@@ -53,7 +53,12 @@ What is currently true:
 - All text colour tokens have been measured against all three surface colours
   (`#131313`, `#1A1A1A`, `#0E0E0E`).
 - Every route is checked for horizontal overflow at a 320px viewport, with and
-  without the SC 1.4.12 text-spacing override (`tests/reflow.spec.ts`).
+  without the SC 1.4.12 text-spacing override (`tests/reflow.spec.ts`), and the
+  same measurement has been made by hand in a headed browser with a real
+  classic scrollbar, where the content box is 305px rather than 320px.
+- Every route is also scanned with the mobile menu dialog **open** at 320px, at
+  the same rule tags. Before that, no element inside the panel had ever been
+  scanned.
 
 Passing axe is not conformance. See section 6.
 
@@ -108,15 +113,29 @@ of the ring, which is what SC 1.4.11 measures.
 Playwright drives a real Chromium against the production build. CI runs it on
 every push and pull request to `main`, and a violation fails the build.
 
-| Check             | Tool                                | Covers                                    |
-| ----------------- | ----------------------------------- | ----------------------------------------- |
-| WCAG rule scan    | axe-core via `@axe-core/playwright` | Every built route                         |
-| Reflow overflow   | Playwright at 320px                 | Every route, with and without SC 1.4.12   |
-| Reflow navigation | Playwright at 320px                 | Menu opens, takes focus, closes on Escape |
-| Route drift       | Playwright                          | Test list matches real build output       |
-| Type safety       | `astro check`                       | Templates and components                  |
+| Check              | Tool                                | Covers                                    |
+| ------------------ | ----------------------------------- | ----------------------------------------- |
+| WCAG rule scan     | axe-core via `@axe-core/playwright` | Every built route                         |
+| Rule scan, menu on | axe-core at 320px, dialog open      | Every route, with the mobile menu open    |
+| Reflow overflow    | Playwright at 320px                 | Every route, with and without SC 1.4.12   |
+| Reflow navigation  | Playwright at 320px                 | Menu opens, takes focus, closes on Escape |
+| Route drift        | Playwright                          | Test list matches real build output       |
+| Type safety        | `astro check`                       | Templates and components                  |
 
 Rule tags: `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`.
+
+Two limits of the automated tier that are easy to mistake for coverage:
+
+- **The suite only runs rules its tag list carries.** Anything axe classes as
+  best practice, `landmark-unique` among them, has never run here and does not
+  run now. A green suite is silent about those, not passing them.
+- **It measures a wider viewport than a real one.** Playwright runs headless,
+  where scrollbars are overlaid, so a 320px viewport gives a 320px content box.
+  Headed Chrome draws a classic 15px scrollbar and gives 305px. The reflow
+  assertion is therefore 15px more forgiving than a real browser at 400% zoom.
+  The heading floors are calibrated against 305px to compensate, and the 305px
+  case is checked by hand (see [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md)
+  §3).
 
 **Automated testing catches only a minority of WCAG success criteria.** Roughly
 a third of WCAG failures are machine-detectable at all; the rest need a human.
@@ -178,6 +197,14 @@ Stated honestly. This list is not filtered for how it looks.
 4. **No screen reader testing has been done at all.** See section 6.
 5. **Only one blog post exists,** and it is placeholder content. Long-form
    reading order, in-page headings, and link text in real prose are untested.
+6. **The breadcrumb link above the `<h1>` on blog routes is undersized.**
+   Measured headed at a 320px viewport, "All posts" on a category route is
+   87x16 and the category link on a post route is 179x16, against the 24x24 of
+   SC 2.5.8. Both are a bare `.label` with no padding, the same shape the
+   header nav links had before `py-2` was added to them. They pass 2.5.8 today
+   only by the spacing exception, with the nearest other target 167px away.
+   That is the arrangement this project decided not to depend on, because it
+   makes an unrelated layout change able to break conformance silently.
 
 ## 8. Reporting a barrier
 

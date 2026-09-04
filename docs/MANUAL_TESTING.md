@@ -14,6 +14,12 @@ navigation, not real reading content.
 npm run build && npm run preview   # http://localhost:4321
 ```
 
+**Stop that server before running `npm run test:a11y`.** The suite now sets
+`reuseExistingServer: false`, so it always builds and serves its own copy and
+refuses to start over a server already on :4321. That is deliberate: reusing
+one meant skipping `npm run build`, so a run could pass against the previous
+build. `astro preview stop` clears it.
+
 Record results in section 7 of [ACCESSIBILITY.md](../ACCESSIBILITY.md). A gap
 is closed by testing it, not by fixing it.
 
@@ -65,9 +71,13 @@ Chrome at 375px wide (DevTools device toolbar, or narrow the window).
 - [ ] Press Escape, reopen with **Space**. Both keys work. → SC 2.1.1
 - [ ] With the panel open, focus is **inside** the panel, on the first link.
       You do not have to Tab to get there. → SC 2.4.3
-- [ ] Tab forward repeatedly. Focus cycles Home → About → Career → Blog →
-      Get in touch → Close → back to Home. It **never** reaches the page
-      behind. → SC 2.1.2
+- [ ] Tab forward repeatedly. Focus goes Home → About → Career → Blog →
+      Get in touch → Close, then **out to the browser UI for one stop**, then
+      back to Home. It is a seven-step cycle, not a tight six-step loop, and
+      the browser-UI stop is correct `<dialog>` behaviour rather than a leak:
+      measured in Chrome 152, `document.activeElement` is `body` at that stop
+      and the next Tab re-enters the panel at Home. What matters is that focus
+      **never** reaches the inert page behind. → SC 2.1.2
 - [ ] Shift+Tab from the first item wraps to Close, not out of the panel.
       → SC 2.1.2
 - [ ] Press **Escape**. The panel closes. → SC 2.1.2
@@ -95,6 +105,19 @@ This gives a ~320px CSS viewport.
 > do this check by hand.** Resizing a viewport is not zooming: real 400% zoom
 > brings a classic scrollbar, subpixel rounding, and the browser's own minimum
 > font size, none of which the automated run sees.
+>
+> **The suite measures a wider box than you will.** Playwright runs headless,
+> where scrollbars are overlaid and a 320px viewport gives a 320px content
+> box. Headed Chrome 152 and Chromium 151 both draw a classic 15px scrollbar
+> and give **305px**. The heading floors are calibrated against 305px for that
+> reason, but the automated assertion is 15px more forgiving than what you are
+> about to look at. Verified by hand this round: all eleven routes measure
+> `scrollWidth === clientWidth === 305` headed, with and without the override.
+
+- [ ] **No heading is cut mid-word.** `overflow-wrap: break-word` breaks
+      anywhere and draws no hyphen, so a heading reading `ANNOUNCEM / ENTS` is
+      the signal that a word needs a soft hyphen. See the content rule in the
+      design system skill. → SC 1.4.10
 
 - [ ] The **mobile menu button appears** and the desktop nav is gone.
       → SC 1.4.10
@@ -280,6 +303,15 @@ used anywhere on this site, so a change to nav spacing cannot break 2.5.8.
 - [ ] The mobile menu button is 48x48. → pass
 - [ ] Footer social links are ≥56px tall. → pass
 - [ ] Mobile menu links at 320px are ≥24px tall. → pass, they are 34px+ type
+- [ ] **The breadcrumb link above the `<h1>` on blog routes.** Currently
+      **fails on its own size**: measured headed at 320px, "All posts" on
+      `/blog/professional-journey` is 87x16 and the category link on
+      `/blog/example-post` is 179x16. Both are a bare `.label` (13px at
+      line-height 1.2 = a 15.6px line box) with no padding, the same shape the
+      header nav links had before `py-2`. They pass 2.5.8 today **only** by the
+      spacing exception, with the nearest other target 167px away, which is
+      exactly the load-bearing-gap arrangement §9 says this site does not use.
+      Re-check after fixing. → SC 2.5.8
 
 ## 10. What this checklist does not cover
 
