@@ -67,3 +67,69 @@ test.describe('axe: WCAG 2.2 AA', () => {
     });
   }
 });
+
+/**
+ * The scans above run at the default desktop viewport with the menu closed. At
+ * that width the whole MobileMenu subtree is display:none and the <dialog> has
+ * never been opened, so axe has never seen a single element inside the panel:
+ * not the nav links, not the CTA, not the close button. A rule only fires on
+ * markup it can reach, so open the thing before scanning it.
+ *
+ * This is NOT what hid the duplicate `aria-label="Primary"` on the panel's
+ * <nav>, and it is worth writing that down rather than leaving a plausible
+ * story in place. Two separate reasons that never made it into a scan:
+ *
+ *   1. `landmark-unique` is an axe best-practice rule. It carries none of the
+ *      wcag2a / wcag2aa / wcag21a / wcag21aa / wcag22aa tags below, so this
+ *      suite has never run it and still does not.
+ *   2. Even untagged it passes, at every width. The header nav is
+ *      `hidden md:block` and the panel is inside `md:hidden`, so the two navs
+ *      named "Primary" are never exposed at the same time. Measured with the
+ *      panel open at 320px: the header nav computes display:none and
+ *      landmark-unique returns one passing node.
+ *
+ * Removing that label was still right. This suite simply did not catch it and
+ * is not the reason it survived.
+ *
+ * 320px is the SC 1.4.10 Reflow width and the only width where the trigger is
+ * rendered. Same tags as the main suite, deliberately: a violation inside a
+ * dialog is not a lesser violation.
+ *
+ * Verified not to be vacuous: an <img> with no alt and a link at #2a2a2a
+ * dropped into the panel fail all eleven of these (image-alt, color-contrast)
+ * while all thirty-six pre-existing tests stay green.
+ */
+const REFLOW_VIEWPORT = { width: 320, height: 720 };
+
+test.describe('axe: WCAG 2.2 AA with the mobile menu open at 320px', () => {
+  test.use({ viewport: REFLOW_VIEWPORT });
+
+  for (const route of ROUTES) {
+    test(`${route} has no violations with the menu open`, async ({ page }) => {
+      const response = await page.goto(route, { waitUntil: 'networkidle' });
+      expect(response?.status(), `${route} should serve a 200`).toBe(200);
+
+      const trigger = page.getByRole('button', { name: /menu/i });
+      await expect(
+        trigger,
+        'the menu trigger should be visible at 320px',
+      ).toBeVisible();
+      await trigger.click();
+
+      const panel = page.getByRole('dialog');
+      await expect(
+        panel,
+        'the panel must be open, or this scan is the closed-state scan again',
+      ).toBeVisible();
+
+      const results = await new AxeBuilder({ page })
+        .withTags(AXE_TAGS)
+        .analyze();
+
+      expect(
+        results.violations,
+        formatViolations(`${route} (mobile menu open)`, results.violations),
+      ).toEqual([]);
+    });
+  }
+});
