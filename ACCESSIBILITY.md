@@ -52,10 +52,14 @@ What is currently true:
 - No axe rule is disabled and no result is excluded anywhere in the suite.
 - All text colour tokens have been measured against all three surface colours
   (`#131313`, `#1A1A1A`, `#0E0E0E`).
-- Every route is checked for horizontal overflow at a 320px viewport, with and
-  without the SC 1.4.12 text-spacing override (`tests/reflow.spec.ts`), and the
-  same measurement has been made by hand in a headed browser with a real
-  classic scrollbar, where the content box is 305px rather than 320px.
+- Every route is checked for horizontal overflow at **two** viewport widths,
+  320px and 305px, with and without the SC 1.4.12 text-spacing override
+  (`tests/reflow.spec.ts`). 305px is the width a real browser with a classic
+  15px scrollbar gives at a 320px CSS viewport, and it used to be a by-hand
+  check only.
+- The same test asserts the content box each width leaves (288px and 273px)
+  and that no heading word is wider than the box it sits in. The second of
+  those is new and it found two real defects on its first run.
 - Every route is also scanned with the mobile menu dialog **open** at 320px, at
   the same rule tags. Before that, no element inside the panel had ever been
   scanned.
@@ -117,25 +121,36 @@ every push and pull request to `main`, and a violation fails the build.
 | ------------------ | ----------------------------------- | ----------------------------------------- |
 | WCAG rule scan     | axe-core via `@axe-core/playwright` | Every built route                         |
 | Rule scan, menu on | axe-core at 320px, dialog open      | Every route, with the mobile menu open    |
-| Reflow overflow    | Playwright at 320px                 | Every route, with and without SC 1.4.12   |
+| Reflow overflow    | Playwright at 320px and 305px       | Every route, with and without SC 1.4.12   |
+| Content box width  | Playwright at 320px and 305px       | 288px / 273px, the box the floors assume  |
+| Heading word fit   | Playwright at 320px and 305px       | No heading word wider than its own box    |
 | Reflow navigation  | Playwright at 320px                 | Menu opens, takes focus, closes on Escape |
 | Route drift        | Playwright                          | Test list matches real build output       |
 | Type safety        | `astro check`                       | Templates and components                  |
 
 Rule tags: `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`.
 
-Two limits of the automated tier that are easy to mistake for coverage:
+Three limits of the automated tier that are easy to mistake for coverage:
 
 - **The suite only runs rules its tag list carries.** Anything axe classes as
   best practice, `landmark-unique` among them, has never run here and does not
   run now. A green suite is silent about those, not passing them.
-- **It measures a wider viewport than a real one.** Playwright runs headless,
-  where scrollbars are overlaid, so a 320px viewport gives a 320px content box.
-  Headed Chrome draws a classic 15px scrollbar and gives 305px. The reflow
-  assertion is therefore 15px more forgiving than a real browser at 400% zoom.
-  The heading floors are calibrated against 305px to compensate, and the 305px
-  case is checked by hand (see [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md)
-  §3).
+- **It used to measure a wider viewport than a real one.** Playwright runs
+  headless, where scrollbars are overlaid, so a 320px viewport gives a 320px
+  layout box; headed Chrome draws a classic 15px scrollbar and gives 305px.
+  The reflow assertion was therefore 15px more forgiving than a real browser
+  at 400% zoom, and 305px was a by-hand check. 305px now runs as a fixed
+  viewport width in the suite, so that gap is closed. The by-hand check in
+  [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §3 stays, because resizing
+  a viewport is still not zooming.
+- **An overflow assertion cannot see a bad heading floor.** This one is worth
+  stating because the floors were documented as locked down by a test that
+  could not fail on them. `overflow-wrap: break-word` guarantees the document
+  never scrolls sideways, so a heading too big for its box is cut mid-word
+  rather than overflowing. Measured: with the h1 floor put back to 36px, all
+  69 overflow assertions passed while "PROFESSIONAL" was being broken across
+  two lines. The heading-word-fit assertion added alongside the 305px case is
+  what actually watches the floors.
 
 **Automated testing catches only a minority of WCAG success criteria.** Roughly
 a third of WCAG failures are machine-detectable at all; the rest need a human.
