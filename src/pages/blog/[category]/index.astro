@@ -1,17 +1,73 @@
 ---
 import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import { BLOG_CATEGORIES } from '../../../content.config';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 
-// Wired to the blog content collection in Phase 2.
-export const getStaticPaths: GetStaticPaths = () => [];
+export const getStaticPaths: GetStaticPaths = async () => {
+  const posts = await getCollection('blog');
+
+  return BLOG_CATEGORIES.map((category) => ({
+    params: { category },
+    props: {
+      posts: posts
+        .filter((post) => post.data.category === category)
+        .sort((a, b) => b.data.date.getTime() - a.data.date.getTime()),
+    },
+  }));
+};
 
 const { category } = Astro.params;
+const { posts } = Astro.props;
+
+// `category` comes from getStaticPaths, so it is always one of BLOG_CATEGORIES,
+// but Astro.params is typed as string | undefined. Fail loudly rather than
+// rendering a page titled "undefined".
+if (!category) {
+  throw new Error('Category route rendered without a category param.');
+}
+
+const categoryLabel = category.replaceAll('-', ' ');
+
+const DATE_LOCALE = 'en-GB';
+const DATE_FORMAT: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+};
 ---
 
 <BaseLayout
-  title="Category | sinduri.lol"
-  description="Placeholder description. Replace with real copy."
+  title={`${categoryLabel} | sinduri.lol`}
+  description={`Posts filed under ${categoryLabel}.`}
 >
-  <h1>{category}</h1>
-  <p>Placeholder copy. This page is built in a later phase.</p>
+  <div class="mx-auto max-w-5xl px-6 py-20">
+    <p class="label text-subtle">
+      <a href="/blog" class="text-gold">All posts</a>
+    </p>
+
+    <h1 class="mt-6">{categoryLabel}</h1>
+
+    {
+      posts.length === 0 ? (
+        <p class="mt-12 text-muted">Nothing filed under {categoryLabel} yet.</p>
+      ) : (
+        <ul class="mt-16 flex flex-col gap-10">
+          {posts.map((post) => (
+            <li class="card">
+              <h2 class="text-h3">
+                <a href={`/blog/${post.id}`}>{post.data.title}</a>
+              </h2>
+              <p class="mt-6 text-muted">{post.data.teaser}</p>
+              <p class="mt-6 text-label text-subtle">
+                <time datetime={post.data.date.toISOString().slice(0, 10)}>
+                  {post.data.date.toLocaleDateString(DATE_LOCALE, DATE_FORMAT)}
+                </time>
+              </p>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
 </BaseLayout>

@@ -12,6 +12,8 @@
     "typecheck": "astro check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test:a11y": "playwright test",
+    "test:a11y:ui": "playwright test --ui",
     "astro": "astro"
   },
   "dependencies": {
@@ -27,6 +29,9 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.62.1",
+    "axe-core": "^4.13.0",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "typescript": "^6.0.3"

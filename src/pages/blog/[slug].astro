@@ -1,17 +1,70 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+import BlogLayout from '../../layouts/BlogLayout.astro';
 
-// Wired to the blog content collection in Phase 2.
-export const getStaticPaths: GetStaticPaths = () => [];
+export const getStaticPaths: GetStaticPaths = async () => {
+  const posts = await getCollection('blog');
 
-const { slug } = Astro.params;
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+};
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const { title, date, category, tags, teaser, ogImage, readingTime } = post.data;
+
+const DATE_LOCALE = 'en-GB';
+const DATE_FORMAT: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+};
+
+const formattedDate = date.toLocaleDateString(DATE_LOCALE, DATE_FORMAT);
+const machineDate = date.toISOString().slice(0, 10);
+const categoryLabel = category.replaceAll('-', ' ');
 ---
 
-<BaseLayout
-  title="Post | sinduri.lol"
-  description="Placeholder description. Replace with real copy."
+<BlogLayout
+  title={`${post.data.seoTitle ?? title} | sinduri.lol`}
+  description={post.data.seoDescription ?? teaser}
+  ogImage={ogImage}
 >
-  <h1>{slug}</h1>
-  <p>Placeholder copy. This page is built in a later phase.</p>
-</BaseLayout>
+  <div class="mx-auto max-w-3xl px-6 py-20">
+    <p class="label text-subtle">
+      <a href={`/blog/${category}`} class="text-gold">{categoryLabel}</a>
+    </p>
+
+    <h1 class="mt-6">{title}</h1>
+
+    <p class="mt-8 text-muted">{teaser}</p>
+
+    <p class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-label text-subtle">
+      <time datetime={machineDate}>{formattedDate}</time>
+      {readingTime ? <span>{readingTime} min read</span> : null}
+    </p>
+
+    <div class="prose mt-16">
+      <Content />
+    </div>
+
+    {
+      tags.length > 0 ? (
+        <div class="mt-16 border-t-8 border-border pt-10">
+          <h2 class="label text-subtle">Tags</h2>
+          <ul class="mt-6 flex flex-wrap gap-3">
+            {tags.map((tag) => (
+              <li class="label border-4 border-border bg-surface px-4 py-2 text-text">
+                {tag}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null
+    }
+  </div>
+</BlogLayout>

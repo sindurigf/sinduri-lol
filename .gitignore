@@ -27,3 +27,9 @@ pnpm-debug.log*
 .DS_Store
 .idea/
 *.swp
+
+# playwright
+test-results/
+playwright-report/
+blob-report/
+.playwright/
