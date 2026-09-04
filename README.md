@@ -82,6 +82,19 @@ older than 22.12.
 Design system, tokens, commit format, and code conventions are documented in
 [AI.md](AI.md).
 
+## MCP servers
+
+`.mcp.json` declares one project-scoped MCP server, `chrome-devtools`, used to
+drive a real browser when checking rendering, focus order, and zoom behaviour.
+
+It is committed so the setup is shared, not per-machine. Claude Code asks for
+approval the first time it starts the server in this repo; approve it once and
+the prompt does not return. It is fetched with `npx` on first run, so that run
+is slower and needs network access.
+
+The `accesslint` server is deliberately not here. It is installed globally as a
+Claude Code plugin with its own bundled MCP server.
+
 ## Accessibility
 
 The conformance target, the known gaps, and how to report a barrier are in
