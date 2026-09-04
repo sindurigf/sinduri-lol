@@ -155,6 +155,14 @@ An inverted set covers it. The first four are AAA on gold:
 | `darkcyan`       | `#00363F` | 8.00         | Links, and the one accent               |
 | `gold-btn-label` | `#FFFFFF` | 1.64         | Label on the dark button fill only      |
 
+This table is a copy, not a source. The same rows appear in `AI.md` and in the
+design system skill, and the one authority for all three is the live CSS custom
+property. `every documented gold ratio matches the live CSS` in
+`tests/gold-surface.spec.ts` parses every table here keyed `on #FFC000` and
+fails on any row whose hex or ratio disagrees with the running page, naming the
+file and line. Retone a token and all three tables fail in the same run; edit a
+number by hand and it fails on its own.
+
 There is no `gold-subtle`, because a third step would land near luminance 0.02
 and be indistinguishable from `gold-text`. Hierarchy below `gold-muted` on this
 surface is weight and size.
@@ -257,25 +265,27 @@ elements (`.skip-link` on every route, `.btn-primary` on `/404`).
 Playwright drives a real Chromium against the production build. CI runs it on
 every push and pull request to `main`, and a violation fails the build.
 
-| Check                | Tool                                | Covers                                           |
-| -------------------- | ----------------------------------- | ------------------------------------------------ |
-| WCAG rule scan       | axe-core via `@axe-core/playwright` | Every built route                                |
-| Rule scan, menu on   | axe-core at 320px, dialog open      | Every route, with the mobile menu open           |
-| Reflow overflow      | Playwright at 320px and 305px       | Every route, with and without SC 1.4.12          |
-| Content box width    | Playwright at 320px and 305px       | 288px / 273px, the box the floors assume         |
-| Heading word fit     | Playwright at 320px and 305px       | No heading word wider than its own box           |
-| Reflow navigation    | Playwright at 320px                 | Menu opens, takes focus, closes on Escape        |
-| Route drift          | Playwright                          | Test list matches real build output              |
-| Unknown path         | Playwright                          | A path with no page returns 404, not 200         |
-| Response headers     | Playwright over the built `dist/`   | The CSP does not break fonts or the menu         |
-| HSTS scope           | Playwright over the built `dist/`   | max-age ceiling, no preload/subdomains           |
-| Gold-surface text    | Playwright over every route         | Nothing on `#FFC000` below 4.5:1                 |
-| Gold-surface class   | Playwright, mounted fixture         | `.surface-gold` text, links, focus, border       |
-| Gold-surface buttons | Playwright, mounted fixture         | Label, fill, border, focus, SC 2.5.8 size        |
-| Invisible control    | Playwright, mounted fixture         | Fill, or border on all four edges, vs the ground |
-| Two-tone focus ring  | Playwright, mounted fixture         | Both rings and the pink shadow, at zero offset   |
-| Token drift          | Playwright, live CSS variables      | The documented ratios against `#FFC000`          |
-| Type safety          | `astro check`                       | Templates and components                         |
+| Check                | Tool                                | Covers                                            |
+| -------------------- | ----------------------------------- | ------------------------------------------------- |
+| WCAG rule scan       | axe-core via `@axe-core/playwright` | Every built route                                 |
+| Rule scan, menu on   | axe-core at 320px, dialog open      | Every route, with the mobile menu open            |
+| Reflow overflow      | Playwright at 320px and 305px       | Every route, with and without SC 1.4.12           |
+| Content box width    | Playwright at 320px and 305px       | 288px / 273px, the box the floors assume          |
+| Heading word fit     | Playwright at 320px and 305px       | No heading word wider than its own box            |
+| Reflow navigation    | Playwright at 320px                 | Menu opens, takes focus, closes on Escape         |
+| Route drift          | Playwright                          | Test list matches real build output               |
+| Badge route coverage | Playwright over the built `dist/`   | Every route rendering a badge is tested for 2.2.2 |
+| Unknown path         | Playwright                          | A path with no page returns 404, not 200          |
+| Response headers     | Playwright over the built `dist/`   | The CSP does not break fonts or the menu          |
+| HSTS scope           | Playwright over the built `dist/`   | max-age ceiling, no preload/subdomains            |
+| Gold-surface text    | Playwright over every route         | Nothing on `#FFC000` below 4.5:1                  |
+| Gold-surface class   | Playwright, mounted fixture         | `.surface-gold` text, links, focus, border        |
+| Gold-surface buttons | Playwright, mounted fixture         | Label, fill, border, focus, SC 2.5.8 size         |
+| Invisible control    | Playwright, mounted fixture         | Fill, or border on all four edges, vs the ground  |
+| Two-tone focus ring  | Playwright, mounted fixture         | Both rings and the pink shadow, at zero offset    |
+| Token drift          | Playwright, live CSS variables      | The documented ratios against `#FFC000`           |
+| Doc table drift      | Playwright, live CSS variables      | The gold tables in AI.md, this file and the skill |
+| Type safety          | `astro check`                       | Templates and components                          |
 
 Rule tags: `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`.
 

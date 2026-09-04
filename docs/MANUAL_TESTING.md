@@ -27,6 +27,26 @@ build. `astro preview stop` clears it.
 Record results in section 7 of [ACCESSIBILITY.md](../ACCESSIBILITY.md). A gap
 is closed by testing it, not by fixing it.
 
+**A measurement that changes between two attempts is environmental until proved
+otherwise.** This matters more by hand than in CI, because every number below is
+read off one machine in one session and there is nothing to diff it against. If
+the same page measures differently twice, the cause is almost never the page:
+
+- The browser. §3 exists because headless Chromium overlays its scrollbar and
+  gives a 320px viewport a 320px layout box, where headed Chrome draws a classic
+  15px bar and gives 305px. Same CSS, same build, 15px apart. Record which
+  browser and which version produced a number.
+- A stale server. Astro 7 backgrounds `dev` and `preview` when it detects an AI
+  coding agent, so a daemon from an earlier session can still be answering on
+  :4321 while you believe you are looking at a fresh build. `ps aux | grep astro`.
+- Zoom and text scaling left set from the previous section. §3 and §7 both change
+  it, and neither resets it for you.
+- Machine load. A page that renders slowly enough to measure mid-layout is a
+  memory problem, not a layout regression.
+
+Re-measure before writing a result down, and note the conditions next to it.
+[README.md](../README.md) has the same rule for the automated suite.
+
 **Software.** Checked on this machine (Ubuntu 25.10, GNOME, Wayland):
 
 | Tool          | Status                                        | Needed for   |

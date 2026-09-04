@@ -160,6 +160,14 @@ readable on gold is a near-black.
 | `darkcyan`       | `#00363F` | 8.00         | Links, and the one accent               |
 | `gold-btn-label` | `#FFFFFF` | 1.64         | Label on the dark button fill only      |
 
+These rows are a copy. `AI.md` and `ACCESSIBILITY.md` carry the same table, and
+the live CSS custom property is the one source of truth for all three:
+`every documented gold ratio matches the live CSS` in
+`tests/gold-surface.spec.ts` compares each hex and ratio here against the
+running page and fails naming the file and line. Never hand-correct a number in
+this table to make it agree with another document — re-measure, or change the
+token and let all three fail together.
+
 The first four are AAA on gold, and `gold-border` clears the 3:1 of SC 1.4.11
 by 2.4x. `gold-btn-label` is the exception in that column: it is **1.64 on
 gold and must never touch it**, because it never does. It sits on
@@ -911,6 +919,17 @@ npm run typecheck  # 0 errors, 0 warnings, 0 hints
 npm run test:a11y  # axe, 0 violations
 ```
 
+Read the summary line, not the last few lines of output, and check the reported
+total against `npx playwright test --list`. A total below the collected count
+means those tests did not run; it does not mean they passed.
+
 Automated testing catches a minority of WCAG failures. Also tab the page,
 zoom to 400%, and toggle reduced motion. Never suppress an axe rule to get
 green; fix the markup or report the failure.
+
+If you added a test, prove it can fail before believing it: remove the thing it
+guards, watch it go red, restore it, watch it go green, and write both results
+into the spec's comment. A new colour, animation or control almost always needs
+a new assertion, and an assertion nobody has seen fail is not yet evidence of
+anything. `AI.md` > Conventions > Tests has the full rule and the cases behind
+it.
