@@ -425,6 +425,20 @@ Stated honestly. This list is not filtered for how it looks.
    Chromium exposes markup reading `About` as `"ABOUT"`, and AI.md and the
    design system skill both flag what a reader says for such a name as
    unverified.
+
+   **An Orca pass narrows this gap; it does not close it.**
+   [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §6 is the checklist, and it
+   is deliberately split by browser: everything runs in Firefox, which is the
+   pairing Orca is built and tested against, except the uppercase question in
+   §6.4, which needs Chrome because Chromium is the only engine that puts the
+   transformed string into the accessibility tree. When those blanks are
+   filled, this gap is rewritten to say what was heard, in which browser, at
+   which versions, and not deleted. Orca is one screen reader read through one
+   engine on one machine. NVDA and VoiceOver announce differently and neither
+   is available here, JAWS is not either, so screen reader coverage stays
+   partial and section 6's "Screen reader announcement quality" bullet stays
+   with it.
+
 5. **Only one blog post exists,** and it is placeholder content. Long-form
    reading order, in-page headings, and link text in real prose are untested.
 6. **The gold surface is measured, and rendered only on a throwaway fixture.**

@@ -31,8 +31,8 @@ is closed by testing it, not by fixing it.
 
 | Tool          | Status                                        | Needed for   |
 | ------------- | --------------------------------------------- | ------------ |
-| Google Chrome | installed (152)                               | all          |
-| Firefox       | installed (155)                               | §2, §8       |
+| Google Chrome | installed (152)                               | all but §6   |
+| Firefox       | installed (155)                               | §2, §6, §8   |
 | Orca          | **installed** — 49.1, AT-SPI2 2.57.1          | §6           |
 | NVDA          | not available — Windows only                  | §6           |
 | VoiceOver     | not available — macOS/iOS only                | §6           |
@@ -203,6 +203,30 @@ Written to be worked through in one sitting, against what exists today:
 `BaseLayout`, `Header`, `Footer`, `MobileMenu`, the blog templates, and the
 404 page. No prior Orca experience assumed.
 
+**Which browser. Firefox, except for one step.** This section departs from the
+rest of the document, which uses Chrome. Orca is built and tested primarily
+against Firefox on Linux, and its Chromium support is weaker. An unexpected
+result in Chrome may therefore reflect the Orca–Chromium pairing rather than
+anything about this site's markup. Everything here runs in **Firefox**: the
+skip link (6.5), the header, footer, landmarks and headings (6.6), the
+MobileMenu dialog (6.7), the blog post's heading order (6.8) and the 404 page
+(6.9). A result from Firefox is trustworthy and can be acted on as it stands.
+
+**Chromium is used for exactly one step, 6.4, the uppercase question**, and for
+a reason specific to that question. Chromium is the only engine that puts the
+string produced by `text-transform` into the accessibility tree; Firefox and
+WebKit are reported to leave the name as authored. Asking Firefox how an all-caps
+accessible name is announced answers nothing, because Firefox never produces
+one. Step 6.4 therefore runs in both: Firefox as the control, Chrome for the
+only reading that can settle it. Nothing else in this section needs Chrome.
+
+Read anything strange in the Chrome half of 6.4 as a question, not a finding.
+It may be the pairing rather than the site, and a single odd result is not
+enough on its own to change a file.
+
+**If Firefox is missing:** `sudo apt install firefox` (on Ubuntu that installs
+the Firefox snap). It is present on this machine at version 155.
+
 ### 6.1 Setting up
 
 Build and serve, in one terminal:
@@ -232,14 +256,18 @@ tail -f /tmp/orca-pass.log | grep --line-buffered "SPEECH OUTPUT"
 is the fallback. The log grows fast, because `LEVEL_ALL` records far more than
 speech; `rm /tmp/orca-pass.log` when you are done with it.
 
-**If Chrome is silent.** Orca 49 switches accessibility on by itself over
+**If the browser is silent.** Orca 49 switches accessibility on by itself over
 D-Bus (`org.a11y.Status IsEnabled`), so the old
 `gsettings set org.gnome.desktop.interface toolkit-accessibility true` step is
 a GTK-era fallback rather than a requirement. If nothing is announced anyway,
-in this order: restart Chrome while Orca is already running; set
-`toolkit-accessibility true` and restart Chrome again; try Firefox, which is
-often more reliable than Chrome with Orca. Set `toolkit-accessibility` back to
-`false` afterwards if the desktop feels slow.
+in this order: restart the browser while Orca is already running; set
+`toolkit-accessibility true` and restart it again. Set `toolkit-accessibility`
+back to `false` afterwards if the desktop feels slow.
+
+Silence is more likely in Chrome than in Firefox, which is part of why Firefox
+is the primary browser here. If Chrome stays silent through both fallbacks, say
+so in the 6.4 blanks and leave them empty. An unanswered question recorded as
+unanswered is worth more than one answered by the wrong engine.
 
 Checked on this machine: **Orca 49.1, AT-SPI2 2.57.1, Wayland.**
 
@@ -293,67 +321,108 @@ record. A ticked box with an empty blank is not.
 
 ### 6.4 The uppercase question. Do this one first
 
-This is the open half of a known issue and the only reason to run the pass in
-a particular order: three files are waiting on the answer.
+This is the open half of a known issue, the only step in this section that
+touches Chrome, and the only reason to run the pass in a particular order:
+three files are waiting on the answer.
 
 `AI.md` [Uppercase](../AI.md#uppercase) and the design system skill's
 `### Uppercase` both record that Chromium hands the **transformed** string to
 the accessibility tree, measured at Chromium 151: markup reading `About`
-exposes the accessible name `"ABOUT"`. Both then flag what a reader actually
-_says_ for such a name as unverified. That guess is what these checks replace.
+exposes the accessible name `"ABOUT"`. Both also record that Firefox and WebKit
+do not transform it. Both then flag what a reader actually _says_ for such a
+name as unverified. That guess is what this step replaces.
+
+**Why it cannot be answered in Firefox alone.** If Firefox leaves the name as
+authored, then Firefox never produces the input condition being asked about: an
+all-caps accessible name. Hearing "career" there measures Firefox's name, not
+Orca's handling of caps. Chromium is the only engine on this machine that puts
+`"CAREER"` into the tree, so it is the only one that can be asked. Firefox is
+still run, as the control that establishes what the untransformed name sounds
+like on the same link, in the same voice, at the same setting.
 
 It is not only the nav. Every `h1`–`h6`, `.label`, `.label-wide`,
 `.btn-primary`, `.btn-secondary` and the skip link carry
 `text-transform: uppercase`, so the answer applies to the whole site.
 
-**6.4.1 A nav link, Chrome.**
-
-1. Chrome at 1280px, full screen, on `http://localhost:4321/about`.
-2. `Ctrl+Home`.
-3. Press `K` until Orca reaches the header link **Career**. Career rather than
-   About on purpose: it is not the current page, so nothing about
-   `aria-current` is mixed into the announcement.
-4. Press `Orca+Return` and listen to it again.
-
-There is no pass here, only an answer. Record which of these it was: the word
-read normally ("Career"); the word read with the caps signalled somehow, by a
-pitch change or a tone; the word spelled out ("C A R E E R"); or something
-else entirely.
-
-- [ ] Heard: `_________________________________________________________`
-- [ ] `SPEECH OUTPUT:` line: `_____________________________________________`
-
-**6.4.2 The same link, other verbosity.** Press `Orca+V`, repeat 6.4.1, then
-`Orca+V` again to put it back.
-
-- [ ] Heard: `_________________________________________________________`
-
-**6.4.3 Capitalization style.** Orca has a **Capitalization style** setting
-under `Orca+Space` → Voice, with the values None (the default), Spell, and
-Icon. It changes how a capital is signalled, so 6.4.1 is only meaningful with
-the value written down.
+**6.4.1 Pin the variable first: Capitalization style.** Orca signals capitals
+according to a setting, at `Orca+Space` → Voice → **Capitalization style**,
+with the values None (the default), Spell, and Icon. On Spell it will spell
+capitals out whatever the browser hands it, which answers a different question
+from the one being asked. Read the value, write it down, and leave it on
+**None** for 6.4.2 and 6.4.3. Neither recording means anything without it.
 
 - [ ] The setting was on: `______________________________________________`
 
-**6.4.4 A heading.** `Ctrl+Home`, then `H` to reach the `<h1>` on `/about`,
-which reads `About` in the markup.
+**6.4.2 A nav link, Firefox.** The control.
 
-- [ ] Heard: `_________________________________________________________`
+1. Firefox at 1280px, full screen, on `http://localhost:4321/about`.
+2. Click once on empty page background, so the reading cursor is in the
+   document rather than in the browser chrome.
+3. `Ctrl+Home`.
+4. Press `K` until Orca reaches the header link **Career**. Career rather than
+   About on purpose: it is not the current page, so nothing about
+   `aria-current` is mixed into the announcement.
+5. Press `Orca+Return` and listen to it again.
 
-**6.4.5 A button label.** Go to `http://localhost:4321/404` and press `K` to
-"Go to the homepage", which `.btn-primary` uppercases.
+Write what came out of the speakers, word for word. Not "reads it normally".
 
-- [ ] Heard: `_________________________________________________________`
+- [ ] Firefox said, verbatim: `______________________________________`
+- [ ] `SPEECH OUTPUT:` line: `_______________________________________`
 
-**6.4.6 The same nav link, Firefox.** Firefox is reported not to apply
-`text-transform` to the accessible name. That has never been checked here, and
-it is the load-bearing half of the design system rule. Repeat 6.4.1 in
-Firefox.
+**6.4.3 The same nav link, Chrome.** The measurement. Same URL, same width,
+same five steps, same Capitalization style, in Chrome instead. If Chrome is
+silent, work through the fallbacks in 6.1 before recording anything.
 
-- [ ] Heard: `_________________________________________________________`
+- [ ] Chrome said, verbatim: `_______________________________________`
+- [ ] `SPEECH OUTPUT:` line: `_______________________________________`
 
-If Firefox reads "Career" and Chrome does not, that is the engine
-inconsistency the rule is built on, measured rather than cited.
+**6.4.4 What the pair means.** Three outcomes, and the third is a real one:
+
+1. **Both read the word normally** — Firefox "career" and Chrome "career". The
+   worry that a CSS-uppercased accessible name gets spelled out letter by
+   letter was unfounded in both engines. Replace the "unverified" sentence in
+   the three files with the two quotes. The practice keeps its other
+   justifications, which never rested on this.
+2. **Chrome spells it out ("C A R E E R") and Firefox does not.** A genuine
+   cross-engine inconsistency, heard rather than cited. This is the strongest
+   possible argument _for_ the practice: sentence case in the markup is then
+   demonstrably the only input that is safe under either engine's behaviour,
+   because it is the only one that never forces caps into the name.
+3. **Anything else.** A pitch or tone change, a partial spell-out, Firefox
+   spelling it out too, Chrome silent, the two engines differing in some other
+   way. Record it verbatim in the blank above and stop there. **Do not
+   interpret it.** Orca–Chromium is the weaker pairing, so an odd Chrome
+   reading is as likely to be the pairing as the site. Repeat it once with the
+   Capitalization style confirmed; if it repeats, it goes into the files as a
+   quoted observation with the browser and version named, not as a conclusion.
+
+**No outcome changes the practice.** `text-transform` in CSS stays, and
+sentence case in the markup stays, whatever Orca says. What changes is the
+stated justification, and only if the evidence supports it. The rule was never
+justified by the announcement: the design system skill is explicit that the
+earlier "it keeps the accessible name in sentence case" defence is false. It
+rests on three things this test cannot touch. Chromium transforms the
+accessible name and Firefox and WebKit do not, so sentence case is the only
+input that is safe under either behaviour. The content stays editable,
+copy-pasteable and searchable as written. And machines reading the DOM get the
+true string. Typing `ABOUT` into the markup makes all three worse and fixes
+nothing.
+
+**6.4.5 Does the answer generalize? Chrome only.** Only Chrome is worth asking,
+for the reason in 6.4.2, and only to check that the nav link was not a special
+case.
+
+- [ ] A heading. `/about`, `Ctrl+Home`, then `H` to the `<h1>`, which reads
+      `About` in the markup.
+      Heard: `___________________________________________`
+- [ ] A button label. `http://localhost:4321/404`, then `K` to "Go to the
+      homepage", which `.btn-primary` uppercases.
+      Heard: `___________________________________________`
+- [ ] The 6.4.3 link again at the other verbosity: `Orca+V`, repeat, `Orca+V`
+      back.
+      Heard: `___________________________________________`
+
+That is the last of Chrome. Everything from 6.5 on is Firefox.
 
 ### 6.5 Skip link
 
@@ -364,12 +433,14 @@ and not only focus. A skip link that moves the sequential focus point but
 leaves the screen reader's cursor at the top of the document has skipped
 nothing for the person using it.
 
-Chrome at 1280px on `http://localhost:4321/`. Click into the address bar, then
+Firefox at 1280px on `http://localhost:4321/`. Click into the address bar, then
 press `Tab` once.
 
 - [ ] It is announced, and it is the first thing announced.
       Heard: `___________________________________________` → SC 2.4.1
-- [ ] The name is "Skip to main content", in whatever casing 6.4 settled.
+- [ ] The name is "Skip to main content". This is Firefox, so 6.4.2 is the
+      relevant half of the uppercase answer: the name should arrive as
+      authored, whatever Chrome does with it.
       Heard: `___________________________________________` → SC 2.4.4
 
 Press `Enter`.
@@ -386,7 +457,7 @@ Press `Enter`.
 
 ### 6.6 Header, footer, landmarks and headings
 
-Chrome at 1280px on `http://localhost:4321/about`. Home, About, Career, Blog
+Firefox at 1280px on `http://localhost:4321/about`. Home, About, Career, Blog
 and Contact are still `PLACEHOLDER` stubs, so this exercises the chrome and
 nothing else, which is exactly what it is for.
 
@@ -424,13 +495,14 @@ nothing else, which is exactly what it is for.
 
 **Getting to 320px.** The breakpoint is Tailwind's `md`, 768px, so the mobile
 menu is present at any width below that; 320px is the width the rest of this
-document is calibrated against, so use it. If the browser window will not go
-that narrow, use DevTools' device toolbar (`Ctrl+Shift+M`) with the width set
-to 320. **Undock DevTools into its own window first** (DevTools' three-dot
-menu → Dock side → the separate-window icon): a docked panel is in the same
-accessibility tree as the page, and Orca will read into it.
+document is calibrated against, so use it. Narrowing the window itself is the
+cleanest way. If it will not go that narrow, use Firefox's Responsive Design
+Mode (`Ctrl+Shift+M`) with the width set to 320. **Detach the developer tools
+into their own window first** (the tools' meatball menu → Dock side → Separate
+Window): a docked panel sits in the same accessibility tree as the page, and
+Orca will read into it.
 
-Chrome at 320px on `http://localhost:4321/`. `Ctrl+Home`, then `Tab` three
+Firefox at 320px on `http://localhost:4321/`. `Ctrl+Home`, then `Tab` three
 times: skip link, logo, menu button. The desktop nav is `display: none` here,
 so it is not in the way.
 
@@ -468,14 +540,15 @@ so it is not in the way.
 - [ ] Reopen and activate a nav link. It navigates, and the new page is
       announced rather than arriving in silence.
       Heard: `___________________________________________` → SC 2.1.1
-- [ ] Repeat the open, the Escape, and both cursor-position checks in
-      **Firefox**. `<dialog>` differs between engines and Orca is often better
-      behaved in Firefox.
-      Heard: `___________________________________________` → SC 4.1.2
+- [ ] `<dialog>` differs between engines, so note that this whole subsection
+      is the **Firefox** result, and that Chrome's is unknown. §2 covers the
+      keyboard half of the same dialog in both browsers; nobody has heard it in
+      Chrome. That is a scope limit to state, not a check to tick.
+      Noted: `___________________________________________` → SC 4.1.2
 
 ### 6.8 A blog post: heading order and landmarks
 
-`http://localhost:4321/blog/example-post`, Chrome at 1280px. It is the only
+`http://localhost:4321/blog/example-post`, Firefox at 1280px. It is the only
 route with more than one level of real document structure, and the largest
 page in the build. The copy is placeholder; the structure is not.
 
@@ -517,9 +590,9 @@ What the templates produce, in source order:
 
 ### 6.9 The 404 page
 
-`http://localhost:4321/404`. This page answers every wrong address on the
-deployed site, so it is the one page someone can arrive at with no idea why.
-Whether the announcement says so is the entire check.
+`http://localhost:4321/404`, Firefox at 1280px. This page answers every wrong
+address on the deployed site, so it is the one page someone can arrive at with
+no idea why. Whether the announcement says so is the entire check.
 
 `astro preview` serves it at `/404` with a 200. That is fine here; the status
 code is asserted by `tests/not-found.spec.ts`, not by this section.
@@ -561,6 +634,20 @@ whatever Orca says.
 
 ### 6.11 What to do with the results
 
+**What a clean pass settles, and what it does not.** Orca is one screen reader,
+read through one engine, on one machine, by one person. It is a data point, not
+a verdict. NVDA and VoiceOver pair announcements with browsers differently, and
+neither is available here; JAWS is not either. So a page that Orca reads
+correctly has been shown to work for Orca users in Firefox, which is worth
+having and is more than this site could claim before. It has not been shown to
+work for everyone using a screen reader.
+
+Gap 4 in [ACCESSIBILITY.md](../ACCESSIBILITY.md) §7 therefore **narrows** on a
+clean pass; it does not close. Rewrite it to say what was tested, in which
+browser, with which versions, and what remains untested. Deleting it would
+claim a coverage that a single reader cannot give. The same goes for §6's
+"Screen reader announcement quality" bullet.
+
 | What you have              | Where it goes                                                                                                                                                                          |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Every filled blank         | This file. It is the record; the boxes and quotes stay here.                                                                                                                           |
@@ -569,25 +656,22 @@ whatever Orca says.
 | A check that failed        | Fix the component, and add a test if the failure is machine-detectable. If it is not, it becomes a new numbered gap in `ACCESSIBILITY.md` §7, with what you heard quoted.              |
 | A check you did not get to | Leave the blank empty and say so in `ACCESSIBILITY.md` §7. An empty blank is data.                                                                                                     |
 
-**A negative result on 6.4 changes the rule's justification, not the
-practice.** Keep writing sentence case in the markup and uppercasing in CSS
-whatever Orca says. The rule was never justified by the announcement: the
-design system skill is explicit that the earlier "it keeps the accessible name
-in sentence case" defence is false. It rests on three things this test cannot
-touch. Chromium transforms the accessible name and Firefox and WebKit do not,
-so sentence case is the only input that is safe under either behaviour. The
-content stays editable, copy-pasteable and searchable as written. And machines
-reading the DOM get the true string. Typing `ABOUT` into the markup makes all
-three worse and fixes nothing.
+**On 6.4 specifically, no outcome changes the practice.** 6.4.4 sets out why
+in full: `text-transform` in CSS stays and sentence case in the markup stays,
+because the rule never rested on the announcement. Only the stated
+justification moves, and only as far as the two quotes support.
 
-So a good result ("Career") replaces a flagged assumption with a measurement
-in three files, and nothing else changes. A bad result replaces the same
-assumption with the same measurement, and **additionally** opens a gap against
-the visual decision to uppercase at all. That second one is a design question
-for Sinduri: it would mean dropping `text-transform` from `.label` and the
-headings, which changes how the site looks. Do not make that change as a side
-effect of running this test. Either way, the "unverified" sentence in AI.md
-and in the skill gets replaced with what you actually heard.
+Outcome 1 and outcome 2 both replace a flagged assumption with a measurement in
+three files, and nothing else changes. Outcome 2 also strengthens the rule,
+since it is the engine inconsistency measured rather than cited. If instead a
+reading turns out to be genuinely bad for a listener, that **additionally**
+opens a gap against the visual decision to uppercase at all. That second one is
+a design question for Sinduri: it would mean dropping `text-transform` from
+`.label` and the headings, which changes how the site looks. Do not make that
+change as a side effect of running this test. Either way, the "unverified"
+sentence in AI.md and in the skill gets replaced with what was actually heard,
+named by browser and version, with the Capitalization style value alongside
+it.
 
 ## 7. Text zoom and text spacing
 
