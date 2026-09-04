@@ -139,18 +139,30 @@ so the readable band lies below the ground: AAA needs a foreground luminance of
 `#FFC000` it spans 0 to 0.0414, fifteen times narrower. Everything readable on
 gold is a near-black.
 
-An inverted set covers it, all four AAA on gold:
+An inverted set covers it. The first four are AAA on gold:
 
-| Token         | Value     | on `#FFC000` | Job                       |
-| ------------- | --------- | ------------ | ------------------------- |
-| `gold-text`   | `#131313` | 11.32        | Headings and body copy    |
-| `gold-muted`  | `#3A3020` | 7.88         | Secondary copy            |
-| `gold-border` | `#22394D` | 7.27         | Every border and rule     |
-| `darkcyan`    | `#00363F` | 8.00         | Links, and the one accent |
+| Token            | Value     | on `#FFC000` | Job                                     |
+| ---------------- | --------- | ------------ | --------------------------------------- |
+| `gold-text`      | `#131313` | 11.32        | Body copy, headings, **button borders** |
+| `gold-muted`     | `#3A3020` | 7.88         | Secondary copy                          |
+| `gold-border`    | `#22394D` | 7.27         | **Structural** rules, dividers, cards   |
+| `darkcyan`       | `#00363F` | 8.00         | Links, and the one accent               |
+| `gold-btn-label` | `#FFFFFF` | 1.64         | Label on the dark button fill only      |
 
 There is no `gold-subtle`, because a third step would land near luminance 0.02
 and be indistinguishable from `gold-text`. Hierarchy below `gold-muted` on this
 surface is weight and size.
+
+`gold-btn-label` is listed for completeness and is the one value there that
+fails against gold. It never sits on gold: it is the label on
+`.btn-gold-primary`'s `#131313` fill, where it measures 18.58.
+
+**Two border tokens apply on this surface**, split by what the border encloses.
+`gold-border` carries structural boundaries: section rules, dividers, card
+edges. **Button borders use `gold-text`**, matching their own fill, so the
+control reads as one solid block rather than a dark block inside a navy
+outline. Both clear SC 1.4.11 on gold several times over, so that split is a
+design decision rather than a contrast one.
 
 **Three site-wide rules break silently on this ground and are overridden by the
 `.surface-gold` class**, which is the only supported way to build one:
@@ -165,11 +177,36 @@ surface is weight and size.
   offset puts the dark page background on both sides of the ring. On a large
   gold surface the offset gap is gold too, so **the ring would be completely
   invisible**. It is repainted `gold-text` (11.32).
+
+  **That mitigation has an assumption in it worth stating generally: it holds
+  only while the ring colour differs from the surface behind the element.** It
+  breaks whenever a surface matches an accent, which is exactly what the gold
+  ground does. Any new surface token needs its own focus ring measured rather
+  than inherited, and measured twice: against the surface behind the element,
+  which is what the offset gap shows, and against the element's own edge, in
+  case the offset is ever reduced. The gold buttons are where the second check
+  bites. The ring there is `gold-text`, the same colour as
+  `.btn-gold-primary`'s fill and border, so ring-against-fill measures 1.00 and
+  only the 3px offset makes it 11.32 against what it actually touches.
+
 - **Borders (SC 1.4.11).** The base layer defaults every border to `border`,
   2.34 on gold. The subtree is re-defaulted to `gold-border`.
 
-`.btn-primary` must not be used on this surface: it is `bg-gold`, a 1.00:1 fill
-with a `shadow-hard-pink-12` that measures 2.31.
+Neither `.btn-primary` nor `.btn-secondary` may be used on this surface.
+`.btn-primary` is `bg-gold`, a 1.00:1 fill; `.btn-secondary` carries
+`border-border` (2.34 on gold) and a gold offset shadow (1.00 on gold).
+`.btn-gold-primary` and `.btn-gold-secondary` are the pair the comps specify,
+scoped to `.surface-gold`. Measured against what each colour actually touches:
+the primary label is 18.58 on its own `#131313` fill, the primary fill is 11.32
+against gold, and the secondary label and border are both 11.32 against gold.
+Both render 51.6px tall, so each passes SC 2.5.8 on its own size without the
+spacing exception.
+
+**The pink offset shadow on the primary button measures 2.31 on gold**, under
+the 3:1 of SC 1.4.11. That is acceptable only because it carries no meaning:
+the control is identified by its `#131313` fill against the gold ground at
+11.32. An offset shadow is never allowed to become the thing that delimits a
+control here.
 
 `tests/gold-surface.spec.ts` enforces all of this by measuring the rendered
 DOM. No section of the site uses the gold ground yet, so the class contract is
@@ -183,22 +220,23 @@ elements (`.skip-link` on every route, `.btn-primary` on `/404`).
 Playwright drives a real Chromium against the production build. CI runs it on
 every push and pull request to `main`, and a violation fails the build.
 
-| Check              | Tool                                | Covers                                     |
-| ------------------ | ----------------------------------- | ------------------------------------------ |
-| WCAG rule scan     | axe-core via `@axe-core/playwright` | Every built route                          |
-| Rule scan, menu on | axe-core at 320px, dialog open      | Every route, with the mobile menu open     |
-| Reflow overflow    | Playwright at 320px and 305px       | Every route, with and without SC 1.4.12    |
-| Content box width  | Playwright at 320px and 305px       | 288px / 273px, the box the floors assume   |
-| Heading word fit   | Playwright at 320px and 305px       | No heading word wider than its own box     |
-| Reflow navigation  | Playwright at 320px                 | Menu opens, takes focus, closes on Escape  |
-| Route drift        | Playwright                          | Test list matches real build output        |
-| Unknown path       | Playwright                          | A path with no page returns 404, not 200   |
-| Response headers   | Playwright over the built `dist/`   | The CSP does not break fonts or the menu   |
-| HSTS scope         | Playwright over the built `dist/`   | max-age ceiling, no preload/subdomains     |
-| Gold-surface text  | Playwright over every route         | Nothing on `#FFC000` below 4.5:1           |
-| Gold-surface class | Playwright, mounted fixture         | `.surface-gold` text, links, focus, border |
-| Token drift        | Playwright, live CSS variables      | The documented ratios against `#FFC000`    |
-| Type safety        | `astro check`                       | Templates and components                   |
+| Check                | Tool                                | Covers                                     |
+| -------------------- | ----------------------------------- | ------------------------------------------ |
+| WCAG rule scan       | axe-core via `@axe-core/playwright` | Every built route                          |
+| Rule scan, menu on   | axe-core at 320px, dialog open      | Every route, with the mobile menu open     |
+| Reflow overflow      | Playwright at 320px and 305px       | Every route, with and without SC 1.4.12    |
+| Content box width    | Playwright at 320px and 305px       | 288px / 273px, the box the floors assume   |
+| Heading word fit     | Playwright at 320px and 305px       | No heading word wider than its own box     |
+| Reflow navigation    | Playwright at 320px                 | Menu opens, takes focus, closes on Escape  |
+| Route drift          | Playwright                          | Test list matches real build output        |
+| Unknown path         | Playwright                          | A path with no page returns 404, not 200   |
+| Response headers     | Playwright over the built `dist/`   | The CSP does not break fonts or the menu   |
+| HSTS scope           | Playwright over the built `dist/`   | max-age ceiling, no preload/subdomains     |
+| Gold-surface text    | Playwright over every route         | Nothing on `#FFC000` below 4.5:1           |
+| Gold-surface class   | Playwright, mounted fixture         | `.surface-gold` text, links, focus, border |
+| Gold-surface buttons | Playwright, mounted fixture         | Label, fill, border, focus, SC 2.5.8 size  |
+| Token drift          | Playwright, live CSS variables      | The documented ratios against `#FFC000`    |
+| Type safety          | `astro check`                       | Templates and components                   |
 
 Rule tags: `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`.
 
@@ -231,6 +269,19 @@ Three limits of the automated tier that are easy to mistake for coverage:
   viewport width in the suite, so that gap is closed. The by-hand check in
   [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §3 stays, because resizing
   a viewport is still not zooming.
+- **A rule engine cannot see an invisible control.** Every automated
+  contrast rule measures a foreground against its background, which means it
+  measures a button's _label_ against that button's own fill. It has nothing
+  to say about whether the fill itself is distinguishable from the surface the
+  control sits on. Measured: a gold section containing `.btn-primary`, whose
+  `bg-gold` fill is 1.00:1 against the gold ground, returned **"No
+  accessibility violations found"** from AccessLint with AAA rules enabled,
+  because `.surface-gold` repaints the label `darkcyan` at 8.00 and the label
+  is all the rule looks at. The button was invisible as a shape and the scan
+  was clean. `tests/gold-surface.spec.ts` checks this directly, by comparing
+  each control's opaque fill against the ground behind it; a transparent fill
+  like `.btn-gold-secondary`'s is excluded by its alpha, since there the
+  border does the delimiting.
 - **An overflow assertion cannot see a bad heading floor.** This one is worth
   stating because the floors were documented as locked down by a test that
   could not fail on them. `overflow-wrap: break-word` guarantees the document
@@ -319,12 +370,16 @@ Stated honestly. This list is not filtered for how it looks.
 5. **Only one blog post exists,** and it is placeholder content. Long-form
    reading order, in-page headings, and link text in real prose are untested.
 6. **The gold surface has been measured but never rendered.** The inverted
-   token set in section 5 is arithmetic and a CSS class; no page uses it yet,
-   so the class contract is tested against a mounted fixture rather than
-   against real markup. Nothing has been looked at, tabbed through, or zoomed
-   on an actual gold section, and the focus ring on that ground in particular
-   is the kind of thing that should be seen before it is believed. Re-test
-   when the Career page lands and replace the fixture with the real section.
+   token set in section 5 is arithmetic, a CSS class and two button classes;
+   no page uses any of them yet, so the contracts are tested against mounted
+   fixtures rather than against real markup. Nothing has been looked at,
+   tabbed through, or zoomed on an actual gold section. The focus ring on that
+   ground is the item to look at first: on `.btn-gold-primary` it is the same
+   colour as the button's own fill and is legible only because of the 3px
+   offset, which passes by measurement but has not been seen by anyone.
+   Reflow is untested there too, since no gold section exists to run the 305px
+   suite against. Re-test when the Career page lands and replace the fixtures
+   with the real section.
 
 ## 8. Reporting a barrier
 

@@ -130,17 +130,29 @@ gold is a near-black.
 
 The inverted set:
 
-| Token         | Hex       | on `#FFC000` | Job                       |
-| ------------- | --------- | ------------ | ------------------------- |
-| `gold-text`   | `#131313` | 11.32        | Headings and body copy    |
-| `gold-muted`  | `#3A3020` | 7.88         | Secondary copy            |
-| `gold-border` | `#22394D` | 7.27         | Every border and rule     |
-| `darkcyan`    | `#00363F` | 8.00         | Links, and the one accent |
+| Token            | Hex       | on `#FFC000` | Job                                     |
+| ---------------- | --------- | ------------ | --------------------------------------- |
+| `gold-text`      | `#131313` | 11.32        | Body copy, headings, **button borders** |
+| `gold-muted`     | `#3A3020` | 7.88         | Secondary copy                          |
+| `gold-border`    | `#22394D` | 7.27         | **Structural** rules, dividers, cards   |
+| `darkcyan`       | `#00363F` | 8.00         | Links, and the one accent               |
+| `gold-btn-label` | `#FFFFFF` | 1.64         | Label on the dark button fill only      |
 
 `gold-border` is `#22394D` rather than flat `#131313` because contrast did not
 decide it: both clear 1.4.11 several times over. `#22394D` keeps the blue that
 carries every boundary elsewhere, and `#131313` is already `gold-text`, so
-using it would paint every rule the exact colour of the body copy.
+using it would paint every structural rule the exact colour of the body copy.
+
+**`gold-border` does not govern every border on this surface.** It governs
+structural ones: section rules, dividers, card edges. **Button borders use
+`gold-text`**, matching their own fill, because a navy outline around a solid
+dark block would read as an outline this design does not have.
+
+`gold-btn-label` is the one token here that is component-scoped, and the one
+that fails on gold (1.64). It never touches gold: it sits on
+`.btn-gold-primary`'s `#131313` fill, at 18.58. It is named for the button so
+that pure white does not leak into body copy, where `text` `#E5E2E1` is the
+deliberate choice, since white blooms on a dark ground.
 
 There is deliberately no `gold-subtle`: a third step would land near luminance
 0.02 and be indistinguishable from `gold-text`. `darkcyan` is the only accent
@@ -152,9 +164,12 @@ rules are wrong on this ground and three fail silently: links are painted
 `gold` by the base layer (1.00) and `cyan` on hover (1.01); the focus ring is
 `gold`, and the 3px offset that saves it elsewhere does not help when the
 offset gap is also gold; borders default to `border` (2.34); text defaults to
-`text` (1.27). `.btn-primary` is `bg-gold` and must not be used there at all.
+`text` (1.27). Neither `.btn-primary` nor `.btn-secondary` may be used there;
+`.btn-gold-primary` and `.btn-gold-secondary` are the gold-surface pair, scoped
+to `.surface-gold` so using one elsewhere renders it unstyled.
 `tests/gold-surface.spec.ts` measures all of it from the rendered DOM. The full
-rules are in the design system skill.
+rules, including the button specifications and their measured ratios, are in
+the design system skill.
 
 ### Typography
 

@@ -152,14 +152,37 @@ readable on gold is a near-black.
 
 ### The inverted set
 
-| Token         | Hex       | on `#FFC000` | Job                       |
-| ------------- | --------- | ------------ | ------------------------- |
-| `gold-text`   | `#131313` | 11.32        | Headings and body copy    |
-| `gold-muted`  | `#3A3020` | 7.88         | Secondary copy            |
-| `gold-border` | `#22394D` | 7.27         | Every border and rule     |
-| `darkcyan`    | `#00363F` | 8.00         | Links, and the one accent |
+| Token            | Hex       | on `#FFC000` | Job                                     |
+| ---------------- | --------- | ------------ | --------------------------------------- |
+| `gold-text`      | `#131313` | 11.32        | Body copy, headings, **button borders** |
+| `gold-muted`     | `#3A3020` | 7.88         | Secondary copy                          |
+| `gold-border`    | `#22394D` | 7.27         | **Structural** rules, dividers, cards   |
+| `darkcyan`       | `#00363F` | 8.00         | Links, and the one accent               |
+| `gold-btn-label` | `#FFFFFF` | 1.64         | Label on the dark button fill only      |
 
-All four are AAA on gold; `gold-border` clears the 3:1 of SC 1.4.11 by 2.4x.
+The first four are AAA on gold, and `gold-border` clears the 3:1 of SC 1.4.11
+by 2.4x. `gold-btn-label` is the exception in that column: it is **1.64 on
+gold and must never touch it**, because it never does. It sits on
+`.btn-gold-primary`'s `#131313` fill, where it measures **18.58**. It is named
+for the button rather than for a role because the site's text colour is `text`
+`#E5E2E1`, and that softness is deliberate: pure white blooms on a dark ground.
+That argument is about continuous prose, not about a 13px uppercase label on a
+small control, and the component-scoped name is what stops `#FFFFFF` leaking
+into body copy.
+
+#### Two border tokens on this surface, split by what the border encloses
+
+`gold-border` does **not** govern every border on gold. The split is:
+
+| Border on gold                                 | Token         | Why                                                                 |
+| ---------------------------------------------- | ------------- | ------------------------------------------------------------------- |
+| Structural rules, section dividers, card edges | `gold-border` | A boundary between areas; the blue keeps the site's identity.       |
+| Button borders                                 | `gold-text`   | The border matches its own fill, so the control reads as one block. |
+
+A navy outline around a solid dark button would read as an outline this design
+does not have. Do not "correct" `.btn-gold-primary`'s border to `gold-border`:
+`tests/gold-surface.spec.ts` asserts that the primary button's border colour
+equals its own fill, precisely so that edit fails.
 
 **`gold-border` is `#22394D`, not flat `#131313`.** Both clear the threshold
 several times over, so contrast did not decide it. Two things did. `#22394D`
@@ -217,12 +240,57 @@ three of them fail silently.** Applying `bg-gold` by hand gets none of them.
 4. **Text.** `text` is 1.27 on gold, so the class sets the foreground rather
    than trusting each element to.
 
-**`.btn-primary` must not be used on a gold surface.** It is `bg-gold`, so on
-this ground it is a 1.00:1 fill: an invisible button identified only by its
-border, carrying a `shadow-hard-pink-12` that measures 2.31. A primary action
-here is a dark fill instead — `bg-background text-gold` with a `border-4` in
-`gold-border`. There is no class for it yet; build it with the page that needs
-one.
+### Buttons on gold
+
+**Neither `.btn-primary` nor `.btn-secondary` may be used on this surface.**
+`.btn-primary` is `bg-gold`, so on this ground it is a 1.00:1 fill: an
+invisible button identified only by its border. `.btn-secondary` carries
+`border-border` (2.34 on gold) and a gold offset shadow (1.00 on gold).
+
+Use `.btn-gold-primary` and `.btn-gold-secondary`, which are scoped to
+`.surface-gold` so that using one anywhere else renders it unstyled — loudly
+wrong rather than quietly wrong.
+
+```html
+<div class="surface-gold">
+  <a class="btn-gold-primary" href="/cv.pdf" download>Download CV</a>
+  <a class="btn-gold-secondary" href="/contact">Get in touch</a>
+</div>
+```
+
+| Button      | Fill        | Label            | Border          | Shadow               |
+| ----------- | ----------- | ---------------- | --------------- | -------------------- |
+| `primary`   | `gold-text` | `gold-btn-label` | 4px `gold-text` | `shadow-hard-pink-8` |
+| `secondary` | transparent | `gold-text`      | 4px `gold-text` | none                 |
+
+Both are 13px / weight 900 / 0.1em / uppercase with 18px 34px of padding, from
+the comps. Measured, each colour against what it is actually adjacent to:
+
+| Measurement                             | Ratio     | Needs |
+| --------------------------------------- | --------- | ----- |
+| Primary label on its own `#131313` fill | **18.58** | 4.5   |
+| Primary fill against the gold ground    | **11.32** | 3.0   |
+| Secondary label on gold                 | **11.32** | 4.5   |
+| Secondary border on gold                | **11.32** | 3.0   |
+
+Three things about these that are easy to get wrong:
+
+- **The pink shadow is decoration and nothing else.** `pink` measures 2.31 on
+  gold, under the 3:1 of SC 1.4.11, and that is acceptable here only because
+  the shadow carries no meaning: what identifies the control is its `#131313`
+  fill against gold at 11.32. **Never let an offset shadow become the thing
+  that delimits a control**, on this surface or any other. If the fill ever
+  goes, the shadow does not inherit the job.
+- **The padding is a conformance floor, not a spacing preference.** A 13px
+  label at line-height 1.2 is a 15.6px line box; `18px` top and bottom takes
+  the control to 51.6px, past the 24px SC 2.5.8 asks of a target on its own
+  size. `--spacing-btn-gold-y` and `--spacing-btn-gold-x` exist as tokens
+  because 18 and 34 are not multiples of the 4px Tailwind step and this
+  project does not allow arbitrary values.
+- **The button label is not underlined**, unlike every other link on this
+  surface. The border and fill already distinguish it, so SC 1.4.1 is
+  satisfied by the box rather than by the colour, and an underline under a
+  0.1em-tracked uppercase label reads as damage.
 
 A gold section is full-bleed, so it breaks out of `.page-gutter` with negative
 inline margins and re-applies the gutter inside itself. See the `.page-gutter`
@@ -235,6 +303,14 @@ after components in the cascade. That is intentional, and it is also the hole:
 `class="border-border"` or `class="text-muted"` written inside a gold section
 is a bug no CSS can prevent.
 
+**A rule engine will not catch this for you, and specifically will not catch a
+`.btn-primary` on gold.** Measured: a gold section containing one returned "No
+accessibility violations found" from AccessLint with AAA enabled. Contrast
+rules measure a label against its own button's fill, and `.surface-gold`
+repaints that label `darkcyan` at 8.00, so the control passes while being a
+1.00:1 gold fill on a gold ground, invisible as a shape. A green scan is not
+evidence here.
+
 `tests/gold-surface.spec.ts` is what catches it. It measures from the rendered
 DOM rather than matching class names, so it fails on the _outcome_:
 
@@ -243,8 +319,15 @@ DOM rather than matching class names, so it fails on the _outcome_:
 - the ratios in this table are re-measured from the live CSS variables, so
   retoning any token here or in the dark set fails until every table in
   `AI.md`, `ACCESSIBILITY.md` and this file is updated;
+- every control inside a `.surface-gold` section is checked for an opaque fill
+  the same colour as the ground behind it, which is the `.btn-primary` case
+  above; a transparent fill is excluded by its alpha, since
+  `.btn-gold-secondary` is deliberately transparent and delimited by its
+  border;
 - `.surface-gold` itself is asserted for text, muted text, link colour, link
-  underline, focus ring and border colour.
+  underline, focus ring and border colour;
+- both button classes are asserted for label, fill, border, focus ring, focus
+  offset, absence of an underline, and SC 2.5.8 target size.
 
 If you change a number on this page, run it.
 
@@ -555,6 +638,37 @@ Check this by tabbing from the top of a long page, not by reading the CSS.
 
 Use `:focus-visible`, not `:focus`, so a mouse click does not leave a ring
 behind. Never rely on the browser default alone against these dark surfaces.
+
+### The 3px offset is a mitigation, and it has an assumption in it
+
+The site-wide ring is `gold` with a 3px offset, and the offset is not spacing.
+Gold on the gold `.btn-primary` fill measures **1.00**, so a ring flush against
+that button would be invisible. The offset works by putting the _page_
+background on both sides of the ring, and 3:1 is then measured against that
+rather than against the element.
+
+**That only holds while the ring colour differs from the surface behind the
+element.** It is an assumption, not a guarantee, and it breaks the moment a
+surface matches an accent — which is exactly what the gold ground does. On
+`.surface-gold` the offset gap is gold too, so the mitigation buys nothing and
+the ring has to be repainted (`gold-text`, 11.32).
+
+So, as a standing rule:
+
+**Any new surface token needs its own focus ring measured, never inherited.**
+Two checks, not one, because the offset means the ring touches two things:
+
+1. the ring against the **surface behind the element**, which is what the
+   offset gap shows;
+2. the ring against the **element's own edge**, in case the offset is ever
+   reduced to zero.
+
+The gold buttons are the case where the second check bites. The ring on that
+surface is `gold-text`, which is the same colour as `.btn-gold-primary`'s fill
+and border: ring against fill measures **1.00**, ring against the gold gap
+measures **11.32**. **The offset is load-bearing there for a second, separate
+reason**, and `tests/gold-surface.spec.ts` asserts it is non-zero for that
+reason alone. Never set `outline-offset: 0` anywhere on this site.
 
 ---
 
