@@ -21,10 +21,15 @@ applicable" is a valid answer; leaving it blank is not.
 
 ## What CI did not check
 
-`npm run build`, `npm run typecheck`, `npm run format:check`, and
-`npm run test:a11y` run on every pull request, and the branch ruleset will not
-merge a branch that fails them. Re-attesting to them here would be noise, so
-this section is only what no machine decides.
+CI decides all of this on every pull request, and the branch ruleset will not
+merge a branch that fails any of it: the build, `astro check`, Prettier, axe
+on every route, the commit format and sign-off, AI attribution in the commits
+and in this description, arbitrary values and raw hex in components, and
+broken relative links in the documentation. Re-attesting to a machine's answer
+is how the old version of this file ended up with a token checkbox that was
+ticked, and false, seven times running.
+
+So this section is only what no machine decides.
 
 - [ ] Documentation this change makes wrong is corrected in the same PR,
       including [ACCESSIBILITY.md](../ACCESSIBILITY.md) if this change closes a

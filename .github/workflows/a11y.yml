@@ -16,6 +16,15 @@ permissions:
 
 jobs:
   a11y:
+    # DO NOT RENAME. This string is the GitHub status context that the branch
+    # ruleset on `main` requires. Editing it does not fail anything; it makes
+    # the required check disappear, and `main` silently loses its protection.
+    #
+    # It now undersells the job, which also checks commit messages, the pull
+    # request description, design tokens and documentation links. The checks
+    # were added here rather than as a second job precisely so they inherit
+    # this context and cannot be merged past while red. An inaccurate name is
+    # the cheaper of the two problems.
     name: Build, typecheck, and axe
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -23,6 +32,11 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v6
+        with:
+          # check-commits.sh walks base..HEAD, so the base commit has to be in
+          # the clone. The default shallow fetch has only the tip and the
+          # range would not resolve.
+          fetch-depth: 0
 
       - name: Set up Node
         uses: actions/setup-node@v6
@@ -32,6 +46,45 @@ jobs:
           # production by pinning a version here as well.
           node-version-file: '.nvmrc'
           cache: npm
+
+      # The four convention checks run before `npm ci` on purpose. All of them
+      # are stdlib Node or POSIX sh with no dependencies, so a branch that
+      # breaks a convention fails in seconds rather than after a Playwright
+      # browser download. They were checkboxes in the pull request template
+      # until every one of them was ticked while false.
+
+      - name: Verify commit messages
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: sh scripts/check-commits.sh "$BASE_SHA..HEAD"
+
+      - name: Verify the pull request description
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          # Passed as environment variables, never interpolated into the
+          # script body. A title and a description are user-controlled text,
+          # and `${{ ... }}` is substituted before the shell parses the line,
+          # so splicing them inline is a command injection waiting for someone
+          # to open a pull request with a backtick in the title.
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # .githooks/commit-msg cannot reach this text: it sees commit
+          # messages only. This is the one place the description is checked.
+          if printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY" |
+            grep -qiE 'co-authored-by:.*(claude|anthropic)|generated with \[?claude code'
+          then
+            echo "::error::The pull request title or description carries AI attribution."
+            exit 1
+          fi
+          echo "Pull request description: no AI attribution."
+
+      - name: Verify design tokens
+        run: npm run check:tokens
+
+      - name: Verify documentation links
+        run: npm run check:links
 
       - name: Install dependencies
         run: npm ci

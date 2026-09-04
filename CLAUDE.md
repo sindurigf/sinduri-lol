@@ -25,14 +25,21 @@ their content into this file.
 Format: `type: Full sentence with a full stop.`, signed off (`git commit -s`).
 
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `chore`, `perf`, `security`,
-`config`, `revert`.
+`config`, `revert`, `test`.
 
 Example: `feat: Add Header component with sticky nav and active indicator.`
 
+CI checks this on every pull request, over the commits the branch adds, via
+`scripts/check-commits.sh`. Merge commits are skipped: GitHub writes those and
+signs off nothing.
+
 Some historical commits carry a `Co-Authored-By:` trailer and some do not.
 Attribution is now configured off in `.claude/settings.json`, with
-`.githooks/commit-msg` as a backstop. [AI_DISCLOSURE.md](AI_DISCLOSURE.md)
-explains why the history is left inconsistent rather than rewritten.
+`.githooks/commit-msg` as a backstop, and CI as the third layer, because hooks
+are not cloned and `core.hooksPath` is opt-in. The CI check deliberately looks
+only at what a branch adds, never at full history: two commits already on
+`main` carry the trailer, and [AI_DISCLOSURE.md](AI_DISCLOSURE.md) explains why
+the history is left inconsistent rather than rewritten.
 
 ## Where things are documented
 
