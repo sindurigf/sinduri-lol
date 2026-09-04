@@ -59,3 +59,15 @@ the history is left inconsistent rather than rewritten.
 
 Run `npm run build`, `npm run typecheck`, and `npm run test:a11y` before
 calling any change done.
+
+A suite is green only when the summary line with the counts says so. Check the
+reported total against `npx playwright test --list`: a total below the collected
+count means those tests did not run, not that they passed, and nothing in the
+output is coloured to say so. If two runs of unchanged code disagree, the cause
+is environmental until measured otherwise — look for a backgrounded Astro
+daemon, another session writing to this tree, memory pressure or lockfile
+resolution before reading the diff.
+
+[AI.md](AI.md) > Conventions > Tests has the rules for writing a test that can
+actually fail, and for the counts and duplicated facts that go stale otherwise.
+[README.md](README.md) has the longer form of both checks above.
