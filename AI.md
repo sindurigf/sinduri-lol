@@ -60,7 +60,13 @@ Plus `header-bg` (`rgba(10, 10, 10, 0.94)`), used only by the sticky header.
 
 ### Typography
 
-Lexend, self-hosted, weights 300 / 400 / 700 / 800 / 900.
+Lexend, self-hosted via `@fontsource-variable/lexend`, imported in
+`BaseLayout.astro`. Variable on the `wght` axis, so every weight from 100 to 900
+is available from one file per subset. The CSS family name is `'Lexend
+Variable'`, not `'Lexend'`. Licensed OFL-1.1.
+
+Do not switch to the Google Fonts CDN. The design comps reference it; this
+project is self-hosted by design.
 
 The scale is fluid via `clamp()` rather than breakpoint steps, so there are no
 jumps between device sizes. Ceilings land at roughly a 1156px viewport.
@@ -177,20 +183,13 @@ Never invent copy. Where real copy is missing, use text prefixed with
 
 ## Assets not yet in the repo
 
-These paths are referenced in code but the files do not exist. The build emits a
-warning for each missing font and renders a broken image for each missing image
-until they are supplied.
+These paths are referenced in code but the files do not exist. Each renders a
+broken image until it is supplied.
 
-| Path                          | Referenced by         |
-| ----------------------------- | --------------------- |
-| `public/fonts/lexend-300.woff2` | `global.css`        |
-| `public/fonts/lexend-400.woff2` | `global.css`        |
-| `public/fonts/lexend-700.woff2` | `global.css`        |
-| `public/fonts/lexend-800.woff2` | `global.css`        |
-| `public/fonts/lexend-900.woff2` | `global.css`        |
-| `public/images/bunny-dark.png`  | `Header.astro`      |
-| `public/images/og-default.png`  | `BaseLayout.astro`  |
-| `public/images/og-placeholder.png` | `example-post.md` |
+| Path                               | Referenced by       |
+| ---------------------------------- | ------------------- |
+| `public/images/og-default.png`     | `BaseLayout.astro`  |
+| `public/images/og-placeholder.png` | `example-post.md`   |
 
 Footer social links are all `href="#"` placeholders: GitHub, LinkedIn,
 Instagram, Email.

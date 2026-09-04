@@ -14,16 +14,25 @@ static output, deployed to Cloudflare Pages.
 npm install
 ```
 
-Then drop the self-hosted font files into `public/fonts/`. They are not in the
-repo. The build warns once per missing file until they are added.
+That is the whole setup. Fonts come from npm, so there are no files to drop in
+by hand.
 
-```
-public/fonts/lexend-300.woff2
-public/fonts/lexend-400.woff2
-public/fonts/lexend-700.woff2
-public/fonts/lexend-800.woff2
-public/fonts/lexend-900.woff2
-```
+## Fonts
+
+Lexend is installed as [`@fontsource-variable/lexend`][fontsource] and imported
+in `src/layouts/BaseLayout.astro`. It is a variable font covering weights 100
+to 900 on the `wght` axis, subsets latin, latin-ext, and vietnamese.
+
+It is still self-hosted: Fontsource bundles the `.woff2` files into the build
+and they are served from our own origin. No Google Fonts CDN, no third-party
+request at runtime.
+
+Lexend is licensed under the [SIL Open Font License 1.1][ofl], copyright 2019
+The Lexend Project Authors. The full license text ships with the package at
+`node_modules/@fontsource-variable/lexend/LICENSE`.
+
+[fontsource]: https://fontsource.org/fonts/lexend
+[ofl]: https://openfontlicense.org/
 
 ## Commands
 

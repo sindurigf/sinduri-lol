@@ -1,53 +1,6 @@
 @import 'tailwindcss';
 
 /* ---------------------------------------------------------------------------
-   Lexend, self-hosted.
-   Font files are NOT in the repo yet. Drop the five .woff2 files listed below
-   into public/fonts/ and these declarations resolve with no further changes.
-   Until then the fallback stack renders, courtesy of font-display: swap.
---------------------------------------------------------------------------- */
-
-@font-face {
-  font-family: 'Lexend';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url('/fonts/lexend-300.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Lexend';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/lexend-400.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Lexend';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/lexend-700.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Lexend';
-  font-style: normal;
-  font-weight: 800;
-  font-display: swap;
-  src: url('/fonts/lexend-800.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Lexend';
-  font-style: normal;
-  font-weight: 900;
-  font-display: swap;
-  src: url('/fonts/lexend-900.woff2') format('woff2');
-}
-
-/* ---------------------------------------------------------------------------
    Design tokens. Dark mode only, no light theme and no `dark:` variant setup.
    Every value the site uses lives here. Components must not hardcode hex.
 --------------------------------------------------------------------------- */
@@ -70,9 +23,14 @@
   --color-header-bg: rgba(10, 10, 10, 0.94);
 
   /* Typography */
+  /*
+   * 'Lexend Variable' is the family name exposed by @fontsource-variable/lexend,
+   * imported in BaseLayout.astro. Weights 100-900 come from one wght axis file
+   * per subset, bundled at build and served from our own origin.
+   */
   --font-sans:
-    'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, sans-serif;
+    'Lexend Variable', system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
 
   /* Fluid heading scale. Ceilings land at roughly a 1156px viewport. */
   --text-h1: clamp(44px, 9vw, 104px);
