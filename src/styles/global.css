@@ -554,11 +554,40 @@
   }
 
   /*
-   * The 80px header is sticky and will cover anything focused or targeted near
-   * the top of the viewport (SC 2.4.11 Focus Not Obscured).
+   * SC 2.4.11 FOCUS NOT OBSCURED (MINIMUM). The 80px header is sticky, so it
+   * covers whatever the browser scrolls to the top of the viewport.
+   *
+   * THIS USED TO NAME ONLY `:target, [id]`, AND THAT WAS NOT ENOUGH. Almost no
+   * focusable control on this site has an `id` — not a nav link, not a filter
+   * option, not a card heading's link — so `scroll-margin-top` was zero for
+   * nearly everything that can take focus. It covered anchor destinations and
+   * missed the tab order.
+   *
+   * It was invisible in the obvious direction. Tabbing FORWARD, Chromium
+   * scrolls a control up from the bottom edge and it never goes near the
+   * header, so a forward pass over every route reported nothing. Shift-Tabbing
+   * BACK is the direction that fails: the browser scrolls the control to the
+   * top of the viewport, which is exactly where the header is.
+   *
+   * Measured by hit-testing the focused element's four corners and centre
+   * against `document.elementFromPoint`, walking backwards from the footer.
+   * Before this rule, at 1280px and at 305px, controls came back with all five
+   * points painted over by the header — ENTIRELY hidden, which is the AA
+   * failure, not the partial obscuring that 2.4.12 covers at AAA. Among them:
+   * the "All posts" link on a category route, two category cards on the
+   * homepage, and four filter options on the blog routes.
+   *
+   * So the list is every element that can take sequential focus, plus the
+   * anchor destinations it already had. `:where()` keeps the whole selector at
+   * zero specificity, so a component can still set its own scroll-margin
+   * without fighting this.
+   *
+   * tests/focus.spec.ts walks both directions on every route and hit-tests
+   * each stop. Reading the CSS cannot tell you this works; only walking it can.
    */
   :target,
-  [id] {
+  [id],
+  :where(a[href], button, input, select, textarea, summary, [tabindex]) {
     scroll-margin-top: calc(var(--spacing-header) + 1rem);
   }
 }
