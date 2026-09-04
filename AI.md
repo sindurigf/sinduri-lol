@@ -42,21 +42,30 @@ comes from a token. If you need something that does not exist, add a token.
 
 ### Colors
 
-| Token      | Hex       | Usage                        |
-| ---------- | --------- | ---------------------------- |
-| background | `#131313` | Main background              |
-| surface    | `#1A1A1A` | Cards, boxes                 |
-| deep       | `#0E0E0E` | Alternate sections, footer   |
-| border     | `#504632` | All borders, warm dark brown |
-| text       | `#E5E2E1` | Primary text                 |
-| muted      | `#D4C5AB` | Secondary body copy          |
-| subtle     | `#9C8F78` | Footer, captions             |
-| gold       | `#FFC000` | Primary accent               |
-| cyan       | `#00DCFD` | Secondary accent             |
-| pink       | `#FF007A` | Tertiary accent              |
-| darkcyan   | `#00363F` | Text on cyan backgrounds     |
+| Token      | Hex       | Usage                      |
+| ---------- | --------- | -------------------------- |
+| background | `#131313` | Main background            |
+| surface    | `#1A1A1A` | Cards, boxes               |
+| deep       | `#0E0E0E` | Alternate sections, footer |
+| border     | `#5A87A8` | All borders, cool mid blue |
+| text       | `#E5E2E1` | Primary text               |
+| muted      | `#D4C5AB` | Secondary body copy        |
+| subtle     | `#9BB4C6` | Footer, captions           |
+| gold       | `#FFC000` | Primary accent             |
+| cyan       | `#00DCFD` | Secondary accent           |
+| pink       | `#FF007A` | Tertiary accent            |
+| darkcyan   | `#00363F` | Text on cyan backgrounds   |
 
 Plus `header-bg` (`rgba(10, 10, 10, 0.94)`), used only by the sticky header.
+
+`border` and `subtle` are contrast-critical and must not be changed without
+re-verifying against all three surface colors, `#131313`, `#1A1A1A`, and
+`#0E0E0E`. `#5A87A8` measures 4.84 / 4.53 / 5.02 and `#9BB4C6` measures
+8.62 / 8.07 / 8.95. The border they replaced sat at 2.00 and failed WCAG 2.2
+SC 1.4.11, which requires 3:1 for non-text contrast.
+
+The palette is cool, not warm. Gold, cyan, and pink read more strongly against
+blue than they did against the old brown, so use the accents sparingly.
 
 ### Typography
 

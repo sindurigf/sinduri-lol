@@ -10,10 +10,10 @@
   --color-background: #131313;
   --color-surface: #1a1a1a;
   --color-deep: #0e0e0e;
-  --color-border: #504632;
+  --color-border: #5a87a8;
   --color-text: #e5e2e1;
   --color-muted: #d4c5ab;
-  --color-subtle: #9c8f78;
+  --color-subtle: #9bb4c6;
   --color-gold: #ffc000;
   --color-cyan: #00dcfd;
   --color-pink: #ff007a;
@@ -74,8 +74,8 @@
 
 @layer base {
   /*
-   * Tailwind v4 defaults every border to currentColor. The whole design is
-   * warm-brown-bordered, so make the border token the default instead.
+   * Tailwind v4 defaults every border to currentColor. Every border in this
+   * design uses the `border` token, so make that the default instead.
    */
   *,
   ::before,
