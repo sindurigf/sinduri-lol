@@ -1,6 +1,27 @@
 @import 'tailwindcss';
 
 /* ---------------------------------------------------------------------------
+   Source scanning. Tailwind 4 auto-detects sources from the repo root, which
+   means it reads prose as if it were markup and generates a utility for every
+   class name it finds in a code fence. The design system skill is the worst
+   offender because its rules are taught with counter-examples: `text-[32px]`,
+   `shadow-[8px_8px_0]` and `rounded` are in it precisely to say never write
+   these, and Tailwind was emitting all three. Documentation was shipping CSS.
+
+   Both exclusions are needed. Markdown covers the prose and the skills, which
+   are .md; the .claude directory also holds non-Markdown that Tailwind would
+   otherwise scan, such as references/wcag.json.
+
+   Content Markdown in src/content/blog/ is excluded too. That is safe today
+   because no post uses a class attribute, and posts render through
+   BlogLayout. If a post ever needs one, narrow the pattern rather than
+   dropping it, or the class will be missing only in production.
+--------------------------------------------------------------------------- */
+
+@source not '../../**/*.md';
+@source not '../../.claude';
+
+/* ---------------------------------------------------------------------------
    Design tokens. Dark mode only, no light theme and no `dark:` variant setup.
    Every value the site uses lives here. Components must not hardcode hex.
 --------------------------------------------------------------------------- */
