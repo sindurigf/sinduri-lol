@@ -97,11 +97,19 @@ onBeforeUnmount(() => {
       @close="onClose"
     >
       <!--
-        Named with aria-label, not a visually hidden heading. The panel has no
-        visible heading, and an sr-only <h2> here would sit ahead of the page's
-        <h1> in source order and corrupt the document outline.
+        Deliberately unnamed. The dialog around it is already named "Menu", and
+        that is the context a screen reader announces on entry, so the nav needs
+        nothing of its own. It used to carry aria-label="Primary", which
+        duplicated the header nav's label: with the panel open both landmarks
+        read "Primary, navigation" and neither could be told from the other in a
+        landmarks list (landmark-unique, SC 1.3.1). Naming it something else
+        would only invent a second name for the same set of links.
+
+        The dialog is named with aria-label rather than a visually hidden
+        heading, because an sr-only <h2> here would sit ahead of the page's <h1>
+        in source order and corrupt the document outline.
       -->
-      <nav aria-label="Primary">
+      <nav>
         <ul class="flex flex-col gap-8">
           <li v-for="link in links" :key="link.href">
             <a
