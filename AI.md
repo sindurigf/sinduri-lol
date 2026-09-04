@@ -61,8 +61,18 @@ Plus `header-bg` (`rgba(10, 10, 10, 0.94)`), used only by the sticky header.
 `border` and `subtle` are contrast-critical and must not be changed without
 re-verifying against all three surface colors, `#131313`, `#1A1A1A`, and
 `#0E0E0E`. `#5A87A8` measures 4.84 / 4.53 / 5.02 and `#9BB4C6` measures
-8.62 / 8.07 / 8.95. The border they replaced sat at 2.00 and failed WCAG 2.2
-SC 1.4.11, which requires 3:1 for non-text contrast.
+8.62 / 8.07 / 8.95.
+
+The two replacements were made for different reasons, and an earlier note here
+conflated them:
+
+- **`border` was a conformance fix.** Its predecessor `#504632` measured 2.00 on
+  `#131313` and failed WCAG 2.2 SC 1.4.11 Non-text Contrast, which requires 3:1.
+- **`subtle` was a palette decision.** Its predecessor `#9C8F78` measured
+  5.85 / 5.48 / 6.08. It is text, so SC 1.4.3 applied, and it passed AA (4.5:1)
+  on all three surfaces. It fell short of AAA (7:1). Swapping it for `#9BB4C6`
+  was an upgrade from AA to AAA and an alignment with the cool palette, not a
+  1.4.11 fix. `#9C8F78` never failed a success criterion.
 
 The palette is cool, not warm. Gold, cyan, and pink read more strongly against
 blue than they did against the old brown, so use the accents sparingly.
@@ -218,13 +228,6 @@ tile, and it measures 1.04:1 against `#131313`, which is invisible.
 
 Footer social links are real. The footer badge image from the comps is not
 placed yet; see the TODO in `Footer.astro`.
-
----------------------------------- | ------------------ |
-| `public/images/og-default.png` | `BaseLayout.astro` |
-| `public/images/og-placeholder.png` | `example-post.md` |
-
-Footer social links are all `href="#"` placeholders: GitHub, LinkedIn,
-Instagram, Email.
 
 ---
 

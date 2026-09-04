@@ -47,8 +47,14 @@ them without re-verifying.
 
 `border` carries every visible boundary in the design, so it is governed by
 WCAG 2.2 SC 1.4.11 Non-text Contrast, which requires **3:1**. Its predecessor
-measured 2.00 and failed. Anything that replaces it must clear 3:1 on all three
-surfaces, and the numbers above must be updated in the same commit.
+`#504632` measured 2.00 and failed. Anything that replaces it must clear 3:1 on
+all three surfaces, and the numbers above must be updated in the same commit.
+
+`subtle` is a different case, and the two are easy to confuse. It is text, so
+SC 1.4.3 governs it, not 1.4.11. Its predecessor `#9C8F78` measured
+5.85 / 5.48 / 6.08 and **passed AA on all three surfaces**; it only fell short
+of AAA. Replacing it with `#9BB4C6` was an AA-to-AAA upgrade and a palette
+decision, not a conformance fix. Do not describe it as one.
 
 ### Adding a color
 
