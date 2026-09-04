@@ -23,6 +23,16 @@ read, built, typechecked, and run against the accessibility suite in
 
 Review is a human responsibility. Nothing merges because a model produced it.
 
+**The git history is inconsistent about attribution and is left that way.**
+Some commits carry a `Co-Authored-By:` trailer naming the model and some do
+not, because the tooling emitted one by default before the repository was
+configured to suppress it. The history is not rewritten to tidy this up:
+rewriting it would change every commit hash for a cosmetic gain, and the
+trailers are accurate about what happened. From now on the setting in
+`.claude/settings.json` and the `commit-msg` hook described in the README keep
+new commits free of them. The absence of a trailer on a commit therefore says
+nothing about whether AI was involved in it; this document does.
+
 ## No AI at runtime
 
 No AI runs when someone visits this site.

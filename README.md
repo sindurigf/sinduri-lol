@@ -43,6 +43,30 @@ The Lexend Project Authors. The full license text ships with the package at
 | `npm run preview` | Serve the built `dist/` locally       |
 | `npm run astro`   | Astro CLI passthrough                 |
 
+## Commit hooks
+
+Commit messages here carry no AI attribution. Two things enforce that, and the
+second exists because the first is not reliable on its own:
+
+1. `.claude/settings.json` sets an empty attribution template for Claude Code.
+2. `.githooks/commit-msg` strips any AI attribution that lands anyway.
+
+Git does not clone hooks, so the hook has to be switched on once per checkout:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+Do that after `npm install`. It is not wired into a `prepare` script on
+purpose: that would run `git config` during CI and deploy installs, where
+there is no developer checkout to configure and a failure would take the
+install down with it.
+
+The hook removes `Co-Authored-By:` lines naming Claude or Anthropic and the
+`Generated with [Claude Code]` line. It deliberately leaves a `Co-Authored-By:`
+line naming a person alone, because silently dropping a human collaborator's
+credit would be a worse failure than the one it prevents.
+
 ## Project layout
 
 ```

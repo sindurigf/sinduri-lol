@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+# Strip AI attribution trailers from commit messages.
+#
+# This repository's convention is that commit messages carry no AI
+# attribution (see AI.md). `.claude/settings.json` sets an empty attribution
+# template, which is the primary control, but that setting has known
+# reliability problems and a trailer can still land. This hook is the
+# backstop, and it runs whatever tool wrote the message.
+#
+# It removes only AI attribution:
+#
+#   Co-Authored-By: ... claude ... / ... anthropic ...
+#   🤖 Generated with [Claude Code](https://claude.com/claude-code)
+#
+# A `Co-Authored-By:` line naming a person is deliberately left alone. A
+# blanket strip would silently drop a human collaborator's credit, which is a
+# worse failure than the one this hook exists to prevent.
+#
+# Hooks are not cloned. `git config core.hooksPath .githooks` turns this on;
+# the README says so under "Commit hooks".
+
+set -eu
+
+msg_file=${1:?commit-msg: called without a message file}
+tmp_file="${msg_file}.noai"
+
+awk '
+  {
+    lowered = tolower($0)
+    if (lowered ~ /^[[:space:]]*co-authored-by:.*(anthropic|claude)/) next
+    if (lowered ~ /generated with \[?claude code/) next
+    lines[++kept] = $0
+  }
+  END {
+    # Drop the trailing blank lines the removal leaves behind.
+    last = 0
+    for (i = 1; i <= kept; i++) {
+      if (lines[i] ~ /[^[:space:]]/) last = i
+    }
+    for (i = 1; i <= last; i++) print lines[i]
+  }
+' "$msg_file" > "$tmp_file"
+
+if ! grep -q '[^[:space:]]' "$tmp_file"; then
+  rm -f "$tmp_file"
+  echo "commit-msg: the message is only attribution; refusing to empty it." >&2
+  exit 1
+fi
+
+mv "$tmp_file" "$msg_file"
