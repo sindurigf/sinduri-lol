@@ -419,16 +419,21 @@ Stated honestly. This list is not filtered for how it looks.
    keyboard-operable pause control. A `prefers-reduced-motion` media query does
    not satisfy 2.2.2 on its own, because a user who has not set that preference
    still has no way to stop it.
-4. **No screen reader testing has been done at all.** See section 6.
+4. **No screen reader testing has been done at all.** No NVDA, JAWS,
+   VoiceOver, or Orca run, so announcement quality is unknown. That includes
+   how the CSS-uppercased accessible names are read: section 6 records that
+   Chromium exposes markup reading `About` as `"ABOUT"`, and AI.md and the
+   design system skill both flag what a reader says for such a name as
+   unverified.
 5. **Only one blog post exists,** and it is placeholder content. Long-form
    reading order, in-page headings, and link text in real prose are untested.
-6. **The gold surface has been measured but never rendered.** The inverted
-   token set in section 5 is arithmetic, a CSS class and two button classes;
-   no page uses any of them yet, so the contracts are tested against mounted
-   fixtures rather than against real markup. Nothing has been looked at,
-   tabbed through, or zoomed on an actual gold section. The focus ring on that
-   ground is still the item to look at first. On `.btn-gold-primary` it is now
-   two rings, an inner `#FFFFFF` at 18.58 against the button's own fill and the
+6. **The gold surface is measured, and rendered only on a throwaway fixture.**
+   The inverted token set in section 5 is arithmetic, a CSS class and two
+   button classes; no page uses any of them yet, so the contracts are tested
+   against mounted fixtures rather than against real markup. Nothing has been
+   looked at, tabbed through, or zoomed on a gold section of a real route.
+   The focus ring on that ground is still the item to look at first. On
+   `.btn-gold-primary` it is now two rings, an inner `#FFFFFF` at 18.58 against the button's own fill and the
    outer `#131313` at 11.32 against the gold beyond the offset gap, so it no
    longer depends on the offset alone.
 
