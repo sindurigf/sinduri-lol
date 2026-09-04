@@ -121,11 +121,10 @@ Variable on the `wght` axis, 100 to 900. Never load the Google Fonts CDN.
 ### Uppercase
 
 **Apply uppercase with `text-transform` in CSS. Never type it uppercase in the
-markup.** Some screen readers spell all-caps strings out letter by letter, so
-`ABOUT` typed literally can be announced "A B O U T".
+markup.**
 
 ```html
-<!-- Yes: the accessible name stays "About" -->
+<!-- Yes -->
 <a class="label" href="/about">About</a>
 
 <!-- No -->
@@ -135,6 +134,43 @@ markup.** Some screen readers spell all-caps strings out letter by letter, so
 `.label`, `.label-wide`, `.btn-primary`, `.btn-secondary`, and every heading
 already apply `text-transform: uppercase`. Write sentence case and let the CSS
 do it.
+
+#### Why, accurately
+
+An earlier version of this rule claimed `text-transform` keeps the accessible
+name in sentence case. **That is false and the rule should never be defended
+that way.** Chromium exposes the _transformed_ string: measured in Chromium 151
+via `Accessibility.getFullAXTree` on `/about`, source markup reading `About`
+and `Get in touch` produced accessible names `"ABOUT"` and `"GET IN TOUCH"`.
+Every link and heading in the a11y tree came back uppercased.
+
+The practice is still right, for reasons that hold up:
+
+- **Engine behaviour is inconsistent.** Firefox and WebKit do not apply
+  `text-transform` to the accessible name; Chromium does. Writing sentence case
+  is the only input that is safe under either behaviour, because it is the only
+  one that never _forces_ caps into the name. Do not depend on a specific
+  engine's choice here, in either direction.
+- **The content stays real.** Sentence case in the markup stays editable,
+  copy-pasteable, and searchable as written. Literal caps corrupt the content
+  itself to achieve a visual effect.
+- **Machines get the true string.** Search engines, social previews, and
+  anything else reading the DOM receive `About`, not `ABOUT`.
+- **Announcement is a screen-reader decision, not just a browser one.** How a
+  reader handles an all-caps string varies by screen reader as well as by
+  browser: some read the word, some spell it, some depend on verbosity
+  settings.
+
+**Do not claim caps "will be spelled out letter by letter."** That claim is too
+strong, it is what made the old rule wrong, and nothing here has been verified
+against an actual screen reader. What a user hears is untested; see the Orca
+pass in `docs/MANUAL_TESTING.md` §6.
+
+The vendored `frontend-a11y` skill states the spelled-out reason too, under
+"Don't Write All Caps in HTML" and again in `references/css.md`. Those files are
+vendored unmodified and must not be edited (see their `NOTICE`). **This section
+supersedes them on the reason.** The practice they recommend is the same one, so
+follow it; just do not repeat their justification.
 
 ### Weight
 

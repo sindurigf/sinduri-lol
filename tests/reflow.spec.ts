@@ -38,7 +38,7 @@ const overflowReport = async (page: Page): Promise<string> => {
           .replace(/\s+/g, ' ')
           .slice(0, 48);
         out.push(
-          `${el.tagName.toLowerCase()}: scrollWidth ${el.scrollWidth} > clientWidth ${el.clientWidth} — "${text}"`,
+          `${el.tagName.toLowerCase()}: scrollWidth ${el.scrollWidth} > clientWidth ${el.clientWidth}: "${text}"`,
         );
       }
     }

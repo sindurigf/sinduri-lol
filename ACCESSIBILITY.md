@@ -52,6 +52,8 @@ What is currently true:
 - No axe rule is disabled and no result is excluded anywhere in the suite.
 - All text colour tokens have been measured against all three surface colours
   (`#131313`, `#1A1A1A`, `#0E0E0E`).
+- Every route is checked for horizontal overflow at a 320px viewport, with and
+  without the SC 1.4.12 text-spacing override (`tests/reflow.spec.ts`).
 
 Passing axe is not conformance. See section 6.
 
@@ -109,6 +111,7 @@ every push and pull request to `main`, and a violation fails the build.
 | Check             | Tool                                | Covers                                    |
 | ----------------- | ----------------------------------- | ----------------------------------------- |
 | WCAG rule scan    | axe-core via `@axe-core/playwright` | Every built route                         |
+| Reflow overflow   | Playwright at 320px                 | Every route, with and without SC 1.4.12   |
 | Reflow navigation | Playwright at 320px                 | Menu opens, takes focus, closes on Escape |
 | Route drift       | Playwright                          | Test list matches real build output       |
 | Type safety       | `astro check`                       | Templates and components                  |
@@ -136,6 +139,18 @@ None of the following has been performed. Each is a real gap, not a formality.
 - **Screen reader announcement quality.** Nothing has been tested with NVDA,
   JAWS, VoiceOver, or Orca. Whether announcements are correct, ordered, and not
   redundant is unknown.
+- **How uppercase is announced.** Every heading, label, and button on this site
+  is written in sentence case and uppercased with CSS `text-transform`. That
+  does **not** keep the accessible name in sentence case: measured in Chromium
+  151 via the accessibility tree, markup reading `About` exposes the name
+  `"ABOUT"`, and every link and heading on `/about` came back uppercased.
+  Firefox and WebKit are reported not to transform the name, which has not been
+  checked here. **What a screen reader actually says for an all-caps name is
+  therefore unverified.** It varies by reader as well as by browser, and no
+  reader has been run. Pending the Orca pass in
+  [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §6, which records the answer.
+  The practice is kept for reasons that do not depend on the announcement; see
+  the design system skill.
 - **Reduced motion.** The `prefers-reduced-motion: reduce` block is in
   `global.css` but has not been verified with the preference enabled.
 - **Zoom to 400%.** Only the 320px menu behaviour is covered by a test. Full

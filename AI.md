@@ -109,7 +109,7 @@ jumps between device sizes. Ceilings land at roughly a 1156px viewport.
 
 | Role           | Size                       | Weight | Tracking |
 | -------------- | -------------------------- | ------ | -------- |
-| H1             | `clamp(44px, 9vw, 104px)`  | 900    | -0.05em  |
+| H1             | `clamp(38px, 9vw, 104px)`  | 900    | -0.05em  |
 | H2             | `clamp(34px, 6.6vw, 76px)` | 900    | -0.05em  |
 | H3             | `clamp(26px, 4.4vw, 56px)` | 800    | -0.04em  |
 | Body           | `clamp(17px, 1.2vw, 19px)` | 400    | normal   |
@@ -119,10 +119,28 @@ jumps between device sizes. Ceilings land at roughly a 1156px viewport.
 Headings are uppercase. Labels and tags are uppercase. Use `tracking-label-wide`
 (0.14em) where a label needs more air.
 
+The H1 floor is 38px, not a round 40px, because it is a reflow constraint. At a
+320px viewport a classic scrollbar leaves about 305px, and "ACCESSIBILITY"
+measures 348.4px at 44px, so 44 x 305 / 348.4 = 38.5px is the largest floor a
+13-character word still fits inside. Headings also set `hyphens: auto` and
+`overflow-wrap: break-word`; the latter is what actually guarantees no
+horizontal overflow. `tests/reflow.spec.ts` locks this down. Do not raise the
+floor without re-running it.
+
 Body copy is weight 400 and never lighter. Weight 300 halates against the dark
-background. Uppercase is applied with `text-transform` in CSS and never typed
-uppercase in the markup, because some screen readers spell all-caps strings out
-letter by letter.
+background.
+
+Uppercase is applied with `text-transform` in CSS and never typed uppercase in
+the markup. The reason is **not** that this keeps the accessible name in
+sentence case; it does not. Chromium exposes the transformed string, measured
+at version 151: markup reading `About` yields the accessible name `"ABOUT"`.
+The real reasons are that Firefox and WebKit do not apply `text-transform` to
+the accessible name while Chromium does, so sentence case in the markup is the
+only input that is safe under either behaviour; that the content stays
+editable, copy-pasteable and searchable in its real casing; and that search
+engines and social previews receive the true string. How a screen reader
+announces all-caps varies by reader as well as by browser, and has not been
+tested here. See the design system skill for the full rule.
 
 ### Borders, shadows, radius
 
