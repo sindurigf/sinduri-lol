@@ -87,7 +87,15 @@ Chrome, window exactly 1280px wide, then Ctrl+`+` to **400%**.
 This gives a ~320px CSS viewport.
 
 - [ ] **No horizontal scrollbar.** Nothing requires scrolling sideways to read.
-      → SC 1.4.10 > ⚠️ **Known to fail on `/` right now.** The `<h1>` word "PLACEHOLDER" > renders 317px wide against a 305px content box and cannot break, so the > page scrolls 12px sideways. Any h1 word of ~11+ characters does this > ("Accessibility" = 351px, "Professional" = 341px). Re-test once real > headings land. See the report note on `overflow-wrap`.
+      → SC 1.4.10
+
+> The heading overflow that used to fail here is fixed and covered by
+> `tests/reflow.spec.ts`, which asserts `scrollWidth <= clientWidth` on every
+> route at a 320px viewport, with and without the §7 spacing override. **Still
+> do this check by hand.** Resizing a viewport is not zooming: real 400% zoom
+> brings a classic scrollbar, subpixel rounding, and the browser's own minimum
+> font size, none of which the automated run sees.
+
 - [ ] The **mobile menu button appears** and the desktop nav is gone.
       → SC 1.4.10
 - [ ] The mobile menu **opens and is fully operable** at this zoom. This is the
@@ -184,10 +192,21 @@ list, `Orca+K` links list. The Orca modifier is Insert or CapsLock.
 - [ ] The header bunny mark announces "Lepus Ridet mark". → SC 1.1.1
 - [ ] Link names make sense read out of context in the links list. → SC 2.4.4
 - [ ] Nothing is announced twice in a row. → SC 1.3.1
-- [ ] **Note how nav items are read.** They are written sentence case and
-      uppercased in CSS, but Chromium exposes the transformed string, so Orca
-      may receive "ABOUT". Write down whether it says "About", "ABOUT", or
-      spells "A-B-O-U-T". → SC 1.3.1
+- [ ] **Note how nav items are read.** This is the open half of a known issue,
+      so record the answer rather than skipping it. The markup is sentence case
+      and uppercased in CSS, and Chromium is **confirmed** to hand the
+      transformed string to the accessibility tree: measured at version 151,
+      `About` in the markup exposes the accessible name `"ABOUT"`. What is not
+      known is what Orca then _says_. Write down whether it says "About",
+      "ABOUT", or spells "A-B-O-U-T", and whether that changes with verbosity
+      settings. Then update ACCESSIBILITY.md §6 and the design system skill.
+      → SC 1.3.1
+- [ ] Repeat that one item in **Firefox**, which is reported not to apply
+      `text-transform` to the accessible name. Untested here. → SC 1.3.1
+- [ ] The mobile menu's nav landmark is announced **once**, as plain
+      "navigation" inside the "Menu" dialog. It used to be labelled "Primary",
+      the same as the header nav, which made the two indistinguishable in a
+      landmarks list. → SC 1.3.1
 - [ ] Turn `toolkit-accessibility` back to `false` when finished if the desktop
       feels slow.
 
@@ -232,7 +251,11 @@ p, li, h1, h2, h3, h4, h5, h6 { margin-bottom: 2em !important; }
 
 - [ ] No text is clipped and no content is lost.
 - [ ] No text overlaps other text.
-- [ ] Buttons and links grow to fit rather than cutting their labels off. > ⚠️ At a 320px viewport this currently pushes horizontal overflow from > 12px to 94px, same `<h1>` cause as §3. Nothing clips, but the sideways > scroll gets worse. Re-check with real headings.
+- [ ] Buttons and links grow to fit rather than cutting their labels off.
+- [ ] **No horizontal scroll appears** once the override is applied. This used
+      to push overflow from 12px to 94px at 320px, the same `<h1>` cause as §3.
+      It is fixed and asserted for every route by `tests/reflow.spec.ts`, which
+      applies this exact override. Confirm it by eye anyway.
 
 ## 8. Cross-browser
 
@@ -244,13 +267,19 @@ p, li, h1, h2, h3, h4, h5, h6 { margin-bottom: 2em !important; }
 
 ## 9. Target size → SC 2.5.8
 
-- [ ] Header nav links (About, Career, Blog) are only **16px tall**. They pass
-      2.5.8 through the _spacing_ exception: 40px gaps mean 24px circles
-      centred on each do not overlap. Confirm this still holds if the nav gap
-      is ever reduced, or if items are stacked. This is the check to redo after
-      any header layout change.
+Every target is checked on **its own size**. The spacing exception is no longer
+used anywhere on this site, so a change to nav spacing cannot break 2.5.8.
+
+- [ ] Header nav links are **at least 24px tall**. `py-2` on the `.label` link
+      takes the 15.6px line box to 31.6px. Measure one in DevTools; do not
+      infer it from the gap between links. This is the check to redo after any
+      header layout change. → pass at 1280px: Home 47.2x31.6, About 54.5x47.6,
+      Career 61.8x31.6, Blog 43.2x31.6, Get in touch 177.6x47.6
+- [ ] Confirm the nav still **looks** unchanged. The padding was added about
+      the flex centre line, so no glyph should have moved.
 - [ ] The mobile menu button is 48x48. → pass
 - [ ] Footer social links are ≥56px tall. → pass
+- [ ] Mobile menu links at 320px are ≥24px tall. → pass, they are 34px+ type
 
 ## 10. What this checklist does not cover
 
