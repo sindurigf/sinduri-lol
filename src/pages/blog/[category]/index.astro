@@ -1,22 +1,25 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { getCollection, type CollectionEntry } from 'astro:content';
 import { BLOG_CATEGORIES } from '../../../content.config';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BlogListing from '../../../components/BlogListing.astro';
+import {
+  categoryLabel,
+  getSortedPosts,
+  type BlogPost,
+} from '../../../lib/blog';
 
 interface Props {
-  posts: CollectionEntry<'blog'>[];
+  posts: BlogPost[];
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const posts = await getCollection('blog');
+  const posts = await getSortedPosts();
 
   return BLOG_CATEGORIES.map((category) => ({
     params: { category },
     props: {
-      posts: posts
-        .filter((post) => post.data.category === category)
-        .sort((a, b) => b.data.date.getTime() - a.data.date.getTime()),
+      posts: posts.filter((post) => post.data.category === category),
     },
   }));
 };
@@ -31,22 +34,25 @@ if (!category) {
   throw new Error('Category route rendered without a category param.');
 }
 
-const categoryLabel = category.replaceAll('-', ' ');
+const label = categoryLabel(category);
 
-const DATE_LOCALE = 'en-GB';
-const DATE_FORMAT: Intl.DateTimeFormatOptions = {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-};
+/*
+ * A CATEGORY LISTING IS NOT PAGINATED, and that is a decision rather than an
+ * omission. The index paginates because it holds every post; a category holds
+ * a slice, the largest of which is three posts today. Paginating it would add
+ * a /blog/<category>/page/<n> route that emits nothing, which is a code path
+ * that ships and is never exercised — worth less than the long page it would
+ * one day prevent. Revisit when a single category passes a screenful; the
+ * helpers in src/lib/blog.ts already do the arithmetic.
+ */
 ---
 
 <BaseLayout
-  title={`${categoryLabel} | sinduri.lol`}
-  description={`Posts filed under ${categoryLabel}.`}
+  title={`${label} | sinduri.lol`}
+  description={`Posts filed under ${label}.`}
 >
   <!-- No horizontal padding here; see the note in [slug].astro. -->
-  <div class="mx-auto max-w-5xl py-20">
+  <div class="mx-auto max-w-7xl py-20">
     <!--
       inline-block py-2 -my-2 is a target-size rule, not spacing (SC 2.5.8).
       The 13px/1.2 .label renders a 15.6px line box, so the bare link measured
@@ -66,28 +72,15 @@ const DATE_FORMAT: Intl.DateTimeFormatOptions = {
       <a href="/blog" class="-my-2 inline-block py-2 text-gold">All posts</a>
     </p>
 
-    <h1 class="mt-6">{categoryLabel}</h1>
+    <h1 class="mt-6 text-h1 text-text">{label}</h1>
 
-    {
-      posts.length === 0 ? (
-        <p class="mt-12 text-muted">Nothing filed under {categoryLabel} yet.</p>
-      ) : (
-        <ul class="mt-16 flex flex-col gap-10">
-          {posts.map((post) => (
-            <li class="card">
-              <h2 class="text-h3">
-                <a href={`/blog/${post.id}`}>{post.data.title}</a>
-              </h2>
-              <p class="mt-6 text-muted">{post.data.teaser}</p>
-              <p class="mt-6 text-label text-subtle">
-                <time datetime={post.data.date.toISOString().slice(0, 10)}>
-                  {post.data.date.toLocaleDateString(DATE_LOCALE, DATE_FORMAT)}
-                </time>
-              </p>
-            </li>
-          ))}
-        </ul>
-      )
-    }
+    <div class="mt-12">
+      <BlogListing
+        posts={posts}
+        activeCategory={category as (typeof BLOG_CATEGORIES)[number]}
+        currentPage={1}
+        totalPages={1}
+      />
+    </div>
   </div>
 </BaseLayout>

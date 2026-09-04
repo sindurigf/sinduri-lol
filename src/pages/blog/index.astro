@@ -1,11 +1,47 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogListing from '../../components/BlogListing.astro';
+import { getSortedPosts, pageCount, postsOnPage } from '../../lib/blog';
+
+/*
+ * The blog index, page 1. Pages 2 and up are src/pages/blog/page/[page].astro
+ * and render the same component with a different slice; see the note there for
+ * why the pager lives under an extra path segment.
+ *
+ * PLACEHOLDER COPY. The hero heading and standfirst are lorem ipsum at the
+ * length the comp's copy occupies. The five category names in the filter are
+ * real, because they are the content model rather than copy.
+ */
+
+const posts = await getSortedPosts();
+const totalPages = pageCount(posts.length);
 ---
 
 <BaseLayout
   title="Blog | sinduri.lol"
-  description="Placeholder description. Replace with real copy."
+  description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 >
-  <h1>Blog</h1>
-  <p>Placeholder copy. This page is built in a later phase.</p>
+  <div class="mx-auto max-w-7xl py-20">
+    <p class="pill">
+      <span class="label-wide text-gold">Writing</span>
+    </p>
+
+    <h1 class="mt-8 text-h1 text-text">Lorem ipsum.</h1>
+
+    <p class="mt-8 max-w-2xl text-body text-muted text-pretty">
+      Dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+      incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis
+      nostrud exercitation.
+    </p>
+
+    <div class="mt-12">
+      <BlogListing
+        posts={postsOnPage(posts, 1)}
+        activeCategory={null}
+        currentPage={1}
+        totalPages={totalPages}
+        featureFirst
+      />
+    </div>
+  </div>
 </BaseLayout>

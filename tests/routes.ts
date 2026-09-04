@@ -55,8 +55,20 @@ export const POST_ROUTES = [
   '/blog/temporibus-autem-quibusdam',
 ] as const;
 
-/** The blog index, from `src/pages/blog/index.astro`. */
-export const INDEX_ROUTES = ['/blog'] as const;
+/**
+ * The blog index. Page 1 is `/blog` (`src/pages/blog/index.astro`); every
+ * later page is `/blog/page/<n>` (`src/pages/blog/page/[page].astro`).
+ *
+ * `/blog/page/2` existing at all is the point of seeding eleven posts: the
+ * index paginates at nine, so ten would have been the minimum and eleven
+ * leaves the second page with something on it other than a single card.
+ *
+ * The extra `page` segment is not decoration. `/blog/[category]` and
+ * `/blog/[slug]` already share the one segment after `/blog`, so a flat
+ * `/blog/2` would put a third dynamic route on it and any numeric category or
+ * post slug would collide with a page number.
+ */
+export const INDEX_ROUTES = ['/blog', '/blog/page/2'] as const;
 
 export const ROUTES = [
   ...PAGE_ROUTES,
@@ -64,6 +76,19 @@ export const ROUTES = [
   ...CATEGORY_ROUTES,
   ...POST_ROUTES,
 ] as const;
+
+/**
+ * The blog index page size, duplicated from `POSTS_PER_PAGE` in
+ * `src/lib/blog.ts`.
+ *
+ * It has to be duplicated rather than imported. Playwright collects this file
+ * in plain Node, with no Astro or Vite in the chain, so anything that reaches
+ * `astro:content` fails at collection time and takes the whole suite with it.
+ * The pagination test in `tests/blog.spec.ts` counts the cards the built pages
+ * actually render, so a copy that drifted from the real value fails there
+ * rather than sitting here being quietly wrong.
+ */
+export const POSTS_PER_PAGE = 9;
 
 export const DIST_DIR = 'dist';
 
