@@ -148,9 +148,6 @@ Stated honestly. This list is not filtered for how it looks.
 5. **No screen reader testing has been done at all.** See section 6.
 6. **Only one blog post exists,** and it is placeholder content. Long-form
    reading order, in-page headings, and link text in real prose are untested.
-7. **`npm run typecheck` reports 6 errors** for missing Node type definitions in
-   `playwright.config.ts` and `tests/routes.ts`. This does not affect the site,
-   but the gate is not clean.
 
 ## 8. Reporting a barrier
 
