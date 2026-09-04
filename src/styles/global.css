@@ -198,27 +198,48 @@
    *
    *   1. the --text-h1 and --text-h2 floors above, so real headings fit
    *      without breaking;
-   *   2. hyphens, which would break long words at dictionary points; and
+   *   2. hyphens, which permits a break at a soft hyphen the author placed;
+   *      and
    *   3. overflow-wrap, the guarantee that nothing can overflow regardless.
    *
    * overflow-wrap: break-word only permits a break in a word that cannot fit
-   * on a line by itself, so multi-word headings are unaffected. It is what
-   * actually fires here, and layer 1 is what keeps it from having to.
+   * on a line by itself, so multi-word headings are unaffected. It is the
+   * last resort and it breaks anywhere, mid-syllable, with no hyphen drawn.
+   * Layer 1 is what keeps it from having to fire; layer 2 is what makes the
+   * break legible when it does.
    *
-   * Layer 2 is currently inert on this site, and the reason is worth writing
-   * down so nobody "fixes" it. Chromium looks the word up in the hyphenation
-   * dictionary *after* text-transform, and the dictionary is lowercase, so an
-   * uppercased word finds no break points. Measured in Chromium 151 at 20px
-   * serif in a 90px box: "accessibility" hyphenates to two lines, the same
-   * word under text-transform: uppercase stays on one line and overflows to
-   * 148px. A literal "ACCESSIBILITY" behaves the same, and even a capitalised
-   * "Accessibility" fails to hyphenate. Every heading here is uppercased, so
-   * hyphens never gets a chance to act.
+   * NEVER SET hyphens: none ON A HEADING. `hyphens` does two separate jobs
+   * and only one of them is dead here.
    *
-   * It stays because it costs nothing, other engines hyphenate differently
-   * (untested: only Chromium was measured), and it starts working the moment
-   * a heading is not uppercased. Do not treat it as the thing preventing
-   * overflow. That is layer 3.
+   * The dead one is automatic hyphenation. Chromium looks a word up in the
+   * hyphenation dictionary *after* text-transform, and the dictionary is
+   * lowercase, so an uppercased word finds no break points. Measured in
+   * Chromium 151 at 20px serif in a 90px box: "accessibility" hyphenates to
+   * two lines, the same word under text-transform: uppercase stays on one
+   * line and overflows to 148px. A literal "ACCESSIBILITY" behaves the same,
+   * and even a capitalised "Accessibility" fails to hyphenate. Every heading
+   * here is uppercased, so that half never gets a chance to act.
+   *
+   * The live one is the soft hyphen, U+00AD. It is a character in the DOM,
+   * not a dictionary lookup, so text-transform cannot take it away, and
+   * `hyphens` governs whether it is honoured: `none` forbids the break,
+   * `auto` (and the initial `manual`) allows it. Measured headed in Chrome
+   * 152, 36px Lexend 900 uppercase in a 250px box:
+   *
+   *   "acces&shy;sibility"      breaks ACCES- / SIBILITY, hyphen drawn
+   *                             (the hyphen glyph measures 17.58px)
+   *   same string, hyphens:none stays on one line at 287.33px, overflows
+   *   "announce&shy;ments"      breaks ANNOUNCE- / MENTS, hyphen drawn
+   *   "announcements"           break-word cuts ANNOUNCEM / ENTS, no hyphen
+   *
+   * The soft hyphen also wins over overflow-wrap, so it decides where the
+   * break lands. It paints nothing when the word fits: the same string
+   * measures 287.33px either way in a 305px box.
+   *
+   * So `hyphens: auto` stays, and not merely because it is harmless. Setting
+   * it to `none` would silently disable every soft hyphen in the content.
+   * The design system skill carries the authoring rule. Other engines
+   * hyphenate differently and are untested here; only Chromium was measured.
    *
    * hyphens needs a language to pick a dictionary; <html lang="en"> supplies
    * it. Safari still wants the prefix.

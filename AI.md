@@ -152,6 +152,15 @@ Headings also set `hyphens: auto` and `overflow-wrap: break-word`; the latter is
 what actually guarantees no horizontal overflow. `tests/reflow.spec.ts` locks
 this down. Do not raise a floor without re-running it.
 
+Automatic hyphenation is inert here, because Chromium consults its lowercase
+dictionary after `text-transform` and finds nothing for an uppercased word. A
+**soft hyphen** (`&shy;`, U+00AD) is not, because it is a DOM character rather
+than a lookup: it survives the transform, wins over `break-word`, and paints a
+real hyphen at the break. Display heading words over twelve characters take
+one, at a syllable boundary. **Never set `hyphens: none` on a heading**, which
+is the one thing that would disable it. The design system skill carries the
+rule and the authoring paths.
+
 Body copy is weight 400 and never lighter. Weight 300 halates against the dark
 background.
 

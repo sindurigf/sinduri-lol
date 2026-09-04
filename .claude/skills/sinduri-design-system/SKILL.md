@@ -225,6 +225,59 @@ fits at is `44 x 305 / (its width at 44px)`:
 `PROFESSIONAL`. `ANNOUNCEMENTS` is deliberately not fitted: there is always a
 longer word, and `overflow-wrap: break-word` is the guarantee for outliers.
 
+### Content rule: a display heading word over twelve characters takes a soft hyphen
+
+Put a soft hyphen (`&shy;`, U+00AD) at a **syllable boundary** in any word over
+twelve characters that appears in an `h1` or `h2`. Twelve is where the
+arithmetic above runs out: `PROFESSIONAL` is twelve and clears the box by
+26px, `ACCESSIBILITY` is thirteen and clears it by 18px, `ANNOUNCEMENTS` is
+thirteen and does not clear it at all.
+
+Without one, the fallback is `overflow-wrap: break-word`, which breaks
+**anywhere** and draws **no hyphen**. Verified headed in Chrome 152, 36px
+Lexend 900 uppercase in a 250px box:
+
+| Written              | Renders                                 |
+| -------------------- | --------------------------------------- |
+| `announcements`      | `ANNOUNCEM` / `ENTS` — no hyphen at all |
+| `announce&shy;ments` | `ANNOUNCE-` / `MENTS` — hyphen drawn    |
+| `acces&shy;sibility` | `ACCES-` / `SIBILITY` — hyphen drawn    |
+
+The soft hyphen wins over `break-word`, so it decides where the break lands.
+It paints nothing when the word fits, so it is safe to leave in at every
+width. It is a DOM character rather than a dictionary lookup, which is why it
+survives `text-transform: uppercase` when `hyphens: auto` does not — Chromium
+consults its lowercase dictionary after the transform and finds nothing. Never
+set `hyphens: none` on a heading; that is the one thing that would disable it.
+
+**Where to write it.** The entity only survives on the paths where Astro emits
+HTML. Verified against the build output:
+
+| Path                                     | Write                         |
+| ---------------------------------------- | ----------------------------- |
+| `.astro` template text                   | `<h1>Acces&shy;sibility</h1>` |
+| Markdown body heading                    | `## Announce&shy;ments`       |
+| Frontmatter, or any interpolated `{...}` | the literal U+00AD character  |
+
+`{expr}` output is escaped, so `&shy;` in a frontmatter `title` builds to
+`Acces&amp;shy;sibility` and the reader sees `&SHY;` on the page. A literal
+U+00AD in the same field builds correctly. It is invisible in an editor, so
+say in a comment beside it that it is there.
+
+Worked example, a post title that needs one:
+
+```yaml
+# src/content/blog/*.md — the character between "Accessi" and "bility" is
+# U+00AD, a soft hyphen. It only paints at a line break.
+title: 'Accessi­bility Is Not A Feature'
+```
+
+```markdown
+<!-- Markdown body: the entity works here, the Markdown pipeline decodes it. -->
+
+## Announce&shy;ments
+```
+
 ---
 
 ## Motion
