@@ -319,11 +319,21 @@ DOM rather than matching class names, so it fails on the _outcome_:
 - the ratios in this table are re-measured from the live CSS variables, so
   retoning any token here or in the dark set fails until every table in
   `AI.md`, `ACCESSIBILITY.md` and this file is updated;
-- every control inside a `.surface-gold` section is checked for an opaque fill
-  the same colour as the ground behind it, which is the `.btn-primary` case
-  above; a transparent fill is excluded by its alpha, since
-  `.btn-gold-secondary` is deliberately transparent and delimited by its
-  border;
+- every control inside a `.surface-gold` section is checked for being invisible
+  as a shape, on **whichever of the two things delimits it**. An opaque fill is
+  compared against the ground behind it, which is the `.btn-primary` case
+  above. A fill that is transparent, or below full alpha, means the ground
+  shows through and the **border** is the control's only boundary, so the
+  border is compared instead, at the 3:1 of SC 1.4.11. That second arm exists
+  because excluding a transparent fill by its alpha left `.btn-gold-secondary`
+  unverified: it is delimited entirely by its border, so a border matching the
+  ground makes it exactly as invisible as the fill case, for the same reason,
+  and nothing else in the suite watches for it. **All four edges are measured.**
+  Width and colour are set independently, so the narrowest edge is a proxy for
+  nothing; verified by painting only `border-bottom-color` gold, which every
+  other assertion in the file passed — the button test included, since it reads
+  `borderTopColor`. A control with no declared border is not flagged: a link in
+  prose is delimited by its colour and its underline, not by a boundary;
 - `.surface-gold` itself is asserted for text, muted text, link colour, link
   underline, focus ring and border colour;
 - both button classes are asserted for label, fill, border, focus ring, focus

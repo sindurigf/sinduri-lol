@@ -15,7 +15,7 @@ import { ROUTES } from './routes';
  * WHAT THIS FILE IS FOR. The rule "do not use a dark-surface token on a gold
  * background" is not something the cascade can enforce, because an explicit
  * utility always beats a subtree default. So it is enforced by measurement,
- * from the rendered DOM, in three tests:
+ * from the rendered DOM, in four tests:
  *
  *   1. The documented ratios still hold. Reads the live CSS variables and
  *      re-measures each against gold. This fails if any token is retoned, in
@@ -27,6 +27,9 @@ import { ROUTES } from './routes';
  *      on #FFC000.
  *   3. `.surface-gold` supplies the inverted set. A fixture mounted into a
  *      real built page, because no page uses the class yet.
+ *   4. Every control in a gold section is delimited against the ground —
+ *      by its opaque fill, or, when the fill is transparent, by its border.
+ *      Also a fixture, and see `invisibleControls` for why it is two arms.
  *
  * ON TEST 3 BEING A FIXTURE. It is a weaker test than one driven by real
  * markup and it is deliberate: the class has to be right *before* the Career
@@ -63,15 +66,28 @@ import { ROUTES } from './routes';
  *   secondary border removed                nothing delimits it
  *   delete .surface-gold :focus-visible     ring back to gold, 1.00
  *
- * The invisible-control check was verified against a real page rather than a
- * fixture: a temporary route with a .surface-gold hero was built, added to
- * ROUTES, and run both ways. With .btn-gold-primary it passed; with
- * .btn-primary swapped in it failed, reporting
+ * The invisible-control check's FILL arm was verified against a real page
+ * rather than a fixture: a temporary route with a .surface-gold hero was
+ * built, added to ROUTES, and run both ways. With .btn-gold-primary it passed;
+ * with .btn-primary swapped in it failed, reporting
  * `a.btn-primary — fill rgb(255, 192, 0) on rgb(255, 192, 0)`. The same page
  * in the same state returned "No accessibility violations found" from
  * AccessLint with AAA enabled, which is the whole reason this check exists.
  *
- * With the files as committed, all 16 pass.
+ * Its BORDER arm was verified the same way, on the fixture in test 4, twice:
+ *
+ *   secondary border -> border-gold      all four edges reported,
+ *                                        `border-top/right/bottom/left
+ *                                        rgb(255, 192, 0) on rgb(255, 192, 0)
+ *                                        at 1.00:1, needs 3`
+ *   secondary border-bottom-color only   `border-bottom rgb(255, 192, 0) …`
+ *
+ * THE SECOND BREAKAGE IS WHY ALL FOUR EDGES ARE TESTED RATHER THAN ONE. With
+ * only the bottom edge painted gold, every other assertion in this file
+ * passed, the button test included: its `borderOnGold` reads borderTopColor
+ * and the top edge was still #131313. Test 4 was the only thing that failed.
+ *
+ * With the files as committed, all 17 pass.
  */
 
 const GOLD = '#FFC000';
@@ -147,6 +163,21 @@ const PAGE_HELPERS = `
   };
 
   /*
+   * Source-over composite of a partly transparent colour onto an opaque one.
+   * A border painted at alpha 0.4 is not the colour it declares; what a reader
+   * sees is that colour mixed with whatever is behind it, and that mix is what
+   * SC 1.4.11 measures. Alpha 1 is the identity case, alpha 0 collapses to the
+   * ground, which is the right answer for a border that declares a width and
+   * paints nothing.
+   */
+  const over = (fg, bg) => ({
+    r: fg.r * fg.a + bg.r * (1 - fg.a),
+    g: fg.g * fg.a + bg.g * (1 - fg.a),
+    b: fg.b * fg.a + bg.b * (1 - fg.a),
+    a: 1,
+  });
+
+  /*
    * The effective background of an element: its own, or the nearest ancestor
    * with a non-transparent one. Returns null rather than guessing when an
    * image or gradient is in the way, or when a partly transparent layer would
@@ -182,38 +213,129 @@ const PAGE_HELPERS = `
     );
 
   /*
-   * Controls inside a gold section whose own OPAQUE fill is the same colour as
-   * the ground behind them. Such a control is invisible as a shape: its label
-   * may contrast perfectly and every text-contrast rule will pass it.
+   * Controls inside a gold section that are invisible AS A SHAPE against the
+   * ground behind them. Their labels may contrast perfectly, and every
+   * automated contrast rule will pass them: a contrast rule measures a
+   * foreground against its own background and never asks whether that
+   * background is distinguishable from the surface the control sits on.
    *
-   * a.btn-gold-secondary is the case this must not catch, and the alpha test
-   * is what separates them: it is deliberately background-color: transparent
-   * (alpha 0), so the gold shows through and its 4px #131313 border is what
-   * delimits it. .btn-primary is an OPAQUE gold fill, which is a different
-   * thing that happens to look the same to a naive colour comparison.
+   * A control is delimited by one of two things, so this checks one of two
+   * things, chosen by the fill's alpha:
+   *
+   *   OPAQUE FILL (alpha 1). The fill is the boundary. .btn-primary on gold is
+   *   this case: an opaque #FFC000 fill on a #FFC000 ground, 1.00:1, a button
+   *   with no edge at all. Compared at 1.05 rather than at 3:1 deliberately —
+   *   this arm is a same-colour detector, not a conformance check. A filled
+   *   control can legitimately sit close to its ground and still be delimited
+   *   by its border, and that border is measured by the arm below.
+   *
+   *   TRANSPARENT OR PARTLY TRANSPARENT FILL (alpha < 1). The ground shows
+   *   through, so the BORDER is the only thing that delimits the control, and
+   *   a border matching the ground makes it exactly as invisible as the fill
+   *   case. .btn-gold-secondary is this case: background-color: transparent
+   *   with a 4px #131313 border, 11.32 on gold. The border is a non-text
+   *   boundary, so the threshold here is the 3:1 of SC 1.4.11 rather than the
+   *   same-colour proxy above.
+   *
+   * ALL FOUR EDGES ARE TESTED, not just the narrowest. Width and colour are
+   * set independently in CSS — this codebase writes both border-4 and
+   * border-b-8 with different tokens — so the narrowest edge is a proxy for
+   * nothing: it can be the one edge that passes while a wider one fails. Each
+   * edge is an independent segment of the control's outline, and a control
+   * whose left and right edges vanish into the ground reads as two horizontal
+   * rules rather than as a button. The cost of being thorough is three extra
+   * ratio computations on a handful of elements.
+   *
+   * WHAT THIS DELIBERATELY DOES NOT FLAG: a control with no declared border at
+   * all. Every link in prose inside a gold section is a transparent fill with
+   * no border, and it is not border-delimited — it is delimited by its colour
+   * and its underline, which .surface-gold supplies and the text walk in this
+   * file already measures. Flagging those would make this check fire on every
+   * paragraph link on the surface and it would be wrong about all of them.
    */
+  const BORDER_EDGES = ['top', 'right', 'bottom', 'left'];
+
   const invisibleControls = (root) => {
     const out = [];
+    const rgb = (c) =>
+      'rgb(' + Math.round(c.r) + ', ' + Math.round(c.g) + ', ' + Math.round(c.b) + ')';
+
     for (const element of root.querySelectorAll('a, button, [role="button"]')) {
       const style = getComputedStyle(element);
       const fill = parse(style.backgroundColor);
-      if (fill === null || fill.a < 1) continue;
+      if (fill === null) continue;
 
       const behind = effectiveBackground(element.parentElement);
       if (behind === null) continue;
 
-      if (ratio(fill, behind) < 1.05) {
+      const ground = rgb(behind);
+      const label = (element.textContent ?? '').trim().slice(0, 40);
+
+      if (fill.a === 1) {
+        if (ratio(fill, behind) < 1.05) {
+          out.push({
+            selector: describe(element),
+            detail: 'fill ' + style.backgroundColor + ' on ' + ground,
+            label,
+          });
+        }
+        continue;
+      }
+
+      /*
+       * Group the failing edges by the colour they resolve to, so a uniform
+       * four-sided border reports one line naming all four rather than four
+       * identical ones.
+       */
+      const failing = new Map();
+
+      for (const edge of BORDER_EDGES) {
+        const cap = edge[0].toUpperCase() + edge.slice(1);
+        if (['none', 'hidden'].includes(style['border' + cap + 'Style'])) continue;
+        if (parseFloat(style['border' + cap + 'Width']) <= 0) continue;
+
+        const declared = parse(style['border' + cap + 'Color']);
+        if (declared === null) continue;
+
+        const painted = over(declared, behind);
+        const measured = ratio(painted, behind);
+        if (measured >= ${NON_TEXT}) continue;
+
+        const key = rgb(painted) + '|' + measured.toFixed(2);
+        if (!failing.has(key)) failing.set(key, { painted, measured, edges: [] });
+        failing.get(key).edges.push(edge);
+      }
+
+      for (const entry of failing.values()) {
         out.push({
           selector: describe(element),
-          fill: style.backgroundColor,
-          behind: 'rgb(' + behind.r + ', ' + behind.g + ', ' + behind.b + ')',
-          label: (element.textContent ?? '').trim().slice(0, 40),
+          detail:
+            'border-' + entry.edges.join('/') + ' ' + rgb(entry.painted) +
+            ' on ' + ground + ' at ' + entry.measured.toFixed(2) + ':1, needs ' +
+            ${NON_TEXT},
+          label,
         });
       }
     }
     return out;
   };
 `;
+
+/**
+ * One control that is invisible as a shape against the ground behind it,
+ * whether because its opaque fill matches that ground or because the border
+ * that is its only boundary does.
+ */
+type InvisibleControl = { selector: string; detail: string; label: string };
+
+const invisibleControlMessage = (found: InvisibleControl[]) =>
+  `a control inside .surface-gold is invisible as a shape against the ground ` +
+  `behind it, however well its label contrasts. Either its opaque fill is the ` +
+  `same colour as the ground (.btn-primary is bg-gold and does exactly this; ` +
+  `use .btn-gold-primary), or its fill is transparent and the border that is ` +
+  `its only boundary is under ${NON_TEXT}:1 against the ground (SC 1.4.11) — ` +
+  `which is .btn-gold-secondary's failure mode, and just as invisible:\n` +
+  found.map((e) => `  ${e.selector} — ${e.detail} — "${e.label}"`).join('\n');
 
 /** Every element whose own text sits directly on a gold background. */
 const textOnGold = (page: Page) =>
@@ -324,26 +446,9 @@ test.describe('the gold surface exception', () => {
         ${PAGE_HELPERS}
         const section = document.querySelector('.surface-gold');
         return section === null ? [] : invisibleControls(section);
-      })()`)) as {
-        selector: string;
-        fill: string;
-        behind: string;
-        label: string;
-      }[];
+      })()`)) as InvisibleControl[];
 
-      expect(
-        invisible,
-        `a control inside .surface-gold has an opaque fill the same colour as ` +
-          `the ground behind it, so it is invisible as a shape however well ` +
-          `its label contrasts. .btn-primary is bg-gold and does exactly this; ` +
-          `use .btn-gold-primary:\n` +
-          invisible
-            .map(
-              (e) =>
-                `  ${e.selector} — fill ${e.fill} on ${e.behind} — "${e.label}"`,
-            )
-            .join('\n'),
-      ).toEqual([]);
+      expect(invisible, invisibleControlMessage(invisible)).toEqual([]);
 
       const failing = found.filter((entry) => entry.ratio < AA_TEXT);
 
@@ -654,5 +759,71 @@ test.describe('the gold surface exception', () => {
         'through; its label and border are measured against gold, not against ' +
         'a fill of its own.',
     ).toBe(true);
+  });
+
+  /**
+   * The invisible-control check, run against a fixture.
+   *
+   * It also runs on every route above, but no route has a .surface-gold
+   * section yet, so that call returns an empty list without measuring
+   * anything. This is the run that has controls in front of it today, and it
+   * is what makes the check non-vacuous before the Career page lands. Delete
+   * it and keep the route walk once a real gold section exists.
+   *
+   * Both delimiting mechanisms are in the fixture on purpose, because the
+   * check dispatches on which one applies: .btn-gold-primary is delimited by
+   * an opaque #131313 fill (11.32 on gold) and .btn-gold-secondary by a 4px
+   * #131313 border over a transparent fill (also 11.32). A prose link is in
+   * there as the negative case — transparent, no border, delimited by colour
+   * and an underline rather than by a boundary — because a check that flagged
+   * every link on the surface would be worse than no check.
+   */
+  test('every control inside .surface-gold is delimited against the ground', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    const found = (await page.evaluate(`(() => {
+      ${PAGE_HELPERS}
+
+      const host = document.createElement('div');
+      host.className = 'surface-gold';
+      host.innerHTML =
+        '<a data-role="primary" class="btn-gold-primary" href="/cv.pdf">Download CV</a> ' +
+        '<a data-role="secondary" class="btn-gold-secondary" href="/contact">Get in touch</a> ' +
+        '<p>Prose with <a href="/about">a link</a> in it.</p>';
+      document.querySelector('main').append(host);
+
+      const readout = {
+        groundIsGold: isGold(effectiveBackground(host)),
+        controls: host.querySelectorAll('a').length,
+        invisible: invisibleControls(host),
+      };
+
+      host.remove();
+      return readout;
+    })()`)) as {
+      groundIsGold: boolean;
+      controls: number;
+      invisible: InvisibleControl[];
+    };
+
+    expect(found.groundIsGold, 'the fixture is not on a gold ground').toBe(
+      true,
+    );
+
+    /*
+     * Proves the walk saw the controls rather than matching nothing, the same
+     * guard the route test carries. Without it this assertion would pass on an
+     * empty list forever if the selector or the background resolver broke.
+     */
+    expect(
+      found.controls,
+      'the fixture mounted no controls for the check to walk',
+    ).toBe(3);
+
+    expect(found.invisible, invisibleControlMessage(found.invisible)).toEqual(
+      [],
+    );
   });
 });

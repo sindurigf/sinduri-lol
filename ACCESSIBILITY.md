@@ -278,10 +278,18 @@ Three limits of the automated tier that are easy to mistake for coverage:
   accessibility violations found"** from AccessLint with AAA rules enabled,
   because `.surface-gold` repaints the label `darkcyan` at 8.00 and the label
   is all the rule looks at. The button was invisible as a shape and the scan
-  was clean. `tests/gold-surface.spec.ts` checks this directly, by comparing
-  each control's opaque fill against the ground behind it; a transparent fill
-  like `.btn-gold-secondary`'s is excluded by its alpha, since there the
-  border does the delimiting.
+  was clean. `tests/gold-surface.spec.ts` checks this directly, and it checks
+  **both** ways a control can be delimited, because excluding one of them left
+  a control unverified. An opaque fill is compared against the ground behind
+  it. A fill that is transparent, or below full alpha, means the ground shows
+  through and the **border** is the only boundary the control has, so the
+  border is compared instead, at the 3:1 of SC 1.4.11. A border matching the
+  ground is exactly as invisible as a fill matching it, and nothing else in
+  the suite would have caught it: that is `.btn-gold-secondary`'s failure
+  mode, and it was unverified until the border arm existed. All four edges are
+  measured, not just one — verified by painting only `border-bottom-color`
+  gold, which every other assertion in the file passed, the button test
+  included, because that test reads `borderTopColor`.
 - **An overflow assertion cannot see a bad heading floor.** This one is worth
   stating because the floors were documented as locked down by a test that
   could not fail on them. `overflow-wrap: break-word` guarantees the document
