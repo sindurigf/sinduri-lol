@@ -181,15 +181,14 @@ That media query is necessary but **not sufficient**. WCAG 2.2 SC 2.2.2 Pause,
 Stop, Hide applies to anything that moves automatically for more than five
 seconds, and it requires a control the user can operate, not an OS setting.
 
-Two elements in this design fall under it:
+One element in this design falls under it: the **spinning badge**. The comps
+apply `slowspin` to it at 24s and 28s, linear, infinite. It auto-starts and runs
+indefinitely, so it needs a real, keyboard-operable pause control with a visible
+label and a visible focus indicator. A media query alone does not satisfy 2.2.2,
+because a user with reduced motion turned off has no way to stop it.
 
-- the **spinning badge**
-- the **marquee**
-
-Both auto-start and both run indefinitely. Each needs a real, keyboard-operable
-pause control with a visible label and a visible focus indicator. A media query
-alone does not satisfy 2.2.2, because a user with reduced motion turned off has
-no way to stop it.
+There is no marquee in this design. `@keyframes marquee` is declared in the
+source comps but is never applied to an element. Do not build one.
 
 Nothing may flash more than three times per second (SC 2.3.1).
 
