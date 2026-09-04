@@ -7,8 +7,11 @@ description: Design system rules for sinduri.lol - color tokens and their verifi
 
 Neo-brutalist, dark mode only. No light theme, no `dark:` variants, no toggle.
 
-Tokens live in the `@theme` block in `src/styles/global.css`. There is no
-`tailwind.config.mjs`; Tailwind 4 is CSS-first.
+Tokens live in the `@theme static` block in `src/styles/global.css`. There is
+no `tailwind.config.mjs`; Tailwind 4 is CSS-first. The `static` keyword is
+load-bearing: without it Tailwind emits only the custom properties it can see
+something using, so a token nothing references yet is tree-shaken away and
+`var(--color-…)` silently resolves to nothing. Do not drop it.
 
 **Never write an arbitrary value in a component.** No raw hex, no `text-[32px]`,
 no `shadow-[8px_8px_0]`. If the value you need does not exist, add a token.
@@ -33,8 +36,14 @@ no `shadow-[8px_8px_0]`. If the value you need does not exist, add a token.
 | `darkcyan`   | `#00363F`                | Text on cyan backgrounds   |
 | `header-bg`  | `rgba(10, 10, 10, 0.94)` | Sticky header only         |
 
-The three surfaces are `#131313`, `#1A1A1A`, and `#0E0E0E`. Every foreground
-color must be checked against **all three**, not just one.
+The three **dark** surfaces are `#131313`, `#1A1A1A`, and `#0E0E0E`. Every
+foreground color must be checked against **all three**, not just one.
+
+**Those three are not the only surfaces, and the tokens above are not
+universal.** There is a fourth: `gold` used as a ground rather than as an
+accent. Not one foreground token in the table above passes on it. See
+[The gold surface](#the-gold-surface-the-dark-tokens-are-not-universal) before
+building anything on `#FFC000`.
 
 ### Contrast-critical tokens
 
@@ -62,10 +71,11 @@ decision, not a conformance fix. Do not describe it as one.
 Do all four steps, in order. Do not skip step 2 because a color "looks fine".
 
 1. Add it as a token in the `@theme` block. Never inline it.
-2. Measure it against `#131313`, `#1A1A1A`, and `#0E0E0E`.
+2. Measure it against `#131313`, `#1A1A1A`, and `#0E0E0E` — and against
+   `#FFC000` too if it will ever appear on a gold surface.
 3. Meet the threshold for its job: **4.5:1** for body text, **3:1** for large
    text, borders, focus rings, icons, and any other non-text boundary.
-4. Record the three ratios in `AI.md` next to the token.
+4. Record the ratios in `AI.md` next to the token.
 
 The palette is cool. Gold, cyan, and pink read more strongly against blue than
 they did against the warm brown that preceded it. Use accents sparingly.
@@ -109,6 +119,134 @@ be invalidated by a change to the scale.
 
 Text tokens `text`, `muted`, and `subtle` all clear AAA on all three surfaces.
 Prefer them for anything readable that is not deliberately pink.
+
+---
+
+## The gold surface: the dark tokens are not universal
+
+This site is dark-mode only and every foreground token was picked against
+`#131313`, `#1A1A1A` and `#0E0E0E`. **There is one exception, and it is a real
+section of the design, not a hypothetical.** The Career hero is
+`background: #FFC000` with `color: #131313`: a light ground inside a dark-only
+palette.
+
+**Measured against `#FFC000`, every dark-surface foreground token fails.**
+
+| Token       | Hex       | on `#FFC000` | Needs |        |
+| ----------- | --------- | ------------ | ----- | ------ |
+| `border`    | `#5A87A8` | 2.34         | 3.0   | FAIL   |
+| `text`      | `#E5E2E1` | 1.27         | 4.5   | FAIL   |
+| `muted`     | `#D4C5AB` | 1.03         | 4.5   | FAIL   |
+| `subtle`    | `#9BB4C6` | 1.31         | 4.5   | FAIL   |
+| `pink-text` | `#FF79B6` | 1.48         | 4.5   | FAIL   |
+| `pink`      | `#FF007A` | 2.31         | 3.0   | FAIL   |
+| `cyan`      | `#00DCFD` | 1.01         | 3.0   | FAIL   |
+| `gold`      | `#FFC000` | 1.00         | —     | itself |
+
+Not one is close, and no amount of retoning fixes it. L(`#FFC000`) is 0.5896,
+so the readable band on gold sits entirely _below_ the ground: AAA needs a
+foreground luminance of 0.0414 or less. On `#131313` the AAA band runs from
+luminance 0.382 to 1.0, a span of 0.618. On `#FFC000` it runs from 0 to 0.0414,
+a span of 0.041. **The AAA band on gold is fifteen times narrower.** Everything
+readable on gold is a near-black.
+
+### The inverted set
+
+| Token         | Hex       | on `#FFC000` | Job                       |
+| ------------- | --------- | ------------ | ------------------------- |
+| `gold-text`   | `#131313` | 11.32        | Headings and body copy    |
+| `gold-muted`  | `#3A3020` | 7.88         | Secondary copy            |
+| `gold-border` | `#22394D` | 7.27         | Every border and rule     |
+| `darkcyan`    | `#00363F` | 8.00         | Links, and the one accent |
+
+All four are AAA on gold; `gold-border` clears the 3:1 of SC 1.4.11 by 2.4x.
+
+**`gold-border` is `#22394D`, not flat `#131313`.** Both clear the threshold
+several times over, so contrast did not decide it. Two things did. `#22394D`
+keeps the blue that carries every boundary elsewhere on the site, so a gold
+section still reads as the same design. And `#131313` is already `gold-text`,
+so using it for borders too would paint every rule in the exact colour of the
+body copy, collapsing a figure/ground separation the dark set is careful about:
+`border` `#5A87A8` is nowhere near `text` `#E5E2E1`.
+
+**There is no `gold-subtle`, and adding one is not a small change.** A third
+step between `gold-muted` (7.88) and `gold-text` (11.32) would land around
+luminance 0.02, which is another near-black indistinguishable from both. Below
+`gold-muted`, hierarchy on this surface is weight and size, not colour.
+
+**Only one accent survives, and it is `darkcyan`.** Every other accent here is
+a light saturated hue chosen to sit on near-black, and gold itself is the
+ground. Do not reach for `cyan`, `pink` or `pink-text` on this surface at all,
+including for a shadow: `pink` is 2.31, under the 3:1 a boundary needs.
+
+### Build one with `.surface-gold`. Nothing else.
+
+```html
+<!-- Yes -->
+<section class="surface-gold">
+  <h2>Career</h2>
+  <p class="text-gold-muted">PLACEHOLDER: secondary line.</p>
+  <a href="/contact">Get in touch</a>
+</section>
+
+<!-- No: the dark set on a gold ground -->
+<section class="bg-gold">
+  <h2 class="text-text">Career</h2>
+  <p class="text-muted">…</p>
+  <div class="border-8 border-border">…</div>
+</section>
+```
+
+The class exists because **four site-wide rules are wrong on this surface and
+three of them fail silently.** Applying `bg-gold` by hand gets none of them.
+
+1. **Links.** The base layer paints every `<a>` `gold`, which is **1.00** on
+   this ground, and `cyan` on hover, **1.01**. Every link in a hand-rolled gold
+   section is invisible. `.surface-gold` repaints them `darkcyan` and
+   **underlines them**. The underline is not decoration: `darkcyan` measures
+   only 1.42 against `gold-text`, far under the 3:1 that would let colour carry
+   the distinction on its own, so the underline is what satisfies SC 1.4.1.
+   Do not remove it.
+2. **Focus.** The site's ring is `gold` with a 3px offset, and it works
+   everywhere else _because_ of that offset: gold on gold is 1.00, and the
+   offset puts the dark page background on both sides of the ring. **On a large
+   gold surface the offset gap is gold too, so the ring disappears entirely.**
+   `.surface-gold` repaints it `gold-text` (11.32).
+3. **Borders.** The base layer defaults every border to `border` `#5A87A8`,
+   2.34 on gold. `.surface-gold` re-defaults the subtree to `gold-border`.
+4. **Text.** `text` is 1.27 on gold, so the class sets the foreground rather
+   than trusting each element to.
+
+**`.btn-primary` must not be used on a gold surface.** It is `bg-gold`, so on
+this ground it is a 1.00:1 fill: an invisible button identified only by its
+border, carrying a `shadow-hard-pink-12` that measures 2.31. A primary action
+here is a dark fill instead — `bg-background text-gold` with a `border-4` in
+`gold-border`. There is no class for it yet; build it with the page that needs
+one.
+
+A gold section is full-bleed, so it breaks out of `.page-gutter` with negative
+inline margins and re-applies the gutter inside itself. See the `.page-gutter`
+rule.
+
+### The escape hatch, and the test that watches it
+
+An explicit utility still beats the subtree default, because utilities come
+after components in the cascade. That is intentional, and it is also the hole:
+`class="border-border"` or `class="text-muted"` written inside a gold section
+is a bug no CSS can prevent.
+
+`tests/gold-surface.spec.ts` is what catches it. It measures from the rendered
+DOM rather than matching class names, so it fails on the _outcome_:
+
+- every route is walked for text sitting on a `#FFC000` effective background,
+  and anything under 4.5:1 fails with the selector and the measured ratio;
+- the ratios in this table are re-measured from the live CSS variables, so
+  retoning any token here or in the dark set fails until every table in
+  `AI.md`, `ACCESSIBILITY.md` and this file is updated;
+- `.surface-gold` itself is asserted for text, muted text, link colour, link
+  underline, focus ring and border colour.
+
+If you change a number on this page, run it.
 
 ---
 
@@ -459,6 +597,50 @@ another.
 The footer badge is `alt=""` because the copyright line next to it already
 reads "© 2026 sinduri.lol". Naming the badge would announce the same thing
 twice and add nothing. Do not "fix" it by giving it a name.
+
+---
+
+## Coupled changes
+
+Some changes here are only correct when a second, non-obvious edit lands in the
+**same** commit. Each of these has already failed once, or would fail silently.
+
+### A contact form needs the CSP widened in the same change
+
+`public/_headers` sets `form-action 'none'`. That is a claim about today: there
+are no forms on this site, so the safest possible value is free.
+
+**The moment a `<form>` with a real submission target is added — the Contact
+page is the one that will want it — that directive has to be widened in the
+same commit.** Otherwise the browser blocks the submission outright. The
+failure is bad in a specific way:
+
+- **It is silent.** Nothing appears on the page. The form looks like it
+  submitted, or looks like it did nothing. Only the console carries the
+  refusal, and only if someone has it open.
+- **It survives the tests.** `tests/headers.spec.ts` asserts there is no
+  `'unsafe-inline'` and no hash drift; it does not know what `form-action`
+  should permit, because that depends on where the form posts.
+- **It is worst for the people the form exists for.** `ACCESSIBILITY.md`
+  section 8 asks people to report barriers, and the contact form is one of the
+  two routes for doing that. A submission that fails without saying so turns
+  the barrier-reporting path into a barrier.
+
+Widen it to the exact origin the form posts to, never to `*`. If the form posts
+same-origin, `form-action 'self'` is the value. Add an assertion to
+`tests/headers.spec.ts` for whatever it becomes, and update the CSP section in
+`AI.md` and the header table in `README.md` in the same commit.
+
+The same rule applies to any other directive that is currently `'none'` because
+nothing needs it yet: `object-src`, `base-uri`, `frame-ancestors`. A `'none'`
+in that file is a statement that the feature is unused, not that it is
+forbidden forever.
+
+### Anything animated needs a pause control, not just a media query
+
+See [Motion](#motion). `prefers-reduced-motion` is necessary and not
+sufficient; SC 2.2.2 wants a control. The spinning badge is the element this
+will bite.
 
 ---
 
