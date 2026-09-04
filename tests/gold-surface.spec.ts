@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { ROUTES } from './routes';
 
@@ -474,7 +475,200 @@ const textOnGold = (page: Page) =>
     { selector: string; colour: string; ratio: number; text: string }[]
   >;
 
+/**
+ * THE PROSE COPIES OF THE TABLE ABOVE, AND WHY THEY ARE CHECKED HERE.
+ *
+ * The same token/hex/ratio table is written out in three Markdown files. Three
+ * copies is three chances to retone a colour in the CSS and update two of them,
+ * and nothing about the third going stale is visible: it is a number in a
+ * sentence that still reads correctly. The failure this repo has already had
+ * once, in a different form, is a documented fact that no longer described the
+ * code.
+ *
+ * There is exactly one enforced source of truth and it is not this file's
+ * RATIOS array — it is the live CSS custom properties, which RATIOS is itself
+ * measured against by the test below. So the Markdown is checked the same way:
+ * read the variable out of the running page, measure it against #FFC000, and
+ * require every documented row to agree on both the hex and the ratio.
+ *
+ * Every table keyed "on `#FFC000`" is covered, not only the gold inverted set:
+ * the dark-set tables in ACCESSIBILITY.md and the design system skill quote
+ * the failing ratios that are the whole justification for the exception, and
+ * they are duplicated across two files just as readily.
+ *
+ * `pinkText` in ACCESSIBILITY.md is camelCase where the CSS variable is
+ * `--color-pink-text`; the token name is normalised rather than the document
+ * being made to match, because both spellings appear in the comps.
+ */
+const GOLD_TABLE_DOCS = [
+  'AI.md',
+  'ACCESSIBILITY.md',
+  '.claude/skills/sinduri-design-system/SKILL.md',
+] as const;
+
+interface DocumentedRatio {
+  doc: string;
+  line: number;
+  token: string;
+  variable: string;
+  hex: string;
+  ratio: number;
+}
+
+/**
+ * `#fff` and `#FFFFFF` are the same colour, and which one comes back is not a
+ * fact about this project: the browser returns a custom property in whatever
+ * form the CSS pipeline left it in, and Tailwind shortens where it can. Compare
+ * the colours, not the spellings.
+ */
+const normaliseHex = (value: string): string => {
+  const hex = value.trim().toLowerCase();
+  const short = hex.match(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/);
+  return short === null
+    ? hex
+    : `#${short[1]}${short[1]}${short[2]}${short[2]}${short[3]}${short[3]}`;
+};
+
+/**
+ * Rows of the shape `| \`token\` | \`#hex\` | 1.23 | …` inside a table whose
+ * header names `#FFC000` as the ground.
+ *
+ * Scoped to those tables rather than to every row in the file, so the artwork
+ * table in AI.md — which measures one colour against four grounds and puts two
+ * values in its first cell — is not misread as a token row.
+ */
+const documentedRatios = (doc: string): DocumentedRatio[] => {
+  const lines = readFileSync(doc, 'utf8').split('\n');
+  const out: DocumentedRatio[] = [];
+
+  let inTable = false;
+
+  for (const [index, line] of lines.entries()) {
+    if (!line.startsWith('|')) {
+      inTable = false;
+      continue;
+    }
+
+    if (line.includes('on `#FFC000`')) {
+      inTable = true;
+      continue;
+    }
+
+    if (!inTable) continue;
+
+    const row = line.match(
+      /^\|\s*`([A-Za-z-]+)`\s*\|\s*`(#[0-9a-fA-F]{6})`\s*\|\s*([0-9]+\.[0-9]+)\s*\|/,
+    );
+    if (row === null) continue;
+
+    const token = (row[1] as string).replace(
+      /[A-Z]/g,
+      (c) => `-${c.toLowerCase()}`,
+    );
+
+    out.push({
+      doc,
+      line: index + 1,
+      token,
+      variable: `--color-${token}`,
+      hex: normaliseHex(row[2] as string),
+      ratio: Number(row[3]),
+    });
+  }
+
+  return out;
+};
+
 test.describe('the gold surface exception', () => {
+  /**
+   * The Markdown copies, measured against the same live CSS the RATIOS table
+   * below is measured against. Verified not to be vacuous: changing
+   * `gold-muted` to `#3A3021` in AI.md alone fails this test naming that file
+   * and line, and the parser's own floor fails if the tables stop being found.
+   */
+  test('every documented gold ratio matches the live CSS', async ({ page }) => {
+    await page.goto('/');
+
+    const documented = GOLD_TABLE_DOCS.flatMap(documentedRatios);
+
+    /*
+     * The floor. If a heading is reworded, or the table is reformatted, the
+     * parser silently matches nothing and every assertion below passes on an
+     * empty list — which is exactly the shape of vacuity this file guards
+     * against everywhere else.
+     */
+    expect(
+      documented.length,
+      `no "on #FFC000" token rows were parsed out of ${GOLD_TABLE_DOCS.join(
+        ', ',
+      )}. The tables were reformatted or moved, so this check is reading ` +
+        `nothing rather than finding them clean.`,
+    ).toBeGreaterThan(0);
+
+    for (const doc of GOLD_TABLE_DOCS) {
+      expect(
+        documented.filter((row) => row.doc === doc).length,
+        `${doc} contributed no rows, so it is no longer being checked`,
+      ).toBeGreaterThan(0);
+    }
+
+    const measured = (await page.evaluate(
+      `(([gold, variables]) => {
+        ${PAGE_HELPERS}
+        const root = getComputedStyle(document.documentElement);
+        const ground = fromHex(gold);
+        return variables.map((variable) => {
+          const value = root.getPropertyValue(variable).trim();
+          const colour = value.startsWith('#') ? fromHex(value) : parse(value);
+          return {
+            variable,
+            value: value.toLowerCase(),
+            ratio: colour === null ? null : Number(ratio(colour, ground).toFixed(2)),
+          };
+        });
+      })(${JSON.stringify([GOLD, [...new Set(documented.map((r) => r.variable))]])})`,
+    )) as { variable: string; value: string; ratio: number | null }[];
+
+    const live = new Map(measured.map((row) => [row.variable, row]));
+
+    const wrong: string[] = [];
+
+    for (const row of documented) {
+      const actual = live.get(row.variable);
+
+      if (actual === undefined || actual.value === '') {
+        wrong.push(
+          `${row.doc}:${row.line}  \`${row.token}\` — ${row.variable} is not ` +
+            `defined in global.css`,
+        );
+        continue;
+      }
+
+      if (normaliseHex(actual.value) !== row.hex) {
+        wrong.push(
+          `${row.doc}:${row.line}  \`${row.token}\` — documented ${row.hex}, ` +
+            `CSS says ${actual.value}`,
+        );
+      }
+
+      if (actual.ratio === null || Math.abs(actual.ratio - row.ratio) > 0.05) {
+        wrong.push(
+          `${row.doc}:${row.line}  \`${row.token}\` — documented ${row.ratio} ` +
+            `against ${GOLD}, measured ${actual.ratio}`,
+        );
+      }
+    }
+
+    expect(
+      wrong,
+      `a gold-surface table has drifted from the CSS. The live custom ` +
+        `properties are the source of truth and the prose is a copy of them, ` +
+        `so fix the Markdown, not the token — unless the token really did ` +
+        `change, in which case every row below is a file that still needs ` +
+        `updating in this commit:\n  ${wrong.join('\n  ')}`,
+    ).toEqual([]);
+  });
+
   test('the documented ratios against #FFC000 still hold', async ({ page }) => {
     await page.goto('/');
 
