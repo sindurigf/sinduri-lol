@@ -398,6 +398,24 @@ Two things about that are worth knowing before they bite:
   settings change too, so do not rename the job without updating the ruleset in
   the same change.
 
+### Two things that look like a misconfiguration and are not
+
+**`required_approving_review_count` is `0`, on purpose.** This is a solo
+repository with one maintainer. A review requirement would mean nobody could
+merge anything, and the way out of that is a bypass entry, which is a bigger
+hole than the missing review. So the ruleset enforces "changes arrive via a
+pull request with CI green", not "reviewed by another person". Those are
+different guarantees and only the first one is available here. The number is
+`0` because that is the honest setting, not because the ruleset was left half
+configured. Revisit it if a second maintainer ever arrives.
+
+**GitHub's "your main branch isn't protected" banner is safe to ignore.** It
+reads the legacy branch-protection API, which this repository does not use and
+which is empty here. The ruleset above is what is in force, and it is
+enforced: `git push origin main` is rejected. Look under
+**Settings > Rules > Rulesets** for the real state, not under
+**Settings > Branches**.
+
 ### What it costs
 
 Once the ruleset is active, `git push origin main` is rejected. Every change,
