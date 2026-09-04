@@ -139,6 +139,32 @@
   a:hover {
     color: var(--color-cyan);
   }
+
+  /*
+   * One focus indicator for the whole site, on :focus-visible so a mouse click
+   * never leaves a ring behind. Gold measures 11.32 / 10.60 / 11.76 against
+   * background / surface / deep, well past the 3:1 that SC 1.4.11 asks for.
+   *
+   * The offset is not cosmetic. Gold on the gold button is 1.00:1, so a ring
+   * flush against the element would be invisible on .btn-primary. The offset
+   * puts surface color on both sides of the ring, which is what is actually
+   * measured. Never set outline-offset to 0 here.
+   *
+   * The hard offset shadows are decoration and resting state, never focus.
+   */
+  :focus-visible {
+    outline: 3px solid var(--color-gold);
+    outline-offset: 3px;
+  }
+
+  /*
+   * The 80px header is sticky and will cover anything focused or targeted near
+   * the top of the viewport (SC 2.4.11 Focus Not Obscured).
+   */
+  :target,
+  [id] {
+    scroll-margin-top: calc(var(--spacing-header) + 1rem);
+  }
 }
 
 @layer components {
@@ -172,5 +198,39 @@
 
   .section-number {
     @apply text-section-number font-extrabold text-pink;
+  }
+
+  /*
+   * First focusable element on the page. Off-screen until focused, then it
+   * animates into view so a sighted keyboard user can see where they landed.
+   * Not `sr-only` and not `display: none`: both stay hidden on focus.
+   */
+  .skip-link {
+    @apply absolute left-4 top-4 z-[60] border-4 border-border bg-gold px-6 py-4
+      text-label font-black uppercase tracking-label text-background;
+
+    transform: translateY(calc(-100% - 1.5rem));
+  }
+
+  .skip-link:focus,
+  .skip-link:focus-visible {
+    transform: translateY(0);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion. Anything animated must honour this; see the design system
+   skill. Note that SC 2.2.2 also requires a real pause control for anything
+   that auto-starts and runs past five seconds, which this does not provide.
+--------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

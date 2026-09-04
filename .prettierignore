@@ -8,3 +8,6 @@ package-lock.json
 
 # binary assets
 public/
+
+# vendored third-party skill, kept byte-identical to upstream
+.claude/skills/frontend-a11y/

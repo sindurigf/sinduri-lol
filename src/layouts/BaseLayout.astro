@@ -48,8 +48,10 @@ const ogImageUrl = new URL(ogImage, Astro.site);
     <meta name="generator" content={Astro.generator} />
   </head>
   <body class="flex min-h-screen flex-col">
+    <!-- Must be the first focusable element on the page (SC 2.4.1). -->
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <Header />
-    <main class="flex-1">
+    <main id="main-content" class="flex-1">
       <slot />
     </main>
     <Footer />

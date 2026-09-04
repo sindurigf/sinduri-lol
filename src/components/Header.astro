@@ -10,8 +10,13 @@ const NAV_LINKS = [
 
 const CTA = { href: '/contact', label: 'Get in touch' } as const;
 
-// Dark line-art mark, sits on the gold logo tile. Intrinsic size 458x900.
-const BUNNY_MARK = '/images/bunny-dark.png';
+// Dark line-art mark, sits on the gold logo tile.
+const BUNNY_MARK = {
+  src: '/images/bunny-dark.png',
+  alt: 'Lepus Ridet mark',
+  width: 458,
+  height: 900,
+} as const;
 
 const currentPath = Astro.url.pathname;
 
@@ -23,22 +28,28 @@ const isActive = (href: string): boolean =>
   class="sticky top-0 z-50 h-header border-b-8 border-border bg-header-bg backdrop-blur-[10px]"
 >
   <div class="mx-auto flex h-full max-w-7xl items-center justify-between px-6">
-    <a href="/" class="flex items-center gap-4" aria-label="sinduri.lol home">
+    <!--
+      No aria-label on this link. It would override both the image's alt and the
+      visible wordmark, hiding the mark from assistive tech and breaking voice
+      control for anyone who says "sinduri.lol". The width and height are the
+      intrinsic pixel size so the browser reserves the right box before load.
+    -->
+    <a href="/" class="flex items-center gap-4">
       <span
         class="flex h-12 w-12 rotate-3 items-center justify-center rounded-nav border-4 border-border bg-gold shadow-hard-pink-12"
       >
         <img
-          src={BUNNY_MARK}
-          alt=""
-          width="12"
-          height="24"
+          src={BUNNY_MARK.src}
+          alt={BUNNY_MARK.alt}
+          width={BUNNY_MARK.width}
+          height={BUNNY_MARK.height}
           class="h-6 w-auto"
         />
       </span>
       <span class="label text-text">sinduri.lol</span>
     </a>
 
-    <nav class="hidden md:block" aria-label="Main">
+    <nav class="hidden md:block" aria-label="Primary">
       <ul class="flex items-center gap-10">
         {
           NAV_LINKS.map((link) => (

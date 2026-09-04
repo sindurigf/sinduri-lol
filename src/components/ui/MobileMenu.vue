@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 
 interface NavLink {
   href: string;
@@ -13,71 +13,66 @@ const props = defineProps<{
   currentPath: string;
 }>();
 
+/*
+ * Native <dialog> with showModal(). The browser supplies the whole feature set
+ * that used to be hand-rolled here: it traps focus, moves focus into the
+ * dialog on open, closes on Escape, restores focus to the trigger on close,
+ * marks the rest of the page inert, and renders ::backdrop. No focus-trap
+ * library, and no keydown handler of our own.
+ */
+const dialog = ref<HTMLDialogElement | null>(null);
 const isOpen = ref(false);
-const panel = ref<HTMLElement | null>(null);
-
-const FOCUSABLE = 'a[href], button:not([disabled])';
 
 const isActive = (href: string): boolean =>
   href === '/' ? props.currentPath === '/' : props.currentPath.startsWith(href);
 
-const label = computed(() => (isOpen.value ? 'Close menu' : 'Open menu'));
+// A modal dialog does not reliably stop the page behind it from scrolling.
+const lockScroll = (locked: boolean): void => {
+  document.body.style.overflow = locked ? 'hidden' : '';
+};
+
+const open = (): void => {
+  if (!dialog.value) return;
+  dialog.value.showModal();
+  isOpen.value = true;
+  lockScroll(true);
+};
 
 const close = (): void => {
+  // Always go through close() so the browser restores focus to the trigger.
+  dialog.value?.close();
+};
+
+/*
+ * The single source of truth for the closed state. Escape and the backdrop
+ * close the dialog without going through close(), so aria-expanded and the
+ * scroll lock are reset here rather than in the click handler.
+ */
+const onClose = (): void => {
   isOpen.value = false;
+  lockScroll(false);
 };
-
-const onKeydown = (event: KeyboardEvent): void => {
-  if (event.key === 'Escape') {
-    close();
-    return;
-  }
-
-  if (event.key !== 'Tab' || !panel.value) return;
-
-  const targets = Array.from(
-    panel.value.querySelectorAll<HTMLElement>(FOCUSABLE),
-  );
-  const first = targets[0];
-  const last = targets[targets.length - 1];
-  if (!first || !last) return;
-
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
-};
-
-watch(isOpen, (open) => {
-  document.body.style.overflow = open ? 'hidden' : '';
-
-  if (open) {
-    window.addEventListener('keydown', onKeydown);
-  } else {
-    window.removeEventListener('keydown', onKeydown);
-  }
-});
 
 onBeforeUnmount(() => {
-  document.body.style.overflow = '';
-  window.removeEventListener('keydown', onKeydown);
+  lockScroll(false);
 });
 </script>
 
 <template>
   <div class="md:hidden">
+    <!--
+      The name stays "Menu" in both states. aria-expanded already announces
+      collapsed/expanded, so flipping the name to "Close menu" would duplicate
+      the state into the name and can contradict what is announced.
+    -->
     <button
       type="button"
       class="flex h-12 w-12 items-center justify-center border-4 border-border bg-surface"
       :aria-expanded="isOpen"
-      :aria-label="label"
       aria-controls="mobile-menu-panel"
-      @click="isOpen = !isOpen"
+      aria-label="Menu"
+      @click="open"
     >
-      <span class="sr-only">{{ label }}</span>
       <span aria-hidden="true" class="relative block h-4 w-6">
         <span
           class="absolute left-0 block h-[3px] w-6 bg-gold transition-transform duration-150"
@@ -94,20 +89,25 @@ onBeforeUnmount(() => {
       </span>
     </button>
 
-    <div
-      v-show="isOpen"
+    <dialog
       id="mobile-menu-panel"
-      ref="panel"
-      class="fixed inset-x-0 bottom-0 top-header z-40 overflow-y-auto bg-background px-6 py-10"
+      ref="dialog"
+      class="mobile-menu-dialog"
+      aria-label="Menu"
+      @close="onClose"
     >
-      <nav aria-label="Mobile">
+      <!--
+        Named with aria-label, not a visually hidden heading. The panel has no
+        visible heading, and an sr-only <h2> here would sit ahead of the page's
+        <h1> in source order and corrupt the document outline.
+      -->
+      <nav aria-label="Primary">
         <ul class="flex flex-col gap-8">
           <li v-for="link in links" :key="link.href">
             <a
               :href="link.href"
               :aria-current="isActive(link.href) ? 'page' : undefined"
               class="block font-black uppercase tracking-heading-tight text-text hover:text-cyan"
-              style="font-size: clamp(34px, 8vw, 56px); line-height: 1"
               @click="close"
             >
               {{ link.label }}
@@ -128,6 +128,43 @@ onBeforeUnmount(() => {
           {{ ctaLabel }}
         </a>
       </nav>
-    </div>
+
+      <button type="button" class="btn-secondary mt-12 w-full" @click="close">
+        Close
+      </button>
+    </dialog>
   </div>
 </template>
+
+<style scoped>
+/*
+ * A <dialog> is display: none until opened and is centred in the top layer by
+ * default, so it has to be reset to the full-bleed panel this design wants.
+ * Sizing stays in the component because it is dialog mechanics, not a token.
+ */
+.mobile-menu-dialog {
+  max-width: none;
+  max-height: none;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 2.5rem 1.5rem;
+  border: 0;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  overflow-y: auto;
+}
+
+.mobile-menu-dialog::backdrop {
+  background-color: var(--color-deep);
+}
+
+.mobile-menu-dialog nav a {
+  font-size: clamp(34px, 8vw, 56px);
+  line-height: 1;
+}
+
+.mobile-menu-dialog nav a[href]:not([class*='bg-cyan']) {
+  color: var(--color-text);
+}
+</style>

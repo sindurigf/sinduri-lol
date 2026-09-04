@@ -1,8 +1,12 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { getCollection } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
 import { BLOG_CATEGORIES } from '../../../content.config';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+interface Props {
+  posts: CollectionEntry<'blog'>[];
+}
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const posts = await getCollection('blog');
@@ -18,7 +22,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 const { category } = Astro.params;
-const { posts } = Astro.props;
+const { posts } = Astro.props as Props;
 
 // `category` comes from getStaticPaths, so it is always one of BLOG_CATEGORIES,
 // but Astro.params is typed as string | undefined. Fail loudly rather than
