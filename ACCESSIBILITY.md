@@ -117,6 +117,12 @@ required: gold against the gold button measures 1.00:1, so a ring flush with the
 element would be invisible there. The offset puts surface colour on both sides
 of the ring, which is what SC 1.4.11 measures.
 
+One control does not rely on that alone. `.btn-gold-primary`'s ring is the same
+colour as its own fill, so it carries a second, inner `#FFFFFF` ring flush to
+that fill at 18.58. See "The gold surface is an exception" below. It is the
+only control on the site with that problem, and a single-colour ring is correct
+everywhere else.
+
 ### The gold surface is an exception, and every dark token fails on it
 
 The three surfaces above are not the only ones. The Career hero in the design
@@ -187,7 +193,34 @@ design decision rather than a contrast one.
   case the offset is ever reduced. The gold buttons are where the second check
   bites. The ring there is `gold-text`, the same colour as
   `.btn-gold-primary`'s fill and border, so ring-against-fill measures 1.00 and
-  only the 3px offset makes it 11.32 against what it actually touches.
+  only the 3px offset made it 11.32 against what it actually touches.
+
+  **That put the whole indicator on one property staying non-zero**, on the
+  single control where getting it wrong hides the indicator completely rather
+  than merely weakening it, so `.btn-gold-primary`'s ring is now two rings —
+  one for each background it can end up against:
+
+  | Layer                           | Against        | Ratio |
+  | ------------------------------- | -------------- | ----- |
+  | inner `#FFFFFF`, flush to fill  | `#131313`      | 18.58 |
+  | outer `#131313`, beyond the gap | gold `#FFC000` | 11.32 |
+
+  The inner ring is an `inset` `box-shadow` folded in alongside the button's
+  pink offset shadow, because `box-shadow` is one property and a rule naming
+  only the ring would delete the resting decoration for as long as the button
+  had focus. It reuses `gold-btn-label`, the same white at the same 18.58 on
+  the same fill, rather than adding a second white token.
+
+  This is not a general pattern. A single-colour ring is sufficient everywhere
+  else, `.btn-gold-secondary` included: its fill is transparent, so a ring
+  flush to its interior sits on the gold showing through at 11.32.
+  `.btn-gold-primary` is the only control whose ring colour equals its own
+  opaque fill.
+
+  The offset is unchanged at 3px and is still asserted. It is now redundant
+  rather than load-bearing, which was the point: measured with
+  `outline-offset: 0`, the offset assertion fails and the ring assertion
+  passes, because the inner ring is still 18.58 against the fill.
 
 - **Borders (SC 1.4.11).** The base layer defaults every border to `border`,
   2.34 on gold. The subtree is re-defaulted to `gold-border`.
@@ -220,23 +253,25 @@ elements (`.skip-link` on every route, `.btn-primary` on `/404`).
 Playwright drives a real Chromium against the production build. CI runs it on
 every push and pull request to `main`, and a violation fails the build.
 
-| Check                | Tool                                | Covers                                     |
-| -------------------- | ----------------------------------- | ------------------------------------------ |
-| WCAG rule scan       | axe-core via `@axe-core/playwright` | Every built route                          |
-| Rule scan, menu on   | axe-core at 320px, dialog open      | Every route, with the mobile menu open     |
-| Reflow overflow      | Playwright at 320px and 305px       | Every route, with and without SC 1.4.12    |
-| Content box width    | Playwright at 320px and 305px       | 288px / 273px, the box the floors assume   |
-| Heading word fit     | Playwright at 320px and 305px       | No heading word wider than its own box     |
-| Reflow navigation    | Playwright at 320px                 | Menu opens, takes focus, closes on Escape  |
-| Route drift          | Playwright                          | Test list matches real build output        |
-| Unknown path         | Playwright                          | A path with no page returns 404, not 200   |
-| Response headers     | Playwright over the built `dist/`   | The CSP does not break fonts or the menu   |
-| HSTS scope           | Playwright over the built `dist/`   | max-age ceiling, no preload/subdomains     |
-| Gold-surface text    | Playwright over every route         | Nothing on `#FFC000` below 4.5:1           |
-| Gold-surface class   | Playwright, mounted fixture         | `.surface-gold` text, links, focus, border |
-| Gold-surface buttons | Playwright, mounted fixture         | Label, fill, border, focus, SC 2.5.8 size  |
-| Token drift          | Playwright, live CSS variables      | The documented ratios against `#FFC000`    |
-| Type safety          | `astro check`                       | Templates and components                   |
+| Check                | Tool                                | Covers                                           |
+| -------------------- | ----------------------------------- | ------------------------------------------------ |
+| WCAG rule scan       | axe-core via `@axe-core/playwright` | Every built route                                |
+| Rule scan, menu on   | axe-core at 320px, dialog open      | Every route, with the mobile menu open           |
+| Reflow overflow      | Playwright at 320px and 305px       | Every route, with and without SC 1.4.12          |
+| Content box width    | Playwright at 320px and 305px       | 288px / 273px, the box the floors assume         |
+| Heading word fit     | Playwright at 320px and 305px       | No heading word wider than its own box           |
+| Reflow navigation    | Playwright at 320px                 | Menu opens, takes focus, closes on Escape        |
+| Route drift          | Playwright                          | Test list matches real build output              |
+| Unknown path         | Playwright                          | A path with no page returns 404, not 200         |
+| Response headers     | Playwright over the built `dist/`   | The CSP does not break fonts or the menu         |
+| HSTS scope           | Playwright over the built `dist/`   | max-age ceiling, no preload/subdomains           |
+| Gold-surface text    | Playwright over every route         | Nothing on `#FFC000` below 4.5:1                 |
+| Gold-surface class   | Playwright, mounted fixture         | `.surface-gold` text, links, focus, border       |
+| Gold-surface buttons | Playwright, mounted fixture         | Label, fill, border, focus, SC 2.5.8 size        |
+| Invisible control    | Playwright, mounted fixture         | Fill, or border on all four edges, vs the ground |
+| Two-tone focus ring  | Playwright, mounted fixture         | Both rings and the pink shadow, at zero offset   |
+| Token drift          | Playwright, live CSS variables      | The documented ratios against `#FFC000`          |
+| Type safety          | `astro check`                       | Templates and components                         |
 
 Rule tags: `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`.
 
@@ -290,6 +325,16 @@ Three limits of the automated tier that are easy to mistake for coverage:
   measured, not just one — verified by painting only `border-bottom-color`
   gold, which every other assertion in the file passed, the button test
   included, because that test reads `borderTopColor`.
+
+  **The border case was confirmed to be invisible to a rule engine, the same
+  way the fill case was.** Measured on 2026-09-04 against a temporary route
+  rendering a `.surface-gold` section: with `.btn-gold-secondary`'s border
+  painted `#FFC000`, so the control was a transparent fill inside a border the
+  colour of the ground and had no visible edge anywhere, AccessLint returned
+  **0 violations across 95 rules with AAA enabled**. Its label still measured
+  11.32 on gold, and the label is all a contrast rule looks at. A green scan
+  is not evidence for either arm of this check.
+
 - **An overflow assertion cannot see a bad heading floor.** This one is worth
   stating because the floors were documented as locked down by a test that
   could not fail on them. `overflow-wrap: break-word` guarantees the document
@@ -382,12 +427,25 @@ Stated honestly. This list is not filtered for how it looks.
    no page uses any of them yet, so the contracts are tested against mounted
    fixtures rather than against real markup. Nothing has been looked at,
    tabbed through, or zoomed on an actual gold section. The focus ring on that
-   ground is the item to look at first: on `.btn-gold-primary` it is the same
-   colour as the button's own fill and is legible only because of the 3px
-   offset, which passes by measurement but has not been seen by anyone.
-   Reflow is untested there too, since no gold section exists to run the 305px
-   suite against. Re-test when the Career page lands and replace the fixtures
-   with the real section.
+   ground is still the item to look at first. On `.btn-gold-primary` it is now
+   two rings, an inner `#FFFFFF` at 18.58 against the button's own fill and the
+   outer `#131313` at 11.32 against the gold beyond the offset gap, so it no
+   longer depends on the offset alone.
+
+   **Partially observed on 2026-09-04, and the gap stays open.** A temporary,
+   uncommitted route rendering a `.surface-gold` section was built and driven
+   in headless Chromium: a real `Tab` press reaches `.btn-gold-primary`,
+   `:focus-visible` matches, and the rendered indicator carries all three
+   layers at once — `box-shadow: rgb(255, 255, 255) 0px 0px 0px 3px inset,
+rgb(255, 0, 122) 8px 8px 0px 0px` with `outline: 3px solid rgb(19, 19, 19)`
+   at a 3px offset. Screenshotted, the two rings read as one deliberate
+   double-stroke rather than as noise.
+
+   That is one viewport, one engine, headless, on a fixture, judged by an
+   agent. It is not a person looking at a real page, no screen reader has been
+   near it, and reflow on a gold ground is still untested because no real route
+   has one to run the 305px suite against. Re-test when the Career page lands
+   and replace the fixtures with the real section.
 
 ## 8. Reporting a barrier
 

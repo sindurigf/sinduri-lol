@@ -167,9 +167,16 @@ offset gap is also gold; borders default to `border` (2.34); text defaults to
 `text` (1.27). Neither `.btn-primary` nor `.btn-secondary` may be used there;
 `.btn-gold-primary` and `.btn-gold-secondary` are the gold-surface pair, scoped
 to `.surface-gold` so using one elsewhere renders it unstyled.
-`tests/gold-surface.spec.ts` measures all of it from the rendered DOM. The full
-rules, including the button specifications and their measured ratios, are in
-the design system skill.
+`.btn-gold-primary` carries a two-tone focus ring, an inner `#FFFFFF` flush to
+its `#131313` fill (18.58) inside the existing `#131313` outline beyond the gold
+gap (11.32), because its ring colour is its own fill colour and a single ring
+there rests entirely on the offset staying non-zero. It is the only control on
+the site with that problem; a single-colour ring is correct everywhere else.
+`tests/gold-surface.spec.ts` measures all of it from the rendered DOM,
+including whether each control is distinguishable from the ground behind it by
+its fill or, when the fill is transparent, by its border on all four edges. The
+full rules, including the button specifications and their measured ratios, are
+in the design system skill.
 
 ### Typography
 
@@ -195,6 +202,8 @@ jumps between device sizes. Ceilings land at roughly a 1156px viewport.
 
 Headings are uppercase. Labels and tags are uppercase. Use `tracking-label-wide`
 (0.14em) where a label needs more air.
+
+#### The heading floors are a reflow constraint, not a taste call
 
 The H1 and H2 floors are reflow constraints, not taste calls (SC 1.4.10).
 
@@ -255,6 +264,8 @@ Headings also set `hyphens: auto` and `overflow-wrap: break-word`; the latter is
 what actually guarantees no horizontal overflow. `tests/reflow.spec.ts` locks
 this down. Do not raise a floor without re-running it.
 
+#### Content rule: a display heading word over twelve characters takes a soft hyphen
+
 Automatic hyphenation is inert here, because Chromium consults its lowercase
 dictionary after `text-transform` and finds nothing for an uppercased word. A
 **soft hyphen** (`&shy;`, U+00AD) is not, because it is a DOM character rather
@@ -264,8 +275,12 @@ one, at a syllable boundary. **Never set `hyphens: none` on a heading**, which
 is the one thing that would disable it. The design system skill carries the
 rule and the authoring paths.
 
+#### Weight
+
 Body copy is weight 400 and never lighter. Weight 300 halates against the dark
 background.
+
+#### Uppercase
 
 Uppercase is applied with `text-transform` in CSS and never typed uppercase in
 the markup. The reason is **not** that this keeps the accessible name in
@@ -323,7 +338,11 @@ Defined in `@layer components` in `src/styles/global.css`:
 - `.section-number` — `clamp(24px, 2.8vw, 32px)` / 800, `pinkText`
 - `.page-gutter` — the horizontal gutter, declared once and applied to the
   header, `<main>` and the footer, so every route presents the same content
-  box at 320px
+  box at 320px. **It is a reflow constraint, not a spacing preference.** The
+  heading floors are calibrated against the 273px box it leaves, so changing
+  it, adding padding to a page container, or zeroing it below `sm` all invalidate
+  that arithmetic. See
+  [The heading floors are a reflow constraint](#the-heading-floors-are-a-reflow-constraint-not-a-taste-call)
 - `.skip-link` — the skip-to-content link, visible on focus
 - `.surface-gold`, `.btn-gold-primary`, `.btn-gold-secondary` — the gold-ground
   set, scoped to `.surface-gold`. See [The gold surface](#the-gold-surface)
