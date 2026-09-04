@@ -33,4 +33,14 @@ test-results/
 playwright-report/
 blob-report/
 .playwright/
+
+# design comps, including the CV PDF: never committed
 design/
+
+# claude code, per-machine and not shared
+.claude/settings.local.json
+.claude/*.local.json
+
+# scratch and atomic-write temp files
+*.tmp
+*.tmp.*
