@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { islandRoutesFromBuild } from './routes';
 
 /**
  * The spinning badge and its pause control (SC 2.2.2 Pause, Stop, Hide).
@@ -32,9 +33,46 @@ import { expect, test, type Page } from '@playwright/test';
  *
  * Every route carrying a badge is exercised. The comps put one on the homepage
  * at 24s and one on Contact at 28s.
+ *
+ * BADGE_ROUTES IS A LITERAL WITH A GUARD, NOT A LITERAL ON TRUST. It has to be
+ * a literal, because Playwright collects this file before the `webServer`
+ * command builds the site, so deriving it here would generate its tests from an
+ * absent or stale `dist/`. The guard below closes the gap that leaves: it reads
+ * the real build and fails when a badge exists on a route this list does not
+ * name. Without it, this file spent the whole of the Contact page's existence
+ * covering one of the two badges and reporting green.
  */
 
+/** The island whose presence in the built HTML defines "this route has a badge". */
+const BADGE_COMPONENT = 'SpinBadge';
+
 const BADGE_ROUTES = ['/', '/contact'] as const;
+
+test('BADGE_ROUTES names every route that renders a badge', () => {
+  const built = islandRoutesFromBuild(BADGE_COMPONENT);
+
+  /*
+   * The floor first. If the marker ever stops matching, `built` goes empty and
+   * the comparison below would pass against an emptied BADGE_ROUTES rather than
+   * failing — the same vacuity the route walks in gold-surface.spec.ts guard
+   * with their own `length > 0` assertions.
+   */
+  expect(
+    built.length,
+    `no route in dist/ carries a ${BADGE_COMPONENT} island. Either the site ` +
+      `stopped rendering the badge, or Astro changed the \`component-url\` ` +
+      `attribute that islandRoutesFromBuild matches on — in which case this ` +
+      `whole file is measuring nothing.`,
+  ).toBeGreaterThan(0);
+
+  expect(
+    built,
+    `BADGE_ROUTES is out of sync with the build. Every route that renders a ` +
+      `${BADGE_COMPONENT} needs SC 2.2.2 coverage, and this file only walks ` +
+      `the routes named in that list, so a badge on an unlisted route has no ` +
+      `pause-control test at all.`,
+  ).toEqual([...BADGE_ROUTES].sort());
+});
 
 /** SC 2.5.8 asks 24x24 CSS px of a target on its own size. */
 const MIN_TARGET = 24;

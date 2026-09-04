@@ -1,4 +1,4 @@
-import { readdirSync, existsSync } from 'node:fs';
+import { readdirSync, existsSync, readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 /**
@@ -134,14 +134,14 @@ export const postRoutesFromContent = (
  * entirely, so the coverage test would have kept passing with `/404` in ROUTES
  * removed, or with the page itself deleted.
  */
-export const routesFromBuild = (distDir = DIST_DIR): string[] => {
+const builtPages = (distDir = DIST_DIR): { route: string; file: string }[] => {
   if (!existsSync(distDir)) {
     throw new Error(
       `Build output not found at "${distDir}". Run \`npm run build\` first.`,
     );
   }
 
-  const found: string[] = [];
+  const found: { route: string; file: string }[] = [];
 
   const walk = (dir: string): void => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -158,16 +158,53 @@ export const routesFromBuild = (distDir = DIST_DIR): string[] => {
 
       if (entry.name === 'index.html') {
         const rel = segments.slice(0, -1).join('/');
-        found.push(rel === '' ? '/' : `/${rel}`);
+        found.push({ route: rel === '' ? '/' : `/${rel}`, file: full });
         continue;
       }
 
       segments[segments.length - 1] = entry.name.replace(/\.html$/, '');
-      found.push(`/${segments.join('/')}`);
+      found.push({ route: `/${segments.join('/')}`, file: full });
     }
   };
 
   walk(distDir);
 
-  return found.sort();
+  return found;
+};
+
+export const routesFromBuild = (distDir = DIST_DIR): string[] =>
+  builtPages(distDir)
+    .map((page) => page.route)
+    .sort();
+
+/**
+ * The routes whose built HTML carries a hydrated island for `component`.
+ *
+ * This is the completeness guard for a route-list literal that names a subset
+ * of ROUTES: a spec that walks `['/']` because that is where the badge used to
+ * be keeps passing when a second badge lands somewhere else, and the new one
+ * has no coverage at all. Deriving the real list from `dist/` and asserting the
+ * literal against it turns that from a silent gap into a failure. See
+ * `BADGE_ROUTES` in tests/motion.spec.ts, and `GOLD_ROUTE_CONTROLS` in
+ * tests/gold-surface.spec.ts for the same idea applied to a count.
+ *
+ * The literal cannot simply be replaced by this function. Playwright collects
+ * test files before the `webServer` command runs, so a `for` loop over a call
+ * to this at module scope would read an absent or stale `dist/` and generate
+ * the wrong tests, or none. Same reason ROUTES is hardcoded; same fix.
+ *
+ * Matched on Astro's `component-url` attribute rather than on the component
+ * name anywhere in the page, so a mention of "SpinBadge" in an HTML comment or
+ * in prose cannot make a route look like it renders one.
+ */
+export const islandRoutesFromBuild = (
+  component: string,
+  distDir = DIST_DIR,
+): string[] => {
+  const marker = new RegExp(`component-url="[^"]*/${component}\\.[^"]*\\.js"`);
+
+  return builtPages(distDir)
+    .filter((page) => marker.test(readFileSync(page.file, 'utf8')))
+    .map((page) => page.route)
+    .sort();
 };
