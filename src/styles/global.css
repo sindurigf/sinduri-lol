@@ -147,6 +147,20 @@
    * the deciding factor; both values clear 1.4.11 several times over.
    */
   --color-gold-border: #22394d;
+  /*
+   * 18.58 on the #131313 fill of .btn-gold-primary; not usable on gold itself,
+   * where pure white measures 1.64.
+   *
+   * DELIBERATELY COMPONENT-SCOPED, and it is the one token here that is. The
+   * site's text colour is `text` #E5E2E1, and that softness is a choice:
+   * 14.42 on #131313 with less halation than pure white, which blooms on a
+   * dark ground and is worst for low-vision and astigmatic readers. That
+   * argument is about continuous prose. This string is a 13px/900 uppercase
+   * label on a small control, where the comps ask for pure white and the
+   * halation risk does not apply. Naming it for the button is what stops
+   * #FFFFFF leaking out to body copy, where `text` is still the right answer.
+   */
+  --color-gold-btn-label: #ffffff;
 
   /* Header chrome. Translucent, so it stays a raw rgba rather than a hex. */
   --color-header-bg: rgba(10, 10, 10, 0.94);
@@ -261,6 +275,7 @@
   --shadow-hard-gold-6: 6px 6px 0 var(--color-gold);
   --shadow-hard-gold-4: 4px 4px 0 var(--color-gold);
   --shadow-hard-pink-12: 12px 12px 0 var(--color-pink);
+  --shadow-hard-pink-8: 8px 8px 0 var(--color-pink);
   --shadow-hard-cyan-8: 8px 8px 0 var(--color-cyan);
 
   /* Layout */
@@ -279,6 +294,18 @@
    */
   --spacing-card-tight: 24px;
   --spacing-card: 40px;
+  /*
+   * Gold-surface button padding, from the comps: 18px 34px. Neither is a
+   * multiple of the 4px Tailwind spacing step, so without tokens they would
+   * have to be arbitrary values, which this project does not allow.
+   *
+   * The vertical number is also a conformance floor. A 13px label at
+   * line-height 1.2 is a 15.6px line box, so the control is 15.6 + 36 =
+   * 51.6px tall, comfortably past the 24px SC 2.5.8 asks of a target on its
+   * own size. Do not reduce it below 5px without re-checking that.
+   */
+  --spacing-btn-gold-y: 18px;
+  --spacing-btn-gold-x: 34px;
 }
 
 @layer base {
@@ -508,12 +535,12 @@
    * gold section is a bug this class cannot stop.
    * tests/gold-surface.spec.ts is what catches it.
    *
-   * .btn-primary MUST NOT BE USED HERE. It is `bg-gold`, so on this ground it
-   * is a 1.00:1 fill: an invisible button identified only by its border, with
-   * a `shadow-hard-pink-12` that measures 2.31 on gold. A primary action on
-   * this surface is a dark fill instead: `bg-background text-gold`, border-4
-   * in `gold-border`. There is no class for it yet because no page has one
-   * yet; build it with the page.
+   * .btn-primary AND .btn-secondary MUST NOT BE USED HERE. .btn-primary is
+   * `bg-gold`, so on this ground it is a 1.00:1 fill: an invisible button
+   * identified only by its border. .btn-secondary is `bg-surface` with
+   * `text-text`, which is fine in itself, but it carries `border-border`
+   * (2.34 on gold) and a gold offset shadow (1.00 on gold). Use
+   * .btn-gold-primary and .btn-gold-secondary below.
    *
    * A gold section is full-bleed, so it breaks out of .page-gutter with
    * negative inline margins and re-applies the gutter inside itself.
@@ -546,6 +573,71 @@
    */
   .surface-gold :focus-visible {
     outline-color: var(--color-gold-text);
+  }
+
+  /*
+   * GOLD-SURFACE BUTTONS, from the comps. Both are scoped to .surface-gold on
+   * purpose: used anywhere else they render unstyled, which is loudly wrong
+   * rather than quietly wrong. Neither .btn-primary nor .btn-secondary works
+   * on this ground; see above.
+   *
+   * Measured, all against what each colour is actually adjacent to:
+   *
+   *   primary label   #FFFFFF on the #131313 fill      18.58   needs 4.5
+   *   primary fill    #131313 on #FFC000               11.32   needs 3.0
+   *   secondary label #131313 on #FFC000               11.32   needs 4.5
+   *   secondary border #131313 on #FFC000              11.32   needs 3.0
+   *
+   * THE BORDER IS `gold-text`, NOT `gold-border`. That is a deliberate
+   * exception to the subtree default and the only one. On the primary button
+   * the border matches its own fill, so it reads as one solid block; a navy
+   * outline around a solid dark block would be an outline this design does
+   * not have. `gold-border` still governs everything structural on this
+   * surface: section rules, dividers, card borders.
+   *
+   * THE PINK SHADOW IS DECORATION AND NOTHING ELSE. `pink` measures 2.31 on
+   * gold, under the 3:1 of SC 1.4.11, and that is fine here only because the
+   * shadow carries no meaning: the button's boundary is its #131313 fill
+   * against the gold ground at 11.32, which is what identifies the control.
+   * Never let an offset shadow become the thing that delimits a control, on
+   * this surface or any other.
+   *
+   * THE FOCUS OFFSET IS LOAD-BEARING AGAIN, FOR A SECOND REASON. The ring on
+   * this surface is `gold-text`, which is the same colour as the primary
+   * button's fill and border. Flush against the button it would be invisible
+   * (1.00). The 3px offset puts gold on both sides of it, so it measures
+   * 11.32 against what it actually touches. Never set outline-offset to 0.
+   */
+  .surface-gold .btn-gold-primary {
+    @apply inline-block border-4 border-gold-text bg-gold-text
+      px-btn-gold-x py-btn-gold-y text-label font-black uppercase
+      tracking-label text-gold-btn-label shadow-hard-pink-8;
+  }
+
+  .surface-gold .btn-gold-secondary {
+    @apply inline-block border-4 border-gold-text bg-transparent
+      px-btn-gold-x py-btn-gold-y text-label font-black uppercase
+      tracking-label text-gold-text;
+  }
+
+  /*
+   * The base layer underlines links on this surface, which is right for a
+   * link in prose and wrong for a button: the border and fill already
+   * distinguish these, and an underline under a 0.1em-tracked uppercase label
+   * reads as damage. SC 1.4.1 is satisfied by the box, not by the colour, so
+   * removing it here costs nothing.
+   */
+  .surface-gold a.btn-gold-primary,
+  .surface-gold a.btn-gold-secondary {
+    text-decoration: none;
+  }
+
+  .surface-gold a.btn-gold-primary:hover {
+    color: var(--color-gold-btn-label);
+  }
+
+  .surface-gold a.btn-gold-secondary:hover {
+    color: var(--color-gold-text);
   }
 
   .label {

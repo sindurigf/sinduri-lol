@@ -50,7 +50,28 @@ import { ROUTES } from './routes';
  *   delete the border re-default             test 3 fails at 2.34:1
  *   retone gold-border to #2C4A63 (5.64)     test 1 fails on the drift
  *
- * With the files as committed, all 14 pass.
+ * The button test was checked the same way, nine breakages, each caught by the
+ * assertion meant for it:
+ *
+ *   primary label -> gold-muted             1.55 on the #131313 fill
+ *   primary border -> gold-border           the "correction" the docs warn of
+ *   primary fill -> gold                    the .btn-primary mistake
+ *   py-0 on either button                   23.6px tall, under SC 2.5.8
+ *   outline-offset: 0 on .surface-gold      ring invisible against the fill
+ *   delete the text-decoration: none rule   underlined button label
+ *   secondary given a fill                  label no longer measured on gold
+ *   secondary border removed                nothing delimits it
+ *   delete .surface-gold :focus-visible     ring back to gold, 1.00
+ *
+ * The invisible-control check was verified against a real page rather than a
+ * fixture: a temporary route with a .surface-gold hero was built, added to
+ * ROUTES, and run both ways. With .btn-gold-primary it passed; with
+ * .btn-primary swapped in it failed, reporting
+ * `a.btn-primary — fill rgb(255, 192, 0) on rgb(255, 192, 0)`. The same page
+ * in the same state returned "No accessibility violations found" from
+ * AccessLint with AAA enabled, which is the whole reason this check exists.
+ *
+ * With the files as committed, all 16 pass.
  */
 
 const GOLD = '#FFC000';
@@ -159,6 +180,39 @@ const PAGE_HELPERS = `
     [...element.childNodes].some(
       (n) => n.nodeType === Node.TEXT_NODE && (n.textContent ?? '').trim() !== '',
     );
+
+  /*
+   * Controls inside a gold section whose own OPAQUE fill is the same colour as
+   * the ground behind them. Such a control is invisible as a shape: its label
+   * may contrast perfectly and every text-contrast rule will pass it.
+   *
+   * a.btn-gold-secondary is the case this must not catch, and the alpha test
+   * is what separates them: it is deliberately background-color: transparent
+   * (alpha 0), so the gold shows through and its 4px #131313 border is what
+   * delimits it. .btn-primary is an OPAQUE gold fill, which is a different
+   * thing that happens to look the same to a naive colour comparison.
+   */
+  const invisibleControls = (root) => {
+    const out = [];
+    for (const element of root.querySelectorAll('a, button, [role="button"]')) {
+      const style = getComputedStyle(element);
+      const fill = parse(style.backgroundColor);
+      if (fill === null || fill.a < 1) continue;
+
+      const behind = effectiveBackground(element.parentElement);
+      if (behind === null) continue;
+
+      if (ratio(fill, behind) < 1.05) {
+        out.push({
+          selector: describe(element),
+          fill: style.backgroundColor,
+          behind: 'rgb(' + behind.r + ', ' + behind.g + ', ' + behind.b + ')',
+          label: (element.textContent ?? '').trim().slice(0, 40),
+        });
+      }
+    }
+    return out;
+  };
 `;
 
 /** Every element whose own text sits directly on a gold background. */
@@ -252,6 +306,44 @@ test.describe('the gold surface exception', () => {
           `route has .skip-link, so this means the background resolver in ` +
           `this file stopped matching, not that the page is clean.`,
       ).toBeGreaterThan(0);
+
+      /*
+       * The one failure on this surface that measuring text cannot find.
+       * .btn-primary is `bg-gold`, so on a gold ground it is a 1.00:1 fill —
+       * an invisible control. Its LABEL still passes: `.surface-gold a` repaints
+       * it darkcyan, 8.00 on gold. So every text-contrast rule, this file's own
+       * route check above, and AccessLint at AAA all report it clean.
+       *
+       * Verified: a page with .btn-primary inside .surface-gold returned "No
+       * accessibility violations found" from AccessLint with AAA enabled. The
+       * boundary of a control is not something a text rule evaluates, and no
+       * rule engine knows that this project's gold is a surface as well as an
+       * accent. Hence this check, by measurement rather than by class name.
+       */
+      const invisible = (await page.evaluate(`(() => {
+        ${PAGE_HELPERS}
+        const section = document.querySelector('.surface-gold');
+        return section === null ? [] : invisibleControls(section);
+      })()`)) as {
+        selector: string;
+        fill: string;
+        behind: string;
+        label: string;
+      }[];
+
+      expect(
+        invisible,
+        `a control inside .surface-gold has an opaque fill the same colour as ` +
+          `the ground behind it, so it is invisible as a shape however well ` +
+          `its label contrasts. .btn-primary is bg-gold and does exactly this; ` +
+          `use .btn-gold-primary:\n` +
+          invisible
+            .map(
+              (e) =>
+                `  ${e.selector} — fill ${e.fill} on ${e.behind} — "${e.label}"`,
+            )
+            .join('\n'),
+      ).toEqual([]);
 
       const failing = found.filter((entry) => entry.ratio < AA_TEXT);
 
@@ -387,5 +479,180 @@ test.describe('the gold surface exception', () => {
         'layer defaults every border to `border` #5A87A8, which is 2.34 on ' +
         'gold; .surface-gold has to re-default the subtree.',
     ).toBeGreaterThanOrEqual(NON_TEXT);
+  });
+
+  /**
+   * The two buttons the comps specify for the gold hero. Mounted for the same
+   * reason as the fixture above: the Career page does not exist yet.
+   *
+   * Each colour is measured against what it is actually adjacent to, which is
+   * not the same ground for both buttons. The primary button's label sits on
+   * the button's own #131313 fill, not on gold; its fill is what sits on gold.
+   * The secondary button is transparent, so its label and border both sit on
+   * gold directly.
+   */
+  test('.surface-gold buttons clear their thresholds and their target size', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    const result = (await page.evaluate(`(() => {
+      ${PAGE_HELPERS}
+
+      const host = document.createElement('div');
+      host.className = 'surface-gold';
+      host.innerHTML =
+        '<a data-role="primary" class="btn-gold-primary" href="/cv.pdf">Download CV</a> ' +
+        '<a data-role="secondary" class="btn-gold-secondary" href="/contact">Get in touch</a>';
+      document.querySelector('main').append(host);
+
+      const pick = (role) => host.querySelector('[data-role="' + role + '"]');
+      const primary = pick('primary');
+      const secondary = pick('secondary');
+      const gold = fromHex('${GOLD}');
+
+      const measure = (element) => {
+        const style = getComputedStyle(element);
+        element.focus();
+        const focused = getComputedStyle(element);
+        const box = element.getBoundingClientRect();
+
+        const fill = parse(style.backgroundColor);
+        const label = parse(style.color);
+        const border = parse(style.borderTopColor);
+        const ring = parse(focused.outlineColor);
+
+        // A transparent fill means the label sits on whatever is behind it.
+        const ground = fill !== null && fill.a === 1 ? fill : gold;
+
+        return {
+          fillIsTransparent: fill === null || fill.a === 0,
+          fillCss: style.backgroundColor,
+          borderCss: style.borderTopColor,
+          labelCss: style.color,
+          borderWidth: parseFloat(style.borderTopWidth),
+          underline: style.textDecorationLine,
+          width: Number(box.width.toFixed(1)),
+          height: Number(box.height.toFixed(1)),
+          outlineOffset: parseFloat(focused.outlineOffset),
+          outlineWidth: parseFloat(focused.outlineWidth),
+          // The label against the surface it actually sits on.
+          labelOnGround: Number(ratio(label, ground).toFixed(2)),
+          // What identifies the control against the gold surface: the fill for
+          // a filled button, the border for a transparent one.
+          boundaryOnGold: Number(
+            ratio(fill !== null && fill.a === 1 ? fill : border, gold).toFixed(2),
+          ),
+          borderOnGold: Number(ratio(border, gold).toFixed(2)),
+          ringOnGold: Number(ratio(ring, gold).toFixed(2)),
+          borderMatchesFill:
+            fill !== null && border !== null && fill.a === 1
+              ? fill.r === border.r && fill.g === border.g && fill.b === border.b
+              : null,
+        };
+      };
+
+      const readout = {
+        groundIsGold: isGold(effectiveBackground(host)),
+        primary: measure(primary),
+        secondary: measure(secondary),
+      };
+
+      host.remove();
+      return readout;
+    })()`)) as {
+      groundIsGold: boolean;
+      primary: Record<string, number | string | boolean | null>;
+      secondary: Record<string, number | string | boolean | null>;
+    };
+
+    expect(result.groundIsGold, 'the fixture is not on a gold ground').toBe(
+      true,
+    );
+
+    for (const [name, button] of [
+      ['btn-gold-primary', result.primary],
+      ['btn-gold-secondary', result.secondary],
+    ] as const) {
+      expect(
+        button.borderWidth,
+        `.${name} lost its border. It is what delimits the secondary button ` +
+          `against gold, and what makes the primary read as one solid block.`,
+      ).toBe(4);
+
+      expect(
+        button.labelOnGround,
+        `.${name} label against the surface it actually sits on (SC 1.4.3)`,
+      ).toBeGreaterThanOrEqual(AAA_TEXT);
+
+      expect(
+        button.boundaryOnGold,
+        `.${name} against the gold ground (SC 1.4.11). This is what identifies ` +
+          `the control: its fill if it has one, its border if it does not. ` +
+          `The pink offset shadow is decoration and measures 2.31 on gold, so ` +
+          `it must never be the thing carrying this.`,
+      ).toBeGreaterThanOrEqual(NON_TEXT);
+
+      /*
+       * SC 2.5.8, on the target's own size. The spacing exception is not
+       * relied on anywhere on this site and is not going to start here.
+       */
+      expect(
+        button.height,
+        `.${name} target height (SC 2.5.8)`,
+      ).toBeGreaterThanOrEqual(24);
+      expect(
+        button.width,
+        `.${name} target width (SC 2.5.8)`,
+      ).toBeGreaterThanOrEqual(24);
+
+      expect(
+        button.ringOnGold,
+        `.${name} focus ring against the gold ground (SC 1.4.11)`,
+      ).toBeGreaterThanOrEqual(NON_TEXT);
+
+      /*
+       * The ring is `gold-text`, which is exactly the primary button's fill
+       * and both buttons' border colour. Flush against the element it would
+       * measure 1.00. The 3px offset is what puts gold on either side of it,
+       * and it is the second, separate reason this offset cannot be zeroed.
+       */
+      expect(
+        button.outlineOffset,
+        `.${name} focus ring offset. The ring colour is the same as this ` +
+          `button's border, so with no offset it would be invisible against ` +
+          `the control it is marking.`,
+      ).toBeGreaterThan(0);
+      expect(button.outlineWidth, `.${name} focus ring width`).toBeGreaterThan(
+        0,
+      );
+
+      expect(
+        button.underline,
+        `.${name} must not be underlined. The base .surface-gold rule ` +
+          `underlines links, which is right in prose and wrong under a ` +
+          `0.1em-tracked uppercase label inside a bordered box.`,
+      ).not.toContain('underline');
+    }
+
+    /*
+     * The deliberate exception to the subtree border default, asserted so it
+     * cannot be "corrected" back to gold-border by someone reading the rule
+     * and not the reason. A navy outline around a solid dark block is an
+     * outline this design does not have.
+     */
+    expect(
+      result.primary.borderMatchesFill,
+      '.btn-gold-primary border must match its own fill, not gold-border. ' +
+        `Measured border ${result.primary.borderCss} against fill ` +
+        `${result.primary.fillCss}.`,
+    ).toBe(true);
+
+    expect(
+      result.secondary.fillIsTransparent,
+      '.btn-gold-secondary must be transparent so the gold ground shows ' +
+        'through; its label and border are measured against gold, not against ' +
+        'a fill of its own.',
+    ).toBe(true);
   });
 });
