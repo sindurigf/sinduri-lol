@@ -42,6 +42,14 @@ const props = withDefaults(
     frameClass?: string;
     /** Rendered size of the badge artwork, in Tailwind size utilities. */
     markClass?: string;
+    /**
+     * The frame's border weight. A prop rather than part of `frameClass`
+     * because two border-width utilities on one element are decided by their
+     * order in the stylesheet, not by their order in the class attribute, so
+     * overriding a hardcoded default that way is a coin toss. The comps use
+     * 4px on the homepage badge and 8px on the larger Contact one.
+     */
+    borderClass?: string;
     /** The hard offset shadow the frame carries, from the comps. */
     shadowClass?: string;
   }>(),
@@ -49,6 +57,7 @@ const props = withDefaults(
     pace: 'hero',
     frameClass: 'h-32 w-32',
     markClass: 'w-24',
+    borderClass: 'border-4',
     shadowClass: 'shadow-hard-cyan-8',
   },
 );
@@ -101,9 +110,10 @@ const toggle = (): void => {
 <template>
   <div class="relative inline-flex">
     <div
-      class="flex items-center justify-center rounded-full border-4 border-border bg-deep"
+      class="flex items-center justify-center rounded-full border-border bg-deep"
       :class="[
         frameClass,
+        borderClass,
         shadowClass,
         mounted && !reducedMotion ? ['spin-badge', `spin-pace-${pace}`] : [],
       ]"

@@ -34,7 +34,7 @@ import { expect, test, type Page } from '@playwright/test';
  * at 24s and one on Contact at 28s.
  */
 
-const BADGE_ROUTES = ['/'] as const;
+const BADGE_ROUTES = ['/', '/contact'] as const;
 
 /** SC 2.5.8 asks 24x24 CSS px of a target on its own size. */
 const MIN_TARGET = 24;
