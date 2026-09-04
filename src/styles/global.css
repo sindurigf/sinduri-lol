@@ -1,1 +1,48 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Lexend, self-hosted.
+   Font files are NOT in the repo yet. Drop the five .woff2 files listed below
+   into public/fonts/ and these declarations resolve with no further changes.
+   Until then the fallback stack renders, courtesy of font-display: swap.
+--------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Lexend';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/lexend-300.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Lexend';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/lexend-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Lexend';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/lexend-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Lexend';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/lexend-800.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Lexend';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('/fonts/lexend-900.woff2') format('woff2');
+}
