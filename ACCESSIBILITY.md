@@ -8,7 +8,7 @@
 | Project type        | Static personal website (Astro, Vue islands, Tailwind)     |
 | Accessibility owner | Sinduri Guntupalli                                         |
 | Public reporting    | https://github.com/sindurigf/sinduri-lol/issues            |
-| Private reporting   | sinduri.g@gmail.com                                        |
+| Private reporting   | lol@sinduri.lol                                            |
 | Target standard     | WCAG 2.2 Level AA, with AAA text contrast where achievable |
 | Conformance status  | **Target only. No conformance claim.**                     |
 | Last reviewed       | 2026-09-04                                                 |
@@ -50,8 +50,10 @@ What is currently true:
 - Every route the site builds passes axe-core with no violations, at the
   `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, and `wcag22aa` tags.
 - No axe rule is disabled and no result is excluded anywhere in the suite.
-- All text colour tokens have been measured against all three surface colours
-  (`#131313`, `#1A1A1A`, `#0E0E0E`).
+- All text colour tokens have been measured against all three dark surface
+  colours (`#131313`, `#1A1A1A`, `#0E0E0E`), and against `#FFC000`, which is
+  the fourth surface the design uses and the one every dark token fails on.
+  An inverted token set covers it; see section 5.
 - Every route is checked for horizontal overflow at **two** viewport widths,
   320px and 305px, with and without the SC 1.4.12 text-spacing override
   (`tests/reflow.spec.ts`). 305px is the width a real browser with a classic
@@ -115,6 +117,102 @@ required: gold against the gold button measures 1.00:1, so a ring flush with the
 element would be invisible there. The offset puts surface colour on both sides
 of the ring, which is what SC 1.4.11 measures.
 
+### The gold surface is an exception, and every dark token fails on it
+
+The three surfaces above are not the only ones. The Career hero in the design
+comps is `background: #FFC000`: a light ground inside a dark-only palette.
+**Measured against `#FFC000`, not one of the foreground tokens above passes.**
+
+| Token      | Value     | on `#FFC000` | Needs | Result |
+| ---------- | --------- | ------------ | ----- | ------ |
+| `border`   | `#5A87A8` | 2.34         | 3.0   | FAIL   |
+| `text`     | `#E5E2E1` | 1.27         | 4.5   | FAIL   |
+| `muted`    | `#D4C5AB` | 1.03         | 4.5   | FAIL   |
+| `subtle`   | `#9BB4C6` | 1.31         | 4.5   | FAIL   |
+| `pinkText` | `#FF79B6` | 1.48         | 4.5   | FAIL   |
+| `pink`     | `#FF007A` | 2.31         | 3.0   | FAIL   |
+| `cyan`     | `#00DCFD` | 1.01         | 3.0   | FAIL   |
+
+This is structural rather than a bad choice of tones. L(`#FFC000`) is 0.5896,
+so the readable band lies below the ground: AAA needs a foreground luminance of
+0.0414 or less. On `#131313` the AAA band spans luminance 0.382 to 1.0; on
+`#FFC000` it spans 0 to 0.0414, fifteen times narrower. Everything readable on
+gold is a near-black.
+
+An inverted set covers it. The first four are AAA on gold:
+
+| Token            | Value     | on `#FFC000` | Job                                     |
+| ---------------- | --------- | ------------ | --------------------------------------- |
+| `gold-text`      | `#131313` | 11.32        | Body copy, headings, **button borders** |
+| `gold-muted`     | `#3A3020` | 7.88         | Secondary copy                          |
+| `gold-border`    | `#22394D` | 7.27         | **Structural** rules, dividers, cards   |
+| `darkcyan`       | `#00363F` | 8.00         | Links, and the one accent               |
+| `gold-btn-label` | `#FFFFFF` | 1.64         | Label on the dark button fill only      |
+
+There is no `gold-subtle`, because a third step would land near luminance 0.02
+and be indistinguishable from `gold-text`. Hierarchy below `gold-muted` on this
+surface is weight and size.
+
+`gold-btn-label` is listed for completeness and is the one value there that
+fails against gold. It never sits on gold: it is the label on
+`.btn-gold-primary`'s `#131313` fill, where it measures 18.58.
+
+**Two border tokens apply on this surface**, split by what the border encloses.
+`gold-border` carries structural boundaries: section rules, dividers, card
+edges. **Button borders use `gold-text`**, matching their own fill, so the
+control reads as one solid block rather than a dark block inside a navy
+outline. Both clear SC 1.4.11 on gold several times over, so that split is a
+design decision rather than a contrast one.
+
+**Three site-wide rules break silently on this ground and are overridden by the
+`.surface-gold` class**, which is the only supported way to build one:
+
+- **Links.** The base layer paints every `<a>` `gold` (1.00 on this ground) and
+  `cyan` on hover (1.01). They are repainted `darkcyan` and underlined. The
+  underline is required, not stylistic: `darkcyan` measures 1.42 against
+  `gold-text`, well under the 3:1 that would let colour carry the distinction
+  alone, so the underline is what satisfies SC 1.4.1.
+- **Focus (SC 2.4.7, 1.4.11).** The site's ring is gold with a 3px offset, and
+  it works elsewhere _because_ of the offset: gold on gold is 1.00, and the
+  offset puts the dark page background on both sides of the ring. On a large
+  gold surface the offset gap is gold too, so **the ring would be completely
+  invisible**. It is repainted `gold-text` (11.32).
+
+  **That mitigation has an assumption in it worth stating generally: it holds
+  only while the ring colour differs from the surface behind the element.** It
+  breaks whenever a surface matches an accent, which is exactly what the gold
+  ground does. Any new surface token needs its own focus ring measured rather
+  than inherited, and measured twice: against the surface behind the element,
+  which is what the offset gap shows, and against the element's own edge, in
+  case the offset is ever reduced. The gold buttons are where the second check
+  bites. The ring there is `gold-text`, the same colour as
+  `.btn-gold-primary`'s fill and border, so ring-against-fill measures 1.00 and
+  only the 3px offset makes it 11.32 against what it actually touches.
+
+- **Borders (SC 1.4.11).** The base layer defaults every border to `border`,
+  2.34 on gold. The subtree is re-defaulted to `gold-border`.
+
+Neither `.btn-primary` nor `.btn-secondary` may be used on this surface.
+`.btn-primary` is `bg-gold`, a 1.00:1 fill; `.btn-secondary` carries
+`border-border` (2.34 on gold) and a gold offset shadow (1.00 on gold).
+`.btn-gold-primary` and `.btn-gold-secondary` are the pair the comps specify,
+scoped to `.surface-gold`. Measured against what each colour actually touches:
+the primary label is 18.58 on its own `#131313` fill, the primary fill is 11.32
+against gold, and the secondary label and border are both 11.32 against gold.
+Both render 51.6px tall, so each passes SC 2.5.8 on its own size without the
+spacing exception.
+
+**The pink offset shadow on the primary button measures 2.31 on gold**, under
+the 3:1 of SC 1.4.11. That is acceptable only because it carries no meaning:
+the control is identified by its `#131313` fill against the gold ground at
+11.32. An offset shadow is never allowed to become the thing that delimits a
+control here.
+
+`tests/gold-surface.spec.ts` enforces all of this by measuring the rendered
+DOM. No section of the site uses the gold ground yet, so the class contract is
+tested against a mounted fixture; the route-level text check runs against real
+elements (`.skip-link` on every route, `.btn-primary` on `/404`).
+
 ## 6. Testing and validation
 
 ### What is automated
@@ -122,18 +220,41 @@ of the ring, which is what SC 1.4.11 measures.
 Playwright drives a real Chromium against the production build. CI runs it on
 every push and pull request to `main`, and a violation fails the build.
 
-| Check              | Tool                                | Covers                                    |
-| ------------------ | ----------------------------------- | ----------------------------------------- |
-| WCAG rule scan     | axe-core via `@axe-core/playwright` | Every built route                         |
-| Rule scan, menu on | axe-core at 320px, dialog open      | Every route, with the mobile menu open    |
-| Reflow overflow    | Playwright at 320px and 305px       | Every route, with and without SC 1.4.12   |
-| Content box width  | Playwright at 320px and 305px       | 288px / 273px, the box the floors assume  |
-| Heading word fit   | Playwright at 320px and 305px       | No heading word wider than its own box    |
-| Reflow navigation  | Playwright at 320px                 | Menu opens, takes focus, closes on Escape |
-| Route drift        | Playwright                          | Test list matches real build output       |
-| Type safety        | `astro check`                       | Templates and components                  |
+| Check                | Tool                                | Covers                                     |
+| -------------------- | ----------------------------------- | ------------------------------------------ |
+| WCAG rule scan       | axe-core via `@axe-core/playwright` | Every built route                          |
+| Rule scan, menu on   | axe-core at 320px, dialog open      | Every route, with the mobile menu open     |
+| Reflow overflow      | Playwright at 320px and 305px       | Every route, with and without SC 1.4.12    |
+| Content box width    | Playwright at 320px and 305px       | 288px / 273px, the box the floors assume   |
+| Heading word fit     | Playwright at 320px and 305px       | No heading word wider than its own box     |
+| Reflow navigation    | Playwright at 320px                 | Menu opens, takes focus, closes on Escape  |
+| Route drift          | Playwright                          | Test list matches real build output        |
+| Unknown path         | Playwright                          | A path with no page returns 404, not 200   |
+| Response headers     | Playwright over the built `dist/`   | The CSP does not break fonts or the menu   |
+| HSTS scope           | Playwright over the built `dist/`   | max-age ceiling, no preload/subdomains     |
+| Gold-surface text    | Playwright over every route         | Nothing on `#FFC000` below 4.5:1           |
+| Gold-surface class   | Playwright, mounted fixture         | `.surface-gold` text, links, focus, border |
+| Gold-surface buttons | Playwright, mounted fixture         | Label, fill, border, focus, SC 2.5.8 size  |
+| Token drift          | Playwright, live CSS variables      | The documented ratios against `#FFC000`    |
+| Type safety          | `astro check`                       | Templates and components                   |
 
 Rule tags: `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`.
+
+The last two are there for reasons that are not obviously accessibility
+reasons, and both are:
+
+- **A 404 that answers 200 is a wrong-answer problem, not an SEO one.** Before
+  `src/pages/404.astro` existed, every mistyped or dead URL on the deployed
+  site returned the homepage with a success status. A sighted user sees the
+  wrong page and can infer what happened from the layout. Someone using a
+  screen reader is read the homepage with nothing anywhere in the announcement
+  to say the address was wrong, and nothing in the status code for their
+  browser to act on.
+- **The CSP can silently kill the only navigation at 400% zoom.** Its hashes
+  are build output, so an Astro upgrade can invalidate one; the island then
+  fails to hydrate and the mobile menu stops opening. At 320px, which is where
+  a desktop user at 400% zoom lands (SC 1.4.10), that menu is the entire
+  navigation. The header test opens it under the real policy for that reason.
 
 Three limits of the automated tier that are easy to mistake for coverage:
 
@@ -148,6 +269,19 @@ Three limits of the automated tier that are easy to mistake for coverage:
   viewport width in the suite, so that gap is closed. The by-hand check in
   [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §3 stays, because resizing
   a viewport is still not zooming.
+- **A rule engine cannot see an invisible control.** Every automated
+  contrast rule measures a foreground against its background, which means it
+  measures a button's _label_ against that button's own fill. It has nothing
+  to say about whether the fill itself is distinguishable from the surface the
+  control sits on. Measured: a gold section containing `.btn-primary`, whose
+  `bg-gold` fill is 1.00:1 against the gold ground, returned **"No
+  accessibility violations found"** from AccessLint with AAA rules enabled,
+  because `.surface-gold` repaints the label `darkcyan` at 8.00 and the label
+  is all the rule looks at. The button was invisible as a shape and the scan
+  was clean. `tests/gold-surface.spec.ts` checks this directly, by comparing
+  each control's opaque fill against the ground behind it; a transparent fill
+  like `.btn-gold-secondary`'s is excluded by its alpha, since there the
+  border does the delimiting.
 - **An overflow assertion cannot see a bad heading floor.** This one is worth
   stating because the floors were documented as locked down by a test that
   could not fail on them. `overflow-wrap: break-word` guarantees the document
@@ -206,6 +340,24 @@ Stated honestly. This list is not filtered for how it looks.
 1. **The contact form is not built.** No form exists, so none of the form
    criteria (1.3.5, 3.3.1, 3.3.2, 3.3.3, 3.3.7, 3.3.8, 4.1.3) have been
    addressed or tested.
+
+   **When it is built, the CSP has to be widened in the same change.**
+   `public/_headers` sets `form-action 'none'`, which is free while there are
+   no forms and blocks the submission outright the moment there is one. The
+   failure is silent: nothing appears on the page, the form looks like it
+   submitted or like it did nothing, and only the browser console carries the
+   refusal. `tests/headers.spec.ts` does not catch it either, because it
+   asserts the absence of `'unsafe-inline'` and the freshness of the inline
+   hashes, not what `form-action` ought to permit.
+
+   This is in the accessibility file rather than only in the security notes
+   because of who it lands on. Section 8 below points people at the contact
+   form to report a barrier. A form that fails without saying so turns the
+   barrier-reporting path into a barrier, and does it worst for someone who
+   cannot see that the page did not change. Widen the directive to the exact
+   origin the form posts to (`'self'` if same-origin), never `*`, and add an
+   assertion for the new value in the same commit.
+
 2. **Most pages are placeholder stubs.** Home, About, Career, Blog index, and
    Contact render `PLACEHOLDER` copy. They pass axe because there is almost
    nothing on them. That is not evidence of anything.
@@ -217,6 +369,17 @@ Stated honestly. This list is not filtered for how it looks.
 4. **No screen reader testing has been done at all.** See section 6.
 5. **Only one blog post exists,** and it is placeholder content. Long-form
    reading order, in-page headings, and link text in real prose are untested.
+6. **The gold surface has been measured but never rendered.** The inverted
+   token set in section 5 is arithmetic, a CSS class and two button classes;
+   no page uses any of them yet, so the contracts are tested against mounted
+   fixtures rather than against real markup. Nothing has been looked at,
+   tabbed through, or zoomed on an actual gold section. The focus ring on that
+   ground is the item to look at first: on `.btn-gold-primary` it is the same
+   colour as the button's own fill and is legible only because of the 3px
+   offset, which passes by measurement but has not been seen by anyone.
+   Reflow is untested there too, since no gold section exists to run the 305px
+   suite against. Re-test when the Career page lands and replace the fixtures
+   with the real section.
 
 ## 8. Reporting a barrier
 
@@ -225,7 +388,7 @@ which WCAG criterion it is, and you do not need to disclose anything about
 yourself.
 
 - **Open an issue:** https://github.com/sindurigf/sinduri-lol/issues
-- **Email:** sinduri.g@gmail.com
+- **Email:** lol@sinduri.lol
 
 Useful if you have it, but never required:
 
@@ -244,9 +407,14 @@ Update this file in the same commit as the change it describes.
 Review it when:
 
 - a page moves out of placeholder into real content;
-- the contact form lands;
+- the contact form lands, which is also when `form-action 'none'` has to be
+  widened (see section 7);
 - any animation lands;
-- a colour token changes;
+- a colour token changes, including any of the gold-surface tokens, in which
+  case the tables in section 5, `AI.md` and the design system skill all quote
+  the number and all three have to move together;
+- a new surface colour is introduced, which means every foreground token needs
+  re-measuring against it, the way `#FFC000` did;
 - a manual test is actually performed, so a gap in section 7 can be closed.
 
 Do not remove an item from section 7 because it was fixed in passing. Remove it

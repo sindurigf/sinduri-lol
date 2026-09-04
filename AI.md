@@ -23,6 +23,15 @@ Both were confirmed before implementation.
 1. **No `tailwind.config.mjs`.** Tailwind 4 is CSS-first. All tokens live in the
    `@theme` block in `src/styles/global.css`. The legacy `@astrojs/tailwind`
    integration peers at `astro ^3 || ^4 || ^5` and cannot be used with Astro 7.
+
+   That block is `@theme static`, not plain `@theme`. A plain block only emits
+   the custom properties Tailwind can see something using, which is right for a
+   utility framework and wrong for a design system: a declared token that no
+   page happens to reference yet is tree-shaken away, and `var(--color-…)` in a
+   style attribute or a test then resolves to nothing with no error anywhere.
+   That is not hypothetical; it is how `--color-gold-muted` disappeared. See
+   the comment above the block.
+
 2. **`src/content.config.ts`, not `src/content/config.ts`.** Current Astro
    expects the collection config at the `src/` root with a `glob()` loader.
    Markdown posts still live in `src/content/blog/`.
@@ -59,6 +68,9 @@ comes from a token. If you need something that does not exist, add a token.
 
 Plus `header-bg` (`rgba(10, 10, 10, 0.94)`), used only by the sticky header.
 
+Those are the **dark-surface** tokens. There is a fourth surface, `gold` used
+as a ground, and none of them work on it. See [The gold surface](#the-gold-surface).
+
 `border` and `subtle` are contrast-critical and must not be changed without
 re-verifying against all three surface colors, `#131313`, `#1A1A1A`, and
 `#0E0E0E`. `#5A87A8` measures 4.84 / 4.53 / 5.02 and `#9BB4C6` measures
@@ -94,6 +106,71 @@ shadow. `#FF79B6` is AAA on all three surfaces at every size, so the rule needs
 no reference to the WCAG large-text exemption and does not break if the type
 scale changes. Do not merge the two tokens.
 
+#### The gold surface
+
+The Career hero is `background: #FFC000` with `color: #131313`. It is a light
+ground inside a dark-only palette and **no dark-surface token works on it.**
+Measured against `#FFC000`:
+
+| Token      | Hex       | Ratio | Needs | Result |
+| ---------- | --------- | ----- | ----- | ------ |
+| `border`   | `#5A87A8` | 2.34  | 3.0   | FAIL   |
+| `text`     | `#E5E2E1` | 1.27  | 4.5   | FAIL   |
+| `muted`    | `#D4C5AB` | 1.03  | 4.5   | FAIL   |
+| `subtle`   | `#9BB4C6` | 1.31  | 4.5   | FAIL   |
+| `pinkText` | `#FF79B6` | 1.48  | 4.5   | FAIL   |
+| `pink`     | `#FF007A` | 2.31  | 3.0   | FAIL   |
+| `cyan`     | `#00DCFD` | 1.01  | 3.0   | FAIL   |
+
+This is structural, not a bad pick. L(`#FFC000`) is 0.5896, so the readable
+band sits below the ground: AAA needs a foreground luminance of 0.0414 or less.
+On `#131313` the AAA band spans luminance 0.382 to 1.0 (0.618); on `#FFC000` it
+spans 0 to 0.0414 (0.041), **fifteen times narrower**. Everything readable on
+gold is a near-black.
+
+The inverted set:
+
+| Token            | Hex       | on `#FFC000` | Job                                     |
+| ---------------- | --------- | ------------ | --------------------------------------- |
+| `gold-text`      | `#131313` | 11.32        | Body copy, headings, **button borders** |
+| `gold-muted`     | `#3A3020` | 7.88         | Secondary copy                          |
+| `gold-border`    | `#22394D` | 7.27         | **Structural** rules, dividers, cards   |
+| `darkcyan`       | `#00363F` | 8.00         | Links, and the one accent               |
+| `gold-btn-label` | `#FFFFFF` | 1.64         | Label on the dark button fill only      |
+
+`gold-border` is `#22394D` rather than flat `#131313` because contrast did not
+decide it: both clear 1.4.11 several times over. `#22394D` keeps the blue that
+carries every boundary elsewhere, and `#131313` is already `gold-text`, so
+using it would paint every structural rule the exact colour of the body copy.
+
+**`gold-border` does not govern every border on this surface.** It governs
+structural ones: section rules, dividers, card edges. **Button borders use
+`gold-text`**, matching their own fill, because a navy outline around a solid
+dark block would read as an outline this design does not have.
+
+`gold-btn-label` is the one token here that is component-scoped, and the one
+that fails on gold (1.64). It never touches gold: it sits on
+`.btn-gold-primary`'s `#131313` fill, at 18.58. It is named for the button so
+that pure white does not leak into body copy, where `text` `#E5E2E1` is the
+deliberate choice, since white blooms on a dark ground.
+
+There is deliberately no `gold-subtle`: a third step would land near luminance
+0.02 and be indistinguishable from `gold-text`. `darkcyan` is the only accent
+that survives; every other accent here is a light saturated hue picked for
+near-black.
+
+**Build a gold section with `.surface-gold` and nothing else.** Four site-wide
+rules are wrong on this ground and three fail silently: links are painted
+`gold` by the base layer (1.00) and `cyan` on hover (1.01); the focus ring is
+`gold`, and the 3px offset that saves it elsewhere does not help when the
+offset gap is also gold; borders default to `border` (2.34); text defaults to
+`text` (1.27). Neither `.btn-primary` nor `.btn-secondary` may be used there;
+`.btn-gold-primary` and `.btn-gold-secondary` are the gold-surface pair, scoped
+to `.surface-gold` so using one elsewhere renders it unstyled.
+`tests/gold-surface.spec.ts` measures all of it from the rendered DOM. The full
+rules, including the button specifications and their measured ratios, are in
+the design system skill.
+
 ### Typography
 
 Lexend, self-hosted via `@fontsource-variable/lexend`, imported in
@@ -124,7 +201,7 @@ The H1 and H2 floors are reflow constraints, not taste calls (SC 1.4.10).
 Every route presents the same content box at a 320px viewport, because the
 horizontal gutter is declared once as `.page-gutter` and applied to the header,
 `<main>` and the footer rather than page by page. Below `sm` it is 16px a side.
-Measured on all eleven built routes:
+Measured on all twelve built routes:
 
 | Viewport                          | Content box |
 | --------------------------------- | ----------- |
@@ -302,10 +379,38 @@ Commits are signed off (`git commit -s`). No AI attribution in commit messages.
 - Prefer stdlib or an existing dependency over adding a package. Ask before
   adding anything not already in `package.json`.
 
-### Placeholder content
+### Copy: two kinds, two different rules
 
-Never invent copy. Where real copy is missing, use text prefixed with
-`PLACEHOLDER` so it is obvious at a glance and greppable.
+"Never invent copy" was one rule covering two things that need opposite
+treatment, and the 404 page is where that showed. Its body text was written
+by an agent and then read as a violation of the placeholder rule, when it is
+in fact the category that has to be written.
+
+**Functional microcopy is agent-authored by default.** 404 body text, the skip
+link, `aria-label`s and `aria-describedby` text, button and form-control
+labels, error and validation messages, empty states, `alt` text, the visually
+hidden text that gives a control its accessible name. Write it. Do not leave it
+as `PLACEHOLDER`.
+
+This text is part of how the interface works rather than part of what the site
+says. A `PLACEHOLDER` skip link or a `PLACEHOLDER` error message is not a
+neutral gap waiting to be filled: it is a broken control, and it is broken
+specifically for the people who depend on it most. The 404 page is the clearest
+case, which is why it is finished and the other stubs are not — a 404 that says
+nothing useful is a dead end for someone who cannot see the layout and infer
+what happened. Keep it plain, short, second person, and never blame the reader.
+
+**Editorial copy is never invented.** Blog posts, About, Career, taglines,
+project descriptions, bios, the homepage hero line, anything with a voice or a
+claim about Sinduri. This stays `PLACEHOLDER`-prefixed until she writes it, so
+it is obvious at a glance and greppable.
+
+The test is whose voice it is. If the sentence could only be written by the
+person whose site this is, it is editorial and it waits. If it would read the
+same on any competent website, it is functional and it gets written now.
+
+Where the two meet, split them. A Career section gets a real, working heading
+structure and real control labels around `PLACEHOLDER` prose.
 
 ---
 
@@ -313,17 +418,66 @@ Never invent copy. Where real copy is missing, use text prefixed with
 
 All referenced assets are now in the repo.
 
-| Path                               | Used by            |
-| ---------------------------------- | ------------------ |
-| `public/images/bunny-dark.png`     | `Header.astro`     |
-| `public/images/badge-white.png`    | `Footer.astro`, OG |
-| `public/images/og-default.png`     | `BaseLayout.astro` |
-| `public/images/og-placeholder.png` | `example-post.md`  |
+**The suffix names the artwork colour, not the target surface.** Measured: the
+`-dark` files are RGB(17, 17, 17) artwork on transparency, and the `-white`
+files are RGB(255, 255, 255) artwork on transparency. So a `-dark` file goes on
+a _light_ surface and a `-white` file goes on a _dark_ one. An earlier version
+of this table had that inverted, which is an easy mistake to make and an
+invisible one to ship: the wrong pairing does not error, it just renders a mark
+nobody can see.
+
+| Path                               | Artwork                 | Goes on              | Used by                                  |
+| ---------------------------------- | ----------------------- | -------------------- | ---------------------------------------- |
+| `public/images/bunny-dark.png`     | Dark, RGB(17,17,17)     | Gold, light surfaces | `Header.astro` logo tile, `404.astro`    |
+| `public/images/badge-dark.png`     | Dark, RGB(17,17,17)     | Gold, light surfaces | Career hero watermark, see below         |
+| `public/images/bunny-white.png`    | White, RGB(255,255,255) | Dark surfaces        | Reserved, see below                      |
+| `public/images/badge-white.png`    | White, RGB(255,255,255) | Dark surfaces        | `Footer.astro`, Contact badge, OG images |
+| `public/images/og-default.png`     | Composite               | n/a                  | `BaseLayout.astro`                       |
+| `public/images/og-placeholder.png` | Composite               | n/a                  | `example-post.md`                        |
+
+Measured ratios for the two artwork colours, so the pairing is arithmetic
+rather than judgement:
+
+| Artwork             | on `#131313` | on `#1A1A1A` | on `#0E0E0E` | on `#FFC000` |
+| ------------------- | ------------ | ------------ | ------------ | ------------ |
+| `-dark`, `#111111`  | 1.02         | 1.08         | 1.02         | **11.50**    |
+| `-white`, `#FFFFFF` | **18.58**    | **17.40**    | **19.30**    | 1.64         |
+
+Each variant is invisible on the surfaces the other one is for. That is not
+"low contrast", it is nothing at all, and it is why the header logo puts the
+dark bunny on a gold tile rather than straight on the page. **The gold surface
+is the only ground this site has that a `-dark` asset can sit on**; see
+[The gold surface](#the-gold-surface). Everything else takes `-white`.
+
+An earlier version of this file quoted 1.04:1 for the dark artwork on
+`#131313`. The correct figure is 1.02: 1.04 is what `#0E0E0E` measures there,
+and the artwork is `#111111`. It changes nothing about the conclusion and it
+is corrected because the number is quoted as a measurement.
+
+**No reserved asset is unused. Do not delete them.** Each is a placement on a
+page that is a stub today, recorded here so a future cleanup pass reads an
+intent rather than a missing reference:
+
+- `badge-dark.png` is the **Career hero watermark**: 700px wide, `opacity` 0.09,
+  positioned `right: -150px; top: 20px`, `pointer-events: none`. It sits on the
+  gold hero, which is what makes the dark variant the right one. Decorative, so
+  it takes `alt=""`. At that opacity it is a texture, not an image, and it must
+  never become the only carrier of anything.
+- `bunny-white.png` is the **dark-surface variant of the mark**, for anywhere
+  the mark sits directly on `#131313`, `#1A1A1A` or `#0E0E0E` rather than on a
+  gold tile.
+- `badge-white.png` is already in the footer, and is also the **Contact page
+  spinning badge**, which sits on the dark background. That badge auto-starts
+  and runs past five seconds, so building it means building a keyboard-operable
+  pause control with it (SC 2.2.2); see `ACCESSIBILITY.md` §7.
+
+Check any new pairing by measurement before shipping it, as with any colour
+here.
 
 `og-default.png` and `og-placeholder.png` are 1200x630, built by compositing
 `badge-white.png` onto `#131313` inside an 8px gold frame. Use `badge-white`,
-not `badge-dark`: the dark badge is near-black line art meant for the gold
-tile, and it measures 1.04:1 against `#131313`, which is invisible.
+not `badge-dark`: the ground is `#131313`, and the dark badge measures 1.02:1
+against it.
 
 Footer social links are real. The footer badge is placed: `badge-white.png` at
 44px tall, `opacity-80`, in a 14px flex row to the left of the copyright line.
@@ -335,9 +489,105 @@ asset standing alone as the only carrier of the name needs a real alt.
 
 ---
 
+## Security headers
+
+`public/_headers` is the only place response headers are set. The build copies
+it to `dist/_headers`, which is where Cloudflare Pages reads it. There is no
+SSR adapter and no Pages Function, so nothing else is in the request path and
+there is no request-time nonce to be had.
+
+Measured against the deployed site on 2026-09-04, before this file existed,
+Cloudflare Pages was already sending `x-content-type-options: nosniff` and
+`referrer-policy: strict-origin-when-cross-origin` by default. Both are
+declared here anyway, at the same values, so they are a property of this
+repository rather than of a platform default that can change without notice.
+There was no `Content-Security-Policy` at all, and that is the real addition.
+
+### HSTS is set short, and it is the only header here that outlives itself
+
+`Strict-Transport-Security: max-age=86400`, with **no `includeSubDomains`** and
+**no `preload`**.
+
+Every other header stops applying the moment it stops being sent. This one is
+remembered: a browser that has seen it will refuse to reach this host over http
+for the full `max-age`, and there is no way to shorten that after the fact. One
+day is long enough to mean something and short enough that a mistake ages out
+by tomorrow.
+
+`preload` is the directive that cannot be walked back at all — it bakes the
+host into browser binaries and removal takes months of release trains nobody
+here controls — so it is omitted deliberately, not overlooked.
+`includeSubDomains` is omitted because it would commit subdomains that do not
+exist yet. Raise `max-age` only once the deployed setup has been proven stable,
+and in steps. `tests/headers.spec.ts` asserts the ceiling and the absence of
+both directives, so widening it requires editing the test in the same commit.
+Full reasoning in README.
+
+### The CSP
+
+    default-src 'self';
+    script-src 'self' <2 sha256 hashes>;
+    style-src  'self' <1 sha256 hash>;
+    object-src 'none'; base-uri 'none';
+    form-action 'none'; frame-ancestors 'none'
+
+No `'unsafe-inline'` and no `'unsafe-eval'`, and the site needs neither.
+Everything it loads is same-origin: the fonts are bundled by Fontsource and
+served from `/_astro/`, there is no third-party script, no analytics, no
+embed, and no `data:` URI in the build. Vue ships as the runtime-only build,
+so nothing compiles a template at runtime and nothing calls `eval` or
+`new Function`.
+
+**`form-action 'none'` is a claim about today, and it is a coupled change.**
+There are no forms, so the safest value is free. **Adding a `<form>` with a
+real submission target — the Contact page is the one that will want it —
+requires widening this directive in the same commit, or the browser blocks the
+submission.**
+
+That failure is silent in three ways at once. Nothing appears on the page: the
+form looks like it submitted, or like it did nothing, and only the console
+carries the refusal. `tests/headers.spec.ts` does not catch it, because it
+asserts there is no `'unsafe-inline'` and no hash drift, not what `form-action`
+ought to permit. And it lands hardest on the people the form exists for:
+`ACCESSIBILITY.md` §8 points people at the contact form to report a barrier, so
+a submission that fails without saying so turns the reporting path into a
+barrier of its own.
+
+Widen it to the exact origin the form posts to, never to `*`; `form-action
+'self'` if it posts same-origin. Add an assertion for the new value to
+`tests/headers.spec.ts`, and update the header table in `README.md`, in the
+same commit. The same applies to `object-src`, `base-uri` and `frame-ancestors`:
+`'none'` there records that the feature is unused, not that it is banned.
+
+### The hashes go stale, and that is the thing to know
+
+Astro emits three inline blocks on every page: the `client:load` directive
+loader, the `<astro-island>` element that hydrates `MobileMenu.vue`, and
+`astro-island,astro-slot,astro-static-slot{display:contents}`. They have no
+`src` to point at, so on a static host the only way to allow exactly those and
+nothing else is by hash.
+
+Those hashes are build output. An Astro upgrade that changes one byte of that
+runtime invalidates one, the browser refuses the script, the island never
+hydrates, and **the mobile menu stops opening**, which is the only navigation a
+desktop user has at 400% zoom. Nothing on the page shows it; the console does.
+
+`tests/headers.spec.ts` is what keeps that from shipping. It recomputes all
+three hashes from `dist/`, fails on drift in either direction, and then serves
+the built output under the real policy and drives a browser at it: the fonts
+load, the island hydrates, the menu opens, and the browser reports no
+violation. Do not hand-edit a hash. Re-run the suite and take the values from
+the failure message.
+
+The one thing that suite cannot check is Cloudflare's own parsing of
+`_headers`. That is a `curl -I` against the deployed site; see README.
+
+---
+
 ## Not built yet
 
 Homepage, About, Career, Blog index, blog post, blog category, and Contact pages
-are minimal stubs by design. `src/pages/blog/[slug].astro` and
+are minimal stubs by design. `src/pages/404.astro` is not one of them: it is a
+finished page, because what it does only works if it ships. `src/pages/blog/[slug].astro` and
 `src/pages/blog/[category]/index.astro` both return an empty `getStaticPaths()`
 and still need wiring to the `blog` collection.

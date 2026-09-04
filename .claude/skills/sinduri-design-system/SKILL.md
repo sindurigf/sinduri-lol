@@ -7,8 +7,11 @@ description: Design system rules for sinduri.lol - color tokens and their verifi
 
 Neo-brutalist, dark mode only. No light theme, no `dark:` variants, no toggle.
 
-Tokens live in the `@theme` block in `src/styles/global.css`. There is no
-`tailwind.config.mjs`; Tailwind 4 is CSS-first.
+Tokens live in the `@theme static` block in `src/styles/global.css`. There is
+no `tailwind.config.mjs`; Tailwind 4 is CSS-first. The `static` keyword is
+load-bearing: without it Tailwind emits only the custom properties it can see
+something using, so a token nothing references yet is tree-shaken away and
+`var(--color-…)` silently resolves to nothing. Do not drop it.
 
 **Never write an arbitrary value in a component.** No raw hex, no `text-[32px]`,
 no `shadow-[8px_8px_0]`. If the value you need does not exist, add a token.
@@ -33,8 +36,14 @@ no `shadow-[8px_8px_0]`. If the value you need does not exist, add a token.
 | `darkcyan`   | `#00363F`                | Text on cyan backgrounds   |
 | `header-bg`  | `rgba(10, 10, 10, 0.94)` | Sticky header only         |
 
-The three surfaces are `#131313`, `#1A1A1A`, and `#0E0E0E`. Every foreground
-color must be checked against **all three**, not just one.
+The three **dark** surfaces are `#131313`, `#1A1A1A`, and `#0E0E0E`. Every
+foreground color must be checked against **all three**, not just one.
+
+**Those three are not the only surfaces, and the tokens above are not
+universal.** There is a fourth: `gold` used as a ground rather than as an
+accent. Not one foreground token in the table above passes on it. See
+[The gold surface](#the-gold-surface-the-dark-tokens-are-not-universal) before
+building anything on `#FFC000`.
 
 ### Contrast-critical tokens
 
@@ -62,10 +71,11 @@ decision, not a conformance fix. Do not describe it as one.
 Do all four steps, in order. Do not skip step 2 because a color "looks fine".
 
 1. Add it as a token in the `@theme` block. Never inline it.
-2. Measure it against `#131313`, `#1A1A1A`, and `#0E0E0E`.
+2. Measure it against `#131313`, `#1A1A1A`, and `#0E0E0E` — and against
+   `#FFC000` too if it will ever appear on a gold surface.
 3. Meet the threshold for its job: **4.5:1** for body text, **3:1** for large
    text, borders, focus rings, icons, and any other non-text boundary.
-4. Record the three ratios in `AI.md` next to the token.
+4. Record the ratios in `AI.md` next to the token.
 
 The palette is cool. Gold, cyan, and pink read more strongly against blue than
 they did against the warm brown that preceded it. Use accents sparingly.
@@ -109,6 +119,217 @@ be invalidated by a change to the scale.
 
 Text tokens `text`, `muted`, and `subtle` all clear AAA on all three surfaces.
 Prefer them for anything readable that is not deliberately pink.
+
+---
+
+## The gold surface: the dark tokens are not universal
+
+This site is dark-mode only and every foreground token was picked against
+`#131313`, `#1A1A1A` and `#0E0E0E`. **There is one exception, and it is a real
+section of the design, not a hypothetical.** The Career hero is
+`background: #FFC000` with `color: #131313`: a light ground inside a dark-only
+palette.
+
+**Measured against `#FFC000`, every dark-surface foreground token fails.**
+
+| Token       | Hex       | on `#FFC000` | Needs |        |
+| ----------- | --------- | ------------ | ----- | ------ |
+| `border`    | `#5A87A8` | 2.34         | 3.0   | FAIL   |
+| `text`      | `#E5E2E1` | 1.27         | 4.5   | FAIL   |
+| `muted`     | `#D4C5AB` | 1.03         | 4.5   | FAIL   |
+| `subtle`    | `#9BB4C6` | 1.31         | 4.5   | FAIL   |
+| `pink-text` | `#FF79B6` | 1.48         | 4.5   | FAIL   |
+| `pink`      | `#FF007A` | 2.31         | 3.0   | FAIL   |
+| `cyan`      | `#00DCFD` | 1.01         | 3.0   | FAIL   |
+| `gold`      | `#FFC000` | 1.00         | —     | itself |
+
+Not one is close, and no amount of retoning fixes it. L(`#FFC000`) is 0.5896,
+so the readable band on gold sits entirely _below_ the ground: AAA needs a
+foreground luminance of 0.0414 or less. On `#131313` the AAA band runs from
+luminance 0.382 to 1.0, a span of 0.618. On `#FFC000` it runs from 0 to 0.0414,
+a span of 0.041. **The AAA band on gold is fifteen times narrower.** Everything
+readable on gold is a near-black.
+
+### The inverted set
+
+| Token            | Hex       | on `#FFC000` | Job                                     |
+| ---------------- | --------- | ------------ | --------------------------------------- |
+| `gold-text`      | `#131313` | 11.32        | Body copy, headings, **button borders** |
+| `gold-muted`     | `#3A3020` | 7.88         | Secondary copy                          |
+| `gold-border`    | `#22394D` | 7.27         | **Structural** rules, dividers, cards   |
+| `darkcyan`       | `#00363F` | 8.00         | Links, and the one accent               |
+| `gold-btn-label` | `#FFFFFF` | 1.64         | Label on the dark button fill only      |
+
+The first four are AAA on gold, and `gold-border` clears the 3:1 of SC 1.4.11
+by 2.4x. `gold-btn-label` is the exception in that column: it is **1.64 on
+gold and must never touch it**, because it never does. It sits on
+`.btn-gold-primary`'s `#131313` fill, where it measures **18.58**. It is named
+for the button rather than for a role because the site's text colour is `text`
+`#E5E2E1`, and that softness is deliberate: pure white blooms on a dark ground.
+That argument is about continuous prose, not about a 13px uppercase label on a
+small control, and the component-scoped name is what stops `#FFFFFF` leaking
+into body copy.
+
+#### Two border tokens on this surface, split by what the border encloses
+
+`gold-border` does **not** govern every border on gold. The split is:
+
+| Border on gold                                 | Token         | Why                                                                 |
+| ---------------------------------------------- | ------------- | ------------------------------------------------------------------- |
+| Structural rules, section dividers, card edges | `gold-border` | A boundary between areas; the blue keeps the site's identity.       |
+| Button borders                                 | `gold-text`   | The border matches its own fill, so the control reads as one block. |
+
+A navy outline around a solid dark button would read as an outline this design
+does not have. Do not "correct" `.btn-gold-primary`'s border to `gold-border`:
+`tests/gold-surface.spec.ts` asserts that the primary button's border colour
+equals its own fill, precisely so that edit fails.
+
+**`gold-border` is `#22394D`, not flat `#131313`.** Both clear the threshold
+several times over, so contrast did not decide it. Two things did. `#22394D`
+keeps the blue that carries every boundary elsewhere on the site, so a gold
+section still reads as the same design. And `#131313` is already `gold-text`,
+so using it for borders too would paint every rule in the exact colour of the
+body copy, collapsing a figure/ground separation the dark set is careful about:
+`border` `#5A87A8` is nowhere near `text` `#E5E2E1`.
+
+**There is no `gold-subtle`, and adding one is not a small change.** A third
+step between `gold-muted` (7.88) and `gold-text` (11.32) would land around
+luminance 0.02, which is another near-black indistinguishable from both. Below
+`gold-muted`, hierarchy on this surface is weight and size, not colour.
+
+**Only one accent survives, and it is `darkcyan`.** Every other accent here is
+a light saturated hue chosen to sit on near-black, and gold itself is the
+ground. Do not reach for `cyan`, `pink` or `pink-text` on this surface at all,
+including for a shadow: `pink` is 2.31, under the 3:1 a boundary needs.
+
+### Build one with `.surface-gold`. Nothing else.
+
+```html
+<!-- Yes -->
+<section class="surface-gold">
+  <h2>Career</h2>
+  <p class="text-gold-muted">PLACEHOLDER: secondary line.</p>
+  <a href="/contact">Get in touch</a>
+</section>
+
+<!-- No: the dark set on a gold ground -->
+<section class="bg-gold">
+  <h2 class="text-text">Career</h2>
+  <p class="text-muted">…</p>
+  <div class="border-8 border-border">…</div>
+</section>
+```
+
+The class exists because **four site-wide rules are wrong on this surface and
+three of them fail silently.** Applying `bg-gold` by hand gets none of them.
+
+1. **Links.** The base layer paints every `<a>` `gold`, which is **1.00** on
+   this ground, and `cyan` on hover, **1.01**. Every link in a hand-rolled gold
+   section is invisible. `.surface-gold` repaints them `darkcyan` and
+   **underlines them**. The underline is not decoration: `darkcyan` measures
+   only 1.42 against `gold-text`, far under the 3:1 that would let colour carry
+   the distinction on its own, so the underline is what satisfies SC 1.4.1.
+   Do not remove it.
+2. **Focus.** The site's ring is `gold` with a 3px offset, and it works
+   everywhere else _because_ of that offset: gold on gold is 1.00, and the
+   offset puts the dark page background on both sides of the ring. **On a large
+   gold surface the offset gap is gold too, so the ring disappears entirely.**
+   `.surface-gold` repaints it `gold-text` (11.32).
+3. **Borders.** The base layer defaults every border to `border` `#5A87A8`,
+   2.34 on gold. `.surface-gold` re-defaults the subtree to `gold-border`.
+4. **Text.** `text` is 1.27 on gold, so the class sets the foreground rather
+   than trusting each element to.
+
+### Buttons on gold
+
+**Neither `.btn-primary` nor `.btn-secondary` may be used on this surface.**
+`.btn-primary` is `bg-gold`, so on this ground it is a 1.00:1 fill: an
+invisible button identified only by its border. `.btn-secondary` carries
+`border-border` (2.34 on gold) and a gold offset shadow (1.00 on gold).
+
+Use `.btn-gold-primary` and `.btn-gold-secondary`, which are scoped to
+`.surface-gold` so that using one anywhere else renders it unstyled — loudly
+wrong rather than quietly wrong.
+
+```html
+<div class="surface-gold">
+  <a class="btn-gold-primary" href="/cv.pdf" download>Download CV</a>
+  <a class="btn-gold-secondary" href="/contact">Get in touch</a>
+</div>
+```
+
+| Button      | Fill        | Label            | Border          | Shadow               |
+| ----------- | ----------- | ---------------- | --------------- | -------------------- |
+| `primary`   | `gold-text` | `gold-btn-label` | 4px `gold-text` | `shadow-hard-pink-8` |
+| `secondary` | transparent | `gold-text`      | 4px `gold-text` | none                 |
+
+Both are 13px / weight 900 / 0.1em / uppercase with 18px 34px of padding, from
+the comps. Measured, each colour against what it is actually adjacent to:
+
+| Measurement                             | Ratio     | Needs |
+| --------------------------------------- | --------- | ----- |
+| Primary label on its own `#131313` fill | **18.58** | 4.5   |
+| Primary fill against the gold ground    | **11.32** | 3.0   |
+| Secondary label on gold                 | **11.32** | 4.5   |
+| Secondary border on gold                | **11.32** | 3.0   |
+
+Three things about these that are easy to get wrong:
+
+- **The pink shadow is decoration and nothing else.** `pink` measures 2.31 on
+  gold, under the 3:1 of SC 1.4.11, and that is acceptable here only because
+  the shadow carries no meaning: what identifies the control is its `#131313`
+  fill against gold at 11.32. **Never let an offset shadow become the thing
+  that delimits a control**, on this surface or any other. If the fill ever
+  goes, the shadow does not inherit the job.
+- **The padding is a conformance floor, not a spacing preference.** A 13px
+  label at line-height 1.2 is a 15.6px line box; `18px` top and bottom takes
+  the control to 51.6px, past the 24px SC 2.5.8 asks of a target on its own
+  size. `--spacing-btn-gold-y` and `--spacing-btn-gold-x` exist as tokens
+  because 18 and 34 are not multiples of the 4px Tailwind step and this
+  project does not allow arbitrary values.
+- **The button label is not underlined**, unlike every other link on this
+  surface. The border and fill already distinguish it, so SC 1.4.1 is
+  satisfied by the box rather than by the colour, and an underline under a
+  0.1em-tracked uppercase label reads as damage.
+
+A gold section is full-bleed, so it breaks out of `.page-gutter` with negative
+inline margins and re-applies the gutter inside itself. See the `.page-gutter`
+rule.
+
+### The escape hatch, and the test that watches it
+
+An explicit utility still beats the subtree default, because utilities come
+after components in the cascade. That is intentional, and it is also the hole:
+`class="border-border"` or `class="text-muted"` written inside a gold section
+is a bug no CSS can prevent.
+
+**A rule engine will not catch this for you, and specifically will not catch a
+`.btn-primary` on gold.** Measured: a gold section containing one returned "No
+accessibility violations found" from AccessLint with AAA enabled. Contrast
+rules measure a label against its own button's fill, and `.surface-gold`
+repaints that label `darkcyan` at 8.00, so the control passes while being a
+1.00:1 gold fill on a gold ground, invisible as a shape. A green scan is not
+evidence here.
+
+`tests/gold-surface.spec.ts` is what catches it. It measures from the rendered
+DOM rather than matching class names, so it fails on the _outcome_:
+
+- every route is walked for text sitting on a `#FFC000` effective background,
+  and anything under 4.5:1 fails with the selector and the measured ratio;
+- the ratios in this table are re-measured from the live CSS variables, so
+  retoning any token here or in the dark set fails until every table in
+  `AI.md`, `ACCESSIBILITY.md` and this file is updated;
+- every control inside a `.surface-gold` section is checked for an opaque fill
+  the same colour as the ground behind it, which is the `.btn-primary` case
+  above; a transparent fill is excluded by its alpha, since
+  `.btn-gold-secondary` is deliberately transparent and delimited by its
+  border;
+- `.surface-gold` itself is asserted for text, muted text, link colour, link
+  underline, focus ring and border colour;
+- both button classes are asserted for label, fill, border, focus ring, focus
+  offset, absence of an underline, and SC 2.5.8 target size.
+
+If you change a number on this page, run it.
 
 ---
 
@@ -418,6 +639,37 @@ Check this by tabbing from the top of a long page, not by reading the CSS.
 Use `:focus-visible`, not `:focus`, so a mouse click does not leave a ring
 behind. Never rely on the browser default alone against these dark surfaces.
 
+### The 3px offset is a mitigation, and it has an assumption in it
+
+The site-wide ring is `gold` with a 3px offset, and the offset is not spacing.
+Gold on the gold `.btn-primary` fill measures **1.00**, so a ring flush against
+that button would be invisible. The offset works by putting the _page_
+background on both sides of the ring, and 3:1 is then measured against that
+rather than against the element.
+
+**That only holds while the ring colour differs from the surface behind the
+element.** It is an assumption, not a guarantee, and it breaks the moment a
+surface matches an accent — which is exactly what the gold ground does. On
+`.surface-gold` the offset gap is gold too, so the mitigation buys nothing and
+the ring has to be repainted (`gold-text`, 11.32).
+
+So, as a standing rule:
+
+**Any new surface token needs its own focus ring measured, never inherited.**
+Two checks, not one, because the offset means the ring touches two things:
+
+1. the ring against the **surface behind the element**, which is what the
+   offset gap shows;
+2. the ring against the **element's own edge**, in case the offset is ever
+   reduced to zero.
+
+The gold buttons are the case where the second check bites. The ring on that
+surface is `gold-text`, which is the same colour as `.btn-gold-primary`'s fill
+and border: ring against fill measures **1.00**, ring against the gold gap
+measures **11.32**. **The offset is load-bearing there for a second, separate
+reason**, and `tests/gold-surface.spec.ts` asserts it is non-zero for that
+reason alone. Never set `outline-offset: 0` anywhere on this site.
+
 ---
 
 ## Components
@@ -459,6 +711,50 @@ another.
 The footer badge is `alt=""` because the copyright line next to it already
 reads "© 2026 sinduri.lol". Naming the badge would announce the same thing
 twice and add nothing. Do not "fix" it by giving it a name.
+
+---
+
+## Coupled changes
+
+Some changes here are only correct when a second, non-obvious edit lands in the
+**same** commit. Each of these has already failed once, or would fail silently.
+
+### A contact form needs the CSP widened in the same change
+
+`public/_headers` sets `form-action 'none'`. That is a claim about today: there
+are no forms on this site, so the safest possible value is free.
+
+**The moment a `<form>` with a real submission target is added — the Contact
+page is the one that will want it — that directive has to be widened in the
+same commit.** Otherwise the browser blocks the submission outright. The
+failure is bad in a specific way:
+
+- **It is silent.** Nothing appears on the page. The form looks like it
+  submitted, or looks like it did nothing. Only the console carries the
+  refusal, and only if someone has it open.
+- **It survives the tests.** `tests/headers.spec.ts` asserts there is no
+  `'unsafe-inline'` and no hash drift; it does not know what `form-action`
+  should permit, because that depends on where the form posts.
+- **It is worst for the people the form exists for.** `ACCESSIBILITY.md`
+  section 8 asks people to report barriers, and the contact form is one of the
+  two routes for doing that. A submission that fails without saying so turns
+  the barrier-reporting path into a barrier.
+
+Widen it to the exact origin the form posts to, never to `*`. If the form posts
+same-origin, `form-action 'self'` is the value. Add an assertion to
+`tests/headers.spec.ts` for whatever it becomes, and update the CSP section in
+`AI.md` and the header table in `README.md` in the same commit.
+
+The same rule applies to any other directive that is currently `'none'` because
+nothing needs it yet: `object-src`, `base-uri`, `frame-ancestors`. A `'none'`
+in that file is a statement that the feature is unused, not that it is
+forbidden forever.
+
+### Anything animated needs a pause control, not just a media query
+
+See [Motion](#motion). `prefers-reduced-motion` is necessary and not
+sufficient; SC 2.2.2 wants a control. The spinning badge is the element this
+will bite.
 
 ---
 

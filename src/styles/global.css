@@ -16,17 +16,50 @@
    because no post uses a class attribute, and posts render through
    BlogLayout. If a post ever needs one, narrow the pattern rather than
    dropping it, or the class will be missing only in production.
+
+   tests/ is excluded for the same reason, found the same way. A test names a
+   utility in a comment or in an assertion message far more often than it
+   renders one: `tests/gold-surface.spec.ts` mentions `text-gold-muted` twice
+   while explaining why it deliberately does not use it, and Tailwind emitted
+   the utility off the back of those two mentions.
+
+   That turned out to be the smaller half. Measured on the build immediately
+   before this exclusion, the test suite's own prose was also shipping
+   `.fixed`, `.underline`, `.ring` and `.outline`, plus the `--tw-outline-style`
+   @property that goes with the last one: 562 bytes of CSS no page can ever
+   use, generated from ordinary English words like "focus ring" and "outline"
+   sitting in test comments. Nothing in tests/ renders into the site, so
+   nothing there should be able to add a byte to production CSS.
+
+   A test that needs a class on an element it mounts itself should use an
+   inline style, or a component class from @layer components, which is
+   authored CSS and is emitted regardless of scanning.
 --------------------------------------------------------------------------- */
 
 @source not '../../**/*.md';
 @source not '../../.claude';
+@source not '../../tests';
 
 /* ---------------------------------------------------------------------------
    Design tokens. Dark mode only, no light theme and no `dark:` variant setup.
    Every value the site uses lives here. Components must not hardcode hex.
+
+   `static`, because a plain @theme block only emits the custom properties
+   Tailwind can see something using. That is right for a utility framework and
+   wrong for a design system: a token is a contract, and dropping one because
+   no page happens to reference it *yet* means `var(--color-gold-muted)` in a
+   style attribute, in a test, or in a component authored ahead of its page
+   resolves to nothing at all, with no error anywhere.
+
+   Found the hard way. --color-gold-muted was emitted only because a comment
+   in tests/gold-surface.spec.ts happened to contain the string
+   `text-gold-muted`; excluding tests/ from source scanning tree-shook the
+   token away and the gold-surface suite failed on a variable that is right
+   there in this file. `static` costs a few dozen bytes and removes the class
+   of bug entirely.
 --------------------------------------------------------------------------- */
 
-@theme {
+@theme static {
   /* Colors */
   --color-background: #131313;
   --color-surface: #1a1a1a;
@@ -56,6 +89,78 @@
   --color-pink: #ff007a;
   --color-pink-text: #ff79b6;
   --color-darkcyan: #00363f;
+
+  /*
+   * THE GOLD SURFACE. The dark tokens above are not universal.
+   *
+   * `gold` is an accent everywhere else on the site, but the Career hero uses
+   * it as a *ground*: `background: #FFC000`. That is a light surface inside a
+   * dark-only design, and every foreground token above was chosen against
+   * #131313 / #1A1A1A / #0E0E0E. Measured against #FFC000, all of them fail:
+   *
+   *   border   #5A87A8  2.34  needs 3.0   FAIL
+   *   text     #E5E2E1  1.27  needs 4.5   FAIL
+   *   muted    #D4C5AB  1.03  needs 4.5   FAIL
+   *   subtle   #9BB4C6  1.31  needs 4.5   FAIL
+   *   pinkText #FF79B6  1.48  needs 4.5   FAIL
+   *   pink     #FF007A  2.31  needs 3.0   FAIL
+   *   cyan     #00DCFD  1.01  needs 3.0   FAIL
+   *
+   * Not one of them is close. That is not a coincidence and it is not fixable
+   * by retoning: L(#FFC000) is 0.5896, so the whole usable band on gold sits
+   * *below* it. AAA (7:1) needs a foreground luminance of 0.0414 or less, out
+   * of gold's own 0.5896. On #131313 the AAA band runs from luminance 0.382
+   * to 1.0, a span of 0.618; on #FFC000 it runs from 0 to 0.0414, a span of
+   * 0.041. THE AAA BAND ON GOLD IS FIFTEEN TIMES NARROWER. Every colour that
+   * is readable on gold is a near-black.
+   *
+   * So this is an inverted set, not a variant of the set above, and it is
+   * deliberately short. See .surface-gold in @layer components, which is the
+   * only supported way to build one of these sections.
+   *
+   * There is no `gold-subtle`. A third step between gold-muted (7.88) and
+   * gold-text (11.32) would have to land around luminance 0.02, which is
+   * another near-black and would not be distinguishable from either. Below
+   * gold-muted, hierarchy on this surface is carried by weight and size, not
+   * by colour.
+   *
+   * The only accent that survives is `darkcyan` #00363F at 8.00. Gold is the
+   * accent everywhere else; on this surface it is the ground, and there is no
+   * second accent left, because every other accent in this palette is a light
+   * saturated hue picked to sit on near-black.
+   */
+  /* 11.32 on #FFC000. Same value as --color-background, a different job: this
+   * is a foreground. If --color-background is ever retoned, this must not
+   * follow it automatically; re-measure against #FFC000 instead. */
+  --color-gold-text: #131313;
+  /* 7.88 on #FFC000. AAA with 12.6% headroom. Warm, mirroring `muted`
+   * #D4C5AB, which is the warm token in the dark set. */
+  --color-gold-muted: #3a3020;
+  /*
+   * 7.27 on #FFC000, against the 3:1 SC 1.4.11 asks of a boundary: 2.4x the
+   * threshold. Chosen over flat #131313 (11.32) for two reasons. It keeps the
+   * blue that carries every boundary in this design, so a gold section still
+   * reads as the same site. And #131313 is already --color-gold-text, so
+   * using it here would paint every border in the exact colour of the body
+   * copy, collapsing a figure/ground separation the dark set is careful to
+   * keep: `border` #5A87A8 is nowhere near `text` #E5E2E1. Contrast was never
+   * the deciding factor; both values clear 1.4.11 several times over.
+   */
+  --color-gold-border: #22394d;
+  /*
+   * 18.58 on the #131313 fill of .btn-gold-primary; not usable on gold itself,
+   * where pure white measures 1.64.
+   *
+   * DELIBERATELY COMPONENT-SCOPED, and it is the one token here that is. The
+   * site's text colour is `text` #E5E2E1, and that softness is a choice:
+   * 14.42 on #131313 with less halation than pure white, which blooms on a
+   * dark ground and is worst for low-vision and astigmatic readers. That
+   * argument is about continuous prose. This string is a 13px/900 uppercase
+   * label on a small control, where the comps ask for pure white and the
+   * halation risk does not apply. Naming it for the button is what stops
+   * #FFFFFF leaking out to body copy, where `text` is still the right answer.
+   */
+  --color-gold-btn-label: #ffffff;
 
   /* Header chrome. Translucent, so it stays a raw rgba rather than a hex. */
   --color-header-bg: rgba(10, 10, 10, 0.94);
@@ -170,6 +275,7 @@
   --shadow-hard-gold-6: 6px 6px 0 var(--color-gold);
   --shadow-hard-gold-4: 4px 4px 0 var(--color-gold);
   --shadow-hard-pink-12: 12px 12px 0 var(--color-pink);
+  --shadow-hard-pink-8: 8px 8px 0 var(--color-pink);
   --shadow-hard-cyan-8: 8px 8px 0 var(--color-cyan);
 
   /* Layout */
@@ -188,6 +294,18 @@
    */
   --spacing-card-tight: 24px;
   --spacing-card: 40px;
+  /*
+   * Gold-surface button padding, from the comps: 18px 34px. Neither is a
+   * multiple of the 4px Tailwind spacing step, so without tokens they would
+   * have to be arbitrary values, which this project does not allow.
+   *
+   * The vertical number is also a conformance floor. A 13px label at
+   * line-height 1.2 is a 15.6px line box, so the control is 15.6 + 36 =
+   * 51.6px tall, comfortably past the 24px SC 2.5.8 asks of a target on its
+   * own size. Do not reduce it below 5px without re-checking that.
+   */
+  --spacing-btn-gold-y: 18px;
+  --spacing-btn-gold-x: 34px;
 }
 
 @layer base {
@@ -381,6 +499,145 @@
 
   .section-divider {
     @apply border-b-8 border-border;
+  }
+
+  /*
+   * THE GOLD SURFACE. The only supported way to build a section whose ground
+   * is `gold`, which today means the Career hero (`background: #FFC000`).
+   *
+   * It exists as one class rather than as a note in the docs because four
+   * separate site-wide rules are wrong on this surface, and three of them fail
+   * silently. See the @theme comment for the measured table and the
+   * arithmetic; these are the consequences.
+   *
+   *   1. TEXT. `text` #E5E2E1 is 1.27 on gold. The class sets the foreground
+   *      so a section that forgets to is still readable.
+   *   2. LINKS. The base layer paints every <a> with `gold`, which is 1.00
+   *      against this ground, and `cyan` on hover, which is 1.01. Every link
+   *      in a gold section is invisible without this override. They are also
+   *      underlined here and nowhere else: the link colour (darkcyan, 8.00 on
+   *      gold) measures only 1.42 against the body colour, well under the 3:1
+   *      that would let colour carry the distinction on its own, so the
+   *      underline is what satisfies SC 1.4.1. Do not remove it.
+   *   3. FOCUS. The site's focus ring is `gold` with a 3px offset. That works
+   *      everywhere else *because* of the offset: gold on gold is 1.00, and
+   *      the offset puts the dark page background on both sides of the ring.
+   *      On a large gold surface the offset gap is gold too, so the
+   *      mitigation does not carry over and the ring disappears completely.
+   *      The ring is repainted in `gold-text` here (11.32).
+   *   4. BORDERS. The base layer defaults every border to `border` #5A87A8,
+   *      2.34 on gold, under the 3:1 of SC 1.4.11. Defaulted to `gold-border`
+   *      for the subtree.
+   *
+   * An explicit utility still wins over the subtree default, because
+   * utilities come after components in the cascade. That is the intended
+   * escape hatch and it is also the hole: `border-border` written inside a
+   * gold section is a bug this class cannot stop.
+   * tests/gold-surface.spec.ts is what catches it.
+   *
+   * .btn-primary AND .btn-secondary MUST NOT BE USED HERE. .btn-primary is
+   * `bg-gold`, so on this ground it is a 1.00:1 fill: an invisible button
+   * identified only by its border. .btn-secondary is `bg-surface` with
+   * `text-text`, which is fine in itself, but it carries `border-border`
+   * (2.34 on gold) and a gold offset shadow (1.00 on gold). Use
+   * .btn-gold-primary and .btn-gold-secondary below.
+   *
+   * A gold section is full-bleed, so it breaks out of .page-gutter with
+   * negative inline margins and re-applies the gutter inside itself.
+   */
+  .surface-gold {
+    @apply bg-gold text-gold-text;
+  }
+
+  .surface-gold,
+  .surface-gold *,
+  .surface-gold ::before,
+  .surface-gold ::after {
+    border-color: var(--color-gold-border);
+  }
+
+  .surface-gold a {
+    color: var(--color-darkcyan);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .surface-gold a:hover {
+    color: var(--color-gold-text);
+  }
+
+  /*
+   * Higher specificity than the base :focus-visible, and in a later layer, so
+   * it wins twice over. Offset stays 3px; the gap is gold and gold-text
+   * measures 11.32 against it.
+   */
+  .surface-gold :focus-visible {
+    outline-color: var(--color-gold-text);
+  }
+
+  /*
+   * GOLD-SURFACE BUTTONS, from the comps. Both are scoped to .surface-gold on
+   * purpose: used anywhere else they render unstyled, which is loudly wrong
+   * rather than quietly wrong. Neither .btn-primary nor .btn-secondary works
+   * on this ground; see above.
+   *
+   * Measured, all against what each colour is actually adjacent to:
+   *
+   *   primary label   #FFFFFF on the #131313 fill      18.58   needs 4.5
+   *   primary fill    #131313 on #FFC000               11.32   needs 3.0
+   *   secondary label #131313 on #FFC000               11.32   needs 4.5
+   *   secondary border #131313 on #FFC000              11.32   needs 3.0
+   *
+   * THE BORDER IS `gold-text`, NOT `gold-border`. That is a deliberate
+   * exception to the subtree default and the only one. On the primary button
+   * the border matches its own fill, so it reads as one solid block; a navy
+   * outline around a solid dark block would be an outline this design does
+   * not have. `gold-border` still governs everything structural on this
+   * surface: section rules, dividers, card borders.
+   *
+   * THE PINK SHADOW IS DECORATION AND NOTHING ELSE. `pink` measures 2.31 on
+   * gold, under the 3:1 of SC 1.4.11, and that is fine here only because the
+   * shadow carries no meaning: the button's boundary is its #131313 fill
+   * against the gold ground at 11.32, which is what identifies the control.
+   * Never let an offset shadow become the thing that delimits a control, on
+   * this surface or any other.
+   *
+   * THE FOCUS OFFSET IS LOAD-BEARING AGAIN, FOR A SECOND REASON. The ring on
+   * this surface is `gold-text`, which is the same colour as the primary
+   * button's fill and border. Flush against the button it would be invisible
+   * (1.00). The 3px offset puts gold on both sides of it, so it measures
+   * 11.32 against what it actually touches. Never set outline-offset to 0.
+   */
+  .surface-gold .btn-gold-primary {
+    @apply inline-block border-4 border-gold-text bg-gold-text
+      px-btn-gold-x py-btn-gold-y text-label font-black uppercase
+      tracking-label text-gold-btn-label shadow-hard-pink-8;
+  }
+
+  .surface-gold .btn-gold-secondary {
+    @apply inline-block border-4 border-gold-text bg-transparent
+      px-btn-gold-x py-btn-gold-y text-label font-black uppercase
+      tracking-label text-gold-text;
+  }
+
+  /*
+   * The base layer underlines links on this surface, which is right for a
+   * link in prose and wrong for a button: the border and fill already
+   * distinguish these, and an underline under a 0.1em-tracked uppercase label
+   * reads as damage. SC 1.4.1 is satisfied by the box, not by the colour, so
+   * removing it here costs nothing.
+   */
+  .surface-gold a.btn-gold-primary,
+  .surface-gold a.btn-gold-secondary {
+    text-decoration: none;
+  }
+
+  .surface-gold a.btn-gold-primary:hover {
+    color: var(--color-gold-btn-label);
+  }
+
+  .surface-gold a.btn-gold-secondary:hover {
+    color: var(--color-gold-text);
   }
 
   .label {

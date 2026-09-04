@@ -1,0 +1,60 @@
+# Cloudflare Pages response headers.
+#
+# This file is copied verbatim into dist/ by the Astro build, which is where
+# Cloudflare Pages reads it from. It is the only place response headers are
+# set: the site is static, there is no SSR adapter and no Pages Function, so
+# nothing else is in the request path.
+#
+# The rule below is `/*`, so it applies to every response the project serves,
+# including 404.html.
+#
+# ---------------------------------------------------------------------------
+# THE CSP HASHES ARE BUILD OUTPUT AND THEY GO STALE.
+#
+# Astro emits two inline <script> blocks and one inline <style> on every page:
+# the `client:load` directive loader, the <astro-island> custom element that
+# hydrates MobileMenu.vue, and `astro-island,astro-slot,astro-static-slot
+# {display:contents}`. There is no `src` to point at and, on a static host,
+# no request-time nonce to issue, so the only way to allow exactly those three
+# and nothing else is to hash them.
+#
+# The three hashes are of the current build. An Astro upgrade that changes one
+# byte of that runtime changes its hash, the browser refuses the script, and
+# the island never hydrates: the mobile menu stops opening, which is the only
+# navigation a desktop user has at 400% zoom. That failure is silent in the
+# page and loud only in the console.
+#
+# tests/headers.spec.ts recomputes all three from dist/ and fails when this
+# file and the build have drifted. Do not hand-edit a hash; re-run the suite,
+# take the values from the failure message, and check the diff is only the
+# Astro runtime.
+#
+# ---------------------------------------------------------------------------
+# HSTS IS SET SHORT, AND WITHOUT includeSubDomains OR preload, ON PURPOSE.
+#
+# max-age=86400 is one day. It is the one header here that a browser keeps
+# after the response is gone: for as long as max-age says, that browser will
+# refuse to reach this host over http at all, and there is no way to reach
+# into it and shorten that. A day is long enough to be a real commitment and
+# short enough that a mistake ages out by tomorrow.
+#
+# NO preload. Submitting to the preload list bakes this host into browser
+# binaries, and getting back off takes months of release trains that nobody
+# here controls. It is not a header you can retract.
+#
+# NO includeSubDomains. It would extend the promise to every subdomain,
+# including ones that do not exist yet and were never checked for TLS.
+#
+# Raise max-age only after the setup has been proven stable on the deployed
+# site over time, one step at a time. tests/headers.spec.ts asserts the
+# ceiling and the two absent directives so none of this can be widened by
+# accident. See README for the full reasoning.
+# ---------------------------------------------------------------------------
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-QzWFZi+FLIx23tnm9SBU4aEgx4x8DsuASP07mfqol/c=' 'sha256-Ya0pUYrC7nM5Cn/056TyVuEiz6dFGrzmkWzgON0pF0U='; style-src 'self' 'sha256-vv9IoKo7BSLbWcUHr3tNmfNVmm5L/9Cfn2H6LMk7/ow='; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  Strict-Transport-Security: max-age=86400
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
