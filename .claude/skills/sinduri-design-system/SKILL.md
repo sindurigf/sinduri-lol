@@ -203,6 +203,31 @@ Nothing may flash more than three times per second (SC 2.3.1).
   mark it `aria-hidden="true"`.
 - Never signal state with color alone (SC 1.4.1).
 
+### Target size: every nav link is at least 24px tall
+
+**Every nav link carries its own 24x24 CSS px hit area (SC 2.5.8).** Size the
+target, never the gap between targets.
+
+A `.label` link is 13px at line-height 1.2, so its line box is 15.6px and the
+link fails on its own. `py-2` adds 8px top and bottom and takes it to 31.6px.
+The `ul` is `items-center`, so symmetric padding grows the hit area about the
+same centre line and moves no glyph: the rendered header is unchanged.
+
+```html
+<!-- Yes: 31.6px tall, passes on its own size -->
+<a class="label block py-2 text-muted hover:text-cyan" href="/about">About</a>
+
+<!-- No: 15.6px tall, passing only while a neighbour stays far enough away -->
+<a class="label block text-muted hover:text-cyan" href="/about">About</a>
+```
+
+SC 2.5.8 does offer a spacing exception, where an undersized target passes if a
+24px circle centred on it does not touch another target's circle. **Do not rely
+on it here.** It made the 40px `gap-10` load-bearing for conformance, so any
+future change to nav spacing, or stacking the items, would have broken 2.5.8
+silently and at a distance from the edit. The gap is now free to be a
+typographic choice again. Check the link's own box, not its neighbours.
+
 ### The sticky header
 
 The header is 80px (`--spacing-header`) and sticky. It will cover an element

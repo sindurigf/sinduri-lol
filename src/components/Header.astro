@@ -49,6 +49,14 @@ const isActive = (href: string): boolean =>
       <span class="label text-text">sinduri.lol</span>
     </a>
 
+    <!--
+      py-2 is a target-size rule, not spacing. The 13px/1.2 label renders a
+      15.6px line box, well under the 24px SC 2.5.8 asks for. 8px top and
+      bottom takes each link to 31.6px, so the links pass on their own size
+      instead of leaning on the spacing exception the 40px gap used to
+      provide. The ul is items-center, so the padding grows the hit area
+      symmetrically about the same centre line and moves no glyph.
+    -->
     <nav class="hidden md:block" aria-label="Primary">
       <ul class="flex items-center gap-10">
         {
@@ -57,7 +65,7 @@ const isActive = (href: string): boolean =>
               <a
                 href={link.href}
                 aria-current={isActive(link.href) ? 'page' : undefined}
-                class="label block text-muted hover:text-cyan"
+                class="label block py-2 text-muted hover:text-cyan"
               >
                 {link.label}
                 {isActive(link.href) ? (
