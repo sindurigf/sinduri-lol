@@ -428,6 +428,58 @@ Commits are signed off (`git commit -s`). No AI attribution in commit messages.
 - Prefer stdlib or an existing dependency over adding a package. Ask before
   adding anything not already in `package.json`.
 
+### Tests
+
+Every rule here exists because the suite has already been green while covering
+less than it claimed. A test that cannot fail is worse than a missing one: it
+occupies the space where the missing one would have been noticed.
+
+**A route-list literal needs a completeness guard.** Several specs walk a
+hardcoded subset of `ROUTES` rather than all of it. The literal is not the
+problem and cannot be removed — Playwright collects test files before the
+`webServer` command builds the site, so deriving the list at module scope would
+read an absent or stale `dist/`. What is required is a second test that derives
+the real list from the build and fails when the literal has fallen behind:
+
+- `GOLD_ROUTE_CONTROLS` in `tests/gold-surface.spec.ts` is the pattern to copy.
+  The invisible-control walk short-circuits on a page with no `.surface-gold`
+  section, so every route returned `[]` and passed for the whole time no page
+  used the class. The guard asserts `/career` has the section and the expected
+  number of controls in it, which is what stops that going quiet again.
+- `BADGE_ROUTES` in `tests/motion.spec.ts` is the same shape, and is the case
+  that actually shipped: the list said `['/']`, Contact grew a second
+  `SpinBadge`, and its pause control had no SC 2.2.2 coverage at all while the
+  suite reported green. `islandRoutesFromBuild` in `tests/routes.ts` reads the
+  build for Astro's `component-url` marker and the guard compares the two.
+
+A guard that can itself match nothing needs a floor. Both of the above assert a
+non-zero count first, because a comparison of two empty lists passes.
+
+**Prove a new test fails, and record it.** Remove the fix, run the test, watch
+it fail, restore the fix, watch it pass. Then write what happened into the
+spec's comment: what was broken, which assertion caught it, what the failure
+said. Most files in `tests/` carry a "VERIFIED NOT TO BE VACUOUS" block in this
+form, and it is the only evidence a later reader has that the assertions bite.
+An untested assertion is a claim, and this repo does not ship claims as tests.
+
+**A count in a comment states its unit and its date.** A bare number rots
+silently, because nothing recomputes it and it still reads correctly. Three
+notes in `tests/` quoted counts that were true when written; two had gone stale
+against a route list that tripled, and one — "69 overflow assertions" — had
+never been the unit it named, it was the whole suite's test count at the time.
+Write "92 overflow assertions, meaning calls to `expectNoHorizontalOverflow`,
+measured 2026-09-05", or write no number. If the unit cannot be established,
+say so in the comment instead of substituting a guess.
+
+**A fact duplicated across Markdown files needs one enforced source of truth.**
+Do not copy a measured value into a second document without a check that fails
+when the copies disagree. The gold contrast table is written out in `AI.md`,
+`ACCESSIBILITY.md` and the design system skill; the enforced source is the live
+CSS custom properties, and `every documented gold ratio matches the live CSS`
+in `tests/gold-surface.spec.ts` parses all three files and compares both the hex
+and the ratio against the running page. Without a check, prefer one copy and a
+link from the other files.
+
 ### Copy: two kinds, two different rules
 
 "Never invent copy" was one rule covering two things that need opposite
