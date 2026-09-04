@@ -46,3 +46,162 @@
   font-display: swap;
   src: url('/fonts/lexend-900.woff2') format('woff2');
 }
+
+/* ---------------------------------------------------------------------------
+   Design tokens. Dark mode only, no light theme and no `dark:` variant setup.
+   Every value the site uses lives here. Components must not hardcode hex.
+--------------------------------------------------------------------------- */
+
+@theme {
+  /* Colors */
+  --color-background: #131313;
+  --color-surface: #1a1a1a;
+  --color-deep: #0e0e0e;
+  --color-border: #504632;
+  --color-text: #e5e2e1;
+  --color-muted: #d4c5ab;
+  --color-subtle: #9c8f78;
+  --color-gold: #ffc000;
+  --color-cyan: #00dcfd;
+  --color-pink: #ff007a;
+  --color-darkcyan: #00363f;
+
+  /* Header chrome. Translucent, so it stays a raw rgba rather than a hex. */
+  --color-header-bg: rgba(10, 10, 10, 0.94);
+
+  /* Typography */
+  --font-sans:
+    'Lexend', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+
+  /* Fluid heading scale. Ceilings land at roughly a 1156px viewport. */
+  --text-h1: clamp(44px, 9vw, 104px);
+  --text-h1--line-height: 0.94;
+  --text-h2: clamp(34px, 6.6vw, 76px);
+  --text-h2--line-height: 0.96;
+  --text-h3: clamp(26px, 4.4vw, 56px);
+  --text-h3--line-height: 1.02;
+  --text-body: clamp(17px, 1.2vw, 19px);
+  --text-body--line-height: 1.62;
+  --text-label: 13px;
+  --text-label--line-height: 1.2;
+  --text-section-number: 32px;
+  --text-section-number--line-height: 1;
+
+  --tracking-heading: -0.05em;
+  --tracking-heading-tight: -0.04em;
+  --tracking-label: 0.1em;
+  --tracking-label-wide: 0.14em;
+
+  /* Radius. Zero everywhere except the nav CTA. */
+  --radius-nav: 14px;
+
+  /* Hard offset shadows. Zero blur, zero spread. */
+  --shadow-hard-gold-8: 8px 8px 0 var(--color-gold);
+  --shadow-hard-gold-6: 6px 6px 0 var(--color-gold);
+  --shadow-hard-gold-4: 4px 4px 0 var(--color-gold);
+  --shadow-hard-pink-12: 12px 12px 0 var(--color-pink);
+  --shadow-hard-cyan-8: 8px 8px 0 var(--color-cyan);
+
+  /* Layout */
+  --spacing-header: 80px;
+  --spacing-card: 40px;
+}
+
+@layer base {
+  /*
+   * Tailwind v4 defaults every border to currentColor. The whole design is
+   * warm-brown-bordered, so make the border token the default instead.
+   */
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
+    border-radius: 0;
+  }
+
+  html {
+    background-color: var(--color-background);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    font-weight: 300;
+    line-height: 1.62;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-transform: uppercase;
+    font-weight: 900;
+    letter-spacing: var(--tracking-heading);
+  }
+
+  h1 {
+    font-size: var(--text-h1);
+    line-height: 0.94;
+  }
+
+  h2 {
+    font-size: var(--text-h2);
+    line-height: 0.96;
+  }
+
+  h3 {
+    font-size: var(--text-h3);
+    line-height: 1.02;
+    font-weight: 800;
+    letter-spacing: var(--tracking-heading-tight);
+  }
+
+  a {
+    color: var(--color-gold);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-cyan);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-block border-4 border-border bg-gold px-8 py-4
+      text-label font-black uppercase tracking-label text-background
+      shadow-hard-pink-12;
+  }
+
+  .btn-secondary {
+    @apply inline-block border-4 border-border bg-surface px-8 py-4
+      text-label font-black uppercase tracking-label text-text
+      shadow-hard-gold-6;
+  }
+
+  .card {
+    @apply border-8 border-border bg-surface p-card;
+  }
+
+  .section-divider {
+    @apply border-b-8 border-border;
+  }
+
+  .label {
+    @apply text-label font-black uppercase tracking-label;
+  }
+
+  .label-wide {
+    @apply text-label font-black uppercase tracking-label-wide;
+  }
+
+  .section-number {
+    @apply text-section-number font-extrabold text-pink;
+  }
+}
