@@ -59,24 +59,40 @@ Passing axe is not conformance. See section 6.
 
 Every foreground token is measured against all three surfaces. Verified ratios:
 
-| Token    | Value     | `#131313` | `#1A1A1A` | `#0E0E0E` |
-| -------- | --------- | --------- | --------- | --------- |
-| `text`   | `#E5E2E1` | 14.42     | 13.51     | 14.98     |
-| `muted`  | `#D4C5AB` | 10.95     | 10.26     | 11.37     |
-| `subtle` | `#9BB4C6` | 8.62      | 8.07      | 8.95      |
-| `gold`   | `#FFC000` | 11.32     | 10.60     | 11.76     |
-| `cyan`   | `#00DCFD` | 11.20     | 10.49     | 11.63     |
-| `border` | `#5A87A8` | 4.84      | 4.53      | 5.02      |
-| `pink`   | `#FF007A` | 4.90      | 4.59      | 5.09      |
+| Token      | Value     | `#131313` | `#1A1A1A` | `#0E0E0E` |
+| ---------- | --------- | --------- | --------- | --------- |
+| `text`     | `#E5E2E1` | 14.42     | 13.51     | 14.98     |
+| `muted`    | `#D4C5AB` | 10.95     | 10.26     | 11.37     |
+| `subtle`   | `#9BB4C6` | 8.62      | 8.07      | 8.95      |
+| `gold`     | `#FFC000` | 11.32     | 10.60     | 11.76     |
+| `cyan`     | `#00DCFD` | 11.20     | 10.49     | 11.63     |
+| `border`   | `#5A87A8` | 4.84      | 4.53      | 5.02      |
+| `pink`     | `#FF007A` | 4.90      | 4.59      | 5.09      |
+| `pinkText` | `#FF79B6` | 7.66      | 7.18      | 7.96      |
 
-`text`, `muted`, `subtle`, `gold`, and `cyan` clear AAA (7:1) on every surface.
+`text`, `muted`, `subtle`, `gold`, `cyan`, and `pinkText` clear AAA (7:1) on
+every surface.
 
 `border` carries every visible boundary and is governed by SC 1.4.11 Non-text
 Contrast (3:1). It clears it on all three surfaces.
 
-**`pink` is the one constrained token.** It clears AA (4.5:1) but not AAA. It is
-restricted to the section number (weight 800, never below 24px, which is WCAG
-large text) and to decorative accents. It is never used for body-size text.
+**The two pinks are split by role, not by size.** `pink` clears AA but not AAA,
+so it is restricted to non-text: borders, hard offset shadows, and decorative
+fills, where the applicable threshold is the 3:1 of SC 1.4.11. `pinkText` is
+AAA on every surface and carries every pink glyph, including the section
+number. `pink` is never applied to text at any size, and `pinkText` is never
+applied to a border or a shadow.
+
+An earlier version of this rule allowed `pink` on the section number by way of
+the WCAG large-text exemption. That held only while the text stayed above
+18.66px, and `--text-section-number` is `clamp(24px, 2.8vw, 32px)`, so the
+guarantee depended on the type scale. The role split removes the condition.
+
+Two predecessor colours were replaced, for different reasons. `border`'s
+predecessor `#504632` measured 2.00 and failed SC 1.4.11. `subtle`'s
+predecessor `#9C8F78` measured 5.85 / 5.48 / 6.08 and **passed** SC 1.4.3 AA on
+all three surfaces; replacing it was an AA-to-AAA palette decision, not a
+conformance fix.
 
 The focus indicator is a 3px gold outline with a 3px offset. The offset is
 required: gold against the gold button measures 1.00:1, so a ring flush with the
