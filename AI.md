@@ -85,12 +85,17 @@ jumps between device sizes. Ceilings land at roughly a 1156px viewport.
 | H1             | `clamp(44px, 9vw, 104px)`  | 900    | -0.05em  |
 | H2             | `clamp(34px, 6.6vw, 76px)` | 900    | -0.05em  |
 | H3             | `clamp(26px, 4.4vw, 56px)` | 800    | -0.04em  |
-| Body           | `clamp(17px, 1.2vw, 19px)` | 300    | normal   |
+| Body           | `clamp(17px, 1.2vw, 19px)` | 400    | normal   |
 | Label / tag    | `13px`                     | 900    | 0.1em    |
 | Section number | `clamp(24px, 2.8vw, 32px)` | 800    | n/a      |
 
 Headings are uppercase. Labels and tags are uppercase. Use `tracking-label-wide`
 (0.14em) where a label needs more air.
+
+Body copy is weight 400 and never lighter. Weight 300 halates against the dark
+background. Uppercase is applied with `text-transform` in CSS and never typed
+uppercase in the markup, because some screen readers spell all-caps strings out
+letter by letter.
 
 ### Borders, shadows, radius
 
