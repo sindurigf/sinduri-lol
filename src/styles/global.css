@@ -72,26 +72,59 @@
 
   /* Fluid heading scale. Ceilings land at roughly a 1156px viewport. */
   /*
-   * The 38px floor is a reflow constraint, not a taste call (SC 1.4.10).
-   * At a 320px viewport a classic scrollbar leaves ~305px of content box.
-   * A 13-character heading word is the realistic worst case: "ACCESSIBILITY"
-   * measures 348.4px at 44px, so the largest floor that still fits is
-   * 44 x 305 / 348.4 = 38.5px. 38px measures 300.3px and clears it.
-   * Width scales linearly with font-size because the -0.05em tracking is
-   * proportional too. This only bites below a 422px viewport (38 / 0.09).
+   * The floors are a reflow constraint, not a taste call (SC 1.4.10).
    *
-   * That 305px box is now the box on every route. Page containers drop their
-   * horizontal padding below `sm`, so there is one content box width and one
-   * set of arithmetic rather than a padded 272px variant on blog routes.
+   * THE CONTENT BOX. Every route presents the same box at a 320px viewport,
+   * because page containers drop their horizontal padding below `sm`. It
+   * measures 305px in a browser with a classic 15px scrollbar (Chrome 152 and
+   * Chromium 151, headed) and 320px where scrollbars are overlaid (headless,
+   * which is what the Playwright suite sees). Calibrate against 305px: it is
+   * the smaller of the two and it is what a desktop user at 400% zoom gets.
    *
-   * This layer removes the break; it does not guarantee it. Wider 13-char
-   * words ("ANNOUNCEMENTS", 349.3px at 38px) still overflow, and the
-   * overflow-wrap rule in the base layer below is what catches them. That is
-   * the guarantee; this floor is the reason it rarely has to fire.
+   * THE WORST WORD. Headings are uppercased and nothing wraps a single word,
+   * so one long word is the entire risk. Measured in Lexend Variable at
+   * weight 900 with the -0.05em tracking this scale applies:
+   *
+   *                     44px    38px    36px    34px    32px
+   *   PROFESSIONAL    340.92  294.44  278.94  263.44  247.94
+   *   ACCESSIBILITY   351.17  303.28  287.33  271.36  255.41
+   *   ANNOUNCEMENTS   405.25  349.98  331.56  313.14  294.73
+   *
+   * Width scales linearly with font-size, because the tracking is
+   * proportional too. So the largest floor a word fits at is 44 x 305 / its
+   * width at 44px: 39.36px for "PROFESSIONAL", 38.22px for "ACCESSIBILITY",
+   * 33.12px for "ANNOUNCEMENTS".
+   *
+   * h1 IS 36px, NOT 38px. 38px was calibrated to sit exactly at the edge of
+   * the 38.22px "ACCESSIBILITY" allows: it left 1.72px, 0.6% of the box, so
+   * any change to the font, the tracking or the scrollbar width broke it.
+   * 36px leaves 17.67px for "ACCESSIBILITY" and 26.06px for "PROFESSIONAL",
+   * 5.8% and 8.5%. "PROFESSIONAL" is one of the five blog categories, so it
+   * is real content, not a hypothetical: at 38px in the old padded blog box
+   * it overflowed by 37.4px with a classic scrollbar (257px box) and 22.4px
+   * without (272px box), and break-word was cutting it mid-word to hide that.
+   *
+   * h2 IS 32px, NOT 34px. The word arithmetic is identical for h2, so the
+   * overflow constraint alone would allow it the same 36px. What holds it
+   * lower is the step down from h1. The old pair held a 38:34 ratio of 1.118;
+   * 36:32 holds 1.125. Leaving h2 at 34px under an h1 of 36px would put 5.6%
+   * between them, near enough that the two read as one size at 320px. That is
+   * a hierarchy failure rather than an overflow one, but it is still a
+   * failure. At 32px "ACCESSIBILITY" leaves 49.59px, 16% of the box.
+   *
+   * "ANNOUNCEMENTS" IS DELIBERATELY NOT FITTED. It would need a 33px h1
+   * floor, no page uses it, and there is always a longer word. Genuine
+   * outliers are the job of overflow-wrap: break-word in the base layer
+   * below. That is the guarantee. These floors are the reason it rarely has
+   * to fire.
+   *
+   * The floors only bite below a 400px viewport for h1 (36 / 0.09) and below
+   * a 485px viewport for h2 (32 / 0.066). tests/reflow.spec.ts locks the
+   * outcome down. Do not raise a floor without re-running it.
    */
-  --text-h1: clamp(38px, 9vw, 104px);
+  --text-h1: clamp(36px, 9vw, 104px);
   --text-h1--line-height: 0.94;
-  --text-h2: clamp(34px, 6.6vw, 76px);
+  --text-h2: clamp(32px, 6.6vw, 76px);
   --text-h2--line-height: 0.96;
   --text-h3: clamp(26px, 4.4vw, 56px);
   --text-h3--line-height: 1.02;
@@ -163,7 +196,8 @@
    * Three layers stop a heading forcing a horizontal scroll at 320px
    * (SC 1.4.10 Reflow, and SC 1.4.12 once text spacing is overridden):
    *
-   *   1. the --text-h1 floor above, so real headings fit without breaking;
+   *   1. the --text-h1 and --text-h2 floors above, so real headings fit
+   *      without breaking;
    *   2. hyphens, which would break long words at dictionary points; and
    *   3. overflow-wrap, the guarantee that nothing can overflow regardless.
    *

@@ -109,8 +109,8 @@ jumps between device sizes. Ceilings land at roughly a 1156px viewport.
 
 | Role           | Size                       | Weight | Tracking |
 | -------------- | -------------------------- | ------ | -------- |
-| H1             | `clamp(38px, 9vw, 104px)`  | 900    | -0.05em  |
-| H2             | `clamp(34px, 6.6vw, 76px)` | 900    | -0.05em  |
+| H1             | `clamp(36px, 9vw, 104px)`  | 900    | -0.05em  |
+| H2             | `clamp(32px, 6.6vw, 76px)` | 900    | -0.05em  |
 | H3             | `clamp(26px, 4.4vw, 56px)` | 800    | -0.04em  |
 | Body           | `clamp(17px, 1.2vw, 19px)` | 400    | normal   |
 | Label / tag    | `13px`                     | 900    | 0.1em    |
@@ -119,13 +119,38 @@ jumps between device sizes. Ceilings land at roughly a 1156px viewport.
 Headings are uppercase. Labels and tags are uppercase. Use `tracking-label-wide`
 (0.14em) where a label needs more air.
 
-The H1 floor is 38px, not a round 40px, because it is a reflow constraint. At a
-320px viewport a classic scrollbar leaves about 305px, and "ACCESSIBILITY"
-measures 348.4px at 44px, so 44 x 305 / 348.4 = 38.5px is the largest floor a
-13-character word still fits inside. Headings also set `hyphens: auto` and
-`overflow-wrap: break-word`; the latter is what actually guarantees no
-horizontal overflow. `tests/reflow.spec.ts` locks this down. Do not raise the
-floor without re-running it.
+The H1 and H2 floors are reflow constraints, not taste calls (SC 1.4.10).
+
+Every route presents the same content box at a 320px viewport, because page
+containers drop their horizontal padding below `sm`. Measured: **305px** with a
+classic 15px scrollbar (Chrome 152 and Chromium 151, headed), **320px** where
+scrollbars are overlaid (headless, which is what the Playwright suite sees).
+305px is the number to calibrate against.
+
+A single uppercased word is the whole risk, because nothing wraps it. Measured
+in Lexend at weight 900 with -0.05em tracking:
+
+| Word            |   44px |   36px |   32px | Largest floor it fits |
+| --------------- | -----: | -----: | -----: | --------------------: |
+| `PROFESSIONAL`  | 340.92 | 278.94 | 247.94 |               39.36px |
+| `ACCESSIBILITY` | 351.17 | 287.33 | 255.41 |               38.22px |
+| `ANNOUNCEMENTS` | 405.25 | 331.56 | 294.73 |               33.12px |
+
+The old 38px H1 floor sat 1.72px inside the 38.22px `ACCESSIBILITY` allows,
+0.6% of the box. **36px** leaves 17.67px for `ACCESSIBILITY` and 26.06px for
+`PROFESSIONAL`, which is a real blog category rather than a hypothetical.
+
+H2 is **32px**. The word arithmetic is identical, so overflow alone would allow
+H2 the same 36px; what holds it lower is the step down from H1. 36:32 is 1.125,
+matching the 38:34 of 1.118 the old pair held. At 34px under a 36px H1 the two
+would read as one size at 320px.
+
+`ANNOUNCEMENTS` is deliberately not fitted. It needs a 33px floor, no page uses
+it, and there is always a longer word.
+
+Headings also set `hyphens: auto` and `overflow-wrap: break-word`; the latter is
+what actually guarantees no horizontal overflow. `tests/reflow.spec.ts` locks
+this down. Do not raise a floor without re-running it.
 
 Body copy is weight 400 and never lighter. Weight 300 halates against the dark
 background.

@@ -194,6 +194,37 @@ Every size is a token and fluid via `clamp()`. Do not add breakpoint steps.
 
 Headings must not skip levels. One `<h1>` per page.
 
+### The heading floors are a reflow constraint, not a taste call
+
+`text-h1` floors at **36px** and `text-h2` at **32px**. Both numbers are
+derived, not chosen. Do not raise either without redoing the arithmetic and
+re-running `tests/reflow.spec.ts`.
+
+**One content box.** Every route presents the same content box at a 320px
+viewport: **305px** with a classic 15px scrollbar, 320px where scrollbars are
+overlaid. That is why page containers drop their horizontal padding below `sm`
+(`sm:px-6`, not `px-6`). **Do not add unconditional horizontal padding to a
+page container or to any element that can hold a heading.** It narrows the box
+below what the floors were calibrated against, and the only symptom is a
+heading quietly cut mid-word. `px-6` on the blog routes is exactly how
+`PROFESSIONAL` came to overflow by 37px without anyone noticing.
+
+The header is the one exception and holds no heading. Keep it that way.
+
+**The arithmetic.** A single uppercased word is the whole risk, because nothing
+wraps it. Width scales linearly with font-size, so the largest floor a word
+fits at is `44 x 305 / (its width at 44px)`:
+
+| Word            | at 44px | Largest floor | At 36px | At 32px |
+| --------------- | ------: | ------------: | ------: | ------: |
+| `PROFESSIONAL`  |  340.92 |       39.36px |  278.94 |  247.94 |
+| `ACCESSIBILITY` |  351.17 |       38.22px |  287.33 |  255.41 |
+| `ANNOUNCEMENTS` |  405.25 |       33.12px |  331.56 |  294.73 |
+
+36px leaves 17.67px of headroom for `ACCESSIBILITY` and 26.06px for
+`PROFESSIONAL`. `ANNOUNCEMENTS` is deliberately not fitted: there is always a
+longer word, and `overflow-wrap: break-word` is the guarantee for outliers.
+
 ---
 
 ## Motion
