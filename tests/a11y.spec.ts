@@ -1,6 +1,11 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { ROUTES, routesFromBuild } from './routes';
+import {
+  POST_ROUTES,
+  ROUTES,
+  postRoutesFromContent,
+  routesFromBuild,
+} from './routes';
 
 /**
  * WCAG 2.2 AA is the target, so every A and AA tag up to 2.2 is enabled.
@@ -59,6 +64,21 @@ test.describe('axe: WCAG 2.2 AA', () => {
       routesFromBuild(),
       'tests/routes.ts is out of sync with dist/. Update ROUTES.',
     ).toEqual([...ROUTES].sort());
+  });
+
+  /**
+   * The same drift, caught one step earlier and named at the file rather than
+   * at the URL. The test above compares this list to the build; this compares
+   * it to `src/content/blog/`, so adding or renaming a post without touching
+   * POST_ROUTES fails saying which Markdown file is unaccounted for instead of
+   * which route is missing from `dist/`.
+   */
+  test('post routes match the Markdown in src/content/blog', () => {
+    expect(
+      postRoutesFromContent(),
+      'POST_ROUTES in tests/routes.ts does not match src/content/blog/. A ' +
+        'post was added, renamed or deleted without updating the list.',
+    ).toEqual([...POST_ROUTES].sort());
   });
 
   for (const route of ROUTES) {

@@ -376,8 +376,22 @@ Categories: `skincare`, `travel`, `personal-thoughts`, `professional-journey`,
 `open-source`. Exported as `BLOG_CATEGORIES` — import it rather than retyping
 the list.
 
-`src/content/blog/example-post.md` exists only to validate the schema. Delete it
-once real posts land.
+There are eleven posts in `src/content/blog/`, spread across all five
+categories. **Every one of them is lorem ipsum**, seeded so the listing has
+something to exercise: the index paginates at nine, so eleven is the smallest
+count that makes a second page exist, and the titles, teasers, `featured` flags
+and `readingTime` values deliberately span both extremes so a card is tested at
+a ten-character title and at a seventy-character one. They replaced
+`example-post.md`, which existed only to validate the schema.
+
+The lorem is Latin inside a `lang="en"` document. That is wrong for a screen
+reader and is recorded as a known gap in `ACCESSIBILITY.md` §7; it is acceptable
+only until Sinduri's copy lands.
+
+`consectetur-adipiscing-elit.md` carries a **literal U+00AD** in its frontmatter
+title, which is the only form that survives there. See the soft-hyphen rule in
+the design system skill before editing it: the character is invisible in an
+editor, and writing `&shy;` instead builds to a visible `&SHY;` on the page.
 
 ---
 
@@ -459,7 +473,7 @@ nobody can see.
 | `public/images/bunny-white.png`    | White, RGB(255,255,255) | Dark surfaces        | Reserved, see below                      |
 | `public/images/badge-white.png`    | White, RGB(255,255,255) | Dark surfaces        | `Footer.astro`, Contact badge, OG images |
 | `public/images/og-default.png`     | Composite               | n/a                  | `BaseLayout.astro`                       |
-| `public/images/og-placeholder.png` | Composite               | n/a                  | `example-post.md`                        |
+| `public/images/og-placeholder.png` | Composite               | n/a                  | Posts with an `ogImage`                  |
 
 Measured ratios for the two artwork colours, so the pairing is arithmetic
 rather than judgement:
