@@ -50,7 +50,22 @@
     'Helvetica Neue', Arial, sans-serif;
 
   /* Fluid heading scale. Ceilings land at roughly a 1156px viewport. */
-  --text-h1: clamp(44px, 9vw, 104px);
+  /*
+   * The 38px floor is a reflow constraint, not a taste call (SC 1.4.10).
+   * At a 320px viewport a classic scrollbar leaves ~305px of content box.
+   * A 13-character heading word is the realistic worst case: "ACCESSIBILITY"
+   * measures 348.4px at 44px, so the largest floor that still fits is
+   * 44 x 305 / 348.4 = 38.5px. 38px measures 300.3px and clears it.
+   * Width scales linearly with font-size because the -0.05em tracking is
+   * proportional too. This only bites below a 422px viewport (38 / 0.09).
+   *
+   * This layer removes the break; it does not guarantee it. Wider 13-char
+   * words ("ANNOUNCEMENTS", 349.3px at 38px) and the 272px content box on
+   * padded blog pages still overflow at 38px, and the overflow-wrap rule in
+   * the base layer below is what catches them. That is the guarantee; this
+   * floor is the reason it rarely has to fire.
+   */
+  --text-h1: clamp(38px, 9vw, 104px);
   --text-h1--line-height: 0.94;
   --text-h2: clamp(34px, 6.6vw, 76px);
   --text-h2--line-height: 0.96;
@@ -120,6 +135,36 @@
     line-height: 1.62;
   }
 
+  /*
+   * Three layers stop a heading forcing a horizontal scroll at 320px
+   * (SC 1.4.10 Reflow, and SC 1.4.12 once text spacing is overridden):
+   *
+   *   1. the --text-h1 floor above, so real headings fit without breaking;
+   *   2. hyphens, which would break long words at dictionary points; and
+   *   3. overflow-wrap, the guarantee that nothing can overflow regardless.
+   *
+   * overflow-wrap: break-word only permits a break in a word that cannot fit
+   * on a line by itself, so multi-word headings are unaffected. It is what
+   * actually fires here, and layer 1 is what keeps it from having to.
+   *
+   * Layer 2 is currently inert on this site, and the reason is worth writing
+   * down so nobody "fixes" it. Chromium looks the word up in the hyphenation
+   * dictionary *after* text-transform, and the dictionary is lowercase, so an
+   * uppercased word finds no break points. Measured in Chromium 151 at 20px
+   * serif in a 90px box: "accessibility" hyphenates to two lines, the same
+   * word under text-transform: uppercase stays on one line and overflows to
+   * 148px. A literal "ACCESSIBILITY" behaves the same, and even a capitalised
+   * "Accessibility" fails to hyphenate. Every heading here is uppercased, so
+   * hyphens never gets a chance to act.
+   *
+   * It stays because it costs nothing, other engines hyphenate differently
+   * (untested: only Chromium was measured), and it starts working the moment
+   * a heading is not uppercased. Do not treat it as the thing preventing
+   * overflow. That is layer 3.
+   *
+   * hyphens needs a language to pick a dictionary; <html lang="en"> supplies
+   * it. Safari still wants the prefix.
+   */
   h1,
   h2,
   h3,
@@ -129,6 +174,9 @@
     text-transform: uppercase;
     font-weight: 900;
     letter-spacing: var(--tracking-heading);
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    overflow-wrap: break-word;
   }
 
   h1 {
