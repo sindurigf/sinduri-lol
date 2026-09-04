@@ -27,8 +27,10 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          # Matches the `engines.node` floor in package.json.
-          node-version: '22'
+          # .nvmrc is the single source of truth. Cloudflare Pages reads the
+          # same file for the deploy build, so CI cannot drift away from
+          # production by pinning a version here as well.
+          node-version-file: '.nvmrc'
           cache: npm
 
       - name: Install dependencies
