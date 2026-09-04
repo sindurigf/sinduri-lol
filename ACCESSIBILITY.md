@@ -325,6 +325,16 @@ Three limits of the automated tier that are easy to mistake for coverage:
   measured, not just one — verified by painting only `border-bottom-color`
   gold, which every other assertion in the file passed, the button test
   included, because that test reads `borderTopColor`.
+
+  **The border case was confirmed to be invisible to a rule engine, the same
+  way the fill case was.** Measured on 2026-09-04 against a temporary route
+  rendering a `.surface-gold` section: with `.btn-gold-secondary`'s border
+  painted `#FFC000`, so the control was a transparent fill inside a border the
+  colour of the ground and had no visible edge anywhere, AccessLint returned
+  **0 violations across 95 rules with AAA enabled**. Its label still measured
+  11.32 on gold, and the label is all a contrast rule looks at. A green scan
+  is not evidence for either arm of this check.
+
 - **An overflow assertion cannot see a bad heading floor.** This one is worth
   stating because the floors were documented as locked down by a test that
   could not fail on them. `overflow-wrap: break-word` guarantees the document
@@ -420,12 +430,22 @@ Stated honestly. This list is not filtered for how it looks.
    ground is still the item to look at first. On `.btn-gold-primary` it is now
    two rings, an inner `#FFFFFF` at 18.58 against the button's own fill and the
    outer `#131313` at 11.32 against the gold beyond the offset gap, so it no
-   longer depends on the offset alone. **Both numbers are measurement, and
-   nobody has looked at the result.** Whether two concentric rings 3px apart
-   read as one indicator or as visual noise at real size is a judgement no test
-   makes. Reflow is untested there too, since no gold section exists to run the
-   305px suite against. Re-test when the Career page lands and replace the
-   fixtures with the real section.
+   longer depends on the offset alone.
+
+   **Partially observed on 2026-09-04, and the gap stays open.** A temporary,
+   uncommitted route rendering a `.surface-gold` section was built and driven
+   in headless Chromium: a real `Tab` press reaches `.btn-gold-primary`,
+   `:focus-visible` matches, and the rendered indicator carries all three
+   layers at once — `box-shadow: rgb(255, 255, 255) 0px 0px 0px 3px inset,
+rgb(255, 0, 122) 8px 8px 0px 0px` with `outline: 3px solid rgb(19, 19, 19)`
+   at a 3px offset. Screenshotted, the two rings read as one deliberate
+   double-stroke rather than as noise.
+
+   That is one viewport, one engine, headless, on a fixture, judged by an
+   agent. It is not a person looking at a real page, no screen reader has been
+   near it, and reflow on a gold ground is still untested because no real route
+   has one to run the 305px suite against. Re-test when the Career page lands
+   and replace the fixtures with the real section.
 
 ## 8. Reporting a barrier
 

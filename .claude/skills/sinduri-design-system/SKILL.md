@@ -310,13 +310,19 @@ after components in the cascade. That is intentional, and it is also the hole:
 `class="border-border"` or `class="text-muted"` written inside a gold section
 is a bug no CSS can prevent.
 
-**A rule engine will not catch this for you, and specifically will not catch a
-`.btn-primary` on gold.** Measured: a gold section containing one returned "No
-accessibility violations found" from AccessLint with AAA enabled. Contrast
-rules measure a label against its own button's fill, and `.surface-gold`
-repaints that label `darkcyan` at 8.00, so the control passes while being a
-1.00:1 gold fill on a gold ground, invisible as a shape. A green scan is not
-evidence here.
+**A rule engine will not catch this for you.** Measured twice, on a real route
+rendering a `.surface-gold` section, both times with AAA enabled:
+
+| Broken control                                | AccessLint result      |
+| --------------------------------------------- | ---------------------- |
+| `.btn-primary` on gold — 1.00:1 gold fill     | 0 violations           |
+| `.btn-gold-secondary` with a `#FFC000` border | 0 violations, 95 rules |
+
+Both controls had no visible edge anywhere on them. Contrast rules measure a
+label against its own control's background, and `.surface-gold` repaints those
+labels to something that passes, so the scan is clean while the button is not
+there. **A green scan is not evidence about whether a control is visible**, on
+either the fill case or the border case.
 
 `tests/gold-surface.spec.ts` is what catches it. It measures from the rendered
 DOM rather than matching class names, so it fails on the _outcome_:
