@@ -81,3 +81,21 @@ older than 22.12.
 
 Design system, tokens, commit format, and code conventions are documented in
 [AI.md](AI.md).
+
+## Accessibility
+
+The conformance target, the known gaps, and how to report a barrier are in
+[ACCESSIBILITY.md](ACCESSIBILITY.md).
+
+## AI use
+
+AI tooling was used to build this repository. What was used, how it is
+reviewed, and the fact that no AI runs at runtime are documented in
+[AI_DISCLOSURE.md](AI_DISCLOSURE.md).
+
+## License
+
+Source code is MIT licensed. See [LICENSE](LICENSE).
+
+Lexend is licensed separately under the SIL Open Font License 1.1, copyright
+2019 The Lexend Project Authors. See [Fonts](#fonts) above.
