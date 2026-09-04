@@ -235,7 +235,11 @@ Defined in `@layer components` in `src/styles/global.css`:
   `12px 12px 0` pink shadow, 13px / 900 / 0.1em uppercase
 - `.btn-secondary` — surface background, text-colored text, `border-4`,
   `6px 6px 0` gold shadow
-- `.card` — surface background, `border-8`, 40px padding
+- `.card` — surface background, `border-8`, 24px padding below `sm` and 40px
+  from `sm` up (`p-card-tight sm:p-card`). Two numbers because the card is a
+  box inside a box: 40px a side leaves a 177px content box at a 305px
+  viewport, which breaks a card title mid-word. 24px leaves 209px. It steps up
+  at the same breakpoint as the page gutter
 - `.section-divider` — `border-b-8`
 - `.label` / `.label-wide` — 13px / 900 uppercase, 0.1em / 0.14em tracking
 - `.section-number` — `clamp(24px, 2.8vw, 32px)` / 800, `pinkText`

@@ -174,6 +174,19 @@
 
   /* Layout */
   --spacing-header: 80px;
+  /*
+   * Card padding is two numbers because the card is a box inside a box. At
+   * 40px a side, a card at a 305px viewport leaves 273 - 16 (border-8) - 80
+   * = 177px of content, and 177px is not enough for the type that goes in
+   * one: a card title at the 26px h3 floor breaks "PLACEHOLDER:" mid-word,
+   * and a real post title runs to six lines. The padding was sized for the
+   * desktop card and then applied to a card a third the width.
+   *
+   * 24px below `sm` leaves 209px, which is where it was before the page
+   * gutter came back. It steps up to 40px at the same breakpoint as the
+   * gutter, so there is one place where the layout changes, not two.
+   */
+  --spacing-card-tight: 24px;
   --spacing-card: 40px;
 }
 
@@ -363,7 +376,7 @@
   }
 
   .card {
-    @apply border-8 border-border bg-surface p-card;
+    @apply border-8 border-border bg-surface p-card-tight sm:p-card;
   }
 
   .section-divider {
