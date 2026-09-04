@@ -302,6 +302,7 @@ Hard offset shadow utilities, all zero blur and zero spread:
 | `shadow-hard-gold-6`  | `6px 6px 0` gold   |
 | `shadow-hard-gold-4`  | `4px 4px 0` gold   |
 | `shadow-hard-pink-12` | `12px 12px 0` pink |
+| `shadow-hard-pink-8`  | `8px 8px 0` pink   |
 | `shadow-hard-cyan-8`  | `8px 8px 0` cyan   |
 
 ### Component classes
@@ -320,6 +321,12 @@ Defined in `@layer components` in `src/styles/global.css`:
 - `.section-divider` — `border-b-8`
 - `.label` / `.label-wide` — 13px / 900 uppercase, 0.1em / 0.14em tracking
 - `.section-number` — `clamp(24px, 2.8vw, 32px)` / 800, `pinkText`
+- `.page-gutter` — the horizontal gutter, declared once and applied to the
+  header, `<main>` and the footer, so every route presents the same content
+  box at 320px
+- `.skip-link` — the skip-to-content link, visible on focus
+- `.surface-gold`, `.btn-gold-primary`, `.btn-gold-secondary` — the gold-ground
+  set, scoped to `.surface-gold`. See [The gold surface](#the-gold-surface)
 
 Links are gold with no underline, and turn cyan on hover. This is set in the
 base layer, so plain `<a>` elements are already correct.
