@@ -80,11 +80,14 @@
    * Width scales linearly with font-size because the -0.05em tracking is
    * proportional too. This only bites below a 422px viewport (38 / 0.09).
    *
+   * That 305px box is now the box on every route. Page containers drop their
+   * horizontal padding below `sm`, so there is one content box width and one
+   * set of arithmetic rather than a padded 272px variant on blog routes.
+   *
    * This layer removes the break; it does not guarantee it. Wider 13-char
-   * words ("ANNOUNCEMENTS", 349.3px at 38px) and the 272px content box on
-   * padded blog pages still overflow at 38px, and the overflow-wrap rule in
-   * the base layer below is what catches them. That is the guarantee; this
-   * floor is the reason it rarely has to fire.
+   * words ("ANNOUNCEMENTS", 349.3px at 38px) still overflow, and the
+   * overflow-wrap rule in the base layer below is what catches them. That is
+   * the guarantee; this floor is the reason it rarely has to fire.
    */
   --text-h1: clamp(38px, 9vw, 104px);
   --text-h1--line-height: 0.94;

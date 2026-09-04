@@ -38,7 +38,16 @@ const categoryLabel = category.replaceAll('-', ' ');
   description={post.data.seoDescription ?? teaser}
   ogImage={ogImage}
 >
-  <div class="mx-auto max-w-3xl px-6 py-20">
+  <!--
+    No horizontal padding below `sm`. Every route has to present the same
+    content box width at 320px, or the heading floors need one set of
+    arithmetic per route. The stub pages render straight into <main>, which
+    has no padding, so 24px here made this route's box 48px narrower than
+    theirs and "PROFESSIONAL" overflowed it. Padding returns at `sm`, where
+    the box is wide enough that it costs nothing. See the --text-h1 comment
+    in global.css.
+  -->
+  <div class="mx-auto max-w-3xl py-20 sm:px-6">
     <p class="label text-subtle">
       <a href={`/blog/${category}`} class="text-gold">{categoryLabel}</a>
     </p>

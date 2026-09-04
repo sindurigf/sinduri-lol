@@ -45,7 +45,14 @@ const currentYear = new Date().getFullYear();
 const copyright = `© ${currentYear} ${SITE_NAME}`;
 ---
 
-<footer class="border-t-8 border-gold bg-deep px-6 pb-10 pt-20">
+<!--
+  No horizontal padding below `sm`. The footer carries an <h2>, so it is one
+  of the boxes the heading floors are calibrated against and it has to match
+  the page content box exactly. The header is excluded on purpose: it holds no
+  heading, and zeroing its padding would push the rotated logo tile past the
+  left edge.
+-->
+<footer class="border-t-8 border-gold bg-deep pb-10 pt-20 sm:px-6">
   <div class="mx-auto max-w-7xl">
     <h2 class="-rotate-1 text-h2 text-gold">Let&rsquo;s Talk.</h2>
 
