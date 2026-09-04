@@ -123,6 +123,10 @@ that require judgement.
 
 ### What is not automated, and has not been done
 
+[docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) is the checklist for the list
+below. It gives steps, a pass condition, and the criterion for each, and it
+names the software each check needs.
+
 None of the following has been performed. Each is a real gap, not a formality.
 
 - **Keyboard flow.** Tab order, focus visibility in context, whether the sticky
