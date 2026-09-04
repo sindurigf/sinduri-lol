@@ -35,7 +35,9 @@ const onKeydown = (event: KeyboardEvent): void => {
 
   if (event.key !== 'Tab' || !panel.value) return;
 
-  const targets = Array.from(panel.value.querySelectorAll<HTMLElement>(FOCUSABLE));
+  const targets = Array.from(
+    panel.value.querySelectorAll<HTMLElement>(FOCUSABLE),
+  );
   const first = targets[0];
   const last = targets[targets.length - 1];
   if (!first || !last) return;

@@ -36,12 +36,12 @@ The Lexend Project Authors. The full license text ships with the package at
 
 ## Commands
 
-| Command           | Does                                        |
-| ----------------- | ------------------------------------------- |
-| `npm run dev`     | Dev server at `http://localhost:4321`       |
-| `npm run build`   | Static build to `dist/`                     |
-| `npm run preview` | Serve the built `dist/` locally             |
-| `npm run astro`   | Astro CLI passthrough                       |
+| Command           | Does                                  |
+| ----------------- | ------------------------------------- |
+| `npm run dev`     | Dev server at `http://localhost:4321` |
+| `npm run build`   | Static build to `dist/`               |
+| `npm run preview` | Serve the built `dist/` locally       |
+| `npm run astro`   | Astro CLI passthrough                 |
 
 ## Project layout
 
@@ -67,12 +67,12 @@ the build fails on anything that does not match. See
 
 Cloudflare Pages, static. No SSR adapter is configured.
 
-| Setting            | Value           |
-| ------------------ | --------------- |
-| Framework preset   | Astro           |
-| Build command      | `npm run build` |
-| Build output       | `dist`          |
-| Node version       | `22.12.0` or newer |
+| Setting          | Value              |
+| ---------------- | ------------------ |
+| Framework preset | Astro              |
+| Build command    | `npm run build`    |
+| Build output     | `dist`             |
+| Node version     | `22.12.0` or newer |
 
 Set `NODE_VERSION` in the Pages environment variables if the default runtime is
 older than 22.12.
