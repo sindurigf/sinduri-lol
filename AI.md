@@ -234,7 +234,7 @@ All referenced assets are now in the repo.
 | Path                               | Used by            |
 | ---------------------------------- | ------------------ |
 | `public/images/bunny-dark.png`     | `Header.astro`     |
-| `public/images/badge-white.png`    | OG image source    |
+| `public/images/badge-white.png`    | `Footer.astro`, OG |
 | `public/images/og-default.png`     | `BaseLayout.astro` |
 | `public/images/og-placeholder.png` | `example-post.md`  |
 
@@ -243,8 +243,13 @@ All referenced assets are now in the repo.
 not `badge-dark`: the dark badge is near-black line art meant for the gold
 tile, and it measures 1.04:1 against `#131313`, which is invisible.
 
-Footer social links are real. The footer badge image from the comps is not
-placed yet; see the TODO in `Footer.astro`.
+Footer social links are real. The footer badge is placed: `badge-white.png` at
+44px tall, `opacity-80`, in a 14px flex row to the left of the copyright line.
+
+Its `alt` is `""` on purpose. Beside a copyright line that already reads
+"© 2026 sinduri.lol", a name of "Sinduri — Lepus Ridet" would announce the same
+thing twice. **The alt belongs to the placement, not to the file.** The same
+asset standing alone as the only carrier of the name needs a real alt.
 
 ---
 

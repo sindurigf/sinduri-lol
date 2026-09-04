@@ -151,18 +151,13 @@ Stated honestly. This list is not filtered for how it looks.
 2. **Most pages are placeholder stubs.** Home, About, Career, Blog index, and
    Contact render `PLACEHOLDER` copy. They pass axe because there is almost
    nothing on them. That is not evidence of anything.
-3. **The footer badge image is not placed.** The design comps show a badge mark
-   in the footer that has not been implemented. See the `TODO(design)` in
-   `src/components/Footer.astro`. When added it takes
-   `alt="Sinduri - Lepus Ridet"`, and a decorative watermark version takes
-   `alt=""`.
-4. **The spinning badge is not built.** It appears in the comps, auto-starts,
+3. **The spinning badge is not built.** It appears in the comps, auto-starts,
    and runs past five seconds, so under SC 2.2.2 Pause, Stop, Hide it needs a
    keyboard-operable pause control. A `prefers-reduced-motion` media query does
    not satisfy 2.2.2 on its own, because a user who has not set that preference
    still has no way to stop it.
-5. **No screen reader testing has been done at all.** See section 6.
-6. **Only one blog post exists,** and it is placeholder content. Long-form
+4. **No screen reader testing has been done at all.** See section 6.
+5. **Only one blog post exists,** and it is placeholder content. Long-form
    reading order, in-page headings, and link text in real prose are untested.
 
 ## 8. Reporting a barrier

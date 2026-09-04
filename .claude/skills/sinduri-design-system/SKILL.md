@@ -273,11 +273,20 @@ Rules:
 
 ### Alt text conventions
 
-| Image                             | Alt                     |
-| --------------------------------- | ----------------------- |
-| Header bunny mark                 | `Lepus Ridet mark`      |
-| Footer badge                      | `Sinduri — Lepus Ridet` |
-| Large decorative watermark badges | `""`                    |
+Alt text is decided by what the image does **in its position**, not by which
+file it is. The same badge is informative in one place and decorative in
+another.
+
+| Image                                   | Alt                     |
+| --------------------------------------- | ----------------------- |
+| Header bunny mark, inside the home link | `Lepus Ridet mark`      |
+| Footer badge, beside the copyright line | `""`                    |
+| Badge standing alone as the only name   | `Sinduri — Lepus Ridet` |
+| Large decorative watermark badges       | `""`                    |
+
+The footer badge is `alt=""` because the copyright line next to it already
+reads "© 2026 sinduri.lol". Naming the badge would announce the same thing
+twice and add nothing. Do not "fix" it by giving it a name.
 
 ---
 
