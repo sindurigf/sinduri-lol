@@ -1,0 +1,16 @@
+---
+// Stub. Built out in a later phase.
+
+interface Props {
+  href: string;
+  title: string;
+  teaser: string;
+}
+
+const { href, title, teaser } = Astro.props;
+---
+
+<article>
+  <h3><a href={href}>{title}</a></h3>
+  <p>{teaser}</p>
+</article>

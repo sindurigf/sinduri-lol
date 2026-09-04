@@ -1,0 +1,17 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Wired to the blog content collection in Phase 2.
+export const getStaticPaths: GetStaticPaths = () => [];
+
+const { slug } = Astro.params;
+---
+
+<BaseLayout
+  title="Post | sinduri.lol"
+  description="Placeholder description. Replace with real copy."
+>
+  <h1>{slug}</h1>
+  <p>Placeholder copy. This page is built in a later phase.</p>
+</BaseLayout>
