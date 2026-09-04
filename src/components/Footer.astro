@@ -1,7 +1,39 @@
 ---
-// Stub. Built out in Phase 5.
+// PLACEHOLDER hrefs. Every `#` below needs a real URL before launch.
+const SOCIAL_LINKS = [
+  { href: '#', label: 'GitHub' },
+  { href: '#', label: 'LinkedIn' },
+  { href: '#', label: 'Instagram' },
+  { href: '#', label: 'Email' },
+] as const;
+
+const SITE_NAME = 'sinduri.lol';
+const currentYear = new Date().getFullYear();
 ---
 
-<footer>
-  <p>&copy; {new Date().getFullYear()} sinduri.lol</p>
+<footer class="border-t-8 border-gold bg-deep px-6 pb-10 pt-20">
+  <div class="mx-auto max-w-7xl">
+    <h2 class="-rotate-1 text-h2 text-gold">Let&rsquo;s Talk.</h2>
+
+    <nav aria-label="Social" class="mt-14">
+      <ul class="flex flex-wrap gap-6">
+        {
+          SOCIAL_LINKS.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="label block border-4 border-border bg-surface px-6 py-4 text-text hover:shadow-hard-gold-6"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <p class="mt-20 text-label font-black uppercase tracking-label text-subtle">
+      &copy; {currentYear} {SITE_NAME}
+    </p>
+  </div>
 </footer>

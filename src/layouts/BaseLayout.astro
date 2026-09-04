@@ -9,7 +9,14 @@ interface Props {
   ogImage?: string;
 }
 
-const { title, description, ogImage } = Astro.props;
+const SITE_NAME = 'sinduri.lol';
+// PLACEHOLDER: this asset is not in the repo yet. See AI.md.
+const DEFAULT_OG_IMAGE = '/images/og-default.png';
+
+const { title, description, ogImage = DEFAULT_OG_IMAGE } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImageUrl = new URL(ogImage, Astro.site);
 ---
 
 <html lang="en">
@@ -18,11 +25,28 @@ const { title, description, ogImage } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    {ogImage ? <meta property="og:image" content={ogImage} /> : null}
+    <link rel="canonical" href={canonical} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <meta name="generator" content={Astro.generator} />
   </head>
-  <body>
+  <body class="flex min-h-screen flex-col">
     <Header />
-    <main>
+    <main class="flex-1">
       <slot />
     </main>
     <Footer />
