@@ -8,6 +8,9 @@ their content into this file.
 
 - `main` is protected by a branch ruleset. Direct pushes are rejected. Always
   branch, and name the branch for the task.
+- The required status check is the GitHub _context_ name, which comes from
+  `jobs.a11y.name` in `.github/workflows/a11y.yml` and not from the job key.
+  Renaming that string silently removes protection from `main`.
 - `gh` is the tool for pull requests. Run `gh auth status` before relying on
   it; if it is unauthenticated, stop and say so. Printing a `compare/` URL is
   not opening a pull request.
