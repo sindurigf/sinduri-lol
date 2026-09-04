@@ -4,9 +4,13 @@ The checks a machine cannot decide. Automated coverage (`npm run test:a11y`)
 reaches roughly a third of WCAG failures; everything below is the rest, for
 what currently exists.
 
-**Scope.** `BaseLayout`, `Header`, `Footer`, `MobileMenu`, `BlogLayout`,
-`BlogCard`. Pages are still `PLACEHOLDER` stubs, so this covers chrome and
-navigation, not real reading content.
+**Scope.** `BaseLayout`, `Header`, `Footer`, `MobileMenu`, the blog templates
+(`BlogLayout`, `blog/[slug].astro`, `blog/[category]/index.astro`), and
+`404.astro`. Home, About, Career, Blog index and Contact still render
+`PLACEHOLDER` stubs, so those routes exercise the chrome and navigation and
+nothing else. The blog routes and the 404 page have real structure, and the
+404 page has real copy. `BlogCard.astro` is a stub no route renders, so there
+is nothing in it to test yet.
 
 **Setup.**
 
@@ -29,7 +33,7 @@ is closed by testing it, not by fixing it.
 | ------------- | --------------------------------------------- | ------------ |
 | Google Chrome | installed (152)                               | all          |
 | Firefox       | installed (155)                               | §2, §8       |
-| Orca          | **installed** (`/usr/bin/orca`)               | §6           |
+| Orca          | **installed** — 49.1, AT-SPI2 2.57.1          | §6           |
 | NVDA          | not available — Windows only                  | §6           |
 | VoiceOver     | not available — macOS/iOS only                | §6           |
 | Accerciser    | not installed (`sudo apt install accerciser`) | optional, §6 |
@@ -188,71 +192,402 @@ Look, do not measure:
 - [ ] Nothing relies on the hard offset shadow to signal focus. The shadows are
       resting state and decoration. → SC 2.4.7
 
-## 6. Screen reader
+## 6. Screen reader: the Orca pass
 
-**Orca is installed and is your realistic option.** NVDA needs a Windows VM;
-VoiceOver needs a Mac. Do the Orca pass; treat the others as optional.
+This is gap 4 in [ACCESSIBILITY.md](../ACCESSIBILITY.md) §7, the oldest
+outstanding item on the site and the only one that needs a person at a
+keyboard. Nothing here has ever been run against any screen reader. Orca is
+the realistic option: NVDA needs a Windows VM and VoiceOver needs a Mac.
 
-### Orca (Linux, available now)
+Written to be worked through in one sitting, against what exists today:
+`BaseLayout`, `Header`, `Footer`, `MobileMenu`, the blog templates, and the
+404 page. No prior Orca experience assumed.
 
-Orca on Wayland with Chrome needs accessibility support switched on:
+### 6.1 Setting up
+
+Build and serve, in one terminal:
 
 ```sh
-gsettings set org.gnome.desktop.interface toolkit-accessibility true
-orca &                     # Super+Alt+S also toggles it
+npm run build && npm run preview   # http://localhost:4321
 ```
 
-Chrome enables its accessibility tree automatically once Orca is running.
-If nothing is announced, restart Chrome after starting Orca. Firefox is often
-more reliable than Chrome with Orca — try it if Chrome is silent.
+Start Orca with a log, in a second terminal:
 
-Orca keys: `Orca+Tab` next item, `Orca+H` next heading, `Orca+M` landmarks
-list, `Orca+K` links list. The Orca modifier is Insert or CapsLock.
+```sh
+orca --replace --debug-file=/tmp/orca-pass.log &
+```
 
-- [ ] Landmarks are announced: banner, navigation "Primary", main,
-      contentinfo, navigation "Social". → SC 1.3.1
-- [ ] There is exactly **one** `<h1>` and it is announced first among headings.
-      → SC 1.3.1, 2.4.6
-- [ ] Heading levels do not skip. → SC 1.3.1
-- [ ] The current page's nav link is announced as **current**, not merely shown
-      with a gold dot. → SC 1.4.1
-- [ ] The gold active-page dot is **not** announced. → SC 1.3.1
-- [ ] The menu button is announced as "Menu, button, collapsed", and as
-      **expanded** once opened. → SC 4.1.2
-- [ ] Opening the menu moves the reading cursor **into** the dialog, and the
-      page behind is not reachable while it is open. → SC 4.1.2
-- [ ] The footer badge is **silent**. If you hear "Sinduri" or a filename,
-      the `alt=""` has been broken. → SC 1.1.1
-- [ ] The header bunny mark announces "Lepus Ridet mark". → SC 1.1.1
-- [ ] Link names make sense read out of context in the links list. → SC 2.4.4
-- [ ] Nothing is announced twice in a row. → SC 1.3.1
-- [ ] **Note how nav items are read.** This is the open half of a known issue,
-      so record the answer rather than skipping it. The markup is sentence case
-      and uppercased in CSS, and Chromium is **confirmed** to hand the
-      transformed string to the accessibility tree: measured at version 151,
-      `About` in the markup exposes the accessible name `"ABOUT"`. What is not
-      known is what Orca then _says_. Write down whether it says "About",
-      "ABOUT", or spells "A-B-O-U-T", and whether that changes with verbosity
-      settings. Then update ACCESSIBILITY.md §6 and the design system skill.
-      → SC 1.3.1
-- [ ] Repeat that one item in **Firefox**, which is reported not to apply
-      `text-transform` to the accessible name. Untested here. → SC 1.3.1
-- [ ] The mobile menu's nav landmark is announced **once**, as plain
-      "navigation" inside the "Menu" dialog. It used to be labelled "Primary",
-      the same as the header nav, which made the two indistinguishable in a
-      landmarks list. → SC 1.3.1
-- [ ] Turn `toolkit-accessibility` back to `false` when finished if the desktop
-      feels slow.
+**The log is the point.** `--debug-file` sets Orca's debug level to
+`LEVEL_ALL`, and every utterance is written out as a line reading
+`SPEECH OUTPUT: '...'`. That is a verbatim transcript, which is what several
+of the checks below actually ask for. Do not work from memory. Watch it live
+in a third terminal:
 
-### NVDA (Windows) — needs a VM, mark N/A if you have none
+```sh
+tail -f /tmp/orca-pass.log | grep --line-buffered "SPEECH OUTPUT"
+```
 
-- [ ] Same list as above, in Chrome and Firefox.
-- [ ] Check browse mode vs focus mode on the dialog specifically.
+**Stopping Orca.** `Super+Alt+S` toggles it off, and back on. There is no
+`--quit` flag and the quit command is unbound by default, so `pkill -f orca`
+is the fallback. The log grows fast, because `LEVEL_ALL` records far more than
+speech; `rm /tmp/orca-pass.log` when you are done with it.
 
-### VoiceOver (macOS/iOS) — no hardware, mark N/A
+**If Chrome is silent.** Orca 49 switches accessibility on by itself over
+D-Bus (`org.a11y.Status IsEnabled`), so the old
+`gsettings set org.gnome.desktop.interface toolkit-accessibility true` step is
+a GTK-era fallback rather than a requirement. If nothing is announced anyway,
+in this order: restart Chrome while Orca is already running; set
+`toolkit-accessibility true` and restart Chrome again; try Firefox, which is
+often more reliable than Chrome with Orca. Set `toolkit-accessibility` back to
+`false` afterwards if the desktop feels slow.
 
-- [ ] Safari only. `Cmd+F5` to start, `Ctrl+Opt+U` for the rotor.
-- [ ] iOS VoiceOver on the mobile menu, since touch differs from keyboard.
+Checked on this machine: **Orca 49.1, AT-SPI2 2.57.1, Wayland.**
+
+### 6.2 The keys you need
+
+The **Orca modifier** is `CapsLock` on the Laptop keyboard layout and `Insert`
+on the Desktop layout. If you do not know which you have, press `Orca+H` with
+each in turn: Learn Mode announces every key you press along with the command
+it runs, and `Esc` leaves it. Learn Mode is also the safe way to try any key
+below without triggering it.
+
+| Key                 | What it does                                      |
+| ------------------- | ------------------------------------------------- |
+| `Super+Alt+S`       | Turn Orca on and off                              |
+| `Orca+H`            | Learn Mode on. `Esc` to leave                     |
+| `Orca+S`            | Silence speech, and turn it back on               |
+| `Orca+V`            | Toggle verbose and brief verbosity                |
+| `Orca+Return`       | Where Am I: describe what you are on now          |
+| `Orca+Slash`        | Read the window title bar                         |
+| `Orca+Space`        | Orca's preferences dialog                         |
+| `Orca+Z`            | Turn the single-letter navigation keys off and on |
+| `Tab` / `Shift+Tab` | Move focus, exactly as without a screen reader    |
+| `Up` / `Down`       | Read the previous / next line                     |
+| `Ctrl+Home`         | Go to the top of the document                     |
+| `H` / `Shift+H`     | Next / previous heading                           |
+| `1`–`6`             | Next heading at that level                        |
+| `Alt+Shift+H`       | **List** every heading on the page                |
+| `K` / `Shift+K`     | Next / previous link                              |
+| `Alt+Shift+K`       | **List** every link                               |
+| `M` / `Shift+M`     | Next / previous landmark                          |
+| `Alt+Shift+M`       | **List** every landmark                           |
+| `B`                 | Next button                                       |
+| `G`                 | Next image                                        |
+| `L` / `I`           | Next list / next list item                        |
+
+`Orca+Return` is the Laptop-layout binding for Where Am I. On the Desktop
+layout it is the numeric keypad's `Enter`.
+
+The single-letter keys are structural navigation, and they only work while you
+are reading a document rather than typing into a field. This site has no form
+fields yet, so they work everywhere on it.
+
+### 6.3 How to fill this in
+
+Each check gives the steps, what a pass sounds like, and a blank. **Write what
+you heard, word for word, not a summary.** "Says the name" is not a result;
+`About link` is. Where the log is running, paste the `SPEECH OUTPUT` line.
+
+A blank left empty is an untested check, and that is a legitimate outcome to
+record. A ticked box with an empty blank is not.
+
+### 6.4 The uppercase question. Do this one first
+
+This is the open half of a known issue and the only reason to run the pass in
+a particular order: three files are waiting on the answer.
+
+`AI.md` [Uppercase](../AI.md#uppercase) and the design system skill's
+`### Uppercase` both record that Chromium hands the **transformed** string to
+the accessibility tree, measured at Chromium 151: markup reading `About`
+exposes the accessible name `"ABOUT"`. Both then flag what a reader actually
+_says_ for such a name as unverified. That guess is what these checks replace.
+
+It is not only the nav. Every `h1`–`h6`, `.label`, `.label-wide`,
+`.btn-primary`, `.btn-secondary` and the skip link carry
+`text-transform: uppercase`, so the answer applies to the whole site.
+
+**6.4.1 A nav link, Chrome.**
+
+1. Chrome at 1280px, full screen, on `http://localhost:4321/about`.
+2. `Ctrl+Home`.
+3. Press `K` until Orca reaches the header link **Career**. Career rather than
+   About on purpose: it is not the current page, so nothing about
+   `aria-current` is mixed into the announcement.
+4. Press `Orca+Return` and listen to it again.
+
+There is no pass here, only an answer. Record which of these it was: the word
+read normally ("Career"); the word read with the caps signalled somehow, by a
+pitch change or a tone; the word spelled out ("C A R E E R"); or something
+else entirely.
+
+- [ ] Heard: `_________________________________________________________`
+- [ ] `SPEECH OUTPUT:` line: `_____________________________________________`
+
+**6.4.2 The same link, other verbosity.** Press `Orca+V`, repeat 6.4.1, then
+`Orca+V` again to put it back.
+
+- [ ] Heard: `_________________________________________________________`
+
+**6.4.3 Capitalization style.** Orca has a **Capitalization style** setting
+under `Orca+Space` → Voice, with the values None (the default), Spell, and
+Icon. It changes how a capital is signalled, so 6.4.1 is only meaningful with
+the value written down.
+
+- [ ] The setting was on: `______________________________________________`
+
+**6.4.4 A heading.** `Ctrl+Home`, then `H` to reach the `<h1>` on `/about`,
+which reads `About` in the markup.
+
+- [ ] Heard: `_________________________________________________________`
+
+**6.4.5 A button label.** Go to `http://localhost:4321/404` and press `K` to
+"Go to the homepage", which `.btn-primary` uppercases.
+
+- [ ] Heard: `_________________________________________________________`
+
+**6.4.6 The same nav link, Firefox.** Firefox is reported not to apply
+`text-transform` to the accessible name. That has never been checked here, and
+it is the load-bearing half of the design system rule. Repeat 6.4.1 in
+Firefox.
+
+- [ ] Heard: `_________________________________________________________`
+
+If Firefox reads "Career" and Chrome does not, that is the engine
+inconsistency the rule is built on, measured rather than cited.
+
+### 6.5 Skip link
+
+Two separate questions, and the second is the one usually missed. The skip
+link is the first focusable element in `BaseLayout`, and `main` carries
+`tabindex="-1"` precisely so that activating it moves the **reading cursor**
+and not only focus. A skip link that moves the sequential focus point but
+leaves the screen reader's cursor at the top of the document has skipped
+nothing for the person using it.
+
+Chrome at 1280px on `http://localhost:4321/`. Click into the address bar, then
+press `Tab` once.
+
+- [ ] It is announced, and it is the first thing announced.
+      Heard: `___________________________________________` → SC 2.4.1
+- [ ] The name is "Skip to main content", in whatever casing 6.4 settled.
+      Heard: `___________________________________________` → SC 2.4.4
+
+Press `Enter`.
+
+- [ ] Something is announced on landing rather than silence.
+      Heard: `___________________________________________` → SC 2.4.1
+- [ ] **The reading cursor moved, not just focus.** Press `Down` immediately.
+      A pass reads the page's own first line ("Placeholder heading" on `/`). A
+      line from the header is a fail: the cursor never left the top.
+      Heard: `___________________________________________` → SC 2.4.1
+- [ ] Press `Tab` once. A pass lands on the footer's first social link,
+      GitHub. A header nav link means the skip did not take.
+      Heard: `___________________________________________` → SC 2.4.1
+
+### 6.6 Header, footer, landmarks and headings
+
+Chrome at 1280px on `http://localhost:4321/about`. Home, About, Career, Blog
+and Contact are still `PLACEHOLDER` stubs, so this exercises the chrome and
+nothing else, which is exactly what it is for.
+
+- [ ] `Alt+Shift+M` lists exactly five landmarks: banner, navigation
+      "Primary", main, contentinfo, navigation "Social". Nothing unnamed,
+      nothing duplicated.
+      Listed: `__________________________________________` → SC 1.3.1
+- [ ] `M` from the top steps through those five in that order.
+      Heard: `___________________________________________` → SC 1.3.1
+- [ ] `Alt+Shift+H` lists exactly two headings: the `h1` "About" and the
+      footer's `h2` "Let's Talk.". One `h1`, announced first, no skipped level.
+      Listed: `__________________________________________` → SC 1.3.1, 2.4.6
+- [ ] `G` from `Ctrl+Home` reaches the header bunny mark and announces
+      "Lepus Ridet mark".
+      Heard: `___________________________________________` → SC 1.1.1
+- [ ] `G` again finds **no second image**. The footer badge is `alt=""` and
+      must be silent. "Sinduri", "badge", or a filename means the empty alt
+      has been broken.
+      Heard: `___________________________________________` → SC 1.1.1
+- [ ] Reach the **About** link with `K`. A pass announces it as the current
+      page, not merely as a link.
+      Heard: `___________________________________________` → SC 1.4.1, 4.1.2
+- [ ] The gold active-page dot is **not** announced. Nothing about a dot, a
+      bullet, or a stray blank in that same announcement.
+      Heard: `___________________________________________` → SC 1.3.1
+- [ ] `Alt+Shift+K` lists the links. Every name stands on its own, out of
+      context: no "click here", no bare URL, no two destinations sharing a
+      name. Note any that do not.
+      Noted: `___________________________________________` → SC 2.4.4
+- [ ] Nothing is announced twice in a row, anywhere in this pass. Note where
+      if it is.
+      Noted: `___________________________________________` → SC 1.3.1
+
+### 6.7 MobileMenu at 320px
+
+**Getting to 320px.** The breakpoint is Tailwind's `md`, 768px, so the mobile
+menu is present at any width below that; 320px is the width the rest of this
+document is calibrated against, so use it. If the browser window will not go
+that narrow, use DevTools' device toolbar (`Ctrl+Shift+M`) with the width set
+to 320. **Undock DevTools into its own window first** (DevTools' three-dot
+menu → Dock side → the separate-window icon): a docked panel is in the same
+accessibility tree as the page, and Orca will read into it.
+
+Chrome at 320px on `http://localhost:4321/`. `Ctrl+Home`, then `Tab` three
+times: skip link, logo, menu button. The desktop nav is `display: none` here,
+so it is not in the way.
+
+- [ ] The button announces its name **and** its state. A pass contains "Menu",
+      "button", and collapsed or not-expanded, in some wording.
+      Heard: `___________________________________________` → SC 4.1.2
+- [ ] Press `Enter`. A pass announces a **dialog** and its name: something
+      containing both "Menu" and "dialog". "dialog" with no name means the
+      `aria-label="Menu"` is not reaching the tree.
+      Heard: `___________________________________________` → SC 4.1.2
+- [ ] The reading cursor is **inside** the panel, not still on the button.
+      Press `Down` immediately. A pass reads the first nav link.
+      Heard: `___________________________________________` → SC 4.1.2
+- [ ] The page behind is **unreachable**. `Ctrl+Home`, then `Down` repeatedly.
+      A pass never reads the header, the footer, or the page's `h1`.
+      `showModal()` marks the rest inert, so a leak is a real finding.
+      Heard: `___________________________________________` → SC 4.1.2
+- [ ] `Alt+Shift+M` with the panel open lists **one** navigation, unnamed,
+      inside the dialog. Two navigations both called "Primary" is the
+      `landmark-unique` regression this markup was changed to avoid, and the
+      automated suite does not run that rule.
+      Listed: `__________________________________________` → SC 1.3.1
+- [ ] Press **Escape**. A pass announces the close and puts you back on the
+      menu button, with its state collapsed again.
+      Heard: `___________________________________________` → SC 2.1.2, 4.1.2
+- [ ] **Where the cursor landed after Escape.** Press `Orca+Return` before
+      pressing anything else. A pass describes the menu button. The document,
+      "html", or the page `h1` means the reading cursor did not follow the
+      focus the browser restored, which is a finding even though the
+      keyboard-only check in §2 passes.
+      Heard: `___________________________________________` → SC 2.4.3
+- [ ] Reopen, reach **Close** (`B`, or Tab to it), press Enter, and ask the
+      same question with `Orca+Return`.
+      Heard: `___________________________________________` → SC 2.4.3
+- [ ] Reopen and activate a nav link. It navigates, and the new page is
+      announced rather than arriving in silence.
+      Heard: `___________________________________________` → SC 2.1.1
+- [ ] Repeat the open, the Escape, and both cursor-position checks in
+      **Firefox**. `<dialog>` differs between engines and Orca is often better
+      behaved in Firefox.
+      Heard: `___________________________________________` → SC 4.1.2
+
+### 6.8 A blog post: heading order and landmarks
+
+`http://localhost:4321/blog/example-post`, Chrome at 1280px. It is the only
+route with more than one level of real document structure, and the largest
+page in the build. The copy is placeholder; the structure is not.
+
+What the templates produce, in source order:
+
+| Level | Text                            | From                             |
+| ----- | ------------------------------- | -------------------------------- |
+| `h1`  | PLACEHOLDER: Example Post Title | `[slug].astro`, post frontmatter |
+| `h2`  | PLACEHOLDER heading             | the Markdown body                |
+| `h2`  | Tags                            | `[slug].astro`                   |
+| `h2`  | Let's Talk.                     | `Footer.astro`                   |
+
+- [ ] `Alt+Shift+H` lists exactly those four, in that order, at those levels.
+      A fifth entry, a different order, or an `h3` in the middle is a finding.
+      Listed: `__________________________________________` → SC 1.3.1
+- [ ] One `h1`, announced first. Levels run 1, 2, 2, 2 with nothing skipped.
+      Heard: `___________________________________________` → SC 1.3.1, 2.4.6
+- [ ] `H` from `Ctrl+Home` walks the same four in the same order, and each
+      announcement carries its level.
+      Heard, first two: `________________________________` → SC 1.3.1
+- [ ] `Alt+Shift+M` lists the same five landmarks as any other route. The
+      `<article>` in `BlogLayout` is not a landmark and must not appear.
+      Listed: `__________________________________________` → SC 1.3.1
+- [ ] `M` to `main`, then `Down` repeatedly. Reading order matches visual
+      order: category link, `h1`, teaser, date, then the body.
+      Heard: `___________________________________________` → SC 1.3.2
+- [ ] The category link reads "personal thoughts" and appears in
+      `Alt+Shift+K` with no surrounding context. Judge it there: does it say
+      it is a category filter? If not, that is a link-text finding, not a
+      pass.
+      Noted: `___________________________________________` → SC 2.4.4
+- [ ] The `<time>` element reads the formatted date, "1 January 2026", and not
+      the ISO string in its `datetime` attribute.
+      Heard: `___________________________________________` → SC 1.3.1
+- [ ] The Tags block is announced as a list of two items, each tag once. The
+      tags are plain `<li>` text, not links, so nothing should be announced as
+      clickable.
+      Heard: `___________________________________________` → SC 1.3.1
+
+### 6.9 The 404 page
+
+`http://localhost:4321/404`. This page answers every wrong address on the
+deployed site, so it is the one page someone can arrive at with no idea why.
+Whether the announcement says so is the entire check.
+
+`astro preview` serves it at `/404` with a 200. That is fine here; the status
+code is asserted by `tests/not-found.spec.ts`, not by this section.
+
+- [ ] `Ctrl+Home`, then `Down` through the page. Within the first few lines it
+      is clear the address was wrong and that nothing is broken on the
+      listener's end.
+      Heard: `___________________________________________` → SC 1.3.1
+- [ ] `Orca+Slash` reads the window title. A pass contains "404".
+      Heard: `___________________________________________` → SC 2.4.2
+- [ ] `Alt+Shift+H` lists exactly two headings: the `h1` "Page not found" and
+      the footer's "Let's Talk.".
+      Listed: `__________________________________________` → SC 1.3.1, 2.4.6
+- [ ] `G` from the top finds **only** the header mark. The large gold bunny
+      tile on this page is `alt=""`; hearing anything for it means the empty
+      alt has been broken.
+      Heard: `___________________________________________` → SC 1.1.1
+- [ ] The "404" above the heading is a `<p class="section-number">`, not a
+      heading, and should read as ordinary text. Record whether it comes out
+      as "four hundred and four", "four zero four", or "404". None of those is
+      a fail; the answer is the point.
+      Heard: `___________________________________________`
+- [ ] `Alt+Shift+K` lists this page's own two links, "Go to the homepage" and
+      "Read the blog". Both stand on their own.
+      Listed: `__________________________________________` → SC 2.4.4
+- [ ] They sit in a `<ul>` and are announced as a list of two items.
+      Heard: `___________________________________________` → SC 1.3.1
+
+### 6.10 NVDA (Windows) and VoiceOver (macOS/iOS)
+
+No hardware for either. Mark them N/A; they stay open in ACCESSIBILITY.md §7
+whatever Orca says.
+
+- [ ] NVDA: the same list, Chrome and Firefox, plus browse mode versus focus
+      mode on the dialog specifically. → needs a Windows VM
+- [ ] VoiceOver: Safari only, `Cmd+F5` to start, `Ctrl+Opt+U` for the rotor;
+      and iOS VoiceOver on the mobile menu, since touch differs from keyboard.
+      → needs a Mac
+
+### 6.11 What to do with the results
+
+| What you have              | Where it goes                                                                                                                                                                          |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Every filled blank         | This file. It is the record; the boxes and quotes stay here.                                                                                                                           |
+| The 6.4 answers            | `AI.md` → Uppercase; `.claude/skills/sinduri-design-system/SKILL.md` → `#### Why, accurately`; `ACCESSIBILITY.md` §6 → "How uppercase is announced"; `ACCESSIBILITY.md` §7 gap 4.      |
+| Everything else, passed    | `ACCESSIBILITY.md` §7 gap 4. **Narrow it, do not delete it.** NVDA, JAWS and VoiceOver stay untested whatever Orca says, and §6's "Screen reader announcement quality" bullet with it. |
+| A check that failed        | Fix the component, and add a test if the failure is machine-detectable. If it is not, it becomes a new numbered gap in `ACCESSIBILITY.md` §7, with what you heard quoted.              |
+| A check you did not get to | Leave the blank empty and say so in `ACCESSIBILITY.md` §7. An empty blank is data.                                                                                                     |
+
+**A negative result on 6.4 changes the rule's justification, not the
+practice.** Keep writing sentence case in the markup and uppercasing in CSS
+whatever Orca says. The rule was never justified by the announcement: the
+design system skill is explicit that the earlier "it keeps the accessible name
+in sentence case" defence is false. It rests on three things this test cannot
+touch. Chromium transforms the accessible name and Firefox and WebKit do not,
+so sentence case is the only input that is safe under either behaviour. The
+content stays editable, copy-pasteable and searchable as written. And machines
+reading the DOM get the true string. Typing `ABOUT` into the markup makes all
+three worse and fixes nothing.
+
+So a good result ("Career") replaces a flagged assumption with a measurement
+in three files, and nothing else changes. A bad result replaces the same
+assumption with the same measurement, and **additionally** opens a gap against
+the visual decision to uppercase at all. That second one is a design question
+for Sinduri: it would mean dropping `text-transform` from `.label` and the
+headings, which changes how the site looks. Do not make that change as a side
+effect of running this test. Either way, the "unverified" sentence in AI.md
+and in the skill gets replaced with what you actually heard.
 
 ## 7. Text zoom and text spacing
 
