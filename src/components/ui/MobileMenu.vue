@@ -75,16 +75,16 @@ onBeforeUnmount(() => {
     >
       <span aria-hidden="true" class="relative block h-4 w-6">
         <span
-          class="absolute left-0 block h-[3px] w-6 bg-gold transition-transform duration-150"
-          :class="isOpen ? 'top-[7px] rotate-45' : 'top-0'"
+          class="absolute left-0 block h-menu-bar w-6 bg-gold transition-transform duration-150"
+          :class="isOpen ? 'top-menu-bar-mid rotate-45' : 'top-0'"
         />
         <span
-          class="absolute left-0 top-[7px] block h-[3px] w-6 bg-gold transition-opacity duration-150"
+          class="absolute left-0 top-menu-bar-mid block h-menu-bar w-6 bg-gold transition-opacity duration-150"
           :class="isOpen ? 'opacity-0' : 'opacity-100'"
         />
         <span
-          class="absolute left-0 block h-[3px] w-6 bg-gold transition-transform duration-150"
-          :class="isOpen ? 'top-[7px] -rotate-45' : 'top-[14px]'"
+          class="absolute left-0 block h-menu-bar w-6 bg-gold transition-transform duration-150"
+          :class="isOpen ? 'top-menu-bar-mid -rotate-45' : 'top-menu-bar-end'"
         />
       </span>
     </button>

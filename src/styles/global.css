@@ -34,11 +34,19 @@
    A test that needs a class on an element it mounts itself should use an
    inline style, or a component class from @layer components, which is
    authored CSS and is emitted regardless of scanning.
+
+   scripts/ is excluded last, and it is the sharpest version of the problem.
+   scripts/check-tokens.mjs exists to reject arbitrary values, so it names the
+   ones it was written to catch: `h-[3px]`, `top-[7px]`, `top-[14px]`,
+   `backdrop-blur-[10px]`. Before this line, Tailwind read that comment and
+   emitted all four. The checker that forbids arbitrary values was, for one
+   build, the only thing in the repo still shipping them.
 --------------------------------------------------------------------------- */
 
 @source not '../../**/*.md';
 @source not '../../.claude';
 @source not '../../tests';
+@source not '../../scripts';
 
 /* ---------------------------------------------------------------------------
    Design tokens. Dark mode only, no light theme and no `dark:` variant setup.
@@ -344,6 +352,32 @@
    */
   --spacing-btn-gold-y: 18px;
   --spacing-btn-gold-x: 34px;
+
+  /*
+   * The mobile menu button's three bars, inside a 24x16 (`w-6 h-4`) box.
+   * Three 3px bars at 0, 7 and 14 leave a 4px gap either side and end at
+   * 17px, one past the box, which is why the bars are absolutely positioned
+   * and the box is not what clips them.
+   *
+   * None of the three is a multiple of the 4px Tailwind spacing step, so
+   * without tokens they would each have to be an arbitrary value, which this
+   * project does not allow. `scripts/check-tokens.mjs` enforces that in CI.
+   *
+   * The 7px offset is also what the two bars rotate about when the menu is
+   * open: both animate to `top-menu-bar-mid`, so they cross at the centre of
+   * the box rather than at their own resting positions.
+   */
+  --spacing-menu-bar: 3px;
+  --spacing-menu-bar-mid: 7px;
+  --spacing-menu-bar-end: 14px;
+
+  /*
+   * The sticky header's backdrop blur. The header fill is `header-bg`, which
+   * is not fully opaque, so page content is visible through it as it scrolls
+   * under; 10px is enough to keep that from competing with the wordmark and
+   * the nav labels. Named rather than arbitrary for the same reason as above.
+   */
+  --blur-header: 10px;
 }
 
 @layer base {
@@ -887,7 +921,7 @@
    * Not `sr-only` and not `display: none`: both stay hidden on focus.
    */
   .skip-link {
-    @apply absolute left-4 top-4 z-[60] border-4 border-border bg-gold px-6 py-4
+    @apply absolute left-4 top-4 z-60 border-4 border-border bg-gold px-6 py-4
       text-label font-black uppercase tracking-label text-background;
 
     transform: translateY(calc(-100% - 1.5rem));
