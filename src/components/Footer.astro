@@ -7,12 +7,21 @@
  * repeats the mark that already carries the name.
  */
 
-// PLACEHOLDER hrefs. Every `#` below needs a real URL before launch.
+const EMAIL = 'sinduri.g@gmail.com';
+
 const SOCIAL_LINKS = [
-  { href: '#', label: 'GitHub' },
-  { href: '#', label: 'LinkedIn' },
-  { href: '#', label: 'Instagram' },
-  { href: '#', label: 'Email' },
+  { href: 'https://github.com/sindurigf', label: 'GitHub' },
+  {
+    href: 'https://at.linkedin.com/in/sinduri-guntupalli-307542131',
+    label: 'LinkedIn',
+  },
+  { href: 'https://www.instagram.com/sindurigf/', label: 'Instagram' },
+  {
+    href: 'https://bsky.app/profile/sinduri-lol.bsky.social',
+    label: 'Bluesky',
+  },
+  { href: 'https://drupal.community/@sinduri', label: 'Drupal' },
+  { href: `mailto:${EMAIL}`, label: 'Email' },
 ] as const;
 
 const SITE_NAME = 'sinduri.lol';

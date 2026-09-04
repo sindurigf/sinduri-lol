@@ -200,15 +200,28 @@ Never invent copy. Where real copy is missing, use text prefixed with
 
 ---
 
-## Assets not yet in the repo
+## Assets
 
-These paths are referenced in code but the files do not exist. Each renders a
-broken image until it is supplied.
+All referenced assets are now in the repo.
 
-| Path                               | Referenced by      |
+| Path                               | Used by            |
 | ---------------------------------- | ------------------ |
+| `public/images/bunny-dark.png`     | `Header.astro`     |
+| `public/images/badge-white.png`    | OG image source    |
 | `public/images/og-default.png`     | `BaseLayout.astro` |
 | `public/images/og-placeholder.png` | `example-post.md`  |
+
+`og-default.png` and `og-placeholder.png` are 1200x630, built by compositing
+`badge-white.png` onto `#131313` inside an 8px gold frame. Use `badge-white`,
+not `badge-dark`: the dark badge is near-black line art meant for the gold
+tile, and it measures 1.04:1 against `#131313`, which is invisible.
+
+Footer social links are real. The footer badge image from the comps is not
+placed yet; see the TODO in `Footer.astro`.
+
+---------------------------------- | ------------------ |
+| `public/images/og-default.png` | `BaseLayout.astro` |
+| `public/images/og-placeholder.png` | `example-post.md` |
 
 Footer social links are all `href="#"` placeholders: GitHub, LinkedIn,
 Instagram, Email.
