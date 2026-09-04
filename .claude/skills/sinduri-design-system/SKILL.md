@@ -285,10 +285,15 @@ Four things about these that are easy to get wrong:
   goes, the shadow does not inherit the job.
 - **The padding is a conformance floor, not a spacing preference.** A 13px
   label at line-height 1.2 is a 15.6px line box; `18px` top and bottom takes
-  the control to 51.6px, past the 24px SC 2.5.8 asks of a target on its own
-  size. `--spacing-btn-gold-y` and `--spacing-btn-gold-x` exist as tokens
-  because 18 and 34 are not multiples of the 4px Tailwind step and this
-  project does not allow arbitrary values.
+  the padding box to 51.6px, and the 4px border takes the rendered control to
+  **59.6px**, well past the 24px SC 2.5.8 asks of a target on its own size.
+  Measured on the real Career hero at 305px, 320px and 1280px: 59.6px tall at
+  all three, 226.2px and 197.6px wide. An earlier version of this note quoted
+  51.6px as the rendered height, which is the padding box with the border left
+  out; SC 2.5.8 measures the target, and the border is part of it.
+  `--spacing-btn-gold-y` and `--spacing-btn-gold-x` exist as tokens because 18
+  and 34 are not multiples of the 4px Tailwind step and this project does not
+  allow arbitrary values.
 - **`.btn-gold-primary`'s focus ring is two rings, and it is the only one.**
   Its ring colour is its own fill colour, so a single ring depends entirely on
   the offset gap. See

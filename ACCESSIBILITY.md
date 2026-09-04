@@ -232,8 +232,12 @@ Neither `.btn-primary` nor `.btn-secondary` may be used on this surface.
 scoped to `.surface-gold`. Measured against what each colour actually touches:
 the primary label is 18.58 on its own `#131313` fill, the primary fill is 11.32
 against gold, and the secondary label and border are both 11.32 against gold.
-Both render 51.6px tall, so each passes SC 2.5.8 on its own size without the
-spacing exception.
+Both render **59.6px** tall — a 15.6px line box, 18px of padding either side
+and a 4px border either side — so each passes SC 2.5.8 on its own size without
+the spacing exception. Measured on the real Career hero at 305px, 320px and
+1280px, where they are 226.2x59.6 and 197.6x59.6. An earlier version of this
+paragraph said 51.6px, which is the padding box with the border left out; the
+border is part of the target.
 
 **The pink offset shadow on the primary button measures 2.31 on gold**, under
 the 3:1 of SC 1.4.11. That is acceptable only because it carries no meaning:

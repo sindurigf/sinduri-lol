@@ -334,9 +334,13 @@
    * have to be arbitrary values, which this project does not allow.
    *
    * The vertical number is also a conformance floor. A 13px label at
-   * line-height 1.2 is a 15.6px line box, so the control is 15.6 + 36 =
-   * 51.6px tall, comfortably past the 24px SC 2.5.8 asks of a target on its
-   * own size. Do not reduce it below 5px without re-checking that.
+   * line-height 1.2 is a 15.6px line box, so the padding box is 15.6 + 36 =
+   * 51.6px and the rendered control, including its 4px border either side, is
+   * 59.6px. Measured on /career at 305px, 320px and 1280px: 59.6px at all
+   * three. Either number is comfortably past the 24px SC 2.5.8 asks of a
+   * target on its own size; 59.6 is the one that answers the criterion,
+   * because the border is part of the target. Do not reduce the padding below
+   * 5px without re-checking that.
    */
   --spacing-btn-gold-y: 18px;
   --spacing-btn-gold-x: 34px;
@@ -953,6 +957,37 @@
 
   .motion-toggle:hover {
     @apply bg-gold text-background;
+  }
+
+  /*
+   * THE CAREER HERO WATERMARK, placed exactly as design/Career.dc.html has it:
+   * 700px wide, opacity 0.09, right: -150px, top: 20px, pointer-events: none.
+   *
+   * Authored CSS rather than utilities because none of those four numbers is a
+   * design value the site reuses; they are one placement of one asset, and
+   * `w-[700px] -right-[150px]` would be four arbitrary values in the markup,
+   * which this project does not allow. Same reason .mobile-menu-dialog keeps
+   * its sizing in the component.
+   *
+   * `badge-dark.png` is #111111 artwork, which measures 11.50 on gold and 1.02
+   * on the page background: the gold hero is the only ground on this site a
+   * -dark asset can sit on at all. The suffix names the artwork colour, not
+   * the target surface. See the asset table in AI.md.
+   *
+   * AT 0.09 THIS IS A TEXTURE, NOT AN IMAGE. It takes alt="" and it must never
+   * become the only carrier of anything. The section that holds it is
+   * overflow-hidden, which is what keeps the -150px from scrolling the page
+   * sideways at 320px.
+   */
+  .career-watermark {
+    position: absolute;
+    top: 20px;
+    right: -150px;
+    width: 700px;
+    max-width: none;
+    height: auto;
+    opacity: 0.09;
+    pointer-events: none;
   }
 }
 
