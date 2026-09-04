@@ -101,18 +101,29 @@ This gives a ~320px CSS viewport.
 
 > The heading overflow that used to fail here is fixed and covered by
 > `tests/reflow.spec.ts`, which asserts `scrollWidth <= clientWidth` on every
-> route at a 320px viewport, with and without the §7 spacing override. **Still
-> do this check by hand.** Resizing a viewport is not zooming: real 400% zoom
-> brings a classic scrollbar, subpixel rounding, and the browser's own minimum
-> font size, none of which the automated run sees.
+> route at **320px and 305px**, with and without the §7 spacing override.
+> **Still do this check by hand.** Resizing a viewport is not zooming: real
+> 400% zoom brings a classic scrollbar, subpixel rounding, and the browser's
+> own minimum font size, none of which the automated run sees.
 >
-> **The suite measures a wider box than you will.** Playwright runs headless,
-> where scrollbars are overlaid and a 320px viewport gives a 320px content
-> box. Headed Chrome 152 and Chromium 151 both draw a classic 15px scrollbar
-> and give **305px**. The heading floors are calibrated against 305px for that
-> reason, but the automated assertion is 15px more forgiving than what you are
-> about to look at. Verified by hand this round: all eleven routes measure
-> `scrollWidth === clientWidth === 305` headed, with and without the override.
+> **The 15px gap is closed.** Playwright runs headless, where scrollbars are
+> overlaid and a 320px viewport gives a 320px layout box; headed Chrome 152
+> and Chromium 151 draw a classic 15px scrollbar and give **305px**. The suite
+> used to run only the forgiving width. It now runs 305px as a fixed viewport
+> width too, which is the width the heading floors are calibrated against, so
+> this is no longer a check the automated tier cannot make.
+>
+> **What to expect on screen.** The page gutter is 16px a side below `sm`, so
+> body copy does not touch the screen edge. The content box is **273px** at a
+> real 305px viewport and 288px at 320px, on every route including the stubs.
+> A card on a category route has 24px of padding at this width, not 40px,
+> leaving a 209px content box.
+>
+> **An overflow assertion cannot see a heading floor that is too high.**
+> `overflow-wrap: break-word` guarantees the document never scrolls sideways,
+> so the symptom of a bad floor is a heading cut mid-word, not a scrollbar.
+> The suite now measures every heading word against its own box as well, but
+> the next check is still the one your eyes do.
 
 - [ ] **No heading is cut mid-word.** `overflow-wrap: break-word` breaks
       anywhere and draws no hyphen, so a heading reading `ANNOUNCEM / ENTS` is
@@ -293,6 +304,11 @@ p, li, h1, h2, h3, h4, h5, h6 { margin-bottom: 2em !important; }
 Every target is checked on **its own size**. The spacing exception is no longer
 used anywhere on this site, so a change to nav spacing cannot break 2.5.8.
 
+- [ ] **The page gutter is present at every width.** Narrow to 320px and
+      confirm body copy, headings and cards all sit 16px in from both screen
+      edges, on a stub page and on a blog route. A route whose text touches
+      the edge has picked up its own container padding rules again, or lost
+      `.page-gutter`. → SC 1.4.10
 - [ ] Header nav links are **at least 24px tall**. `py-2` on the `.label` link
       takes the 15.6px line box to 31.6px. Measure one in DevTools; do not
       infer it from the gap between links. This is the check to redo after any
@@ -303,15 +319,17 @@ used anywhere on this site, so a change to nav spacing cannot break 2.5.8.
 - [ ] The mobile menu button is 48x48. → pass
 - [ ] Footer social links are ≥56px tall. → pass
 - [ ] Mobile menu links at 320px are ≥24px tall. → pass, they are 34px+ type
-- [ ] **The breadcrumb link above the `<h1>` on blog routes.** Currently
-      **fails on its own size**: measured headed at 320px, "All posts" on
-      `/blog/professional-journey` is 87x16 and the category link on
-      `/blog/example-post` is 179x16. Both are a bare `.label` (13px at
-      line-height 1.2 = a 15.6px line box) with no padding, the same shape the
-      header nav links had before `py-2`. They pass 2.5.8 today **only** by the
-      spacing exception, with the nearest other target 167px away, which is
-      exactly the load-bearing-gap arrangement §9 says this site does not use.
-      Re-check after fixing. → SC 2.5.8
+- [ ] **The breadcrumb link above the `<h1>` on blog routes.** Was the last
+      target on the site passing only by the spacing exception, at 87x16 and
+      179x16. `inline-block py-2 -my-2` takes each to **31.6px** tall: the
+      padding grows the hit area and the matching negative margin keeps the
+      layout box at the 15.6px it occupied, so no glyph moved. Measured at a
+      305px viewport after the fix: "All posts" on
+      `/blog/professional-journey` is 86.7x31.6, the category link on
+      `/blog/example-post` is 178.1x31.6, and the `<h1>` below sits at the
+      same y as before (199.6px) on both. Confirm by hovering that the
+      clickable area is taller than the words, and that the gap to the `<h1>`
+      still looks right. → SC 2.5.8
 
 ## 10. What this checklist does not cover
 
