@@ -196,42 +196,69 @@ Headings must not skip levels. One `<h1>` per page.
 
 ### The heading floors are a reflow constraint, not a taste call
 
-`text-h1` floors at **36px** and `text-h2` at **32px**. Both numbers are
+`text-h1` floors at **33px** and `text-h2` at **29px**. Both numbers are
 derived, not chosen. Do not raise either without redoing the arithmetic and
 re-running `tests/reflow.spec.ts`.
 
-**One content box.** Every route presents the same content box at a 320px
-viewport: **305px** with a classic 15px scrollbar, 320px where scrollbars are
-overlaid. That is why page containers drop their horizontal padding below `sm`
-(`sm:px-6`, not `px-6`). **Do not add unconditional horizontal padding to a
-page container or to any element that can hold a heading.** It narrows the box
-below what the floors were calibrated against, and the only symptom is a
-heading quietly cut mid-word. `px-6` on the blog routes is exactly how
-`PROFESSIONAL` came to overflow by 37px without anyone noticing.
+**One content box, declared once.** The horizontal gutter is `.page-gutter`
+(`px-4 sm:px-6`) and it is applied in exactly three places: the header,
+`<main>` in `BaseLayout.astro`, and the footer. Every route therefore presents
+the same box:
 
-The header is the one exception and holds no heading. Keep it that way.
+| Viewport                       | Content box |
+| ------------------------------ | ----------- |
+| 305px (classic 15px scrollbar) | **273px**   |
+| 320px (overlay scrollbar)      | 288px       |
 
-**The arithmetic.** A single uppercased word is the whole risk, because nothing
-wraps it. Width scales linearly with font-size, so the largest floor a word
-fits at is `44 x 305 / (its width at 44px)`:
+**Do not add horizontal padding to a page container.** `<main>` already has
+it, so a container that adds its own narrows that route's box below what the
+floors were calibrated against, and the only symptom is a heading quietly cut
+mid-word. `px-6` on the blog routes is exactly how `PROFESSIONAL` came to
+overflow by 37px without anyone noticing.
 
-| Word            | at 44px | Largest floor | At 36px | At 32px |
-| --------------- | ------: | ------------: | ------: | ------: |
-| `PROFESSIONAL`  |  340.92 |       39.36px |  278.94 |  247.94 |
-| `ACCESSIBILITY` |  351.17 |       38.22px |  287.33 |  255.41 |
-| `ANNOUNCEMENTS` |  405.25 |       33.12px |  331.56 |  294.73 |
+**And do not zero it either.** The fix for that overflow was to drop the
+gutter below `sm`, which moved the cost from one heading word on two category
+pages to every line of body copy on every page on every phone. Both mistakes
+are the same mistake: a per-page decision about a site-wide box. The gutter is
+fixed; the floors are the variable.
 
-36px leaves 17.67px of headroom for `ACCESSIBILITY` and 26.06px for
-`PROFESSIONAL`. `ANNOUNCEMENTS` is deliberately not fitted: there is always a
-longer word, and `overflow-wrap: break-word` is the guarantee for outliers.
+A full-bleed band inside `<main>` has to break out with negative inline
+margins. That is the right way round — the exception is visible in the markup
+that wants it.
+
+**The arithmetic.** A single uppercased word is the whole risk, because
+nothing wraps it. Measured in headless Chromium as the rendered width of an
+`h1` at `width: max-content`, Lexend 900, -0.05em:
+
+| Word            |   36px |   34px |   33px |   32px | Largest floor it fits |
+| --------------- | -----: | -----: | -----: | -----: | --------------------: |
+| `PROFESSIONAL`  | 278.41 | 262.61 | 257.20 | 250.81 |               35.26px |
+| `ACCESSIBILITY` | 286.61 | 270.91 | 261.56 | 258.20 |               34.24px |
+| `WOODWORKING`   | 302.20 | 285.31 | 278.86 | 270.41 |               32.44px |
+| `ANNOUNCEMENTS` | 329.61 | 313.91 | 304.56 | 294.20 |               29.55px |
+
+33px leaves 15.80px of headroom for `PROFESSIONAL` (5.8% of the box) and
+11.44px for `ACCESSIBILITY` (4.2%). 34px is the number the box arithmetic
+suggests at a glance and measurement rules it out: it leaves `ACCESSIBILITY`
+2.09px, 0.77% of the box, the same razor edge the old 38px floor sat on.
+
+`ANNOUNCEMENTS` and `WOODWORKING` are deliberately not fitted: there is always
+a longer word, and `overflow-wrap: break-word` is the guarantee for outliers.
 
 ### Content rule: a display heading word over twelve characters takes a soft hyphen
 
 Put a soft hyphen (`&shy;`, U+00AD) at a **syllable boundary** in any word over
 twelve characters that appears in an `h1` or `h2`. Twelve is where the
-arithmetic above runs out: `PROFESSIONAL` is twelve and clears the box by
-26px, `ACCESSIBILITY` is thirteen and clears it by 18px, `ANNOUNCEMENTS` is
-thirteen and does not clear it at all.
+arithmetic above runs out for the words this site actually uses:
+`PROFESSIONAL` is twelve and clears the 273px box by 15.80px, `ACCESSIBILITY`
+is thirteen and clears it by 11.44px only because its letters are narrow, and
+`ANNOUNCEMENTS` is thirteen and misses by 31.56px.
+
+**Twelve is a proxy for width, not a rule about width.** `WOODWORKING` is
+_eleven_ characters and overflows the box by 5.86px, because W, O, D and M are
+wide and I, L and S are not. If a heading word looks wide, measure it against
+273px at 33px rather than counting letters. The threshold catches the common
+case; it does not replace the measurement.
 
 Without one, the fallback is `overflow-wrap: break-word`, which breaks
 **anywhere** and draws **no hyphen**. Verified headed in Chrome 152, 36px

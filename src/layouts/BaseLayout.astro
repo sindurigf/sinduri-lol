@@ -57,7 +57,13 @@ const ogImageUrl = new URL(ogImage, Astro.site);
       focus starting point, so the next Tab skips the header, but focus and a
       screen reader's cursor never enter main. -1 keeps it out of the tab order.
     -->
-    <main id="main-content" tabindex="-1" class="flex-1">
+    <!--
+      The page gutter lives here, not on each page's container. Every route
+      then presents the same content box, which is the box the heading floors
+      in global.css are calibrated against, and a new page cannot ship without
+      it. See the .page-gutter comment.
+    -->
+    <main id="main-content" tabindex="-1" class="page-gutter flex-1">
       <slot />
     </main>
     <Footer />

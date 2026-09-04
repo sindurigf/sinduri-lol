@@ -75,56 +75,72 @@
    * The floors are a reflow constraint, not a taste call (SC 1.4.10).
    *
    * THE CONTENT BOX. Every route presents the same box at a 320px viewport,
-   * because page containers drop their horizontal padding below `sm`. It
-   * measures 305px in a browser with a classic 15px scrollbar (Chrome 152 and
-   * Chromium 151, headed) and 320px where scrollbars are overlaid (headless,
-   * which is what the Playwright suite sees). Calibrate against 305px: it is
-   * the smaller of the two and it is what a desktop user at 400% zoom gets.
+   * because the horizontal gutter is declared once as `.page-gutter` below and
+   * applied to the header, <main> and the footer rather than page by page.
+   * Below `sm` it is 16px a side, so the box is:
+   *
+   *   305 - 32 = 273px  with a classic 15px scrollbar (Chrome 152 and
+   *                     Chromium 151, headed, and a desktop user at 400% zoom)
+   *   320 - 32 = 288px  where scrollbars are overlaid (headless Chromium,
+   *                     which is what one half of the Playwright matrix sees)
+   *
+   * Calibrate against 273px. tests/reflow.spec.ts now runs both widths, so the
+   * 273px box is asserted rather than only checked by hand.
+   *
+   * THE GUTTER IS NOT NEGOTIABLE. An earlier round bought 32px of box by
+   * dropping the gutter below `sm`. That is not a trade between a heading and
+   * some whitespace: it puts every line of body copy on every page flush
+   * against the screen edge on every phone, to fit one word that appears on
+   * two category pages. The floors move; the gutter stays.
    *
    * THE WORST WORD. Headings are uppercased and nothing wraps a single word,
-   * so one long word is the entire risk. Measured in Lexend Variable at
-   * weight 900 with the -0.05em tracking this scale applies:
+   * so one long word is the entire risk. Measured in this build, headless
+   * Chromium, Lexend Variable at weight 900 with the -0.05em tracking this
+   * scale applies, as the rendered width of an <h1> at width: max-content:
    *
-   *                     44px    38px    36px    34px    32px
-   *   PROFESSIONAL    340.92  294.44  278.94  263.44  247.94
-   *   ACCESSIBILITY   351.17  303.28  287.33  271.36  255.41
-   *   ANNOUNCEMENTS   405.25  349.98  331.56  313.14  294.73
+   *                     36px    34px    33px    32px    29px
+   *   PROFESSIONAL    278.41  262.61  257.20  250.81  226.61
+   *   ACCESSIBILITY   286.61  270.91  261.56  258.20  232.16
+   *   ANNOUNCEMENTS   329.61  313.91  304.56  294.20  268.16
+   *   WOODWORKING     302.20  285.31  278.86  270.41  245.06
    *
-   * Width scales linearly with font-size, because the tracking is
-   * proportional too. So the largest floor a word fits at is 44 x 305 / its
-   * width at 44px: 39.36px for "PROFESSIONAL", 38.22px for "ACCESSIBILITY",
-   * 33.12px for "ANNOUNCEMENTS".
+   * h1 IS 33px. In a 273px box that leaves 15.80px for "PROFESSIONAL" (5.8%
+   * of the box) and 11.44px for "ACCESSIBILITY" (4.2%). "PROFESSIONAL" is one
+   * of the five blog categories, so it is real content rather than a
+   * hypothetical, and it is the word that must never need help.
    *
-   * h1 IS 36px, NOT 38px. 38px was calibrated to sit exactly at the edge of
-   * the 38.22px "ACCESSIBILITY" allows: it left 1.72px, 0.6% of the box, so
-   * any change to the font, the tracking or the scrollbar width broke it.
-   * 36px leaves 17.67px for "ACCESSIBILITY" and 26.06px for "PROFESSIONAL",
-   * 5.8% and 8.5%. "PROFESSIONAL" is one of the five blog categories, so it
-   * is real content, not a hypothetical: at 38px in the old padded blog box
-   * it overflowed by 37.4px with a classic scrollbar (257px box) and 22.4px
-   * without (272px box), and break-word was cutting it mid-word to hide that.
+   * 34px was the obvious candidate and it does not survive measurement:
+   * "ACCESSIBILITY" is 270.91px there, 2.09px inside a 273px box, 0.77% of
+   * it. That is the same razor edge the old 38px floor sat on in the old
+   * 305px box (1.72px, 0.6%), where any change to the font, the tracking or
+   * the scrollbar width broke it. A floor is only worth having if it has
+   * room, so 33px it is.
    *
-   * h2 IS 32px, NOT 34px. The word arithmetic is identical for h2, so the
-   * overflow constraint alone would allow it the same 36px. What holds it
-   * lower is the step down from h1. The old pair held a 38:34 ratio of 1.118;
-   * 36:32 holds 1.125. Leaving h2 at 34px under an h1 of 36px would put 5.6%
-   * between them, near enough that the two read as one size at 320px. That is
-   * a hierarchy failure rather than an overflow one, but it is still a
-   * failure. At 32px "ACCESSIBILITY" leaves 49.59px, 16% of the box.
+   * h2 IS 29px. The word arithmetic is identical for h2, so overflow alone
+   * would allow it the same 33px; what holds it lower is the step down from
+   * h1, and what holds it up is the step down to h3. 33:29 is 1.138 and
+   * 29:26 is 1.115, either side of the 1.125 the old 36:32 pair held. 28px
+   * would read better against h1 and worse against h3: 28:26 is 1.077, near
+   * enough that the two would look like one size at 320px, which is the same
+   * hierarchy failure the old 34px h2 had, one level down.
    *
-   * "ANNOUNCEMENTS" IS DELIBERATELY NOT FITTED. It would need a 33px h1
-   * floor, no page uses it, and there is always a longer word. Genuine
-   * outliers are the job of overflow-wrap: break-word in the base layer
-   * below. That is the guarantee. These floors are the reason it rarely has
-   * to fire.
+   * "ANNOUNCEMENTS" IS DELIBERATELY NOT FITTED. It needs a 29px h1 floor in
+   * this box (268.16px at 29px, 278.50px at 30px), no page uses it, and there
+   * is always a longer word.
+   * "WOODWORKING" is the cheap proof: eleven characters, all wide, and it
+   * overflows 273px at every floor above 32px. Genuine outliers are the job
+   * of the soft hyphen in the content and of overflow-wrap: break-word in the
+   * base layer below. That is the guarantee. These floors are the reason it
+   * rarely has to fire.
    *
-   * The floors only bite below a 400px viewport for h1 (36 / 0.09) and below
-   * a 485px viewport for h2 (32 / 0.066). tests/reflow.spec.ts locks the
-   * outcome down. Do not raise a floor without re-running it.
+   * The floors only bite below a 367px viewport for h1 (33 / 0.09) and below
+   * a 440px viewport for h2 (29 / 0.066). tests/reflow.spec.ts locks the
+   * outcome down at 320px and 305px. Do not raise a floor without re-running
+   * it.
    */
-  --text-h1: clamp(36px, 9vw, 104px);
+  --text-h1: clamp(33px, 9vw, 104px);
   --text-h1--line-height: 0.94;
-  --text-h2: clamp(32px, 6.6vw, 76px);
+  --text-h2: clamp(29px, 6.6vw, 76px);
   --text-h2--line-height: 0.96;
   --text-h3: clamp(26px, 4.4vw, 56px);
   --text-h3--line-height: 1.02;
@@ -322,6 +338,28 @@
     @apply inline-block border-4 border-border bg-surface px-8 py-4
       text-label font-black uppercase tracking-label text-text
       shadow-hard-gold-6;
+  }
+
+  /*
+   * THE PAGE GUTTER. One declaration, applied to the header, <main> and the
+   * footer, so every route presents the same content box and no page can
+   * forget it. That matters more than it sounds: `px-6` added to the blog
+   * routes alone is how "PROFESSIONAL" came to overflow by 37px without
+   * anyone noticing, and zeroing it below `sm` to win the space back put
+   * every line of body copy flush against the screen edge on every phone.
+   * Both failures were a per-page decision about a site-wide box.
+   *
+   * 16px below `sm`, 24px from `sm` up. The heading floors in @theme are
+   * calibrated against what this leaves: 273px at a real 305px viewport.
+   * Changing this number means redoing that arithmetic and re-running
+   * tests/reflow.spec.ts. It is not a spacing preference.
+   *
+   * A full-bleed band inside <main> has to break out of this deliberately
+   * (negative inline margins), which is the right way round: the exception
+   * is visible in the markup that wants it.
+   */
+  .page-gutter {
+    @apply px-4 sm:px-6;
   }
 
   .card {

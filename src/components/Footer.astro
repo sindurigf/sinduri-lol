@@ -46,13 +46,11 @@ const copyright = `© ${currentYear} ${SITE_NAME}`;
 ---
 
 <!--
-  No horizontal padding below `sm`. The footer carries an <h2>, so it is one
-  of the boxes the heading floors are calibrated against and it has to match
-  the page content box exactly. The header is excluded on purpose: it holds no
-  heading, and zeroing its padding would push the rotated logo tile past the
-  left edge.
+  The footer sits outside <main>, so it applies the shared gutter itself. It
+  carries an <h2>, so its box is one of the boxes the heading floors are
+  calibrated against and it has to match the page content box exactly.
 -->
-<footer class="border-t-8 border-gold bg-deep pb-10 pt-20 sm:px-6">
+<footer class="page-gutter border-t-8 border-gold bg-deep pb-10 pt-20">
   <div class="mx-auto max-w-7xl">
     <h2 class="-rotate-1 text-h2 text-gold">Let&rsquo;s Talk.</h2>
 

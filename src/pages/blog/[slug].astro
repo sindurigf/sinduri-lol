@@ -39,15 +39,13 @@ const categoryLabel = category.replaceAll('-', ' ');
   ogImage={ogImage}
 >
   <!--
-    No horizontal padding below `sm`. Every route has to present the same
-    content box width at 320px, or the heading floors need one set of
-    arithmetic per route. The stub pages render straight into <main>, which
-    has no padding, so 24px here made this route's box 48px narrower than
-    theirs and "PROFESSIONAL" overflowed it. Padding returns at `sm`, where
-    the box is wide enough that it costs nothing. See the --text-h1 comment
-    in global.css.
+    No horizontal padding here. <main> carries the one page gutter for the
+    whole site, so this container only sets the measure. Adding padding back
+    would narrow this route's box below the one the heading floors are
+    calibrated against, which is exactly how "PROFESSIONAL" overflowed by
+    37px before. See the .page-gutter comment in global.css.
   -->
-  <div class="mx-auto max-w-3xl py-20 sm:px-6">
+  <div class="mx-auto max-w-3xl py-20">
     <p class="label text-subtle">
       <a href={`/blog/${category}`} class="text-gold">{categoryLabel}</a>
     </p>
