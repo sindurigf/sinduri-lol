@@ -53,7 +53,8 @@ comes from a token. If you need something that does not exist, add a token.
 | subtle     | `#9BB4C6` | Footer, captions           |
 | gold       | `#FFC000` | Primary accent             |
 | cyan       | `#00DCFD` | Secondary accent           |
-| pink       | `#FF007A` | Tertiary accent            |
+| pink       | `#FF007A` | Borders, shadows, decor    |
+| pinkText   | `#FF79B6` | All pink text, any size    |
 | darkcyan   | `#00363F` | Text on cyan backgrounds   |
 
 Plus `header-bg` (`rgba(10, 10, 10, 0.94)`), used only by the sticky header.
@@ -76,6 +77,22 @@ conflated them:
 
 The palette is cool, not warm. Gold, cyan, and pink read more strongly against
 blue than they did against the old brown, so use the accents sparingly.
+
+#### The two pinks
+
+The split is by **role**, not by size. The CSS variables are `--color-pink` and
+`--color-pink-text`; the Tailwind utilities are `bg-pink` / `border-pink` and
+`text-pink-text`.
+
+| Token      | Hex       | Ratios             | Allowed on                     |
+| ---------- | --------- | ------------------ | ------------------------------ |
+| `pink`     | `#FF007A` | 4.90 / 4.59 / 5.09 | Borders, offset shadows, fills |
+| `pinkText` | `#FF79B6` | 7.66 / 7.18 / 7.96 | All pink text, at any size     |
+
+`pink` is never used for text and `pinkText` is never used for a border or a
+shadow. `#FF79B6` is AAA on all three surfaces at every size, so the rule needs
+no reference to the WCAG large-text exemption and does not break if the type
+scale changes. Do not merge the two tokens.
 
 ### Typography
 
@@ -143,7 +160,7 @@ Defined in `@layer components` in `src/styles/global.css`:
 - `.card` — surface background, `border-8`, 40px padding
 - `.section-divider` — `border-b-8`
 - `.label` / `.label-wide` — 13px / 900 uppercase, 0.1em / 0.14em tracking
-- `.section-number` — `clamp(24px, 2.8vw, 32px)` / 800, pink
+- `.section-number` — `clamp(24px, 2.8vw, 32px)` / 800, `pinkText`
 
 Links are gold with no underline, and turn cyan on hover. This is set in the
 base layer, so plain `<a>` elements are already correct.

@@ -16,7 +16,24 @@
   --color-subtle: #9bb4c6;
   --color-gold: #ffc000;
   --color-cyan: #00dcfd;
+  /*
+   * Two pinks, split by role, not by size. Do not merge them.
+   *
+   * `pink` #FF007A measures 4.90 / 4.59 / 5.09 against background / surface /
+   * deep. That is AA for text but not AAA, so it is restricted to non-text:
+   * borders, hard offset shadows, and decorative fills, where SC 1.4.11 asks
+   * for 3:1 and it clears comfortably.
+   *
+   * `pink-text` #FF79B6 measures 7.66 / 7.18 / 7.96 on the same three surfaces.
+   * It is AAA at any size, so every pink glyph on the site uses it, including
+   * the section number.
+   *
+   * The rule used to depend on the WCAG large-text exemption, which only held
+   * while the text stayed above 18.66px at weight 800. A role split holds at
+   * every size and survives a change to the type scale.
+   */
   --color-pink: #ff007a;
+  --color-pink-text: #ff79b6;
   --color-darkcyan: #00363f;
 
   /* Header chrome. Translucent, so it stays a raw rgba rather than a hex. */
@@ -46,8 +63,8 @@
   /*
    * Fluid like the rest of the scale. A fixed 32px outgrew the H3 floor of 26px
    * on narrow screens; this keeps the number just under the heading it labels.
-   * The floor stays at 24px so the token remains WCAG "large text" at its
-   * weight of 800, which is what lets the pink accent be used on it.
+   * The floor is a typographic choice only. It no longer carries a contrast
+   * argument: the number is colored with `pink-text`, which is AAA at any size.
    */
   --text-section-number: clamp(24px, 2.8vw, 32px);
   --text-section-number--line-height: 1;
@@ -196,8 +213,9 @@
     @apply text-label font-black uppercase tracking-label-wide;
   }
 
+  /* text-pink-text, never text-pink. See the token comment in @theme. */
   .section-number {
-    @apply text-section-number font-extrabold text-pink;
+    @apply text-section-number font-extrabold text-pink-text;
   }
 
   /*

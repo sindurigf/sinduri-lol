@@ -28,7 +28,8 @@ no `shadow-[8px_8px_0]`. If the value you need does not exist, add a token.
 | `subtle`     | `#9BB4C6`                | Footer, captions           |
 | `gold`       | `#FFC000`                | Primary accent             |
 | `cyan`       | `#00DCFD`                | Secondary accent           |
-| `pink`       | `#FF007A`                | Tertiary accent            |
+| `pink`       | `#FF007A`                | Borders, shadows, decor    |
+| `pink-text`  | `#FF79B6`                | All pink text, any size    |
 | `darkcyan`   | `#00363F`                | Text on cyan backgrounds   |
 | `header-bg`  | `rgba(10, 10, 10, 0.94)` | Sticky header only         |
 
@@ -73,20 +74,41 @@ they did against the warm brown that preceded it. Use accents sparingly.
 
 ## Contrast rules
 
-Pink `#FF007A` is the one token with a real ceiling. Measured: **4.90** on
-`background`, **4.59** on `surface`, **5.09** on `deep`.
+### The two pinks
 
-That clears AA for normal text (4.5:1) but not AAA (7:1). At weight 800 and
-18.66px or larger it counts as WCAG large text, where 4.5:1 also satisfies AAA.
+There are two pink tokens and they are split by **role**, never by size.
 
-- **Use pink for:** section numbers (`.section-number`, weight 800, never
-  smaller than 24px), hard offset shadows, and decorative accents.
-- **Never use pink for body-size text**, captions, labels, links, or anything
-  the reader has to sustain attention on. It is AA-only, and AA is the floor
-  here, not the goal.
+| Token       | Hex       | on `#131313` | on `#1A1A1A` | on `#0E0E0E` |
+| ----------- | --------- | ------------ | ------------ | ------------ |
+| `pink`      | `#FF007A` | 4.90         | 4.59         | 5.09         |
+| `pink-text` | `#FF79B6` | 7.66         | 7.18         | 7.96         |
+
+- **`pink` is decoration only.** Borders, hard offset shadows, decorative
+  fills. It clears the 3:1 that SC 1.4.11 asks of non-text by a wide margin.
+  **Never put `pink` on text.** Not on a heading, not on a section number, not
+  on a label, not at any size.
+- **`pink-text` is for every pink glyph on the site**, including the section
+  number. It is AAA (7:1) on all three surfaces at every size and weight.
+  **Never use `pink-text` for a border, a shadow, or a fill.** Keeping it off
+  non-text is what stops the two drifting back into one token.
+
+```html
+<!-- Yes -->
+<span class="section-number text-pink-text">01</span>
+<div class="border-4 border-pink shadow-hard-pink-12">…</div>
+
+<!-- No -->
+<span class="text-pink">01</span>
+```
+
+The old rule made pink conditional on the text being 18.66px or larger, which
+leaned on the WCAG large-text exemption. That held only while the type scale
+did, and it contradicted `--text-section-number`, whose floor is
+`clamp(24px, 2.8vw, 32px)`. The role split has no size condition, so it cannot
+be invalidated by a change to the scale.
 
 Text tokens `text`, `muted`, and `subtle` all clear AAA on all three surfaces.
-Prefer them for anything readable.
+Prefer them for anything readable that is not deliberately pink.
 
 ---
 
