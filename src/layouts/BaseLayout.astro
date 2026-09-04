@@ -51,7 +51,13 @@ const ogImageUrl = new URL(ogImage, Astro.site);
     <!-- Must be the first focusable element on the page (SC 2.4.1). -->
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <Header />
-    <main id="main-content" class="flex-1">
+    <!--
+      tabindex="-1" so the skip link actually moves focus here. Without it
+      document.activeElement stays on <body>: Chrome still sets the sequential
+      focus starting point, so the next Tab skips the header, but focus and a
+      screen reader's cursor never enter main. -1 keeps it out of the tab order.
+    -->
+    <main id="main-content" tabindex="-1" class="flex-1">
       <slot />
     </main>
     <Footer />
