@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+/*
+ * Cloudflare Pages serves dist/404.html with a real 404 status for any path
+ * that does not match an asset. Without this file it falls back to serving
+ * index.html with a 200, so every typo and every dead inbound link looks like
+ * a working homepage to a crawler, a link checker, and to anyone using a
+ * screen reader who has no visual cue that the address was wrong.
+ *
+ * Astro emits this route as dist/404.html, not dist/404/index.html, which is
+ * exactly the filename Cloudflare looks for. tests/routes.ts derives routes
+ * from both shapes so this one is not invisible to the suite.
+ */
+
+// Decorative only. The gold tile plus the dark line-art mark is the same
+// pairing the header logo uses, and it is the pairing round the right way: the
+// -dark suffix names the artwork colour, not the target surface. bunny-dark is
+// #111111 artwork, which measures 11.50:1 on gold and 1.02:1 on the page
+// background, so the tile is what makes it visible at all. alt="" because the
+// heading below already says what the page is, and the mark carries no
+// information of its own.
+const BUNNY_MARK = {
+  src: '/images/bunny-dark.png',
+  width: 458,
+  height: 900,
+} as const;
+
+/*
+ * `noCanonical` below. This page is the response for every wrong address on
+ * the site, so a canonical link here would tell a crawler that each of those
+ * dead URLs is the preferred address for this content. It is the one page on
+ * the site that must not claim one.
+ *
+ * Deliberately no `noindex` to go with it. The 404 status already tells a
+ * crawler not to index the response, and a meta robots tag would be a weaker
+ * second statement of the same thing. If the status is ever wrong that is the
+ * bug; tests/not-found.spec.ts is what asserts it.
+ *
+ * This note is in the frontmatter rather than in an HTML comment above
+ * <BaseLayout> on purpose: a comment there is emitted into the built page,
+ * between the doctype and <html>, and shipped on every 404 response.
+ */
+---
+
+<BaseLayout
+  title="404 | sinduri.lol"
+  description="That address does not lead anywhere on sinduri.lol."
+  noCanonical
+>
+  <div class="mx-auto max-w-7xl py-20">
+    <span
+      class="flex h-24 w-24 rotate-3 items-center justify-center rounded-nav border-4 border-border bg-gold shadow-hard-pink-12"
+    >
+      <img
+        src={BUNNY_MARK.src}
+        alt=""
+        width={BUNNY_MARK.width}
+        height={BUNNY_MARK.height}
+        class="h-12 w-auto"
+      />
+    </span>
+
+    <p class="section-number mt-14">404</p>
+    <h1 class="mt-4 -rotate-1 text-h1 text-gold">Page not found</h1>
+
+    <p class="mt-10 max-w-2xl text-body text-muted">
+      That address does not lead anywhere. It either moved, or it never existed.
+      Nothing here is broken on your end.
+    </p>
+
+    <ul class="mt-14 flex flex-wrap gap-6">
+      <li><a href="/" class="btn-primary">Go to the homepage</a></li>
+      <li><a href="/blog" class="btn-secondary">Read the blog</a></li>
+    </ul>
+  </div>
+</BaseLayout>
