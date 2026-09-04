@@ -301,13 +301,22 @@ tested here. See the design system skill for the full rule.
 - Section dividers: `border-b-8`
 - Default border color is the `border` token, set in the base layer, because
   Tailwind 4 defaults borders to `currentColor`.
-- Radius is `0` everywhere. `rounded-nav` (14px) applies to exactly two things
-  and nothing else:
+- Radius is `0` everywhere, and there are exactly two exceptions.
+
+  `rounded-nav` (14px) is the **softened-box** exception, and it applies to two
+  things and nothing else:
   1. the nav CTA button, in both `Header.astro` and `MobileMenu.vue`
   2. the logo tile in `Header.astro`
 
-  Anything else with a radius is a bug. The base layer sets `border-radius: 0`
-  on every element, so `rounded-nav` has to be opted into explicitly.
+  `rounded-full` is the **circle and pill** exception: the spinning badge
+  frame, the bunny roundel in the About teaser, the decorative glow, and
+  `.pill`. It is a different thing from the rule above rather than a loophole
+  in it — a circle is a shape the comps draw, not a box with its corners taken
+  off, and it is the only radius that cannot be mistaken for one. The comps
+  write `border-radius: 9999px` for all of them.
+
+  Any other radius is a bug. The base layer sets `border-radius: 0` on every
+  element, so both have to be opted into explicitly.
 
 Hard offset shadow utilities, all zero blur and zero spread:
 
@@ -506,10 +515,12 @@ intent rather than a missing reference:
 - `bunny-white.png` is the **dark-surface variant of the mark**, for anywhere
   the mark sits directly on `#131313`, `#1A1A1A` or `#0E0E0E` rather than on a
   gold tile.
-- `badge-white.png` is already in the footer, and is also the **Contact page
-  spinning badge**, which sits on the dark background. That badge auto-starts
-  and runs past five seconds, so building it means building a keyboard-operable
-  pause control with it (SC 2.2.2); see `ACCESSIBILITY.md` §7.
+- `badge-white.png` is in the footer, and is also the artwork inside the
+  **spinning badge**, which sits on the dark background on the homepage hero
+  (24s) and on Contact (28s). That badge auto-starts and runs past five
+  seconds, so it carries the keyboard-operable pause control SC 2.2.2 asks for;
+  `src/components/ui/SpinBadge.vue` is the component and
+  `tests/motion.spec.ts` measures it.
 
 Check any new pairing by measurement before shipping it, as with any colour
 here.
@@ -626,8 +637,21 @@ The one thing that suite cannot check is Cloudflare's own parsing of
 
 ## Not built yet
 
-Homepage, About, Career, Blog index, blog post, blog category, and Contact pages
-are minimal stubs by design. `src/pages/404.astro` is not one of them: it is a
-finished page, because what it does only works if it ships. `src/pages/blog/[slug].astro` and
-`src/pages/blog/[category]/index.astro` both return an empty `getStaticPaths()`
-and still need wiring to the `blog` collection.
+Every route is built. What is not real is the **copy**: every heading,
+paragraph, card description, teaser and post body outside the list below is
+lorem ipsum at the length the comps' real copy occupies, waiting for Sinduri.
+
+Still outstanding:
+
+- **The CV PDF.** `/sinduri-guntupalli-cv.pdf` is the path the Career hero's
+  primary button points at and no such file is in `public/`. One exists in the
+  gitignored `design/uploads/` and must not be committed until it has been
+  checked for personal data.
+- **Every photograph.** The hero portrait, the workspace square, the About
+  portrait, the Career conference photo and the blog post artwork are all
+  `PlaceholderBox` — a bordered, dashed frame at the right aspect ratio that
+  says what belongs in it. See that component for why a marked empty frame
+  beats an omitted one.
+- **The contact form.** Deliberately not built; `public/_headers` carries
+  `form-action 'none'` and widening it is a separate decision. See the CSP
+  section above and `ACCESSIBILITY.md` §7 gap 1.

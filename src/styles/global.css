@@ -273,6 +273,16 @@
   --text-section-number: clamp(24px, 2.8vw, 32px);
   --text-section-number--line-height: 1;
 
+  /*
+   * Aspect ratios for the placeholder boxes that stand in for photography.
+   * Tokens rather than `aspect-[4/5]`, because this project does not allow an
+   * arbitrary value in a component and these three shapes recur: the hero
+   * artwork slot, the About portrait, and the square workspace slot.
+   * `aspect-video` (16 / 9) is Tailwind's own and covers the hero.
+   */
+  --aspect-portrait: 4 / 5;
+  --aspect-photo: 4 / 3;
+
   --tracking-heading: -0.05em;
   --tracking-heading-tight: -0.04em;
   --tracking-label: 0.1em;
@@ -456,6 +466,39 @@
   }
 
   /*
+   * SC 1.4.1 Use of Color, for links in running text.
+   *
+   * The rule above strips the underline from every link, which is right for a
+   * nav item, a card and a button — a box, a border and a position already
+   * distinguish those — and wrong the moment a link sits inside a sentence,
+   * where colour becomes the only signal. Measured: `gold` #FFC000 against
+   * `muted` #D4C5AB, the colour body copy is actually set in, is 1.03:1.
+   * Nothing about that is perceivable to a reader who does not see the hue.
+   *
+   * This could not fail while every page was a stub with no prose in it. It is
+   * one of the defects real content surfaces.
+   *
+   * SCOPED BY `:not([class])`, NOT BY A WRAPPER. The links that need this come
+   * out of the Markdown pipeline and carry no class attribute at all, while
+   * every link in this design that is already a box carries one: .btn-primary
+   * in the 404 list, the footer's social links, the nav CTA, the blog cards.
+   * A bare selector would underline all of those, and `.prose a` alone would
+   * miss a hand-written paragraph in an .astro page. The known cost is that
+   * giving a prose link a class silently drops its underline; `.prose a` is
+   * unconditional so the Markdown case is covered either way.
+   *
+   * .surface-gold underlines every link on that ground for the same reason and
+   * exempts its two button classes explicitly. See @layer components.
+   */
+  .prose a,
+  p a:not([class]),
+  li a:not([class]) {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 2px;
+  }
+
+  /*
    * One focus indicator for the whole site, on :focus-visible so a mouse click
    * never leaves a ring behind. Gold measures 11.32 / 10.60 / 11.76 against
    * background / surface / deep, well past the 3:1 that SC 1.4.11 asks for.
@@ -517,12 +560,130 @@
     @apply px-4 sm:px-6;
   }
 
+  /*
+   * A FULL-BLEED BAND INSIDE <main>.
+   *
+   * Most sections in the comps carry their own background (`#0E0E0E`
+   * alternating with `#131313`, and `#FFC000` on Career) and run edge to edge,
+   * while their text stays in the same measure as everything else. <main>
+   * carries the one page gutter for the whole site, so a band has to break out
+   * of it with negative inline margins and re-apply it inside itself. The
+   * .page-gutter comment calls this out as the right way round: the exception
+   * is visible in the markup that wants it.
+   *
+   * The four values are duplicated from .page-gutter and have to move with it.
+   * They are written out rather than composed, because @apply resolves
+   * utilities and .page-gutter is a component class, not a utility.
+   *
+   * This does not change the content box the heading floors are calibrated
+   * against: -mx-4 widens the band into <main>'s own padding, and px-4 puts
+   * the same 273px box back inside it. tests/reflow.spec.ts measures <main>,
+   * so a band that got this wrong would fail on the box width rather than
+   * waiting for a long enough heading.
+   */
+  .band {
+    @apply -mx-4 px-4 sm:-mx-6 sm:px-6;
+  }
+
+  /*
+   * `min-w-0` is not spacing and it is not defensive. It is the fix for a
+   * defect that only appears once a card has a long word in it, which is why
+   * no stub page could show it.
+   *
+   * A grid or flex item defaults to `min-width: auto`, which resolves to its
+   * min-content width, and `overflow-wrap: break-word` — the guarantee the
+   * whole reflow story rests on — does NOT reduce min-content. It permits a
+   * break during layout and changes no intrinsic size. So a card containing
+   * the word PROFESSIONAL grows its own grid track past the container instead
+   * of breaking inside it, and the page scrolls sideways at 320px.
+   *
+   * Measured on the homepage category grid at a 305px viewport with the SC
+   * 1.4.12 text-spacing override applied, which is what pushes PROFESSIONAL
+   * from 202.6px to 255.6px: the single `auto` track computed to 316.45px in a
+   * 273px container, the card overflowed the page by 27px, and every one of
+   * the heading floors was being measured against a box that had quietly
+   * stopped being 273px. `min-w-0` puts the track back to 273 and lets
+   * break-word do the job it is there for.
+   *
+   * It lives on `.card` because the card is the recurring grid item on this
+   * site. It is inert anywhere else: a block element's min-width is already 0.
+   */
   .card {
-    @apply border-8 border-border bg-surface p-card-tight sm:p-card;
+    @apply min-w-0 border-8 border-border bg-surface p-card-tight sm:p-card;
   }
 
   .section-divider {
     @apply border-b-8 border-border;
+  }
+
+  /*
+   * A pill. `rounded-full` is the third and last radius on this site, and the
+   * only one that is not `rounded-nav`; see the radius rule in the design
+   * system skill. It is permitted here because a pill and a circle are shapes
+   * in their own right rather than a softened box, which is the thing the
+   * zero-radius rule exists to prevent.
+   *
+   * Not interactive, so SC 2.5.8 does not apply. It is a label in a frame.
+   */
+  .pill {
+    @apply inline-flex items-center rounded-full border-4 border-border
+      bg-surface px-5 py-1.5;
+  }
+
+  /*
+   * RENDERED MARKDOWN.
+   *
+   * Tailwind's preflight removes list markers, list indentation and every
+   * heading and paragraph margin, and this project has no typography plugin.
+   * A post body without these rules renders as one undifferentiated column of
+   * text whose lists are lists only in the accessibility tree — visually
+   * indistinguishable from the paragraphs around them, which is exactly the
+   * kind of failure a page with no prose on it cannot surface.
+   *
+   * Headings keep the site's uppercase treatment from @layer base, so a long
+   * word in a post heading is subject to the same reflow arithmetic as a page
+   * heading and the same soft-hyphen rule. tests/reflow.spec.ts walks h1, h2
+   * and h3 on every route, post routes included.
+   */
+  .prose > :first-child {
+    @apply mt-0;
+  }
+
+  .prose h2 {
+    @apply mt-16 text-h2 text-text;
+  }
+
+  .prose h3 {
+    @apply mt-12 text-h3 text-text;
+  }
+
+  .prose p {
+    @apply mt-6 text-body text-muted;
+  }
+
+  .prose :is(ul, ol) {
+    @apply mt-6 pl-6 text-muted;
+  }
+
+  .prose ul {
+    @apply list-disc;
+  }
+
+  .prose ol {
+    @apply list-decimal;
+  }
+
+  .prose li {
+    @apply mt-3;
+  }
+
+  /* The marker is the only thing separating a list item from a paragraph. */
+  .prose li::marker {
+    color: var(--color-gold);
+  }
+
+  .prose strong {
+    @apply font-black text-text;
   }
 
   /*
@@ -732,12 +893,98 @@
   .skip-link:focus-visible {
     transform: translateY(0);
   }
+
+  /*
+   * THE SPINNING BADGE. Two instances: the homepage hero at 24s and the
+   * Contact page at 28s, both from the comps, both linear and infinite.
+   *
+   * The animation is applied by src/components/ui/SpinBadge.vue AFTER the
+   * island mounts, and never by the server-rendered HTML. That is not a
+   * performance choice, it is what makes the SC 2.2.2 claim true: the pause
+   * control is JavaScript, so if the island never hydrates there must be no
+   * motion for it to have failed to stop. No JS, no spin, nothing to pause.
+   *
+   * The component also refuses to animate at all when
+   * `prefers-reduced-motion: reduce` matches, so the reduced-motion block at
+   * the end of this file is a backstop here rather than the mechanism, and no
+   * pause button is rendered into a page that has nothing moving on it. A
+   * hidden-but-focusable control would be worse than no control.
+   *
+   * The durations live here rather than in @theme because they are two
+   * instances of one effect, not a value the design reuses — the same reason
+   * .mobile-menu-dialog keeps its sizing in the component.
+   */
+  .spin-badge {
+    animation: slowspin var(--spin-duration, 24s) linear infinite;
+  }
+
+  .spin-badge[data-paused='true'] {
+    animation-play-state: paused;
+  }
+
+  .spin-pace-hero {
+    --spin-duration: 24s;
+  }
+
+  .spin-pace-contact {
+    --spin-duration: 28s;
+  }
+
+  /*
+   * The pause control. Square, 4px border, gold on `surface`, in the badge's
+   * lower-right corner, per the comps.
+   *
+   * 38x38 CSS px, so it passes SC 2.5.8 on its own size with 14px to spare and
+   * does not lean on the spacing exception, which nothing on this site does.
+   *
+   * `bg-surface` rather than the comps' #131313. The control sits on the page
+   * background, which is #131313, so an opaque fill of that colour would leave
+   * the 4px border as the only thing delimiting it. The border does clear SC
+   * 1.4.11 on its own (`border` is 4.84 on #131313), but this project already
+   * decided, in tests/gold-surface.spec.ts, that a control whose opaque fill
+   * matches the ground behind it is a defect rather than a style. `surface`
+   * #1A1A1A gives the control a fill AND a border, and it is the token whose
+   * job is exactly this: a box on the page.
+   */
+  .motion-toggle {
+    @apply absolute -bottom-3 -right-3 grid h-10 w-10 place-items-center
+      border-4 border-border bg-surface text-gold;
+  }
+
+  .motion-toggle:hover {
+    @apply bg-gold text-background;
+  }
+}
+
+/*
+ * Top level rather than inside a layer, so nothing about cascade layers can
+ * affect whether the browser sees the keyframes at all.
+ */
+@keyframes slowspin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ---------------------------------------------------------------------------
    Reduced motion. Anything animated must honour this; see the design system
-   skill. Note that SC 2.2.2 also requires a real pause control for anything
-   that auto-starts and runs past five seconds, which this does not provide.
+   skill.
+
+   NECESSARY, NOT SUFFICIENT, AND NO LONGER THE ONLY THING HERE. SC 2.2.2 Pause,
+   Stop, Hide asks for a control the user can operate, not an OS setting: a
+   reader who has not set this preference, or who is distracted by the motion in
+   the moment, gets nothing from a media query. The one animation on this site
+   is the spinning badge, and SpinBadge.vue carries a real, keyboard-operable
+   pause button for it. This block stays as the backstop for anything animated
+   that is not that badge.
+
+   The badge does not rely on it in either direction: the component reads
+   `prefers-reduced-motion` itself and never starts, so a reader with the
+   preference set sees a still badge and no pause control rather than an
+   animation neutralised to 0.01ms with a dead button beside it.
 --------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {

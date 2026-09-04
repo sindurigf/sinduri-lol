@@ -1,16 +1,135 @@
 ---
-// Stub. Built out in a later phase.
+import type { BlogCategory } from '../content.config';
+import { categoryLabel } from '../lib/blog';
+import PlaceholderBox from './PlaceholderBox.astro';
+
+/*
+ * One post, as a card. Used by the homepage featured row, the blog index, and
+ * the category listings, so its heading level is a prop rather than a
+ * decision baked into the markup: on /blog the cards sit under the page <h1>
+ * and are <h2>s, on the homepage they sit under a section <h2> and are <h3>s.
+ * Headings must not skip levels.
+ *
+ * THE LINK IS ON THE HEADING, NOT ON THE CARD. The comps make the whole card a
+ * single <a>, which is a common pattern and a bad one here: the link's
+ * accessible name becomes every word in the card — category, reading time,
+ * title and a forty-word teaser — read out as one string in a links list, and
+ * the teaser text stops being selectable. The heading-link pattern is what
+ * src/pages/blog/[category]/index.astro already uses, so this follows it.
+ *
+ * There is deliberately no separate "Read the post" link. Two links to the
+ * same URL in one card is one redundant stop in the tab order and a second
+ * entry in every links list, and the title already says where it goes.
+ */
+
+/*
+ * Accent per category, so a card's colour means something rather than
+ * cycling with position. Both halves are written out as complete class names
+ * because Tailwind scans source text: a composed string like
+ * `text-${accent}` is invisible to it and the utility would never be emitted.
+ *
+ * All three clear AAA on `surface` #1A1A1A: gold 10.60, cyan 10.49,
+ * pink-text 7.18. `pink-text` and never `pink` for a glyph, and `pink` and
+ * never `pink-text` for the shadow; see the two-pinks rule.
+ */
+const ACCENTS = {
+  gold: { text: 'text-gold', shadow: 'shadow-hard-gold-8' },
+  cyan: { text: 'text-cyan', shadow: 'shadow-hard-cyan-8' },
+  pink: { text: 'text-pink-text', shadow: 'shadow-hard-pink-8' },
+} as const;
+
+const CATEGORY_ACCENT: Record<BlogCategory, keyof typeof ACCENTS> = {
+  skincare: 'pink',
+  travel: 'cyan',
+  'personal-thoughts': 'gold',
+  'professional-journey': 'cyan',
+  'open-source': 'gold',
+};
 
 interface Props {
   href: string;
   title: string;
   teaser: string;
+  category: BlogCategory;
+  date: Date;
+  readingTime?: number;
+  featured?: boolean;
+  /** The wide, two-column treatment the comps give the lead post. */
+  feature?: boolean;
+  headingLevel?: 2 | 3;
+  class?: string;
 }
 
-const { href, title, teaser } = Astro.props;
+const {
+  href,
+  title,
+  teaser,
+  category,
+  date,
+  readingTime,
+  featured = false,
+  feature = false,
+  headingLevel = 3,
+  class: className = '',
+} = Astro.props;
+
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+
+const accent = ACCENTS[CATEGORY_ACCENT[category]];
+
+const DATE_LOCALE = 'en-GB';
+const DATE_FORMAT: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+};
+
+const machineDate = date.toISOString().slice(0, 10);
+const readableDate = date.toLocaleDateString(DATE_LOCALE, DATE_FORMAT);
 ---
 
-<article>
-  <h3><a href={href}>{title}</a></h3>
-  <p>{teaser}</p>
+<article class:list={['card flex flex-col', accent.shadow, className]}>
+  <div
+    class:list={[feature ? 'grid gap-10 md:grid-cols-2 md:items-center' : '']}
+  >
+    <div class="flex flex-col">
+      <p
+        class:list={['label flex flex-wrap items-center gap-x-3', accent.text]}
+      >
+        <span>{categoryLabel(category)}</span>
+        {
+          featured ? (
+            <Fragment>
+              <span aria-hidden="true">&middot;</span>
+              <span>Featured</span>
+            </Fragment>
+          ) : null
+        }
+        {
+          readingTime ? (
+            <Fragment>
+              <span aria-hidden="true">&middot;</span>
+              <span>{readingTime} min read</span>
+            </Fragment>
+          ) : null
+        }
+      </p>
+
+      <Heading class:list={['mt-5', feature ? 'text-h2' : 'text-h3']}>
+        <a href={href} class="text-text hover:text-cyan">{title}</a>
+      </Heading>
+
+      <p class="mt-6 text-body text-muted text-pretty">{teaser}</p>
+
+      <p class="label mt-8 text-subtle">
+        <time datetime={machineDate}>{readableDate}</time>
+      </p>
+    </div>
+
+    {
+      feature ? (
+        <PlaceholderBox ratio="photo" label="post artwork" class="mt-2" />
+      ) : null
+    }
+  </div>
 </article>

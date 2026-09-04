@@ -576,11 +576,32 @@ That media query is necessary but **not sufficient**. WCAG 2.2 SC 2.2.2 Pause,
 Stop, Hide applies to anything that moves automatically for more than five
 seconds, and it requires a control the user can operate, not an OS setting.
 
-One element in this design falls under it: the **spinning badge**. The comps
-apply `slowspin` to it at 24s and 28s, linear, infinite. It auto-starts and runs
-indefinitely, so it needs a real, keyboard-operable pause control with a visible
-label and a visible focus indicator. A media query alone does not satisfy 2.2.2,
-because a user with reduced motion turned off has no way to stop it.
+One element in this design falls under it: the **spinning badge**, `slowspin`
+at 24s on the homepage hero and 28s on Contact, linear and infinite. It is
+built, in `src/components/ui/SpinBadge.vue`, and `tests/motion.spec.ts`
+measures it. Three things about how, because each is the difference between
+meeting 2.2.2 and appearing to:
+
+- **The animation is added by the island on mount, never by the server-rendered
+  HTML.** The control is JavaScript, so motion in the static markup would run
+  in a browser where the island failed to hydrate with nothing able to stop
+  it. No JS, no spin. Reuse this shape for anything animated that is paused by
+  script.
+- **Under `prefers-reduced-motion: reduce` the component neither animates nor
+  renders the button.** Leaving the global media query to neutralise the
+  animation to 0.01ms would leave a control in the tab order that pauses
+  nothing.
+- **The state lives in the accessible name and nowhere else.** No
+  `aria-pressed` beside it. The comps do both, which states the same thing
+  twice and lets the two disagree. `MobileMenu.vue` makes the opposite call —
+  fixed name, state in `aria-expanded` — for the same underlying rule. Which
+  half carries the state depends on the control: for a transport control the
+  name wins, because "Play" and "Pause" say what pressing it will do, while
+  "pressed" says nothing about whether anything is moving.
+
+Anything else animated on this site needs the same treatment. A media query
+alone does not satisfy 2.2.2, because a user with reduced motion turned off has
+no way to stop it.
 
 There is no marquee in this design. `@keyframes marquee` is declared in the
 source comps but is never applied to an element. Do not build one.
@@ -853,13 +874,27 @@ a magnification user. See the comment in `Header.astro`.
 
 ## Radius
 
-`rounded-nav` is 14px and applies to **exactly two things**:
+Everything is `0` unless it is one of two named exceptions. The base layer sets
+`border-radius: 0` on every element, so any radius has to be opted into.
+
+**`rounded-nav` (14px) is the softened-box exception**, and it applies to
+exactly two things:
 
 1. the nav CTA button, in `Header.astro` and `MobileMenu.vue`
 2. the logo tile in `Header.astro`
 
-Everything else is `0`. The base layer sets `border-radius: 0` on every element,
-so a radius has to be opted into. Any other rounded corner is a bug.
+**`rounded-full` is the circle-and-pill exception.** It applies to the spinning
+badge frame (`SpinBadge.vue`), the bunny roundel in the homepage About teaser,
+the decorative hero glow, and `.pill`.
+
+The two are not degrees of the same thing and the second is not a loophole in
+the first. `rounded-nav` softens a rectangle, which is the move this design
+language is built to avoid, so it is capped at two elements and stays there.
+`rounded-full` draws a circle or a pill, which is a shape in its own right:
+there is no rectangle underneath it to have gone soft. The comps write
+`border-radius: 9999px` on every one of these.
+
+Any other rounded corner is a bug.
 
 ---
 

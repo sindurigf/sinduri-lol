@@ -414,11 +414,43 @@ Stated honestly. This list is not filtered for how it looks.
 2. **Most pages are placeholder stubs.** Home, About, Career, Blog index, and
    Contact render `PLACEHOLDER` copy. They pass axe because there is almost
    nothing on them. That is not evidence of anything.
-3. **The spinning badge is not built.** It appears in the comps, auto-starts,
-   and runs past five seconds, so under SC 2.2.2 Pause, Stop, Hide it needs a
-   keyboard-operable pause control. A `prefers-reduced-motion` media query does
-   not satisfy 2.2.2 on its own, because a user who has not set that preference
-   still has no way to stop it.
+3. ~~**The spinning badge is not built.**~~ **Built, with the pause control SC
+   2.2.2 requires.** `src/components/ui/SpinBadge.vue` renders it on the
+   homepage hero at 24s, and `tests/motion.spec.ts` measures the whole
+   contract from the rendered DOM rather than from the markup: that the
+   animation is really running (`animation-play-state: running` on a real
+   `slowspin`), that a **key press** on the focused control pauses it and a
+   second one resumes it, that the control passes SC 2.5.8 on its own size
+   (40x40 CSS px), and that its accessible name changes with the state.
+
+   Three decisions in it are worth stating, because each is the difference
+   between the criterion being met and appearing to be met:
+
+   - **The animation is applied by the island on mount, never by the
+     server-rendered HTML.** The pause control is JavaScript. Had the
+     animation been in the static markup it would run in any browser where
+     the island failed to hydrate, with the control that stops it absent —
+     motion with no mechanism, which is the failure 2.2.2 names. No JS now
+     means no spin.
+   - **Under `prefers-reduced-motion: reduce` the component does not animate
+     and renders no button**, rather than leaning on the global media query to
+     neutralise the animation to 0.01ms and leaving a control that pauses
+     nothing in the tab order.
+   - **The state is carried by the accessible name and by nothing else.** The
+     comps flip `aria-pressed` _and_ swap the label, which states the same
+     thing twice and lets the two contradict each other. For a transport
+     control the name is the stronger carrier, because "Play" and "Pause" say
+     what the button will do while "pressed" says nothing about whether
+     anything is moving. `MobileMenu.vue` makes the opposite call for the same
+     reason: state in one place.
+
+   **This is not a claim that the badge has been observed by a person.** It has
+   been measured headlessly in Chromium. Nobody has watched it spin, tabbed to
+   it on a real page, or heard a screen reader announce the name change; the
+   Orca pass in [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §6 is where
+   that would be recorded. The line stays here rather than being deleted so
+   that distinction is visible.
+
 4. **No screen reader testing has been done at all.** No NVDA, JAWS,
    VoiceOver, or Orca run, so announcement quality is unknown. That includes
    how the CSS-uppercased accessible names are read: section 6 records that
