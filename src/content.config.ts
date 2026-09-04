@@ -1,5 +1,8 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
+// `astro:content` still re-exports `z`, but it is deprecated and goes away in
+// Astro 8. `astro/zod` is the supported path to the same Zod instance.
+import { z } from 'astro/zod';
 
 export const BLOG_CONTENT_DIR = './src/content/blog';
 export const BLOG_FILE_PATTERN = '**/*.md';

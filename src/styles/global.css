@@ -43,7 +43,13 @@
   --text-body--line-height: 1.62;
   --text-label: 13px;
   --text-label--line-height: 1.2;
-  --text-section-number: 32px;
+  /*
+   * Fluid like the rest of the scale. A fixed 32px outgrew the H3 floor of 26px
+   * on narrow screens; this keeps the number just under the heading it labels.
+   * The floor stays at 24px so the token remains WCAG "large text" at its
+   * weight of 800, which is what lets the pink accent be used on it.
+   */
+  --text-section-number: clamp(24px, 2.8vw, 32px);
   --text-section-number--line-height: 1;
 
   --tracking-heading: -0.05em;

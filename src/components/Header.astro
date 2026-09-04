@@ -27,7 +27,13 @@ const isActive = (href: string): boolean =>
       <span
         class="flex h-12 w-12 rotate-3 items-center justify-center rounded-nav border-4 border-border bg-gold shadow-hard-pink-12"
       >
-        <img src={BUNNY_MARK} alt="" width="12" height="24" class="h-6 w-auto" />
+        <img
+          src={BUNNY_MARK}
+          alt=""
+          width="12"
+          height="24"
+          class="h-6 w-auto"
+        />
       </span>
       <span class="label text-text">sinduri.lol</span>
     </a>
@@ -64,6 +70,13 @@ const isActive = (href: string): boolean =>
       </ul>
     </nav>
 
+    <!--
+      client:load, deliberately not client:media. A desktop user at 400% zoom
+      crosses the mobile breakpoint, and if the island failed to hydrate on that
+      media change the only navigation available to them would be dead - exactly
+      the users who depend on magnification (WCAG 2.2 SC 1.4.10 Reflow). The few
+      kilobytes client:media would save are not worth that risk.
+    -->
     <MobileMenu
       client:load
       links={[...NAV_LINKS]}

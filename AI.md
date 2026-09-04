@@ -7,12 +7,12 @@ so the design system and conventions do not have to be re-explained.
 
 ## Stack
 
-| Concern     | Choice                                     |
-| ----------- | ------------------------------------------ |
-| Framework   | Astro 7 (static output, no SSR adapter)    |
-| Interactive | Vue 3 via `@astrojs/vue`, islands only     |
-| Styling     | Tailwind CSS 4 via `@tailwindcss/vite`     |
-| Language    | TypeScript, `astro/tsconfigs/strict`       |
+| Concern     | Choice                                      |
+| ----------- | ------------------------------------------- |
+| Framework   | Astro 7 (static output, no SSR adapter)     |
+| Interactive | Vue 3 via `@astrojs/vue`, islands only      |
+| Styling     | Tailwind CSS 4 via `@tailwindcss/vite`      |
+| Language    | TypeScript, `astro/tsconfigs/strict`        |
 | Content     | Astro Content Collections, Markdown in repo |
 | Hosting     | Cloudflare Pages                            |
 
@@ -78,7 +78,7 @@ jumps between device sizes. Ceilings land at roughly a 1156px viewport.
 | H3             | `clamp(26px, 4.4vw, 56px)` | 800    | -0.04em  |
 | Body           | `clamp(17px, 1.2vw, 19px)` | 300    | normal   |
 | Label / tag    | `13px`                     | 900    | 0.1em    |
-| Section number | `32px`                     | 800    | n/a      |
+| Section number | `clamp(24px, 2.8vw, 32px)` | 800    | n/a      |
 
 Headings are uppercase. Labels and tags are uppercase. Use `tracking-label-wide`
 (0.14em) where a label needs more air.
@@ -90,18 +90,23 @@ Headings are uppercase. Labels and tags are uppercase. Use `tracking-label-wide`
 - Section dividers: `border-b-8`
 - Default border color is the `border` token, set in the base layer, because
   Tailwind 4 defaults borders to `currentColor`.
-- Radius is `0` everywhere. The only exceptions are the nav CTA button and the
-  logo tile, both `rounded-nav` (14px).
+- Radius is `0` everywhere. `rounded-nav` (14px) applies to exactly two things
+  and nothing else:
+  1. the nav CTA button, in both `Header.astro` and `MobileMenu.vue`
+  2. the logo tile in `Header.astro`
+
+  Anything else with a radius is a bug. The base layer sets `border-radius: 0`
+  on every element, so `rounded-nav` has to be opted into explicitly.
 
 Hard offset shadow utilities, all zero blur and zero spread:
 
-| Utility                | Value                |
-| ---------------------- | -------------------- |
-| `shadow-hard-gold-8`   | `8px 8px 0` gold     |
-| `shadow-hard-gold-6`   | `6px 6px 0` gold     |
-| `shadow-hard-gold-4`   | `4px 4px 0` gold     |
-| `shadow-hard-pink-12`  | `12px 12px 0` pink   |
-| `shadow-hard-cyan-8`   | `8px 8px 0` cyan     |
+| Utility               | Value              |
+| --------------------- | ------------------ |
+| `shadow-hard-gold-8`  | `8px 8px 0` gold   |
+| `shadow-hard-gold-6`  | `6px 6px 0` gold   |
+| `shadow-hard-gold-4`  | `4px 4px 0` gold   |
+| `shadow-hard-pink-12` | `12px 12px 0` pink |
+| `shadow-hard-cyan-8`  | `8px 8px 0` cyan   |
 
 ### Component classes
 
@@ -114,7 +119,7 @@ Defined in `@layer components` in `src/styles/global.css`:
 - `.card` — surface background, `border-8`, 40px padding
 - `.section-divider` — `border-b-8`
 - `.label` / `.label-wide` — 13px / 900 uppercase, 0.1em / 0.14em tracking
-- `.section-number` — 32px / 800, pink
+- `.section-number` — `clamp(24px, 2.8vw, 32px)` / 800, pink
 
 Links are gold with no underline, and turn cyan on hover. This is set in the
 base layer, so plain `<a>` elements are already correct.
@@ -128,18 +133,18 @@ from `src/content/blog/**/*.md`.
 
 Frontmatter schema:
 
-| Field            | Type                 | Required | Default |
-| ---------------- | -------------------- | -------- | ------- |
-| `title`          | string               | yes      |         |
-| `date`           | date                 | yes      |         |
-| `category`       | enum, see below      | yes      |         |
-| `tags`           | string[]             | no       | `[]`    |
-| `teaser`         | string               | yes      |         |
-| `ogImage`        | string               | no       |         |
-| `featured`       | boolean              | no       | `false` |
-| `readingTime`    | number               | no       |         |
-| `seoTitle`       | string               | no       |         |
-| `seoDescription` | string               | no       |         |
+| Field            | Type            | Required | Default |
+| ---------------- | --------------- | -------- | ------- |
+| `title`          | string          | yes      |         |
+| `date`           | date            | yes      |         |
+| `category`       | enum, see below | yes      |         |
+| `tags`           | string[]        | no       | `[]`    |
+| `teaser`         | string          | yes      |         |
+| `ogImage`        | string          | no       |         |
+| `featured`       | boolean         | no       | `false` |
+| `readingTime`    | number          | no       |         |
+| `seoTitle`       | string          | no       |         |
+| `seoDescription` | string          | no       |         |
 
 Categories: `skincare`, `travel`, `personal-thoughts`, `professional-journey`,
 `open-source`. Exported as `BLOG_CATEGORIES` — import it rather than retyping
@@ -186,10 +191,10 @@ Never invent copy. Where real copy is missing, use text prefixed with
 These paths are referenced in code but the files do not exist. Each renders a
 broken image until it is supplied.
 
-| Path                               | Referenced by       |
-| ---------------------------------- | ------------------- |
-| `public/images/og-default.png`     | `BaseLayout.astro`  |
-| `public/images/og-placeholder.png` | `example-post.md`   |
+| Path                               | Referenced by      |
+| ---------------------------------- | ------------------ |
+| `public/images/og-default.png`     | `BaseLayout.astro` |
+| `public/images/og-placeholder.png` | `example-post.md`  |
 
 Footer social links are all `href="#"` placeholders: GitHub, LinkedIn,
 Instagram, Email.

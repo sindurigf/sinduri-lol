@@ -9,6 +9,11 @@ const SOCIAL_LINKS = [
 
 const SITE_NAME = 'sinduri.lol';
 const currentYear = new Date().getFullYear();
+
+// Built here rather than interpolated inline. Astro collapses the whitespace
+// between two adjacent expressions when a formatter puts them on their own
+// lines, which silently renders "2026sinduri.lol".
+const copyright = `© ${currentYear} ${SITE_NAME}`;
 ---
 
 <footer class="border-t-8 border-gold bg-deep px-6 pb-10 pt-20">
@@ -33,7 +38,7 @@ const currentYear = new Date().getFullYear();
     </nav>
 
     <p class="mt-20 text-label font-black uppercase tracking-label text-subtle">
-      &copy; {currentYear} {SITE_NAME}
+      {copyright}
     </p>
   </div>
 </footer>
