@@ -10,7 +10,7 @@ const NAV_LINKS = [
 
 const CTA = { href: '/contact', label: 'Get in touch' } as const;
 
-// NOTE: this asset is not in the repo yet. See AI.md for the expected files.
+// Dark line-art mark, sits on the gold logo tile. Intrinsic size 458x900.
 const BUNNY_MARK = '/images/bunny-dark.png';
 
 const currentPath = Astro.url.pathname;
@@ -27,13 +27,7 @@ const isActive = (href: string): boolean =>
       <span
         class="flex h-12 w-12 rotate-3 items-center justify-center rounded-nav border-4 border-border bg-gold shadow-hard-pink-12"
       >
-        <img
-          src={BUNNY_MARK}
-          alt=""
-          width="28"
-          height="28"
-          class="h-7 w-7 object-contain"
-        />
+        <img src={BUNNY_MARK} alt="" width="12" height="24" class="h-6 w-auto" />
       </span>
       <span class="label text-text">sinduri.lol</span>
     </a>
