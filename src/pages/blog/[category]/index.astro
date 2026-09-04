@@ -47,8 +47,23 @@ const DATE_FORMAT: Intl.DateTimeFormatOptions = {
 >
   <!-- No horizontal padding here; see the note in [slug].astro. -->
   <div class="mx-auto max-w-5xl py-20">
+    <!--
+      inline-block py-2 -my-2 is a target-size rule, not spacing (SC 2.5.8).
+      The 13px/1.2 .label renders a 15.6px line box, so the bare link measured
+      87x16 and passed only by the spacing exception, with the nearest other
+      target 167px away. That is the load-bearing-gap arrangement this project
+      decided not to depend on, because an unrelated layout change can break
+      conformance silently and at a distance from the edit.
+
+      py-2 takes the hit area to 31.6px. The matching -my-2 pulls the layout
+      box back to the 15.6px it occupied before, so the padding grows the
+      target about the same centre line and no glyph moves: the <h1> below
+      stays at the same y. Margins do not shrink the padding box, so the
+      target keeps its full height. inline-block rather than block, so the
+      target is the width of the words and not of the whole container.
+    -->
     <p class="label text-subtle">
-      <a href="/blog" class="text-gold">All posts</a>
+      <a href="/blog" class="-my-2 inline-block py-2 text-gold">All posts</a>
     </p>
 
     <h1 class="mt-6">{categoryLabel}</h1>

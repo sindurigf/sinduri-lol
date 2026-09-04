@@ -63,6 +63,11 @@ What is currently true:
 - Every route is also scanned with the mobile menu dialog **open** at 320px, at
   the same rule tags. Before that, no element inside the panel had ever been
   scanned.
+- Every target on the site now passes SC 2.5.8 on **its own size**. The
+  spacing exception is not relied on anywhere. The last two that did were the
+  breadcrumb links on blog routes; measured at a 305px viewport they are now
+  86.7x31.6 ("All posts") and 178.1x31.6 (the category link), up from 16px
+  tall, with the `<h1>` below them at an unchanged y.
 
 Passing axe is not conformance. See section 6.
 
@@ -212,14 +217,6 @@ Stated honestly. This list is not filtered for how it looks.
 4. **No screen reader testing has been done at all.** See section 6.
 5. **Only one blog post exists,** and it is placeholder content. Long-form
    reading order, in-page headings, and link text in real prose are untested.
-6. **The breadcrumb link above the `<h1>` on blog routes is undersized.**
-   Measured headed at a 320px viewport, "All posts" on a category route is
-   87x16 and the category link on a post route is 179x16, against the 24x24 of
-   SC 2.5.8. Both are a bare `.label` with no padding, the same shape the
-   header nav links had before `py-2` was added to them. They pass 2.5.8 today
-   only by the spacing exception, with the nearest other target 167px away.
-   That is the arrangement this project decided not to depend on, because it
-   makes an unrelated layout change able to break conformance silently.
 
 ## 8. Reporting a barrier
 
