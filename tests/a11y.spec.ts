@@ -116,8 +116,15 @@ test.describe('axe: WCAG 2.2 AA', () => {
  * dialog is not a lesser violation.
  *
  * Verified not to be vacuous: an <img> with no alt and a link at #2a2a2a
- * dropped into the panel fail all eleven of these (image-alt, color-contrast)
- * while all thirty-six pre-existing tests stay green.
+ * dropped into the panel fail every test in this describe block, on image-alt
+ * and color-contrast, while every test outside it stays green.
+ *
+ * UNIT: tests in this block, which is one per entry in ROUTES. Measured at
+ * commit 39e10b9, where that was 11 of a 47-test suite; the comment used to
+ * quote those two figures bare, as "eleven" and "thirty-six" (47 minus the 11
+ * new ones), and both rotted the moment the blog added twelve routes. The
+ * block is 23 tests as of 2026-09-05. The numbers are not the claim — "every
+ * test in this block" is — so they are dated rather than maintained.
  */
 const REFLOW_VIEWPORT = { width: 320, height: 720 };
 

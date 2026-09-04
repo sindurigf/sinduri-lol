@@ -343,10 +343,14 @@ Three limits of the automated tier that are easy to mistake for coverage:
   stating because the floors were documented as locked down by a test that
   could not fail on them. `overflow-wrap: break-word` guarantees the document
   never scrolls sideways, so a heading too big for its box is cut mid-word
-  rather than overflowing. Measured: with the h1 floor put back to 36px, all
-  69 overflow assertions passed while "PROFESSIONAL" was being broken across
-  two lines. The heading-word-fit assertion added alongside the 305px case is
-  what actually watches the floors.
+  rather than overflowing. Measured 2026-09-05: with the `--text-h1` floor put
+  back to 36px, all 92 overflow assertions passed, and the only two failures in
+  the run were the heading-word-fit assertion at 305px. The unit is calls to
+  `expectNoHorizontalOverflow`, one per route per width per spacing mode. This
+  figure previously read "69 overflow assertions", which was the whole suite's
+  test count at the time and not the assertion count at all; see the note in
+  `tests/reflow.spec.ts`. The heading-word-fit assertion added alongside the
+  305px case is what actually watches the floors.
 
 **Automated testing catches only a minority of WCAG success criteria.** Roughly
 a third of WCAG failures are machine-detectable at all; the rest need a human.
