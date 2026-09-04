@@ -272,8 +272,10 @@ the comps. Measured, each colour against what it is actually adjacent to:
 | Primary fill against the gold ground    | **11.32** | 3.0   |
 | Secondary label on gold                 | **11.32** | 4.5   |
 | Secondary border on gold                | **11.32** | 3.0   |
+| Primary inner focus ring on its fill    | **18.58** | 3.0   |
+| Primary outer focus ring on gold        | **11.32** | 3.0   |
 
-Three things about these that are easy to get wrong:
+Four things about these that are easy to get wrong:
 
 - **The pink shadow is decoration and nothing else.** `pink` measures 2.31 on
   gold, under the 3:1 of SC 1.4.11, and that is acceptable here only because
@@ -287,6 +289,11 @@ Three things about these that are easy to get wrong:
   size. `--spacing-btn-gold-y` and `--spacing-btn-gold-x` exist as tokens
   because 18 and 34 are not multiples of the 4px Tailwind step and this
   project does not allow arbitrary values.
+- **`.btn-gold-primary`'s focus ring is two rings, and it is the only one.**
+  Its ring colour is its own fill colour, so a single ring depends entirely on
+  the offset gap. See
+  [A two-tone ring](#a-two-tone-ring-for-an-indicator-that-has-to-survive-two-backgrounds).
+  Do not copy it to `.btn-gold-secondary`, which does not have the problem.
 - **The button label is not underlined**, unlike every other link on this
   surface. The border and fill already distinguish it, so SC 1.4.1 is
   satisfied by the box rather than by the colour, and an underline under a
@@ -337,7 +344,11 @@ DOM rather than matching class names, so it fails on the _outcome_:
 - `.surface-gold` itself is asserted for text, muted text, link colour, link
   underline, focus ring and border colour;
 - both button classes are asserted for label, fill, border, focus ring, focus
-  offset, absence of an underline, and SC 2.5.8 target size.
+  offset, absence of an underline, and SC 2.5.8 target size;
+- `.btn-gold-primary`'s two-tone focus ring is asserted on its own: both rings
+  and the pink offset shadow present at once, each ring's ratio pinned to the
+  number the docs quote, and — the assertion the phase exists for — a visible
+  ring remaining with `outline-offset` forced to `0`.
 
 If you change a number on this page, run it.
 
@@ -676,9 +687,63 @@ Two checks, not one, because the offset means the ring touches two things:
 The gold buttons are the case where the second check bites. The ring on that
 surface is `gold-text`, which is the same colour as `.btn-gold-primary`'s fill
 and border: ring against fill measures **1.00**, ring against the gold gap
-measures **11.32**. **The offset is load-bearing there for a second, separate
-reason**, and `tests/gold-surface.spec.ts` asserts it is non-zero for that
-reason alone. Never set `outline-offset: 0` anywhere on this site.
+measures **11.32**. Never set `outline-offset: 0` anywhere on this site;
+`tests/gold-surface.spec.ts` asserts it is non-zero.
+
+### A two-tone ring, for an indicator that has to survive two backgrounds
+
+**`.btn-gold-primary` is the only control on this site with this problem, and
+this is not a general pattern to copy.**
+
+The check above found it, and finding it was not the same as fixing it. The
+ring on that button was a single `gold-text` `#131313` ring, 1.00:1 against the
+button's own `#131313` fill, made visible only by the 3px offset gap, which is
+gold, at 11.32. So the entire indicator rested on one property staying
+non-zero, on the one control where getting it wrong hides the indicator
+completely rather than merely weakening it. Asserting the offset guards that
+dependency. It does not remove it.
+
+**The technique: give the indicator one ring for each background it can end up
+against.**
+
+| Layer                           | Against        | Ratio     |
+| ------------------------------- | -------------- | --------- |
+| inner `#FFFFFF`, flush to fill  | `#131313` fill | **18.58** |
+| outer `#131313`, beyond the gap | gold `#FFC000` | **11.32** |
+
+```css
+.surface-gold .btn-gold-primary:focus-visible {
+  box-shadow: var(--inset-shadow-gold-btn-ring), var(--shadow-hard-pink-8);
+}
+```
+
+Three things that are easy to get wrong here:
+
+- **It folds into `box-shadow`, it does not replace it.** `box-shadow` is one
+  property, so a `:focus-visible` rule naming only the ring deletes
+  `8px 8px 0` pink for as long as the button has focus: the resting decoration
+  vanishes at exactly the moment someone is looking at the control. Both
+  layers are named, and the pink one is the same token the resting rule uses,
+  so they cannot drift.
+- **The inner ring is a shadow, not a second outline.** An element gets one
+  outline. `inset` clips the shadow to the padding box, which puts it flush
+  against the inner edge of the 4px border, with `#131313` on both sides.
+- **It reuses `gold-btn-label`.** Same white, same fill, same 18.58. A second
+  white token would be the same value measured against the same thing, free to
+  drift and quoted twice in every table.
+
+**A single-colour ring is sufficient everywhere else**, including on
+`.btn-gold-secondary`: its fill is transparent, so a ring flush to its interior
+sits on the gold showing through, where `gold-text` already measures 11.32.
+Reach for two tones only when the ring colour equals the control's own opaque
+fill. Adding one where it is not needed is a second thing to keep in sync for
+no gain.
+
+The offset assertion stays and is now **redundant rather than load-bearing**,
+which is the point. Measured both ways: deleting the two-tone rule fails the
+ring test at 1.00:1 with the offset zeroed, and setting `outline-offset: 0`
+fails the offset assertion while the ring test passes, because the inner ring
+is still 18.58.
 
 ---
 

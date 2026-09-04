@@ -151,6 +151,17 @@
    * 18.58 on the #131313 fill of .btn-gold-primary; not usable on gold itself,
    * where pure white measures 1.64.
    *
+   * TWO JOBS ON THAT ONE CONTROL, both on the same #131313 fill and both at
+   * 18.58: the label, and the inner half of the two-tone focus ring. The ring
+   * reuses this token rather than introducing a second white, because a second
+   * one would be the same value with the same measurement against the same
+   * fill, free to drift apart and quoted twice in every table. The name says
+   * "label" and now carries a ring as well, which is a naming cost worth
+   * paying: what the name is actually for is keeping #FFFFFF scoped to this
+   * button instead of leaking into body copy, and a ring on this button is
+   * inside that scope. See .btn-gold-primary:focus-visible in @layer
+   * components.
+   *
    * DELIBERATELY COMPONENT-SCOPED, and it is the one token here that is. The
    * site's text colour is `text` #E5E2E1, and that softness is a choice:
    * 14.42 on #131313 with less halation than pure white, which blooms on a
@@ -277,6 +288,19 @@
   --shadow-hard-pink-12: 12px 12px 0 var(--color-pink);
   --shadow-hard-pink-8: 8px 8px 0 var(--color-pink);
   --shadow-hard-cyan-8: 8px 8px 0 var(--color-cyan);
+
+  /*
+   * The inner half of .btn-gold-primary's two-tone focus ring. 3px to match
+   * the width of the site-wide outline, so the two halves read as one
+   * indicator. Inset, so it is clipped to the padding box and lands flush
+   * against the inner edge of the button's 4px border, with the #131313 fill
+   * on one side and the #131313 border on the other: 18.58 either way.
+   *
+   * It is a shadow rather than a second outline because an element gets one
+   * outline, and it lives here as a token because this project does not allow
+   * an arbitrary value in a component. See the :focus-visible rule.
+   */
+  --inset-shadow-gold-btn-ring: inset 0 0 0 3px var(--color-gold-btn-label);
 
   /* Layout */
   --spacing-header: 80px;
@@ -618,6 +642,45 @@
     @apply inline-block border-4 border-gold-text bg-transparent
       px-btn-gold-x py-btn-gold-y text-label font-black uppercase
       tracking-label text-gold-text;
+  }
+
+  /*
+   * A TWO-TONE FOCUS RING, ON THIS ONE CONTROL ONLY.
+   *
+   * The ring on this surface is `gold-text` #131313, which is the same colour
+   * as this button's fill and border. Ring against fill is 1.00. Only the 3px
+   * offset gap, which is gold, makes it visible at all, at 11.32. That put the
+   * whole indicator on one property staying non-zero, on the single control
+   * where getting it wrong hides the indicator completely rather than merely
+   * weakening it, and an assertion on the offset guarded the dependency rather
+   * than removing it.
+   *
+   * So the ring is now two rings, against the two different things it can end
+   * up abutting:
+   *
+   *   inner  #FFFFFF, inset, flush to the fill   on #131313      18.58
+   *   outer  #131313, the outline, beyond the gap on gold #FFC000 11.32
+   *
+   * Whatever the offset does, at least one of them still has something to
+   * contrast against. The offset is still 3px and the assertion on it stays,
+   * but it is now redundant rather than load-bearing, which is the point.
+   *
+   * THIS FOLDS INTO THE PINK OFFSET SHADOW, IT DOES NOT REPLACE IT. box-shadow
+   * is one property, so writing only the ring here would delete
+   * `8px 8px 0 pink` for as long as the button had focus — the resting
+   * decoration would vanish at exactly the moment someone is looking at the
+   * control. Both layers are named, and the pink one is the same token the
+   * resting rule applies, so the two cannot drift.
+   *
+   * NOT A GENERAL PATTERN. A single-colour ring is sufficient everywhere else
+   * on this site, including on .btn-gold-secondary, whose fill is transparent:
+   * a ring flush to that button's interior sits on the gold showing through,
+   * where `gold-text` already measures 11.32. This button is the only control
+   * whose ring colour equals its own opaque fill. Do not copy this to controls
+   * that do not have that problem.
+   */
+  .surface-gold .btn-gold-primary:focus-visible {
+    box-shadow: var(--inset-shadow-gold-btn-ring), var(--shadow-hard-pink-8);
   }
 
   /*

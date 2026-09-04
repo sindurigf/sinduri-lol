@@ -167,9 +167,16 @@ offset gap is also gold; borders default to `border` (2.34); text defaults to
 `text` (1.27). Neither `.btn-primary` nor `.btn-secondary` may be used there;
 `.btn-gold-primary` and `.btn-gold-secondary` are the gold-surface pair, scoped
 to `.surface-gold` so using one elsewhere renders it unstyled.
-`tests/gold-surface.spec.ts` measures all of it from the rendered DOM. The full
-rules, including the button specifications and their measured ratios, are in
-the design system skill.
+`.btn-gold-primary` carries a two-tone focus ring, an inner `#FFFFFF` flush to
+its `#131313` fill (18.58) inside the existing `#131313` outline beyond the gold
+gap (11.32), because its ring colour is its own fill colour and a single ring
+there rests entirely on the offset staying non-zero. It is the only control on
+the site with that problem; a single-colour ring is correct everywhere else.
+`tests/gold-surface.spec.ts` measures all of it from the rendered DOM,
+including whether each control is distinguishable from the ground behind it by
+its fill or, when the fill is transparent, by its border on all four edges. The
+full rules, including the button specifications and their measured ratios, are
+in the design system skill.
 
 ### Typography
 

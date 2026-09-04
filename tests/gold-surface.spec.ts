@@ -15,7 +15,7 @@ import { ROUTES } from './routes';
  * WHAT THIS FILE IS FOR. The rule "do not use a dark-surface token on a gold
  * background" is not something the cascade can enforce, because an explicit
  * utility always beats a subtree default. So it is enforced by measurement,
- * from the rendered DOM, in four tests:
+ * from the rendered DOM, in five tests:
  *
  *   1. The documented ratios still hold. Reads the live CSS variables and
  *      re-measures each against gold. This fails if any token is retoned, in
@@ -30,6 +30,8 @@ import { ROUTES } from './routes';
  *   4. Every control in a gold section is delimited against the ground —
  *      by its opaque fill, or, when the fill is transparent, by its border.
  *      Also a fixture, and see `invisibleControls` for why it is two arms.
+ *   5. `.btn-gold-primary` keeps a visible focus ring whatever the offset
+ *      does. Its ring colour is its own fill colour, so the ring is two rings.
  *
  * ON TEST 3 BEING A FIXTURE. It is a weaker test than one driven by real
  * markup and it is deliberate: the class has to be right *before* the Career
@@ -87,7 +89,24 @@ import { ROUTES } from './routes';
  * passed, the button test included: its `borderOnGold` reads borderTopColor
  * and the top edge was still #131313. Test 4 was the only thing that failed.
  *
- * With the files as committed, all 17 pass.
+ * The two-tone ring in test 5 was verified two ways, and the pair of results
+ * is the whole point of that phase:
+ *
+ *   delete .btn-gold-primary:focus-visible   test 5 fails on its first
+ *                                            assertion, reporting
+ *                                            `outline rgb(19, 19, 19) —
+ *                                            1.00:1` at zero offset. That is
+ *                                            the state this file was in
+ *                                            before the inner ring existed.
+ *   outline-offset: 0 on .surface-gold       the button test's offset
+ *                                            assertion fails, and TEST 5
+ *                                            PASSES, because the inner ring
+ *                                            is still 18.58 against the fill.
+ *
+ * The second result is what "the offset assertion is now redundant rather
+ * than load-bearing" means, measured rather than asserted in prose.
+ *
+ * With the files as committed, all 18 pass.
  */
 
 const GOLD = '#FFC000';
@@ -198,6 +217,74 @@ const PAGE_HELPERS = `
 
   const isGold = (colour) =>
     colour !== null && colour.r === 255 && colour.g === 192 && colour.b === 0;
+
+  /*
+   * Split a computed box-shadow into its layers. Not a plain split on ",":
+   * every layer starts with an rgb() or rgba() colour, which contains commas
+   * of its own, so this tracks parenthesis depth. Chromium computes a layer as
+   * "rgb(255, 255, 255) 0px 0px 0px 3px inset".
+   */
+  const shadowLayers = (value) => {
+    if (value === 'none') return [];
+    const parts = [];
+    let depth = 0;
+    let current = '';
+    for (const character of String(value)) {
+      if (character === '(') depth += 1;
+      if (character === ')') depth -= 1;
+      if (character === ',' && depth === 0) {
+        parts.push(current);
+        current = '';
+        continue;
+      }
+      current += character;
+    }
+    parts.push(current);
+    return parts
+      .map((part) => part.trim())
+      .filter((part) => part !== '')
+      .map((part) => ({
+        text: part,
+        colour: parse(part),
+        inset: part.includes('inset'),
+      }));
+  };
+
+  /*
+   * Every layer of an element's focus indicator, measured against ONE colour:
+   * the fill of the control it is marking. That is the measurement the offset
+   * was hiding. An inset ring sits inside the padding box, so the fill is
+   * literally what it abuts. The outline sits outside the border box, so with
+   * a non-zero offset it abuts the ground instead and this number understates
+   * it — which is the point, because the question being asked is what survives
+   * when the offset is taken away.
+   */
+  const focusRingsAgainstFill = (element, fill) => {
+    const style = getComputedStyle(element);
+    const out = [];
+
+    const outline = parse(style.outlineColor);
+    if (
+      outline !== null &&
+      style.outlineStyle !== 'none' &&
+      parseFloat(style.outlineWidth) > 0
+    ) {
+      out.push({
+        layer: 'outline ' + style.outlineColor,
+        ratio: Number(ratio(over(outline, fill), fill).toFixed(2)),
+      });
+    }
+
+    for (const layer of shadowLayers(style.boxShadow)) {
+      if (!layer.inset || layer.colour === null) continue;
+      out.push({
+        layer: 'inset ring ' + layer.text,
+        ratio: Number(ratio(over(layer.colour, fill), fill).toFixed(2)),
+      });
+    }
+
+    return out;
+  };
 
   const describe = (element) => {
     const id = element.id ? '#' + element.id : '';
@@ -719,14 +806,26 @@ test.describe('the gold surface exception', () => {
       /*
        * The ring is `gold-text`, which is exactly the primary button's fill
        * and both buttons' border colour. Flush against the element it would
-       * measure 1.00. The 3px offset is what puts gold on either side of it,
-       * and it is the second, separate reason this offset cannot be zeroed.
+       * measure 1.00, and the 3px offset is what puts gold on either side of
+       * it.
+       *
+       * KEPT, AND DELIBERATELY REDUNDANT ON THE PRIMARY. This used to be the
+       * only thing standing between .btn-gold-primary and a completely
+       * invisible focus indicator, which is a lot of weight for an assertion
+       * on a single numeric property to carry. The two-tone ring took that
+       * weight off it: verified by setting outline-offset: 0 on
+       * .surface-gold :focus-visible, where this assertion fails and the
+       * two-tone ring test passes, because the inner #FFFFFF ring is still
+       * 18.58 against the fill. The offset is still right and is still
+       * asserted; it is no longer load-bearing.
        */
       expect(
         button.outlineOffset,
         `.${name} focus ring offset. The ring colour is the same as this ` +
-          `button's border, so with no offset it would be invisible against ` +
-          `the control it is marking.`,
+          `button's border, so with no offset it sits flush against a colour ` +
+          `it matches. On .btn-gold-primary the inner ring now covers that ` +
+          `case; this assertion keeps the offset honest rather than carrying ` +
+          `the indicator on its own.`,
       ).toBeGreaterThan(0);
       expect(button.outlineWidth, `.${name} focus ring width`).toBeGreaterThan(
         0,
@@ -759,6 +858,187 @@ test.describe('the gold surface exception', () => {
         'through; its label and border are measured against gold, not against ' +
         'a fill of its own.',
     ).toBe(true);
+  });
+
+  /**
+   * .btn-gold-primary's focus ring, which is two rings.
+   *
+   * The ring colour on this surface is `gold-text` #131313, which is exactly
+   * this button's fill and border. Ring against fill is 1.00, and only the 3px
+   * gold offset gap made it visible, at 11.32. That put the entire indicator
+   * on one property staying non-zero, on the one control where getting it
+   * wrong hides the indicator rather than weakening it. An inner #FFFFFF ring
+   * flush to the fill (18.58) removes the dependency: whatever the offset
+   * does, one ring still has something to contrast against.
+   *
+   * The offset assertion in the button test above stays, and is now redundant
+   * rather than load-bearing. This test is what makes it redundant.
+   */
+  test('.btn-gold-primary keeps a visible focus ring whatever the offset does', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    const result = (await page.evaluate(`(() => {
+      ${PAGE_HELPERS}
+
+      const host = document.createElement('div');
+      host.className = 'surface-gold';
+      host.innerHTML =
+        '<a data-role="primary" class="btn-gold-primary" href="/cv.pdf">Download CV</a>';
+      document.querySelector('main').append(host);
+
+      const button = host.querySelector('[data-role="primary"]');
+      const root = getComputedStyle(document.documentElement);
+      const pink = fromHex(root.getPropertyValue('--color-pink').trim());
+      const gold = fromHex('${GOLD}');
+
+      button.focus();
+      const focused = getComputedStyle(button);
+      const fill = parse(focused.backgroundColor);
+      const layers = shadowLayers(focused.boxShadow);
+      const inner = layers.find((layer) => layer.inset) ?? null;
+      const offsetShadow = layers.find((layer) => !layer.inset) ?? null;
+      const outline = parse(focused.outlineColor);
+
+      /*
+       * The failure this whole rule exists to prevent. Forced on the element
+       * rather than assumed, so what is asserted is the rendered result of
+       * outline-offset: 0 and not a description of it.
+       */
+      button.style.outlineOffset = '0px';
+      const atZeroOffset = focusRingsAgainstFill(button, fill);
+      button.style.outlineOffset = '';
+
+      const readout = {
+        fillCss: focused.backgroundColor,
+        boxShadowCss: focused.boxShadow,
+        layerCount: layers.length,
+
+        innerRingCss: inner === null ? null : inner.text,
+        innerRingOnFill:
+          inner === null || inner.colour === null
+            ? null
+            : Number(ratio(inner.colour, fill).toFixed(2)),
+
+        offsetShadowCss: offsetShadow === null ? null : offsetShadow.text,
+        offsetShadowIsPink:
+          offsetShadow === null || offsetShadow.colour === null
+            ? false
+            : offsetShadow.colour.r === pink.r &&
+              offsetShadow.colour.g === pink.g &&
+              offsetShadow.colour.b === pink.b,
+
+        outlineWidth: parseFloat(focused.outlineWidth),
+        outlineOnGold:
+          outline === null ? null : Number(ratio(outline, gold).toFixed(2)),
+        outlineOnFill:
+          outline === null ? null : Number(ratio(outline, fill).toFixed(2)),
+
+        atZeroOffset,
+        bestAtZeroOffset: atZeroOffset.reduce(
+          (best, layer) => (layer.ratio > best ? layer.ratio : best),
+          0,
+        ),
+      };
+
+      host.remove();
+      return readout;
+    })()`)) as {
+      fillCss: string;
+      boxShadowCss: string;
+      layerCount: number;
+      innerRingCss: string | null;
+      innerRingOnFill: number | null;
+      offsetShadowCss: string | null;
+      offsetShadowIsPink: boolean;
+      outlineWidth: number;
+      outlineOnGold: number | null;
+      outlineOnFill: number | null;
+      atZeroOffset: { layer: string; ratio: number }[];
+      bestAtZeroOffset: number;
+    };
+
+    /*
+     * THE HEADLINE CLAIM, ASSERTED FIRST ON PURPOSE. Every other assertion in
+     * this test is a detail of how it is achieved, and any of them failing
+     * would also break this one. Ordering it first means the failure a reader
+     * sees names the actual consequence — the indicator is invisible against
+     * the control it marks — rather than an intermediate fact about how many
+     * box-shadow layers there are.
+     */
+    expect(
+      result.bestAtZeroOffset,
+      `with outline-offset forced to 0, no layer of .btn-gold-primary's focus ` +
+        `indicator reaches ${NON_TEXT}:1 against the button's own fill ` +
+        `(SC 1.4.11), so the ring is invisible against the control it marks. ` +
+        `This is the failure the inner ring exists to prevent. Measured:\n` +
+        result.atZeroOffset
+          .map((layer) => `  ${layer.layer} — ${layer.ratio.toFixed(2)}:1`)
+          .join('\n'),
+    ).toBeGreaterThanOrEqual(NON_TEXT);
+
+    /*
+     * BOTH RINGS AND THE PINK SHADOW, ALL THREE AT ONCE. box-shadow is one
+     * property, so a :focus-visible rule that names only the ring silently
+     * deletes the resting decoration for as long as the button has focus.
+     */
+    expect(
+      result.layerCount,
+      `.btn-gold-primary on focus must carry two box-shadow layers, the inner ` +
+        `ring and the pink offset shadow. Measured: ${result.boxShadowCss}`,
+    ).toBe(2);
+
+    expect(
+      result.innerRingCss,
+      `.btn-gold-primary has no inset ring on focus. It is the half of the ` +
+        `indicator that does not depend on outline-offset. Measured ` +
+        `box-shadow: ${result.boxShadowCss}`,
+    ).not.toBeNull();
+
+    expect(
+      result.offsetShadowIsPink,
+      `.btn-gold-primary lost its pink offset shadow on focus. The ring folds ` +
+        `into box-shadow rather than replacing it, or the resting decoration ` +
+        `disappears at exactly the moment someone is looking at the control. ` +
+        `Measured: ${result.boxShadowCss}`,
+    ).toBe(true);
+
+    expect(
+      result.outlineWidth,
+      '.btn-gold-primary lost its outer ring on focus',
+    ).toBeGreaterThan(0);
+
+    /*
+     * The two documented numbers, pinned the way the token table above is
+     * pinned, so retoning either colour fails here as well as in the docs.
+     */
+    expect(
+      result.innerRingOnFill,
+      `the inner ring against .btn-gold-primary's own fill ${result.fillCss}`,
+    ).toBeCloseTo(18.58, 1);
+    expect(result.innerRingOnFill).toBeGreaterThanOrEqual(NON_TEXT);
+
+    expect(
+      result.outlineOnGold,
+      'the outer ring against the gold ground, which is what the 3px offset ' +
+        'gap shows',
+    ).toBeCloseTo(11.32, 1);
+    expect(result.outlineOnGold).toBeGreaterThanOrEqual(NON_TEXT);
+
+    /*
+     * The reason this test exists. The outer ring is the same colour as the
+     * fill, so on its own it measures 1.00 against the control it is marking
+     * and the offset is the only thing saving it. Asserted so that the number
+     * is on the record rather than described.
+     */
+    expect(
+      result.outlineOnFill,
+      'the outer ring against the fill. It is `gold-text`, the same colour as ' +
+        'the fill and the border, so this is expected to be 1.00 — which is ' +
+        'why a second ring is needed and why the offset used to be the whole ' +
+        'indicator.',
+    ).toBeCloseTo(1.0, 1);
   });
 
   /**
