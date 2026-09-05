@@ -194,12 +194,76 @@ const readFocused = (page: Page): Promise<Stop | null> =>
     };
   })()`) as Promise<Stop | null>;
 
+/**
+ * Wait until the page has stopped scrolling.
+ *
+ * WHY THIS EXISTS, AND WHY IT IS NOT A WEAKENING OF THE ASSERTION BELOW.
+ *
+ * `keyboard.press` resolves when the input event has been dispatched, not when
+ * the browser has finished moving focus, applying `scroll-margin-top` and
+ * settling layout. Probing immediately therefore races the scroll, and what it
+ * measures is a position no reader ever sees.
+ *
+ * WebKit is where that race actually bit. CI run 33979308331 failed one test
+ * of 1461 — `/` at 1280px — reporting the card heading "Sed ut perspiciatis
+ * unde omnis" as fully obscured by the header, with `covered: 2, probed: 2`.
+ * That `probed: 2` is the tell: three of the five probe points were outside
+ * the viewport, so the element was captured most of the way above the fold
+ * with only a sliver showing, which is a mid-scroll frame rather than a
+ * resting state. It did not reproduce in 3 repeats of the same spec in the
+ * same container, which is what an intermittent race looks like rather than a
+ * defect.
+ *
+ * Settling first makes the check STRICTER, not looser: it measures the state
+ * the reader is left in, and a control that is genuinely under the header once
+ * the scroll finishes still fails. What it stops doing is failing on frames
+ * that never reached anyone's eye.
+ *
+ * Two consecutive animation frames with an unchanged `scrollY` is the
+ * condition, with a frame budget so a page that never settles fails the walk
+ * rather than hanging it.
+ *
+ * MEASURED AFTER THE FIX, 2026-09-05. 414 passing: this spec across all three
+ * engines at three repeats each, WebKit included. And the assertion still
+ * bites — settling did not blunt it — because with `scroll-margin-top` forced
+ * to 0 the same spec fails 13 of its 46 chromium tests, and passes all 46
+ * again the moment the rule is restored. That sabotage is harsher than the one
+ * described below, which reverts the rule to naming only `:target, [id]` and
+ * fails 9; both are recorded because they break the same rule by different
+ * amounts.
+ */
+const SETTLE_FRAMES = 60;
+
+const settleScroll = (page: Page): Promise<void> =>
+  page.evaluate((budget) => {
+    return new Promise<void>((resolve) => {
+      let previous: number | null = null;
+      let frames = 0;
+      const check = () => {
+        const y = window.scrollY;
+        if (previous === y) {
+          resolve();
+          return;
+        }
+        previous = y;
+        frames += 1;
+        if (frames >= budget) {
+          resolve();
+          return;
+        }
+        requestAnimationFrame(check);
+      };
+      requestAnimationFrame(check);
+    });
+  }, SETTLE_FRAMES);
+
 /** Walk the tab order in one direction, collecting every stop. */
 const walk = async (page: Page, key: 'Tab' | 'Shift+Tab'): Promise<Stop[]> => {
   const stops: Stop[] = [];
   const seen = new Set<string>();
 
   for (let i = 0; i < MAX_STOPS; i += 1) {
+    await settleScroll(page);
     const stop = await readFocused(page);
     if (stop === null) break;
 
