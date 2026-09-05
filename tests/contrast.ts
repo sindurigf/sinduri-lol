@@ -103,6 +103,41 @@ export const PAGE_HELPERS = `
     return null;
   };
 
+  /*
+   * The effective background, composited rather than surrendered.
+   *
+   * effectiveBackground above returns null the moment it meets a partly
+   * transparent layer, which is the right answer where the caller needs a
+   * single declared colour it can name. It is the wrong answer for a focus
+   * ring: the sticky header is rgba(10, 10, 10, 0.94) over the page's
+   * rgb(19, 19, 19), and every control inside it — the wordmark, four nav
+   * links, the menu trigger, the call to action — came back unresolved on
+   * that alone. 138 of 572 controls, which is not a rounding error, and a
+   * spec that skipped them would have skipped the entire header.
+   *
+   * So: collect the translucent layers on the way up, find the first opaque
+   * one, and composite them back down onto it. Still returns null for a
+   * background image or a gradient, where there is no single colour to
+   * composite and guessing would be worse than declining.
+   */
+  const compositeBackground = (element) => {
+    const layers = [];
+    for (let node = element; node instanceof Element; node = node.parentElement) {
+      const style = getComputedStyle(node);
+      if (style.backgroundImage !== 'none') return null;
+      const colour = parse(style.backgroundColor);
+      if (!colour) return null;
+      if (colour.a === 0) continue;
+      if (colour.a < 1) {
+        layers.push(colour);
+        continue;
+      }
+      /* Opaque ground found: fold the translucent layers back onto it. */
+      return layers.reduceRight((ground, layer) => over(layer, ground), colour);
+    }
+    return null;
+  };
+
   const isGold = (colour) =>
     colour !== null && colour.r === 255 && colour.g === 192 && colour.b === 0;
 

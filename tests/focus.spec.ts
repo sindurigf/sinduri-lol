@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { NON_TEXT, PAGE_HELPERS } from './contrast';
 import { ROUTES } from './routes';
 
 /**
@@ -34,6 +35,15 @@ import { ROUTES } from './routes';
  * because a control that is 80% covered is worth looking at even though it
  * passes AA.
  *
+ * THE RING'S CONTRAST IS ASSERTED TOO, not just its presence. See the SC
+ * 1.4.11 block at the foot of the file. Verified computing rather than
+ * skipping: on a real keyboard walk of `/`, 12 of the first 12 stops resolve a
+ * ratio. The skip link measures 11.32:1 against `background` and the header
+ * controls 12.02:1 against the composited header, which is the figure
+ * global.css has claimed in a comment since the ring was written. Verified
+ * able to fail: forcing the ring to #1a1a1a catches 8 of 8 stops, at 1.07 to
+ * 1.13:1. Measured 2026-09-05.
+ *
  * VERIFIED NOT TO BE VACUOUS, by reverting the fix rather than by assertion.
  * With the `scroll-margin-top` rule in global.css put back to naming only
  * `:target, [id]`, 9 of these 46 tests fail: `/` at both widths, and at 305px
@@ -66,6 +76,9 @@ interface Stop {
   by: string | null;
   hasRing: boolean;
   outline: string;
+  /** The ring measured against what is painted in the offset gap. */
+  ratio: number | null;
+  behind: string | null;
 }
 
 /**
@@ -76,22 +89,25 @@ interface Stop {
  * live declaration, so an outline read after a blur is the resting value.
  */
 const readFocused = (page: Page): Promise<Stop | null> =>
-  page.evaluate(() => {
+  page.evaluate(`(() => {
+    ${PAGE_HELPERS}
+
     const el = document.activeElement;
-    if (
-      el === null ||
-      el === document.body ||
-      el === document.documentElement
-    ) {
+    if (el === null || el === document.body || el === document.documentElement) {
       return null;
     }
 
-    const describe = (node: Element): string => {
+    /*
+     * Named \`label\` and not \`describe\`: PAGE_HELPERS brings a \`describe\` of
+     * its own, and two consts of one name in the same scope is a SyntaxError
+     * that would surface as every stop reading null.
+     */
+    const label = (node) => {
       const cls =
         typeof node.className === 'string' && node.className.trim() !== ''
-          ? `.${node.className.trim().split(/\s+/).slice(0, 2).join('.')}`
+          ? '.' + node.className.trim().split(/\\s+/).slice(0, 2).join('.')
           : '';
-      return `${node.tagName.toLowerCase()}${cls}`;
+      return node.tagName.toLowerCase() + cls;
     };
 
     const rect = el.getBoundingClientRect();
@@ -101,7 +117,7 @@ const readFocused = (page: Page): Promise<Stop | null> =>
      * Four corners and the centre, inset by 2px so a corner probe lands on the
      * element rather than on whatever abuts it.
      */
-    const points: [number, number][] = [
+    const points = [
       [rect.left + 2, rect.top + 2],
       [rect.right - 2, rect.top + 2],
       [rect.left + 2, rect.bottom - 2],
@@ -111,7 +127,7 @@ const readFocused = (page: Page): Promise<Stop | null> =>
 
     let covered = 0;
     let probed = 0;
-    let by: string | null = null;
+    let by = null;
 
     for (const [x, y] of points) {
       // A point outside the viewport is not evidence either way.
@@ -130,20 +146,53 @@ const readFocused = (page: Page): Promise<Stop | null> =>
       if (el.contains(hit) || hit.contains(el)) continue;
 
       covered += 1;
-      if (by === null) by = describe(hit);
+      if (by === null) by = label(hit);
+    }
+
+    const hasRing =
+      style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0;
+
+    /*
+     * SC 1.4.11 on the indicator itself. The ring is drawn in the offset gap,
+     * which is outside the element's border box, so what it is measured
+     * against is the ground BEHIND the control and not the control's own fill.
+     * That is the whole reason global.css never sets outline-offset to 0:
+     * gold on the gold button is 1.00:1, and a flush ring would be invisible.
+     *
+     * compositeBackground rather than effectiveBackground, because the sticky
+     * header is rgba(10, 10, 10, 0.94) and every control inside it — the
+     * wordmark, the nav links, the menu trigger — resolves to null without the
+     * compositing step.
+     */
+    let ratio_ = null;
+    let behind_ = null;
+    if (hasRing) {
+      const offset = parseFloat(style.outlineOffset) || 0;
+      const ground = compositeBackground(
+        offset > 0 ? el.parentElement || el : el,
+      );
+      const ring = parse(style.outlineColor);
+      if (ground && ring) {
+        behind_ =
+          'rgb(' + Math.round(ground.r) + ', ' + Math.round(ground.g) +
+          ', ' + Math.round(ground.b) + ')';
+        ratio_ = ratio(over(ring, ground), ground);
+      }
     }
 
     return {
-      selector: describe(el),
-      text: (el.textContent ?? '').trim().replace(/\s+/g, ' ').slice(0, 36),
+      selector: label(el),
+      text: (el.textContent ?? '').trim().replace(/\\s+/g, ' ').slice(0, 36),
       covered,
       probed,
       by,
-      hasRing:
-        style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0,
-      outline: `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor}`,
+      hasRing,
+      outline:
+        style.outlineStyle + ' ' + style.outlineWidth + ' ' + style.outlineColor,
+      ratio: ratio_,
+      behind: behind_,
     };
-  });
+  })()`) as Promise<Stop | null>;
 
 /** Walk the tab order in one direction, collecting every stop. */
 const walk = async (page: Page, key: 'Tab' | 'Shift+Tab'): Promise<Stop[]> => {
@@ -238,6 +287,46 @@ for (const { width, height, note } of WIDTHS) {
           `${route} at ${width}px has focused control(s) with no visible ` +
             `focus indicator (SC 2.4.7). The site-wide ring is a 3px gold ` +
             `outline on :focus-visible:\n${report(unmarked)}`,
+        ).toEqual([]);
+
+        /*
+         * SC 1.4.11: the indicator has to be perceivable, not merely present.
+         * A 3px gold ring is no use at 1.2:1 against what it is drawn on, and
+         * the assertion above would score that a pass — it asks only whether
+         * an outline exists.
+         *
+         * This came out of a trial run of the keyboard-a11y-tester project,
+         * which reported a focus indicator at 2.24:1 on this site. That number
+         * did not reproduce: measured across 572 controls on every route at
+         * both widths, the lowest is 10.60:1, gold on `surface`. The finding
+         * was still worth the run — the dimension it points at was genuinely
+         * untested, and global.css has claimed 11.32 / 10.60 / 11.76 against
+         * background / surface / deep in a comment since the ring was written,
+         * with nothing behind the claim.
+         *
+         * Stops with no resolvable ground are not counted: a ratio of null
+         * means a background image or gradient sits behind the control, where
+         * there is no single colour to measure and guessing is worse than
+         * declining. `hasRing` above is what stops that becoming a hole.
+         */
+        const dim = stops.filter(
+          (s) => s.hasRing && s.ratio !== null && s.ratio < NON_TEXT,
+        );
+        expect(
+          dim,
+          `${route} at ${width}px has focus indicator(s) below ${NON_TEXT}:1 ` +
+            `against the ground they are drawn on (SC 1.4.11). The ring is ` +
+            `painted in the outline-offset gap, so it is measured against ` +
+            `what is behind the control, never the control's own fill:\n` +
+            dim
+              .map(
+                (s) =>
+                  `  ${s.selector} ${JSON.stringify(s.text)}\n` +
+                  `    outline: ${s.outline}\n` +
+                  `    behind:  ${s.behind}\n` +
+                  `    ratio:   ${s.ratio?.toFixed(2)}:1`,
+              )
+              .join('\n'),
         ).toEqual([]);
       });
     }
