@@ -176,12 +176,21 @@ for (const route of BADGE_ROUTES) {
 
     /*
      * The preference is emulated with `page.emulateMedia` rather than with
-     * `test.use({ reducedMotion })`. Measured on this Playwright version: the
-     * fixture form silently does not apply inside a nested describe here —
-     * `matchMedia('(prefers-reduced-motion: reduce)').matches` came back
-     * `false` and the badge animated — so the test would have passed against
-     * a page that had never been asked the question. It is called before
-     * `goto` so the island reads the right answer on its first mount.
+     * `test.use({ reducedMotion })`, and called before `goto` so the island
+     * reads the right answer on its first mount.
+     *
+     * On @playwright/test 1.62.1 the fixture form silently did not apply
+     * inside a nested describe here: `matchMedia('(prefers-reduced-motion:
+     * reduce)').matches` came back `false` and the badge animated, so the test
+     * would have passed against a page that had never been asked the question.
+     * **Fixed in 1.63.0** — re-measured on the upgrade, `test.use` reports true
+     * in chromium 153 and firefox 153 alike. The same bug affected
+     * `forcedColors`; see tests/forced-colors.spec.ts, which has the longer
+     * version of this note.
+     *
+     * `emulateMedia` is kept because it is the form that was never broken, and
+     * the assertion below that the preference actually matched is kept because
+     * it is what made the bug visible rather than silent.
      */
     test('under reduced motion there is no motion and no control', async ({
       page,

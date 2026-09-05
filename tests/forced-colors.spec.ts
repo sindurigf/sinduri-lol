@@ -21,22 +21,32 @@ import { ROUTES } from './routes';
  * feature.
  *
  * ────────────────────────────────────────────────────────────────────────
- * READ THIS BEFORE CHANGING HOW THE EMULATION IS TURNED ON.
+ * WHY EVERY TEST CHECKS THE EMULATION BEFORE IT CHECKS ANYTHING ELSE.
  *
- * `test.use({ forcedColors: 'active' })` DOES NOT WORK HERE. It is the
- * idiomatic Playwright form, it is what every other spec in this suite uses
- * for `viewport`, it raises no error, and the page it hands you has
- * `matchMedia('(forced-colors: active)').matches === false`. Measured both at
- * module scope and inside a describe block, on chromium 151.0.7922.34: false
- * in both. A spec written the obvious way asserts against the ordinary
- * rendering and passes for the wrong reason.
+ * On @playwright/test 1.62.1, which is the version this file was written
+ * against, `test.use({ forcedColors: 'active' })` silently did nothing. It is
+ * the idiomatic form and the one every other spec here uses for `viewport`; it
+ * raised no error, and the page it handed you had
+ * `matchMedia('(forced-colors: active)').matches === false`. Measured at module
+ * scope and inside a describe block, on chromium 151.0.7922.34: false in both.
+ * A file written the obvious way would have asserted against the ordinary
+ * rendering and passed for the wrong reason.
  *
- * `page.emulateMedia({ forcedColors: 'active' })` does work, as does
- * `browser.newContext({ forcedColors: 'active' })`. This file uses
- * emulateMedia, and every test asserts the feature is actually active before
- * it asserts anything else. That guard is not ceremony: it is the only thing
- * standing between this file and a suite that reports 24 passing tests having
- * exercised nothing at all.
+ * **That is fixed in 1.63.0.** Re-measured on the upgrade, chromium 153 and
+ * firefox 153: `test.use` now reports true in both engines, as do
+ * `emulateMedia` and `browser.newContext`. So the paragraph above is history
+ * rather than a live warning, and it is kept as history because the guard it
+ * produced is the reason the bug was survivable.
+ *
+ * THE GUARD STAYS, and not out of sentiment. It costs one `matchMedia` call
+ * per test and it is the only thing standing between this file and 25 passing
+ * tests that exercised nothing. It caught a real Playwright regression once
+ * already; it is what proved the emulation genuinely activates in Firefox when
+ * that engine was added, rather than leaving it assumed; and it is what will
+ * catch the next engine or version where the feature quietly stops applying.
+ * A test that cannot tell "the page is fine" from "the page was never asked"
+ * is not a test. This file uses `emulateMedia` rather than `test.use` for the
+ * same reason: it is the form that was never broken.
  * ────────────────────────────────────────────────────────────────────────
  *
  * WHAT IS ASSERTED, AND WHY EACH SURVIVES A REDESIGN.
