@@ -111,19 +111,6 @@ const STATS = [
       the section's `overflow-hidden`, and clipped text is still announced. A
       decoration that cannot be laid out is better left out than hidden.
     -->
-    <p
-      aria-hidden="true"
-      class="absolute left-4 top-1/4 z-40 hidden -rotate-12 border-4 border-border bg-cyan px-5 py-2.5 text-h3 font-extrabold uppercase tracking-heading-tight text-darkcyan shadow-hard-pink-8 lg:block"
-    >
-      Lepus
-    </p>
-    <p
-      aria-hidden="true"
-      class="absolute bottom-1/4 right-4 z-40 hidden rotate-6 border-4 border-pink bg-surface px-5 py-2.5 text-h3 font-extrabold uppercase tracking-heading-tight text-pink-text shadow-hard-cyan-8 lg:block"
-    >
-      Ridet
-    </p>
-
     <div
       class="relative z-20 mx-auto flex max-w-3xl flex-col items-center text-center"
     >
@@ -159,11 +146,56 @@ const STATS = [
         <span class="block text-gold">Guntupalli</span>
       </h1>
 
-      <PlaceholderBox
-        ratio="video"
-        label="hero portrait"
-        class="mt-10 w-full -rotate-2 shadow-hard-gold-8"
-      />
+      <!--
+        THE PORTRAIT AND ITS TWO STICKERS ARE ONE OBJECT.
+        The stickers used to be positioned against the hero section, first at
+        `left-4`/`right-4` (which pinned them to the viewport edge) and then
+        against the content column. Both left them floating near the page
+        margins with nothing to belong to. They now hang off the corners of the
+        frame they decorate.
+
+        THE ROTATION MOVED FROM THE FRAME TO THIS WRAPPER, deliberately. With
+        -2deg on the frame alone, an unrotated sticker placed at a corner
+        misses it: over a ~768px box a 2deg tilt walks the corners about 13px
+        vertically, which is enough to read as a mistake. Rotating the wrapper
+        instead means the stickers travel with the frame and sit exactly on its
+        corners. Their own rotations compose with it, so `-rotate-12` renders
+        at -14deg and `rotate-6` at +4deg, both close to the comp's -12 and +6.
+
+        Still `lg` only, for the reason the old layer gave: at 320px there is
+        no room beside the frame for a rotated word, and a decoration that
+        cannot be laid out is better left out than clipped.
+      -->
+      <div class="relative mt-10 w-full -rotate-2">
+        <PlaceholderBox
+          ratio="video"
+          label="hero portrait"
+          class="w-full shadow-hard-gold-8"
+        />
+
+        <!--
+          30px, from the comp. They were rendering at 48px, which is half the
+          h1 and made two decorations compete with the name of the site.
+
+          The shadows stay saturated rather than taking the comp's #001F25 and
+          #3F001A. Those were measured against this page's #131313 ground and
+          come back at 1.08:1 — an offset shadow falls OUTSIDE its element, so
+          on this ground the comp's version is not a soft shadow, it is no
+          shadow. The size was where the loudness actually came from.
+        -->
+        <p
+          aria-hidden="true"
+          class="absolute -left-5 -top-7 hidden -rotate-12 border-4 border-border bg-cyan px-5 py-2.5 text-sticker font-extrabold uppercase tracking-heading-tight text-darkcyan shadow-hard-pink-8 lg:block"
+        >
+          Lepus
+        </p>
+        <p
+          aria-hidden="true"
+          class="absolute -bottom-7 -right-5 hidden rotate-6 border-4 border-pink bg-surface px-5 py-2.5 text-sticker font-extrabold uppercase tracking-heading-tight text-pink-text shadow-hard-cyan-8 lg:block"
+        >
+          Ridet
+        </p>
+      </div>
 
       <p class="mt-12 max-w-xl text-body text-muted text-pretty">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
@@ -176,17 +208,42 @@ const STATS = [
       </p>
     </div>
 
+    <!--
+      LOWER LEFT, DIAGONALLY OPPOSITE RIDET.
+
+      Three positions in three rounds, and the last two were both wrong for
+      reasons worth writing down. `lg:right-12` pinned it 48px from the SCREEN
+      edge, so on a 1920px monitor it sat 272px outside a content column that
+      starts at 320px. Anchoring it to the column fixed that but left it in the
+      hero's bottom-right — which is where Ridet had just moved, so two objects
+      were stacked in one corner while the entire lower-left quadrant was
+      empty. Lepus sits upper-left of the frame and Ridet lower-right; this
+      completes the diagonal.
+
+      `bottom-40` is 160px, measured rather than chosen. The copy block runs
+      860..1039 from the top of an 1183px section, so its centre is 233px up
+      from the bottom; a 141px badge centred there puts its lower edge at
+      ~163px. Re-measure this if the hero's copy or padding changes, because it
+      is an absolute offset pretending to be an alignment.
+
+      It cannot join the stickers' markup. They are aria-hidden decoration and
+      this badge carries the pause control SC 2.2.2 requires, so it has to stay
+      reachable and operable. It also stays in normal flow below `lg`, centred
+      under the hero; only from `lg` does it become a positioned element.
+    -->
     <div
-      class="relative z-20 mt-20 flex justify-center lg:absolute lg:bottom-12 lg:right-12 lg:mt-0"
+      class="page-gutter relative z-20 mt-20 lg:absolute lg:inset-x-0 lg:bottom-40 lg:mt-0"
     >
-      <!--
+      <div class="mx-auto flex max-w-page justify-center lg:justify-start">
+        <!--
         client:load, matching MobileMenu, and for a related reason. This island
         carries the pause control SC 2.2.2 requires, and the animation it
         pauses is only applied once the island has mounted, so a lazier
         directive would delay both together rather than leave motion running
         with nothing to stop it. See the component.
       -->
-      <SpinBadge client:load pace="hero" />
+        <SpinBadge client:load pace="hero" />
+      </div>
     </div>
   </section>
 
