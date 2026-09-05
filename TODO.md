@@ -7,7 +7,15 @@ ACCESSIBILITY.md §6 and §7, and docs/MANUAL_TESTING.md.
 
 - [ ] Replace the placeholder copy on every page with real editorial copy, which waits for Sinduri
 - [ ] Add the CV PDF at `public/sinduri-guntupalli-cv.pdf`, after checking it for personal data
-- [ ] Replace every `PlaceholderBox`: hero portrait, workspace square, About portrait, Career conference photo, blog post artwork
+- [ ] Replace the four `PlaceholderBox` slots that exist: the hero portrait and
+      the workspace square on the homepage, the About portrait, and the blog
+      post artwork in `BlogCard`. There is no fifth. **The Career conference
+      photo has no placement on `/career` at all**, neither a `PlaceholderBox`
+      nor an `<img>`; the page's only image is the decorative hero watermark.
+      The `photo` ratio comment in `PlaceholderBox.astro` and the "Not built
+      yet" section of AI.md both name it as though it were a frame already
+      waiting for a photograph, and both are wrong. Building that placement is
+      a separate change from replacing a placeholder
 - [ ] Replace the eleven lorem ipsum posts with real ones. They exist and are valid against the schema; every word is placeholder (ACCESSIBILITY.md gap 5)
 
 ## Build
