@@ -449,17 +449,36 @@ Every size is a token and fluid via `clamp()`. Do not add breakpoint steps.
 | H1             | `text-h1`             | 900    |
 | H2             | `text-h2`             | 900    |
 | H3             | `text-h3`             | 800    |
+| Sticker        | `text-sticker`        | 800    |
 | Body           | `text-body`           | 400    |
 | Label / tag    | `text-label`          | 900    |
 | Section number | `text-section-number` | 800    |
 
 Headings must not skip levels. One `<h1>` per page.
 
+`text-sticker` is not a heading size and must not be used as one. It is the
+homepage hero's two rotated brand words, at the comp's 30px. H3 came down from a 48px ceiling to 32px because it also sizes lead
+paragraphs and card titles, which were reading as headings; the stickers are
+decoration, so they were split off rather than dragged down — and then set to
+the 30px the comp always specified, rather than the 48px the build had drifted
+to. Reach for it only for a short decorative word in a box.
+
+**A decoration belongs to the thing it decorates.** Both stickers hang off the
+corners of the hero portrait frame and rotate with it. They were previously
+positioned against the section, which pinned them near the viewport edge with
+nothing to belong to, and no gutter change could fix that. The same applied to
+the spinning badge. If a decorative element's position is expressed relative to
+the page rather than to an element in it, that is the bug.
+
 ### The heading floors are a reflow constraint, not a taste call
 
-`text-h1` floors at **33px** and `text-h2` at **29px**. Both numbers are
+`text-h1` floors at **33px** and `text-h2` at **26px**. Both numbers are
 derived, not chosen. Do not raise either without redoing the arithmetic and
 re-running `tests/reflow.spec.ts`.
+
+The step from H1 to H2 is wide on purpose: 33:26 is 1.269, against 26:23 for
+H2 to H3. H1 is the display size; H2 and H3 are the reading sizes. Do not even
+out the ratio by raising H2.
 
 **One content box, declared once.** The horizontal gutter is `.page-gutter`
 (`px-4 sm:px-6`) and it is applied in exactly three places: the header,

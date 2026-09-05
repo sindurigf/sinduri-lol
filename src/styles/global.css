@@ -194,7 +194,10 @@
     'Lexend Variable', system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
 
-  /* Fluid heading scale. Ceilings land at roughly a 1156px viewport. */
+  /*
+   * Fluid heading scale. h1 reaches its ceiling at roughly a 1156px viewport,
+   * h2 and the section number at roughly 1150px, h3 at about 1265px.
+   */
   /*
    * The floors are a reflow constraint, not a taste call (SC 1.4.10).
    *
@@ -220,13 +223,15 @@
    * THE WORST WORD. Headings are uppercased and nothing wraps a single word,
    * so one long word is the entire risk. Measured in this build, headless
    * Chromium, Lexend Variable at weight 900 with the -0.05em tracking this
-   * scale applies, as the rendered width of an <h1> at width: max-content:
+   * scale applies, as the rendered width of an <h1> at width: max-content.
+   * The 36/34/33/32 columns are kept because the argument below is about why
+   * the floors are not up there:
    *
-   *                     36px    34px    33px    32px    29px
-   *   PROFESSIONAL    278.41  262.61  257.20  250.81  226.61
-   *   ACCESSIBILITY   286.61  270.91  261.56  258.20  232.16
-   *   ANNOUNCEMENTS   329.61  313.91  304.56  294.20  268.16
-   *   WOODWORKING     302.20  285.31  278.86  270.41  245.06
+   *                     36px    34px    33px    32px    30px    29px    26px
+   *   PROFESSIONAL    278.41  262.61  257.20  250.81  232.00  226.61  202.41
+   *   ACCESSIBILITY   286.61  270.91  261.56  258.20  235.50  232.16  207.11
+   *   ANNOUNCEMENTS   329.61  313.91  304.56  294.20  278.50  268.16  238.11
+   *   WOODWORKING     302.20  285.31  278.86  270.41  252.50  245.06  219.70
    *
    * h1 IS 33px. In a 273px box that leaves 15.80px for "PROFESSIONAL" (5.8%
    * of the box) and 11.44px for "ACCESSIBILITY" (4.2%). "PROFESSIONAL" is one
@@ -240,45 +245,91 @@
    * the scrollbar width broke it. A floor is only worth having if it has
    * room, so 33px it is.
    *
-   * h2 IS 29px. The word arithmetic is identical for h2, so overflow alone
-   * would allow it the same 33px; what holds it lower is the step down from
-   * h1, and what holds it up is the step down to h3. 33:29 is 1.138 and
-   * 29:26 is 1.115, either side of the 1.125 the old 36:32 pair held. 28px
-   * would read better against h1 and worse against h3: 28:26 is 1.077, near
-   * enough that the two would look like one size at 320px, which is the same
-   * hierarchy failure the old 34px h2 had, one level down.
+   * h1 WENT TO 30px AND CAME BACK. The whole scale was cut by roughly 15% and
+   * h1 was restored on its own, so the 30px column stays in the table above:
+   * it is the measurement that says the restore is not a reflow risk, because
+   * the floor moved back UP, which is the direction that costs headroom. At
+   * 30px "PROFESSIONAL" had 41.00px of room and "ACCESSIBILITY" 37.50px; at
+   * 33px they have 15.80px and 11.44px, which is where they were before and
+   * is the number the paragraphs above defend. h2 and h3 kept the cut.
+   *
+   * h2 IS 26px, AND THE STEP FROM h1 IS NOW WIDE ON PURPOSE. 33:26 is 1.269
+   * and 26:23 is 1.130. That is not the near-even 1.138 / 1.115 the 33:29:26
+   * set held, and it is not an oversight: h1 is the display size and h2 and h3
+   * are the reading sizes, so the scale is deliberately top-heavy. Do not
+   * "fix" the ratio by pulling h2 back up to 29px; that reverses a choice, it
+   * does not correct an error. What still holds h2 up is the step down to h3,
+   * and 24px would put 26:24 at 1.083, near enough that the two would look
+   * like one size at 320px.
    *
    * "ANNOUNCEMENTS" IS DELIBERATELY NOT FITTED. It needs a 29px h1 floor in
-   * this box (268.16px at 29px, 278.50px at 30px), no page uses it, and there
-   * is always a longer word.
+   * this box (268.16px at 29px, 278.50px at 30px, 304.56px at 33px), no page
+   * uses it, and there is always a longer word.
    * "WOODWORKING" is the cheap proof: eleven characters, all wide, and it
-   * overflows 273px at every floor above 32px. Genuine outliers are the job
-   * of the soft hyphen in the content and of overflow-wrap: break-word in the
-   * base layer below. That is the guarantee. These floors are the reason it
-   * rarely has to fire.
+   * overflows 273px at every floor above 32px, so it overflows at 33px by
+   * 5.86px. It fitted while h1 was at 30px (252.50px). Genuine outliers are
+   * the job of the soft hyphen in the content and of overflow-wrap:
+   * break-word in the base layer below. That is the guarantee. These floors
+   * are the reason it rarely has to fire.
    *
    * The floors only bite below a 367px viewport for h1 (33 / 0.09) and below
-   * a 440px viewport for h2 (29 / 0.066). tests/reflow.spec.ts locks the
+   * a 465px viewport for h2 (26 / 0.056). tests/reflow.spec.ts locks the
    * outcome down at 320px and 305px. Do not raise a floor without re-running
    * it.
    */
   --text-h1: clamp(33px, 9vw, 104px);
   --text-h1--line-height: 0.94;
-  --text-h2: clamp(29px, 6.6vw, 76px);
+  --text-h2: clamp(26px, 5.6vw, 64px);
   --text-h2--line-height: 0.96;
-  --text-h3: clamp(26px, 4.4vw, 56px);
-  --text-h3--line-height: 1.02;
+  --text-h3: clamp(20px, 2.6vw, 32px);
+  --text-h3--line-height: 1.15;
+  /*
+   * THE STICKER SIZE, AND WHY IT IS NOT `text-h3`.
+   *
+   * `text-h3` does two unrelated jobs on this site. It is the card and
+   * sub-section heading size, and it is also the lead-paragraph size, both of
+   * which are read as prose. It was ALSO the size of the two rotated brand
+   * stickers in the homepage hero, "Lepus" and "Ridet", which are neither:
+   * they are single decorative words in a coloured box, and the thing that
+   * makes them work is being large.
+   *
+   * It is a token rather than an arbitrary value because this project does not
+   * allow one in a component.
+   *
+   * 30px IS THE COMP'S NUMBER. The build had these rendering at 48px, which is
+   * a little under half the h1 and put two decorations in competition with the
+   * name of the site. They are back to the comp's 30px, floored at 24px, and
+   * they only render from `lg` up, so the floor is a formality rather than a
+   * reflow constraint.
+   *
+   * The line-height stays at h3's old 1.02: nothing set in this ever wraps,
+   * and if something here ever runs to two lines that is the signal it has
+   * stopped being a sticker.
+   */
+  --text-sticker: clamp(24px, 2.1vw, 30px);
+  --text-sticker--line-height: 1.02;
   --text-body: clamp(17px, 1.2vw, 19px);
   --text-body--line-height: 1.62;
   --text-label: 13px;
   --text-label--line-height: 1.2;
   /*
-   * Fluid like the rest of the scale. A fixed 32px outgrew the H3 floor of 26px
-   * on narrow screens; this keeps the number just under the heading it labels.
+   * Fluid like the rest of the scale. A fixed 32px outgrew the H3 floor on
+   * narrow screens, which is what made it fluid in the first place.
+   *
+   * IT IS SIZED AGAINST THE HEADING IT ACTUALLY LABELS, WHICH IS h1 OR h2.
+   * An earlier version of this comment measured it against h3, and h3 is not a
+   * heading it ever appears beside: the number sits in a flex row with the
+   * section's `h2` on the homepage, About and Career, and with the `h1` in the
+   * Career hero. Against those it is comfortably smaller at both ends, 21px
+   * against an h2 floor of 26px and 28px against an h2 ceiling of 64px.
+   *
+   * That h3 comparison stopped being merely irrelevant and became misleading
+   * when h3 came down to a 20px floor, which is BELOW this one. Nothing is
+   * wrong with that; the two simply never appear together.
    * The floor is a typographic choice only. It no longer carries a contrast
    * argument: the number is colored with `pink-text`, which is AAA at any size.
    */
-  --text-section-number: clamp(24px, 2.8vw, 32px);
+  --text-section-number: clamp(21px, 2.4vw, 28px);
   --text-section-number--line-height: 1;
 
   /*
@@ -325,14 +376,30 @@
   /*
    * Card padding is two numbers because the card is a box inside a box. At
    * 40px a side, a card at a 305px viewport leaves 273 - 16 (border-8) - 80
-   * = 177px of content, and 177px is not enough for the type that goes in
-   * one: a card title at the 26px h3 floor breaks "PLACEHOLDER:" mid-word,
-   * and a real post title runs to six lines. The padding was sized for the
-   * desktop card and then applied to a card a third the width.
+   * = 177px of content; 24px leaves 209px.
    *
-   * 24px below `sm` leaves 209px, which is where it was before the page
-   * gutter came back. It steps up to 40px at the same breakpoint as the
-   * gutter, so there is one place where the layout changes, not two.
+   * THE ORIGINAL ARGUMENT FOR THIS NO LONGER HOLDS, AND THE VALUE STILL DOES.
+   * It used to be that 177px could not fit a card title without breaking it
+   * mid-word, measured against a 26px and later a 23px h3 floor. h3 now floors
+   * at 20px, and re-measured there (weight 800, -0.04em, rendered width at
+   * max-content) every title word clears even the tight box:
+   *
+   *   PLACEHOLDER:   150.41   fits 177 by 26.59px
+   *   PROFESSIONAL   158.41   fits 177 by 18.59px
+   *   ACCESSIBILITY  160.61   fits 177 by 16.39px
+   *
+   * So the mid-word break is gone and cannot be cited any more. What remains
+   * is the other half of the original reasoning, which is untouched by the
+   * type scale: at 177px a real post title runs to six lines and the card
+   * becomes a column of fragments. The padding was sized for the desktop card
+   * and then applied to a card a third of the width, and that is still true.
+   *
+   * Stated plainly because the arithmetic above would otherwise read as
+   * support for a conclusion it stopped supporting. If the line count ever
+   * stops being a problem too, this should become one number.
+   *
+   * It steps up to 40px at `sm`, the same breakpoint as the gutter's step, so
+   * the layout changes in one move rather than two.
    */
   --spacing-card-tight: 24px;
   --spacing-card: 40px;

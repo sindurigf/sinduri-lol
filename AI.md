@@ -189,16 +189,30 @@ Do not switch to the Google Fonts CDN. The design comps reference it; this
 project is self-hosted by design.
 
 The scale is fluid via `clamp()` rather than breakpoint steps, so there are no
-jumps between device sizes. Ceilings land at roughly a 1156px viewport.
+jumps between device sizes. H1 reaches its ceiling at roughly a 1156px
+viewport, H2 and the section number at roughly 1150px, H3 at about 1231px and
+the sticker size at about 1265px.
+
+`Sticker` is not a heading. It is the size of the two rotated brand words in
+the homepage hero, and it exists as its own token so that H3 could come down
+for lead paragraphs and card titles without shrinking them with it. 30px is the
+comp's number; the build had them rendering at 48px, competing with the H1.
+They render only from `lg`, hang off the corners of the hero portrait frame,
+and rotate with it.
 
 | Role           | Size                       | Weight | Tracking |
 | -------------- | -------------------------- | ------ | -------- |
 | H1             | `clamp(33px, 9vw, 104px)`  | 900    | -0.05em  |
-| H2             | `clamp(29px, 6.6vw, 76px)` | 900    | -0.05em  |
-| H3             | `clamp(26px, 4.4vw, 56px)` | 800    | -0.04em  |
+| H2             | `clamp(26px, 5.6vw, 64px)` | 900    | -0.05em  |
+| H3             | `clamp(20px, 2.6vw, 32px)` | 800    | -0.04em  |
+| Sticker        | `clamp(24px, 2.1vw, 30px)` | 800    | -0.04em  |
 | Body           | `clamp(17px, 1.2vw, 19px)` | 400    | normal   |
 | Label / tag    | `13px`                     | 900    | 0.1em    |
-| Section number | `clamp(24px, 2.8vw, 32px)` | 800    | n/a      |
+| Section number | `clamp(21px, 2.4vw, 28px)` | 800    | n/a      |
+
+H2, H3 and the section number were cut by roughly 15% after the set above was
+first written; H1 was cut with them and then restored on its own. The scale is
+deliberately top-heavy as a result: see the H2 note below.
 
 Headings are uppercase. Labels and tags are uppercase. Use `tracking-label-wide`
 (0.14em) where a label needs more air.
@@ -248,17 +262,20 @@ of it. That is the same razor edge the old 38px floor sat on in the old 305px
 box, where 1.72px of headroom meant any change to the font, the tracking or
 the scrollbar width broke it.
 
-H2 is **29px**. The word arithmetic is identical, so overflow alone would
-allow H2 the same 33px; what holds it lower is the step down from H1, and what
-holds it up is the step down to H3. 33:29 is 1.138 and 29:26 is 1.115, either
-side of the 1.125 the old 36:32 pair held. 28px would read better against H1
-and worse against H3: 28:26 is 1.077, near enough that the two look like one
-size at 320px.
+H2 is **26px**, and the step down from H1 is wide on purpose. 33:26 is 1.269
+and 26:23 is 1.130. That is not the near-even 1.138 / 1.115 the old 33:29:26
+set held, and it is not an oversight: H1 is the display size while H2 and H3
+are the reading sizes, so the scale is top-heavy by choice. Do not "fix" the
+ratio by pulling H2 back to 29px; that reverses a decision rather than
+correcting an error. What still holds H2 up is the step down to H3, and 24px
+would put 26:24 at 1.083, near enough that the two look like one size at
+320px.
 
 `ANNOUNCEMENTS` is deliberately not fitted. It needs a 29px H1 floor in this
 box, no page uses it, and there is always a longer word. `WOODWORKING` is the
 cheap proof that character count is only a proxy: eleven characters, all wide,
-and it overflows 273px at every floor above 32px.
+and it overflows 273px at every floor above 32px, so it overflows at 33px by
+5.86px. It fitted, at 252.50px, during the window when H1 floored at 30px.
 
 Headings also set `hyphens: auto` and `overflow-wrap: break-word`; the latter is
 what actually guarantees no horizontal overflow. `tests/reflow.spec.ts` locks
@@ -340,17 +357,32 @@ Defined in `@layer components` in `src/styles/global.css`:
 - `.card` — surface background, `border-8`, 24px padding below `sm` and 40px
   from `sm` up (`p-card-tight sm:p-card`). Two numbers because the card is a
   box inside a box: 40px a side leaves a 177px content box at a 305px
-  viewport, which breaks a card title mid-word. 24px leaves 209px. It steps up
-  at the same breakpoint as the page gutter
-- `.section-divider` — `border-b-8`
+  viewport and 24px leaves 209px. **The original reason for the split has
+  expired.** It was that a card title broke mid-word at 177px, measured
+  against a 26px and later a 23px H3 floor; H3 now floors at 20px and every
+  title word clears 177px with 16px to spare. What still holds is the other
+  half: at 177px a real post title runs to six lines. The measurements are in
+  the `--spacing-card` comment in global.css
+- `.section-rule` — a 96px x 8px bar at the head of a section, rotating
+  through gold, cyan and pink. It replaced the full-bleed `border-b-8
+border-border` line that used to run between every section, which framed the
+  page rather than punctuating it and was doing all the separating on its own
+  (the two grounds either side measured 1.039:1). It must sit inside a
+  column-width box, because a band is full-bleed and a rule placed directly in
+  one aligns to the viewport instead. It also replaced `.section-divider`,
+  which had no users: the sections wrote `border-b-8 border-border` inline
 - `.label` / `.label-wide` — 13px / 900 uppercase, 0.1em / 0.14em tracking
-- `.section-number` — `clamp(24px, 2.8vw, 32px)` / 800, `pinkText`
-- `.page-gutter` — the horizontal gutter, declared once and applied to the
-  header, `<main>` and the footer, so every route presents the same content
-  box at 320px. **It is a reflow constraint, not a spacing preference.** The
-  heading floors are calibrated against the 273px box it leaves, so changing
-  it, adding padding to a page container, or zeroing it below `sm` all invalidate
-  that arithmetic. See
+- `.section-number` — `clamp(21px, 2.4vw, 28px)` / 800, `pinkText`
+- `.page-gutter` — the horizontal gutter (`px-4 sm:px-6`), declared once and
+  applied to the header, `<main>` and the footer, so every route presents the
+  same content box at 320px. **The base `px-4` is a reflow constraint, not a
+  spacing preference.** The heading floors are calibrated against the 273px box
+  it leaves, so changing it, adding padding to a page container, or zeroing it
+  below `sm` all invalidate that arithmetic. The `sm` step is far wider than the
+  viewports the floors are measured at and is free to change; it was widened to
+  `sm:px-8 lg:px-12` for one round and reverted, because the cramped feeling it
+  was chasing came from decorations anchored to the viewport, not from the
+  gutter. See
   [The heading floors are a reflow constraint](#the-heading-floors-are-a-reflow-constraint-not-a-taste-call)
 - `.skip-link` — the skip-to-content link, visible on focus
 - `.surface-gold`, `.btn-gold-primary`, `.btn-gold-secondary` — the gold-ground
