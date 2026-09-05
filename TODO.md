@@ -17,13 +17,7 @@ ACCESSIBILITY.md §6 and §7, and docs/MANUAL_TESTING.md.
 
 ## Documentation
 
-- [ ] Rewrite `ACCESSIBILITY.md` §7 against what the site now is. Deferred on 2026-09-05 because a second agent session was writing to that file at the time:
-  - [ ] Gap 2 says "Most pages are placeholder stubs … they pass axe because there is almost nothing on them". Every page is built; the _copy_ is what is placeholder. The parenthetical is now actively misleading — 23 routes pass with real markup, prose, a paginated listing and a gold surface on them
-  - [ ] Gap 5 says one post exists. Eleven do
-  - [ ] Gap 6: narrowed to "measured in situ, never looked at" (see above)
-  - [ ] NEW GAP: the copy is lorem ipsum, which is **Latin inside a `lang="en"` document**, so a screen reader pronounces it with English rules. Wrong on every page, acceptable only until real copy lands. It also means §6's "cognitive load, plain language and reading order" cannot be assessed at all yet, rather than merely being untested
-  - [ ] NEW: record the SC 2.4.11 defect found and fixed on 2026-09-05 — `scroll-margin-top` covered anchor destinations but not the tab order, so shift-tabbing put controls entirely under the sticky header. Fixed in `bcf0ecf`, tested in `9d5bacd`. §6 still lists sticky-header occlusion as unverified, which is no longer true in the automated tier
-  - [ ] §4 and §6: three spec files were added (`focus`, `target-size`, `blog`), and the SC 2.5.8 claim in §4 now has a test behind it instead of being a claim
+- [x] Rewrite `ACCESSIBILITY.md` §7 against what the site now is — done 2026-09-05 in `b090d4f`. Gaps 2, 5 and 6 rewritten; gap 7 (lorem ipsum is Latin in a `lang="en"` document) and gap 8 (the SC 2.4.11 defect) added; §4 and §6 corrected, including a §6 bullet that still claimed the sticky-header rule was unverified "because no long page exists yet"
 
 ## Manual accessibility testing (docs/MANUAL_TESTING.md)
 
