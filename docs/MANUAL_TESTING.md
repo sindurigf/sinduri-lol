@@ -739,9 +739,27 @@ p, li, h1, h2, h3, h4, h5, h6 { margin-bottom: 2em !important; }
 
 `<dialog>` is the one thing here with real engine differences.
 
-- [ ] Firefox: full §2 pass.
-- [ ] Firefox: focus ring is visible on every stop.
-- [ ] WebKit/Safari: mark N/A unless you get access to a Mac.
+**Firefox is now automated.** `playwright.config.ts` defines a `firefox`
+project alongside `chromium`, so the whole suite — all 487 tests — runs twice,
+974 in total. Firefox 153.0 passed every one on the first attempt, with no
+source change and no browser-conditional assertion anywhere in `tests/`.
+`<dialog>` and `showModal()` behave, which is the thing this section was
+written to worry about.
+
+That does not retire the by-hand pass below. A suite that passes in Firefox
+says the assertions hold there; it does not say the page reads right, and the
+focus-ring check in particular is a measured ratio rather than a judgement
+about whether the ring reads as one in context.
+
+- [ ] Firefox: full §2 pass, by hand.
+- [ ] Firefox: focus ring is visible on every stop, judged rather than measured.
+- [ ] WebKit: **not yet run once, anywhere.** The browser is installed but will
+      not launch on this machine — it needs system libraries (`libicu74` and
+      others) that `sudo npx playwright install-deps` supplies. That is a change
+      to the machine, not to the repository, so it has not been made. No
+      `webkit` project is defined, deliberately: adding one would make CI the
+      first place WebKit ever ran, and a red CI on a green branch teaches people
+      to ignore CI. See the comment in `playwright.config.ts`.
 
 ## 9. Target size → SC 2.5.8
 

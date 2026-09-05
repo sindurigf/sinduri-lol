@@ -115,6 +115,12 @@ What is currently true:
 - **Reduced motion is checked site-wide**, not only on the two routes that
   render a badge. Zero elements still animate under
   `prefers-reduced-motion: reduce` across all 23 routes.
+- **The whole suite runs in two engines.** Chromium and Firefox 153.0, 487
+  tests each, 974 in total. Firefox passed every one on its first run with no
+  source change and no browser-conditional assertion. Until this build every
+  claim the suite made was a claim about one engine. WebKit has still never
+  been run: it needs system libraries this machine does not have, and no
+  `webkit` project is defined rather than have CI be the first place it runs.
 - **Every page names itself** (`tests/titles.spec.ts`). axe's `document-title`
   fires only on a missing or empty title and says nothing about two pages
   sharing one. All 23 titles are distinct and name the page before the site.

@@ -27,7 +27,10 @@ jobs:
     # the cheaper of the two problems.
     name: Build, typecheck, and axe
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Raised from 15 when Firefox doubled the suite to 974 tests. The chromium
+    # half took 4.9 minutes on this runner; the headroom is for the second
+    # browser plus the install, not for a suite that has started to crawl.
+    timeout-minutes: 25
 
     steps:
       - name: Check out
@@ -89,10 +92,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # --with-deps pulls the system libraries the browser needs on a bare
-      # runner. Chromium only, matching the single project in the config.
+      # --with-deps pulls the system libraries the browsers need on a bare
+      # runner. Chromium and Firefox, matching the two projects in the config.
+      #
+      # WebKit is deliberately absent, and playwright.config.ts says why at
+      # length: it is not that the project was forgotten, it is that nobody has
+      # run the suite against it even once. Adding it here would make CI the
+      # first place it ever ran, which is the wrong place to find out.
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium firefox
 
       - name: Build
         run: npm run build

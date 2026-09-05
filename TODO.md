@@ -77,6 +77,17 @@ ACCESSIBILITY.md §6 and §7, and docs/MANUAL_TESTING.md.
       answers
 - [ ] §6: the Orca pass in Firefox, plus §6.4, the uppercase question, in Chrome (ACCESSIBILITY.md gap 4)
 - [ ] §7: 200% text-only zoom (SC 1.4.4) and the text spacing override (SC 1.4.12)
-- [ ] §8: cross-browser run in Firefox and WebKit, `<dialog>` in particular. Needs browsers that are not installed — `~/.cache/ms-playwright` holds only chromium, and `playwright.config.ts` defines only a chromium project, so this is a download plus a config change before it is a test run
+- [ ] §8: cross-browser. **Firefox is done and automated** — `playwright.config.ts`
+      defines a `firefox` project, the suite runs 974 tests across two engines,
+      and Firefox 153.0 passed all 487 on the first attempt with no source
+      change and no browser-conditional assertion. `<dialog>` and `showModal()`
+      behave, which is what this item was really about. What remains:
+      **WebKit has never been run once.** It downloads but will not launch here
+      without system libraries (`libicu74` and others) that
+      `sudo npx playwright install-deps` installs — a change to the machine
+      rather than the repository. No `webkit` project is defined on purpose, so
+      that CI is not the first place it ever runs; see the reasoning in
+      `playwright.config.ts`. The by-hand Firefox pass in §8 also stays, because
+      a passing assertion is not a judgement about whether the page reads right
 - [ ] §9: target size (SC 2.5.8). Automated in `tests/target-size.spec.ts` for every route at 305px and 1280px, measuring each target's own box — the SC 2.5.8 spacing exception is deliberately not implemented, because relying on it makes the gap between two controls load-bearing for conformance
 - [ ] Rewrite ACCESSIBILITY.md §6 and gap 4 with what was heard, in which browser, at which versions
