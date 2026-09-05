@@ -27,6 +27,26 @@ build. `astro preview stop` clears it.
 Record results in section 7 of [ACCESSIBILITY.md](../ACCESSIBILITY.md). A gap
 is closed by testing it, not by fixing it.
 
+**A measurement that changes between two attempts is environmental until proved
+otherwise.** This matters more by hand than in CI, because every number below is
+read off one machine in one session and there is nothing to diff it against. If
+the same page measures differently twice, the cause is almost never the page:
+
+- The browser. §3 exists because headless Chromium overlays its scrollbar and
+  gives a 320px viewport a 320px layout box, where headed Chrome draws a classic
+  15px bar and gives 305px. Same CSS, same build, 15px apart. Record which
+  browser and which version produced a number.
+- A stale server. Astro 7 backgrounds `dev` and `preview` when it detects an AI
+  coding agent, so a daemon from an earlier session can still be answering on
+  :4321 while you believe you are looking at a fresh build. `ps aux | grep astro`.
+- Zoom and text scaling left set from the previous section. §3 and §7 both change
+  it, and neither resets it for you.
+- Machine load. A page that renders slowly enough to measure mid-layout is a
+  memory problem, not a layout regression.
+
+Re-measure before writing a result down, and note the conditions next to it.
+[README.md](../README.md) has the same rule for the automated suite.
+
 **Software.** Checked on this machine (Ubuntu 25.10, GNOME, Wayland):
 
 | Tool          | Status                                        | Needed for   |
@@ -140,7 +160,7 @@ This gives a ~320px CSS viewport.
       reason it is `client:load`; if it were `client:media` it could fail here.
       → SC 1.4.10
 - [ ] No content overlaps another element or is cut off. → SC 1.4.10
-- [ ] Tab through the page. **The sticky 80px header never covers the element
+- [ ] Tab through the page. **The sticky 96px header never covers the element
       that has focus.** Watch the top of the viewport as you Tab.
       → SC 2.4.11
 - [ ] Repeat on `/blog/example-post`, the longest page. → SC 1.4.10, 2.4.11
@@ -480,8 +500,12 @@ nothing else, which is exactly what it is for.
 - [ ] Reach the **About** link with `K`. A pass announces it as the current
       page, not merely as a link.
       Heard: `___________________________________________` → SC 1.4.1, 4.1.2
-- [ ] The gold active-page dot is **not** announced. Nothing about a dot, a
-      bullet, or a stray blank in that same announcement.
+- [ ] The active-page **box** is not announced. Nothing about a border, a
+      frame, or a stray blank in that same announcement. It is drawn with
+      `border` and `box-shadow` on the link itself, so unlike the gold dot it
+      replaced there is no element here to leak into the accessible name; this
+      check is now confirming the absence of a defect rather than watching a
+      known risk.
       Heard: `___________________________________________` → SC 1.3.1
 - [ ] `Alt+Shift+K` lists the links. Every name stands on its own, out of
       context: no "click here", no bare URL, no two destinations sharing a
@@ -682,8 +706,9 @@ Settings → General → Zoom → tick **"Zoom text only"**, then Ctrl+`+` to 20
 
 - [ ] No text is clipped, truncated, or hidden behind another element.
 - [ ] Uppercase labels in the header and footer still fit their buttons.
-- [ ] The 80px sticky header grows or the text inside it stays readable;
-      nothing spills out of it.
+- [ ] The 96px sticky header grows or the text inside it stays readable;
+      nothing spills out of it. The active link's box is the thing most likely
+      to break here: it has to grow with the label rather than clip it.
 - [ ] The mobile menu, if it appears, is still operable.
 - [ ] Repeat on `/blog/example-post`.
 
@@ -714,9 +739,41 @@ p, li, h1, h2, h3, h4, h5, h6 { margin-bottom: 2em !important; }
 
 `<dialog>` is the one thing here with real engine differences.
 
-- [ ] Firefox: full §2 pass.
-- [ ] Firefox: focus ring is visible on every stop.
-- [ ] WebKit/Safari: mark N/A unless you get access to a Mac.
+**Firefox and WebKit are now automated.** `playwright.config.ts` defines a
+`firefox` project alongside `chromium`, and a `webkit` project in CI, so the
+whole suite runs in three engines. Firefox 153.0 passed every one on the first attempt, with no
+source change and no browser-conditional assertion anywhere in `tests/`.
+`<dialog>` and `showModal()` behave, which is the thing this section was
+written to worry about.
+
+That does not retire the by-hand pass below. A suite that passes in Firefox
+says the assertions hold there; it does not say the page reads right, and the
+focus-ring check in particular is a measured ratio rather than a judgement
+about whether the ring reads as one in context.
+
+- [ ] Firefox: full §2 pass, by hand.
+- [ ] Firefox: focus ring is visible on every stop, judged rather than measured.
+- [ ] WebKit: **automated in CI, and it passes** — 487 tests, 44.1s, first run.
+      A real Safari pass on real hardware is still worth doing if anyone has a
+      Mac. Headless WebKit is not Safari, and the gap is widest in exactly the
+      places this checklist cares about: VoiceOver, and how the platform draws
+      focus.
+
+**WebKit cannot run on this machine, and that is an OS fact rather than a
+missing package.** Playwright builds WebKit against ICU 74; this machine is
+Ubuntu 25.10, which ships ICU 76, and ICU has no ABI compatibility across
+majors. `sudo npx playwright install-deps` does **not** fix it — apt has no
+`libicu74` on 25.10 at all, and it will also fail to find `libavcodec60`. Do
+not chase it by hand-installing 24.04 packages: that risks the system ICU,
+which a great deal links against, for the sake of a test browser.
+
+To run WebKit here, use Playwright's own container, which is Ubuntu 24.04:
+
+```sh
+docker run --rm --ipc=host -v "$PWD":/work -w /work \
+  mcr.microsoft.com/playwright:v1.63.0-noble \
+  bash -c "npm ci && WEBKIT=1 npx playwright test --project=webkit"
+```
 
 ## 9. Target size → SC 2.5.8
 
@@ -729,12 +786,15 @@ used anywhere on this site, so a change to nav spacing cannot break 2.5.8.
       the edge has picked up its own container padding rules again, or lost
       `.page-gutter`. → SC 1.4.10
 - [ ] Header nav links are **at least 24px tall**. `py-2` on the `.label` link
-      takes the 15.6px line box to 31.6px. Measure one in DevTools; do not
-      infer it from the gap between links. This is the check to redo after any
-      header layout change. → pass at 1280px: Home 47.2x31.6, About 54.5x47.6,
-      Career 61.8x31.6, Blog 43.2x31.6, Get in touch 177.6x47.6
-- [ ] Confirm the nav still **looks** unchanged. The padding was added about
-      the flex centre line, so no glyph should have moved.
+      takes the 15.6px line box to 31.6px, and the `border-4` every link now
+      carries takes it to 39.6px. Measure one in DevTools; do not infer it from
+      the gap between links. This is the check to redo after any header layout
+      change. → pass at 1440px: Home 87.2x39.6, About 94.5x39.6,
+      Career 101.8x39.6, Blog 83.2x39.6, Get in touch 177.6x47.6
+- [ ] All four nav links are the **same height**, active or not. They were not
+      before: the gold dot sat inside the anchor with `mt-2`, so the current
+      page's link was 47.6px and the other three 31.6px. The box that replaced
+      it is on every link, transparent until current.
 - [ ] The mobile menu button is 48x48. → pass
 - [ ] Footer social links are ≥56px tall. → pass
 - [ ] Mobile menu links at 320px are ≥24px tall. → pass, they are 34px+ type
@@ -749,6 +809,92 @@ used anywhere on this site, so a change to nav spacing cannot break 2.5.8.
       same y as before (199.6px) on both. Confirm by hovering that the
       clickable area is taller than the words, and that the gap to the `<h1>`
       still looks right. → SC 2.5.8
+
+## 10a. Exploratory tools, and what a trial of one produced
+
+Nothing here is a dependency and nothing here gates CI. These are one-off runs
+for finding questions the suite is not asking, which is a different job from
+answering them.
+
+### keyboard-a11y-tester
+
+<https://github.com/ezufelt/keyboard-a11y-tester>. MIT, Node >= 20, drives
+Playwright keyboard-only as two W3C personas and maps findings to success
+criteria. **Not a dependency of this repository and should not become one**: it
+needs an LLM to drive its judgment layer, so it cannot gate a build, and
+`tests/focus.spec.ts` already walks the tab order deterministically in both
+directions on every route at two widths.
+
+Trialled 2026-09-05 against the built site on `localhost:4322`, homepage only,
+both viewports. It produced three finding types. **Two were false positives,
+and they are recorded here so nobody spends the afternoon on them again.**
+
+1. `sr-duplicate-landmark`, "banner (2x), main (3x)", graded moderate. **False.**
+   The DOM has exactly one `<header>`, one `<main>` and one `<footer>`, and zero
+   elements carrying `role="banner"` or `role="main"`. axe agrees:
+   `landmark-one-main`, `landmark-no-duplicate-banner` and
+   `landmark-no-duplicate-main` all pass. The multiplier tracks the number of
+   page-audit snapshots the run took — 3 on desktop, 4 on mobile — so it is
+   counting one landmark once per snapshot.
+
+2. `sr-focusable-not-exposed`, two `BlogCard` heading links "keyboard-focusable
+   but never appear in the accessibility-tree walk (likely `aria-hidden="true"`
+   combined with a focusable tabindex)", graded **serious**, confidence 0.75.
+   **False.** Both links have no `tabindex`, no `aria-hidden`, and no
+   `aria-hidden` ancestor; `ariaSnapshot()` returns them as links with correct
+   accessible names. The tool crawls rather than exhausting the page, which its
+   own README says, and its census simply did not reach them.
+
+3. `focus-appearance-weak`, WCAG 2.4.13, informative. Graded AAA and so not a
+   claim this site makes — but one measurement in it, a focus indicator at
+   2.24:1, pointed at something real: **the suite asserted that a focus ring
+   exists and never that it could be seen.** The 2.24 figure did not reproduce
+   (across 572 controls at both widths the lowest is 10.60:1), but the dimension
+   was genuinely untested, and `global.css` had claimed 11.32 / 10.60 / 11.76 in
+   a comment with nothing behind it. `tests/focus.spec.ts` now measures it, for
+   SC 1.4.11.
+
+**Verdict: worth the one run, not worth a dependency.** One of three findings
+was useful, and its usefulness was in naming an untested dimension rather than
+in the number it reported. Re-run it after a navigation or card redesign; read
+every finding against the DOM before acting on it.
+
+## 10b. Items mined from external checklists
+
+Checked against this site on 2026-09-05, from the Accessible Astro testing
+checklist and <https://specification.website/checklist/>. Recorded so the same
+ground is not re-walked.
+
+**Now automated, so no longer by hand:** heading hierarchy and one `h1` per page
+(axe best-practice `heading-order`, `page-has-heading-one`); content inside
+landmarks (`region`); skip link (`skip-link`); descriptive and distinct page
+titles (`tests/titles.spec.ts`); forced colours
+(`tests/forced-colors.spec.ts`); reduced motion site-wide (`tests/motion.spec.ts`);
+focus indicator contrast (`tests/focus.spec.ts`).
+
+**Already covered before this build, and worth knowing so it is not re-checked:**
+duplicate IDs. `duplicate-id-aria` carries `wcag2a`, not `best-practice`, so it
+has been running under the WCAG tags all along. Its two siblings `duplicate-id`
+and `duplicate-id-active` are deprecated in axe 4.13 and do not run at all.
+
+**Not applicable to this site as it stands:** links opening in new tabs — there
+is no `target=` attribute anywhere; captions, transcripts and audio description
+— there is no video or audio; accessible data tables — there are no tables;
+dragging movements, accessible authentication, redundant entry and consistent
+help — there is no form, no login and no multi-step flow. Revisit each when the
+contact form lands.
+
+**Already satisfied by construction:** the `inert` behaviour behind an open
+dialog, because `MobileMenu.vue` uses a native `<dialog>` with `showModal()`
+rather than a hand-rolled focus trap.
+
+**One item from the Accessible Astro list is deliberately rejected.** It asks
+for touch targets of at least **44x44** pixels. That is SC 2.5.5 Target Size
+(Enhanced), which is level **AAA**, or Apple's HIG. The AA criterion this site
+targets is **SC 2.5.8 at 24x24**, which `tests/target-size.spec.ts` implements.
+Adopting 44 would quietly change the conformance target. The same list's "the
+logo should not be linked on the homepage" has no basis in WCAG and is contested
+practice; it is not adopted either.
 
 ## 10. What this checklist does not cover
 

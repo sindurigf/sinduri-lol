@@ -14,6 +14,10 @@
     "format:check": "prettier --check .",
     "test:a11y": "playwright test",
     "test:a11y:ui": "playwright test --ui",
+    "check:tokens": "node scripts/check-tokens.mjs",
+    "check:links": "node scripts/check-links.mjs",
+    "check:commits": "sh scripts/check-commits.sh",
+    "check": "npm run check:tokens && npm run check:links && npm run check:commits",
     "astro": "astro"
   },
   "dependencies": {
@@ -30,7 +34,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@axe-core/playwright": "^4.13.0",
-    "@playwright/test": "^1.62.1",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^26.4.1",
     "axe-core": "^4.13.0",
     "prettier": "^3.9.6",

@@ -1,11 +1,205 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SpinBadge from '../components/ui/SpinBadge.vue';
+
+/*
+ * PLACEHOLDER COPY, per design/Contact.dc.html. Headings, the standfirst and
+ * the "reasons to write" list are lorem ipsum at the length the comp's copy
+ * occupies.
+ *
+ * WHAT IS REAL HERE, and deliberately so: the contact addresses. An address is
+ * not editorial copy, it is the thing the page exists to carry, and a
+ * PLACEHOLDER one would make this page a dead end for exactly the reader who
+ * cannot work around it. `lol@sinduri.lol` is the public address, and the two
+ * profile links are the same ones the footer already carries.
+ *
+ * THE FORM IS NOT BUILT, ON PURPOSE. public/_headers sets
+ * `form-action 'none'`, which is free while there are no forms and blocks the
+ * submission outright the moment there is one — silently, with nothing on the
+ * page to say so. Widening that directive is a coupled change and a separate
+ * decision; see the CSP section in AI.md and gap 1 in ACCESSIBILITY.md. The
+ * region below says so in plain words and points at the address instead,
+ * which is the difference between an honest gap and a broken control.
+ */
+
+const EMAIL = 'lol@sinduri.lol';
+
+const CONTACT_METHODS = [
+  {
+    label: 'Email',
+    value: EMAIL,
+    href: `mailto:${EMAIL}`,
+    accent: 'text-gold',
+    shadow: 'shadow-hard-gold-8',
+  },
+  {
+    label: 'LinkedIn',
+    value: 'in/sinduri-guntupalli',
+    href: 'https://at.linkedin.com/in/sinduri-guntupalli-307542131',
+    accent: 'text-cyan',
+    shadow: 'shadow-hard-cyan-8',
+  },
+  {
+    label: 'GitHub',
+    value: '@sindurigf',
+    href: 'https://github.com/sindurigf',
+    accent: 'text-pink-text',
+    shadow: 'shadow-hard-pink-8',
+  },
+] as const;
+
+const REASONS = [
+  'Lorem ipsum dolor sit amet consectetur',
+  'Adipiscing elit sed do eiusmod tempor',
+  'Incididunt ut labore et dolore magna',
+  'Aliqua ut enim ad minim veniam quis',
+] as const;
 ---
 
 <BaseLayout
   title="Contact | sinduri.lol"
-  description="Placeholder description. Replace with real copy."
+  description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 >
-  <h1>Contact</h1>
-  <p>Placeholder copy. This page is built in a later phase.</p>
+  <!-- ===================================================================
+       HERO
+       =================================================================== -->
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto grid max-w-page gap-16 lg:grid-cols-2 lg:items-start">
+      <div class="min-w-0">
+        <h1 class="text-h1 text-gold">Lorem ipsum.</h1>
+
+        <p class="mt-8 max-w-xl text-body text-muted text-pretty">
+          Dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+          incididunt ut labore et dolore magna aliqua, ut enim ad minim veniam
+          quis nostrud exercitation ullamco.
+        </p>
+
+        <!--
+          The whole card is the link here, unlike the blog cards, and the
+          reason is the length of the resulting name. A blog card's link would
+          be read as its category, its reading time, its title and a forty-word
+          teaser in one string; this one is read as "Email lol@sinduri.lol",
+          which is exactly what the control is. The arrow is decoration and is
+          out of the tree, so it adds nothing to that name.
+        -->
+        <ul class="mt-12 flex flex-col gap-6">
+          {
+            CONTACT_METHODS.map((method) => (
+              <li class="flex min-w-0">
+                <a
+                  href={method.href}
+                  class:list={[
+                    'flex w-full min-w-0 items-center justify-between gap-6 border-8 border-border bg-surface p-card-tight text-text sm:p-8',
+                    method.shadow,
+                  ]}
+                >
+                  <span class="flex min-w-0 flex-col gap-2">
+                    <span class:list={['label-wide', method.accent]}>
+                      {method.label}
+                    </span>
+                    <span class="text-h3 font-extrabold text-text">
+                      {method.value}
+                    </span>
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    class:list={['text-h3 leading-none', method.accent]}
+                  >
+                    &rarr;
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="flex min-w-0 flex-col items-center gap-12">
+        <!--
+          The 28s badge, the second of the two the comps specify. client:load
+          for the same reason as the homepage one: the animation is applied by
+          the island on mount, so the pause control SC 2.2.2 asks for and the
+          motion it pauses arrive together or not at all.
+        -->
+        <SpinBadge
+          client:load
+          pace="contact"
+          frameClass="h-56 w-56"
+          markClass="w-40"
+          borderClass="border-8"
+          shadowClass="shadow-hard-cyan-8"
+        />
+
+        <div class="card w-full">
+          <h2 class="label-wide text-gold">Lorem ipsum dolor sit</h2>
+          <ul class="mt-6 list-disc pl-6 text-muted marker:text-gold">
+            {
+              REASONS.map((reason) => (
+                <li class="mt-3 text-body text-pretty">{reason}</li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       THE FORM REGION — OUTSTANDING, AND SAYING SO
+       =================================================================== -->
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-gold"></span>
+    </div>
+
+    <div class="mx-auto max-w-3xl">
+      <h2 class="text-h2 text-text">Lorem ipsum dolor</h2>
+
+      <!--
+        Functional microcopy, so it is written rather than left as
+        PLACEHOLDER. An empty state that says nothing is a dead end, and it is
+        a dead end first for someone who cannot see that the region is empty.
+        Plain, short, second person, and it names the way through.
+      -->
+      <p class="mt-8 text-body text-muted text-pretty">
+        There is no contact form on this page yet. Email
+        <a href={`mailto:${EMAIL}`}>{EMAIL}</a> instead — it reaches the same place,
+        and you do not need to explain why you are writing.
+      </p>
+
+      <p class="mt-6 text-body text-muted text-pretty">
+        If something on this site blocks you, that is worth reporting even if
+        you cannot say which part is wrong. You can also
+        <a href="https://github.com/sindurigf/sinduri-lol/issues">
+          open an issue
+        </a> instead of writing.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       CLOSING
+       =================================================================== -->
+  <!--
+    THE GOLD BAND. The one ground change on this page that is a real boundary
+    rather than a hue shift: #FFC000 against the section above it is 11.32:1,
+    where navy against deep is 1.07:1.
+
+    Nothing here names a dark-set token. `.surface-gold` supplies `text-gold-text`
+    to the subtree, and an explicit `text-text` would beat it and render at 1.27
+    on this ground. The button is the gold-surface pair; `.btn-primary` measures
+    as unreadable here and is not permitted. tests/gold-surface.spec.ts walks
+    this section and fails on either mistake.
+  -->
+  <section class="surface-gold band py-28 sm:py-36">
+    <div
+      class="mx-auto flex max-w-page flex-wrap items-center justify-between gap-10"
+    >
+      <p class="max-w-2xl text-h3 font-bold text-pretty">
+        Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+        accusantium doloremque laudantium totam rem aperiam.
+      </p>
+      <a href="/about" class="btn-gold-primary">More about me</a>
+    </div>
+  </section>
 </BaseLayout>

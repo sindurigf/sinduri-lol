@@ -160,6 +160,14 @@ readable on gold is a near-black.
 | `darkcyan`       | `#00363F` | 8.00         | Links, and the one accent               |
 | `gold-btn-label` | `#FFFFFF` | 1.64         | Label on the dark button fill only      |
 
+These rows are a copy. `AI.md` and `ACCESSIBILITY.md` carry the same table, and
+the live CSS custom property is the one source of truth for all three:
+`every documented gold ratio matches the live CSS` in
+`tests/gold-surface.spec.ts` compares each hex and ratio here against the
+running page and fails naming the file and line. Never hand-correct a number in
+this table to make it agree with another document — re-measure, or change the
+token and let all three fail together.
+
 The first four are AAA on gold, and `gold-border` clears the 3:1 of SC 1.4.11
 by 2.4x. `gold-btn-label` is the exception in that column: it is **1.64 on
 gold and must never touch it**, because it never does. It sits on
@@ -285,10 +293,15 @@ Four things about these that are easy to get wrong:
   goes, the shadow does not inherit the job.
 - **The padding is a conformance floor, not a spacing preference.** A 13px
   label at line-height 1.2 is a 15.6px line box; `18px` top and bottom takes
-  the control to 51.6px, past the 24px SC 2.5.8 asks of a target on its own
-  size. `--spacing-btn-gold-y` and `--spacing-btn-gold-x` exist as tokens
-  because 18 and 34 are not multiples of the 4px Tailwind step and this
-  project does not allow arbitrary values.
+  the padding box to 51.6px, and the 4px border takes the rendered control to
+  **59.6px**, well past the 24px SC 2.5.8 asks of a target on its own size.
+  Measured on the real Career hero at 305px, 320px and 1280px: 59.6px tall at
+  all three, 226.2px and 197.6px wide. An earlier version of this note quoted
+  51.6px as the rendered height, which is the padding box with the border left
+  out; SC 2.5.8 measures the target, and the border is part of it.
+  `--spacing-btn-gold-y` and `--spacing-btn-gold-x` exist as tokens because 18
+  and 34 are not multiples of the 4px Tailwind step and this project does not
+  allow arbitrary values.
 - **`.btn-gold-primary`'s focus ring is two rings, and it is the only one.**
   Its ring colour is its own fill colour, so a single ring depends entirely on
   the offset gap. See
@@ -436,22 +449,43 @@ Every size is a token and fluid via `clamp()`. Do not add breakpoint steps.
 | H1             | `text-h1`             | 900    |
 | H2             | `text-h2`             | 900    |
 | H3             | `text-h3`             | 800    |
+| Sticker        | `text-sticker`        | 800    |
 | Body           | `text-body`           | 400    |
 | Label / tag    | `text-label`          | 900    |
 | Section number | `text-section-number` | 800    |
 
 Headings must not skip levels. One `<h1>` per page.
 
+`text-sticker` is not a heading size and must not be used as one. It is the
+homepage hero's two rotated brand words, at the comp's 30px. H3 came down from a 48px ceiling to 32px because it also sizes lead
+paragraphs and card titles, which were reading as headings; the stickers are
+decoration, so they were split off rather than dragged down — and then set to
+the 30px the comp always specified, rather than the 48px the build had drifted
+to. Reach for it only for a short decorative word in a box.
+
+**A decoration belongs to the thing it decorates.** Both stickers hang off the
+corners of the hero portrait frame and rotate with it. They were previously
+positioned against the section, which pinned them near the viewport edge with
+nothing to belong to, and no gutter change could fix that. The same applied to
+the spinning badge. If a decorative element's position is expressed relative to
+the page rather than to an element in it, that is the bug.
+
 ### The heading floors are a reflow constraint, not a taste call
 
-`text-h1` floors at **33px** and `text-h2` at **29px**. Both numbers are
+`text-h1` floors at **33px** and `text-h2` at **26px**. Both numbers are
 derived, not chosen. Do not raise either without redoing the arithmetic and
 re-running `tests/reflow.spec.ts`.
 
+The step from H1 to H2 is wide on purpose: 33:26 is 1.269, against 26:23 for
+H2 to H3. H1 is the display size; H2 and H3 are the reading sizes. Do not even
+out the ratio by raising H2.
+
 **One content box, declared once.** The horizontal gutter is `.page-gutter`
 (`px-4 sm:px-6`) and it is applied in exactly three places: the header,
-`<main>` in `BaseLayout.astro`, and the footer. Every route therefore presents
-the same box:
+`<main>` in `BaseLayout.astro`, and the footer. **Only the base `px-4` is
+load-bearing.** `sm` is 640px, so at the viewports the floors are measured at,
+only `px-4` applies; the `sm` step is ordinary spacing and can change freely.
+Every route therefore presents the same box:
 
 | Viewport                       | Content box |
 | ------------------------------ | ----------- |
@@ -472,7 +506,26 @@ fixed; the floors are the variable.
 
 A full-bleed band inside `<main>` has to break out with negative inline
 margins. That is the right way round — the exception is visible in the markup
-that wants it.
+that wants it. `.band` duplicates all four of the gutter's values and has to
+move with it.
+
+**The column is `max-w-page`**, `--container-page`, 80rem / 1280px. The gutter
+goes on the outer element (header, `<main>`, footer) and the column goes on the
+element inside it. Never the other way round. The header used to apply the
+gutter _inside_ its column, which is invisible below the column width and puts
+the header's content one whole gutter inside main's above it — measured at 24px
+on `/about` at 1440px, 1600px and 1920px, for as long as the site had existed.
+
+The width itself is a free variable: once all three share the structure, any
+value keeps them aligned, because each centres the same box inside boxes that
+differ by exactly the gutter. `tests/alignment.spec.ts` asserts the three
+landmarks share one column, and pins the absolute edges separately so the
+agreement and the width cannot drift apart silently.
+
+**Widening the gutter does not fix a cramped-looking page.** It was tried, to
+`sm:px-8 lg:px-12`, and reverted: the real cause was decorations positioned
+against the viewport rather than against an element. See the decoration rule
+under Typography.
 
 **The arithmetic.** A single uppercased word is the whole risk, because
 nothing wraps it. Measured in headless Chromium as the rendered width of an
@@ -576,11 +629,32 @@ That media query is necessary but **not sufficient**. WCAG 2.2 SC 2.2.2 Pause,
 Stop, Hide applies to anything that moves automatically for more than five
 seconds, and it requires a control the user can operate, not an OS setting.
 
-One element in this design falls under it: the **spinning badge**. The comps
-apply `slowspin` to it at 24s and 28s, linear, infinite. It auto-starts and runs
-indefinitely, so it needs a real, keyboard-operable pause control with a visible
-label and a visible focus indicator. A media query alone does not satisfy 2.2.2,
-because a user with reduced motion turned off has no way to stop it.
+One element in this design falls under it: the **spinning badge**, `slowspin`
+at 24s on the homepage hero and 28s on Contact, linear and infinite. It is
+built, in `src/components/ui/SpinBadge.vue`, and `tests/motion.spec.ts`
+measures it. Three things about how, because each is the difference between
+meeting 2.2.2 and appearing to:
+
+- **The animation is added by the island on mount, never by the server-rendered
+  HTML.** The control is JavaScript, so motion in the static markup would run
+  in a browser where the island failed to hydrate with nothing able to stop
+  it. No JS, no spin. Reuse this shape for anything animated that is paused by
+  script.
+- **Under `prefers-reduced-motion: reduce` the component neither animates nor
+  renders the button.** Leaving the global media query to neutralise the
+  animation to 0.01ms would leave a control in the tab order that pauses
+  nothing.
+- **The state lives in the accessible name and nowhere else.** No
+  `aria-pressed` beside it. The comps do both, which states the same thing
+  twice and lets the two disagree. `MobileMenu.vue` makes the opposite call —
+  fixed name, state in `aria-expanded` — for the same underlying rule. Which
+  half carries the state depends on the control: for a transport control the
+  name wins, because "Play" and "Pause" say what pressing it will do, while
+  "pressed" says nothing about whether anything is moving.
+
+Anything else animated on this site needs the same treatment. A media query
+alone does not satisfy 2.2.2, because a user with reduced motion turned off has
+no way to stop it.
 
 There is no marquee in this design. `@keyframes marquee` is declared in the
 source comps but is never applied to an element. Do not build one.
@@ -593,10 +667,17 @@ Nothing may flash more than three times per second (SC 2.3.1).
 
 - The active item uses **`aria-current="page"`**. That is the machine-readable
   indicator and it is not optional.
-- The gold dot is **visual reinforcement only**. It must never be the sole
-  signal of the active page, and it carries no meaning to assistive tech, so
-  mark it `aria-hidden="true"`.
-- Never signal state with color alone (SC 1.4.1).
+- The active item's **box** is visual reinforcement only: `border-4
+border-border` with `shadow-hard-gold-4`. It must never be the sole signal of
+  the active page. It carries no meaning to assistive tech and needs no ARIA of
+  its own, because it is drawn with border and shadow rather than an element.
+  (It replaced an 8x8 gold dot, which was a separate `aria-hidden` span.)
+- **Every link carries the border and padding; only the colour and shadow
+  change.** Inactive links get `border-transparent`, which is holding space,
+  not decorating. An indicator applied to the active link alone makes that item
+  wider on its own page and reflows the whole row as you navigate.
+- Never signal state with color alone (SC 1.4.1). A box is a shape cue and
+  passes; recolouring the active label and nothing else would not.
 
 ### Target size: every nav link is at least 24px tall
 
@@ -604,13 +685,22 @@ Nothing may flash more than three times per second (SC 2.3.1).
 target, never the gap between targets.
 
 A `.label` link is 13px at line-height 1.2, so its line box is 15.6px and the
-link fails on its own. `py-2` adds 8px top and bottom and takes it to 31.6px.
-The `ul` is `items-center`, so symmetric padding grows the hit area about the
-same centre line and moves no glyph: the rendered header is unchanged.
+link fails on its own. `py-2` adds 8px top and bottom and takes it to 31.6px;
+the `border-4` the active-item box needs adds 8px more, to **39.6px**, measured
+on `/about` at 1440px. The `ul` is `items-center`, so symmetric padding grows
+the hit area about the same centre line and moves no glyph.
+
+All four links now measure the same height, which they did not before: the old
+gold dot sat inside the anchor with `mt-2`, so the active link alone was 47.6px
+and the other three were 31.6px.
 
 ```html
-<!-- Yes: 31.6px tall, passes on its own size -->
-<a class="label block py-2 text-muted hover:text-cyan" href="/about">About</a>
+<!-- Yes: 39.6px tall, passes on its own size, same box active or not -->
+<a
+  class="label block border-4 border-transparent px-4 py-2 text-muted"
+  href="/about"
+  >About</a
+>
 
 <!-- No: 15.6px tall, passing only while a neighbour stays far enough away -->
 <a class="label block text-muted hover:text-cyan" href="/about">About</a>
@@ -621,13 +711,19 @@ SC 2.5.8 does offer a spacing exception, where an undersized target passes if a
 on it here.** It made the 40px `gap-10` load-bearing for conformance, so any
 future change to nav spacing, or stacking the items, would have broken 2.5.8
 silently and at a distance from the edit. The gap is now free to be a
-typographic choice again. Check the link's own box, not its neighbours.
+typographic choice again, and it has since been used as one: it is `gap-3`,
+because the links carry 16px of horizontal padding of their own and the old
+40px gap on top of that read as a broken row. Check the link's own box, not its
+neighbours.
 
 ### The sticky header
 
-The header is 80px (`--spacing-header`) and sticky. It will cover an element
+The header is 96px (`--spacing-header`) and sticky. It will cover an element
 that receives focus near the top of the viewport, which fails WCAG 2.2 SC 2.4.11
 Focus Not Obscured.
+
+It is fixed pixels of every viewport, a 720px-tall one at 400% zoom included,
+which is the argument against growing it further.
 
 Give focusable targets and in-page anchor destinations a `scroll-margin-top` of
 at least the header height:
@@ -853,13 +949,27 @@ a magnification user. See the comment in `Header.astro`.
 
 ## Radius
 
-`rounded-nav` is 14px and applies to **exactly two things**:
+Everything is `0` unless it is one of two named exceptions. The base layer sets
+`border-radius: 0` on every element, so any radius has to be opted into.
+
+**`rounded-nav` (14px) is the softened-box exception**, and it applies to
+exactly two things:
 
 1. the nav CTA button, in `Header.astro` and `MobileMenu.vue`
 2. the logo tile in `Header.astro`
 
-Everything else is `0`. The base layer sets `border-radius: 0` on every element,
-so a radius has to be opted into. Any other rounded corner is a bug.
+**`rounded-full` is the circle-and-pill exception.** It applies to the spinning
+badge frame (`SpinBadge.vue`), the bunny roundel in the homepage About teaser,
+the decorative hero glow, and `.pill`.
+
+The two are not degrees of the same thing and the second is not a loophole in
+the first. `rounded-nav` softens a rectangle, which is the move this design
+language is built to avoid, so it is capped at two elements and stays there.
+`rounded-full` draws a circle or a pill, which is a shape in its own right:
+there is no rectangle underneath it to have gone soft. The comps write
+`border-radius: 9999px` on every one of these.
+
+Any other rounded corner is a bug.
 
 ---
 
@@ -871,6 +981,17 @@ npm run typecheck  # 0 errors, 0 warnings, 0 hints
 npm run test:a11y  # axe, 0 violations
 ```
 
+Read the summary line, not the last few lines of output, and check the reported
+total against `npx playwright test --list`. A total below the collected count
+means those tests did not run; it does not mean they passed.
+
 Automated testing catches a minority of WCAG failures. Also tab the page,
 zoom to 400%, and toggle reduced motion. Never suppress an axe rule to get
 green; fix the markup or report the failure.
+
+If you added a test, prove it can fail before believing it: remove the thing it
+guards, watch it go red, restore it, watch it go green, and write both results
+into the spec's comment. A new colour, animation or control almost always needs
+a new assertion, and an assertion nobody has seen fail is not yet evidence of
+anything. `AI.md` > Conventions > Tests has the full rule and the cases behind
+it.

@@ -1,11 +1,429 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import BlogCard from '../components/BlogCard.astro';
+import PlaceholderBox from '../components/PlaceholderBox.astro';
+import SpinBadge from '../components/ui/SpinBadge.vue';
+import { BLOG_CATEGORIES } from '../content.config';
+import { categoryLabel, getFeaturedPosts } from '../lib/blog';
+
+/*
+ * PLACEHOLDER COPY. Every paragraph, heading and card description on this page
+ * is lorem ipsum at the length the comp's real copy occupies, so the layout is
+ * stress-tested at the sizes it will actually carry. What is real here is
+ * structural and stays: the brand strings, the five category names, and the
+ * functional microcopy on the controls.
+ *
+ * The lorem is Latin inside a lang="en" document, which is wrong for a screen
+ * reader and is recorded as a known gap in ACCESSIBILITY.md section 7.
+ */
+
+const FEATURED_LIMIT = 3;
+const featured = await getFeaturedPosts(FEATURED_LIMIT);
+
+/*
+ * The comps show four category cards; there are five categories. Deriving the
+ * grid from BLOG_CATEGORIES rather than transcribing the comp means a category
+ * cannot be silently missing from the homepage, which is what transcribing
+ * four of five would have shipped.
+ *
+ * The accent classes are written out per category rather than composed,
+ * because Tailwind scans source text and would never see `border-${accent}`.
+ */
+const CATEGORY_CARDS = [
+  {
+    category: BLOG_CATEGORIES[0],
+    tile: 'bg-gold text-background',
+    shadow: 'shadow-hard-gold-8',
+    glyph: '✦',
+    teaser:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua enim.',
+  },
+  {
+    category: BLOG_CATEGORIES[1],
+    tile: 'bg-cyan text-darkcyan',
+    shadow: 'shadow-hard-cyan-8',
+    glyph: '✈',
+    teaser:
+      'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi.',
+  },
+  {
+    category: BLOG_CATEGORIES[2],
+    tile: 'bg-pink text-background',
+    shadow: 'shadow-hard-pink-8',
+    glyph: '❋',
+    teaser:
+      'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum.',
+  },
+  {
+    category: BLOG_CATEGORIES[3],
+    tile: 'bg-gold text-background',
+    shadow: 'shadow-hard-gold-8',
+    glyph: '◆',
+    teaser:
+      'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.',
+  },
+  {
+    category: BLOG_CATEGORIES[4],
+    tile: 'bg-cyan text-darkcyan',
+    shadow: 'shadow-hard-cyan-8',
+    glyph: '</>',
+    teaser:
+      'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium.',
+  },
+] as const;
+
+const STATS = [
+  { value: 'Duis', label: 'Lorem ipsum dolor', frame: 'border-gold text-gold' },
+  {
+    value: 'Aute',
+    label: 'Sit amet consectetur',
+    frame: 'border-cyan text-cyan',
+  },
+] as const;
 ---
 
 <BaseLayout
   title="sinduri.lol"
-  description="Placeholder description. Replace with real copy."
+  description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 >
-  <h1>Placeholder heading</h1>
-  <p>Placeholder copy. Homepage is built in a later phase.</p>
+  <!-- ===================================================================
+       HERO
+       =================================================================== -->
+  <section class="band relative overflow-hidden py-28 sm:py-36">
+    <!--
+      Decorative glow. The comp uses a pale cream at 0.22; this uses `gold`,
+      which is a token, at 10% so the composite behind body copy stays well
+      clear of 4.5:1. Measured: gold at 0.10 over #131313 composites to
+      rgb(43, 36, 17), where `muted` #D4C5AB is far above the threshold. A
+      decorative wash is not allowed to erode text contrast.
+    -->
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-0 flex items-center justify-center"
+    >
+      <div class="size-96 rounded-full bg-gold opacity-10 blur-3xl"></div>
+    </div>
+
+    <!--
+      The two brand words, as the rotated stickers the comp floats over the
+      hero. Absolutely positioned only from `lg` up, and not rendered at all
+      below it: at 320px they would either overlap the heading or be clipped by
+      the section's `overflow-hidden`, and clipped text is still announced. A
+      decoration that cannot be laid out is better left out than hidden.
+    -->
+    <div
+      class="relative z-20 mx-auto flex max-w-3xl flex-col items-center text-center"
+    >
+      <!--
+        ONE <h1>, TWO LINES. The comp stacks two separate <h1> elements above
+        and below the artwork with a -56px overlap. Two <h1>s on one page is a
+        document-outline defect, and the overlap is built from negative margins
+        on a 104px display size, which in a 273px box at 305px would pull the
+        second line into the artwork rather than kiss its edge. The two-tone
+        treatment and the order are kept; the overlap is not. The name is real
+        content and stays real.
+      -->
+      <!--
+        `w-full`, and the explicit `{' '}` between the two lines. Both are
+        load-bearing and neither is obvious.
+
+        Without `w-full` the <h1> is a flex item under `items-center`, so it
+        shrinks to fit its own longest line rather than filling the 273px
+        content box. The heading then measures itself against a box the width
+        of the word inside it, which is a box that can never be too small and
+        never too large: the reflow suite's heading-word check would be
+        measuring a tautology on this page.
+
+        Without the space, Astro emits the two spans adjacent and
+        `textContent` reads "SinduriGuntupalli" as one 17-character word. It
+        renders correctly either way, because the spans are block, so the only
+        thing that notices is anything reading the text — the heading-word
+        check, a screen reader, and search. That is exactly the set of readers
+        it must not be broken for.
+      -->
+      <h1 class="w-full text-h1">
+        <span class="block text-text">Sinduri</span>{' '}
+        <span class="block text-gold">Guntupalli</span>
+      </h1>
+
+      <!--
+        THE PORTRAIT AND ITS TWO STICKERS ARE ONE OBJECT.
+        The stickers used to be positioned against the hero section, first at
+        `left-4`/`right-4` (which pinned them to the viewport edge) and then
+        against the content column. Both left them floating near the page
+        margins with nothing to belong to. They now hang off the corners of the
+        frame they decorate.
+
+        THE ROTATION MOVED FROM THE FRAME TO THIS WRAPPER, deliberately. With
+        -2deg on the frame alone, an unrotated sticker placed at a corner
+        misses it: over a ~768px box a 2deg tilt walks the corners about 13px
+        vertically, which is enough to read as a mistake. Rotating the wrapper
+        instead means the stickers travel with the frame and sit exactly on its
+        corners. Their own rotations compose with it, so `-rotate-12` renders
+        at -14deg and `rotate-6` at +4deg, both close to the comp's -12 and +6.
+
+        Still `lg` only, for the reason the old layer gave: at 320px there is
+        no room beside the frame for a rotated word, and a decoration that
+        cannot be laid out is better left out than clipped.
+      -->
+      <div class="relative mt-10 w-full -rotate-2">
+        <PlaceholderBox
+          ratio="video"
+          label="hero portrait"
+          class="w-full shadow-hard-gold-8"
+        />
+
+        <!--
+          30px, from the comp. They were rendering at 48px, which is half the
+          h1 and made two decorations compete with the name of the site.
+
+          The shadows stay saturated rather than taking the comp's #001F25 and
+          #3F001A. Those were measured against this page's #131313 ground and
+          come back at 1.08:1 — an offset shadow falls OUTSIDE its element, so
+          on this ground the comp's version is not a soft shadow, it is no
+          shadow. The size was where the loudness actually came from.
+        -->
+        <p
+          aria-hidden="true"
+          class="absolute -left-5 -top-7 hidden -rotate-12 border-4 border-border bg-cyan px-5 py-2.5 text-sticker font-extrabold uppercase tracking-heading-tight text-darkcyan shadow-hard-pink-8 lg:block"
+        >
+          Lepus
+        </p>
+        <p
+          aria-hidden="true"
+          class="absolute -bottom-7 -right-5 hidden rotate-6 border-4 border-pink bg-surface px-5 py-2.5 text-sticker font-extrabold uppercase tracking-heading-tight text-pink-text shadow-hard-cyan-8 lg:block"
+        >
+          Ridet
+        </p>
+      </div>
+
+      <p class="mt-12 max-w-xl text-body text-muted text-pretty">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+        veniam, quis nostrud exercitation ullamco.
+      </p>
+
+      <p class="mt-10">
+        <a href="/blog" class="btn-primary">Read the blog</a>
+      </p>
+    </div>
+
+    <!--
+      LOWER LEFT, DIAGONALLY OPPOSITE RIDET.
+
+      Three positions in three rounds, and the last two were both wrong for
+      reasons worth writing down. `lg:right-12` pinned it 48px from the SCREEN
+      edge, so on a 1920px monitor it sat 272px outside a content column that
+      starts at 320px. Anchoring it to the column fixed that but left it in the
+      hero's bottom-right — which is where Ridet had just moved, so two objects
+      were stacked in one corner while the entire lower-left quadrant was
+      empty. Lepus sits upper-left of the frame and Ridet lower-right; this
+      completes the diagonal.
+
+      `bottom-40` is 160px, measured rather than chosen. The copy block runs
+      860..1039 from the top of an 1183px section, so its centre is 233px up
+      from the bottom; a 141px badge centred there puts its lower edge at
+      ~163px. Re-measure this if the hero's copy or padding changes, because it
+      is an absolute offset pretending to be an alignment.
+
+      It cannot join the stickers' markup. They are aria-hidden decoration and
+      this badge carries the pause control SC 2.2.2 requires, so it has to stay
+      reachable and operable. It also stays in normal flow below `lg`, centred
+      under the hero; only from `lg` does it become a positioned element.
+    -->
+    <div
+      class="page-gutter relative z-20 mt-20 lg:absolute lg:inset-x-0 lg:bottom-40 lg:mt-0"
+    >
+      <div class="mx-auto flex max-w-page justify-center lg:justify-start">
+        <!--
+        client:load, matching MobileMenu, and for a related reason. This island
+        carries the pause control SC 2.2.2 requires, and the animation it
+        pauses is only applied once the island has mounted, so a lazier
+        directive would delay both together rather than leave motion running
+        with nothing to stop it. See the component.
+      -->
+        <SpinBadge client:load pace="hero" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       ABOUT TEASER
+       =================================================================== -->
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-gold"></span>
+    </div>
+
+    <div class="mx-auto max-w-page">
+      <div class="flex flex-wrap items-baseline gap-x-5 gap-y-2">
+        <span class="section-number" aria-hidden="true">01</span>
+        <h2 class="text-h2 text-text">Lorem ipsum sit</h2>
+      </div>
+
+      <div class="mt-16 grid gap-16 lg:grid-cols-2 lg:items-start">
+        <div class="relative">
+          <PlaceholderBox ratio="square" label="workspace photo" />
+          <!--
+            The bunny mark on its gold tile, as in the comp. `bunny-dark` is
+            #111111 artwork: 11.50 on gold and 1.02 on the page background, so
+            the tile is the only thing that makes it visible. alt="" because
+            the heading and the wordmark in the header already name the site
+            and the mark adds nothing here.
+          -->
+          <span
+            class="absolute -bottom-8 -right-2 flex size-28 items-center justify-center rounded-full border-8 border-border bg-gold shadow-hard-cyan-8 sm:-right-8"
+          >
+            <img
+              src="/images/bunny-dark.png"
+              alt=""
+              width="458"
+              height="900"
+              class="h-14 w-auto"
+            />
+          </span>
+        </div>
+
+        <div class="card mt-12 shadow-hard-pink-8 lg:mt-16">
+          <p class="text-h3 font-bold text-text text-pretty">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua veniam.
+          </p>
+
+          <p class="mt-8 text-body text-muted text-pretty">
+            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+            nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+            pariatur sint occaecat.
+          </p>
+
+          <ul class="mt-10 grid gap-6 sm:grid-cols-2">
+            {
+              STATS.map((stat) => (
+                <li
+                  class:list={[
+                    'flex min-w-0 flex-col items-center border-8 bg-background p-6 text-center',
+                    stat.frame,
+                  ]}
+                >
+                  <span class="text-h3 font-extrabold">{stat.value}</span>
+                  <span class="label mt-2 text-text">{stat.label}</span>
+                </li>
+              ))
+            }
+          </ul>
+
+          <p class="mt-10 text-body text-muted text-pretty">
+            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
+            officia deserunt mollit anim id est laborum. Sed ut perspiciatis
+            unde omnis iste natus error sit voluptatem accusantium doloremque.
+          </p>
+
+          <p class="mt-10">
+            <a href="/about" class="btn-secondary">Learn more about me</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       CATEGORY GRID
+       =================================================================== -->
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-cyan"></span>
+    </div>
+
+    <div class="mx-auto max-w-page">
+      <div class="flex flex-wrap items-end justify-between gap-8">
+        <div>
+          <p class="pill">
+            <span class="label-wide text-gold">Topics</span>
+          </p>
+          <div class="mt-6 flex flex-wrap items-baseline gap-x-5 gap-y-2">
+            <span class="section-number" aria-hidden="true">02</span>
+            <h2 class="text-h2 text-text">Lorem ipsum dolor</h2>
+          </div>
+        </div>
+        <a href="/blog" class="btn-secondary">View all posts</a>
+      </div>
+
+      <ul class="mt-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          CATEGORY_CARDS.map((card, index) => (
+            <li
+              class:list={[
+                'card flex flex-col',
+                card.shadow,
+                index === 0 ? 'sm:col-span-2 lg:col-span-2' : '',
+              ]}
+            >
+              <span
+                aria-hidden="true"
+                class:list={[
+                  'flex size-16 -rotate-6 items-center justify-center border-4 border-border text-section-number font-black leading-none',
+                  card.tile,
+                ]}
+              >
+                {card.glyph}
+              </span>
+
+              <h3 class="mt-8 text-h3">
+                <a
+                  href={`/blog/${card.category}`}
+                  class="text-text hover:text-cyan"
+                >
+                  {categoryLabel(card.category)}
+                </a>
+              </h3>
+
+              <p class="mt-5 text-body text-muted text-pretty">{card.teaser}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       FEATURED POSTS
+       =================================================================== -->
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-pink"></span>
+    </div>
+
+    <div class="mx-auto max-w-page">
+      <div class="flex flex-wrap items-baseline gap-x-5 gap-y-2">
+        <span class="section-number" aria-hidden="true">03</span>
+        <h2 class="text-h2 text-text">Lorem ipsum dolor sit</h2>
+      </div>
+
+      <p class="mt-8 max-w-2xl text-body text-muted text-pretty">
+        Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut
+        fugit, sed quia consequuntur magni dolores eos qui ratione.
+      </p>
+
+      <ul class="mt-16 grid gap-10 lg:grid-cols-3">
+        {
+          featured.map((post) => (
+            <li class="flex min-w-0">
+              <BlogCard
+                href={`/blog/${post.id}`}
+                title={post.data.title}
+                teaser={post.data.teaser}
+                category={post.data.category}
+                date={post.data.date}
+                readingTime={post.data.readingTime}
+                featured={post.data.featured}
+                headingLevel={3}
+                class="w-full"
+              />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
 </BaseLayout>

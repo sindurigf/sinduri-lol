@@ -33,4 +33,30 @@ test-results/
 playwright-report/
 blob-report/
 .playwright/
+
+# design comps, including the CV PDF: never committed
 design/
+
+# claude code, per-machine and not shared
+.claude/settings.local.json
+.claude/*.local.json
+
+# scratch and atomic-write temp files
+*.tmp
+*.tmp.*
+
+# Per-session agent scaffolding. Written fresh by each agent run and addressed
+# to whoever is reading that run, so committing them would mean every session
+# overwriting the last one's and a repository full of stale advice about a
+# session nobody remembers.
+#
+# TODO.md is deliberately NOT here. It is the durable checklist,
+# .claude/hooks/todo-context.sh injects it into every session, and that hook
+# no-ops silently when the file is absent — so an uncommitted TODO.md is one
+# machine's private note that vanishes on clone.
+#
+# If something in one of these turns out to be durable, move it into TODO.md,
+# AI.md or ACCESSIBILITY.md before the file is regenerated.
+PLAN.md
+QUESTIONS.md
+SESSION.md

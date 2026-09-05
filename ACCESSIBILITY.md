@@ -11,7 +11,7 @@
 | Private reporting   | lol@sinduri.lol                                            |
 | Target standard     | WCAG 2.2 Level AA, with AAA text contrast where achievable |
 | Conformance status  | **Target only. No conformance claim.**                     |
-| Last reviewed       | 2026-09-04                                                 |
+| Last reviewed       | 2026-09-05                                                 |
 
 ## 2. Commitment
 
@@ -50,6 +50,20 @@ What is currently true:
 - Every route the site builds passes axe-core with no violations, at the
   `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, and `wcag22aa` tags.
 - No axe rule is disabled and no result is excluded anywhere in the suite.
+- Every route also passes axe's **best-practice** rules, which the suite had
+  never run: `region`, `heading-order`, `landmark-one-main`, `skip-link` and
+  fourteen others executed against this site for the first time in this build
+  and found nothing. They run in a block of their own rather than folded into
+  the WCAG tags, because none of them is a success criterion and a failure
+  should say which of the two things broke.
+- **Nothing axe leaves undecided is left undecided.** `analyze()` returns
+  violations, passes, incomplete and inapplicable, and until this build the
+  suite read only the first. `incomplete` was not empty: eleven `color-contrast`
+  nodes across `/`, `/about` and `/contact`, three of them ordinary content —
+  the homepage standfirst, the "Read the blog" call to action, and the About
+  portrait label. `tests/contrast-incomplete.spec.ts` decides every one by
+  walking the paint stack and measuring against the resolved ground. All eleven
+  clear their floors; the tightest is 4.90:1 against a 3:1 large-text floor.
 - All text colour tokens have been measured against all three dark surface
   colours (`#131313`, `#1A1A1A`, `#0E0E0E`), and against `#FFC000`, which is
   the fourth surface the design uses and the one every dark token fails on.
@@ -65,11 +79,63 @@ What is currently true:
 - Every route is also scanned with the mobile menu dialog **open** at 320px, at
   the same rule tags. Before that, no element inside the panel had ever been
   scanned.
-- Every target on the site now passes SC 2.5.8 on **its own size**. The
-  spacing exception is not relied on anywhere. The last two that did were the
-  breadcrumb links on blog routes; measured at a 305px viewport they are now
-  86.7x31.6 ("All posts") and 178.1x31.6 (the category link), up from 16px
-  tall, with the `<h1>` below them at an unchanged y.
+- Every target on the site passes SC 2.5.8 on **its own size**, and that is now
+  a test rather than a claim. `tests/target-size.spec.ts` walks every route at
+  305px and 1280px and measures each target's own box. The spacing exception is
+  not implemented anywhere in the suite, deliberately: relying on it makes the
+  gap between two controls load-bearing for conformance, so an unrelated
+  spacing change breaks 2.5.8 silently and a long way from the edit. The two
+  exceptions the criterion itself grants — an inline link in a sentence, and an
+  element with no box — are implemented, and detected structurally rather than
+  by class name.
+
+  It was a claim until this build, established by measuring the handful of
+  controls that existed then. The count of controls has roughly quadrupled
+  since: six filter options, a pager, a pause button, card headings and contact
+  cards.
+
+- **Keyboard flow is partly covered.** `tests/focus.spec.ts` walks the tab
+  order in both directions on every route at two widths and hit-tests each
+  stop, for SC 2.4.11 Focus Not Obscured (Minimum) and SC 2.4.7 Focus Visible.
+  It exists because that rule had already failed; see gap 8.
+- The same walk now also measures the focus ring against the ground it is drawn
+  on, for **SC 1.4.11 Non-text Contrast**. Presence was asserted; perceivability
+  was not, so a ring at 1.2:1 would have scored a pass. Across 572 controls at
+  both widths the lowest is 10.60:1. `global.css` had claimed 11.32 / 10.60 /
+  11.76 against `background` / `surface` / `deep` in a comment since the ring
+  was written; that claim now has a test behind it.
+- **Windows High Contrast Mode is covered** (`tests/forced-colors.spec.ts`),
+  which nothing in the repository had ever set. The mode suppresses every
+  `box-shadow`, and this design uses `shadow-hard-*` for the offset blocks that
+  give cards and buttons their shape, so anything bounded only by a shadow has
+  no edges there. Asserted: nothing sets `forced-color-adjust` away from `auto`,
+  every non-link control keeps a painted border or an opaque background, links
+  are painted distinctly from body text, and the focus ring keeps a non-zero
+  width.
+- **Reduced motion is checked site-wide**, not only on the two routes that
+  render a badge. Zero elements still animate under
+  `prefers-reduced-motion: reduce` across all 23 routes.
+- **The whole suite runs in three engines.** Chromium, Firefox 153.0 and
+  WebKit. Each passed all 487 tests on its first run, with no source change and
+  no browser-conditional assertion anywhere in the suite. Until this build
+  every claim the suite made was a claim about one engine.
+
+  WebKit is defined in CI only. The development machine is Ubuntu 25.10, which
+  ships ICU 76, and Playwright builds WebKit against ICU 74; that is an ABI
+  incompatibility rather than a missing package, so it cannot run there at all.
+  It was verified in Playwright's container before being added, and
+  `playwright.config.ts` carries the reasoning and the command. Headless WebKit
+  is also not Safari: it says nothing about VoiceOver, which remains untested.
+
+- **Every page names itself** (`tests/titles.spec.ts`). axe's `document-title`
+  fires only on a missing or empty title and says nothing about two pages
+  sharing one. All 23 titles are distinct and name the page before the site.
+
+**None of the above says anything about the words.** Every page currently
+carries lorem ipsum, which is Latin inside a `lang="en"` document, so the
+criteria that depend on real language — plain language, reading order,
+pronunciation, link text out of context — are not merely untested but
+unassessable. See gap 7.
 
 Passing axe is not conformance. See section 6.
 
@@ -155,6 +221,14 @@ An inverted set covers it. The first four are AAA on gold:
 | `darkcyan`       | `#00363F` | 8.00         | Links, and the one accent               |
 | `gold-btn-label` | `#FFFFFF` | 1.64         | Label on the dark button fill only      |
 
+This table is a copy, not a source. The same rows appear in `AI.md` and in the
+design system skill, and the one authority for all three is the live CSS custom
+property. `every documented gold ratio matches the live CSS` in
+`tests/gold-surface.spec.ts` parses every table here keyed `on #FFC000` and
+fails on any row whose hex or ratio disagrees with the running page, naming the
+file and line. Retone a token and all three tables fail in the same run; edit a
+number by hand and it fails on its own.
+
 There is no `gold-subtle`, because a third step would land near luminance 0.02
 and be indistinguishable from `gold-text`. Hierarchy below `gold-muted` on this
 surface is weight and size.
@@ -232,8 +306,12 @@ Neither `.btn-primary` nor `.btn-secondary` may be used on this surface.
 scoped to `.surface-gold`. Measured against what each colour actually touches:
 the primary label is 18.58 on its own `#131313` fill, the primary fill is 11.32
 against gold, and the secondary label and border are both 11.32 against gold.
-Both render 51.6px tall, so each passes SC 2.5.8 on its own size without the
-spacing exception.
+Both render **59.6px** tall — a 15.6px line box, 18px of padding either side
+and a 4px border either side — so each passes SC 2.5.8 on its own size without
+the spacing exception. Measured on the real Career hero at 305px, 320px and
+1280px, where they are 226.2x59.6 and 197.6x59.6. An earlier version of this
+paragraph said 51.6px, which is the padding box with the border left out; the
+border is part of the target.
 
 **The pink offset shadow on the primary button measures 2.31 on gold**, under
 the 3:1 of SC 1.4.11. That is acceptable only because it carries no meaning:
@@ -253,25 +331,27 @@ elements (`.skip-link` on every route, `.btn-primary` on `/404`).
 Playwright drives a real Chromium against the production build. CI runs it on
 every push and pull request to `main`, and a violation fails the build.
 
-| Check                | Tool                                | Covers                                           |
-| -------------------- | ----------------------------------- | ------------------------------------------------ |
-| WCAG rule scan       | axe-core via `@axe-core/playwright` | Every built route                                |
-| Rule scan, menu on   | axe-core at 320px, dialog open      | Every route, with the mobile menu open           |
-| Reflow overflow      | Playwright at 320px and 305px       | Every route, with and without SC 1.4.12          |
-| Content box width    | Playwright at 320px and 305px       | 288px / 273px, the box the floors assume         |
-| Heading word fit     | Playwright at 320px and 305px       | No heading word wider than its own box           |
-| Reflow navigation    | Playwright at 320px                 | Menu opens, takes focus, closes on Escape        |
-| Route drift          | Playwright                          | Test list matches real build output              |
-| Unknown path         | Playwright                          | A path with no page returns 404, not 200         |
-| Response headers     | Playwright over the built `dist/`   | The CSP does not break fonts or the menu         |
-| HSTS scope           | Playwright over the built `dist/`   | max-age ceiling, no preload/subdomains           |
-| Gold-surface text    | Playwright over every route         | Nothing on `#FFC000` below 4.5:1                 |
-| Gold-surface class   | Playwright, mounted fixture         | `.surface-gold` text, links, focus, border       |
-| Gold-surface buttons | Playwright, mounted fixture         | Label, fill, border, focus, SC 2.5.8 size        |
-| Invisible control    | Playwright, mounted fixture         | Fill, or border on all four edges, vs the ground |
-| Two-tone focus ring  | Playwright, mounted fixture         | Both rings and the pink shadow, at zero offset   |
-| Token drift          | Playwright, live CSS variables      | The documented ratios against `#FFC000`          |
-| Type safety          | `astro check`                       | Templates and components                         |
+| Check                | Tool                                | Covers                                            |
+| -------------------- | ----------------------------------- | ------------------------------------------------- |
+| WCAG rule scan       | axe-core via `@axe-core/playwright` | Every built route                                 |
+| Rule scan, menu on   | axe-core at 320px, dialog open      | Every route, with the mobile menu open            |
+| Reflow overflow      | Playwright at 320px and 305px       | Every route, with and without SC 1.4.12           |
+| Content box width    | Playwright at 320px and 305px       | 288px / 273px, the box the floors assume          |
+| Heading word fit     | Playwright at 320px and 305px       | No heading word wider than its own box            |
+| Reflow navigation    | Playwright at 320px                 | Menu opens, takes focus, closes on Escape         |
+| Route drift          | Playwright                          | Test list matches real build output               |
+| Badge route coverage | Playwright over the built `dist/`   | Every route rendering a badge is tested for 2.2.2 |
+| Unknown path         | Playwright                          | A path with no page returns 404, not 200          |
+| Response headers     | Playwright over the built `dist/`   | The CSP does not break fonts or the menu          |
+| HSTS scope           | Playwright over the built `dist/`   | max-age ceiling, no preload/subdomains            |
+| Gold-surface text    | Playwright over every route         | Nothing on `#FFC000` below 4.5:1                  |
+| Gold-surface class   | Playwright, mounted fixture         | `.surface-gold` text, links, focus, border        |
+| Gold-surface buttons | Playwright, mounted fixture         | Label, fill, border, focus, SC 2.5.8 size         |
+| Invisible control    | Playwright, mounted fixture         | Fill, or border on all four edges, vs the ground  |
+| Two-tone focus ring  | Playwright, mounted fixture         | Both rings and the pink shadow, at zero offset    |
+| Token drift          | Playwright, live CSS variables      | The documented ratios against `#FFC000`           |
+| Doc table drift      | Playwright, live CSS variables      | The gold tables in AI.md, this file and the skill |
+| Type safety          | `astro check`                       | Templates and components                          |
 
 Rule tags: `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`.
 
@@ -339,10 +419,14 @@ Three limits of the automated tier that are easy to mistake for coverage:
   stating because the floors were documented as locked down by a test that
   could not fail on them. `overflow-wrap: break-word` guarantees the document
   never scrolls sideways, so a heading too big for its box is cut mid-word
-  rather than overflowing. Measured: with the h1 floor put back to 36px, all
-  69 overflow assertions passed while "PROFESSIONAL" was being broken across
-  two lines. The heading-word-fit assertion added alongside the 305px case is
-  what actually watches the floors.
+  rather than overflowing. Measured 2026-09-05: with the `--text-h1` floor put
+  back to 36px, all 92 overflow assertions passed, and the only two failures in
+  the run were the heading-word-fit assertion at 305px. The unit is calls to
+  `expectNoHorizontalOverflow`, one per route per width per spacing mode. This
+  figure previously read "69 overflow assertions", which was the whole suite's
+  test count at the time and not the assertion count at all; see the note in
+  `tests/reflow.spec.ts`. The heading-word-fit assertion added alongside the
+  305px case is what actually watches the floors.
 
 **Automated testing catches only a minority of WCAG success criteria.** Roughly
 a third of WCAG failures are machine-detectable at all; the rest need a human.
@@ -358,10 +442,17 @@ names the software each check needs.
 
 None of the following has been performed. Each is a real gap, not a formality.
 
-- **Keyboard flow.** Tab order, focus visibility in context, whether the sticky
-  80px header obscures a focused element in practice (SC 2.4.11). The
-  `scroll-margin-top` rule is in place but has not been verified by tabbing
-  through a long page, because no long page exists yet.
+- **Keyboard flow, in part.** Occlusion by the sticky header (SC 2.4.11) and
+  the presence of an indicator (SC 2.4.7) have moved into the automated tier:
+  `tests/focus.spec.ts` walks the tab order in both directions on every route
+  at 305px and 1280px and hit-tests each stop. It was written because the rule
+  it guards had already failed — see gap 8.
+
+  **What is still not done is the judgement half.** Whether the focus order is
+  sensible, whether an indicator is easy to find on a busy page, and whether
+  the route through a page makes sense to somebody who cannot see it are not
+  things an assertion asks. A person still has to tab these pages.
+
 - **Screen reader announcement quality.** Nothing has been tested with NVDA,
   JAWS, VoiceOver, or Orca. Whether announcements are correct, ordered, and not
   redundant is unknown.
@@ -411,14 +502,59 @@ Stated honestly. This list is not filtered for how it looks.
    origin the form posts to (`'self'` if same-origin), never `*`, and add an
    assertion for the new value in the same commit.
 
-2. **Most pages are placeholder stubs.** Home, About, Career, Blog index, and
-   Contact render `PLACEHOLDER` copy. They pass axe because there is almost
-   nothing on them. That is not evidence of anything.
-3. **The spinning badge is not built.** It appears in the comps, auto-starts,
-   and runs past five seconds, so under SC 2.2.2 Pause, Stop, Hide it needs a
-   keyboard-operable pause control. A `prefers-reduced-motion` media query does
-   not satisfy 2.2.2 on its own, because a user who has not set that preference
-   still has no way to stop it.
+2. ~~**Most pages are placeholder stubs.**~~ **Every page is built. The copy is
+   what is still placeholder, and it is lorem ipsum rather than
+   `PLACEHOLDER`.** Home, About, Career, Blog index, blog post, blog category
+   and Contact all render their full structure: 23 routes, a paginated
+   listing, a category filter, a gold surface, rendered Markdown, and two
+   animated badges with pause controls.
+
+   **The old wording said they passed axe "because there is almost nothing on
+   them", and that sentence has to go rather than be softened.** It was the
+   honest reading of a stub and it is the dishonest reading of this: the scans
+   now run against real markup, real prose, real lists and real controls. What
+   a green scan still is not, is conformance — section 6 says why, and that
+   has not changed.
+
+   What is genuinely untested here is not the markup but the words. See gap 7.
+
+3. ~~**The spinning badge is not built.**~~ **Built, with the pause control SC
+   2.2.2 requires.** `src/components/ui/SpinBadge.vue` renders it on the
+   homepage hero at 24s, and `tests/motion.spec.ts` measures the whole
+   contract from the rendered DOM rather than from the markup: that the
+   animation is really running (`animation-play-state: running` on a real
+   `slowspin`), that a **key press** on the focused control pauses it and a
+   second one resumes it, that the control passes SC 2.5.8 on its own size
+   (40x40 CSS px), and that its accessible name changes with the state.
+
+   Three decisions in it are worth stating, because each is the difference
+   between the criterion being met and appearing to be met:
+
+   - **The animation is applied by the island on mount, never by the
+     server-rendered HTML.** The pause control is JavaScript. Had the
+     animation been in the static markup it would run in any browser where
+     the island failed to hydrate, with the control that stops it absent —
+     motion with no mechanism, which is the failure 2.2.2 names. No JS now
+     means no spin.
+   - **Under `prefers-reduced-motion: reduce` the component does not animate
+     and renders no button**, rather than leaning on the global media query to
+     neutralise the animation to 0.01ms and leaving a control that pauses
+     nothing in the tab order.
+   - **The state is carried by the accessible name and by nothing else.** The
+     comps flip `aria-pressed` _and_ swap the label, which states the same
+     thing twice and lets the two contradict each other. For a transport
+     control the name is the stronger carrier, because "Play" and "Pause" say
+     what the button will do while "pressed" says nothing about whether
+     anything is moving. `MobileMenu.vue` makes the opposite call for the same
+     reason: state in one place.
+
+   **This is not a claim that the badge has been observed by a person.** It has
+   been measured headlessly in Chromium. Nobody has watched it spin, tabbed to
+   it on a real page, or heard a screen reader announce the name change; the
+   Orca pass in [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §6 is where
+   that would be recorded. The line stays here rather than being deleted so
+   that distinction is visible.
+
 4. **No screen reader testing has been done at all.** No NVDA, JAWS,
    VoiceOver, or Orca run, so announcement quality is unknown. That includes
    how the CSS-uppercased accessible names are read: section 6 records that
@@ -439,32 +575,125 @@ Stated honestly. This list is not filtered for how it looks.
    partial and section 6's "Screen reader announcement quality" bullet stays
    with it.
 
-5. **Only one blog post exists,** and it is placeholder content. Long-form
-   reading order, in-page headings, and link text in real prose are untested.
-6. **The gold surface is measured, and rendered only on a throwaway fixture.**
-   The inverted token set in section 5 is arithmetic, a CSS class and two
-   button classes; no page uses any of them yet, so the contracts are tested
-   against mounted fixtures rather than against real markup. Nothing has been
-   looked at, tabbed through, or zoomed on a gold section of a real route.
-   The focus ring on that ground is still the item to look at first. On
-   `.btn-gold-primary` it is now two rings, an inner `#FFFFFF` at 18.58 against the button's own fill and the
-   outer `#131313` at 11.32 against the gold beyond the offset gap, so it no
-   longer depends on the offset alone.
+5. ~~**Only one blog post exists.**~~ **Eleven exist, and every word of them is
+   placeholder.** They are spread across all five categories and vary
+   deliberately in title length, teaser length, `featured` and `readingTime`,
+   so a card is exercised at a ten-character title and at a seventy-character
+   one. Eleven is not arbitrary: the index paginates at nine, so it is the
+   count that makes a second page exist with more than one card on it.
 
-   **Partially observed on 2026-09-04, and the gap stays open.** A temporary,
-   uncommitted route rendering a `.surface-gold` section was built and driven
-   in headless Chromium: a real `Tab` press reaches `.btn-gold-primary`,
-   `:focus-visible` matches, and the rendered indicator carries all three
-   layers at once — `box-shadow: rgb(255, 255, 255) 0px 0px 0px 3px inset,
-rgb(255, 0, 122) 8px 8px 0px 0px` with `outline: 3px solid rgb(19, 19, 19)`
-   at a 3px offset. Screenshotted, the two rings read as one deliberate
-   double-stroke rather than as noise.
+   What that bought is structural coverage that one post could not give:
+   pagination, the category filter, rendered Markdown with lists and
+   sub-headings, an author-placed soft hyphen in a frontmatter title, and
+   in-prose links — which is how the missing underline in gap 8 was found.
 
-   That is one viewport, one engine, headless, on a fixture, judged by an
-   agent. It is not a person looking at a real page, no screen reader has been
-   near it, and reflow on a gold ground is still untested because no real route
-   has one to run the 305px suite against. Re-test when the Career page lands
-   and replace the fixtures with the real section.
+   **What it did not buy is anything about the prose itself.** Long-form
+   reading order, whether the in-page heading structure helps or hinders, and
+   whether link text makes sense out of context are all judgements about real
+   writing, and there is no real writing here. See gap 7.
+
+6. ~~**The gold surface is rendered only on a throwaway fixture.**~~ **It is on a
+   real route now, and measured there. The gap narrows to one thing: nobody
+   has looked at it.**
+
+   `/career` renders the hero as `.surface-gold`, and it is the only
+   `.surface-gold` section on the site. `tests/gold-surface.spec.ts` measures
+   it in situ at 305px and at 320px, on the shipped markup rather than on a
+   mounted `<div>`:
+
+   | Measured on `/career`           | Result                                                                                               |
+   | ------------------------------- | ---------------------------------------------------------------------------------------------------- |
+   | `.btn-gold-primary`             | 226.2x59.6; label 18.58 on its own `#131313` fill; fill 11.32 on gold                                |
+   | its focus ring                  | outer 11.32 on gold, **1.00 against its own fill**; inner `#FFFFFF` 18.58; 3px solid at a 3px offset |
+   | `.btn-gold-secondary`           | 197.6x59.6; label and border both 11.32 on gold; ring 11.32                                          |
+   | every string on the gold ground | nothing below 4.5:1                                                                                  |
+   | content box                     | 273px at 305px, 288px at 320px, unchanged by the full-bleed band                                     |
+   | document                        | does not scroll sideways at either width                                                             |
+
+   Reflow on a gold ground was previously untestable for want of a route with
+   one on it. It is now in the 305px and 320px suites like any other section.
+   The watermark deliberately overhangs by 150px and `overflow-hidden` on the
+   section contains it; both the overhang and the clip are asserted, so
+   removing either fails a test rather than becoming a horizontal scrollbar.
+
+   **The fixtures were kept, not deleted, and that is deliberate.** A fixture
+   can be broken on purpose to prove an assertion still bites, without editing
+   a shipped route; and it keeps the class honest for the next page written
+   against it. Only the in-situ test can fail on a mistake made in
+   `career.astro` — a `text-muted` written inside the section, `.btn-primary`
+   reached for out of habit. Neither covers the other. A non-vacuity guard was
+   added at the same time, because the route-level walk short-circuits when a
+   page has no gold section: correct while none existed, and silently vacuous
+   the moment one did.
+
+   **What keeps this open.** Every number above came from headless Chromium and
+   was judged by an agent. No person has looked at the gold hero, tabbed it on
+   a real screen, or zoomed it; no screen reader has been near it. That is the
+   whole of the remaining gap, and it is
+   [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §5 that closes it.
+
+7. **The copy is lorem ipsum, which is Latin inside a `lang="en"` document.**
+   This is new with this build and it affects every page.
+
+   A screen reader takes its pronunciation from the language of the content.
+   `<html lang="en">` is correct for the site and wrong for the words currently
+   in it, so every heading, paragraph, teaser and post body on the site is
+   announced with English pronunciation rules applied to Latin. That is not a
+   small cosmetic wrongness for someone listening to the page; it is most of
+   what they receive.
+
+   **The fix is real copy, not a language attribute.** Marking the placeholder
+   `lang="la"` would make the announcement more accurate and the situation
+   worse: it would be a claim that the site is deliberately publishing Latin,
+   it would have to be unpicked from every element later, and it would silence
+   the very oddness that signals the copy is not finished. The gap is that the
+   words are placeholder. Fixing the words fixes it.
+
+   Two consequences worth naming rather than leaving implied:
+
+   - **Section 6's "cognitive load, plain language and reading order" bullet is
+     not merely untested here, it is unassessable.** There is no prose to judge
+     for plain language.
+   - **SC 3.1.2 Language of Parts** is not currently satisfied for this content,
+     and will stop applying the moment the real copy lands rather than needing
+     a fix of its own. It is listed so the state is on the record, not because
+     a change is pending.
+
+8. **A focus defect shipped and was caught late, and the miss is worth
+   recording.** `scroll-margin-top` was scoped to `:target, [id]`, which covers
+   anchor destinations. Essentially nothing focusable on this site has an
+   `id` — not a nav link, not a filter option, not a card heading's link — so
+   the tab order was never covered at all. Shift-Tabbing back up a page put
+   controls **entirely** underneath the sticky header, 80px at the time and
+   96px now: an SC 2.4.11
+   Focus Not Obscured (Minimum) failure at AA, not the partial obscuring that
+   2.4.12 covers at AAA.
+
+   Fixed in `bcf0ecf`; `tests/focus.spec.ts` walks the tab order in both
+   directions on every route at 305px and 1280px and hit-tests each stop.
+
+   **Two things about how it hid are the reason this is written down.**
+
+   - **Direction.** A forward pass over every route reported nothing wrong the
+     whole time it was failing. Tabbing forward, Chromium scrolls the next
+     control up from the bottom edge of the viewport, so it never approaches a
+     header pinned to the top. Only walking backwards reproduces it. A
+     keyboard check that goes one way is not a keyboard check.
+   - **Method.** Comparing the focused element's box to the header's box gets
+     the wrong answer in both directions: it reports the skip link as obscured
+     on every route, when the skip link deliberately overlaps that band and is
+     painted over it at `z-60` against `z-50`, and it cannot see obscuring by
+     anything that is not the header. `document.elementFromPoint` is what
+     answers the actual question.
+
+   Verified by reverting the fix rather than by assertion: 9 of the 46 tests
+   fail, eight of them at 305px, each reporting five of five probe points
+   covered.
+
+   **This does not close [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §1,
+   §2 or §5.** The automated tier now covers occlusion and indicator presence;
+   it says nothing about whether the focus order is _sensible_, or whether an
+   indicator is easy to find on a busy page.
 
 ## 8. Reporting a barrier
 

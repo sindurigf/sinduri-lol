@@ -25,14 +25,21 @@ their content into this file.
 Format: `type: Full sentence with a full stop.`, signed off (`git commit -s`).
 
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `chore`, `perf`, `security`,
-`config`, `revert`.
+`config`, `revert`, `test`.
 
 Example: `feat: Add Header component with sticky nav and active indicator.`
 
+CI checks this on every pull request, over the commits the branch adds, via
+`scripts/check-commits.sh`. Merge commits are skipped: GitHub writes those and
+signs off nothing.
+
 Some historical commits carry a `Co-Authored-By:` trailer and some do not.
 Attribution is now configured off in `.claude/settings.json`, with
-`.githooks/commit-msg` as a backstop. [AI_DISCLOSURE.md](AI_DISCLOSURE.md)
-explains why the history is left inconsistent rather than rewritten.
+`.githooks/commit-msg` as a backstop, and CI as the third layer, because hooks
+are not cloned and `core.hooksPath` is opt-in. The CI check deliberately looks
+only at what a branch adds, never at full history: two commits already on
+`main` carry the trailer, and [AI_DISCLOSURE.md](AI_DISCLOSURE.md) explains why
+the history is left inconsistent rather than rewritten.
 
 ## Where things are documented
 
@@ -50,5 +57,32 @@ explains why the history is left inconsistent rather than rewritten.
 - Never commit anything from `design/`, especially the CV PDF.
 - Ask before installing packages.
 
+## Task checklist
+
+[TODO.md](TODO.md) is the durable checklist for this repository.
+`.claude/hooks/todo-context.sh` runs on `SessionStart` and `UserPromptSubmit`
+and prints its contents into context every turn, so what is in context is
+always the current file.
+
+- Print the full checklist, with a count of the remaining items, at the start
+  of every session.
+- Mirror every unchecked item into the session task list.
+- Check an item off in TODO.md in the same edit as the work that completes it,
+  never as a separate pass afterwards.
+- Reprint the checklist at the end of any response in which a box changed.
+- Never invent items. If the file has no unchecked items, say so and stop.
+
 Run `npm run build`, `npm run typecheck`, and `npm run test:a11y` before
 calling any change done.
+
+A suite is green only when the summary line with the counts says so. Check the
+reported total against `npx playwright test --list`: a total below the collected
+count means those tests did not run, not that they passed, and nothing in the
+output is coloured to say so. If two runs of unchanged code disagree, the cause
+is environmental until measured otherwise — look for a backgrounded Astro
+daemon, another session writing to this tree, memory pressure or lockfile
+resolution before reading the diff.
+
+[AI.md](AI.md) > Conventions > Tests has the rules for writing a test that can
+actually fail, and for the counts and duplicated facts that go stale otherwise.
+[README.md](README.md) has the longer form of both checks above.

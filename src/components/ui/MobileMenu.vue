@@ -75,16 +75,16 @@ onBeforeUnmount(() => {
     >
       <span aria-hidden="true" class="relative block h-4 w-6">
         <span
-          class="absolute left-0 block h-[3px] w-6 bg-gold transition-transform duration-150"
-          :class="isOpen ? 'top-[7px] rotate-45' : 'top-0'"
+          class="absolute left-0 block h-menu-bar w-6 bg-gold transition-transform duration-150"
+          :class="isOpen ? 'top-menu-bar-mid rotate-45' : 'top-0'"
         />
         <span
-          class="absolute left-0 top-[7px] block h-[3px] w-6 bg-gold transition-opacity duration-150"
+          class="absolute left-0 top-menu-bar-mid block h-menu-bar w-6 bg-gold transition-opacity duration-150"
           :class="isOpen ? 'opacity-0' : 'opacity-100'"
         />
         <span
-          class="absolute left-0 block h-[3px] w-6 bg-gold transition-transform duration-150"
-          :class="isOpen ? 'top-[7px] -rotate-45' : 'top-[14px]'"
+          class="absolute left-0 block h-menu-bar w-6 bg-gold transition-transform duration-150"
+          :class="isOpen ? 'top-menu-bar-mid -rotate-45' : 'top-menu-bar-end'"
         />
       </span>
     </button>
@@ -111,20 +111,33 @@ onBeforeUnmount(() => {
       -->
       <nav>
         <ul class="flex flex-col gap-8">
+          <!--
+            The same active treatment as the desktop nav: a bordered box with
+            the site's offset gold shadow, with the border present but
+            transparent on every link so becoming current changes colour and
+            shadow rather than geometry. Here that matters for a different
+            reason than on desktop - these are stacked, so a border appearing
+            on one item would shift every item below it.
+
+            It replaces an 8x8 gold dot that sat after the link as a sibling.
+            The dot was aria-hidden and `aria-current="page"` above is what
+            actually announces the state, so nothing changes for a screen
+            reader.
+          -->
           <li v-for="link in links" :key="link.href">
             <a
               :href="link.href"
               :aria-current="isActive(link.href) ? 'page' : undefined"
-              class="block font-black uppercase tracking-heading-tight text-text hover:text-cyan"
+              class="block border-4 px-4 py-2 font-black uppercase tracking-heading-tight"
+              :class="
+                isActive(link.href)
+                  ? 'border-border text-text shadow-hard-gold-4'
+                  : 'border-transparent text-text hover:text-cyan'
+              "
               @click="close"
             >
               {{ link.label }}
             </a>
-            <span
-              v-if="isActive(link.href)"
-              aria-hidden="true"
-              class="mt-3 block h-2 w-2 bg-gold"
-            />
           </li>
         </ul>
 

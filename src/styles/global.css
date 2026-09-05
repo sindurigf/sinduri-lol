@@ -34,11 +34,19 @@
    A test that needs a class on an element it mounts itself should use an
    inline style, or a component class from @layer components, which is
    authored CSS and is emitted regardless of scanning.
+
+   scripts/ is excluded last, and it is the sharpest version of the problem.
+   scripts/check-tokens.mjs exists to reject arbitrary values, so it names the
+   ones it was written to catch: `h-[3px]`, `top-[7px]`, `top-[14px]`,
+   `backdrop-blur-[10px]`. Before this line, Tailwind read that comment and
+   emitted all four. The checker that forbids arbitrary values was, for one
+   build, the only thing in the repo still shipping them.
 --------------------------------------------------------------------------- */
 
 @source not '../../**/*.md';
 @source not '../../.claude';
 @source not '../../tests';
+@source not '../../scripts';
 
 /* ---------------------------------------------------------------------------
    Design tokens. Dark mode only, no light theme and no `dark:` variant setup.
@@ -186,7 +194,10 @@
     'Lexend Variable', system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
 
-  /* Fluid heading scale. Ceilings land at roughly a 1156px viewport. */
+  /*
+   * Fluid heading scale. h1 reaches its ceiling at roughly a 1156px viewport,
+   * h2 and the section number at roughly 1150px, h3 at about 1265px.
+   */
   /*
    * The floors are a reflow constraint, not a taste call (SC 1.4.10).
    *
@@ -203,7 +214,13 @@
    * Calibrate against 273px. tests/reflow.spec.ts now runs both widths, so the
    * 273px box is asserted rather than only checked by hand.
    *
-   * THE GUTTER IS NOT NEGOTIABLE. An earlier round bought 32px of box by
+   * ONLY THE BASE GUTTER IS IN THIS ARITHMETIC. `.page-gutter` steps up once,
+   * at `sm`, and that step does not appear above: `sm` is 640px, far wider
+   * than the viewports the floors are calibrated against, so at 305px and
+   * 320px only the base `px-4` applies. Widening the `sm` step costs the
+   * floors nothing. Widening `px-4` costs them everything.
+   *
+   * THE BASE GUTTER IS NOT NEGOTIABLE. An earlier round bought 32px of box by
    * dropping the gutter below `sm`. That is not a trade between a heading and
    * some whitespace: it puts every line of body copy on every page flush
    * against the screen edge on every phone, to fit one word that appears on
@@ -212,13 +229,15 @@
    * THE WORST WORD. Headings are uppercased and nothing wraps a single word,
    * so one long word is the entire risk. Measured in this build, headless
    * Chromium, Lexend Variable at weight 900 with the -0.05em tracking this
-   * scale applies, as the rendered width of an <h1> at width: max-content:
+   * scale applies, as the rendered width of an <h1> at width: max-content.
+   * The 36/34/33/32 columns are kept because the argument below is about why
+   * the floors are not up there:
    *
-   *                     36px    34px    33px    32px    29px
-   *   PROFESSIONAL    278.41  262.61  257.20  250.81  226.61
-   *   ACCESSIBILITY   286.61  270.91  261.56  258.20  232.16
-   *   ANNOUNCEMENTS   329.61  313.91  304.56  294.20  268.16
-   *   WOODWORKING     302.20  285.31  278.86  270.41  245.06
+   *                     36px    34px    33px    32px    30px    29px    26px
+   *   PROFESSIONAL    278.41  262.61  257.20  250.81  232.00  226.61  202.41
+   *   ACCESSIBILITY   286.61  270.91  261.56  258.20  235.50  232.16  207.11
+   *   ANNOUNCEMENTS   329.61  313.91  304.56  294.20  278.50  268.16  238.11
+   *   WOODWORKING     302.20  285.31  278.86  270.41  252.50  245.06  219.70
    *
    * h1 IS 33px. In a 273px box that leaves 15.80px for "PROFESSIONAL" (5.8%
    * of the box) and 11.44px for "ACCESSIBILITY" (4.2%). "PROFESSIONAL" is one
@@ -232,46 +251,102 @@
    * the scrollbar width broke it. A floor is only worth having if it has
    * room, so 33px it is.
    *
-   * h2 IS 29px. The word arithmetic is identical for h2, so overflow alone
-   * would allow it the same 33px; what holds it lower is the step down from
-   * h1, and what holds it up is the step down to h3. 33:29 is 1.138 and
-   * 29:26 is 1.115, either side of the 1.125 the old 36:32 pair held. 28px
-   * would read better against h1 and worse against h3: 28:26 is 1.077, near
-   * enough that the two would look like one size at 320px, which is the same
-   * hierarchy failure the old 34px h2 had, one level down.
+   * h1 WENT TO 30px AND CAME BACK. The whole scale was cut by roughly 15% and
+   * h1 was restored on its own, so the 30px column stays in the table above:
+   * it is the measurement that says the restore is not a reflow risk, because
+   * the floor moved back UP, which is the direction that costs headroom. At
+   * 30px "PROFESSIONAL" had 41.00px of room and "ACCESSIBILITY" 37.50px; at
+   * 33px they have 15.80px and 11.44px, which is where they were before and
+   * is the number the paragraphs above defend. h2 and h3 kept the cut.
+   *
+   * h2 IS 26px, AND THE STEP FROM h1 IS NOW WIDE ON PURPOSE. 33:26 is 1.269
+   * and 26:23 is 1.130. That is not the near-even 1.138 / 1.115 the 33:29:26
+   * set held, and it is not an oversight: h1 is the display size and h2 and h3
+   * are the reading sizes, so the scale is deliberately top-heavy. Do not
+   * "fix" the ratio by pulling h2 back up to 29px; that reverses a choice, it
+   * does not correct an error. What still holds h2 up is the step down to h3,
+   * and 24px would put 26:24 at 1.083, near enough that the two would look
+   * like one size at 320px.
    *
    * "ANNOUNCEMENTS" IS DELIBERATELY NOT FITTED. It needs a 29px h1 floor in
-   * this box (268.16px at 29px, 278.50px at 30px), no page uses it, and there
-   * is always a longer word.
+   * this box (268.16px at 29px, 278.50px at 30px, 304.56px at 33px), no page
+   * uses it, and there is always a longer word.
    * "WOODWORKING" is the cheap proof: eleven characters, all wide, and it
-   * overflows 273px at every floor above 32px. Genuine outliers are the job
-   * of the soft hyphen in the content and of overflow-wrap: break-word in the
-   * base layer below. That is the guarantee. These floors are the reason it
-   * rarely has to fire.
+   * overflows 273px at every floor above 32px, so it overflows at 33px by
+   * 5.86px. It fitted while h1 was at 30px (252.50px). Genuine outliers are
+   * the job of the soft hyphen in the content and of overflow-wrap:
+   * break-word in the base layer below. That is the guarantee. These floors
+   * are the reason it rarely has to fire.
    *
    * The floors only bite below a 367px viewport for h1 (33 / 0.09) and below
-   * a 440px viewport for h2 (29 / 0.066). tests/reflow.spec.ts locks the
+   * a 465px viewport for h2 (26 / 0.056). tests/reflow.spec.ts locks the
    * outcome down at 320px and 305px. Do not raise a floor without re-running
    * it.
    */
   --text-h1: clamp(33px, 9vw, 104px);
   --text-h1--line-height: 0.94;
-  --text-h2: clamp(29px, 6.6vw, 76px);
+  --text-h2: clamp(26px, 5.6vw, 64px);
   --text-h2--line-height: 0.96;
-  --text-h3: clamp(26px, 4.4vw, 56px);
-  --text-h3--line-height: 1.02;
+  --text-h3: clamp(20px, 2.6vw, 32px);
+  --text-h3--line-height: 1.15;
+  /*
+   * THE STICKER SIZE, AND WHY IT IS NOT `text-h3`.
+   *
+   * `text-h3` does two unrelated jobs on this site. It is the card and
+   * sub-section heading size, and it is also the lead-paragraph size, both of
+   * which are read as prose. It was ALSO the size of the two rotated brand
+   * stickers in the homepage hero, "Lepus" and "Ridet", which are neither:
+   * they are single decorative words in a coloured box, and the thing that
+   * makes them work is being large.
+   *
+   * It is a token rather than an arbitrary value because this project does not
+   * allow one in a component.
+   *
+   * 30px IS THE COMP'S NUMBER. The build had these rendering at 48px, which is
+   * a little under half the h1 and put two decorations in competition with the
+   * name of the site. They are back to the comp's 30px, floored at 24px, and
+   * they only render from `lg` up, so the floor is a formality rather than a
+   * reflow constraint.
+   *
+   * The line-height stays at h3's old 1.02: nothing set in this ever wraps,
+   * and if something here ever runs to two lines that is the signal it has
+   * stopped being a sticker.
+   */
+  --text-sticker: clamp(24px, 2.1vw, 30px);
+  --text-sticker--line-height: 1.02;
   --text-body: clamp(17px, 1.2vw, 19px);
   --text-body--line-height: 1.62;
   --text-label: 13px;
   --text-label--line-height: 1.2;
   /*
-   * Fluid like the rest of the scale. A fixed 32px outgrew the H3 floor of 26px
-   * on narrow screens; this keeps the number just under the heading it labels.
+   * Fluid like the rest of the scale. A fixed 32px outgrew the H3 floor on
+   * narrow screens, which is what made it fluid in the first place.
+   *
+   * IT IS SIZED AGAINST THE HEADING IT ACTUALLY LABELS, WHICH IS h1 OR h2.
+   * An earlier version of this comment measured it against h3, and h3 is not a
+   * heading it ever appears beside: the number sits in a flex row with the
+   * section's `h2` on the homepage, About and Career, and with the `h1` in the
+   * Career hero. Against those it is comfortably smaller at both ends, 21px
+   * against an h2 floor of 26px and 28px against an h2 ceiling of 64px.
+   *
+   * That h3 comparison stopped being merely irrelevant and became misleading
+   * when h3 came down to a 20px floor, which is BELOW this one. Nothing is
+   * wrong with that; the two simply never appear together.
    * The floor is a typographic choice only. It no longer carries a contrast
    * argument: the number is colored with `pink-text`, which is AAA at any size.
    */
-  --text-section-number: clamp(24px, 2.8vw, 32px);
+  --text-section-number: clamp(21px, 2.4vw, 28px);
   --text-section-number--line-height: 1;
+
+  /*
+   * Aspect ratios for the placeholder boxes that stand in for photography.
+   * Tokens rather than `aspect-[4/5]`, because this project does not allow an
+   * arbitrary value in a component and these three shapes recur: the hero
+   * artwork slot, the About portrait, and the square workspace slot.
+   * `aspect-video` (16 / 9) is Tailwind's own and covers the hero.
+   */
+  --aspect-portrait: 4 / 5;
+  --aspect-photo: 4 / 3;
 
   --tracking-heading: -0.05em;
   --tracking-heading-tight: -0.04em;
@@ -303,18 +378,74 @@
   --inset-shadow-gold-btn-ring: inset 0 0 0 3px var(--color-gold-btn-label);
 
   /* Layout */
-  --spacing-header: 80px;
+  /*
+   * THE CONTENT COLUMN. One number, so the header, <main> and the footer put
+   * their content on the same two vertical lines at every viewport.
+   *
+   * They did not, and nothing caught it. The header used to apply
+   * `.page-gutter` INSIDE its `max-w-page` box while <main> and the footer
+   * applied it OUTSIDE theirs. Below the column width that reads the same,
+   * because the max-width is not binding and all three are just
+   * viewport-minus-gutter. Above it they diverge by exactly the gutter, and
+   * measured on /about the header's content sat 24px inside main's at 1440px,
+   * 1600px and 1920px. Widening the `lg` gutter to 48px doubled that to 48px,
+   * which is what made a five-year-old misalignment visible enough to find.
+   *
+   * The fix is structural: every one of the three now carries the gutter on
+   * the outer element and this token on the column inside it. Once they share
+   * that structure the width is a FREE VARIABLE — any value keeps them
+   * aligned, because all three centre the same box inside boxes that differ by
+   * exactly the gutter, and (W - col) / 2 is the same either way.
+   *
+   * 80rem is what the site used as `max-w-7xl` before any of this, and it is
+   * deliberately back to it. It was narrowed to 74rem for one round to buy
+   * horizontal breathing room; that was the wrong lever, for the reason set
+   * out in the .page-gutter comment.
+   *
+   * tests/alignment.spec.ts asserts the outcome rather than the arithmetic, so
+   * it fails on a structural regression rather than on this number, and pins
+   * the absolute edges separately so the two cannot drift apart silently.
+   */
+  --container-page: 80rem;
+  /*
+   * The sticky header's height. 80px until the nav gained a bordered box for
+   * the active link: at 80px the box (15.6px line + 16px padding + 8px border
+   * = 39.6px, plus its 4px offset shadow) left too little air above and below
+   * to read as deliberate.
+   *
+   * It is fixed pixels of every viewport, including a 720px-tall one at 400%
+   * zoom, which is the reason not to keep going. `scroll-margin-top` below is
+   * calc()'d from this token, so in-page anchors and focus targets follow it
+   * automatically and SC 2.4.11 does not have to be re-derived by hand.
+   */
+  --spacing-header: 96px;
   /*
    * Card padding is two numbers because the card is a box inside a box. At
    * 40px a side, a card at a 305px viewport leaves 273 - 16 (border-8) - 80
-   * = 177px of content, and 177px is not enough for the type that goes in
-   * one: a card title at the 26px h3 floor breaks "PLACEHOLDER:" mid-word,
-   * and a real post title runs to six lines. The padding was sized for the
-   * desktop card and then applied to a card a third the width.
+   * = 177px of content; 24px leaves 209px.
    *
-   * 24px below `sm` leaves 209px, which is where it was before the page
-   * gutter came back. It steps up to 40px at the same breakpoint as the
-   * gutter, so there is one place where the layout changes, not two.
+   * THE ORIGINAL ARGUMENT FOR THIS NO LONGER HOLDS, AND THE VALUE STILL DOES.
+   * It used to be that 177px could not fit a card title without breaking it
+   * mid-word, measured against a 26px and later a 23px h3 floor. h3 now floors
+   * at 20px, and re-measured there (weight 800, -0.04em, rendered width at
+   * max-content) every title word clears even the tight box:
+   *
+   *   PLACEHOLDER:   150.41   fits 177 by 26.59px
+   *   PROFESSIONAL   158.41   fits 177 by 18.59px
+   *   ACCESSIBILITY  160.61   fits 177 by 16.39px
+   *
+   * So the mid-word break is gone and cannot be cited any more. What remains
+   * is the other half of the original reasoning, which is untouched by the
+   * type scale: at 177px a real post title runs to six lines and the card
+   * becomes a column of fragments. The padding was sized for the desktop card
+   * and then applied to a card a third of the width, and that is still true.
+   *
+   * Stated plainly because the arithmetic above would otherwise read as
+   * support for a conclusion it stopped supporting. If the line count ever
+   * stops being a problem too, this should become one number.
+   *
+   * It steps up to 40px at `sm`, the same breakpoint as the gutter's step, so
+   * the layout changes in one move rather than two.
    */
   --spacing-card-tight: 24px;
   --spacing-card: 40px;
@@ -324,12 +455,42 @@
    * have to be arbitrary values, which this project does not allow.
    *
    * The vertical number is also a conformance floor. A 13px label at
-   * line-height 1.2 is a 15.6px line box, so the control is 15.6 + 36 =
-   * 51.6px tall, comfortably past the 24px SC 2.5.8 asks of a target on its
-   * own size. Do not reduce it below 5px without re-checking that.
+   * line-height 1.2 is a 15.6px line box, so the padding box is 15.6 + 36 =
+   * 51.6px and the rendered control, including its 4px border either side, is
+   * 59.6px. Measured on /career at 305px, 320px and 1280px: 59.6px at all
+   * three. Either number is comfortably past the 24px SC 2.5.8 asks of a
+   * target on its own size; 59.6 is the one that answers the criterion,
+   * because the border is part of the target. Do not reduce the padding below
+   * 5px without re-checking that.
    */
   --spacing-btn-gold-y: 18px;
   --spacing-btn-gold-x: 34px;
+
+  /*
+   * The mobile menu button's three bars, inside a 24x16 (`w-6 h-4`) box.
+   * Three 3px bars at 0, 7 and 14 leave a 4px gap either side and end at
+   * 17px, one past the box, which is why the bars are absolutely positioned
+   * and the box is not what clips them.
+   *
+   * None of the three is a multiple of the 4px Tailwind spacing step, so
+   * without tokens they would each have to be an arbitrary value, which this
+   * project does not allow. `scripts/check-tokens.mjs` enforces that in CI.
+   *
+   * The 7px offset is also what the two bars rotate about when the menu is
+   * open: both animate to `top-menu-bar-mid`, so they cross at the centre of
+   * the box rather than at their own resting positions.
+   */
+  --spacing-menu-bar: 3px;
+  --spacing-menu-bar-mid: 7px;
+  --spacing-menu-bar-end: 14px;
+
+  /*
+   * The sticky header's backdrop blur. The header fill is `header-bg`, which
+   * is not fully opaque, so page content is visible through it as it scrolls
+   * under; 10px is enough to keep that from competing with the wordmark and
+   * the nav labels. Named rather than arbitrary for the same reason as above.
+   */
+  --blur-header: 10px;
 }
 
 @layer base {
@@ -456,6 +617,39 @@
   }
 
   /*
+   * SC 1.4.1 Use of Color, for links in running text.
+   *
+   * The rule above strips the underline from every link, which is right for a
+   * nav item, a card and a button — a box, a border and a position already
+   * distinguish those — and wrong the moment a link sits inside a sentence,
+   * where colour becomes the only signal. Measured: `gold` #FFC000 against
+   * `muted` #D4C5AB, the colour body copy is actually set in, is 1.03:1.
+   * Nothing about that is perceivable to a reader who does not see the hue.
+   *
+   * This could not fail while every page was a stub with no prose in it. It is
+   * one of the defects real content surfaces.
+   *
+   * SCOPED BY `:not([class])`, NOT BY A WRAPPER. The links that need this come
+   * out of the Markdown pipeline and carry no class attribute at all, while
+   * every link in this design that is already a box carries one: .btn-primary
+   * in the 404 list, the footer's social links, the nav CTA, the blog cards.
+   * A bare selector would underline all of those, and `.prose a` alone would
+   * miss a hand-written paragraph in an .astro page. The known cost is that
+   * giving a prose link a class silently drops its underline; `.prose a` is
+   * unconditional so the Markdown case is covered either way.
+   *
+   * .surface-gold underlines every link on that ground for the same reason and
+   * exempts its two button classes explicitly. See @layer components.
+   */
+  .prose a,
+  p a:not([class]),
+  li a:not([class]) {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 2px;
+  }
+
+  /*
    * One focus indicator for the whole site, on :focus-visible so a mouse click
    * never leaves a ring behind. Gold measures 11.32 / 10.60 / 11.76 against
    * background / surface / deep, well past the 3:1 that SC 1.4.11 asks for.
@@ -473,11 +667,40 @@
   }
 
   /*
-   * The 80px header is sticky and will cover anything focused or targeted near
-   * the top of the viewport (SC 2.4.11 Focus Not Obscured).
+   * SC 2.4.11 FOCUS NOT OBSCURED (MINIMUM). The 80px header is sticky, so it
+   * covers whatever the browser scrolls to the top of the viewport.
+   *
+   * THIS USED TO NAME ONLY `:target, [id]`, AND THAT WAS NOT ENOUGH. Almost no
+   * focusable control on this site has an `id` — not a nav link, not a filter
+   * option, not a card heading's link — so `scroll-margin-top` was zero for
+   * nearly everything that can take focus. It covered anchor destinations and
+   * missed the tab order.
+   *
+   * It was invisible in the obvious direction. Tabbing FORWARD, Chromium
+   * scrolls a control up from the bottom edge and it never goes near the
+   * header, so a forward pass over every route reported nothing. Shift-Tabbing
+   * BACK is the direction that fails: the browser scrolls the control to the
+   * top of the viewport, which is exactly where the header is.
+   *
+   * Measured by hit-testing the focused element's four corners and centre
+   * against `document.elementFromPoint`, walking backwards from the footer.
+   * Before this rule, at 1280px and at 305px, controls came back with all five
+   * points painted over by the header — ENTIRELY hidden, which is the AA
+   * failure, not the partial obscuring that 2.4.12 covers at AAA. Among them:
+   * the "All posts" link on a category route, two category cards on the
+   * homepage, and four filter options on the blog routes.
+   *
+   * So the list is every element that can take sequential focus, plus the
+   * anchor destinations it already had. `:where()` keeps the whole selector at
+   * zero specificity, so a component can still set its own scroll-margin
+   * without fighting this.
+   *
+   * tests/focus.spec.ts walks both directions on every route and hit-tests
+   * each stop. Reading the CSS cannot tell you this works; only walking it can.
    */
   :target,
-  [id] {
+  [id],
+  :where(a[href], button, input, select, textarea, summary, [tabindex]) {
     scroll-margin-top: calc(var(--spacing-header) + 1rem);
   }
 }
@@ -504,10 +727,21 @@
    * every line of body copy flush against the screen edge on every phone.
    * Both failures were a per-page decision about a site-wide box.
    *
-   * 16px below `sm`, 24px from `sm` up. The heading floors in @theme are
-   * calibrated against what this leaves: 273px at a real 305px viewport.
-   * Changing this number means redoing that arithmetic and re-running
-   * tests/reflow.spec.ts. It is not a spacing preference.
+   * 16px below `sm`, 24px from `sm` up. ONLY THE FIRST NUMBER IS LOAD-BEARING.
+   * The heading floors in @theme are calibrated against what `px-4` leaves at
+   * the two viewports the reflow suite measures: 273px at a real 305px
+   * viewport and 288px at 320px. Both are far below `sm` (640px), so the `sm`
+   * step is not in that arithmetic at all and is free to be a spacing
+   * preference. `px-4` is not: changing it means redoing the arithmetic and
+   * re-running tests/reflow.spec.ts.
+   *
+   * These were briefly widened to `sm:px-8 lg:px-12` while chasing a complaint
+   * that the page had too little horizontal breathing room. IT WAS THE WRONG
+   * LEVER. The actual cause was three absolutely positioned decorations in the
+   * homepage hero anchored to the VIEWPORT rather than to the content column,
+   * so they hugged the screen edge no matter what the gutter did. They are
+   * anchored to the column now and the gutter is back where it was. Widening
+   * this cannot fix a decoration that ignores it.
    *
    * A full-bleed band inside <main> has to break out of this deliberately
    * (negative inline margins), which is the right way round: the exception
@@ -517,12 +751,164 @@
     @apply px-4 sm:px-6;
   }
 
-  .card {
-    @apply border-8 border-border bg-surface p-card-tight sm:p-card;
+  /*
+   * A FULL-BLEED BAND INSIDE <main>.
+   *
+   * Most sections in the comps carry their own background (`#0E0E0E`
+   * alternating with `#131313`, and `#FFC000` on Career) and run edge to edge,
+   * while their text stays in the same measure as everything else. <main>
+   * carries the one page gutter for the whole site, so a band has to break out
+   * of it with negative inline margins and re-apply it inside itself. The
+   * .page-gutter comment calls this out as the right way round: the exception
+   * is visible in the markup that wants it.
+   *
+   * The four values are duplicated from .page-gutter and have to move with it,
+   * both breakpoints of it: a band that kept `sm:-mx-6` after the gutter moved
+   * would sit inside the page edge on every viewport from 640px up, which is
+   * exactly the kind of miss that reads as a rendering artefact rather than as
+   * a bug. Anything that needs the gutter WITHOUT duplicating it should just
+   * use `.page-gutter` itself, the way the hero's decoration layer does. This
+   * class cannot, because it also needs the matching negative margins.
+   * They are written out rather than composed, because @apply resolves
+   * utilities and .page-gutter is a component class, not a utility.
+   *
+   * This does not change the content box the heading floors are calibrated
+   * against: -mx-4 widens the band into <main>'s own padding, and px-4 puts
+   * the same 273px box back inside it. tests/reflow.spec.ts measures <main>,
+   * so a band that got this wrong would fail on the box width rather than
+   * waiting for a long enough heading.
+   */
+  .band {
+    @apply -mx-4 px-4 sm:-mx-6 sm:px-6;
   }
 
-  .section-divider {
-    @apply border-b-8 border-border;
+  /*
+   * `min-w-0` is not spacing and it is not defensive. It is the fix for a
+   * defect that only appears once a card has a long word in it, which is why
+   * no stub page could show it.
+   *
+   * A grid or flex item defaults to `min-width: auto`, which resolves to its
+   * min-content width, and `overflow-wrap: break-word` — the guarantee the
+   * whole reflow story rests on — does NOT reduce min-content. It permits a
+   * break during layout and changes no intrinsic size. So a card containing
+   * the word PROFESSIONAL grows its own grid track past the container instead
+   * of breaking inside it, and the page scrolls sideways at 320px.
+   *
+   * Measured on the homepage category grid at a 305px viewport with the SC
+   * 1.4.12 text-spacing override applied, which is what pushes PROFESSIONAL
+   * from 202.6px to 255.6px: the single `auto` track computed to 316.45px in a
+   * 273px container, the card overflowed the page by 27px, and every one of
+   * the heading floors was being measured against a box that had quietly
+   * stopped being 273px. `min-w-0` puts the track back to 273 and lets
+   * break-word do the job it is there for.
+   *
+   * It lives on `.card` because the card is the recurring grid item on this
+   * site. It is inert anywhere else: a block element's min-width is already 0.
+   */
+  .card {
+    @apply min-w-0 border-8 border-border bg-surface p-card-tight sm:p-card;
+  }
+
+  /*
+   * THE SECTION RULE. A short bar at the head of a section, in place of the
+   * full-bleed 8px `border-b-8 border-border` line that used to be drawn
+   * between every one.
+   *
+   * The line had two problems. It ran the full width of the viewport while
+   * everything it separated was in a capped, centred column, so it read as a
+   * frame around the page rather than as punctuation in it. And it was doing
+   * ALL the separating: the two grounds either side measured 1.039:1, which is
+   * no step at all.
+   *
+   * This is deliberately not a divider. It sits at the top of a section rather
+   * than between two, it is 96px rather than the full width, and it rotates
+   * through gold, cyan and pink so it reads as a chapter mark. `pink` #FF007A
+   * is the right pink here and `pink-text` is not: this is a non-text element,
+   * which is exactly the split those two tokens exist for.
+   *
+   * It must sit inside a column-width box to line up with the text below it.
+   * A band is full-bleed, so a rule placed directly in one aligns to the
+   * viewport instead. Every use is wrapped for that reason, including in the
+   * sections whose column is a grid or a flex row, where a bare first child
+   * would become a track or an item instead of a rule.
+   *
+   * It replaced `.section-divider`, which was `border-b-8 border-border` and
+   * had no users at all — the sections wrote those two utilities inline rather
+   * than using the class, so the class was dead while the pattern was
+   * everywhere.
+   */
+  .section-rule {
+    @apply mb-12 block h-2 w-24;
+  }
+
+  /*
+   * A pill. `rounded-full` is the third and last radius on this site, and the
+   * only one that is not `rounded-nav`; see the radius rule in the design
+   * system skill. It is permitted here because a pill and a circle are shapes
+   * in their own right rather than a softened box, which is the thing the
+   * zero-radius rule exists to prevent.
+   *
+   * Not interactive, so SC 2.5.8 does not apply. It is a label in a frame.
+   */
+  .pill {
+    @apply inline-flex items-center rounded-full border-4 border-border
+      bg-surface px-5 py-1.5;
+  }
+
+  /*
+   * RENDERED MARKDOWN.
+   *
+   * Tailwind's preflight removes list markers, list indentation and every
+   * heading and paragraph margin, and this project has no typography plugin.
+   * A post body without these rules renders as one undifferentiated column of
+   * text whose lists are lists only in the accessibility tree — visually
+   * indistinguishable from the paragraphs around them, which is exactly the
+   * kind of failure a page with no prose on it cannot surface.
+   *
+   * Headings keep the site's uppercase treatment from @layer base, so a long
+   * word in a post heading is subject to the same reflow arithmetic as a page
+   * heading and the same soft-hyphen rule. tests/reflow.spec.ts walks h1, h2
+   * and h3 on every route, post routes included.
+   */
+  .prose > :first-child {
+    @apply mt-0;
+  }
+
+  .prose h2 {
+    @apply mt-16 text-h2 text-text;
+  }
+
+  .prose h3 {
+    @apply mt-12 text-h3 text-text;
+  }
+
+  .prose p {
+    @apply mt-6 text-body text-muted;
+  }
+
+  .prose :is(ul, ol) {
+    @apply mt-6 pl-6 text-muted;
+  }
+
+  .prose ul {
+    @apply list-disc;
+  }
+
+  .prose ol {
+    @apply list-decimal;
+  }
+
+  .prose li {
+    @apply mt-3;
+  }
+
+  /* The marker is the only thing separating a list item from a paragraph. */
+  .prose li::marker {
+    color: var(--color-gold);
+  }
+
+  .prose strong {
+    @apply font-black text-text;
   }
 
   /*
@@ -722,7 +1108,7 @@
    * Not `sr-only` and not `display: none`: both stay hidden on focus.
    */
   .skip-link {
-    @apply absolute left-4 top-4 z-[60] border-4 border-border bg-gold px-6 py-4
+    @apply absolute left-4 top-4 z-60 border-4 border-border bg-gold px-6 py-4
       text-label font-black uppercase tracking-label text-background;
 
     transform: translateY(calc(-100% - 1.5rem));
@@ -732,12 +1118,129 @@
   .skip-link:focus-visible {
     transform: translateY(0);
   }
+
+  /*
+   * THE SPINNING BADGE. Two instances: the homepage hero at 24s and the
+   * Contact page at 28s, both from the comps, both linear and infinite.
+   *
+   * The animation is applied by src/components/ui/SpinBadge.vue AFTER the
+   * island mounts, and never by the server-rendered HTML. That is not a
+   * performance choice, it is what makes the SC 2.2.2 claim true: the pause
+   * control is JavaScript, so if the island never hydrates there must be no
+   * motion for it to have failed to stop. No JS, no spin, nothing to pause.
+   *
+   * The component also refuses to animate at all when
+   * `prefers-reduced-motion: reduce` matches, so the reduced-motion block at
+   * the end of this file is a backstop here rather than the mechanism, and no
+   * pause button is rendered into a page that has nothing moving on it. A
+   * hidden-but-focusable control would be worse than no control.
+   *
+   * The durations live here rather than in @theme because they are two
+   * instances of one effect, not a value the design reuses — the same reason
+   * .mobile-menu-dialog keeps its sizing in the component.
+   */
+  .spin-badge {
+    animation: slowspin var(--spin-duration, 24s) linear infinite;
+  }
+
+  .spin-badge[data-paused='true'] {
+    animation-play-state: paused;
+  }
+
+  .spin-pace-hero {
+    --spin-duration: 24s;
+  }
+
+  .spin-pace-contact {
+    --spin-duration: 28s;
+  }
+
+  /*
+   * The pause control. Square, 4px border, gold on `surface`, in the badge's
+   * lower-right corner, per the comps.
+   *
+   * 38x38 CSS px, so it passes SC 2.5.8 on its own size with 14px to spare and
+   * does not lean on the spacing exception, which nothing on this site does.
+   *
+   * `bg-surface` rather than the comps' #131313. The control sits on the page
+   * background, which is #131313, so an opaque fill of that colour would leave
+   * the 4px border as the only thing delimiting it. The border does clear SC
+   * 1.4.11 on its own (`border` is 4.84 on #131313), but this project already
+   * decided, in tests/gold-surface.spec.ts, that a control whose opaque fill
+   * matches the ground behind it is a defect rather than a style. `surface`
+   * #1A1A1A gives the control a fill AND a border, and it is the token whose
+   * job is exactly this: a box on the page.
+   */
+  .motion-toggle {
+    @apply absolute -bottom-3 -right-3 grid h-10 w-10 place-items-center
+      border-4 border-border bg-surface text-gold;
+  }
+
+  .motion-toggle:hover {
+    @apply bg-gold text-background;
+  }
+
+  /*
+   * THE CAREER HERO WATERMARK, placed exactly as design/Career.dc.html has it:
+   * 700px wide, opacity 0.09, right: -150px, top: 20px, pointer-events: none.
+   *
+   * Authored CSS rather than utilities because none of those four numbers is a
+   * design value the site reuses; they are one placement of one asset, and
+   * `w-[700px] -right-[150px]` would be four arbitrary values in the markup,
+   * which this project does not allow. Same reason .mobile-menu-dialog keeps
+   * its sizing in the component.
+   *
+   * `badge-dark.png` is #111111 artwork, which measures 11.50 on gold and 1.02
+   * on the page background: the gold hero is the only ground on this site a
+   * -dark asset can sit on at all. The suffix names the artwork colour, not
+   * the target surface. See the asset table in AI.md.
+   *
+   * AT 0.09 THIS IS A TEXTURE, NOT AN IMAGE. It takes alt="" and it must never
+   * become the only carrier of anything. The section that holds it is
+   * overflow-hidden, which is what keeps the -150px from scrolling the page
+   * sideways at 320px.
+   */
+  .career-watermark {
+    position: absolute;
+    top: 20px;
+    right: -150px;
+    width: 700px;
+    max-width: none;
+    height: auto;
+    opacity: 0.09;
+    pointer-events: none;
+  }
+}
+
+/*
+ * Top level rather than inside a layer, so nothing about cascade layers can
+ * affect whether the browser sees the keyframes at all.
+ */
+@keyframes slowspin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ---------------------------------------------------------------------------
    Reduced motion. Anything animated must honour this; see the design system
-   skill. Note that SC 2.2.2 also requires a real pause control for anything
-   that auto-starts and runs past five seconds, which this does not provide.
+   skill.
+
+   NECESSARY, NOT SUFFICIENT, AND NO LONGER THE ONLY THING HERE. SC 2.2.2 Pause,
+   Stop, Hide asks for a control the user can operate, not an OS setting: a
+   reader who has not set this preference, or who is distracted by the motion in
+   the moment, gets nothing from a media query. The one animation on this site
+   is the spinning badge, and SpinBadge.vue carries a real, keyboard-operable
+   pause button for it. This block stays as the backstop for anything animated
+   that is not that badge.
+
+   The badge does not rely on it in either direction: the component reads
+   `prefers-reduced-motion` itself and never starts, so a reader with the
+   preference set sees a still badge and no pause control rather than an
+   animation neutralised to 0.01ms with a dead button beside it.
 --------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {

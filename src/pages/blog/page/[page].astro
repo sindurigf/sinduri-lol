@@ -1,0 +1,96 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BlogListing from '../../../components/BlogListing.astro';
+import {
+  getSortedPosts,
+  pageCount,
+  postsOnPage,
+  type BlogPost,
+} from '../../../lib/blog';
+
+/*
+ * Pages 2 and up of the blog index. Page 1 is /blog, which is
+ * src/pages/blog/index.astro; this file starts at 2 and emits nothing when
+ * there is only one page of posts.
+ *
+ * WHY THE EXTRA `page` SEGMENT rather than a flat `/blog/2`. The one segment
+ * after `/blog` is already spoken for twice: `/blog/[category]` and
+ * `/blog/[slug]`. Adding a third dynamic route to it would mean a category
+ * slug or a post slug that happened to be numeric silently collided with a
+ * page number, and nothing would say so — the build would simply write one
+ * file over the other. `/blog/page/<n>` cannot collide with either, at the
+ * cost of one segment.
+ *
+ * The listing itself is a component rather than duplicated markup, so the
+ * filter, the cards and the pager on page 2 cannot drift from page 1.
+ */
+
+interface Props {
+  posts: BlogPost[];
+  page: number;
+  totalPages: number;
+}
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  /*
+   * Declared inside the function, not at the top of the frontmatter. Astro
+   * hoists getStaticPaths and evaluates it before the rest of the frontmatter
+   * runs, so a module-scope const here is not defined yet and the build fails
+   * with "X is not defined" at route-generation time rather than at compile
+   * time. Page 1 is /blog, so this route starts at 2.
+   */
+  const FIRST_PAGED_ROUTE = 2;
+
+  const posts = await getSortedPosts();
+  const totalPages = pageCount(posts.length);
+
+  // Empty when there is only one page of posts, which is the right answer:
+  // this route then emits nothing at all rather than a bare /blog/page/1.
+  return Array.from(
+    { length: Math.max(0, totalPages - FIRST_PAGED_ROUTE + 1) },
+    (_, index) => {
+      const page = index + FIRST_PAGED_ROUTE;
+      return {
+        params: { page: String(page) },
+        props: { posts: postsOnPage(posts, page), page, totalPages },
+      };
+    },
+  );
+};
+
+const { posts, page, totalPages } = Astro.props as Props;
+---
+
+<BaseLayout
+  title={`Blog, page ${page} | sinduri.lol`}
+  description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+>
+  <div class="mx-auto max-w-page py-28">
+    <!--
+      Target size: see the note in [category]/index.astro. `-my-2` pulls the
+      layout box back to what the bare label occupied, so the padding grows the
+      hit area about the same centre line and the <h1> below does not move.
+    -->
+    <p class="label text-subtle">
+      <a href="/blog" class="-my-2 inline-block py-2 text-gold">All posts</a>
+    </p>
+
+    <!--
+      The page number belongs in the <h1>. It is the one thing that
+      distinguishes this page from /blog, and a reader who lands here from a
+      search result or a bookmark has nothing else to tell them which slice of
+      the archive they are looking at.
+    -->
+    <h1 class="mt-6 text-h1 text-text">Lorem ipsum, page {page}</h1>
+
+    <div class="mt-12">
+      <BlogListing
+        posts={posts}
+        activeCategory={null}
+        currentPage={page}
+        totalPages={totalPages}
+      />
+    </div>
+  </div>
+</BaseLayout>

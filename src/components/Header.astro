@@ -24,12 +24,16 @@ const isActive = (href: string): boolean =>
   href === '/' ? currentPath === '/' : currentPath.startsWith(href);
 ---
 
+<!--
+  The gutter goes on <header>, not on the column inside it, so this element
+  matches <main> and the footer. It used to be the other way round, which put
+  the header's content one gutter inside theirs on any viewport wider than the
+  column. See the --container-page comment in global.css.
+-->
 <header
-  class="sticky top-0 z-50 h-header border-b-8 border-border bg-header-bg backdrop-blur-[10px]"
+  class="page-gutter sticky top-0 z-50 h-header border-b-8 border-border bg-header-bg backdrop-blur-header"
 >
-  <div
-    class="page-gutter mx-auto flex h-full max-w-7xl items-center justify-between"
-  >
+  <div class="mx-auto flex h-full max-w-page items-center justify-between">
     <!--
       No aria-label on this link. It would override both the image's alt and the
       visible wordmark, hiding the mark from assistive tech and breaking voice
@@ -56,26 +60,39 @@ const isActive = (href: string): boolean =>
       15.6px line box, well under the 24px SC 2.5.8 asks for. 8px top and
       bottom takes each link to 31.6px, so the links pass on their own size
       instead of leaning on the spacing exception the 40px gap used to
-      provide. The ul is items-center, so the padding grows the hit area
-      symmetrically about the same centre line and moves no glyph.
+      provide. The border-4 adds 8px more, to 39.6px. The ul is items-center,
+      so the padding grows the hit area symmetrically about the same centre
+      line and moves no glyph.
+
+      THE ACTIVE LINK IS A BOX, AND EVERY LINK CARRIES ITS GEOMETRY. The
+      border and padding are on all four links; only the border colour and the
+      shadow change when a link is current. That is what stops the nav
+      reflowing as you move between pages: an indicator applied to the active
+      link alone would make each item wider on its own page and shuffle the
+      row every time. `border-transparent` is holding space, not decorating.
+
+      It replaces an 8x8 gold dot below the label. The dot was also
+      aria-hidden, so this is a visual change only: `aria-current="page"` is
+      what carries the state to assistive tech, then and now. Both are shape
+      cues rather than colour alone, which is what SC 1.4.1 asks for; a rule
+      that only recoloured the active label would not be.
     -->
     <nav class="hidden md:block" aria-label="Primary">
-      <ul class="flex items-center gap-10">
+      <ul class="flex items-center gap-3">
         {
           NAV_LINKS.map((link) => (
             <li>
               <a
                 href={link.href}
                 aria-current={isActive(link.href) ? 'page' : undefined}
-                class="label block py-2 text-muted hover:text-cyan"
+                class:list={[
+                  'label block border-4 px-4 py-2',
+                  isActive(link.href)
+                    ? 'border-border text-text shadow-hard-gold-4'
+                    : 'border-transparent text-muted hover:text-cyan',
+                ]}
               >
                 {link.label}
-                {isActive(link.href) ? (
-                  <span
-                    aria-hidden="true"
-                    class="mx-auto mt-2 block h-2 w-2 bg-gold"
-                  />
-                ) : null}
               </a>
             </li>
           ))

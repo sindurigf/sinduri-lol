@@ -1,4 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
+import { AAA_TEXT, AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { ROUTES } from './routes';
 
 /**
@@ -15,39 +17,46 @@ import { ROUTES } from './routes';
  * WHAT THIS FILE IS FOR. The rule "do not use a dark-surface token on a gold
  * background" is not something the cascade can enforce, because an explicit
  * utility always beats a subtree default. So it is enforced by measurement,
- * from the rendered DOM, in five tests:
+ * from the rendered DOM:
  *
  *   1. The documented ratios still hold. Reads the live CSS variables and
  *      re-measures each against gold. This fails if any token is retoned, in
  *      either direction, and it is what keeps the tables in AI.md,
  *      ACCESSIBILITY.md and the skill from going quietly out of date.
- *   2. Nothing on a real gold background is unreadable. Walks every built
- *      route, resolves each element's *effective* background through
- *      transparent ancestors, and checks the text colour of anything sitting
- *      on #FFC000.
- *   3. `.surface-gold` supplies the inverted set. A fixture mounted into a
- *      real built page, because no page uses the class yet.
- *   4. Every control in a gold section is delimited against the ground —
- *      by its opaque fill, or, when the fill is transparent, by its border.
- *      Also a fixture, and see `invisibleControls` for why it is two arms.
+ *   2. Nothing on a gold background is unreadable, on every built route.
+ *      Resolves each element's *effective* background through transparent
+ *      ancestors and checks the text colour of anything sitting on #FFC000.
+ *   3. `.surface-gold` supplies the inverted set, on a mounted fixture.
+ *   4. Every control in a gold section is delimited against the ground — by
+ *      its opaque fill, or, when the fill is transparent, by its border. Also
+ *      a fixture; see `invisibleControls` for why it is two arms.
  *   5. `.btn-gold-primary` keeps a visible focus ring whatever the offset
  *      does. Its ring colour is its own fill colour, so the ring is two rings.
+ *   6. THE REAL ROUTE. `/career` renders the only `.surface-gold` section on
+ *      the site, and it is measured at 305px and 320px: both buttons' focus
+ *      indicators in situ, their target sizes, every string on the gold
+ *      ground, the content box, and whether the watermark scrolls the page.
  *
- * ON TEST 3 BEING A FIXTURE. It is a weaker test than one driven by real
- * markup and it is deliberate: the class has to be right *before* the Career
- * page is written against it, which is the whole reason this session exists.
- * Delete the fixture and point this at the real section once that page ships.
+ * ON 3, 4 AND 5 STILL BEING FIXTURES NOW THAT 6 EXISTS. They are kept rather
+ * than replaced, and the pair is deliberate. A fixture can be broken on
+ * purpose to prove an assertion still bites without editing a shipped route,
+ * and it keeps the class honest for the next page written against it — which
+ * is the situation this file was originally written for. Only test 6 can fail
+ * on a mistake made in career.astro: a `text-muted` written inside the
+ * section, `.btn-primary` reached for out of habit, the watermark taken out of
+ * its clip. Neither covers the other.
  *
- * Test 2 is not vacuous today even though no gold section exists: `.skip-link`,
+ * Test 2 was never vacuous even before a gold section existed: `.skip-link`,
  * `.btn-primary` on /404, the header logo tile and the 404 mark tile are all
- * gold grounds with a foreground on them, and they are what it walks now.
- * Measured: `/` finds one element (`.skip-link`, 11.32:1) and `/404` finds two
- * (`.skip-link` and `.btn-primary`, both 11.32:1).
+ * gold grounds with a foreground on them. Its companion — the invisible-control
+ * walk it carries — WAS vacuous on every route, because it short-circuits when
+ * a page has no gold section, so every route in `GOLD_ROUTES` is now asserted
+ * to have one with the expected number of controls in it.
  *
  * VERIFIED NOT TO BE VACUOUS. Each assertion was broken on purpose and the
  * failure checked:
  *
- *   change `.skip-link` to `text-muted`      test 2 fails on all 12 routes,
+ *   change `.skip-link` to `text-muted`      test 2 fails on every route,
  *                                            reporting 1.03:1
  *   delete the `.surface-gold a` rule        test 3 fails at 1.00:1
  *   delete only its `text-decoration`        test 3 fails on the underline
@@ -106,15 +115,16 @@ import { ROUTES } from './routes';
  * The second result is what "the offset assertion is now redundant rather
  * than load-bearing" means, measured rather than asserted in prose.
  *
- * With the files as committed, all 18 pass.
+ * TWO WAYS TEST 6 CAN LIE, BOTH FOUND WHILE WRITING IT AND BOTH GUARDED IN THE
+ * CODE. `getComputedStyle` returns a LIVE declaration, so a value read after
+ * the element is blurred is the resting value: the first version reported
+ * `outline-offset: 0` on a button whose offset is 3px. And
+ * `document.activeElement === el` evaluated in the returned object literal is
+ * evaluated after the blur, which reported that a focused button had not taken
+ * focus. Both are read into plain numbers while the element still has focus.
  */
 
 const GOLD = '#FFC000';
-
-/** WCAG thresholds. Body text, and non-text boundaries under SC 1.4.11. */
-const AA_TEXT = 4.5;
-const AAA_TEXT = 7;
-const NON_TEXT = 3;
 
 /**
  * The measured table, as it appears in the docs. Keyed by CSS custom property.
@@ -144,271 +154,6 @@ const RATIOS: ReadonlyArray<{
 ];
 
 /**
- * Everything below runs in the page, so the contrast maths is installed there
- * rather than marshalled back and forth. Colours come out of
- * `getComputedStyle` as `rgb()` / `rgba()`, which is why this parses that
- * rather than hex.
- */
-const PAGE_HELPERS = `
-  const parse = (value) => {
-    const m = String(value).match(/rgba?\\(([^)]+)\\)/);
-    if (!m) return null;
-    const parts = m[1].split(/[,\\s/]+/).filter(Boolean).map(Number);
-    if (parts.length < 3 || parts.some(Number.isNaN)) return null;
-    return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 };
-  };
-
-  const fromHex = (hex) => {
-    const h = hex.trim().replace('#', '');
-    return {
-      r: parseInt(h.slice(0, 2), 16),
-      g: parseInt(h.slice(2, 4), 16),
-      b: parseInt(h.slice(4, 6), 16),
-      a: 1,
-    };
-  };
-
-  const channel = (c) => {
-    const s = c / 255;
-    return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-  };
-
-  const luminance = (c) =>
-    0.2126 * channel(c.r) + 0.7152 * channel(c.g) + 0.0722 * channel(c.b);
-
-  const ratio = (a, b) => {
-    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-    return (hi + 0.05) / (lo + 0.05);
-  };
-
-  /*
-   * Source-over composite of a partly transparent colour onto an opaque one.
-   * A border painted at alpha 0.4 is not the colour it declares; what a reader
-   * sees is that colour mixed with whatever is behind it, and that mix is what
-   * SC 1.4.11 measures. Alpha 1 is the identity case, alpha 0 collapses to the
-   * ground, which is the right answer for a border that declares a width and
-   * paints nothing.
-   */
-  const over = (fg, bg) => ({
-    r: fg.r * fg.a + bg.r * (1 - fg.a),
-    g: fg.g * fg.a + bg.g * (1 - fg.a),
-    b: fg.b * fg.a + bg.b * (1 - fg.a),
-    a: 1,
-  });
-
-  /*
-   * The effective background of an element: its own, or the nearest ancestor
-   * with a non-transparent one. Returns null rather than guessing when an
-   * image or gradient is in the way, or when a partly transparent layer would
-   * make the answer a composite rather than a colour.
-   */
-  const effectiveBackground = (element) => {
-    for (let node = element; node instanceof Element; node = node.parentElement) {
-      const style = getComputedStyle(node);
-      if (style.backgroundImage !== 'none') return null;
-      const colour = parse(style.backgroundColor);
-      if (!colour) return null;
-      if (colour.a === 0) continue;
-      if (colour.a < 1) return null;
-      return colour;
-    }
-    return null;
-  };
-
-  const isGold = (colour) =>
-    colour !== null && colour.r === 255 && colour.g === 192 && colour.b === 0;
-
-  /*
-   * Split a computed box-shadow into its layers. Not a plain split on ",":
-   * every layer starts with an rgb() or rgba() colour, which contains commas
-   * of its own, so this tracks parenthesis depth. Chromium computes a layer as
-   * "rgb(255, 255, 255) 0px 0px 0px 3px inset".
-   */
-  const shadowLayers = (value) => {
-    if (value === 'none') return [];
-    const parts = [];
-    let depth = 0;
-    let current = '';
-    for (const character of String(value)) {
-      if (character === '(') depth += 1;
-      if (character === ')') depth -= 1;
-      if (character === ',' && depth === 0) {
-        parts.push(current);
-        current = '';
-        continue;
-      }
-      current += character;
-    }
-    parts.push(current);
-    return parts
-      .map((part) => part.trim())
-      .filter((part) => part !== '')
-      .map((part) => ({
-        text: part,
-        colour: parse(part),
-        inset: part.includes('inset'),
-      }));
-  };
-
-  /*
-   * Every layer of an element's focus indicator, measured against ONE colour:
-   * the fill of the control it is marking. That is the measurement the offset
-   * was hiding. An inset ring sits inside the padding box, so the fill is
-   * literally what it abuts. The outline sits outside the border box, so with
-   * a non-zero offset it abuts the ground instead and this number understates
-   * it — which is the point, because the question being asked is what survives
-   * when the offset is taken away.
-   */
-  const focusRingsAgainstFill = (element, fill) => {
-    const style = getComputedStyle(element);
-    const out = [];
-
-    const outline = parse(style.outlineColor);
-    if (
-      outline !== null &&
-      style.outlineStyle !== 'none' &&
-      parseFloat(style.outlineWidth) > 0
-    ) {
-      out.push({
-        layer: 'outline ' + style.outlineColor,
-        ratio: Number(ratio(over(outline, fill), fill).toFixed(2)),
-      });
-    }
-
-    for (const layer of shadowLayers(style.boxShadow)) {
-      if (!layer.inset || layer.colour === null) continue;
-      out.push({
-        layer: 'inset ring ' + layer.text,
-        ratio: Number(ratio(over(layer.colour, fill), fill).toFixed(2)),
-      });
-    }
-
-    return out;
-  };
-
-  const describe = (element) => {
-    const id = element.id ? '#' + element.id : '';
-    const cls = element.className && typeof element.className === 'string'
-      ? '.' + element.className.trim().split(/\\s+/).join('.')
-      : '';
-    return element.tagName.toLowerCase() + id + cls;
-  };
-
-  const hasOwnText = (element) =>
-    [...element.childNodes].some(
-      (n) => n.nodeType === Node.TEXT_NODE && (n.textContent ?? '').trim() !== '',
-    );
-
-  /*
-   * Controls inside a gold section that are invisible AS A SHAPE against the
-   * ground behind them. Their labels may contrast perfectly, and every
-   * automated contrast rule will pass them: a contrast rule measures a
-   * foreground against its own background and never asks whether that
-   * background is distinguishable from the surface the control sits on.
-   *
-   * A control is delimited by one of two things, so this checks one of two
-   * things, chosen by the fill's alpha:
-   *
-   *   OPAQUE FILL (alpha 1). The fill is the boundary. .btn-primary on gold is
-   *   this case: an opaque #FFC000 fill on a #FFC000 ground, 1.00:1, a button
-   *   with no edge at all. Compared at 1.05 rather than at 3:1 deliberately —
-   *   this arm is a same-colour detector, not a conformance check. A filled
-   *   control can legitimately sit close to its ground and still be delimited
-   *   by its border, and that border is measured by the arm below.
-   *
-   *   TRANSPARENT OR PARTLY TRANSPARENT FILL (alpha < 1). The ground shows
-   *   through, so the BORDER is the only thing that delimits the control, and
-   *   a border matching the ground makes it exactly as invisible as the fill
-   *   case. .btn-gold-secondary is this case: background-color: transparent
-   *   with a 4px #131313 border, 11.32 on gold. The border is a non-text
-   *   boundary, so the threshold here is the 3:1 of SC 1.4.11 rather than the
-   *   same-colour proxy above.
-   *
-   * ALL FOUR EDGES ARE TESTED, not just the narrowest. Width and colour are
-   * set independently in CSS — this codebase writes both border-4 and
-   * border-b-8 with different tokens — so the narrowest edge is a proxy for
-   * nothing: it can be the one edge that passes while a wider one fails. Each
-   * edge is an independent segment of the control's outline, and a control
-   * whose left and right edges vanish into the ground reads as two horizontal
-   * rules rather than as a button. The cost of being thorough is three extra
-   * ratio computations on a handful of elements.
-   *
-   * WHAT THIS DELIBERATELY DOES NOT FLAG: a control with no declared border at
-   * all. Every link in prose inside a gold section is a transparent fill with
-   * no border, and it is not border-delimited — it is delimited by its colour
-   * and its underline, which .surface-gold supplies and the text walk in this
-   * file already measures. Flagging those would make this check fire on every
-   * paragraph link on the surface and it would be wrong about all of them.
-   */
-  const BORDER_EDGES = ['top', 'right', 'bottom', 'left'];
-
-  const invisibleControls = (root) => {
-    const out = [];
-    const rgb = (c) =>
-      'rgb(' + Math.round(c.r) + ', ' + Math.round(c.g) + ', ' + Math.round(c.b) + ')';
-
-    for (const element of root.querySelectorAll('a, button, [role="button"]')) {
-      const style = getComputedStyle(element);
-      const fill = parse(style.backgroundColor);
-      if (fill === null) continue;
-
-      const behind = effectiveBackground(element.parentElement);
-      if (behind === null) continue;
-
-      const ground = rgb(behind);
-      const label = (element.textContent ?? '').trim().slice(0, 40);
-
-      if (fill.a === 1) {
-        if (ratio(fill, behind) < 1.05) {
-          out.push({
-            selector: describe(element),
-            detail: 'fill ' + style.backgroundColor + ' on ' + ground,
-            label,
-          });
-        }
-        continue;
-      }
-
-      /*
-       * Group the failing edges by the colour they resolve to, so a uniform
-       * four-sided border reports one line naming all four rather than four
-       * identical ones.
-       */
-      const failing = new Map();
-
-      for (const edge of BORDER_EDGES) {
-        const cap = edge[0].toUpperCase() + edge.slice(1);
-        if (['none', 'hidden'].includes(style['border' + cap + 'Style'])) continue;
-        if (parseFloat(style['border' + cap + 'Width']) <= 0) continue;
-
-        const declared = parse(style['border' + cap + 'Color']);
-        if (declared === null) continue;
-
-        const painted = over(declared, behind);
-        const measured = ratio(painted, behind);
-        if (measured >= ${NON_TEXT}) continue;
-
-        const key = rgb(painted) + '|' + measured.toFixed(2);
-        if (!failing.has(key)) failing.set(key, { painted, measured, edges: [] });
-        failing.get(key).edges.push(edge);
-      }
-
-      for (const entry of failing.values()) {
-        out.push({
-          selector: describe(element),
-          detail:
-            'border-' + entry.edges.join('/') + ' ' + rgb(entry.painted) +
-            ' on ' + ground + ' at ' + entry.measured.toFixed(2) + ':1, needs ' +
-            ${NON_TEXT},
-          label,
-        });
-      }
-    }
-    return out;
-  };
-`;
-
-/**
  * One control that is invisible as a shape against the ground behind it,
  * whether because its opaque fill matches that ground or because the border
  * that is its only boundary does.
@@ -423,6 +168,63 @@ const invisibleControlMessage = (found: InvisibleControl[]) =>
   `its only boundary is under ${NON_TEXT}:1 against the ground (SC 1.4.11) — ` +
   `which is .btn-gold-secondary's failure mode, and just as invisible:\n` +
   found.map((e) => `  ${e.selector} — ${e.detail} — "${e.label}"`).join('\n');
+
+/**
+ * The route that renders a real `.surface-gold` section, and how many controls
+ * it puts on that ground.
+ *
+ * Both halves are asserted. The route-level invisible-control check below
+ * short-circuits to an empty list when a page has no gold section, which was
+ * correct while none existed and is a trap now that one does: if the Career
+ * hero lost the class, or the two buttons were swapped for something else,
+ * every route would keep returning `[]` and the check would go quietly
+ * vacuous rather than fail. This is the guard against that.
+ */
+/**
+ * The routes that render a `.surface-gold` section, and how many controls each
+ * puts on the gold ground.
+ *
+ * A map rather than the single `GOLD_ROUTE` this used to be. /career was the
+ * only such route for as long as only one page used the class; /contact now
+ * ends with a gold band too, and a constant naming one route would have gone
+ * quietly out of date while every assertion kept passing — the non-vacuity
+ * guard below only fires on routes named here, so an unnamed gold route is
+ * simply not guarded.
+ *
+ * `goldRoutesFromBuild` checks these keys against the built HTML, so adding a
+ * gold section without adding it here fails rather than going unwatched.
+ */
+const GOLD_ROUTES: Record<string, number> = {
+  '/career': 2,
+  '/contact': 1,
+};
+
+/** The route the reflow checks at the bottom of this file use. */
+const GOLD_ROUTE = '/career';
+
+/**
+ * Routes whose built HTML contains a `.surface-gold` section.
+ *
+ * Derived from `dist/` rather than trusted from the literal above, which is
+ * the same guard `islandRoutesFromBuild` in tests/routes.ts applies to island
+ * routes and for the same reason: a literal listing a subset of routes keeps
+ * passing when a new one appears, and the new one has no coverage at all.
+ */
+const goldRoutesFromBuild = (): string[] =>
+  ROUTES.filter((route) => {
+    const file =
+      route === '/'
+        ? 'dist/index.html'
+        : route === '/404'
+          ? 'dist/404.html'
+          : `dist${route}/index.html`;
+
+    try {
+      return /class="[^"]*\bsurface-gold\b/.test(readFileSync(file, 'utf8'));
+    } catch {
+      return false;
+    }
+  });
 
 /** Every element whose own text sits directly on a gold background. */
 const textOnGold = (page: Page) =>
@@ -447,7 +249,200 @@ const textOnGold = (page: Page) =>
     { selector: string; colour: string; ratio: number; text: string }[]
   >;
 
+/**
+ * THE PROSE COPIES OF THE TABLE ABOVE, AND WHY THEY ARE CHECKED HERE.
+ *
+ * The same token/hex/ratio table is written out in three Markdown files. Three
+ * copies is three chances to retone a colour in the CSS and update two of them,
+ * and nothing about the third going stale is visible: it is a number in a
+ * sentence that still reads correctly. The failure this repo has already had
+ * once, in a different form, is a documented fact that no longer described the
+ * code.
+ *
+ * There is exactly one enforced source of truth and it is not this file's
+ * RATIOS array — it is the live CSS custom properties, which RATIOS is itself
+ * measured against by the test below. So the Markdown is checked the same way:
+ * read the variable out of the running page, measure it against #FFC000, and
+ * require every documented row to agree on both the hex and the ratio.
+ *
+ * Every table keyed "on `#FFC000`" is covered, not only the gold inverted set:
+ * the dark-set tables in ACCESSIBILITY.md and the design system skill quote
+ * the failing ratios that are the whole justification for the exception, and
+ * they are duplicated across two files just as readily.
+ *
+ * `pinkText` in ACCESSIBILITY.md is camelCase where the CSS variable is
+ * `--color-pink-text`; the token name is normalised rather than the document
+ * being made to match, because both spellings appear in the comps.
+ */
+const GOLD_TABLE_DOCS = [
+  'AI.md',
+  'ACCESSIBILITY.md',
+  '.claude/skills/sinduri-design-system/SKILL.md',
+] as const;
+
+interface DocumentedRatio {
+  doc: string;
+  line: number;
+  token: string;
+  variable: string;
+  hex: string;
+  ratio: number;
+}
+
+/**
+ * `#fff` and `#FFFFFF` are the same colour, and which one comes back is not a
+ * fact about this project: the browser returns a custom property in whatever
+ * form the CSS pipeline left it in, and Tailwind shortens where it can. Compare
+ * the colours, not the spellings.
+ */
+const normaliseHex = (value: string): string => {
+  const hex = value.trim().toLowerCase();
+  const short = hex.match(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/);
+  return short === null
+    ? hex
+    : `#${short[1]}${short[1]}${short[2]}${short[2]}${short[3]}${short[3]}`;
+};
+
+/**
+ * Rows of the shape `| \`token\` | \`#hex\` | 1.23 | …` inside a table whose
+ * header names `#FFC000` as the ground.
+ *
+ * Scoped to those tables rather than to every row in the file, so the artwork
+ * table in AI.md — which measures one colour against four grounds and puts two
+ * values in its first cell — is not misread as a token row.
+ */
+const documentedRatios = (doc: string): DocumentedRatio[] => {
+  const lines = readFileSync(doc, 'utf8').split('\n');
+  const out: DocumentedRatio[] = [];
+
+  let inTable = false;
+
+  for (const [index, line] of lines.entries()) {
+    if (!line.startsWith('|')) {
+      inTable = false;
+      continue;
+    }
+
+    if (line.includes('on `#FFC000`')) {
+      inTable = true;
+      continue;
+    }
+
+    if (!inTable) continue;
+
+    const row = line.match(
+      /^\|\s*`([A-Za-z-]+)`\s*\|\s*`(#[0-9a-fA-F]{6})`\s*\|\s*([0-9]+\.[0-9]+)\s*\|/,
+    );
+    if (row === null) continue;
+
+    const token = (row[1] as string).replace(
+      /[A-Z]/g,
+      (c) => `-${c.toLowerCase()}`,
+    );
+
+    out.push({
+      doc,
+      line: index + 1,
+      token,
+      variable: `--color-${token}`,
+      hex: normaliseHex(row[2] as string),
+      ratio: Number(row[3]),
+    });
+  }
+
+  return out;
+};
+
 test.describe('the gold surface exception', () => {
+  /**
+   * The Markdown copies, measured against the same live CSS the RATIOS table
+   * below is measured against. Verified not to be vacuous: changing
+   * `gold-muted` to `#3A3021` in AI.md alone fails this test naming that file
+   * and line, and the parser's own floor fails if the tables stop being found.
+   */
+  test('every documented gold ratio matches the live CSS', async ({ page }) => {
+    await page.goto('/');
+
+    const documented = GOLD_TABLE_DOCS.flatMap(documentedRatios);
+
+    /*
+     * The floor. If a heading is reworded, or the table is reformatted, the
+     * parser silently matches nothing and every assertion below passes on an
+     * empty list — which is exactly the shape of vacuity this file guards
+     * against everywhere else.
+     */
+    expect(
+      documented.length,
+      `no "on #FFC000" token rows were parsed out of ${GOLD_TABLE_DOCS.join(
+        ', ',
+      )}. The tables were reformatted or moved, so this check is reading ` +
+        `nothing rather than finding them clean.`,
+    ).toBeGreaterThan(0);
+
+    for (const doc of GOLD_TABLE_DOCS) {
+      expect(
+        documented.filter((row) => row.doc === doc).length,
+        `${doc} contributed no rows, so it is no longer being checked`,
+      ).toBeGreaterThan(0);
+    }
+
+    const measured = (await page.evaluate(
+      `(([gold, variables]) => {
+        ${PAGE_HELPERS}
+        const root = getComputedStyle(document.documentElement);
+        const ground = fromHex(gold);
+        return variables.map((variable) => {
+          const value = root.getPropertyValue(variable).trim();
+          const colour = value.startsWith('#') ? fromHex(value) : parse(value);
+          return {
+            variable,
+            value: value.toLowerCase(),
+            ratio: colour === null ? null : Number(ratio(colour, ground).toFixed(2)),
+          };
+        });
+      })(${JSON.stringify([GOLD, [...new Set(documented.map((r) => r.variable))]])})`,
+    )) as { variable: string; value: string; ratio: number | null }[];
+
+    const live = new Map(measured.map((row) => [row.variable, row]));
+
+    const wrong: string[] = [];
+
+    for (const row of documented) {
+      const actual = live.get(row.variable);
+
+      if (actual === undefined || actual.value === '') {
+        wrong.push(
+          `${row.doc}:${row.line}  \`${row.token}\` — ${row.variable} is not ` +
+            `defined in global.css`,
+        );
+        continue;
+      }
+
+      if (normaliseHex(actual.value) !== row.hex) {
+        wrong.push(
+          `${row.doc}:${row.line}  \`${row.token}\` — documented ${row.hex}, ` +
+            `CSS says ${actual.value}`,
+        );
+      }
+
+      if (actual.ratio === null || Math.abs(actual.ratio - row.ratio) > 0.05) {
+        wrong.push(
+          `${row.doc}:${row.line}  \`${row.token}\` — documented ${row.ratio} ` +
+            `against ${GOLD}, measured ${actual.ratio}`,
+        );
+      }
+    }
+
+    expect(
+      wrong,
+      `a gold-surface table has drifted from the CSS. The live custom ` +
+        `properties are the source of truth and the prose is a copy of them, ` +
+        `so fix the Markdown, not the token — unless the token really did ` +
+        `change, in which case every row below is a file that still needs ` +
+        `updating in this commit:\n  ${wrong.join('\n  ')}`,
+    ).toEqual([]);
+  });
+
   test('the documented ratios against #FFC000 still hold', async ({ page }) => {
     await page.goto('/');
 
@@ -529,13 +524,45 @@ test.describe('the gold surface exception', () => {
        * rule engine knows that this project's gold is a surface as well as an
        * accent. Hence this check, by measurement rather than by class name.
        */
-      const invisible = (await page.evaluate(`(() => {
+      const walked = (await page.evaluate(`(() => {
         ${PAGE_HELPERS}
         const section = document.querySelector('.surface-gold');
-        return section === null ? [] : invisibleControls(section);
-      })()`)) as InvisibleControl[];
+        if (section === null) return { section: false, controls: 0, invisible: [] };
+        return {
+          section: true,
+          controls: section.querySelectorAll('a, button, [role="button"]').length,
+          invisible: invisibleControls(section),
+        };
+      })()`)) as {
+        section: boolean;
+        controls: number;
+        invisible: InvisibleControl[];
+      };
 
-      expect(invisible, invisibleControlMessage(invisible)).toEqual([]);
+      /*
+       * Non-vacuity, on every route that has a gold section. Without this the
+       * assertion below passes on an empty list for every route forever,
+       * which is exactly what it did for the whole time no page used the
+       * class.
+       */
+      if (route in GOLD_ROUTES) {
+        expect(
+          walked.section,
+          `${route} has no .surface-gold section. It is listed in ` +
+            `GOLD_ROUTES, so losing it makes the invisible-control check ` +
+            `below vacuous on this route rather than failing anywhere.`,
+        ).toBe(true);
+        expect(
+          walked.controls,
+          `${route} should put ${GOLD_ROUTES[route]} controls on the gold ` +
+            `ground for this check to walk`,
+        ).toBe(GOLD_ROUTES[route]);
+      }
+
+      expect(
+        walked.invisible,
+        invisibleControlMessage(walked.invisible),
+      ).toEqual([]);
 
       const failing = found.filter((entry) => entry.ratio < AA_TEXT);
 
@@ -1042,13 +1069,269 @@ test.describe('the gold surface exception', () => {
   });
 
   /**
-   * The invisible-control check, run against a fixture.
+   * THE GOLD SURFACE ON REAL MARKUP, at the two reflow widths.
    *
-   * It also runs on every route above, but no route has a .surface-gold
-   * section yet, so that call returns an empty list without measuring
-   * anything. This is the run that has controls in front of it today, and it
-   * is what makes the check non-vacuous before the Career page lands. Delete
-   * it and keep the route walk once a real gold section exists.
+   * Everything above this point that exercises the class contract does it
+   * against a fixture mounted into `/`, because until the Career page landed
+   * no route used `.surface-gold` at all. This is the same set of questions
+   * asked of the shipped hero: the buttons a reader actually reaches, at the
+   * viewport a reader actually has, with the focus indicator the browser
+   * actually paints.
+   *
+   * It is not a duplicate of the fixture tests and neither replaces the
+   * other. The fixture keeps the class honest for the next page built against
+   * it, and can be broken deliberately without touching a route. This one is
+   * the only thing that can fail on a mistake made in career.astro — a
+   * `text-muted` written inside the section, `.btn-primary` used by habit, the
+   * watermark scrolling the page sideways — none of which the fixture can see.
+   *
+   * THE WATERMARK IS WHY OVERFLOW IS CHECKED HERE AS WELL AS IN
+   * reflow.spec.ts. It is 700px wide at `right: -150px`, so the section's own
+   * scrollWidth genuinely exceeds its clientWidth by 150px at every viewport.
+   * That is the comp's design and it is contained by `overflow-hidden` on the
+   * section; the assertion is that the *document* does not scroll, and the
+   * 150px is asserted too, so removing `overflow-hidden` fails here rather
+   * than becoming someone's horizontal scrollbar.
+   */
+  const GOLD_ROUTE_WIDTHS = [
+    { width: 305, contentBox: 273 },
+    { width: 320, contentBox: 288 },
+  ] as const;
+
+  for (const { width, contentBox } of GOLD_ROUTE_WIDTHS) {
+    test(`the ${GOLD_ROUTE} gold section holds up at ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(GOLD_ROUTE, { waitUntil: 'networkidle' });
+      await page.evaluate(() => document.fonts.ready);
+
+      const result = (await page.evaluate(`(() => {
+        ${PAGE_HELPERS}
+        const gold = fromHex('${GOLD}');
+        const section = document.querySelector('.surface-gold');
+        if (section === null) return null;
+
+        const main = document.querySelector('main');
+        const mainStyle = getComputedStyle(main);
+
+        const controls = [...section.querySelectorAll('a, button')].map((el) => {
+          const resting = getComputedStyle(el);
+          const fill = parse(resting.backgroundColor);
+          el.focus();
+          // Read while the element still has focus. Moving this below the
+          // blur() is how the first version of this test reported that a
+          // focused button had not taken focus.
+          const tookFocus = document.activeElement === el;
+          /*
+           * getComputedStyle returns a LIVE declaration, so every value that
+           * exists only under :focus-visible has to be read into a plain
+           * number before the blur below. Reading them after it is how the
+           * first version of this test reported an outline-offset of 0 on a
+           * button whose offset is 3px.
+           */
+          const focused = getComputedStyle(el);
+          const box = el.getBoundingClientRect();
+          const outline = parse(focused.outlineColor);
+          const outlineWidth = parseFloat(focused.outlineWidth);
+          const outlineOffset = parseFloat(focused.outlineOffset);
+          const inner = shadowLayers(focused.boxShadow).find((l) => l.inset) ?? null;
+          el.blur();
+
+          return {
+            selector: describe(el),
+            focused: tookFocus,
+            width: Number(box.width.toFixed(1)),
+            height: Number(box.height.toFixed(1)),
+            fillIsOpaque: fill !== null && fill.a === 1,
+            // What identifies the control against gold: its fill, or its border.
+            boundaryOnGold: Number(
+              ratio(
+                fill !== null && fill.a === 1 ? fill : parse(resting.borderTopColor),
+                gold,
+              ).toFixed(2),
+            ),
+            outlineWidth,
+            outlineOffset,
+            // The outer ring against the gold the 3px offset gap exposes.
+            outlineOnGold:
+              outline === null ? null : Number(ratio(outline, gold).toFixed(2)),
+            // The outer ring against the control it marks. 1.00 on the
+            // primary, which is the entire reason the inner ring exists.
+            outlineOnFill:
+              outline === null || fill === null || fill.a !== 1
+                ? null
+                : Number(ratio(outline, fill).toFixed(2)),
+            innerRingOnFill:
+              inner === null || inner.colour === null || fill === null || fill.a !== 1
+                ? null
+                : Number(ratio(inner.colour, fill).toFixed(2)),
+          };
+        });
+
+        return {
+          controls,
+          textOnGold: (() => {
+            const out = [];
+            for (const el of section.querySelectorAll('*')) {
+              if (!hasOwnText(el)) continue;
+              const bg = effectiveBackground(el);
+              if (!isGold(bg)) continue;
+              const colour = parse(getComputedStyle(el).color);
+              if (colour === null) continue;
+              out.push({
+                selector: describe(el),
+                ratio: Number(ratio(colour, bg).toFixed(2)),
+                text: (el.textContent ?? '').trim().slice(0, 40),
+              });
+            }
+            return out;
+          })(),
+          documentScrollWidth: document.documentElement.scrollWidth,
+          documentClientWidth: document.documentElement.clientWidth,
+          sectionScrollWidth: section.scrollWidth,
+          sectionClientWidth: section.clientWidth,
+          sectionOverflowX: getComputedStyle(section).overflowX,
+          contentBox:
+            main.clientWidth -
+            parseFloat(mainStyle.paddingLeft) -
+            parseFloat(mainStyle.paddingRight),
+        };
+      })()`)) as {
+        controls: {
+          selector: string;
+          focused: boolean;
+          width: number;
+          height: number;
+          fillIsOpaque: boolean;
+          boundaryOnGold: number;
+          outlineWidth: number;
+          outlineOffset: number;
+          outlineOnGold: number | null;
+          outlineOnFill: number | null;
+          innerRingOnFill: number | null;
+        }[];
+        textOnGold: { selector: string; ratio: number; text: string }[];
+        documentScrollWidth: number;
+        documentClientWidth: number;
+        sectionScrollWidth: number;
+        sectionClientWidth: number;
+        sectionOverflowX: string;
+        contentBox: number;
+      } | null;
+
+      expect(
+        result,
+        `${GOLD_ROUTE} has no .surface-gold section to measure`,
+      ).not.toBeNull();
+      const measured = result as NonNullable<typeof result>;
+
+      expect(
+        measured.controls.length,
+        `${GOLD_ROUTE} should render ${GOLD_ROUTES[GOLD_ROUTE]} controls on gold`,
+      ).toBe(GOLD_ROUTES[GOLD_ROUTE]);
+
+      /* Reflow. The document must not scroll; the section is allowed to clip. */
+      expect(
+        measured.contentBox,
+        `${GOLD_ROUTE} content box at ${width}px`,
+      ).toBe(contentBox);
+      expect(
+        measured.documentScrollWidth,
+        `${GOLD_ROUTE} scrolls sideways at ${width}px (SC 1.4.10)`,
+      ).toBeLessThanOrEqual(measured.documentClientWidth);
+
+      expect(
+        measured.sectionOverflowX,
+        'the gold hero must clip its own overflow. The watermark sits at ' +
+          'right: -150px by design, so without this the page scrolls sideways.',
+      ).toBe('hidden');
+      expect(
+        measured.sectionScrollWidth - measured.sectionClientWidth,
+        "the watermark's 150px overhang, asserted so that moving it is a " +
+          'deliberate edit rather than a silent one',
+      ).toBe(150);
+
+      /* Every string on the gold ground, from the real markup. */
+      expect(
+        measured.textOnGold.length,
+        `nothing with text was found on the gold ground on ${GOLD_ROUTE}`,
+      ).toBeGreaterThan(0);
+      const unreadable = measured.textOnGold.filter((e) => e.ratio < AA_TEXT);
+      expect(
+        unreadable,
+        `text on #FFC000 below ${AA_TEXT}:1 in the real Career hero:\n` +
+          unreadable
+            .map((e) => `  ${e.selector} at ${e.ratio}:1 — "${e.text}"`)
+            .join('\n'),
+      ).toEqual([]);
+
+      for (const control of measured.controls) {
+        expect(
+          control.focused,
+          `${control.selector} did not take focus, so its indicator was never ` +
+            `measured`,
+        ).toBe(true);
+
+        expect(
+          control.boundaryOnGold,
+          `${control.selector} against the gold ground (SC 1.4.11)`,
+        ).toBeGreaterThanOrEqual(NON_TEXT);
+
+        expect(
+          control.height,
+          `${control.selector} target height (SC 2.5.8)`,
+        ).toBeGreaterThanOrEqual(24);
+        expect(
+          control.width,
+          `${control.selector} target width (SC 2.5.8)`,
+        ).toBeGreaterThanOrEqual(24);
+
+        expect(
+          control.outlineWidth,
+          `${control.selector} has no focus ring in situ (SC 2.4.7)`,
+        ).toBeGreaterThan(0);
+        expect(
+          control.outlineOffset,
+          `${control.selector} focus ring offset`,
+        ).toBeGreaterThan(0);
+        expect(
+          control.outlineOnGold,
+          `${control.selector} focus ring against the gold the offset gap ` +
+            `exposes (SC 1.4.11)`,
+        ).toBeGreaterThanOrEqual(NON_TEXT);
+
+        /*
+         * The primary button is the one whose ring colour equals its own
+         * opaque fill. Asserted on the real control, not on the fixture: the
+         * outer ring measures 1.00 against the thing it is marking, and the
+         * inner white ring is what makes the indicator survive that.
+         */
+        if (control.fillIsOpaque) {
+          expect(
+            control.outlineOnFill,
+            `${control.selector} outer ring against its own fill. Expected ` +
+              `1.00 — the ring is gold-text and so is the fill — which is why ` +
+              `there has to be a second ring.`,
+          ).toBeCloseTo(1.0, 1);
+          expect(
+            control.innerRingOnFill,
+            `${control.selector} has no inner ring, so its entire focus ` +
+              `indicator rests on outline-offset staying non-zero`,
+          ).toBeCloseTo(18.58, 1);
+        }
+      }
+    });
+  }
+
+  /**
+   * The invisible-control check, run against a fixture as well as against the
+   * real route above.
+   *
+   * The fixture is kept rather than deleted now that `/career` exists. It is
+   * the only place the check is exercised against a control it was written
+   * for but no page uses — and it can be broken on purpose to prove the check
+   * still bites without editing a shipped route.
    *
    * Both delimiting mechanisms are in the fixture on purpose, because the
    * check dispatches on which one applies: .btn-gold-primary is delimited by
@@ -1106,4 +1389,16 @@ test.describe('the gold surface exception', () => {
       [],
     );
   });
+});
+
+/**
+ * The gold-route literal matches the build.
+ *
+ * GOLD_ROUTES turns the non-vacuity guard on, route by route. A gold section
+ * added to a page nobody listed there is a section with no guard, and every
+ * other assertion in this file keeps passing, so nothing says so. This reads
+ * the built HTML and compares.
+ */
+test('GOLD_ROUTES lists exactly the routes that render a gold section', () => {
+  expect(goldRoutesFromBuild().sort()).toEqual(Object.keys(GOLD_ROUTES).sort());
 });

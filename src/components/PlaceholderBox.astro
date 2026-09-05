@@ -1,0 +1,57 @@
+---
+/*
+ * A bordered box standing in for an image that does not exist yet.
+ *
+ * Every photographic slot in the comps — the hero artwork, the About portrait,
+ * the workspace square, the post artwork — is a `<image-slot>` with a "drop an
+ * image here" placeholder, and no asset has been supplied for any of them. The
+ * two images the repo does have (`bunny-*.png`, `badge-*.png`) are marks, not
+ * photographs, and are used as marks elsewhere.
+ *
+ * So the box is rendered at the right aspect ratio, in the right border, and
+ * says what belongs in it. That is a deliberate choice over three worse ones:
+ * omitting the slot, which changes the layout the rest of the page was
+ * designed around and hides the gap; a stock image, which would be a claim
+ * about content nobody has decided; and an `<img>` with a broken `src`, which
+ * announces a filename to a screen reader and a broken-image icon to everyone
+ * else.
+ *
+ * The label is functional microcopy: it describes the state of the build, not
+ * anything the site has to say, so it is written rather than left as
+ * PLACEHOLDER. It is real text rather than `aria-hidden` decoration on
+ * purpose — someone who cannot see the empty frame should be told the frame is
+ * empty and why, not silently handed a gap.
+ */
+
+const RATIOS = {
+  /* 16 / 9, Tailwind's own. The hero artwork slot. */
+  video: 'aspect-video',
+  /* 4 / 3. Post artwork and the Career conference photo. */
+  photo: 'aspect-photo',
+  /* 4 / 5. The About portrait. */
+  portrait: 'aspect-portrait',
+  /* 1 / 1. The workspace square in the homepage About teaser. */
+  square: 'aspect-square',
+} as const;
+
+interface Props {
+  ratio: keyof typeof RATIOS;
+  /** What belongs in this slot, in sentence case. Uppercased by `.label-wide`. */
+  label: string;
+  class?: string;
+}
+
+const { ratio, label, class: className = '' } = Astro.props;
+---
+
+<div
+  class:list={[
+    'flex items-center justify-center border-8 border-dashed border-border bg-surface',
+    RATIOS[ratio],
+    className,
+  ]}
+>
+  <p class="label-wide max-w-full px-6 text-center text-subtle">
+    Placeholder: {label}
+  </p>
+</div>

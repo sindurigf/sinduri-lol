@@ -29,6 +29,14 @@ that runs a build reads it:
 runtime the dependency tree accepts. `.nvmrc` is a pin, the one version CI and
 production actually run. They answer different questions, so both are kept.
 
+**The two are on different major lines on purpose, and that is not a mistake to
+tidy up.** `.nvmrc` pins 24.20.0, the current LTS; the floor stays at 22.19.0
+because no dependency requires more, and this file's own rule below is to raise
+the floor only when one actually does. Someone on Node 22 can still build. The
+pin moved because 22 and 24 are both LTS and there is no reason for production
+to sit on the older line; the floor did not, because nothing in the tree asked
+it to.
+
 **npm does not enforce that floor on install.** An earlier version of this file
 said it did. What npm actually does on a runtime below the floor is print an
 `EBADENGINE` warning and install anyway; a failed install needs
@@ -91,12 +99,63 @@ The Lexend Project Authors. The full license text ships with the package at
 
 ## Commands
 
-| Command           | Does                                  |
-| ----------------- | ------------------------------------- |
-| `npm run dev`     | Dev server at `http://localhost:4321` |
-| `npm run build`   | Static build to `dist/`               |
-| `npm run preview` | Serve the built `dist/` locally       |
-| `npm run astro`   | Astro CLI passthrough                 |
+| Command                | Does                                        |
+| ---------------------- | ------------------------------------------- |
+| `npm run dev`          | Dev server at `http://localhost:4321`       |
+| `npm run build`        | Static build to `dist/`                     |
+| `npm run preview`      | Serve the built `dist/` locally             |
+| `npm run typecheck`    | `astro check` (it runs `astro sync` itself) |
+| `npm run format`       | Prettier, write                             |
+| `npm run format:check` | Prettier, check only — CI runs this         |
+| `npm run test:a11y`    | Playwright: builds, serves, drives Chromium |
+| `npm run test:a11y:ui` | The same suite in Playwright's UI mode      |
+| `npm run astro`        | Astro CLI passthrough                       |
+
+### Reading the result of a test run
+
+A suite is green when the summary line says so, not when the output stops
+scrolling. Read the line with the counts, and read it in full:
+
+```text
+249 passed (14.7s)
+```
+
+**Check the total against what the suite collected.** `npx playwright test --list`
+ends with `Total: N tests in M files`, and a run that reports fewer results than
+that did not pass the difference — it never ran them. A lower total means tests
+went missing, which is a worse failure than tests going red, because nothing in
+the output is coloured to say so. Never conclude a run is green from truncated
+output; `tail -4` on a Playwright run can cut a failure listing so that the
+surviving lines look like a pass.
+
+`npm run test:a11y` owns the whole lifecycle: it builds, starts its own
+`astro preview`, waits for the port, and tears it down. It will not reuse a
+server it did not start, so stop any preview already on :4321 with
+`astro preview stop` first. That is deliberate — reusing one skipped the build,
+and a run could pass against the previous build's `dist/`.
+
+### When two runs of the same code disagree
+
+If identical inputs produce different output, the difference is environmental
+until measured otherwise, and time spent reading the diff is wasted. Before
+changing any code, check:
+
+- **Another server or agent process.** Astro 7 backgrounds `dev` and `preview`
+  when it detects an AI coding agent, so a daemon from a previous session can
+  outlive it. `ps aux | grep astro` and `ss -ltnp | grep 4321`.
+- **A concurrent writer.** More than one session working in this tree at once
+  will move files under a run. `git status` before and after.
+- **Machine load and memory.** A test server killed by memory pressure looks
+  exactly like a layout regression.
+- **Dependency resolution.** A lockfile resolving a different minor version in
+  one checkout than another makes byte-identical sources render differently.
+- **Environment variables.** `playwright.config.ts` sets
+  `ASTRO_PREVIEW_BACKGROUND` for this reason; tooling that reads the
+  environment can silently change behaviour between two shells.
+
+Re-run before reporting. A failure that does not reproduce is a finding about
+the environment, and it is reported as one, with the run counts from both
+attempts rather than as a fixed bug.
 
 ## Commit hooks
 

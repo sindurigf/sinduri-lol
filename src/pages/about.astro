@@ -1,11 +1,223 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PlaceholderBox from '../components/PlaceholderBox.astro';
+
+/*
+ * PLACEHOLDER COPY, per design/About.dc.html. Structure, layout, spacing and
+ * hierarchy are the comp's; every heading, label and paragraph is lorem ipsum
+ * at the length the comp's copy occupies. Nothing on this page is a claim
+ * about Sinduri, which is the whole point: an About page is the densest
+ * editorial copy on the site and none of it is ours to write.
+ *
+ * ONE DELIBERATE DEPARTURE FROM THE COMP. Its closing call to action is
+ * "Say hello" pointing at Contact. This one points at Career, which is what
+ * was asked for, and the label changes with the destination — a button whose
+ * words do not match where it goes is a worse defect than a different
+ * destination.
+ */
+
+const INTERESTS = [
+  {
+    value: 'MMXXIII',
+    frame: 'border-gold',
+    valueClass: 'text-gold',
+    body: 'Klausi lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore magna.',
+  },
+  {
+    value: 'Tria',
+    frame: 'border-cyan',
+    valueClass: 'text-cyan',
+    body: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+  },
+  {
+    value: 'Consilium',
+    frame: 'border-pink',
+    valueClass: 'text-pink-text',
+    body: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+  },
+] as const;
 ---
 
 <BaseLayout
   title="About | sinduri.lol"
-  description="Placeholder description. Replace with real copy."
+  description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 >
-  <h1>About</h1>
-  <p>Placeholder copy. This page is built in a later phase.</p>
+  <!-- ===================================================================
+       HERO
+       =================================================================== -->
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto max-w-page">
+      <div class="flex flex-wrap items-baseline gap-x-5 gap-y-2">
+        <span class="section-number" aria-hidden="true">01</span>
+        <h1 class="text-h1 text-text">Lorem ipsum</h1>
+      </div>
+
+      <div class="mt-14 grid gap-16 lg:grid-cols-2 lg:items-start">
+        <div class="flex min-w-0 flex-col gap-8">
+          <p class="text-h3 font-bold text-gold text-pretty">
+            Lorem ipsum dolor sit amet. Consectetur adipiscing elit sed do
+            eiusmod tempor incididunt ut labore.
+          </p>
+          <p class="text-body text-muted text-pretty">
+            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+            nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+            pariatur, excepteur sint occaecat cupidatat non proident sunt.
+          </p>
+          <p class="text-body text-muted text-pretty">
+            Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+            accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae
+            ab illo inventore veritatis et quasi architecto beatae vitae dicta
+            sunt explicabo nemo enim ipsam.
+          </p>
+        </div>
+
+        <div class="relative">
+          <PlaceholderBox ratio="portrait" label="portrait" />
+          <!--
+            The offset frame from the comp, drawn as a second border rather
+            than as a shadow. It is decoration with no meaning, so it is
+            pointer-events-none and out of the accessibility tree; `pink` is
+            correct here because it is a border and never a glyph.
+          -->
+          <span
+            aria-hidden="true"
+            class="pointer-events-none absolute -left-3 -top-3 hidden size-full border-8 border-pink sm:block"
+          ></span>
+          <span
+            class="absolute -bottom-8 -right-2 flex size-28 items-center justify-center rounded-full border-8 border-border bg-gold shadow-hard-cyan-8 sm:-right-8"
+          >
+            <img
+              src="/images/bunny-dark.png"
+              alt=""
+              width="458"
+              height="900"
+              class="h-14 w-auto"
+            />
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       STORY
+       =================================================================== -->
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-gold"></span>
+    </div>
+
+    <div class="mx-auto max-w-page">
+      <h2 class="text-h2 text-text">Lorem ipsum dolor sit</h2>
+
+      <div class="mt-14 grid gap-10 lg:grid-cols-2">
+        <div class="card shadow-hard-gold-8">
+          <p class="label-wide text-gold">
+            Lorem ipsum dolor sit amet consectetur
+          </p>
+          <p class="mt-6 text-body text-muted text-pretty">
+            Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut
+            fugit, sed quia consequuntur magni dolores eos qui ratione
+            voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem
+            ipsum quia dolor sit amet consectetur adipisci velit.
+          </p>
+        </div>
+
+        <div class="card shadow-hard-cyan-8">
+          <p class="label-wide text-cyan">Sed quia non</p>
+          <p class="mt-6 text-body text-muted text-pretty">
+            Numquam eius modi tempora incidunt ut labore et dolore magnam
+            aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum
+            exercitationem ullam corporis suscipit laboriosam nisi ut aliquid ex
+            ea commodi consequatur autem vel eum iure.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       VALUES
+       =================================================================== -->
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-cyan"></span>
+    </div>
+
+    <div class="mx-auto grid max-w-page gap-16 lg:grid-cols-2 lg:items-start">
+      <div class="flex min-w-0 flex-col gap-6">
+        <h2 class="text-h2 text-text">Lorem ipsum dolor.</h2>
+        <p class="text-body text-muted text-pretty">
+          Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse
+          quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo
+          voluptas nulla pariatur.
+        </p>
+        <p class="text-body text-muted text-pretty">
+          At vero eos et accusamus et iusto odio dignissimos ducimus qui
+          blanditiis praesentium voluptatum deleniti atque corrupti quos dolores
+          et quas molestias excepturi sint occaecati.
+        </p>
+      </div>
+
+      <div class="card shadow-hard-pink-8">
+        <p class="label-wide text-pink-text">Lorem ipsum dolor sit amet?</p>
+        <p class="mt-6 text-h3 font-bold text-text text-pretty">
+          Cupiditate non provident, similique sunt in culpa qui officia.
+        </p>
+        <p class="mt-6 text-body text-muted text-pretty">
+          Deserunt mollitia animi, id est laborum et dolorum fuga. Et harum
+          quidem rerum facilis est et expedita distinctio nam libero tempore.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       INTERESTS AND FUN FACTS
+       =================================================================== -->
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-pink"></span>
+    </div>
+
+    <div class="mx-auto max-w-page">
+      <h2 class="text-h2 text-text">Lorem ipsum dolor sit amet elit.</h2>
+
+      <ul class="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          INTERESTS.map((item) => (
+            <li
+              class:list={[
+                'flex min-w-0 flex-col gap-4 border-8 bg-background p-8',
+                item.frame,
+              ]}
+            >
+              <span class:list={['text-h3 font-extrabold', item.valueClass]}>
+                {item.value}
+              </span>
+              <p class="text-body text-muted text-pretty">{item.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="card mt-14 shadow-hard-gold-8">
+        <p class="text-h3 font-bold text-text text-pretty">
+          Cumque nihil impedit quo minus id quod maxime placeat facere possimus,
+          omnis voluptas assumenda est.
+        </p>
+        <p class="mt-8 max-w-4xl text-body text-muted text-pretty">
+          Omnis dolor repellendus temporibus autem quibusdam et aut officiis
+          debitis aut rerum necessitatibus saepe eveniet ut et voluptates
+          repudiandae sint et molestiae non recusandae. Itaque earum rerum hic
+          tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores
+          alias consequatur aut perferendis doloribus asperiores repellat.
+        </p>
+        <p class="mt-10">
+          <a href="/career" class="btn-primary">See my career</a>
+        </p>
+      </div>
+    </div>
+  </section>
 </BaseLayout>

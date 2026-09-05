@@ -1,11 +1,321 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+/*
+ * PLACEHOLDER COPY, per design/Career.dc.html. Every heading, job title,
+ * employer, skill and paragraph here is lorem ipsum. A CV is the most
+ * claim-dense page a personal site has and not one of those claims is ours to
+ * make; the date ranges are kept in a real shape only because the left column
+ * of each entry is sized by them.
+ *
+ * THIS IS THE FIRST REAL ROUTE ON THE GOLD SURFACE.
+ *
+ * Until now `.surface-gold`, `.btn-gold-primary` and `.btn-gold-secondary`
+ * were arithmetic verified against a mounted fixture, because no page used
+ * them. Everything inside the hero below is governed by that class and
+ * NOTHING in it may reach for a dark-surface token: `text`, `muted`,
+ * `subtle`, `border`, `pink`, `pink-text` and `cyan` measure 1.27, 1.03,
+ * 1.31, 2.34, 2.31, 1.48 and 1.01 against #FFC000 respectively, and an
+ * explicit utility beats the class's subtree default, so the cascade cannot
+ * stop it. tests/gold-surface.spec.ts measures the rendered result.
+ *
+ * Two consequences visible in the markup:
+ *
+ *   - The section number is NOT `.section-number`. That class is
+ *     `text-pink-text`, which is 1.48 on gold. It is `text-gold-muted`, 7.88.
+ *   - The buttons are the gold pair. `.btn-primary` is `bg-gold`, which on
+ *     this ground is a 1.00:1 fill — an invisible control whose label still
+ *     passes every automated contrast rule. That exact page returned zero
+ *     violations from AccessLint with AAA enabled.
+ *
+ * THE CV FILE DOES NOT EXIST. The primary button points at a placeholder path
+ * and will 404 until a PDF is published there. One exists in the gitignored
+ * design/uploads/ and must not be committed until it has been checked for
+ * personal data. Listed as outstanding in AI.md and in the pull request.
+ */
+const CV_HREF = '/sinduri-guntupalli-cv.pdf';
+
+const WATERMARK = {
+  src: '/images/badge-dark.png',
+  width: 760,
+  height: 900,
+} as const;
+
+const EXPERIENCE = [
+  {
+    dates: 'Jan 2024 — Present',
+    where: 'Lorem ipsum · Dolor',
+    title: 'Consectetur adipiscing elit',
+    frame: 'border-gold',
+    datesClass: 'text-gold',
+    background: 'bg-surface',
+    points: [
+      'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, ut enim ad minim veniam quis nostrud.',
+      'Exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+      'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat.',
+    ],
+  },
+  {
+    dates: 'Jun 2021 — Dec 2023',
+    where: 'Sit amet · Consectetur',
+    title: 'Adipiscing elit sed',
+    frame: 'border-border',
+    datesClass: 'text-cyan',
+    background: 'bg-surface',
+    points: [
+      'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.',
+      'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque.',
+      'Laudantium totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto.',
+    ],
+  },
+  {
+    dates: 'Jan 2019 — May 2021',
+    where: 'Eiusmod · Tempor',
+    title: 'Incididunt ut labore et dolore magna',
+    frame: 'border-border',
+    datesClass: 'text-pink-text',
+    background: 'bg-surface',
+    points: [
+      'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.',
+      'Sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.',
+    ],
+  },
+  {
+    dates: '2011 — 2017',
+    where: 'Aliqua',
+    title: 'Ut enim ad minim',
+    frame: 'border-border',
+    datesClass: 'text-subtle',
+    background: 'bg-deep',
+    points: [
+      'Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.',
+    ],
+  },
+] as const;
+
+const SKILLS = [
+  'Lorem ipsum',
+  'Dolor',
+  'Sit amet',
+  'Consectetur',
+  'Adipiscing elit',
+  'Eiusmod tempor',
+] as const;
+
+const EDUCATION = [
+  {
+    award: 'Lorem ipsum dolor sit',
+    detail: 'Consectetur adipiscing elit, 2006–2009.',
+  },
+  { award: 'Sed do eiusmod', detail: 'Tempor incididunt ut labore.' },
+  {
+    award: 'Magna aliqua ut enim',
+    detail: 'Ad minim veniam, 2019–2020.',
+  },
+] as const;
+
+const OPEN_SOURCE = [
+  {
+    award: 'Quis nostrud exercitation',
+    detail: 'Ullamco laboris nisi ut aliquip ex ea commodo.',
+  },
+  {
+    award: 'Duis aute irure',
+    detail: 'Dolor in reprehenderit in voluptate, since Dec 2024.',
+  },
+  {
+    award: 'Velit esse cillum',
+    detail: 'Dolore eu fugiat nulla pariatur, excepteur sint occaecat.',
+  },
+] as const;
 ---
 
 <BaseLayout
   title="Career | sinduri.lol"
-  description="Placeholder description. Replace with real copy."
+  description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 >
-  <h1>Career</h1>
-  <p>Placeholder copy. This page is built in a later phase.</p>
+  <!-- ===================================================================
+       HERO — THE GOLD SURFACE
+       =================================================================== -->
+  <section class="surface-gold band relative overflow-hidden py-28 sm:py-36">
+    <!--
+      alt="" and decorative. At 0.09 opacity this is a texture; see
+      .career-watermark in global.css for the placement and for why the
+      -dark asset is the right one on this one ground.
+
+      The width and height attributes are the intrinsic pixel size, so the
+      browser reserves the box before the image loads. The CSS width wins.
+    -->
+    <img
+      class="career-watermark"
+      src={WATERMARK.src}
+      alt=""
+      width={WATERMARK.width}
+      height={WATERMARK.height}
+    />
+
+    <div class="relative z-10 mx-auto max-w-page">
+      <div class="flex flex-wrap items-baseline gap-x-5 gap-y-2">
+        <!--
+          NOT `.section-number`. That class is text-pink-text, which measures
+          1.48 against this ground. gold-muted is 7.88.
+        -->
+        <span
+          class="text-section-number font-extrabold text-gold-muted"
+          aria-hidden="true">03</span
+        >
+        <h1 class="text-h1">Lorem</h1>
+      </div>
+
+      <h2 class="mt-8 text-h3">
+        Ipsum dolor sit.<br /><span class="text-gold-muted"
+          >Amet consectetur.</span
+        >
+      </h2>
+
+      <p class="mt-8 max-w-2xl text-body text-gold-muted text-pretty">
+        Adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore
+        magna aliqua, ut enim ad minim veniam quis nostrud exercitation ullamco
+        laboris nisi ut aliquip ex ea commodo consequat duis aute.
+      </p>
+
+      <!--
+        Both buttons are the gold-surface pair, scoped to .surface-gold so that
+        using either anywhere else renders it unstyled. Neither .btn-primary
+        nor .btn-secondary may appear on this ground.
+
+        CV_HREF has no file behind it yet. See the note in the frontmatter.
+      -->
+      <p class="mt-10 flex flex-wrap gap-4">
+        <a href={CV_HREF} class="btn-gold-primary">Download my CV</a>
+        <a href="/contact" class="btn-gold-secondary">Get in touch</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SUMMARY — back to the dark token set
+       =================================================================== -->
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-gold"></span>
+    </div>
+
+    <div class="mx-auto max-w-page">
+      <h2 class="text-h2 text-text">Lorem ipsum dolor</h2>
+      <p class="mt-8 max-w-4xl text-body text-muted text-pretty">
+        Sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+        ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+        exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+        dolore eu fugiat nulla pariatur.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       WORK EXPERIENCE
+       =================================================================== -->
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-cyan"></span>
+    </div>
+
+    <div class="mx-auto max-w-page">
+      <h2 class="text-h2 text-text">Lorem ipsum</h2>
+
+      <ol class="mt-14 flex flex-col gap-10">
+        {
+          EXPERIENCE.map((role) => (
+            <li
+              class:list={[
+                'card grid gap-8 lg:grid-cols-4',
+                role.frame,
+                role.background,
+              ]}
+            >
+              <p class="flex min-w-0 flex-col gap-2">
+                <span class:list={['label', role.datesClass]}>
+                  {role.dates}
+                </span>
+                <span class="label text-subtle">{role.where}</span>
+              </p>
+
+              <div class="min-w-0 lg:col-span-3">
+                <h3 class="text-h3 text-text">{role.title}</h3>
+                <ul class="mt-6 list-disc pl-6 text-muted marker:text-gold">
+                  {role.points.map((point) => (
+                    <li class="mt-3 text-body text-pretty">{point}</li>
+                  ))}
+                </ul>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SKILLS AND EDUCATION
+       =================================================================== -->
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-pink"></span>
+    </div>
+
+    <div class="mx-auto grid max-w-page gap-10 lg:grid-cols-2">
+      <div class="card shadow-hard-cyan-8">
+        <h2 class="text-h3 text-text">Lorem ipsum dolor</h2>
+        <ul class="mt-8 flex flex-col gap-4">
+          {
+            EDUCATION.map((item) => (
+              <li class="text-body text-muted text-pretty">
+                <strong class="font-extrabold text-cyan">{item.award}</strong>
+                {' — '}
+                {item.detail}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="card shadow-hard-gold-8">
+        <h2 class="text-h3 text-text">Sit amet consectetur</h2>
+        <ul class="mt-8 flex flex-wrap gap-3">
+          {
+            SKILLS.map((skill) => (
+              <li class="label border-4 border-border px-4 py-2 text-text">
+                {skill}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       OPEN SOURCE
+       =================================================================== -->
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-gold"></span>
+    </div>
+
+    <div class="mx-auto max-w-page">
+      <h2 class="text-h2 text-text">Lorem ipsum dolor sit</h2>
+      <ul class="mt-12 flex max-w-4xl flex-col gap-6">
+        {
+          OPEN_SOURCE.map((item) => (
+            <li class="text-body text-muted text-pretty">
+              <strong class="font-extrabold text-gold">{item.award}</strong>
+              {' — '}
+              {item.detail}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
 </BaseLayout>

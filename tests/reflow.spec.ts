@@ -113,10 +113,21 @@ const expectContentBox = async (
  * not have it. `expectNoHorizontalOverflow` cannot fail on a floor that is
  * too high, because `overflow-wrap: break-word` in the base layer guarantees
  * the document never scrolls sideways: an oversized word is silently cut
- * mid-word instead, with no hyphen. Measured on this build with the h1 floor
- * put back to 36px, every one of the 69 overflow assertions still passed
- * while "PROFESSIONAL" was being broken across two lines. So the floors were
- * documented as locked down by a test that could not see them.
+ * mid-word instead, with no hyphen.
+ *
+ * Re-measured on 2026-09-05 with `--text-h1` put back to a 36px floor: all 92
+ * overflow assertions still passed, and the only two failures anywhere in the
+ * run were this heading-word-fit assertion, on /blog/professional-journey and
+ * /blog/quis-nostrud-exercitation-ullamco at 305px, reporting `"exercitation"
+ * is 277.41px in a 273.00px box`. So the floors were documented as locked down
+ * by a test that could not see them.
+ *
+ * UNIT: overflow assertions, meaning calls to `expectNoHorizontalOverflow`,
+ * which is one per route per width per spacing mode in this file. This figure
+ * used to read "69", which was not that: 69 was the size of the entire suite
+ * at the commit that wrote it, where the overflow assertions numbered 44. A
+ * count in a comment states what it counts and when it was taken, or it is
+ * worse than no count.
  *
  * This measures each heading word at its own max-content width and compares
  * it to the heading's content box, which is exactly the arithmetic in the
