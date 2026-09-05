@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { islandRoutesFromBuild } from './routes';
+import { islandRoutesFromBuild, ROUTES } from './routes';
 
 /**
  * The spinning badge and its pause control (SC 2.2.2 Pause, Stop, Hide).
@@ -211,3 +211,94 @@ for (const route of BADGE_ROUTES) {
     });
   });
 }
+
+/**
+ * The same preference, swept across every route rather than the two that
+ * render a badge.
+ *
+ * WHY BOTH. The tests above are about the badge and the criterion it has to
+ * satisfy; they run on BADGE_ROUTES, which is `/` and `/contact`. Twenty-one
+ * other routes have no badge, so nothing above looks at them at all. An
+ * animation added to a blog post, a card hover that grows a transition, or a
+ * keyframe that escapes the global block through `!important` would move for a
+ * reader who asked the operating system for stillness, and every test in this
+ * file would stay green.
+ *
+ * WHAT COUNTS AS MOVING. A running animation, or a transition, whose duration
+ * survives the reduce block — which neutralises to 0.01ms, so anything above a
+ * millisecond did not get neutralised. An infinite iteration count is caught
+ * whatever its duration, because that is motion that never stops on its own.
+ *
+ * VERIFIED ABLE TO FAIL, and the second case is why the iteration-count check
+ * is not redundant. An `animation: drift 3s linear infinite !important` added
+ * to an <h1> is caught — and it is caught on the iteration count alone,
+ * because the reduce block still won on duration and computed it to 1e-05s. A
+ * check that looked only at duration would have called that still. A
+ * `transition: color 900ms !important` on <p> is caught on 21 elements.
+ * Measured 2026-09-05.
+ *
+ * UNIT: elements still moving under the preference, across all of ROUTES, when
+ * this was written on 2026-09-05 — zero. Recorded so a later non-zero reads as
+ * a change rather than as the way it has always been.
+ */
+test('nothing anywhere still moves under reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+
+  const moving: string[] = [];
+  for (const route of ROUTES) {
+    await page.goto(route, { waitUntil: 'networkidle' });
+
+    expect(
+      await page.evaluate(
+        () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      ),
+      `the preference was not emulated on ${route}, so this proves nothing`,
+    ).toBe(true);
+
+    const found = await page.evaluate(() => {
+      /* Longest duration in a comma-separated list, in milliseconds. */
+      const longest = (value: string) =>
+        Math.max(
+          0,
+          ...value.split(',').map((part) => {
+            const seconds = parseFloat(part);
+            if (Number.isNaN(seconds)) return 0;
+            return part.includes('ms') ? seconds : seconds * 1000;
+          }),
+        );
+
+      const out: string[] = [];
+      for (const element of document.querySelectorAll('*')) {
+        const style = getComputedStyle(element);
+        const animated = style.animationName !== 'none';
+        const animation = animated ? longest(style.animationDuration) : 0;
+        const transition =
+          style.transitionProperty === 'none'
+            ? 0
+            : longest(style.transitionDuration);
+        const endless =
+          animated && style.animationIterationCount === 'infinite';
+
+        if (animation <= 1 && transition <= 1 && !endless) continue;
+        out.push(
+          `<${element.tagName.toLowerCase()} class="${String(
+            (element as HTMLElement).className,
+          ).slice(0, 48)}"> animation=${style.animationName} ` +
+            `${style.animationDuration}/${style.animationIterationCount} ` +
+            `transition=${style.transitionProperty} ${style.transitionDuration}`,
+        );
+      }
+      return out;
+    });
+
+    moving.push(...found.map((entry) => `${route}  ${entry}`));
+  }
+
+  expect(
+    moving,
+    `element(s) still moving with prefers-reduced-motion: reduce set. The ` +
+      `reduce block in global.css neutralises animation and transition ` +
+      `duration to 0.01ms, so anything above a millisecond has got past it:\n` +
+      moving.map((entry) => `  ${entry}`).join('\n'),
+  ).toEqual([]);
+});
