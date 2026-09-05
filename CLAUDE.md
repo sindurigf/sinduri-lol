@@ -57,6 +57,21 @@ the history is left inconsistent rather than rewritten.
 - Never commit anything from `design/`, especially the CV PDF.
 - Ask before installing packages.
 
+## Task checklist
+
+[TODO.md](TODO.md) is the durable checklist for this repository.
+`.claude/hooks/todo-context.sh` runs on `SessionStart` and `UserPromptSubmit`
+and prints its contents into context every turn, so what is in context is
+always the current file.
+
+- Print the full checklist, with a count of the remaining items, at the start
+  of every session.
+- Mirror every unchecked item into the session task list.
+- Check an item off in TODO.md in the same edit as the work that completes it,
+  never as a separate pass afterwards.
+- Reprint the checklist at the end of any response in which a box changed.
+- Never invent items. If the file has no unchecked items, say so and stop.
+
 Run `npm run build`, `npm run typecheck`, and `npm run test:a11y` before
 calling any change done.
 
