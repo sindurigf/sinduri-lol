@@ -134,7 +134,9 @@ export const postRoutesFromContent = (
  * entirely, so the coverage test would have kept passing with `/404` in ROUTES
  * removed, or with the page itself deleted.
  */
-const builtPages = (distDir = DIST_DIR): { route: string; file: string }[] => {
+export const builtPages = (
+  distDir = DIST_DIR,
+): { route: string; file: string }[] => {
   if (!existsSync(distDir)) {
     throw new Error(
       `Build output not found at "${distDir}". Run \`npm run build\` first.`,
