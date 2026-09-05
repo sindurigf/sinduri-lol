@@ -29,6 +29,14 @@ that runs a build reads it:
 runtime the dependency tree accepts. `.nvmrc` is a pin, the one version CI and
 production actually run. They answer different questions, so both are kept.
 
+**The two are on different major lines on purpose, and that is not a mistake to
+tidy up.** `.nvmrc` pins 24.20.0, the current LTS; the floor stays at 22.19.0
+because no dependency requires more, and this file's own rule below is to raise
+the floor only when one actually does. Someone on Node 22 can still build. The
+pin moved because 22 and 24 are both LTS and there is no reason for production
+to sit on the older line; the floor did not, because nothing in the tree asked
+it to.
+
 **npm does not enforce that floor on install.** An earlier version of this file
 said it did. What npm actually does on a runtime below the floor is print an
 `EBADENGINE` warning and install anyway; a failed install needs
