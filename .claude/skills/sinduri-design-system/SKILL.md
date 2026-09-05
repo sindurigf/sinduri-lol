@@ -482,8 +482,10 @@ out the ratio by raising H2.
 
 **One content box, declared once.** The horizontal gutter is `.page-gutter`
 (`px-4 sm:px-6`) and it is applied in exactly three places: the header,
-`<main>` in `BaseLayout.astro`, and the footer. Every route therefore presents
-the same box:
+`<main>` in `BaseLayout.astro`, and the footer. **Only the base `px-4` is
+load-bearing.** `sm` is 640px, so at the viewports the floors are measured at,
+only `px-4` applies; the `sm` step is ordinary spacing and can change freely.
+Every route therefore presents the same box:
 
 | Viewport                       | Content box |
 | ------------------------------ | ----------- |
@@ -504,7 +506,26 @@ fixed; the floors are the variable.
 
 A full-bleed band inside `<main>` has to break out with negative inline
 margins. That is the right way round — the exception is visible in the markup
-that wants it.
+that wants it. `.band` duplicates all four of the gutter's values and has to
+move with it.
+
+**The column is `max-w-page`**, `--container-page`, 80rem / 1280px. The gutter
+goes on the outer element (header, `<main>`, footer) and the column goes on the
+element inside it. Never the other way round. The header used to apply the
+gutter _inside_ its column, which is invisible below the column width and puts
+the header's content one whole gutter inside main's above it — measured at 24px
+on `/about` at 1440px, 1600px and 1920px, for as long as the site had existed.
+
+The width itself is a free variable: once all three share the structure, any
+value keeps them aligned, because each centres the same box inside boxes that
+differ by exactly the gutter. `tests/alignment.spec.ts` asserts the three
+landmarks share one column, and pins the absolute edges separately so the
+agreement and the width cannot drift apart silently.
+
+**Widening the gutter does not fix a cramped-looking page.** It was tried, to
+`sm:px-8 lg:px-12`, and reverted: the real cause was decorations positioned
+against the viewport rather than against an element. See the decoration rule
+under Typography.
 
 **The arithmetic.** A single uppercased word is the whole risk, because
 nothing wraps it. Measured in headless Chromium as the rendered width of an
@@ -701,6 +722,9 @@ The header is 96px (`--spacing-header`) and sticky. It will cover an element
 that receives focus near the top of the viewport, which fails WCAG 2.2 SC 2.4.11
 Focus Not Obscured.
 
+It is fixed pixels of every viewport, a 720px-tall one at 400% zoom included,
+which is the argument against growing it further.
+
 Give focusable targets and in-page anchor destinations a `scroll-margin-top` of
 at least the header height:
 
@@ -722,9 +746,6 @@ Check this by tabbing from the top of a long page, not by reading the CSS.
 - The indicator must reach **3:1 against adjacent colors** (SC 1.4.11) on all
   three surfaces.
 - **Never remove an outline without replacing it.** `outline: none` on its own
-It is fixed pixels of every viewport, a 720px-tall one at 400% zoom included,
-which is the argument against growing it further.
-
   is a bug.
 - **The hard offset shadow aesthetic is not a focus indicator.** An offset
   shadow reads as decoration, it is already used for resting state on buttons

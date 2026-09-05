@@ -63,8 +63,8 @@ const REASONS = [
   <!-- ===================================================================
        HERO
        =================================================================== -->
-  <section class="band border-b-8 border-border py-20 sm:py-28">
-    <div class="mx-auto grid max-w-7xl gap-16 lg:grid-cols-2 lg:items-start">
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto grid max-w-page gap-16 lg:grid-cols-2 lg:items-start">
       <div class="min-w-0">
         <h1 class="text-h1 text-gold">Lorem ipsum.</h1>
 
@@ -147,7 +147,11 @@ const REASONS = [
   <!-- ===================================================================
        THE FORM REGION — OUTSTANDING, AND SAYING SO
        =================================================================== -->
-  <section class="band border-b-8 border-border bg-deep py-20 sm:py-28">
+  <section class="band py-28 sm:py-36">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-gold"></span>
+    </div>
+
     <div class="mx-auto max-w-3xl">
       <h2 class="text-h2 text-text">Lorem ipsum dolor</h2>
 
@@ -176,15 +180,26 @@ const REASONS = [
   <!-- ===================================================================
        CLOSING
        =================================================================== -->
-  <section class="band border-b-8 border-border py-20 sm:py-28">
+  <!--
+    THE GOLD BAND. The one ground change on this page that is a real boundary
+    rather than a hue shift: #FFC000 against the section above it is 11.32:1,
+    where navy against deep is 1.07:1.
+
+    Nothing here names a dark-set token. `.surface-gold` supplies `text-gold-text`
+    to the subtree, and an explicit `text-text` would beat it and render at 1.27
+    on this ground. The button is the gold-surface pair; `.btn-primary` measures
+    as unreadable here and is not permitted. tests/gold-surface.spec.ts walks
+    this section and fails on either mistake.
+  -->
+  <section class="surface-gold band py-28 sm:py-36">
     <div
-      class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-10"
+      class="mx-auto flex max-w-page flex-wrap items-center justify-between gap-10"
     >
-      <p class="max-w-2xl text-h3 font-bold text-text text-pretty">
+      <p class="max-w-2xl text-h3 font-bold text-pretty">
         Sed ut perspiciatis unde omnis iste natus error sit voluptatem
         accusantium doloremque laudantium totam rem aperiam.
       </p>
-      <a href="/about" class="btn-primary">More about me</a>
+      <a href="/about" class="btn-gold-primary">More about me</a>
     </div>
   </section>
 </BaseLayout>

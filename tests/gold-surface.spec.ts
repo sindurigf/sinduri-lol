@@ -49,8 +49,8 @@ import { ROUTES } from './routes';
  * `.btn-primary` on /404, the header logo tile and the 404 mark tile are all
  * gold grounds with a foreground on them. Its companion — the invisible-control
  * walk it carries — WAS vacuous on every route, because it short-circuits when
- * a page has no gold section, so `GOLD_ROUTE` is now asserted to have one with
- * the expected number of controls in it.
+ * a page has no gold section, so every route in `GOLD_ROUTES` is now asserted
+ * to have one with the expected number of controls in it.
  *
  * VERIFIED NOT TO BE VACUOUS. Each assertion was broken on purpose and the
  * failure checked:
@@ -449,8 +449,51 @@ const invisibleControlMessage = (found: InvisibleControl[]) =>
  * every route would keep returning `[]` and the check would go quietly
  * vacuous rather than fail. This is the guard against that.
  */
+/**
+ * The routes that render a `.surface-gold` section, and how many controls each
+ * puts on the gold ground.
+ *
+ * A map rather than the single `GOLD_ROUTE` this used to be. /career was the
+ * only such route for as long as only one page used the class; /contact now
+ * ends with a gold band too, and a constant naming one route would have gone
+ * quietly out of date while every assertion kept passing — the non-vacuity
+ * guard below only fires on routes named here, so an unnamed gold route is
+ * simply not guarded.
+ *
+ * `goldRoutesFromBuild` checks these keys against the built HTML, so adding a
+ * gold section without adding it here fails rather than going unwatched.
+ */
+const GOLD_ROUTES: Record<string, number> = {
+  '/career': 2,
+  '/contact': 1,
+};
+
+/** The route the reflow checks at the bottom of this file use. */
 const GOLD_ROUTE = '/career';
-const GOLD_ROUTE_CONTROLS = 2;
+
+/**
+ * Routes whose built HTML contains a `.surface-gold` section.
+ *
+ * Derived from `dist/` rather than trusted from the literal above, which is
+ * the same guard `islandRoutesFromBuild` in tests/routes.ts applies to island
+ * routes and for the same reason: a literal listing a subset of routes keeps
+ * passing when a new one appears, and the new one has no coverage at all.
+ */
+const goldRoutesFromBuild = (): string[] =>
+  ROUTES.filter((route) => {
+    const file =
+      route === '/'
+        ? 'dist/index.html'
+        : route === '/404'
+          ? 'dist/404.html'
+          : `dist${route}/index.html`;
+
+    try {
+      return /class="[^"]*\bsurface-gold\b/.test(readFileSync(file, 'utf8'));
+    } catch {
+      return false;
+    }
+  });
 
 /** Every element whose own text sits directly on a gold background. */
 const textOnGold = (page: Page) =>
@@ -766,23 +809,23 @@ test.describe('the gold surface exception', () => {
       };
 
       /*
-       * Non-vacuity, on the one route that has a gold section. Without this
-       * the assertion below passes on an empty list for every route forever,
+       * Non-vacuity, on every route that has a gold section. Without this the
+       * assertion below passes on an empty list for every route forever,
        * which is exactly what it did for the whole time no page used the
        * class.
        */
-      if (route === GOLD_ROUTE) {
+      if (route in GOLD_ROUTES) {
         expect(
           walked.section,
-          `${route} has no .surface-gold section. It is the only route that ` +
-            `renders one, so losing it makes the invisible-control check ` +
-            `below vacuous on every route rather than failing anywhere.`,
+          `${route} has no .surface-gold section. It is listed in ` +
+            `GOLD_ROUTES, so losing it makes the invisible-control check ` +
+            `below vacuous on this route rather than failing anywhere.`,
         ).toBe(true);
         expect(
           walked.controls,
-          `${route} should put ${GOLD_ROUTE_CONTROLS} controls on the gold ` +
+          `${route} should put ${GOLD_ROUTES[route]} controls on the gold ` +
             `ground for this check to walk`,
-        ).toBe(GOLD_ROUTE_CONTROLS);
+        ).toBe(GOLD_ROUTES[route]);
       }
 
       expect(
@@ -1454,8 +1497,8 @@ test.describe('the gold surface exception', () => {
 
       expect(
         measured.controls.length,
-        `${GOLD_ROUTE} should render ${GOLD_ROUTE_CONTROLS} controls on gold`,
-      ).toBe(GOLD_ROUTE_CONTROLS);
+        `${GOLD_ROUTE} should render ${GOLD_ROUTES[GOLD_ROUTE]} controls on gold`,
+      ).toBe(GOLD_ROUTES[GOLD_ROUTE]);
 
       /* Reflow. The document must not scroll; the section is allowed to clip. */
       expect(
@@ -1615,4 +1658,16 @@ test.describe('the gold surface exception', () => {
       [],
     );
   });
+});
+
+/**
+ * The gold-route literal matches the build.
+ *
+ * GOLD_ROUTES turns the non-vacuity guard on, route by route. A gold section
+ * added to a page nobody listed there is a section with no guard, and every
+ * other assertion in this file keeps passing, so nothing says so. This reads
+ * the built HTML and compares.
+ */
+test('GOLD_ROUTES lists exactly the routes that render a gold section', () => {
+  expect(goldRoutesFromBuild().sort()).toEqual(Object.keys(GOLD_ROUTES).sort());
 });

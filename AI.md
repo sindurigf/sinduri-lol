@@ -223,8 +223,9 @@ The H1 and H2 floors are reflow constraints, not taste calls (SC 1.4.10).
 
 Every route presents the same content box at a 320px viewport, because the
 horizontal gutter is declared once as `.page-gutter` and applied to the header,
-`<main>` and the footer rather than page by page. Below `sm` it is 16px a side.
-Measured on all twelve built routes:
+`<main>` and the footer rather than page by page. It is `px-4 sm:px-6`, and
+only the base 16px is in this arithmetic: `sm` is 640px, so at the viewports
+below only `px-4` applies. Measured on all twelve built routes:
 
 | Viewport                          | Content box |
 | --------------------------------- | ----------- |
@@ -313,9 +314,11 @@ tested here. See the design system skill for the full rule.
 
 ### Borders, shadows, radius
 
-- Cards and sections: `border-8`
+- Cards, and every box that reads as one: `border-8`
 - Buttons: `border-4`
-- Section dividers: `border-b-8`
+- Section dividers and band edges: `border-b-8` / `border-t-8`. These are
+  rules across the layout rather than borders around a box, and they stayed at
+  8px when the card borders came down to 6px
 - Default border color is the `border` token, set in the base layer, because
   Tailwind 4 defaults borders to `currentColor`.
 - Radius is `0` everywhere, and there are exactly two exceptions.
@@ -384,6 +387,21 @@ border-border` line that used to run between every section, which framed the
   was chasing came from decorations anchored to the viewport, not from the
   gutter. See
   [The heading floors are a reflow constraint](#the-heading-floors-are-a-reflow-constraint-not-a-taste-call)
+- `max-w-page` — the content column, `--container-page`, 80rem / 1280px. Not a
+  component class; a `--container-*` token, so it is a utility. Every column
+  inside the header, `<main>` and the footer uses it, and the three carry the
+  gutter on the outer element with this on the column inside. **That structure
+  is the point.** The header used to apply the gutter _inside_ its column while
+  `<main>` and the footer applied it _outside_ theirs, which reads identically
+  below the column width and diverges by exactly one gutter above it: measured
+  on `/about`, the header's content sat 24px inside main's at 1440px, 1600px
+  and 1920px. The width is a free variable once the structure is shared — any
+  value keeps the three aligned — so 80rem is simply the value the site always
+  had as `max-w-7xl`. `tests/alignment.spec.ts` asserts the three line up, at
+  three viewports wider than the column, and pins the absolute edges at 1440px.
+  Blog posts opt out with a narrower prose measure, and that exception list is
+  itself derived from the build and checked
+- `.page-column` is not a thing. Do not add one; the column is the utility above
 - `.skip-link` — the skip-to-content link, visible on focus
 - `.surface-gold`, `.btn-gold-primary`, `.btn-gold-secondary` — the gold-ground
   set, scoped to `.surface-gold`. See [The gold surface](#the-gold-surface)

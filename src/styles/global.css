@@ -214,7 +214,13 @@
    * Calibrate against 273px. tests/reflow.spec.ts now runs both widths, so the
    * 273px box is asserted rather than only checked by hand.
    *
-   * THE GUTTER IS NOT NEGOTIABLE. An earlier round bought 32px of box by
+   * ONLY THE BASE GUTTER IS IN THIS ARITHMETIC. `.page-gutter` steps up once,
+   * at `sm`, and that step does not appear above: `sm` is 640px, far wider
+   * than the viewports the floors are calibrated against, so at 305px and
+   * 320px only the base `px-4` applies. Widening the `sm` step costs the
+   * floors nothing. Widening `px-4` costs them everything.
+   *
+   * THE BASE GUTTER IS NOT NEGOTIABLE. An earlier round bought 32px of box by
    * dropping the gutter below `sm`. That is not a trade between a heading and
    * some whitespace: it puts every line of body copy on every page flush
    * against the screen edge on every phone, to fit one word that appears on
@@ -721,10 +727,21 @@
    * every line of body copy flush against the screen edge on every phone.
    * Both failures were a per-page decision about a site-wide box.
    *
-   * 16px below `sm`, 24px from `sm` up. The heading floors in @theme are
-   * calibrated against what this leaves: 273px at a real 305px viewport.
-   * Changing this number means redoing that arithmetic and re-running
-   * tests/reflow.spec.ts. It is not a spacing preference.
+   * 16px below `sm`, 24px from `sm` up. ONLY THE FIRST NUMBER IS LOAD-BEARING.
+   * The heading floors in @theme are calibrated against what `px-4` leaves at
+   * the two viewports the reflow suite measures: 273px at a real 305px
+   * viewport and 288px at 320px. Both are far below `sm` (640px), so the `sm`
+   * step is not in that arithmetic at all and is free to be a spacing
+   * preference. `px-4` is not: changing it means redoing the arithmetic and
+   * re-running tests/reflow.spec.ts.
+   *
+   * These were briefly widened to `sm:px-8 lg:px-12` while chasing a complaint
+   * that the page had too little horizontal breathing room. IT WAS THE WRONG
+   * LEVER. The actual cause was three absolutely positioned decorations in the
+   * homepage hero anchored to the VIEWPORT rather than to the content column,
+   * so they hugged the screen edge no matter what the gutter did. They are
+   * anchored to the column now and the gutter is back where it was. Widening
+   * this cannot fix a decoration that ignores it.
    *
    * A full-bleed band inside <main> has to break out of this deliberately
    * (negative inline margins), which is the right way round: the exception
@@ -745,7 +762,13 @@
    * .page-gutter comment calls this out as the right way round: the exception
    * is visible in the markup that wants it.
    *
-   * The four values are duplicated from .page-gutter and have to move with it.
+   * The four values are duplicated from .page-gutter and have to move with it,
+   * both breakpoints of it: a band that kept `sm:-mx-6` after the gutter moved
+   * would sit inside the page edge on every viewport from 640px up, which is
+   * exactly the kind of miss that reads as a rendering artefact rather than as
+   * a bug. Anything that needs the gutter WITHOUT duplicating it should just
+   * use `.page-gutter` itself, the way the hero's decoration layer does. This
+   * class cannot, because it also needs the matching negative margins.
    * They are written out rather than composed, because @apply resolves
    * utilities and .page-gutter is a component class, not a utility.
    *
@@ -786,8 +809,36 @@
     @apply min-w-0 border-8 border-border bg-surface p-card-tight sm:p-card;
   }
 
-  .section-divider {
-    @apply border-b-8 border-border;
+  /*
+   * THE SECTION RULE. A short bar at the head of a section, in place of the
+   * full-bleed 8px `border-b-8 border-border` line that used to be drawn
+   * between every one.
+   *
+   * The line had two problems. It ran the full width of the viewport while
+   * everything it separated was in a capped, centred column, so it read as a
+   * frame around the page rather than as punctuation in it. And it was doing
+   * ALL the separating: the two grounds either side measured 1.039:1, which is
+   * no step at all.
+   *
+   * This is deliberately not a divider. It sits at the top of a section rather
+   * than between two, it is 96px rather than the full width, and it rotates
+   * through gold, cyan and pink so it reads as a chapter mark. `pink` #FF007A
+   * is the right pink here and `pink-text` is not: this is a non-text element,
+   * which is exactly the split those two tokens exist for.
+   *
+   * It must sit inside a column-width box to line up with the text below it.
+   * A band is full-bleed, so a rule placed directly in one aligns to the
+   * viewport instead. Every use is wrapped for that reason, including in the
+   * sections whose column is a grid or a flex row, where a bare first child
+   * would become a track or an item instead of a rule.
+   *
+   * It replaced `.section-divider`, which was `border-b-8 border-border` and
+   * had no users at all — the sections wrote those two utilities inline rather
+   * than using the class, so the class was dead while the pattern was
+   * everywhere.
+   */
+  .section-rule {
+    @apply mb-12 block h-2 w-24;
   }
 
   /*

@@ -24,12 +24,16 @@ const isActive = (href: string): boolean =>
   href === '/' ? currentPath === '/' : currentPath.startsWith(href);
 ---
 
+<!--
+  The gutter goes on <header>, not on the column inside it, so this element
+  matches <main> and the footer. It used to be the other way round, which put
+  the header's content one gutter inside theirs on any viewport wider than the
+  column. See the --container-page comment in global.css.
+-->
 <header
-  class="sticky top-0 z-50 h-header border-b-8 border-border bg-header-bg backdrop-blur-header"
+  class="page-gutter sticky top-0 z-50 h-header border-b-8 border-border bg-header-bg backdrop-blur-header"
 >
-  <div
-    class="page-gutter mx-auto flex h-full max-w-7xl items-center justify-between"
-  >
+  <div class="mx-auto flex h-full max-w-page items-center justify-between">
     <!--
       No aria-label on this link. It would override both the image's alt and the
       visible wordmark, hiding the mark from assistive tech and breaking voice

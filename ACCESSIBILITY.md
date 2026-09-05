@@ -618,7 +618,8 @@ Stated honestly. This list is not filtered for how it looks.
    anchor destinations. Essentially nothing focusable on this site has an
    `id` — not a nav link, not a filter option, not a card heading's link — so
    the tab order was never covered at all. Shift-Tabbing back up a page put
-   controls **entirely** underneath the 80px sticky header: an SC 2.4.11
+   controls **entirely** underneath the sticky header, 80px at the time and
+   96px now: an SC 2.4.11
    Focus Not Obscured (Minimum) failure at AA, not the partial obscuring that
    2.4.12 covers at AAA.
 
