@@ -699,11 +699,21 @@ Still outstanding:
   primary button points at and no such file is in `public/`. One exists in the
   gitignored `design/uploads/` and must not be committed until it has been
   checked for personal data.
-- **Every photograph.** The hero portrait, the workspace square, the About
-  portrait, the Career conference photo and the blog post artwork are all
-  `PlaceholderBox` — a bordered, dashed frame at the right aspect ratio that
-  says what belongs in it. See that component for why a marked empty frame
-  beats an omitted one.
+- **Every photograph.** Four slots are `PlaceholderBox`, a bordered, dashed
+  frame at the right aspect ratio that says what belongs in it: the hero
+  portrait and the workspace square on the homepage, the About portrait, and
+  the blog post artwork in `BlogCard`. See that component for why a marked
+  empty frame beats an omitted one.
+
+  **The Career conference photo is not among them.** `/career` is built and
+  has no placement for it at all, neither a `PlaceholderBox` nor an `<img>`;
+  the only image on that page is the decorative hero watermark. An earlier
+  version of this list named it alongside the other four, which was written
+  while the page was still a stub and is wrong now that it is built. The
+  `photo` ratio comment in `PlaceholderBox.astro` still says the same thing.
+  Adding that placement is a build decision about whether the section exists,
+  not a matter of swapping a placeholder for a photograph.
+
 - **The contact form.** Deliberately not built; `public/_headers` carries
   `form-action 'none'` and widening it is a separate decision. See the CSP
   section above and `ACCESSIBILITY.md` §7 gap 1.
