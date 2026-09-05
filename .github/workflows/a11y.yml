@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Check out
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # check-commits.sh walks base..HEAD, so the base commit has to be in
           # the clone. The default shallow fetch has only the tip and the
@@ -42,7 +42,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           # .nvmrc is the single source of truth. Cloudflare Pages reads the
           # same file for the deploy build, so CI cannot drift away from
@@ -117,7 +117,7 @@ jobs:
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report/
