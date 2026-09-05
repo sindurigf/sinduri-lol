@@ -160,7 +160,7 @@ This gives a ~320px CSS viewport.
       reason it is `client:load`; if it were `client:media` it could fail here.
       → SC 1.4.10
 - [ ] No content overlaps another element or is cut off. → SC 1.4.10
-- [ ] Tab through the page. **The sticky 80px header never covers the element
+- [ ] Tab through the page. **The sticky 96px header never covers the element
       that has focus.** Watch the top of the viewport as you Tab.
       → SC 2.4.11
 - [ ] Repeat on `/blog/example-post`, the longest page. → SC 1.4.10, 2.4.11
@@ -500,8 +500,12 @@ nothing else, which is exactly what it is for.
 - [ ] Reach the **About** link with `K`. A pass announces it as the current
       page, not merely as a link.
       Heard: `___________________________________________` → SC 1.4.1, 4.1.2
-- [ ] The gold active-page dot is **not** announced. Nothing about a dot, a
-      bullet, or a stray blank in that same announcement.
+- [ ] The active-page **box** is not announced. Nothing about a border, a
+      frame, or a stray blank in that same announcement. It is drawn with
+      `border` and `box-shadow` on the link itself, so unlike the gold dot it
+      replaced there is no element here to leak into the accessible name; this
+      check is now confirming the absence of a defect rather than watching a
+      known risk.
       Heard: `___________________________________________` → SC 1.3.1
 - [ ] `Alt+Shift+K` lists the links. Every name stands on its own, out of
       context: no "click here", no bare URL, no two destinations sharing a
@@ -702,8 +706,9 @@ Settings → General → Zoom → tick **"Zoom text only"**, then Ctrl+`+` to 20
 
 - [ ] No text is clipped, truncated, or hidden behind another element.
 - [ ] Uppercase labels in the header and footer still fit their buttons.
-- [ ] The 80px sticky header grows or the text inside it stays readable;
-      nothing spills out of it.
+- [ ] The 96px sticky header grows or the text inside it stays readable;
+      nothing spills out of it. The active link's box is the thing most likely
+      to break here: it has to grow with the label rather than clip it.
 - [ ] The mobile menu, if it appears, is still operable.
 - [ ] Repeat on `/blog/example-post`.
 
@@ -749,12 +754,15 @@ used anywhere on this site, so a change to nav spacing cannot break 2.5.8.
       the edge has picked up its own container padding rules again, or lost
       `.page-gutter`. → SC 1.4.10
 - [ ] Header nav links are **at least 24px tall**. `py-2` on the `.label` link
-      takes the 15.6px line box to 31.6px. Measure one in DevTools; do not
-      infer it from the gap between links. This is the check to redo after any
-      header layout change. → pass at 1280px: Home 47.2x31.6, About 54.5x47.6,
-      Career 61.8x31.6, Blog 43.2x31.6, Get in touch 177.6x47.6
-- [ ] Confirm the nav still **looks** unchanged. The padding was added about
-      the flex centre line, so no glyph should have moved.
+      takes the 15.6px line box to 31.6px, and the `border-4` every link now
+      carries takes it to 39.6px. Measure one in DevTools; do not infer it from
+      the gap between links. This is the check to redo after any header layout
+      change. → pass at 1440px: Home 87.2x39.6, About 94.5x39.6,
+      Career 101.8x39.6, Blog 83.2x39.6, Get in touch 177.6x47.6
+- [ ] All four nav links are the **same height**, active or not. They were not
+      before: the gold dot sat inside the anchor with `mt-2`, so the current
+      page's link was 47.6px and the other three 31.6px. The box that replaced
+      it is on every link, transparent until current.
 - [ ] The mobile menu button is 48x48. → pass
 - [ ] Footer social links are ≥56px tall. → pass
 - [ ] Mobile menu links at 320px are ≥24px tall. → pass, they are 34px+ type

@@ -646,10 +646,17 @@ Nothing may flash more than three times per second (SC 2.3.1).
 
 - The active item uses **`aria-current="page"`**. That is the machine-readable
   indicator and it is not optional.
-- The gold dot is **visual reinforcement only**. It must never be the sole
-  signal of the active page, and it carries no meaning to assistive tech, so
-  mark it `aria-hidden="true"`.
-- Never signal state with color alone (SC 1.4.1).
+- The active item's **box** is visual reinforcement only: `border-4
+border-border` with `shadow-hard-gold-4`. It must never be the sole signal of
+  the active page. It carries no meaning to assistive tech and needs no ARIA of
+  its own, because it is drawn with border and shadow rather than an element.
+  (It replaced an 8x8 gold dot, which was a separate `aria-hidden` span.)
+- **Every link carries the border and padding; only the colour and shadow
+  change.** Inactive links get `border-transparent`, which is holding space,
+  not decorating. An indicator applied to the active link alone makes that item
+  wider on its own page and reflows the whole row as you navigate.
+- Never signal state with color alone (SC 1.4.1). A box is a shape cue and
+  passes; recolouring the active label and nothing else would not.
 
 ### Target size: every nav link is at least 24px tall
 
@@ -657,13 +664,22 @@ Nothing may flash more than three times per second (SC 2.3.1).
 target, never the gap between targets.
 
 A `.label` link is 13px at line-height 1.2, so its line box is 15.6px and the
-link fails on its own. `py-2` adds 8px top and bottom and takes it to 31.6px.
-The `ul` is `items-center`, so symmetric padding grows the hit area about the
-same centre line and moves no glyph: the rendered header is unchanged.
+link fails on its own. `py-2` adds 8px top and bottom and takes it to 31.6px;
+the `border-4` the active-item box needs adds 8px more, to **39.6px**, measured
+on `/about` at 1440px. The `ul` is `items-center`, so symmetric padding grows
+the hit area about the same centre line and moves no glyph.
+
+All four links now measure the same height, which they did not before: the old
+gold dot sat inside the anchor with `mt-2`, so the active link alone was 47.6px
+and the other three were 31.6px.
 
 ```html
-<!-- Yes: 31.6px tall, passes on its own size -->
-<a class="label block py-2 text-muted hover:text-cyan" href="/about">About</a>
+<!-- Yes: 39.6px tall, passes on its own size, same box active or not -->
+<a
+  class="label block border-4 border-transparent px-4 py-2 text-muted"
+  href="/about"
+  >About</a
+>
 
 <!-- No: 15.6px tall, passing only while a neighbour stays far enough away -->
 <a class="label block text-muted hover:text-cyan" href="/about">About</a>
@@ -674,11 +690,14 @@ SC 2.5.8 does offer a spacing exception, where an undersized target passes if a
 on it here.** It made the 40px `gap-10` load-bearing for conformance, so any
 future change to nav spacing, or stacking the items, would have broken 2.5.8
 silently and at a distance from the edit. The gap is now free to be a
-typographic choice again. Check the link's own box, not its neighbours.
+typographic choice again, and it has since been used as one: it is `gap-3`,
+because the links carry 16px of horizontal padding of their own and the old
+40px gap on top of that read as a broken row. Check the link's own box, not its
+neighbours.
 
 ### The sticky header
 
-The header is 80px (`--spacing-header`) and sticky. It will cover an element
+The header is 96px (`--spacing-header`) and sticky. It will cover an element
 that receives focus near the top of the viewport, which fails WCAG 2.2 SC 2.4.11
 Focus Not Obscured.
 
@@ -703,6 +722,9 @@ Check this by tabbing from the top of a long page, not by reading the CSS.
 - The indicator must reach **3:1 against adjacent colors** (SC 1.4.11) on all
   three surfaces.
 - **Never remove an outline without replacing it.** `outline: none` on its own
+It is fixed pixels of every viewport, a 720px-tall one at 400% zoom included,
+which is the argument against growing it further.
+
   is a bug.
 - **The hard offset shadow aesthetic is not a focus indicator.** An offset
   shadow reads as decoration, it is already used for resting state on buttons

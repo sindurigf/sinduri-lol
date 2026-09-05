@@ -372,7 +372,47 @@
   --inset-shadow-gold-btn-ring: inset 0 0 0 3px var(--color-gold-btn-label);
 
   /* Layout */
-  --spacing-header: 80px;
+  /*
+   * THE CONTENT COLUMN. One number, so the header, <main> and the footer put
+   * their content on the same two vertical lines at every viewport.
+   *
+   * They did not, and nothing caught it. The header used to apply
+   * `.page-gutter` INSIDE its `max-w-page` box while <main> and the footer
+   * applied it OUTSIDE theirs. Below the column width that reads the same,
+   * because the max-width is not binding and all three are just
+   * viewport-minus-gutter. Above it they diverge by exactly the gutter, and
+   * measured on /about the header's content sat 24px inside main's at 1440px,
+   * 1600px and 1920px. Widening the `lg` gutter to 48px doubled that to 48px,
+   * which is what made a five-year-old misalignment visible enough to find.
+   *
+   * The fix is structural: every one of the three now carries the gutter on
+   * the outer element and this token on the column inside it. Once they share
+   * that structure the width is a FREE VARIABLE — any value keeps them
+   * aligned, because all three centre the same box inside boxes that differ by
+   * exactly the gutter, and (W - col) / 2 is the same either way.
+   *
+   * 80rem is what the site used as `max-w-7xl` before any of this, and it is
+   * deliberately back to it. It was narrowed to 74rem for one round to buy
+   * horizontal breathing room; that was the wrong lever, for the reason set
+   * out in the .page-gutter comment.
+   *
+   * tests/alignment.spec.ts asserts the outcome rather than the arithmetic, so
+   * it fails on a structural regression rather than on this number, and pins
+   * the absolute edges separately so the two cannot drift apart silently.
+   */
+  --container-page: 80rem;
+  /*
+   * The sticky header's height. 80px until the nav gained a bordered box for
+   * the active link: at 80px the box (15.6px line + 16px padding + 8px border
+   * = 39.6px, plus its 4px offset shadow) left too little air above and below
+   * to read as deliberate.
+   *
+   * It is fixed pixels of every viewport, including a 720px-tall one at 400%
+   * zoom, which is the reason not to keep going. `scroll-margin-top` below is
+   * calc()'d from this token, so in-page anchors and focus targets follow it
+   * automatically and SC 2.4.11 does not have to be re-derived by hand.
+   */
+  --spacing-header: 96px;
   /*
    * Card padding is two numbers because the card is a box inside a box. At
    * 40px a side, a card at a 305px viewport leaves 273 - 16 (border-8) - 80
