@@ -1,5 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 
+/*
+ * WebKit is defined in CI, and locally only when asked for. The long note on
+ * `projects` says why this is a condition rather than simply a third entry.
+ */
+const WEBKIT = Boolean(process.env.CI) || process.env.WEBKIT === '1';
+
 const PORT = 4321;
 export const BASE_URL = `http://localhost:${PORT}`;
 
@@ -43,22 +49,47 @@ export default defineConfig({
    *
    * Measured against firefox 153.0 on 2026-09-05.
    *
-   * WEBKIT IS NOT HERE, AND NOT BECAUSE IT WAS FORGOTTEN. The browser
-   * downloads, but it will not launch on this machine: it needs system
-   * libraries (libicu74 and others) that `sudo npx playwright install-deps`
-   * would install, and that is a change to the machine rather than to this
-   * repository. Nobody has yet run this suite against WebKit even once.
+   * WEBKIT RUNS, BUT NOT EVERYWHERE, AND THE CONDITION BELOW IS NOT TIMIDITY.
    *
-   * Adding the project here anyway would make CI the first place it ever ran,
-   * on a runner where `--with-deps` would supply those libraries. That is the
-   * wrong place to discover the first failure, and a red CI on a green branch
-   * teaches people to ignore it. The item stays open in TODO with what it
-   * actually needs written down, which is a truer state than a project nobody
-   * has exercised.
+   * It has been run: 487 tests, all passing, in 44.1s. That run happened in
+   * Playwright's own container before this project was defined, because the
+   * first WebKit run should not be a CI run on a green branch.
+   *
+   * It cannot run on the development machine, and that is an operating system
+   * fact rather than a missing package. Playwright builds WebKit against ICU
+   * 74 (Ubuntu 24.04); this machine is Ubuntu 25.10, which ships ICU 76, and
+   * ICU has no ABI compatibility across majors. `libicu74` is in none of its
+   * repositories, so `sudo npx playwright install-deps` does not help — run it
+   * and apt answers "Unable to locate package libicu74" and "Package
+   * 'libavcodec60' has no installation candidate". The full missing set is
+   * libicu{data,i18n,uc}.so.74, libjxl.so.0.8 (the distro has 0.11) and
+   * libmanette-0.2.so.0. Forcing 24.04 packages onto 25.10 would put the
+   * system ICU at risk, which a great deal links against, for a test browser.
+   *
+   * So the project is conditional. CI defines it, because an ubuntu-latest
+   * runner is 24.04 and `--with-deps` supplies exactly those libraries.
+   * Locally it is off unless asked for, so `npm run test:a11y` does not fail
+   * on this machine with an error nobody here can act on.
+   *
+   * TO RUN WEBKIT LOCALLY, on a machine that cannot host it:
+   *
+   *   docker run --rm --ipc=host -v "$PWD":/work -w /work \
+   *     mcr.microsoft.com/playwright:v1.63.0-noble \
+   *     bash -c "npm ci && WEBKIT=1 npx playwright test --project=webkit"
+   *
+   * THIS IS THE ONE PLACE CI RUNS SOMETHING LOCAL DOES NOT, and it is worth
+   * naming because this repository otherwise treats that drift as a defect —
+   * see the .nvmrc reasoning in README. The difference here is not a choice
+   * between two configurations. One of the two machines cannot execute the
+   * binary, and a suite that is red for a reason the developer cannot fix is
+   * worse than one that is honest about where it ran.
    */
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    ...(WEBKIT
+      ? [{ name: 'webkit', use: { ...devices['Desktop Safari'] } }]
+      : []),
   ],
 
   // Playwright owns the server lifecycle: it builds the site, serves the built

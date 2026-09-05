@@ -77,17 +77,20 @@ ACCESSIBILITY.md §6 and §7, and docs/MANUAL_TESTING.md.
       answers
 - [ ] §6: the Orca pass in Firefox, plus §6.4, the uppercase question, in Chrome (ACCESSIBILITY.md gap 4)
 - [ ] §7: 200% text-only zoom (SC 1.4.4) and the text spacing override (SC 1.4.12)
-- [ ] §8: cross-browser. **Firefox is done and automated** — `playwright.config.ts`
-      defines a `firefox` project, the suite runs 974 tests across two engines,
-      and Firefox 153.0 passed all 487 on the first attempt with no source
-      change and no browser-conditional assertion. `<dialog>` and `showModal()`
-      behave, which is what this item was really about. What remains:
-      **WebKit has never been run once.** It downloads but will not launch here
-      without system libraries (`libicu74` and others) that
-      `sudo npx playwright install-deps` installs — a change to the machine
-      rather than the repository. No `webkit` project is defined on purpose, so
-      that CI is not the first place it ever runs; see the reasoning in
-      `playwright.config.ts`. The by-hand Firefox pass in §8 also stays, because
-      a passing assertion is not a judgement about whether the page reads right
+- [x] §8: cross-browser — **done for all three engines.** `playwright.config.ts`
+      defines `chromium` and `firefox` everywhere and `webkit` in CI, and each
+      passed all 487 tests on its first run with no source change and no
+      browser-conditional assertion. `<dialog>` and `showModal()` behave, which
+      is what this item was really about. WebKit cannot run on this machine and
+      will not without changing the OS: Ubuntu 25.10 ships ICU 76, Playwright
+      builds WebKit against ICU 74, and ICU has no cross-major ABI, so
+      `sudo npx playwright install-deps` does not help — there is no
+      `libicu74` in any 25.10 repository. It was verified in Playwright's
+      container before the project was added, and the docker command for
+      reproducing that is in `playwright.config.ts` and docs/MANUAL_TESTING.md
+      §8. What is left is by hand and lives in that section rather than here:
+      the Firefox pass, and a real Safari pass on real hardware if anyone gets
+      a Mac, because headless WebKit is not Safari and says nothing about
+      VoiceOver
 - [ ] §9: target size (SC 2.5.8). Automated in `tests/target-size.spec.ts` for every route at 305px and 1280px, measuring each target's own box — the SC 2.5.8 spacing exception is deliberately not implemented, because relying on it makes the gap between two controls load-bearing for conformance
 - [ ] Rewrite ACCESSIBILITY.md §6 and gap 4 with what was heard, in which browser, at which versions

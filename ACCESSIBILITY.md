@@ -115,12 +115,18 @@ What is currently true:
 - **Reduced motion is checked site-wide**, not only on the two routes that
   render a badge. Zero elements still animate under
   `prefers-reduced-motion: reduce` across all 23 routes.
-- **The whole suite runs in two engines.** Chromium and Firefox 153.0, 487
-  tests each, 974 in total. Firefox passed every one on its first run with no
-  source change and no browser-conditional assertion. Until this build every
-  claim the suite made was a claim about one engine. WebKit has still never
-  been run: it needs system libraries this machine does not have, and no
-  `webkit` project is defined rather than have CI be the first place it runs.
+- **The whole suite runs in three engines.** Chromium, Firefox 153.0 and
+  WebKit. Each passed all 487 tests on its first run, with no source change and
+  no browser-conditional assertion anywhere in the suite. Until this build
+  every claim the suite made was a claim about one engine.
+
+  WebKit is defined in CI only. The development machine is Ubuntu 25.10, which
+  ships ICU 76, and Playwright builds WebKit against ICU 74; that is an ABI
+  incompatibility rather than a missing package, so it cannot run there at all.
+  It was verified in Playwright's container before being added, and
+  `playwright.config.ts` carries the reasoning and the command. Headless WebKit
+  is also not Safari: it says nothing about VoiceOver, which remains untested.
+
 - **Every page names itself** (`tests/titles.spec.ts`). axe's `document-title`
   fires only on a missing or empty title and says nothing about two pages
   sharing one. All 23 titles are distinct and name the page before the site.

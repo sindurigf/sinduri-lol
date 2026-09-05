@@ -739,9 +739,9 @@ p, li, h1, h2, h3, h4, h5, h6 { margin-bottom: 2em !important; }
 
 `<dialog>` is the one thing here with real engine differences.
 
-**Firefox is now automated.** `playwright.config.ts` defines a `firefox`
-project alongside `chromium`, so the whole suite — all 487 tests — runs twice,
-974 in total. Firefox 153.0 passed every one on the first attempt, with no
+**Firefox and WebKit are now automated.** `playwright.config.ts` defines a
+`firefox` project alongside `chromium`, and a `webkit` project in CI, so the
+whole suite runs in three engines. Firefox 153.0 passed every one on the first attempt, with no
 source change and no browser-conditional assertion anywhere in `tests/`.
 `<dialog>` and `showModal()` behave, which is the thing this section was
 written to worry about.
@@ -753,13 +753,27 @@ about whether the ring reads as one in context.
 
 - [ ] Firefox: full §2 pass, by hand.
 - [ ] Firefox: focus ring is visible on every stop, judged rather than measured.
-- [ ] WebKit: **not yet run once, anywhere.** The browser is installed but will
-      not launch on this machine — it needs system libraries (`libicu74` and
-      others) that `sudo npx playwright install-deps` supplies. That is a change
-      to the machine, not to the repository, so it has not been made. No
-      `webkit` project is defined, deliberately: adding one would make CI the
-      first place WebKit ever ran, and a red CI on a green branch teaches people
-      to ignore CI. See the comment in `playwright.config.ts`.
+- [ ] WebKit: **automated in CI, and it passes** — 487 tests, 44.1s, first run.
+      A real Safari pass on real hardware is still worth doing if anyone has a
+      Mac. Headless WebKit is not Safari, and the gap is widest in exactly the
+      places this checklist cares about: VoiceOver, and how the platform draws
+      focus.
+
+**WebKit cannot run on this machine, and that is an OS fact rather than a
+missing package.** Playwright builds WebKit against ICU 74; this machine is
+Ubuntu 25.10, which ships ICU 76, and ICU has no ABI compatibility across
+majors. `sudo npx playwright install-deps` does **not** fix it — apt has no
+`libicu74` on 25.10 at all, and it will also fail to find `libavcodec60`. Do
+not chase it by hand-installing 24.04 packages: that risks the system ICU,
+which a great deal links against, for the sake of a test browser.
+
+To run WebKit here, use Playwright's own container, which is Ubuntu 24.04:
+
+```sh
+docker run --rm --ipc=host -v "$PWD":/work -w /work \
+  mcr.microsoft.com/playwright:v1.63.0-noble \
+  bash -c "npm ci && WEBKIT=1 npx playwright test --project=webkit"
+```
 
 ## 9. Target size → SC 2.5.8
 

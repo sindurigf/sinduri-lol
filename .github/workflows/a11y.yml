@@ -27,10 +27,16 @@ jobs:
     # the cheaper of the two problems.
     name: Build, typecheck, and axe
     runs-on: ubuntu-latest
-    # Raised from 15 when Firefox doubled the suite to 974 tests. The chromium
-    # half took 4.9 minutes on this runner; the headroom is for the second
-    # browser plus the install, not for a suite that has started to crawl.
-    timeout-minutes: 25
+    # Raised twice, and the numbers are why. Chromium alone was 4.9 minutes;
+    # adding Firefox took the run to 13m52s; WebKit is the third engine of
+    # three, so budget around 21. 35 is headroom for the extra browser
+    # download too, not licence for a suite that has started to crawl.
+    #
+    # The run is serial: `workers: 1` under CI in playwright.config.ts. Raising
+    # that would cut the wall clock roughly in half and is the first thing to
+    # try if this becomes painful, but it changes the flake characteristics of
+    # a suite that measures layout, so it is not a change to make casually.
+    timeout-minutes: 35
 
     steps:
       - name: Check out
@@ -93,14 +99,20 @@ jobs:
         run: npm ci
 
       # --with-deps pulls the system libraries the browsers need on a bare
-      # runner. Chromium and Firefox, matching the two projects in the config.
+      # runner. All three, because CI defines all three projects.
       #
-      # WebKit is deliberately absent, and playwright.config.ts says why at
-      # length: it is not that the project was forgotten, it is that nobody has
-      # run the suite against it even once. Adding it here would make CI the
-      # first place it ever ran, which is the wrong place to find out.
+      # WebKit runs HERE AND NOT ON THE DEVELOPMENT MACHINE, which is the one
+      # place this workflow deliberately does more than a local run. That
+      # machine is Ubuntu 25.10 and ships ICU 76; Playwright builds WebKit
+      # against ICU 74, and `install-deps` cannot find libicu74 in any 25.10
+      # repository. This runner is 24.04, where --with-deps simply works.
+      #
+      # It was not adopted sight unseen. The full 487 tests were run against
+      # WebKit in Playwright's own container first, and passed, before the
+      # project was added. playwright.config.ts has the reasoning and the
+      # docker command for reproducing that locally.
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox
+        run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Build
         run: npm run build
