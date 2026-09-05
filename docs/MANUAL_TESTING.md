@@ -778,6 +778,92 @@ used anywhere on this site, so a change to nav spacing cannot break 2.5.8.
       clickable area is taller than the words, and that the gap to the `<h1>`
       still looks right. → SC 2.5.8
 
+## 10a. Exploratory tools, and what a trial of one produced
+
+Nothing here is a dependency and nothing here gates CI. These are one-off runs
+for finding questions the suite is not asking, which is a different job from
+answering them.
+
+### keyboard-a11y-tester
+
+<https://github.com/ezufelt/keyboard-a11y-tester>. MIT, Node >= 20, drives
+Playwright keyboard-only as two W3C personas and maps findings to success
+criteria. **Not a dependency of this repository and should not become one**: it
+needs an LLM to drive its judgment layer, so it cannot gate a build, and
+`tests/focus.spec.ts` already walks the tab order deterministically in both
+directions on every route at two widths.
+
+Trialled 2026-09-05 against the built site on `localhost:4322`, homepage only,
+both viewports. It produced three finding types. **Two were false positives,
+and they are recorded here so nobody spends the afternoon on them again.**
+
+1. `sr-duplicate-landmark`, "banner (2x), main (3x)", graded moderate. **False.**
+   The DOM has exactly one `<header>`, one `<main>` and one `<footer>`, and zero
+   elements carrying `role="banner"` or `role="main"`. axe agrees:
+   `landmark-one-main`, `landmark-no-duplicate-banner` and
+   `landmark-no-duplicate-main` all pass. The multiplier tracks the number of
+   page-audit snapshots the run took — 3 on desktop, 4 on mobile — so it is
+   counting one landmark once per snapshot.
+
+2. `sr-focusable-not-exposed`, two `BlogCard` heading links "keyboard-focusable
+   but never appear in the accessibility-tree walk (likely `aria-hidden="true"`
+   combined with a focusable tabindex)", graded **serious**, confidence 0.75.
+   **False.** Both links have no `tabindex`, no `aria-hidden`, and no
+   `aria-hidden` ancestor; `ariaSnapshot()` returns them as links with correct
+   accessible names. The tool crawls rather than exhausting the page, which its
+   own README says, and its census simply did not reach them.
+
+3. `focus-appearance-weak`, WCAG 2.4.13, informative. Graded AAA and so not a
+   claim this site makes — but one measurement in it, a focus indicator at
+   2.24:1, pointed at something real: **the suite asserted that a focus ring
+   exists and never that it could be seen.** The 2.24 figure did not reproduce
+   (across 572 controls at both widths the lowest is 10.60:1), but the dimension
+   was genuinely untested, and `global.css` had claimed 11.32 / 10.60 / 11.76 in
+   a comment with nothing behind it. `tests/focus.spec.ts` now measures it, for
+   SC 1.4.11.
+
+**Verdict: worth the one run, not worth a dependency.** One of three findings
+was useful, and its usefulness was in naming an untested dimension rather than
+in the number it reported. Re-run it after a navigation or card redesign; read
+every finding against the DOM before acting on it.
+
+## 10b. Items mined from external checklists
+
+Checked against this site on 2026-09-05, from the Accessible Astro testing
+checklist and <https://specification.website/checklist/>. Recorded so the same
+ground is not re-walked.
+
+**Now automated, so no longer by hand:** heading hierarchy and one `h1` per page
+(axe best-practice `heading-order`, `page-has-heading-one`); content inside
+landmarks (`region`); skip link (`skip-link`); descriptive and distinct page
+titles (`tests/titles.spec.ts`); forced colours
+(`tests/forced-colors.spec.ts`); reduced motion site-wide (`tests/motion.spec.ts`);
+focus indicator contrast (`tests/focus.spec.ts`).
+
+**Already covered before this build, and worth knowing so it is not re-checked:**
+duplicate IDs. `duplicate-id-aria` carries `wcag2a`, not `best-practice`, so it
+has been running under the WCAG tags all along. Its two siblings `duplicate-id`
+and `duplicate-id-active` are deprecated in axe 4.13 and do not run at all.
+
+**Not applicable to this site as it stands:** links opening in new tabs — there
+is no `target=` attribute anywhere; captions, transcripts and audio description
+— there is no video or audio; accessible data tables — there are no tables;
+dragging movements, accessible authentication, redundant entry and consistent
+help — there is no form, no login and no multi-step flow. Revisit each when the
+contact form lands.
+
+**Already satisfied by construction:** the `inert` behaviour behind an open
+dialog, because `MobileMenu.vue` uses a native `<dialog>` with `showModal()`
+rather than a hand-rolled focus trap.
+
+**One item from the Accessible Astro list is deliberately rejected.** It asks
+for touch targets of at least **44x44** pixels. That is SC 2.5.5 Target Size
+(Enhanced), which is level **AAA**, or Apple's HIG. The AA criterion this site
+targets is **SC 2.5.8 at 24x24**, which `tests/target-size.spec.ts` implements.
+Adopting 44 would quietly change the conformance target. The same list's "the
+logo should not be linked on the homepage" has no basis in WCAG and is contested
+practice; it is not adopted either.
+
 ## 10. What this checklist does not cover
 
 Not gaps in the testing, gaps in the site.

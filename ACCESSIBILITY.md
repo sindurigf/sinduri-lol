@@ -50,6 +50,20 @@ What is currently true:
 - Every route the site builds passes axe-core with no violations, at the
   `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, and `wcag22aa` tags.
 - No axe rule is disabled and no result is excluded anywhere in the suite.
+- Every route also passes axe's **best-practice** rules, which the suite had
+  never run: `region`, `heading-order`, `landmark-one-main`, `skip-link` and
+  fourteen others executed against this site for the first time in this build
+  and found nothing. They run in a block of their own rather than folded into
+  the WCAG tags, because none of them is a success criterion and a failure
+  should say which of the two things broke.
+- **Nothing axe leaves undecided is left undecided.** `analyze()` returns
+  violations, passes, incomplete and inapplicable, and until this build the
+  suite read only the first. `incomplete` was not empty: eleven `color-contrast`
+  nodes across `/`, `/about` and `/contact`, three of them ordinary content —
+  the homepage standfirst, the "Read the blog" call to action, and the About
+  portrait label. `tests/contrast-incomplete.spec.ts` decides every one by
+  walking the paint stack and measuring against the resolved ground. All eleven
+  clear their floors; the tightest is 4.90:1 against a 3:1 large-text floor.
 - All text colour tokens have been measured against all three dark surface
   colours (`#131313`, `#1A1A1A`, `#0E0E0E`), and against `#FFC000`, which is
   the fourth surface the design uses and the one every dark token fails on.
@@ -84,6 +98,26 @@ What is currently true:
   order in both directions on every route at two widths and hit-tests each
   stop, for SC 2.4.11 Focus Not Obscured (Minimum) and SC 2.4.7 Focus Visible.
   It exists because that rule had already failed; see gap 8.
+- The same walk now also measures the focus ring against the ground it is drawn
+  on, for **SC 1.4.11 Non-text Contrast**. Presence was asserted; perceivability
+  was not, so a ring at 1.2:1 would have scored a pass. Across 572 controls at
+  both widths the lowest is 10.60:1. `global.css` had claimed 11.32 / 10.60 /
+  11.76 against `background` / `surface` / `deep` in a comment since the ring
+  was written; that claim now has a test behind it.
+- **Windows High Contrast Mode is covered** (`tests/forced-colors.spec.ts`),
+  which nothing in the repository had ever set. The mode suppresses every
+  `box-shadow`, and this design uses `shadow-hard-*` for the offset blocks that
+  give cards and buttons their shape, so anything bounded only by a shadow has
+  no edges there. Asserted: nothing sets `forced-color-adjust` away from `auto`,
+  every non-link control keeps a painted border or an opaque background, links
+  are painted distinctly from body text, and the focus ring keeps a non-zero
+  width.
+- **Reduced motion is checked site-wide**, not only on the two routes that
+  render a badge. Zero elements still animate under
+  `prefers-reduced-motion: reduce` across all 23 routes.
+- **Every page names itself** (`tests/titles.spec.ts`). axe's `document-title`
+  fires only on a missing or empty title and says nothing about two pages
+  sharing one. All 23 titles are distinct and name the page before the site.
 
 **None of the above says anything about the words.** Every page currently
 carries lorem ipsum, which is Latin inside a `lang="en"` document, so the
