@@ -79,6 +79,14 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
+      # The contact endpoint, through the Worker with local D1. Its own config,
+      # because the sharded suite runs against a static server with no endpoint;
+      # see playwright.worker.config.ts. Here rather than in the shards because
+      # it is HTTP only and needs no browser, and running it once per shard
+      # would repeat the same requests six times.
+      - name: Contact endpoint tests
+        run: npm run test:worker
+
   # The browser suite, split across parallel runners.
   #
   # Measured 2026-09-12: on one runner the suite step was 866s of a 15.5-minute
@@ -142,12 +150,6 @@ jobs:
       # Fails on any axe violation. No rule is excluded; see ACCESSIBILITY.md.
       - name: Accessibility tests
         run: npm run test:a11y -- --shard=${{ matrix.shard }}/${{ strategy.job-total }}
-
-      # The contact endpoint, served through the Worker with local D1. A separate
-      # config because the suite above runs against a static server; see
-      # playwright.worker.config.ts. HTTP only, so it needs no browser.
-      - name: Contact endpoint tests
-        run: npm run test:worker
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}

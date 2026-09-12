@@ -15,7 +15,8 @@ npm run test:worker
 
 `check` runs the token, link, format and commit checks. `test:worker` runs the
 contact endpoint spec through the Worker, which the static server `test:a11y`
-uses cannot serve. The required CI job runs all five.
+uses cannot serve. CI runs all five across parallel jobs, gated by the one
+required check, `Build, typecheck, and axe`.
 
 A suite is green only when the summary line with the counts says so. Check the
 reported total against `npx playwright test --list`: a total below the collected
