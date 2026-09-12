@@ -122,7 +122,7 @@ against lorem as provisional in both.
 - [ARCHITECTURE.md](ARCHITECTURE.md) — stack, design system, tokens, content
   schema, assets, security headers, conventions
 - [ACCESSIBILITY.md](ACCESSIBILITY.md) — conformance statement and known gaps
-- [README.md](README.md) — setup, commands, deploy, hostnames, branch protection
+- [README.md](README.md) — setup, commands, deploy, Cloudflare settings
 - [AI_DISCLOSURE.md](AI_DISCLOSURE.md) — how AI tooling was used, and that none
   of it runs at runtime
 - [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) — the by-hand checklist that

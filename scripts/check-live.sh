@@ -5,18 +5,18 @@
 #
 # The test suite reads dist/, but Cloudflare's dashboard can change what ships
 # without dist/ changing at all: five such changes were found on 2026-09-11,
-# three of them by accident, and README > Dashboard settings the site depends
-# on lists them. Assume there is a sixth. That is why the body rules below
-# match a string anywhere in the response rather than inside a tag shape
-# decided in advance: the grep that missed JavaScript Detections matched
-# `cdn-cgi` only inside script attributes.
+# three of them by accident, and README > Cloudflare settings lists them.
+# Assume there is a sixth. That is why the body rules below match a string
+# anywhere in the response rather than inside a tag shape decided in advance:
+# the grep that missed JavaScript Detections matched `cdn-cgi` only inside
+# script attributes.
 #
 # What fails, per response:
 #
 #   1. Any header public/_headers sets for that path whose production value
 #      differs, with both values printed. The expected values are parsed out
 #      of the file, every matching rule applied and a repeated name joined
-#      with a comma the way Pages does it, so this cannot drift from the file
+#      with a comma the way Cloudflare does it, so this cannot drift from the file
 #      it guards. Headers the file does not set are not compared; Cloudflare
 #      adds several.
 #   2. `cdn-cgi` anywhere in the body. That namespace is where Cloudflare puts
@@ -248,12 +248,12 @@ detail() {
   printf '        %s\n' "$1"
 }
 
-# The headers Pages sends for a path, as `name<TAB>value`: every matching rule
+# The headers Cloudflare sends for a path, as `name<TAB>value`: every matching rule
 # applies, and a name set by more than one of them is joined with a comma.
 expected_for() {
   while IFS="$TAB" read -r pattern name value; do
     # Unquoted on purpose: the pattern is a glob, and in `case` a `*` matches
-    # across `/`, which is how Pages matches `/*` and `/_astro/*`.
+    # across `/`, which is how Cloudflare matches `/*` and `/_astro/*`.
     # shellcheck disable=SC2254
     case "$1" in $pattern) printf '%s\t%s\n' "$name" "$value" ;; esac
   done < "$TMP/rules" | awk -F "$TAB" '
