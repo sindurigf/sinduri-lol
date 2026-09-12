@@ -6,9 +6,9 @@ import { RETENTION_DAYS } from '../lib/contact-form';
 /*
  * The privacy policy, which specification.website grades Required.
  *
- * IT IS SHORT BECAUSE THE ANSWER IS SHORT. This is a static site on
- * Cloudflare Pages with no server-side code, no database, no accounts and no
- * forms. It sets no cookies, uses no storage API, runs no analytics and loads
+ * IT IS SHORT BECAUSE THE ANSWER IS SHORT. This is a static site on a
+ * Cloudflare Worker with no accounts, and its one piece of server-side code
+ * is the contact form, which stores what is sent in D1. It sets no cookies, uses no storage API, runs no analytics and loads
  * nothing from a third-party origin: the fonts are served from this domain
  * and the built output has no external subresource. Most of a privacy
  * policy's usual length is disclosing things this site does not do.

@@ -35,10 +35,8 @@
 
   // The apex, as a custom domain rather than a route pattern; without
   // `custom_domain` the entry is a pattern and attaches no hostname. In this
-  // file and not only in the dashboard, so a deploy never disagrees with it.
-  //
-  // A deploy fails while the domain is still attached to the Pages project,
-  // which is why this lands only after it has been removed there.
+  // file and not only in the dashboard: a deploy replaces the Worker's routes
+  // with this list, and removes a domain added only in the dashboard.
   "routes": [{ "pattern": "sinduri.lol", "custom_domain": true }],
 
   // The contact form's store, created with the EU jurisdiction, which cannot be

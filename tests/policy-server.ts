@@ -21,7 +21,7 @@ export type Rule = { pattern: string; headers: Map<string, string> };
  * comments, an unindented URL pattern, then the indented `Name: value` lines
  * that belong to it. Every rule is read, in file order.
  *
- * A header line before any pattern throws. Pages would have nowhere to apply
+ * A header line before any pattern throws. Cloudflare would have nowhere to apply
  * it either, and dropping it silently here is how a header goes missing in
  * production while the suite stays green.
  */
@@ -60,7 +60,7 @@ export const parseHeadersFile = (source: string): Rule[] => {
 
 /**
  * Does a pattern match a path? Only the subset this file uses: a literal
- * prefix and `*`, which Pages matches across `/` boundaries, so `/*` matches
+ * prefix and `*`, which Cloudflare matches across `/` boundaries, so `/*` matches
  * everything and `/_astro/*` everything below it. A placeholder
  * (`/blog/:slug`) throws rather than risk a quiet mismatch.
  */
@@ -81,7 +81,7 @@ export const matches = (pattern: string, pathname: string): boolean => {
 };
 
 /**
- * The headers Pages would send for a path: every matching rule applies, and a
+ * The headers Cloudflare would send for a path: every matching rule applies, and a
  * name set by two of them is joined with a comma. Reproducing the join, rather
  * than letting the later rule win, is what makes the corruption visible in `a
  * served response actually carries the headers` if `no header is set by more

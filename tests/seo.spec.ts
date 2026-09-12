@@ -178,9 +178,8 @@ const internalPageLinks = (html: string): string[] =>
 test.describe('internal links', () => {
   /*
    * Every page is built as <route>/index.html, so production answers a link
-   * without its trailing slash with a 308 to the slashed URL. astro preview
-   * serves both forms, so no browser test can see that redirect; this reads
-   * the hrefs instead.
+   * without its trailing slash with a 307 to the slashed URL. A browser test
+   * follows that redirect without failing, so this reads the hrefs instead.
    *
    * Verified 2026-09-11: against the hrefs before the slashes were added this
    * failed with 23 distinct unslashed hrefs across 520 links.
