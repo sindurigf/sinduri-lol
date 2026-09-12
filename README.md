@@ -138,9 +138,28 @@ file the build copies into `dist/`.
 | Node version    | Read from `.nvmrc`             |
 
 `wrangler.jsonc` has to exist. Without it, `wrangler deploy` runs Cloudflare's
-[automatic configuration][cf-autoconfig], which installs the
-`@astrojs/cloudflare` adapter inside the build and builds again. The first
-Workers build, on 2026-09-11, failed that way in the adapter's prerender step.
+[automatic configuration][cf-autoconfig], which installs the adapter itself and
+builds a second time. The adapter is a declared dependency here and configured
+in `astro.config.mjs`; autoconfiguration guessing at it is what broke the first
+Workers build on 2026-09-11.
+
+Four adapter options are load-bearing, and three of them fail quietly:
+
+- `prerenderEnvironment: 'node'`. Prerendering defaults to `workerd`, where the
+  build fails outright: several pages read files at build time.
+- `imageService: { build: 'compile' }`. The default is `cloudflare-binding`,
+  which defers to a binding that does not exist at build time, so every image
+  ships at its master size. `badge-white` went from 8.8-33 KB per density to
+  152 KB with nothing going red.
+- `session: false`. The adapter otherwise enables sessions backed by a KV
+  binding, which is a cookie, and `/privacy` says this site sets none.
+- The build splits into `dist/client` and `dist/server`. `assets.directory` and
+  `DIST_DIR` in `tests/routes.ts` both name the client half.
+
+Astro's image cache in `node_modules/.astro` survives a config change, so a bad
+build poisons it and the next build reports "reused cache entry" while serving
+the old output. Anything touching image handling needs
+`rm -rf dist .astro node_modules/.astro` before the result means anything.
 
 Wrangler is an exact-version devDependency, so the build runs the version in
 `package-lock.json` rather than whatever `npx` resolves that day. To check the
@@ -155,6 +174,36 @@ a 308. Workers [uses 307][cf-html-handling], which is not a permanent redirect.
 
 `not_found_handling: "404-page"` is set explicitly. Pages found `404.html`
 without being told; Workers does not. `tests/not-found.spec.ts` asserts it.
+
+### Cutting over from Pages
+
+Pages serves production until step 5, so every step before it is reversible.
+
+1. **Disconnect the old repository from Workers Builds** before connecting this
+   one. Two repositories deploying to one Worker is the same hazard as Pages and
+   Workers both deploying, one step earlier.
+2. **Connect this repository to Workers Builds** and let it deploy. The Worker
+   answers only on its `workers.dev` address at this point.
+3. **Create the bindings.** `npx wrangler d1 create sinduri-lol`, put the real
+   `database_id` into `wrangler.jsonc`, and apply the migration with
+   `npx wrangler d1 execute sinduri-lol --remote --file migrations/0001_create_messages.sql`.
+   Bindings, variables and secrets do not carry over from Pages, and Workers
+   Builds keeps build-time and runtime variables separate.
+4. **Verify on `workers.dev`.** The 404 status, the headers, and the contact
+   form if it has landed.
+5. **Swap the domain.** Remove the custom domain from the Pages project, then
+   add it to the Worker. In `wrangler.jsonc` that is a `routes` entry with
+   `custom_domain: true`; a route without that flag is treated as a pattern, not
+   a domain. Both sides sit behind Cloudflare's proxy, so the cutover is seconds
+   and waits on no DNS propagation. Wrangler replaces a Worker's routes with the
+   file's on every deploy, so the domain goes in the file, not just the
+   dashboard.
+6. **Turn `workers_dev` off**, or the site has a third hostname.
+7. **Add the bulk redirects** for `www` and `pages.dev`, below.
+8. **Disable automatic deployments on the Pages project**, confirm the Worker is
+   serving, and only then `npx wrangler pages project delete`. Deleting before
+   disabling leaves a window where both systems deploy.
+9. **`npm run check:live`**, which compares production against `public/_headers`.
 
 [cf-autoconfig]: https://developers.cloudflare.com/workers/framework-guides/automatic-configuration/
 [cf-html-handling]: https://developers.cloudflare.com/workers/static-assets/routing/advanced/html-handling/
