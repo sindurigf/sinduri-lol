@@ -697,6 +697,14 @@ the dashboard settings that can change what ships are in [README.md](README.md).
 applies it to static asset responses only, so any endpoint the Worker serves
 sets its own headers in code.
 
+**An on-demand route must be listed in `assets.run_worker_first`.** With
+`not_found_handling` set and a compatibility date from 2025-04-01, a navigation
+request (`Sec-Fetch-Mode: navigate`, which every link click and form submission
+carries) to a path with no asset is answered by the asset layer and never
+invokes the Worker; a POST there is a 405. Opting out of prerendering is not
+enough. The contact form shipped broken this way while its spec passed, because
+the spec did not send the header. `tests/contact.spec.ts` now does.
+
 ### The CSP
 
     default-src 'self';
