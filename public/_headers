@@ -125,6 +125,9 @@
 # SharedArrayBuffer and precise timers, which nothing here uses, and its only
 # other effect would be to break a cross-origin subresource on the day someone
 # adds one.
+#
+# No Reporting-Endpoints either. It needs a collector to send reports to, and
+# there is none; a header naming a dead endpoint is worse than no header.
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: same-origin
