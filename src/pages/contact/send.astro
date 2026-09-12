@@ -85,6 +85,7 @@ if (result?.ok && !tooMany) {
   const database = bindings.MESSAGES_DB;
 
   if (!database) {
+    console.error('contact: message not stored: MESSAGES_DB binding missing');
     /*
      * The binding is missing, which is a deploy that is not finished. Saying
      * so beats a confirmation page for a message nothing received.
@@ -104,7 +105,16 @@ if (result?.ok && !tooMany) {
           now,
         )
         .run();
-    } catch {
+    } catch (error) {
+      /*
+       * The reason only, never the submission: /privacy says nothing but the
+       * stored row is kept, and a log line is not the row. The visitor is still
+       * told the message was not received.
+       */
+      console.error(
+        'contact: message not stored:',
+        error instanceof Error ? error.message : String(error),
+      );
       storageFailed = true;
     }
   }
