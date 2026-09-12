@@ -15,53 +15,28 @@ permissions:
   contents: read
 
 jobs:
-  a11y:
-    # DO NOT RENAME. This string is the GitHub status context that the branch
-    # ruleset on `main` requires. Editing it fails nothing; it makes the
-    # required check disappear, and `main` silently loses its protection.
-    #
-    # The name undersells the job, which also checks commit messages, the pull
-    # request description, design tokens and documentation links. Those checks
-    # live here rather than in a second job so that they inherit this context
-    # and cannot be merged past while red. An inaccurate name is the cheaper
-    # problem.
-    name: Build, typecheck, and axe
+  # Everything that is not the browser suite. Fast, and it runs beside the test
+  # shards rather than before them, so a convention failure and a test failure
+  # are both reported in the same few minutes.
+  checks:
+    name: Conventions, build, typecheck and format
     runs-on: ubuntu-latest
-    # A ceiling for a hung job, not a performance budget: a slow runner should
-    # not turn a required check red where there is no defect. 35 is
-    # deliberately loose, and the recommendation is 20, which still absorbs a
-    # dozen Firefox navigation stalls with a retry each. Lower it deliberately
-    # or not at all.
-    #
-    # Evidence: four two-worker runs of the whole job on 2026-09-09 spanned
-    # 9m43s to 12m34s, against 15m33s and 17m15s serial. playwright.config.ts
-    # has the `workers: 2` reasoning; the numbers are not repeated there,
-    # because two copies of a measurement is how one goes stale.
-    timeout-minutes: 35
+    timeout-minutes: 10
 
     steps:
       - name: Check out
         uses: actions/checkout@v7
         with:
           # check-commits.sh walks base..HEAD, so the base commit has to be in
-          # the clone. The default shallow fetch has only the tip, and the
-          # range would not resolve.
+          # the clone. The default shallow fetch has only the tip.
           fetch-depth: 0
 
       - name: Set up Node
         uses: actions/setup-node@v7
         with:
-          # .nvmrc is the single source of truth. Cloudflare Pages reads the
-          # same file for the deploy build, so pinning a version here as well
-          # would let CI drift away from production.
+          # .nvmrc is the single source of truth; Workers Builds reads it too.
           node-version-file: '.nvmrc'
           cache: npm
-
-      # The four convention checks run before `npm ci` on purpose. All are
-      # stdlib Node or POSIX sh with no dependencies, so a branch that breaks a
-      # convention fails in seconds rather than after a Playwright browser
-      # download. They are checks rather than pull request checkboxes because
-      # the checkboxes were ticked while false.
 
       - name: Verify commit messages
         if: ${{ github.event_name == 'pull_request' }}
@@ -72,16 +47,12 @@ jobs:
       - name: Verify the pull request description
         if: ${{ github.event_name == 'pull_request' }}
         env:
-          # Passed as environment variables, never interpolated into the script
-          # body. A title and a description are user-controlled text, and
-          # `${{ ... }}` is substituted before the shell parses the line, so
-          # splicing them inline is a command injection waiting for a pull
-          # request with a backtick in the title.
+          # Environment variables, never `${{ }}` in the script body: a title
+          # and a description are user-controlled text, and inline
+          # substitution happens before the shell parses the line.
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          # .githooks/commit-msg cannot reach this text: it sees commit
-          # messages only. This is the one place the description is checked.
           if printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY" |
             grep -qiE 'co-authored-by:.*(claude|anthropic)|generated with \[?claude code'
           then
@@ -99,62 +70,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Read the pin rather than repeat it. package.json carries an exact
-      # version with no caret on purpose: playwright.config.ts records that
-      # `^1.62.1` resolves back to 1.63.0 and brings the Firefox navigation
-      # stall with it. Hardcoding the number here would add a place to update,
-      # and the cache key would go on naming a version the job no longer
-      # installs.
-      - name: Read the pinned Playwright version
-        id: playwright
-        run: |
-          version=$(node -p "require('./package.json').devDependencies['@playwright/test']")
-
-          # A range is not a version, and it would poison this key silently:
-          # `^1.62.1` is a stable string, so the cache would keep hitting under
-          # a key naming a version npm had stopped installing, restoring the
-          # wrong browsers with nothing going red. A caret is the regression
-          # playwright.config.ts exists to prevent, so a range reaching this
-          # step is already a bug.
-          if ! printf '%s' "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "::error::@playwright/test is \"$version\" in package.json, not an exact version. The pin is deliberate; see the note in playwright.config.ts."
-            exit 1
-          fi
-
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "Playwright pinned at $version"
-
-      # The browser builds: large, version-specific, and the only thing in this
-      # job downloaded rather than installed from the npm cache above.
-      #
-      # Exact match only, no restore-keys. A near-miss would restore another
-      # version's browsers, and `npx playwright install` prunes builds the
-      # installed version does not reference, so a partial hit is rewritten
-      # anyway under a key that no longer describes its contents. A miss is
-      # honest and costs one download.
-      #
-      # System libraries are not under this path. They come from apt via
-      # --with-deps below, which still runs on a cache hit and has to.
-      - name: Cache Playwright browsers
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ steps.playwright.outputs.version }}
-
-      # --with-deps pulls the system libraries the browsers need on a bare
-      # runner. All three, because CI defines all three projects.
-      #
-      # WebKit runs here and not on the development machine, which is the one
-      # place this workflow deliberately does more than a local run. That
-      # machine is Ubuntu 25.10 and ships ICU 76; Playwright builds WebKit
-      # against ICU 74, and `install-deps` cannot find libicu74 in any 25.10
-      # repository. This runner is 24.04, where --with-deps works. The whole
-      # suite was run against WebKit in Playwright's own container before the
-      # project was added; playwright.config.ts has the reasoning and the
-      # docker command for reproducing that locally.
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox webkit
-
       - name: Build
         run: npm run build
 
@@ -164,15 +79,106 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
+  # The browser suite, split across parallel runners.
+  #
+  # Measured 2026-09-12: on one runner the suite step was 866s of a 15.5-minute
+  # job, and everything else together was about a minute. `fullyParallel` is on
+  # in playwright.config.ts, so a shard splits by test rather than by file and
+  # the shards come out even.
+  #
+  # Each shard is its own runner, with two workers as before, rather than more
+  # workers competing for one machine.
+  test:
+    name: Playwright (${{ matrix.shard }}/${{ strategy.job-total }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      # Every shard reports, so one failing shard does not hide what the others
+      # found.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Read the pin rather than repeat it: playwright.config.ts records why the
+      # version is exact, and a range here would key the cache to a version npm
+      # had stopped installing.
+      - name: Read the pinned Playwright version
+        id: playwright
+        run: |
+          version=$(node -p "require('./package.json').devDependencies['@playwright/test']")
+          if ! printf '%s' "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::@playwright/test is \"$version\" in package.json, not an exact version. The pin is deliberate; see playwright.config.ts."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      # Exact key, no restore-keys: `npx playwright install` prunes builds the
+      # installed version does not reference, so a near-miss is rewritten anyway.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright.outputs.version }}
+
+      # All three, because CI defines all three projects. WebKit runs here and
+      # not on an Ubuntu 25.10 development machine; playwright.config.ts has the
+      # ICU reason and the container command for running it locally.
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
       # Fails on any axe violation. No rule is excluded; see ACCESSIBILITY.md.
       - name: Accessibility tests
-        run: npm run test:a11y
+        run: npm run test:a11y -- --shard=${{ matrix.shard }}/${{ strategy.job-total }}
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.shard }}
           path: playwright-report/
           retention-days: 14
           if-no-files-found: ignore
+
+  a11y:
+    # DO NOT RENAME. This string is the GitHub status context that the branch
+    # ruleset on `main` requires. Editing it fails nothing; it makes the
+    # required check disappear, and `main` silently loses its protection.
+    #
+    # It is a gate over the jobs above rather than the work itself, so the
+    # ruleset names one context however the suite is split.
+    name: Build, typecheck, and axe
+    runs-on: ubuntu-latest
+    needs: [checks, test]
+
+    # `always()` is load-bearing. Without it a failed dependency makes this job
+    # SKIPPED, and a ruleset treats a skipped required check as satisfied: the
+    # branch would merge with a red shard. With it, this job always runs and
+    # fails unless every dependency succeeded.
+    if: ${{ always() }}
+    timeout-minutes: 5
+
+    steps:
+      - name: Require every job above to have succeeded
+        env:
+          CHECKS: ${{ needs.checks.result }}
+          TESTS: ${{ needs.test.result }}
+        run: |
+          echo "checks: $CHECKS"
+          echo "tests:  $TESTS"
+          if [ "$CHECKS" != "success" ] || [ "$TESTS" != "success" ]; then
+            echo "::error::A required job did not succeed (checks=$CHECKS, tests=$TESTS)."
+            exit 1
+          fi
