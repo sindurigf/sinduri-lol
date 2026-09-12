@@ -253,7 +253,7 @@
    * The sticky header's height: clears the nav's 39.6px current-page box plus
    * its 4px shadow, with air either side. Fixed pixels out of every viewport
    * including a 720px one at 400% zoom, which is the reason not to grow it.
-   * scroll-margin-top is calc()'d from this, so SC 2.4.11 follows it.
+   * scroll-padding-top on html is calc()'d from this, so SC 2.4.11 follows it.
    */
   --spacing-header: 96px;
   /*
@@ -325,6 +325,23 @@
   }
 
   html {
+    /*
+     * SC 2.4.11. The sticky header covers whatever the browser scrolls to the
+     * top of the viewport, so every scroll that brings something into view,
+     * anchors and focus alike, stops this far below the top.
+     *
+     * On the scroller, not as `scroll-margin-top` on each focusable element.
+     * WebKit ignores an element's scroll-margin when it scrolls a focused text
+     * `<input>` into view to reveal its caret, and honours the scroller's
+     * scroll-padding: measured 2026-09-12, the two contact form inputs landed
+     * fully under the header when Shift-Tabbing, while the textarea and button
+     * beside them did not. /contact is the only route with text inputs, which
+     * is why nothing caught it sooner. Chromium and Firefox honour both.
+     *
+     * The failure only shows walking focus backwards: tabbing forward scrolls
+     * up from the bottom edge and never nears the header.
+     */
+    scroll-padding-top: calc(var(--spacing-header) + 1rem);
     background-color: var(--color-background);
     -webkit-text-size-adjust: 100%;
     /*
@@ -434,22 +451,6 @@
   :focus-visible {
     outline: 3px solid var(--color-gold);
     outline-offset: 3px;
-  }
-
-  /*
-   * SC 2.4.11. The sticky header covers whatever the browser scrolls to the top
-   * of the viewport.
-   *
-   * The selector must stay every focusable element, not just `:target, [id]`:
-   * almost nothing focusable here has an id, so that version left the tab order
-   * uncovered and controls came back entirely under the header. It fails only
-   * when Shift-Tabbing, because tabbing forward scrolls up from the bottom edge
-   * and never nears the header.
-   */
-  :target,
-  [id],
-  :where(a[href], button, input, select, textarea, summary, [tabindex]) {
-    scroll-margin-top: calc(var(--spacing-header) + 1rem);
   }
 }
 
@@ -1702,5 +1703,61 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@layer components {
+  /*
+   * Contact form controls. Nothing else on the site takes input.
+   *
+   * No focus rule: the site-wide :focus-visible outline covers them. No
+   * forced-colors rule either: every control here has a painted border and an
+   * opaque fill, which is what tests/forced-colors.spec.ts requires.
+   */
+  .field {
+    @apply mt-8 block;
+  }
+
+  .field-label {
+    @apply block text-label font-black uppercase tracking-label text-gold;
+  }
+
+  .field-control {
+    @apply mt-3 block w-full border-4 border-border bg-surface px-4 py-3
+      font-sans text-body text-text;
+  }
+
+  /*
+   * Not `field-sizing: content`: it collapses the box to one row before
+   * anything is typed, which is smaller than the control needs to look like
+   * somewhere to write.
+   */
+  textarea.field-control {
+    @apply min-h-40 resize-y;
+  }
+
+  /*
+   * A failing control is marked three ways, because colour alone fails SC
+   * 1.4.1: the border changes, aria-invalid is set, and the message below is
+   * text. Pink is a non-text use here and clears SC 1.4.11 on surface at 4.59.
+   */
+  .field-control[aria-invalid='true'] {
+    @apply border-pink;
+  }
+
+  .field-error {
+    @apply mt-3 text-body text-pink-text;
+  }
+
+  /*
+   * The error summary takes focus on render, so a reader lands on the problem
+   * rather than at the top of the page.
+   */
+  .error-summary {
+    @apply mt-8 border-8 border-pink bg-surface p-6;
+  }
+
+  .error-summary a {
+    @apply text-pink-text;
   }
 }

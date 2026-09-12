@@ -80,6 +80,7 @@ The Lexend Project Authors. The full text ships with the package.
 | `npm run format`        | Prettier, write                                                  |
 | `npm run format:check`  | Prettier, check only                                             |
 | `npm run test:a11y`     | Playwright: builds, serves, drives Chromium and Firefox          |
+| `npm run test:worker`   | The contact endpoint, through the Worker with local D1           |
 | `npm run test:a11y:ui`  | The same suite in Playwright's UI mode                           |
 | `npm run check:tokens`  | Fails on any arbitrary value, or on raw hex outside `global.css` |
 | `npm run check:links`   | Fails on a relative Markdown link that does not resolve          |
@@ -184,11 +185,15 @@ Pages serves production until step 5, so every step before it is reversible.
    Workers both deploying, one step earlier.
 2. **Connect this repository to Workers Builds** and let it deploy. The Worker
    answers only on its `workers.dev` address at this point.
-3. **Create the bindings.** `npx wrangler d1 create sinduri-lol`, put the real
-   `database_id` into `wrangler.jsonc`, and apply the migration with
-   `npx wrangler d1 execute sinduri-lol --remote --file migrations/0001_create_messages.sql`.
-   Bindings, variables and secrets do not carry over from Pages, and Workers
-   Builds keeps build-time and runtime variables separate.
+3. **Create the bindings.** The D1 database was created with the EU
+   jurisdiction, and its id is in `wrangler.jsonc`. A jurisdiction cannot be
+   changed after creation and `/privacy` states it, so recreating the database
+   means `npx wrangler d1 create sinduri-lol --jurisdiction eu`, never without
+   the flag. Create the table once, with
+   `npx wrangler d1 execute sinduri-lol --remote --file migrations/0001_create_messages.sql`
+   or by pasting that file into the database's Console tab. Bindings, variables
+   and secrets do not carry over from Pages, and Workers Builds keeps build-time
+   and runtime variables separate.
 4. **Verify on `workers.dev`.** The 404 status, the headers, and the contact
    form if it has landed.
 5. **Swap the domain.** Remove the custom domain from the Pages project, then

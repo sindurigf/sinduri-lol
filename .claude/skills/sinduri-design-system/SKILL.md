@@ -798,22 +798,25 @@ Focus Not Obscured.
 It is fixed pixels of every viewport, a 720px-tall one at 400% zoom included,
 which is the argument against growing it further.
 
-Give focusable targets and in-page anchor destinations a `scroll-margin-top` of
-at least the header height:
+Set the offset on the scroller, `html`, as `scroll-padding-top` of at least the
+header height, not as `scroll-margin-top` on each focusable element:
 
 ```css
-:target,
-[id],
-:where(a[href], button, input, select, textarea, summary, [tabindex]) {
-  scroll-margin-top: calc(var(--spacing-header) + 1rem);
+html {
+  scroll-padding-top: calc(var(--spacing-header) + 1rem);
 }
 ```
 
-`:target, [id]` alone is not enough: almost no focusable control here has an
-`id`. `:where()` keeps the selector at zero specificity so a component can
-still set its own. Check this by Shift-Tabbing back from the footer of a long
-page, not by reading the CSS: tabbing forward never brings a control near the
-header. `tests/focus.spec.ts` walks both directions on every route.
+The element version looks equivalent and is not. WebKit ignores an element's
+`scroll-margin` when it scrolls a focused text `<input>` into view to reveal its
+caret, and honours the scroller's `scroll-padding`: the contact form's inputs
+landed fully under the header in WebKit while its textarea did not. Chromium and
+Firefox honour both, so a local run in either passes a rule that fails in Safari.
+
+Check it by Shift-Tabbing back from the footer of a long page, not by reading
+the CSS: tabbing forward never brings a control near the header.
+`tests/focus.spec.ts` walks both directions on every route, and WebKit is the
+engine that matters for text inputs, which runs in CI only.
 
 ---
 

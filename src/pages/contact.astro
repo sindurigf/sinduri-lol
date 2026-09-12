@@ -2,6 +2,7 @@
 import { badgeImage } from '../lib/badge-image';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SpinBadge from '../components/ui/SpinBadge.vue';
+import ContactForm from '../components/ContactForm.astro';
 
 /*
  * PLACEHOLDER COPY, per design/Contact.dc.html. Headings, the standfirst and
@@ -12,12 +13,9 @@ import SpinBadge from '../components/ui/SpinBadge.vue';
  * is what the page exists to carry, and a placeholder one makes this page a
  * dead end. The two profile links are the ones the footer already carries.
  *
- * THE FORM IS NOT BUILT, ON PURPOSE. public/_headers sets
- * `form-action 'none'`, which blocks the submission of any form added here,
- * silently, with nothing on the page to say so. Widening that directive is a
- * coupled change and a separate decision; see the CSP section in ARCHITECTURE.md and
- * gap 1 in ACCESSIBILITY.md. The region below says so in plain words and
- * points at the address, which is an honest gap rather than a broken control.
+ * THE FORM POSTS TO /contact/send/, which is the site's one on-demand route.
+ * public/_headers carries `form-action 'self'` for it; at `'none'` the browser
+ * blocks the submission silently, with nothing on the page to say so.
  */
 
 const EMAIL = 'lol@sinduri.lol';
@@ -139,7 +137,7 @@ const REASONS = [
   </section>
 
   {/* ===================================================================
-       THE FORM REGION: OUTSTANDING, AND SAYING SO
+       THE FORM
        =================================================================== */}
   <section class="band py-24">
     <div class="mx-auto max-w-page">
@@ -147,28 +145,19 @@ const REASONS = [
     </div>
 
     <div class="mx-auto max-w-3xl">
-      <h2 class="text-h2 text-text">Lorem ipsum dolor</h2>
+      <h2 class="text-h2 text-text">Write instead</h2>
 
       {/*
-        Functional microcopy, so it is written rather than left as
-        PLACEHOLDER. An empty state that says nothing is a dead end, first for
-        someone who cannot see that the region is empty. Plain, short, second
-        person, and it names the way through.
+        Functional microcopy. Says what happens to the message and names the
+        way round the form, because a form is not everyone's way in.
       */}
       <p class="mt-8 text-body text-muted text-pretty">
-        There is no contact form on this page yet. Email
-        <a href={`mailto:${EMAIL}`}>{EMAIL}</a> instead — it reaches the same
-        place, and you do not need to explain why you are writing.
+        This goes to the same inbox as the address above. If something on this
+        site blocks you, that is worth sending even if you cannot say which part
+        is wrong, and you do not need to explain why you are writing.
       </p>
 
-      <p class="mt-6 text-body text-muted text-pretty">
-        If something on this site blocks you, that is worth reporting even if
-        you cannot say which part is wrong. You can also
-        <a href="https://github.com/sindurigf/sinduri-lol/issues">
-          open an issue
-        </a>{' '}
-        instead of writing.
-      </p>
+      <ContactForm />
     </div>
   </section>
 

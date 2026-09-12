@@ -1,0 +1,161 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ContactForm from '../../components/ContactForm.astro';
+import { CONTACT_EMAIL } from '../../lib/contact';
+import { looksAutomated, validateSubmission } from '../../lib/contact-form';
+import { env } from 'cloudflare:workers';
+import { rateLimitKey, type ContactEnv } from '../../lib/contact-env';
+import { applyGlobalHeaders } from '../../lib/response-headers';
+
+/*
+ * The contact form's submission target, and the only page on this site that is
+ * not prerendered.
+ *
+ * It renders at all only when something went wrong. A successful submission
+ * redirects to /contact/sent/, which is a static asset like every other page;
+ * a failed one renders here with the form refilled and the errors on it, so a
+ * visitor can fix and resubmit without going back and retyping.
+ *
+ * Why the form is not simply posted back to /contact/: preserving what
+ * somebody typed means rendering it, and rendering it means the page cannot be
+ * an asset. Keeping that to one route leaves /contact static, covered by
+ * public/_headers and by the header suite like everything else.
+ */
+export const prerender = false;
+
+/*
+ * public/_headers does not reach a response the Worker builds, so this route
+ * sets those headers itself. Without this it would ship with no CSP and, more
+ * quietly, no X-Robots-Tag, and be the one indexable page on a noindex site.
+ */
+applyGlobalHeaders(Astro.response.headers);
+
+const CONTACT_PAGE = '/contact/';
+const SENT_PAGE = '/contact/sent/';
+
+/* GET reaches here when somebody opens the URL directly. Nothing to show. */
+if (Astro.request.method !== 'POST') {
+  return Astro.redirect(CONTACT_PAGE, 303);
+}
+
+let form: FormData;
+try {
+  form = await Astro.request.formData();
+} catch {
+  /*
+   * A body that is not form data did not come from this form. Answered as a
+   * redirect rather than an error page: there is no visitor here to help.
+   */
+  return Astro.redirect(CONTACT_PAGE, 303);
+}
+
+const now = Date.now();
+
+/*
+ * Answered exactly as a success is. A bot told which check caught it can be
+ * adjusted until neither does, and nothing is stored.
+ */
+if (looksAutomated(form)) {
+  return Astro.redirect(SENT_PAGE, 303);
+}
+
+const bindings = env as ContactEnv;
+
+const limiter = bindings.CONTACT_RATE_LIMIT;
+const limitKey = await rateLimitKey(Astro.request);
+
+if (limiter && limitKey !== null) {
+  const { success } = await limiter.limit({ key: limitKey });
+
+  if (!success) {
+    Astro.response.status = 429;
+  }
+}
+
+const tooMany = Astro.response.status === 429;
+const result = tooMany ? null : validateSubmission(form);
+
+if (result && !result.ok) {
+  Astro.response.status = 422;
+}
+
+let storageFailed = false;
+
+if (result?.ok && !tooMany) {
+  const database = bindings.MESSAGES_DB;
+
+  if (!database) {
+    /*
+     * The binding is missing, which is a deploy that is not finished. Saying
+     * so beats a confirmation page for a message nothing received.
+     */
+    storageFailed = true;
+  } else {
+    try {
+      await database
+        .prepare(
+          'INSERT INTO messages (id, name, email, body, created_at) VALUES (?, ?, ?, ?, ?)',
+        )
+        .bind(
+          crypto.randomUUID(),
+          result.value.name,
+          result.value.email,
+          result.value.body,
+          now,
+        )
+        .run();
+    } catch {
+      storageFailed = true;
+    }
+  }
+
+  if (!storageFailed) {
+    return Astro.redirect(SENT_PAGE, 303);
+  }
+
+  Astro.response.status = 503;
+}
+
+const errors = result && !result.ok ? result.errors : [];
+const values = result && !result.ok ? result.submitted : {};
+---
+
+<BaseLayout
+  title="Check your message | sinduri.lol"
+  description="Something went wrong sending your message."
+  noCanonical
+>
+  <section class="band py-24">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-pink"></span>
+    </div>
+
+    <div class="mx-auto max-w-3xl">
+      <h1 class="text-h1 text-text">Check your message</h1>
+
+      {tooMany && (
+        <p class="mt-8 text-body text-muted text-pretty">
+          That is a lot of messages in a short time. Wait a few minutes and try
+          again, or email{' '}
+          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> instead.
+        </p>
+      )}
+
+      {storageFailed && (
+        <p class="mt-8 text-body text-muted text-pretty">
+          Your message could not be saved, so it has not been received. Please
+          email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> instead.
+          Your text is still in the form below, so you can copy it.
+        </p>
+      )}
+
+      {!tooMany && !storageFailed && (
+        <p class="mt-8 text-body text-muted text-pretty">
+          Nothing has been sent yet. What you wrote is still here.
+        </p>
+      )}
+
+      <ContactForm errors={errors} values={values} />
+    </div>
+  </section>
+</BaseLayout>

@@ -206,7 +206,7 @@ const isActive = (href: string): boolean => isCurrentPage(currentPath, href);
   no scroll reaches them, others hung over the content at every scroll
   position, which is SC 1.4.10, and a focused link with its ring off screen is
   SC 2.4.7. Letting the header grow instead would break SC 2.4.11, because
-  every `scroll-margin-top` on the site derives from `--spacing-header`. In
+  the page's `scroll-padding-top` derives from `--spacing-header`. In
   normal flow the list takes the room it needs and scrolls away with the page;
   tests/no-script.spec.ts measures that no link starts inside or above the
   header. Outside <header> it is outside the banner landmark, which is fine: a

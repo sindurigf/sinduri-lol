@@ -13,6 +13,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:a11y": "playwright test",
+    "test:worker": "playwright test -c playwright.worker.config.ts",
     "test:a11y:ui": "playwright test --ui",
     "check:tokens": "node scripts/check-tokens.mjs",
     "check:links": "node scripts/check-links.mjs",

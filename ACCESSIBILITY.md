@@ -315,6 +315,7 @@ it, and a violation fails the build.
 | Current page         | Playwright                          | `aria-current` in all three navs, and the ring      |
 | Hero fit             | Playwright, hero viewports          | Fits the screen; control clears name and stickers   |
 | Accessibility page   | Playwright over the built `dist/`   | Linked from every page, status matches section 1    |
+| Contact form         | Playwright, POST to the endpoint    | Validation, honeypot, rate limit, 422 keeping text  |
 | Type safety          | `astro check`                       | Templates and components                            |
 
 Two of those are accessibility checks for less obvious reasons:
@@ -395,23 +396,28 @@ performed.
 
 Stated honestly. This list is not filtered for how it looks.
 
-1. **The contact form is not built.** No form exists, so none of the form
-   criteria (1.3.5, 3.3.1, 3.3.2, 3.3.3, 3.3.7, 3.3.8, 4.1.3) have been
-   addressed or tested.
+1. **The contact form is built; its form criteria are untested by a person.**
+   `/contact` carries a name, email and message form posting to
+   `/contact/send/`. What is automated: labels, the error summary taking focus,
+   `aria-invalid` and `aria-describedby` on failing fields, and a success state
+   reachable with scripting off, all walked by the route-level suites like any
+   other page.
 
-   When it is built, the CSP has to be widened in the same change.
-   `public/_headers` sets `form-action 'none'`, which is free while there are
-   no forms and blocks the submission outright the moment there is one. The
-   failure is silent: nothing appears on the page and only the browser console
-   carries the refusal.
+   What is not: whether the error messages actually help. SC 3.3.1 Error
+   Identification and SC 3.3.3 Error Suggestion are satisfied by a message
+   being present and specific, and whether a given sentence is specific enough
+   to act on is a judgement no assertion makes. Nobody has submitted this form
+   with a screen reader and listened to what the summary announces.
 
-   This matters more than a normal defect because of who it lands on. Section 8
-   offers email and the issue tracker for reporting a barrier, and a contact
-   form would become a third route. A form that fails without saying so turns
-   the barrier-reporting path into a barrier, and does it worst for someone who
-   cannot see that the page did not change. Widen the directive to the exact
-   origin the form posts to, never `*`, and add an assertion for the new value
-   in the same commit.
+   SC 1.3.5 Identify Input Purpose is met by `autocomplete` on the name and
+   email fields. SC 3.3.7 Redundant Entry does not apply: nothing is asked
+   twice. SC 3.3.8 Accessible Authentication does not apply: there is no
+   authentication.
+
+   **The failure path is the part worth testing by hand**, because it is the
+   one nobody sees until it happens. `/contact/send/` re-renders the form with
+   what was typed still in it, so a rejected submission loses nothing, and that
+   has been asserted but not experienced.
 
 2. **No screen reader testing has been done at all.** No NVDA, JAWS, VoiceOver
    or Orca run, so announcement quality is unknown. That includes how the
@@ -504,8 +510,8 @@ form of every one is in the archived repository.
   wrapped links need more than the fixed 96px header. At 305px Home sat above
   the top of the page where no scroll reaches it. Fixed by rendering the
   fallback in normal flow after the header. Growing the header was the other
-  option and the wrong one: the sticky band would then be taller than every
-  `scroll-margin-top` allows for.
+  option and the wrong one: the sticky band would then be taller than the
+  page's scroll offset allows for.
 - **`/contact` had no current-page indicator and the three navigations
   disagreed.** With scripting off the page said where you were and with
   scripting on it did not.
@@ -547,8 +553,8 @@ Update this file in the same commit as the change it describes.
 Review it when:
 
 - a page moves out of placeholder into real content;
-- the contact form lands, which is also when `form-action 'none'` has to be
-  widened;
+- a manual pass is run against the contact form, which closes the rest of gap
+  1;
 - any animation lands;
 - a colour token changes, including any gold-surface token, in which case the
   tables in section 5, [ARCHITECTURE.md](ARCHITECTURE.md) and the design system
