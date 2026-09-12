@@ -51,11 +51,28 @@ const validFields = (): Record<string, string> => ({
 });
 
 /*
- * Astro rejects a cross-origin form POST to an on-demand route with 403, which
- * is its CSRF protection and is on by default. A browser sends this header on
- * a real submission; `request.post` does not unless told.
+ * The headers a browser sends when it submits this form, so every request here
+ * takes the route a real submission takes. `request.post` sends none of them
+ * unless told.
+ *
+ * `Origin`: Astro rejects a cross-origin form POST to an on-demand route with
+ * 403, its CSRF protection, on by default.
+ *
+ * `Sec-Fetch-Mode: navigate`: the one that decides routing. With
+ * `not_found_handling` set and a compatibility date from 2025-04-01, Cloudflare
+ * answers a navigation request to a path with no asset from the asset layer
+ * without invoking the Worker, and a POST there is a 405. This spec first ran
+ * without the header, passed, and the form was broken in production: curl got
+ * a 303 and Chrome got a 405 (2026-09-12). `run_worker_first` in wrangler.jsonc
+ * is the fix, and without it every POST below fails.
  */
-const sameOrigin = (baseURL: string) => ({ origin: baseURL });
+const sameOrigin = (baseURL: string) => ({
+  origin: baseURL,
+  'sec-fetch-mode': 'navigate',
+  'sec-fetch-dest': 'document',
+  'sec-fetch-site': 'same-origin',
+  accept: 'text/html,application/xhtml+xml',
+});
 
 /*
  * Serially: these tests share the store and the rate limiter, so they are a

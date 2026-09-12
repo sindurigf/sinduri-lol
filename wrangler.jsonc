@@ -43,6 +43,14 @@
     // `npm run build`; no `build` key, which would build a second time.
     "directory": "./dist/client",
 
+    // The contact form's endpoint has to reach the Worker on a browser
+    // submission. With `not_found_handling` set and a compatibility date from
+    // 2025-04-01, a navigation request (`Sec-Fetch-Mode: navigate`, which every
+    // form submission carries) to a path with no asset is answered by the asset
+    // layer without invoking the Worker, and a POST there is a 405. Measured
+    // 2026-09-12: curl got a 303, Chrome got a 405, and nothing was stored.
+    "run_worker_first": ["/contact/send", "/contact/send/"],
+
     // Serve 404.html with a 404 status for any path with no file. Pages did
     // this without being told; Workers does not. tests/not-found.spec.ts
     // asserts it.
