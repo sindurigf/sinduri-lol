@@ -2,6 +2,7 @@
 title: 'Lorem ipsum dolor sit amet'
 date: 2026-07-09
 category: 'skincare'
+placeholder: true
 tags: ['lorem', 'ipsum', 'dolor']
 teaser: 'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, ut enim ad minim veniam quis nostrud.'
 featured: true

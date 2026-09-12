@@ -2,6 +2,7 @@
 title: 'Duis aute irure dolor in voluptate velit'
 date: 2026-06-19
 category: 'travel'
+placeholder: true
 tags: ['irure', 'voluptate']
 teaser: 'Esse cillum dolore eu fugiat nulla pariatur, excepteur sint occaecat cupidatat non proident sunt in culpa.'
 featured: false

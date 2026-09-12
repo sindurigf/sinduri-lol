@@ -2,6 +2,7 @@
 title: 'Ut enim ad'
 date: 2026-07-07
 category: 'skincare'
+placeholder: true
 tags: ['minim']
 teaser: 'Veniam quis nostrud.'
 featured: false

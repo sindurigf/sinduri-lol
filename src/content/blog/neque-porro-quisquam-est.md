@@ -2,6 +2,7 @@
 title: 'Neque porro quisquam est qui dolorem ipsum quia dolor sit amet adipisci'
 date: 2026-02-05
 category: 'professional-journey'
+placeholder: true
 tags: ['neque', 'porro', 'quisquam', 'dolorem']
 teaser: 'Consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem, ut enim ad minima.'
 featured: false

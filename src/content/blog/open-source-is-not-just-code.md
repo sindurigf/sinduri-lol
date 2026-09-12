@@ -2,6 +2,7 @@
 title: 'Open Source Is Not Just Code: Designing Communities That Actually Scale'
 date: 2026-07-10
 category: 'open-source'
+placeholder: false
 tags: ['community', 'governance', 'maintainers', 'sustainability', 'talks']
 teaser: 'The best code in the world does not save a project if nobody can figure out how to contribute to it, or if the handful of people maintaining it burn out.'
 featured: true

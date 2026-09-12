@@ -2,6 +2,7 @@
 title: 'Excepteur sint occaecat cupidatat non proident'
 date: 2026-05-22
 category: 'personal-thoughts'
+placeholder: true
 tags: ['excepteur', 'occaecat']
 teaser: 'Sunt in culpa qui officia deserunt mollit anim id est laborum, sed ut perspiciatis unde omnis iste natus error.'
 featured: false

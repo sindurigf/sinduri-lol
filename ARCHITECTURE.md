@@ -421,6 +421,7 @@ from `src/content/blog/**/*.md`.
 | `title`          | string          | yes      |         |
 | `date`           | date            | yes      |         |
 | `category`       | enum, see below | yes      |         |
+| `placeholder`    | boolean         | yes      |         |
 | `tags`           | string[]        | no       | `[]`    |
 | `teaser`         | string          | yes      |         |
 | `ogImage`        | string          | no       |         |
@@ -434,9 +435,11 @@ Categories: `skincare`, `travel`, `personal-thoughts`, `professional-journey`,
 the list.
 
 Eleven posts, across all five categories. One,
-`open-source-is-not-just-code.md`, is real. **The other ten are lorem ipsum**,
-seeded so the listing has something to exercise: the index paginates at
-`POSTS_PER_PAGE`, 9, so eleven is the smallest count that makes a second page
+`open-source-is-not-just-code.md`, is real. **The other ten are lorem ipsum**
+and carry `placeholder: true`, which `/llms.txt` marks and
+`tests/llms-txt.spec.ts` holds to each post's text. They were seeded so the
+listing has something to exercise: the index paginates at `POSTS_PER_PAGE`, 9,
+so eleven is the smallest count that makes a second page
 exist, and the titles, teasers, `featured` flags and `readingTime` values
 deliberately span both extremes, so a card is tested at a ten-character title
 and at a seventy-character one.

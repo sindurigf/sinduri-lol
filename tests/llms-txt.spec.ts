@@ -1,7 +1,12 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { DIST_DIR, POST_ROUTES, routesFromBuild } from './routes';
+import {
+  BLOG_CONTENT_DIR,
+  DIST_DIR,
+  POST_ROUTES,
+  routesFromBuild,
+} from './routes';
 
 /**
  * /llms.txt, the Markdown map of the site for a reader that arrived without a
@@ -13,11 +18,12 @@ import { DIST_DIR, POST_ROUTES, routesFromBuild } from './routes';
  * readers are machines. So every link is checked against the routes the build
  * emitted, and the post list is checked for completeness rather than sampled.
  *
- * The placeholder note is asserted because it is content rather than markup,
- * so nothing else in the suite would notice its removal. Ten of the eleven
- * posts are lorem ipsum (2026-09-11), and this file hands their titles and
- * teasers to a reader that cannot tell filler from writing. Remove the note
- * and this assertion together, in the same commit as the last lorem post.
+ * The placeholder marks are asserted because they are content rather than
+ * markup, so nothing else in the suite would notice them go. This file hands
+ * post titles and teasers to a reader that cannot tell lorem ipsum from
+ * writing. The `placeholder` field they come from is itself held to the text
+ * of each post, so a real post left flagged, or a lorem post left unflagged,
+ * fails here too.
  *
  * It reads dist/ rather than driving a browser, inside test bodies only; see
  * tests/routes.ts.
@@ -28,12 +34,17 @@ import { DIST_DIR, POST_ROUTES, routesFromBuild } from './routes';
  *     names is a page that exists";
  *   - one post deleted from the Posts section fails "every post is listed",
  *     naming the missing slug;
- *   - the placeholder note removed fails "it warns that most posts are
- *     placeholder";
- *   - every link made relative fails 3 of the 4: "every link is absolute" as
+ *   - every link made relative fails 3 tests: "every link is absolute" as
  *     intended, and both route checks, which parse each link with `new URL`
  *     and throw on a bare path. Recorded so the extra two are not mistaken for
  *     a second defect.
+ *
+ * And on 2026-09-13, for the placeholder field:
+ *
+ *   - `placeholder: false` on a lorem post fails "the placeholder field
+ *     matches the text";
+ *   - the mark dropped from the endpoint fails "every placeholder post is
+ *     marked, and only those".
  */
 
 const LLMS_TXT = join(DIST_DIR, 'llms.txt');
@@ -46,6 +57,44 @@ const llmsTxt = (): string => {
 
   return readFileSync(LLMS_TXT, 'utf8');
 };
+
+const PLACEHOLDER_MARK = '(placeholder)';
+
+/*
+ * Words from the lorem ipsum passage that no real post here uses. Two in a
+ * title and teaser is lorem; one could be a real post mentioning the phrase.
+ */
+const LOREM_WORDS =
+  /\b(lorem|ipsum|dolor|consectetur|adipiscing|eiusmod|tempor|incididunt|labore|veniam|nostrud|exercitation|ullamco|laboris|aliquip|commodo|consequat|irure|reprehenderit|voluptate|cillum|fugiat|pariatur|excepteur|occaecat|cupidatat|proident|officia|deserunt|mollit|perspiciatis|voluptatem|quisquam|quibusdam|temporibus|nemo)\b/gi;
+const LOREM_THRESHOLD = 2;
+
+interface PostSource {
+  slug: string;
+  placeholder: string | undefined;
+  text: string;
+}
+
+/**
+ * The frontmatter fields this spec needs, read with line patterns rather
+ * than a YAML parser: Playwright collects in plain Node, and every post
+ * writes these fields on one line each.
+ */
+const postSources = (): PostSource[] =>
+  readdirSync(BLOG_CONTENT_DIR)
+    .filter((name) => name.endsWith('.md'))
+    .map((name) => {
+      const source = readFileSync(join(BLOG_CONTENT_DIR, name), 'utf8');
+      const field = (key: string): string | undefined =>
+        new RegExp(`^${key}:\\s*(.+)$`, 'm').exec(source)?.[1];
+      return {
+        slug: name.replace(/\.md$/, ''),
+        placeholder: field('placeholder'),
+        text: `${field('title') ?? ''} ${field('teaser') ?? ''}`,
+      };
+    });
+
+const looksLorem = (text: string): boolean =>
+  (text.match(LOREM_WORDS) ?? []).length >= LOREM_THRESHOLD;
 
 /** Every Markdown link target in the file. */
 const links = (source: string): string[] =>
@@ -114,19 +163,45 @@ test.describe('llms.txt', () => {
     ).toEqual([]);
   });
 
-  test('it warns that most posts are placeholder', () => {
-    /*
-     * The one assertion here about content rather than structure. This file
-     * hands a machine the titles and teasers of the lorem ipsum posts, and
-     * without the warning it cannot tell filler from writing. Delete this test
-     * in the same commit as the last lorem post, not before and not alone.
-     */
+  test('the placeholder field matches the text', () => {
+    const wrong = postSources()
+      .filter(
+        ({ placeholder, text }) => placeholder !== String(looksLorem(text)),
+      )
+      .map(({ slug, placeholder }) => `${slug} (placeholder: ${placeholder})`);
+
     expect(
-      llmsTxt().toLowerCase(),
-      'llms.txt no longer warns that some posts are placeholder. If the ' +
-        'lorem posts are gone, remove the note and this test together. If ' +
-        'they are not, this file is inviting a reader to quote Latin filler ' +
-        'as though it were writing.',
-    ).toContain('placeholder');
+      wrong,
+      'These posts are flagged the opposite way to what their title and ' +
+        'teaser read as. A real post still flagged is hidden from readers ' +
+        `as filler; a lorem post unflagged is offered as writing: ${wrong.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  test('every placeholder post is marked, and only those', () => {
+    const text = llmsTxt();
+    const lineFor = (slug: string): string =>
+      text.split('\n').find((line) => line.includes(`/blog/${slug}/)`)) ?? '';
+
+    const wrong = postSources()
+      .filter(
+        ({ slug, placeholder }) =>
+          lineFor(slug).endsWith(PLACEHOLDER_MARK) !== (placeholder === 'true'),
+      )
+      .map(({ slug }) => slug);
+
+    expect(
+      wrong,
+      `llms.txt marks these posts wrongly with ${PLACEHOLDER_MARK}: ${wrong.join(', ')}`,
+    ).toEqual([]);
+
+    const anyPlaceholder = postSources().some(
+      ({ placeholder }) => placeholder === 'true',
+    );
+    expect(
+      text.includes(`Posts marked ${PLACEHOLDER_MARK}`),
+      'The note explaining the placeholder mark should appear exactly while ' +
+        'some post carries it.',
+    ).toBe(anyPlaceholder);
   });
 });

@@ -2,6 +2,7 @@
 title: 'Nemo enim ipsam voluptatem quia voluptas'
 date: 2026-03-17
 category: 'professional-journey'
+placeholder: true
 tags: ['voluptatem', 'aspernatur']
 teaser: 'Sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.'
 featured: false
