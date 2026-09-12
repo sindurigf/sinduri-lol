@@ -417,6 +417,19 @@ const collectViolations = async (page: Page): Promise<string[]> => {
 };
 
 test.describe('security headers', () => {
+  /*
+   * Navigations here wait only for what each test asserts. Playwright's default
+   * is `load`, which on the homepage means every font, stylesheet, island script
+   * and the canvas hero. A test reading one response header does not need any of
+   * it, and under the full suite's CPU contention on a CI runner that wait
+   * passed 30 seconds: three tests failed in Firefox as bare `page.goto` timeouts
+   * naming nothing, 2026-09-12. Header-only tests use `commit`, where the
+   * response and its headers already exist. The asset test uses
+   * `domcontentloaded`, because it arms its own bounded waits for every declared
+   * asset before navigating and only needs the DOM parsed to walk the images.
+   * The two tests that assert rendering, fonts and hydration keep `load`.
+   */
+
   let server: Server;
   let origin: string;
   let rules: Rule[];
@@ -734,7 +747,7 @@ test.describe('security headers', () => {
   });
 
   test('a served response actually carries the headers', async ({ page }) => {
-    const response = await page.goto(`${origin}/`);
+    const response = await page.goto(`${origin}/`, { waitUntil: 'commit' });
 
     for (const name of REQUIRED_HEADERS) {
       expect(
@@ -781,7 +794,7 @@ test.describe('security headers', () => {
         .catch(() => null),
     );
 
-    await page.goto(`${origin}/`);
+    await page.goto(`${origin}/`, { waitUntil: 'domcontentloaded' });
 
     /*
      * Every image brought into view in turn, because some declared assets are
@@ -856,7 +869,7 @@ test.describe('security headers', () => {
   });
 
   test('the HTML is not cached immutably', async ({ page }) => {
-    const response = await page.goto(`${origin}/`);
+    const response = await page.goto(`${origin}/`, { waitUntil: 'commit' });
     const cacheControl = (await response?.allHeaders())?.['cache-control'];
 
     expect(
@@ -918,7 +931,9 @@ test.describe('security headers', () => {
   });
 
   test('the 404 response carries the headers too', async ({ page }) => {
-    const response = await page.goto(`${origin}/no-such-path-${Date.now()}`);
+    const response = await page.goto(`${origin}/no-such-path-${Date.now()}`, {
+      waitUntil: 'commit',
+    });
 
     expect(response?.status()).toBe(404);
     expect((await response?.allHeaders())?.['content-security-policy']).toBe(

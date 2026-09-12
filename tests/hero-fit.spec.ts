@@ -1,18 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /*
- * `bypassCSP` because the adapter makes `astro preview` serve through the
- * Worker, so `_headers` and its `style-src` now apply in preview where they
- * did not before, and `addStyleTag` below is blocked.
- *
- * It does not weaken what this file checks. A real text-spacing override comes
- * from a user stylesheet, which CSP does not govern, so injecting one past the
- * policy is the faithful emulation. tests/headers.spec.ts is what asserts the
- * policy itself, under its own server, and it does not bypass anything.
- */
-test.use({ bypassCSP: true });
-
-/*
  * The homepage hero fits the screen, and still grows rather than clipping.
  *
  * The two halves pull against each other, which is why they are one file.
