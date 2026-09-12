@@ -425,6 +425,14 @@
   }
 
   /*
+   * Tailwind 4's preflight leaves buttons on `cursor: default`, as browsers do.
+   * Every button here is an action, so it gets the pointer a link already has.
+   */
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /*
    * SC 1.4.1, for links in running text. The rule above strips the underline,
    * which is right for a nav item or a button and wrong inside a sentence,
    * where colour is the only signal left: gold against muted is 1.03:1.
