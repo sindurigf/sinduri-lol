@@ -19,6 +19,7 @@
     "check:links": "node scripts/check-links.mjs",
     "check:commits": "sh scripts/check-commits.sh",
     "check:live": "sh scripts/check-live.sh",
+    "check:live:console": "playwright test -c playwright.live.config.ts",
     "check": "npm run check:tokens && npm run check:links && npm run format:check && npm run check:commits",
     "astro": "astro"
   },
