@@ -17,14 +17,14 @@
   // No `routes`. Wrangler replaces a Worker's routes with this file's on every
   // deploy, so the custom domain goes here when it moves and not before.
 
-  // The contact form's store. `database_id` is an identifier, not a secret:
-  // it grants nothing without an API token scoped to this account, and Workers
-  // Builds reads it from this file.
+  // The contact form's store, created with the EU jurisdiction, which cannot be
+  // changed afterwards; /privacy states it. `database_id` is an identifier, not
+  // a secret: it grants nothing without an API token scoped to this account.
   "d1_databases": [
     {
       "binding": "MESSAGES_DB",
       "database_name": "sinduri-lol",
-      "database_id": "3a232e2e-2ef5-47cc-a1ec-a8ba6cefe82e",
+      "database_id": "c664ffd5-976d-4b32-b17f-efa254825d54",
     },
   ],
 

@@ -264,6 +264,19 @@ test.describe('the privacy policy is true', () => {
         'page following.',
     ).toContain(`${RETENTION_DAYS} days`);
 
+    /*
+     * Where it is stored, which is fixed: the D1 database was created with the
+     * EU jurisdiction, and D1 does not allow a jurisdiction to be changed after
+     * creation. This asserts only that the page says so; wrangler.jsonc names
+     * the database.
+     */
+    expect(
+      text,
+      '/privacy no longer says where stored messages are kept. The database ' +
+        'is restricted to the European Union, and a reader deciding whether to ' +
+        'write is owed that.',
+    ).toContain('European Union');
+
     expect(
       text.toLowerCase(),
       '/privacy no longer says how to have a stored message deleted. A page ' +
