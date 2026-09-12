@@ -11,11 +11,16 @@
   "name": "sinduri-lol",
   "compatibility_date": "2026-09-11",
 
-  // A second copy of the site, as sinduri-lol.pages.dev is. Turn off at cutover.
-  "workers_dev": true,
+  // Off: the workers.dev address would be a second copy of the site.
+  "workers_dev": false,
 
-  // No `routes`. Wrangler replaces a Worker's routes with this file's on every
-  // deploy, so the custom domain goes here when it moves and not before.
+  // The apex, as a custom domain rather than a route pattern; without
+  // `custom_domain` the entry is a pattern and attaches no hostname. In this
+  // file and not only in the dashboard, so a deploy never disagrees with it.
+  //
+  // A deploy fails while the domain is still attached to the Pages project,
+  // which is why this lands only after it has been removed there.
+  "routes": [{ "pattern": "sinduri.lol", "custom_domain": true }],
 
   // The contact form's store, created with the EU jurisdiction, which cannot be
   // changed afterwards; /privacy states it. `database_id` is an identifier, not
