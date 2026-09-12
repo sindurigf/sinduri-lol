@@ -311,6 +311,7 @@ it, and a violation fails the build.
 | Forced colours       | Playwright, `emulateMedia`          | Every route; skipped on WebKit, see section 4       |
 | Reduced motion       | Playwright, `emulateMedia`          | Nothing on any route still moves                    |
 | Page titles          | Playwright over the built `dist/`   | Every title distinct and names its page             |
+| Console errors       | Playwright, under the real CSP      | Every route: no error, exception, violation, 4xx    |
 | No-JavaScript nav    | Playwright, scripting off           | Fallback visible, below the header, not doubled     |
 | Current page         | Playwright                          | `aria-current` in all three navs, and the ring      |
 | Hero fit             | Playwright, hero viewports          | Fits the screen; control clears name and stickers   |
