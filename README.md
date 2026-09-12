@@ -71,23 +71,24 @@ The Lexend Project Authors. The full text ships with the package.
 
 ## Commands
 
-| Command                 | Does                                                             |
-| ----------------------- | ---------------------------------------------------------------- |
-| `npm run dev`           | Dev server at `http://localhost:4321`                            |
-| `npm run build`         | Static build to `dist/`                                          |
-| `npm run preview`       | Serve the built `dist/` locally                                  |
-| `npm run typecheck`     | `astro check` (it runs `astro sync` itself)                      |
-| `npm run format`        | Prettier, write                                                  |
-| `npm run format:check`  | Prettier, check only                                             |
-| `npm run test:a11y`     | Playwright: builds, serves, drives Chromium and Firefox          |
-| `npm run test:worker`   | The contact endpoint, through the Worker with local D1           |
-| `npm run test:a11y:ui`  | The same suite in Playwright's UI mode                           |
-| `npm run check:tokens`  | Fails on any arbitrary value, or on raw hex outside `global.css` |
-| `npm run check:links`   | Fails on a relative Markdown link that does not resolve          |
-| `npm run check:commits` | Format, sign-off and attribution over `origin/main..HEAD`        |
-| `npm run check`         | The four checks above in turn. Not `check:live`                  |
-| `npm run check:live`    | Production against this repository. By hand, never in CI         |
-| `npm run astro`         | Astro CLI passthrough                                            |
+| Command                      | Does                                                                |
+| ---------------------------- | ------------------------------------------------------------------- |
+| `npm run dev`                | Dev server at `http://localhost:4321`                               |
+| `npm run build`              | Static build to `dist/`                                             |
+| `npm run preview`            | Serve the built `dist/` locally                                     |
+| `npm run typecheck`          | `astro check` (it runs `astro sync` itself)                         |
+| `npm run format`             | Prettier, write                                                     |
+| `npm run format:check`       | Prettier, check only                                                |
+| `npm run test:a11y`          | Playwright: builds, serves, drives Chromium and Firefox             |
+| `npm run test:worker`        | The contact endpoint, through the Worker with local D1              |
+| `npm run test:a11y:ui`       | The same suite in Playwright's UI mode                              |
+| `npm run check:tokens`       | Fails on any arbitrary value, or on raw hex outside `global.css`    |
+| `npm run check:links`        | Fails on a relative Markdown link that does not resolve             |
+| `npm run check:commits`      | Format, sign-off and attribution over `origin/main..HEAD`           |
+| `npm run check`              | The four checks above in turn. Not `check:live`                     |
+| `npm run check:live`         | Production against this repository. By hand, never in CI            |
+| `npm run check:live:console` | Every route on production, in a browser: no console errors. By hand |
+| `npm run astro`              | Astro CLI passthrough                                               |
 
 CI also runs the suite in WebKit. `playwright.config.ts` explains why WebKit is
 not run locally.
@@ -427,12 +428,23 @@ revisits and receives a different value.
 page, which loads `/cdn-cgi/challenge-platform/scripts/jsd/main.js` in a 1x1
 iframe. The CSP can never allow it: it is inline, `script-src` carries no
 `'unsafe-inline'`, and its body embeds a per-request token, so no hash can
-match. That is one CSP console error per page load and no request to
-`/cdn-cgi/`. Cloudflare strips `ETag` from every HTML response it is injected
-into, which is why the HTML cannot answer a conditional request. Bot Fight Mode
-stays off because it challenges crawlers, which works against `robots.txt` being
-deliberately permissive so that `X-Robots-Tag: noindex` actually reaches an
-indexer.
+match; measured 2026-09-12, three requests for the homepage carried three
+different hashes. That is one CSP console error per page load and no request to
+`/cdn-cgi/`, so it gives no protection here while breaking the console.
+Cloudflare strips `ETag` from every HTML response it is injected into, which is
+why the HTML cannot answer a conditional request.
+
+Turn it off under **Security > Settings > JS detections**. Cloudflare's docs say
+it cannot be disabled only where Bot Fight Mode is on. A CSP nonce is the one
+way to allow it, since Cloudflare copies the header's nonce onto what it
+injects, but a nonce has to differ per response, and these pages are static
+assets, so that would mean running the Worker in front of every HTML request.
+`npm run check:live:console` fails on every page while it is injecting and is
+the check that it has stopped.
+
+Bot Fight Mode stays off because it challenges crawlers, which works against
+`robots.txt` being deliberately permissive so that `X-Robots-Tag: noindex`
+actually reaches an indexer.
 
 **Managed robots.txt** prepends Cloudflare's content-signals preamble and a
 block disallowing nine AI crawlers to the site's own `robots.txt`. It was doing
