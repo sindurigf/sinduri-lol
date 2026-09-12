@@ -16,7 +16,12 @@ export default defineConfig({
   /*
    * Static by default: every page is prerendered to an asset. The adapter is
    * here for the handful of routes that opt out with `export const prerender =
-   * false`, which reach the Worker instead.
+   * false`.
+   *
+   * Opting out is not enough on its own. A browser request to such a route is a
+   * navigation, and Cloudflare answers navigations to paths with no asset from
+   * the asset layer without invoking the Worker. Every on-demand route also has
+   * to be listed in `assets.run_worker_first` in wrangler.jsonc.
    */
   output: 'static',
 
