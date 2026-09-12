@@ -168,6 +168,12 @@ jobs:
       - name: Accessibility tests
         run: npm run test:a11y
 
+      # The contact endpoint, served through the Worker with local D1. A separate
+      # config because the suite above runs against a static server; see
+      # playwright.worker.config.ts. HTTP only, so it needs no browser.
+      - name: Contact endpoint tests
+        run: npm run test:worker
+
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7

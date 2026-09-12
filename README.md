@@ -80,6 +80,7 @@ The Lexend Project Authors. The full text ships with the package.
 | `npm run format`        | Prettier, write                                                  |
 | `npm run format:check`  | Prettier, check only                                             |
 | `npm run test:a11y`     | Playwright: builds, serves, drives Chromium and Firefox          |
+| `npm run test:worker`   | The contact endpoint, through the Worker with local D1           |
 | `npm run test:a11y:ui`  | The same suite in Playwright's UI mode                           |
 | `npm run check:tokens`  | Fails on any arbitrary value, or on raw hex outside `global.css` |
 | `npm run check:links`   | Fails on a relative Markdown link that does not resolve          |

@@ -11,10 +11,10 @@ import { LIMITS } from '../src/lib/contact-form';
  * status codes, and the headers the Worker has to set for itself because
  * public/_headers does not reach a response Worker code builds.
  *
- * It runs against the same `astro preview` the rest of the suite uses. Since
- * the Cloudflare adapter landed, preview serves through the Worker and
- * supplies the D1 binding, so a successful submission really is stored rather
- * than mocked.
+ * It runs under playwright.worker.config.ts, not with the rest of the suite:
+ * that suite's static server has no endpoint to post to. `astro preview` serves
+ * through the Worker with a local D1 binding, so a successful submission really
+ * is stored rather than mocked.
  *
  * VERIFIED NOT TO BE VACUOUS, by breaking each rule in turn:
  *
@@ -58,27 +58,12 @@ const validFields = (): Record<string, string> => ({
 const sameOrigin = (baseURL: string) => ({ origin: baseURL });
 
 /*
- * One project, and serially.
- *
- * Nothing here drives a browser: every test is an HTTP request, and the
- * endpoint's behaviour does not vary by engine. Run in both projects they
- * interleave against one `astro preview`, one D1 and one rate limiter, and the
- * honeypot test, which compares two sequential responses, sees the other
- * project's requests between its own. That failed as a 200 where a 422 was
- * expected and as a status mismatch on the honeypot, in firefox only.
- *
- * Serial for the same reason within the project: these tests share the store
- * and the limiter, so they are a sequence rather than independent cases.
+ * Serially: these tests share the store and the rate limiter, so they are a
+ * sequence rather than independent cases.
  */
 test.describe.configure({ mode: 'serial' });
 
 test.describe('the contact endpoint', () => {
-  test.skip(
-    ({ browserName }) => browserName !== 'chromium',
-    'HTTP-level spec: it drives no browser, and two projects posting to one ' +
-      'server interfere.',
-  );
-
   test('a GET is sent back to the form', async ({ request, baseURL }) => {
     const response = await request.get(ENDPOINT, {
       maxRedirects: 0,
