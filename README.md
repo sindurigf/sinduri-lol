@@ -470,14 +470,20 @@ green run. The gate is on the merge, not on the deploy.
 4. Under **Target branches**, choose **Add target > Include default branch**.
 5. Under **Branch rules**, tick **Restrict deletions**, **Block force pushes**,
    **Require a pull request before merging** with **Required approvals** set to
-   `0`, and **Require status checks to pass** with **`Build, typecheck, and
-axe`** selected. Also tick **Require branches to be up to date before
-   merging**.
+   `0`, and **Require status checks to pass** with **`Required checks`**
+   selected. Also tick **Require branches to be up to date before merging**.
+
+Leave **Restrict updates**, **Require linear history** and **Require signed
+commits** unticked. A merge is an update, so the first blocks every merge with an
+empty bypass list; merges here are merge commits, which the second rejects; and
+commits are signed off (`-s`), not cryptographically signed, which the third
+requires.
 
 ### The check name
 
-The string to require is **`Build, typecheck, and axe`**, the `name` of the
-`a11y` job. It is not `Accessibility`, the name of the workflow. GitHub reports
+The string to require is **`Required checks`**, the `name` of the `required`
+job, which passes only when the checks job and every Playwright shard have. It is
+not `Accessibility`, the name of the workflow. GitHub reports
 one status check per job and labels it with the job name, so the workflow name
 never appears in the picker.
 
@@ -485,9 +491,10 @@ never appears in the picker.
   is not offered, open a throwaway pull request, let the workflow run once, and
   come back to the ruleset.
 - **The requirement matches on that string and nothing else.** Renaming
-  `jobs.a11y.name` does not break the ruleset loudly; it leaves it waiting for a
-  check that no longer exists. Do not rename the job without updating the
-  ruleset in the same change.
+  `jobs.required.name` does not break the ruleset loudly; it leaves it waiting for
+  a check that no longer exists, and no pull request can merge. Rename in this
+  order: open the pull request, let it report the new name once, swap the name in
+  the ruleset, then merge.
 
 ### Two things that look like a misconfiguration and are not
 

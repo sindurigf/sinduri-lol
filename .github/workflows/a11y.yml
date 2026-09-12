@@ -160,14 +160,17 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
-  a11y:
-    # DO NOT RENAME. This string is the GitHub status context that the branch
-    # ruleset on `main` requires. Editing it fails nothing; it makes the
-    # required check disappear, and `main` silently loses its protection.
+  required:
+    # DO NOT RENAME without updating the branch ruleset in the same change. This
+    # string is the GitHub status context the ruleset on `main` requires, and
+    # editing it alone fails nothing: it leaves the ruleset waiting for a check
+    # that never reports, so every pull request stops being mergeable.
     #
-    # It is a gate over the jobs above rather than the work itself, so the
-    # ruleset names one context however the suite is split.
-    name: Build, typecheck, and axe
+    # A gate over the jobs above rather than the work itself, so the ruleset
+    # names one context however the suite is split. It was called "Build,
+    # typecheck, and axe" until 2026-09-12, which stopped describing it when the
+    # suite was sharded.
+    name: Required checks
     runs-on: ubuntu-latest
     needs: [checks, test]
 

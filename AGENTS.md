@@ -16,7 +16,7 @@ npm run test:worker
 `check` runs the token, link, format and commit checks. `test:worker` runs the
 contact endpoint spec through the Worker, which the static server `test:a11y`
 uses cannot serve. CI runs all five across parallel jobs, gated by the one
-required check, `Build, typecheck, and axe`.
+required check, `Required checks`.
 
 A suite is green only when the summary line with the counts says so. Check the
 reported total against `npx playwright test --list`: a total below the collected
@@ -33,7 +33,7 @@ diff.
 - `main` is protected by a branch ruleset. Direct pushes are rejected. Always
   branch, and name the branch for the task.
 - The required status check is the GitHub context name, which comes from
-  `jobs.a11y.name` in `.github/workflows/a11y.yml` and not from the job key.
+  `jobs.required.name` in `.github/workflows/a11y.yml` and not from the job key.
   Renaming that string silently removes protection from `main`.
 - `gh` is the tool for pull requests. Run `gh auth status` before relying on it.
   Printing a `compare/` URL is not opening a pull request.
