@@ -418,17 +418,26 @@ const collectViolations = async (page: Page): Promise<string[]> => {
 
 test.describe('security headers', () => {
   /*
-   * Navigations here wait only for what each test asserts. Playwright's default
-   * is `load`, which on the homepage means every font, stylesheet, island script
-   * and the canvas hero. A test reading one response header does not need any of
-   * it, and under the full suite's CPU contention on a CI runner that wait
-   * passed 30 seconds: three tests failed in Firefox as bare `page.goto` timeouts
-   * naming nothing, 2026-09-12. Header-only tests use `commit`, where the
-   * response and its headers already exist. The asset test uses
-   * `domcontentloaded`, because it arms its own bounded waits for every declared
-   * asset before navigating and only needs the DOM parsed to walk the images.
-   * The two tests that assert rendering, fonts and hydration keep `load`.
+   * Navigations here wait only for what each test asserts: `commit` where a test
+   * reads a response header, and `domcontentloaded` for the asset test, which
+   * arms its own bounded waits before navigating. The two tests that assert
+   * rendering, fonts and hydration keep `load`.
+   *
+   * That scoping does NOT prevent the Firefox stall this file is known for, and
+   * an earlier version of this comment said it did. playwright.config.ts
+   * records the cause: Playwright intermittently stops delivering navigation
+   * lifecycle events for Firefox, `commit` included, and every recorded stall
+   * is a `page.goto` here, the one spec that navigates to an origin other than
+   * the preview server. About 5 in 105 executions.
+   *
+   * A stalled navigation never recovers, so most of the default 30s is spent
+   * waiting on nothing; `navigationTimeout` ends it sooner. And on 2026-09-12
+   * the stall hit one test twice running, which one retry could not absorb and
+   * which failed the required check, so CI retries this file twice. A real
+   * navigation to this loopback server takes well under a second.
    */
+  test.use({ navigationTimeout: 15_000 });
+  test.describe.configure({ retries: process.env.CI ? 2 : 0 });
 
   let server: Server;
   let origin: string;
