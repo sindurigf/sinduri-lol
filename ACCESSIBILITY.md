@@ -510,8 +510,8 @@ form of every one is in the archived repository.
   wrapped links need more than the fixed 96px header. At 305px Home sat above
   the top of the page where no scroll reaches it. Fixed by rendering the
   fallback in normal flow after the header. Growing the header was the other
-  option and the wrong one: the sticky band would then be taller than every
-  `scroll-margin-top` allows for.
+  option and the wrong one: the sticky band would then be taller than the
+  page's scroll offset allows for.
 - **`/contact` had no current-page indicator and the three navigations
   disagreed.** With scripting off the page said where you were and with
   scripting on it did not.

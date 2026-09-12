@@ -41,6 +41,11 @@ import { ROUTES } from './routes';
  * was written; forcing the ring to #1a1a1a catches 8 of 8 stops, at 1.07 to
  * 1.13:1.
  *
+ * The offset now lives on `html` as `scroll-padding-top`, moved there
+ * 2026-09-12 because WebKit ignores an element's `scroll-margin-top` when it
+ * reveals a focused text input. The history below predates that and describes
+ * the element rule it replaced.
+ *
  * Verified not to be vacuous, by reverting the fix rather than by assertion.
  * With the `scroll-margin-top` rule in global.css put back to naming only
  * `:target, [id]`, this spec fails on `/` at both widths and, at 305px, on
@@ -244,7 +249,7 @@ const readFocused = (page: Page): Promise<Stop | null> =>
  * Wait until the page has stopped scrolling.
  *
  * `keyboard.press` resolves when the input event has been dispatched, not when
- * the browser has finished moving focus, applying `scroll-margin-top` and
+ * the browser has finished moving focus, applying `scroll-padding-top` and
  * settling layout. Probing immediately therefore races the scroll, and what it
  * measures is a position no reader ever sees.
  *
@@ -427,7 +432,7 @@ for (const { width, height, note } of WIDTHS) {
 
         /*
          * Backward, from the last control on the page. This is the direction
-         * that fails when scroll-margin-top does not cover focusable elements:
+         * that fails when the scroll offset does not reach focusable elements:
          * the browser aligns the control to the top of the viewport, under the
          * sticky header.
          */
@@ -478,8 +483,10 @@ for (const { width, height, note } of WIDTHS) {
           hidden,
           `${route} at ${width}px has focused control(s) completely hidden ` +
             `behind something else (SC 2.4.11 Focus Not Obscured, Minimum). ` +
-            `The usual cause is scroll-margin-top not covering focusable ` +
-            `elements, so the browser aligns them under the sticky header — ` +
+            `The usual cause is the scroll offset not reaching focusable ` +
+            `elements: scroll-padding-top on html is missing or too small, or ` +
+            `the browser ignores an element-level scroll-margin, as WebKit does ` +
+            `for text inputs. Either way it aligns them under the sticky header, ` +
             `which only shows up walking backwards:\n${report(hidden)}`,
         ).toEqual([]);
 
