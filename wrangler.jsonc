@@ -1,0 +1,33 @@
+// Cloudflare Workers configuration.
+//
+// The @astrojs/cloudflare adapter reads this file at build time and writes a
+// redirect config to dist/client/wrangler.json, which is what wrangler deploys.
+// That generated file supplies the entry point, so there is no `main` here.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+
+  // Must match the Worker's name in the Cloudflare dashboard, or Workers
+  // Builds refuses to deploy.
+  "name": "sinduri-lol",
+  "compatibility_date": "2026-09-11",
+
+  // A second copy of the site, as sinduri-lol.pages.dev is. Turn off at cutover.
+  "workers_dev": true,
+
+  // No `routes`. Wrangler replaces a Worker's routes with this file's on every
+  // deploy, so the custom domain goes here when it moves and not before.
+
+  "assets": {
+    // The adapter splits the build into dist/client and dist/server. Built by
+    // `npm run build`; no `build` key, which would build a second time.
+    "directory": "./dist/client",
+
+    // Serve 404.html with a 404 status for any path with no file. Pages did
+    // this without being told; Workers does not. tests/not-found.spec.ts
+    // asserts it.
+    "not_found_handling": "404-page",
+
+    // The default, written out: /about redirects to /about/, with a 307.
+    "html_handling": "auto-trailing-slash",
+  },
+}

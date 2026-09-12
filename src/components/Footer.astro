@@ -1,0 +1,216 @@
+---
+import { Image } from 'astro:assets';
+import badgeWhite from '../assets/badge-white.png';
+import { CONTACT_EMAIL } from '../lib/contact';
+import { DENSITIES } from '../lib/image-densities';
+import { NAV_LINKS } from '../lib/nav';
+import { SOCIAL_PROFILES } from '../lib/profiles';
+import { SOCIAL_ICONS } from '../lib/social-icons';
+
+/*
+ * THE FOOTER: the hero's field again, quieter, with the hare asleep in it.
+ *
+ * Stems along the top with the badge standing in them, the site's pages and
+ * its two policies beside the badge, and a bottom row with the copyright on
+ * one side and the profiles as tilted sticker tiles on the other. The layout
+ * lives with the other component classes in global.css under "THE FOOTER".
+ *
+ * NOTHING HERE RUNS IN THE BROWSER. The field is a still drawing, generated
+ * at build time into src/assets/footer-field.svg (see src/lib/footer-field.ts)
+ * and the hare is the inline SVG below, so this needs no pause control and no
+ * script. The homepage hero is the one animated field.
+ */
+
+/*
+ * The badge's drawn height from `sm` up, in pixels. Below `sm` global.css
+ * draws it at 170px from the same file, 1.47 times this, inside the 1.5
+ * tests/image-size.spec.ts allows. Generated at this height and at 2x rather
+ * than served as the 760x900 master, with width and height attributes that
+ * reserve its box before it loads (CLS).
+ *
+ * alt="" because the copyright line already names the site, and the badge
+ * takes a name only where it is the one thing naming it.
+ */
+const BADGE_HEIGHT = 250;
+
+/*
+ * Imported rather than declared here, because `/.well-known/security.txt`
+ * publishes the same address as its `Contact:` and the two must not drift.
+ * See src/lib/contact.ts.
+ */
+const EMAIL = CONTACT_EMAIL;
+
+/*
+ * The profiles come from src/lib/profiles.ts, which the JSON-LD also reads as
+ * its `sameAs`. The email is appended here rather than living in that module:
+ * it is a `mailto:`, not a profile. Every entry needs an icon in
+ * src/lib/social-icons.ts, and TypeScript refuses the build until it has one.
+ */
+const SOCIAL_LINKS = [
+  ...SOCIAL_PROFILES,
+  { href: `mailto:${EMAIL}`, label: 'Email' },
+] as const;
+
+/*
+ * The header's destinations, imported from src/lib/nav.ts rather than
+ * transcribed. `isActive` is deliberately not imported with them: a footer
+ * nav is what you reach having finished reading, and marking the page you are
+ * already at the bottom of says nothing.
+ */
+const POLICY_LINKS = [
+  { href: '/accessibility/', label: 'Accessibility' },
+  { href: '/privacy/', label: 'Privacy' },
+] as const;
+
+const SITE_NAME = 'sinduri.lol';
+const currentYear = new Date().getFullYear();
+
+// Built here rather than interpolated inline. Astro collapses the whitespace
+// between two adjacent expressions when a formatter puts them on their own
+// lines, which silently renders "2026sinduri.lol".
+const copyright = `© ${currentYear} ${SITE_NAME}`;
+---
+
+<footer class="bg-deep">
+  {/*
+    THE FIELD. Decorative throughout, so the strip is aria-hidden and holds
+    nothing focusable. The stems are its background image; the hare is drawn
+    in its own units, x = 0 at its middle and y = 0 on the ground, and
+    global.css places it (see .footer-hare).
+  */}
+  <div class="footer-field" aria-hidden="true">
+    <div class="page-gutter h-full">
+      <div class="relative mx-auto h-full max-w-page">
+        <svg class="footer-hare" viewBox="-60 -58 114 64" focusable="false">
+          <ellipse class="hare-shadow" cx="-4" cy="1" rx="54" ry="4"></ellipse>
+          <ellipse
+            class="hare-far"
+            cx="4"
+            cy="-44"
+            rx="24"
+            ry="5"
+            transform="rotate(12.6 4 -44)"
+          ></ellipse>
+          <circle cx="-47" cy="-13" r="7"></circle>
+          <path d="M36 0C38-24 16-36-12-37C-36-38-52-24-48 0Z"></path>
+          <path class="hare-line" d="M-8-3Q-6-26-28-29"></path>
+          <ellipse cx="42" cy="-3" rx="9" ry="3.6"></ellipse>
+          <ellipse
+            cx="34"
+            cy="-19"
+            rx="16"
+            ry="13"
+            transform="rotate(-8.6 34 -19)"
+          ></ellipse>
+          <ellipse
+            cx="8"
+            cy="-38"
+            rx="26"
+            ry="5.5"
+            transform="rotate(9.2 8 -38)"
+          ></ellipse>
+          <path class="hare-line" d="M28-34.5Q10-37.5-12-41"></path>
+          <path class="hare-line" d="M41.82-19.82A4 4 0 0 1 34.18-19.82"></path>
+          <circle class="hare-nose" cx="49" cy="-16" r="1.6"></circle>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  {/*
+    The footer sits outside <main>, so it applies the shared gutter itself, and
+    its content keeps to the same column as the header and <main>.
+    tests/alignment.spec.ts measures that.
+  */}
+  <div class="page-gutter">
+    <div class="mx-auto max-w-page">
+      <div class="footer-links">
+        {/*
+          No `loading` override, so <Image>'s lazy default stands: the footer
+          is below the fold on every route.
+        */}
+        <div class="footer-badge">
+          <Image
+            src={badgeWhite}
+            alt=""
+            height={BADGE_HEIGHT}
+            densities={DENSITIES}
+          />
+        </div>
+
+        {/*
+          Two navs, and their labels are what keep them useful. "Site" is
+          where else this is; "Site policies" is what this site claims about
+          itself. A reader listing landmarks sees distinct names, and
+          "Privacy" never reads as one more page of content.
+
+          It duplicates the header's destinations on purpose: a footer nav is
+          for someone who has reached the bottom of a long page.
+          tests/focus.spec.ts walks both.
+        */}
+        <nav aria-label="Site" class="footer-pages">
+          <ul>
+            {NAV_LINKS.map((link) => (
+              <li>
+                <a href={link.href} class="label text-text hover:text-cyan">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/*
+          The two statements the site makes about itself. They sit on every
+          page because a policy nobody can reach is the same as no policy.
+          `subtle` rather than `text` sets them apart from the pages without
+          an underline; it is AAA on `deep`, 8.95.
+        */}
+        <nav aria-label="Site policies" class="footer-policies">
+          <ul>
+            {POLICY_LINKS.map((link) => (
+              <li>
+                <a href={link.href} class="label text-subtle hover:text-cyan">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+
+      <div class="footer-base">
+        {/*
+          <small>, which HTML defines for side comments such as copyright
+          lines, and which WAVE does not report as a possible heading the way
+          it reports a short, large, bold <p>. `.footer-base` is a flex
+          container, so this lays out as a block, and `.footer-copyright` sets
+          its size over the base layer's `small { font-size: 80% }`;
+          tests/footer.spec.ts asserts the 20px.
+        */}
+        <small class="footer-copyright">{copyright}</small>
+
+        {/*
+          THE PROFILES, AS STICKERS. Each tile is a real link whose name is
+          the visually hidden label, so a screen reader hears "GitHub, link"
+          and voice control can say it; the icon is aria-hidden and names
+          nothing. A tile is 56px, 48px on a phone, past the 24px of SC 2.5.8.
+        */}
+        <nav aria-label="Social" class="footer-social">
+          <ul class="footer-stickers">
+            {SOCIAL_LINKS.map((link) => (
+              <li>
+                <a href={link.href} class="footer-sticker">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d={SOCIAL_ICONS[link.label]} />
+                  </svg>
+                  <span class="sr-only">{link.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</footer>

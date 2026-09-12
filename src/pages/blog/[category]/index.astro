@@ -1,0 +1,72 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { BLOG_CATEGORIES } from '../../../content.config';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BlogListing from '../../../components/BlogListing.astro';
+import {
+  categoryLabel,
+  getSortedPosts,
+  type BlogPost,
+} from '../../../lib/blog';
+
+interface Props {
+  posts: BlogPost[];
+}
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const posts = await getSortedPosts();
+
+  return BLOG_CATEGORIES.map((category) => ({
+    params: { category },
+    props: {
+      posts: posts.filter((post) => post.data.category === category),
+    },
+  }));
+};
+
+const { category } = Astro.params;
+const { posts } = Astro.props as Props;
+
+// `category` comes from getStaticPaths, so it is always one of
+// BLOG_CATEGORIES, but Astro.params is typed as string | undefined. Fail
+// loudly rather than rendering a page titled "undefined".
+if (!category) {
+  throw new Error('Category route rendered without a category param.');
+}
+
+const label = categoryLabel(category);
+
+/*
+ * A CATEGORY LISTING IS NOT PAGINATED, which is a decision rather than an
+ * omission. The index paginates because it holds every post; a category holds
+ * a slice, the largest three posts on 2026-09-12. Paginating would add a
+ * /blog/<category>/page/<n> route that emits nothing, a code path that ships
+ * and is never exercised. Revisit when a single category passes a screenful;
+ * the helpers in src/lib/blog.ts already do the arithmetic.
+ */
+---
+
+<BaseLayout
+  title={`${label} | sinduri.lol`}
+  description={`Posts filed under ${label}.`}
+>
+  {/* No horizontal padding here; see the note in [slug].astro. */}
+  <div class="mx-auto max-w-page py-28">
+    {/*
+      No "All posts" link above the heading. The category filter below offers
+      "All posts" as its first option, so one here would be two stops in a row
+      going to the same place under the same name. The filter's option is the
+      one in context.
+    */}
+    <h1 class="text-h1 text-text">{label}</h1>
+
+    <div class="mt-12">
+      <BlogListing
+        posts={posts}
+        activeCategory={category as (typeof BLOG_CATEGORIES)[number]}
+        currentPage={1}
+        totalPages={1}
+      />
+    </div>
+  </div>
+</BaseLayout>

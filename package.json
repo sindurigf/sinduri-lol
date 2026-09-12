@@ -1,0 +1,52 @@
+{
+  "name": "sinduri-lol",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:a11y": "playwright test",
+    "test:a11y:ui": "playwright test --ui",
+    "check:tokens": "node scripts/check-tokens.mjs",
+    "check:links": "node scripts/check-links.mjs",
+    "check:commits": "sh scripts/check-commits.sh",
+    "check:live": "sh scripts/check-live.sh",
+    "check": "npm run check:tokens && npm run check:links && npm run format:check && npm run check:commits",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^14.3.1",
+    "@astrojs/markdown-satteri": "^0.4.1",
+    "@astrojs/sitemap": "^3.7.4",
+    "@astrojs/vue": "^7.0.2",
+    "@fontsource-variable/lexend": "^5.3.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.3.2",
+    "tailwindcss": "^4.3.3",
+    "vue": "^3.5.42"
+  },
+  "allowScripts": {
+    "esbuild": true
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "1.62.1",
+    "@types/node": "^24.13.4",
+    "axe-core": "^4.13.0",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^1.0.0",
+    "typescript": "^6.0.3",
+    "wrangler": "4.131.1"
+  },
+  "overrides": {
+    "playwright-core": "1.62.1"
+  }
+}

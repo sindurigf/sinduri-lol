@@ -1,0 +1,185 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { accessibilityFacts } from '../lib/accessibility-facts';
+import { CONTACT_EMAIL } from '../lib/contact';
+
+/*
+ * The public accessibility statement.
+ *
+ * WHY IT EXISTS. ACCESSIBILITY.md is written for the people a barrier lands
+ * on, and they are not reading the repository, so the record needs a page a
+ * reader can click.
+ *
+ * THIS PAGE IS A SUMMARY AND SAYS SO. It does not restate the file, which
+ * carries measured contrast ratios for every token against every surface,
+ * what is automated and what is not, and every known gap at length.
+ * Reproducing that here would be a second copy to keep in step, and would
+ * bury what a reader came for: what is aimed at, whether it has been reached,
+ * and how to report that it has not.
+ *
+ * THE VOLATILE FACTS ARE DERIVED, NOT TYPED. The target, the status, the
+ * review date and the two reporting routes come out of ACCESSIBILITY.md at
+ * build time, so the page cannot quietly go out of date in front of the
+ * readers least able to check. See src/lib/accessibility-facts.ts.
+ *
+ * THE COPY HERE IS NOT EDITORIAL AND DOES NOT WAIT FOR SINDURI. Every
+ * sentence is a factual statement about what the project does, drawn from
+ * ACCESSIBILITY.md §2, §3, §6 and §8, or functional microcopy on the
+ * reporting routes. That is the line AGENTS.md draws.
+ */
+
+const { targetStandard, conformanceStatus, lastReviewed, publicReporting } =
+  accessibilityFacts;
+
+/*
+ * The full record. A reader who wants the measurements rather than the
+ * summary reaches it in one click, so the page ends by pointing at it rather
+ * than paraphrasing further.
+ */
+const FULL_RECORD =
+  'https://github.com/sindurigf/sinduri-lol/blob/main/ACCESSIBILITY.md';
+
+/*
+ * Taken from ACCESSIBILITY.md section 6 and deliberately not counted: a total
+ * this page has no way to recount would go stale. The prose says what is
+ * covered without asserting one.
+ */
+const AUTOMATED = [
+  'axe on every route, for WCAG 2.2 A and AA and for best practice',
+  'colour contrast measured against the composited background, including every result axe leaves undecided',
+  'the keyboard tab order walked in both directions on every route, at 305px and 1280px, with every focus ring measured where it lands',
+  'target sizes, reflow at 320px, Windows High Contrast Mode, and reduced motion',
+  'navigation with JavaScript switched off',
+];
+---
+
+<BaseLayout
+  title="Accessibility | sinduri.lol"
+  description="What this site aims for, what has been tested, what has not, and how to report a barrier."
+>
+  <section class="band py-24">
+    <div class="mx-auto max-w-page">
+      <h1 class="text-h1 text-gold">Accessibility</h1>
+
+      <p class="mt-10 max-w-prose text-h3 font-bold text-text text-pretty">
+        This site aims to be usable with a keyboard, a screen reader, at high
+        zoom, and without JavaScript. Where it is not, that is a bug worth
+        reporting.
+      </p>
+
+      {/*
+        The status is the most important thing on the page and is deliberately
+        not softened. "No conformance claim" is the honest position while the
+        manual testing is unfinished, and stating a target as though it were
+        an achievement is the standard failure of these pages.
+      */}
+      <dl class="mt-14 grid gap-8 sm:grid-cols-2">
+        <div class="card">
+          <dt class="label-wide text-subtle">Target</dt>
+          <dd class="mt-4 text-text">{targetStandard}</dd>
+        </div>
+        <div class="card">
+          <dt class="label-wide text-subtle">Status</dt>
+          <dd class="mt-4 text-text">{conformanceStatus}</dd>
+        </div>
+        <div class="card">
+          <dt class="label-wide text-subtle">Last reviewed</dt>
+          <dd class="mt-4 text-text">
+            <time datetime={lastReviewed}>{lastReviewed}</time>
+          </dd>
+        </div>
+        <div class="card">
+          <dt class="label-wide text-subtle">Scope</dt>
+          <dd class="mt-4 text-text">
+            Every page on this site. Sites linked from the footer are not
+            covered.
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="band py-24">
+    <div class="mx-auto max-w-page">
+      <h2 class="text-h2 text-gold">What is checked automatically</h2>
+
+      <p class="mt-8 max-w-prose text-muted text-pretty">
+        These run on every change, in Chromium, Firefox and WebKit, and a
+        failure blocks the change from being merged.
+      </p>
+
+      <ul class="mt-8 max-w-prose list-disc pl-6 text-muted marker:text-gold">
+        {AUTOMATED.map((item) => (
+          <li class="mt-3">{item}</li>
+        ))}
+      </ul>
+
+      <h2 class="mt-20 text-h2 text-gold">What is not</h2>
+
+      <p class="mt-8 max-w-prose text-muted text-pretty">
+        Automated checks find a minority of accessibility problems. They cannot
+        say whether a focus ring reads as a focus ring, whether a page still
+        makes sense with motion removed, or whether a screen reader announces
+        something in a useful order. Those need a person, and on this site they
+        are partly done: a screen reader pass and several manual zoom and reflow
+        checks are still outstanding. The full record names each one rather than
+        implying coverage.
+      </p>
+
+      <h2 class="mt-20 text-h2 text-gold">Known gaps</h2>
+
+      <p class="mt-8 max-w-prose text-muted text-pretty">
+        Most of this site's written content is still placeholder text, which
+        means it is Latin inside a page declared as English. A screen reader
+        will announce it as though it were English. That is the largest current
+        defect and it is fixed by finishing the writing, not by a code change.
+        The remaining gaps, and the reasoning behind each, are listed in full in
+        the record below.
+      </p>
+    </div>
+  </section>
+
+  <section class="band py-24">
+    <div class="mx-auto max-w-page">
+      <h2 class="text-h2 text-gold">Report a barrier</h2>
+
+      <p class="mt-8 max-w-prose text-muted text-pretty">
+        If something here blocks you, please say so. You do not need to know
+        which guideline it falls under, and you do not need to tell us anything
+        about yourself. The page address and what you were trying to do are
+        useful, and nothing is required.
+      </p>
+
+      <ul class="mt-10 flex flex-wrap gap-6">
+        <li>
+          <a
+            href={`mailto:${CONTACT_EMAIL}`}
+            class="label block border-4 border-border bg-surface px-6 py-4 text-text hover:shadow-hard-gold-6"
+          >
+            Email {CONTACT_EMAIL}
+          </a>
+        </li>
+        <li>
+          <a
+            href={publicReporting}
+            class="label block border-4 border-border bg-surface px-6 py-4 text-text hover:shadow-hard-gold-6"
+          >
+            Open an issue on GitHub
+          </a>
+        </li>
+      </ul>
+
+      <p class="mt-14 max-w-prose text-muted text-pretty">
+        The full record, including every measured contrast ratio and every known
+        gap, is kept with the source:{' '}
+        <a
+          href={FULL_RECORD}
+          class="underline decoration-gold underline-offset-4 hover:text-cyan"
+        >
+          ACCESSIBILITY.md
+        </a>
+        .
+      </p>
+    </div>
+  </section>
+</BaseLayout>

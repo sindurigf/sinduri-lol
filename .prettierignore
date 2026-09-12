@@ -1,0 +1,26 @@
+# Prettier also reads .gitignore, so build output, dependencies and worktrees
+# are not repeated here.
+
+# lockfile
+package-lock.json
+
+# binary assets
+public/
+
+# vendored third-party skill, kept byte-identical to upstream
+.claude/skills/frontend-a11y/
+
+# Prettier 3.9.6 never converges on this file, so `format:check` could not pass
+# whatever we wrote. Characterised: a task-list item (`- [ ] ` or `- [x] `)
+# whose content starts at column 6 and which carries a wrapped continuation
+# paragraph gets that paragraph's continuation lines re-indented from 6 to 10,
+# then to 14, and so on, four spaces per run. A plain `- ` item is stable, and
+# so is a single-line continuation; it needs both the checkbox offset and the
+# wrap. TODO.md has such paragraphs under both checked and open items
+# (measured 2026-09-11).
+#
+# Flattening them into one line each would satisfy the formatter and make the
+# durable checklist worse to read, so the file is excluded until the bug is
+# fixed upstream. Re-check on the next prettier upgrade and delete this if it
+# has gone.
+TODO.md

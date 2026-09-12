@@ -1,0 +1,243 @@
+---
+import { Image } from 'astro:assets';
+import bunnyDark from '../assets/bunny-dark.png';
+import MobileMenu from './ui/MobileMenu.vue';
+import {
+  CTA,
+  HEADER_LINKS,
+  HOME_HREF,
+  NAV_LINKS,
+  isActive as isCurrentPage,
+} from '../lib/nav';
+import { DENSITIES } from '../lib/image-densities';
+
+/*
+ * Dark line-art mark, on the gold logo tile.
+ *
+ * No intrinsic width or height is written down: the import carries them, and a
+ * copied size keeps reserving the old box after the artwork is re-exported at
+ * a different aspect, which is a layout shift and not an error anywhere.
+ *
+ * MARK_HEIGHT is a different fact: the size the mark is drawn, `h-6` in
+ * pixels, so the build emits a small file and a 2x one rather than the
+ * 458x900 master. tests/image-size.spec.ts fails if the class and this number
+ * drift apart.
+ */
+const BUNNY_ALT = 'Lepus Ridet mark';
+const MARK_HEIGHT = 24;
+
+const currentPath = Astro.url.pathname;
+
+const isActive = (href: string): boolean => isCurrentPage(currentPath, href);
+---
+
+{/*
+  The gutter goes on <header>, not on the column inside it, so this element
+  presents the same content box as <main> and the footer. See the
+  --container-page comment in global.css.
+*/}
+<header class="page-gutter sticky top-0 z-50 h-header border-b-8 border-border bg-header-bg backdrop-blur-header">
+  {/*
+    Three tracks from `lg`, a flex row below it. The navigation holds the
+    middle track, on the page's centre line, with the wordmark and the call to
+    action in the outer two.
+
+    `lg` and not `md`: centring spends dead space, and between 768px and
+    1023px the row only just fits, so a centred track would halve the slack
+    and hand half of it to the side that does not need it. Below `md` the
+    navigation is hidden and the row is the wordmark and the menu trigger, so
+    a three-track grid would leave one track empty.
+
+    See --grid-template-columns-header in global.css.
+  */}
+  <div class="mx-auto flex h-full max-w-page items-center justify-between lg:grid lg:grid-cols-header">
+    {/*
+      This is the header's home link, and on `/` it says so. The desktop nav
+      has no Home item, because two adjacent links to one URL are an extra tab
+      stop and a repeated entry in a links list; see `HEADER_LINKS` in
+      src/lib/nav.ts. That leaves this as the only thing in the desktop header
+      that can mark the homepage as current, so it carries `aria-current`. The
+      attribute only: the logo draws no current-page box.
+
+      No aria-label. It would override both the image's alt and the visible
+      wordmark, hiding the mark from assistive tech and breaking voice control
+      for anyone who says "sinduri.lol".
+
+      `lg:justify-self-start` because a grid item stretches to fill its track
+      by default. Stretched, this link's box is the whole first track, and a
+      click on empty header navigates home from a third of the row away.
+    */}
+    <a
+      href={HOME_HREF}
+      aria-current={isActive(HOME_HREF) ? 'page' : undefined}
+      class="flex items-center gap-4 lg:justify-self-start"
+    >
+      <span class="flex h-12 w-12 rotate-3 items-center justify-center rounded-nav border-4 border-border bg-gold shadow-hard-pink-8">
+        {/*
+          loading="eager", overriding <Image>'s lazy default. This mark is in
+          the first viewport of every route, and a lazy image is not found by
+          the preload scanner, so the default would delay the one image
+          guaranteed to be on screen at load.
+        */}
+        <Image
+          src={bunnyDark}
+          alt={BUNNY_ALT}
+          height={MARK_HEIGHT}
+          densities={DENSITIES}
+          loading="eager"
+          class="h-6 w-auto"
+        />
+      </span>
+      <span class="label text-text">sinduri.lol</span>
+    </a>
+
+    {/*
+      py-2 is a target-size rule, not spacing. The 13px/1.2 label renders a
+      15.6px line box, under the 24px SC 2.5.8 asks for; 8px top and bottom
+      takes each link to 31.6px and border-4 to 39.6px, so every link passes
+      on its own size rather than on the spacing exception. The ul is
+      items-center, so the padding grows the hit area about the same centre
+      line and moves no glyph.
+
+      Every link carries the same geometry: only the border colour and the
+      shadow change when a link is current. An indicator applied to the active
+      link alone would widen that item on its own page and shuffle the row on
+      every navigation, so `border-transparent` is holding space rather than
+      decorating. The box is a shape cue, not colour alone (SC 1.4.1), and
+      `aria-current="page"` is what carries the state to assistive tech.
+    */}
+    <nav class="hidden md:block lg:justify-self-center" aria-label="Primary">
+      {/*
+        The nav appears at `md`, 768px, and between there and `lg` the row
+        only just fits. `gap-1 lg:gap-3` here, `px-3 lg:px-4` on the links and
+        `px-4 lg:px-6` on the call to action are trims spent in that band
+        alone: from 1024px up the row is unchanged.
+
+        The trims are typography, not conformance. SC 2.5.8 is satisfied by
+        each link's own 39.6px box, `py-2` plus `border-4`, which is untouched
+        by them. tests/header-fit.spec.ts holds the floor.
+      */}
+      <ul class="flex items-center gap-1 lg:gap-3">
+        {HEADER_LINKS.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              aria-current={isActive(link.href) ? 'page' : undefined}
+              class:list={[
+                'label block border-4 px-3 py-2 lg:px-4',
+                isActive(link.href)
+                  ? 'border-border text-text shadow-hard-gold-4'
+                  : 'border-transparent text-muted hover:text-cyan',
+              ]}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    {/*
+      The call to action holds the third track, which puts it outside the
+      Primary landmark. The navigation occupies the middle track and one
+      element cannot hold another, so this sits beside the nav rather than in
+      its list, at every width: below `lg` it is the third item of the flex
+      row, spreading that band's slack evenly.
+
+      What that costs, stated rather than glossed: someone listing the Primary
+      navigation finds three links, without this one and without Home, which
+      the logo link stands in for. This link is still in the banner landmark,
+      still in the same place in the tab order, and still marked when it is
+      the current page. The alternative is `ml-auto` inside the list, which
+      leaves the links off the centre line by half this control's width.
+
+      It is a destination like any other, so it carries `aria-current` on
+      /contact; the no-JavaScript fallback below marks it too, and the two
+      must agree. See .nav-cta in global.css for the ring.
+    */}
+    <div class="hidden md:block lg:justify-self-end">
+      <a
+        href={CTA.href}
+        aria-current={isActive(CTA.href) ? 'page' : undefined}
+        class="nav-cta block whitespace-nowrap px-4 py-3 lg:px-6"
+      >
+        {CTA.label}
+      </a>
+    </div>
+
+    {/*
+      client:load, deliberately not client:media. A desktop user at 400% zoom
+      crosses the mobile breakpoint, and an island that failed to hydrate on
+      that media change would leave them with dead navigation, which is
+      exactly the population that depends on magnification (SC 1.4.10
+      Reflow). client:media saves a few kilobytes and is not worth that.
+    */}
+    <MobileMenu client:load currentPath={currentPath} />
+  </div>
+</header>
+
+{/*
+  The no-JavaScript fallback, and what it does and does not cover.
+
+  Below `md` the primary nav above is `hidden`, so the island is the only
+  navigation there is. The island server-renders its whole <dialog>, links
+  included, but a <dialog> is display:none until showModal() runs and the
+  trigger cannot call it without hydration. With scripting off at mobile width
+  and without this list, a reader reaches `/` from the logo and the footer's
+  social links, and no other page on the site.
+
+  Shown by a media query rather than by a <noscript> element, which WAVE
+  reports as an alert. `.noscript-nav` in global.css is display:none, and
+  `@media (scripting: none)` shows it and hides the menu trigger, which would
+  otherwise sit there inert announcing aria-expanded="false".
+
+  What that costs, stated rather than glossed. The list is in the DOM on every
+  page, hidden, where <noscript> content was never parsed by a scripted
+  browser; display:none keeps it out of the tab order and the accessibility
+  tree. It relies on the `scripting` media feature, Baseline since December
+  2023 (Chrome 120, Firefox 113, Safari 17): an older browser with scripting
+  off gets neither this list nor a working trigger, and MDN notes that
+  script-blocking extensions may not report `scripting: none` either. Hidden
+  by default rather than shown, so an older browser WITH scripting never
+  renders a second nav named "Primary".
+
+  After the header, not inside it. Inside, the wrapped links overflowed the
+  fixed 96px of `--spacing-header`: some sat above the top of the page where
+  no scroll reaches them, others hung over the content at every scroll
+  position, which is SC 1.4.10, and a focused link with its ring off screen is
+  SC 2.4.7. Letting the header grow instead would break SC 2.4.11, because
+  every `scroll-margin-top` on the site derives from `--spacing-header`. In
+  normal flow the list takes the room it needs and scrolls away with the page;
+  tests/no-script.spec.ts measures that no link starts inside or above the
+  header. Outside <header> it is outside the banner landmark, which is fine: a
+  <nav> is a landmark of its own, and it still comes after the header in the
+  tab order and before <main>.
+
+  `md:hidden` below is load-bearing. Without it, scripting off at desktop
+  width renders this nav AND the primary nav: every link twice and two
+  landmarks named "Primary". tests/no-script.spec.ts runs at 305px and 1280px
+  for that reason.
+
+  What this does not fix, deliberately. Scripting enabled but hydration
+  failing is a different failure, and `scripting: none` does not match for it,
+  so this list stays hidden. Only not depending on JavaScript would cover it,
+  which is the trade the client:load comment above weighs.
+*/}
+<nav
+  class="noscript-nav page-gutter border-b-4 border-border bg-deep py-4 md:hidden"
+  aria-label="Primary"
+>
+  <ul class="mx-auto flex max-w-page flex-wrap items-center gap-3">
+    {[...NAV_LINKS, CTA].map((link) => (
+      <li>
+        <a
+          href={link.href}
+          aria-current={isActive(link.href) ? 'page' : undefined}
+          class="label block border-4 border-border px-4 py-2 text-text"
+        >
+          {link.label}
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>

@@ -1,0 +1,133 @@
+# Cloudflare Pages response headers.
+#
+# The build copies this file verbatim into dist/, where Cloudflare Pages reads
+# it. It is the only place response headers are set: the site is static, with
+# no SSR adapter and no Pages Function in the request path. The `/*` rule
+# applies to every response the project serves, 404.html included.
+#
+# ---------------------------------------------------------------------------
+# The CSP hashes are build output and they go stale.
+#
+# Astro emits two inline <script> blocks and one inline <style> on every page:
+# the `client:load` directive loader, the <astro-island> element that hydrates
+# MobileMenu.vue, and `astro-island,astro-slot,astro-static-slot
+# {display:contents}`. There is no `src` to point at and, on a static host, no
+# request-time nonce to issue, so hashing is the only way to allow exactly
+# those three. The JSON-LD block in BaseLayout.astro needs no hash: script-src
+# gates scripts the browser runs, and a <script type="application/ld+json">
+# never runs. See src/lib/structured-data.ts.
+#
+# An Astro upgrade that changes one byte of that runtime changes its hash, the
+# browser refuses the script, and the island never hydrates: the mobile menu
+# stops opening, which is the only navigation a desktop user has at 400% zoom.
+# That failure is silent in the page and loud only in the console.
+#
+# tests/headers.spec.ts recomputes all three from dist/ and fails when this
+# file and the build have drifted. Do not hand-edit a hash; re-run the suite,
+# take the values from the failure message, and check the diff is only the
+# Astro runtime. AI.md > "The hashes go stale" has the rest.
+#
+# ---------------------------------------------------------------------------
+# HSTS is 180 days with includeSubDomains, and still without preload.
+#
+# It is the one header here that a browser keeps after the response is gone:
+# for the whole max-age it refuses to reach this host over http, and a stored
+# policy changes only when that browser revisits and receives a different
+# value. includeSubDomains promises that every subdomain of sinduri.lol,
+# present and future, is HTTPS-only, with no click-through, so give a new
+# subdomain working TLS before anything is served on it. No preload: it bakes
+# the host into browser binaries and getting back off takes months of release
+# trains nobody here controls.
+#
+# Raised from max-age=86400 on 2026-09-11, to the value Cloudflare's zone HSTS
+# setting was already serving in place of this header. The zone setting comes
+# off only after this value has deployed, so the file is never the weaker of
+# the two; TODO.md carries that step.
+#
+# tests/headers.spec.ts pins the max-age and asserts preload is absent, so
+# neither can move by accident. scripts/check-live.sh compares what production
+# sends with this file. AI.md > "HSTS is six months" and README have the full
+# reasoning.
+#
+# ---------------------------------------------------------------------------
+# A header may be set by one rule only.
+#
+# Cloudflare applies both rules below to any request matching both, rather than
+# letting the more specific one win, and joins two values for the same header
+# name with a comma. For the headers here that is silent corruption:
+# `Cross-Origin-Resource-Policy: same-origin, cross-origin` is not a policy any
+# browser can parse, and a CSP joined to a second CSP is enforced as two
+# policies at once, which is how a working policy becomes a blank page.
+#
+# So no header name appears under more than one pattern. `Cache-Control` and
+# `Cross-Origin-Resource-Policy` are set only under `/_astro/*`; every other
+# header only under `/*`. tests/headers.spec.ts asserts the two rules share no
+# header name.
+#
+# ---------------------------------------------------------------------------
+# Why only /_astro/* is cached immutably.
+#
+# Vite content-hashes every filename it emits there, so the URL changes
+# whenever the bytes do and a year-long immutable cache can never hold a stale
+# one. Nothing else in the build has that property: the HTML lives at stable
+# addresses, and public/ is copied through verbatim, so
+# `/images/og-default.png` keeps its name across every edit.
+#
+# A browser holding one of these will not revalidate for a year and there is no
+# way to reach in and clear it. Put an unhashed path under that rule and the
+# file is frozen, for a year, in every browser that visited before the mistake.
+#
+# The HTML deliberately gets no Cache-Control. Pages' own default for it
+# revalidates, which is what a document at a stable URL wants.
+#
+# ---------------------------------------------------------------------------
+# The site is closed to search indexes, and this is the only thing doing it.
+#
+# `X-Robots-Tag: noindex` on `/*` is a header rather than a <meta> tag because
+# a meta robots tag exists only in HTML, so it would say nothing about the CV
+# PDF, the talk PDF, llms.txt or the sitemap. One header covers all of them.
+#
+# robots.txt is deliberately still permissive, and the two are not the same
+# instruction. `Disallow` stops a crawler fetching a URL; `noindex` stops it
+# listing one. A crawler told not to fetch a page never receives this header,
+# so it never learns the page is noindex, and the URL can still appear in
+# results on the strength of a link elsewhere. Allowing the crawl is what makes
+# the noindex arrive; adding `Disallow: /` to robots.txt is strictly weaker.
+# The sitemap is generated and advertised for the same reason: it is how a
+# crawler finds the pages to discover this header on.
+#
+# ---------------------------------------------------------------------------
+# Removing this is a launch step and it will not remind you.
+#
+# A forgotten noindex fails silently: the site launches, looks right in every
+# browser, and is absent from every search engine until somebody checks the
+# response headers. No tool can flag it, because a site that does not want to
+# be indexed is a legitimate state.
+#
+# tests/headers.spec.ts therefore asserts the header is present, so deleting it
+# takes a deliberate edit with a failing test attached. TODO.md carries it as a
+# launch item.
+# ---------------------------------------------------------------------------
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-QzWFZi+FLIx23tnm9SBU4aEgx4x8DsuASP07mfqol/c=' 'sha256-Ya0pUYrC7nM5Cn/056TyVuEiz6dFGrzmkWzgON0pF0U='; style-src 'self' 'sha256-vv9IoKo7BSLbWcUHr3tNmfNVmm5L/9Cfn2H6LMk7/ow='; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=15552000; includeSubDomains
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  X-Robots-Tag: noindex
+
+# Build output, and only build output. Every filename Vite emits here carries a
+# content hash, which is what makes both of these safe. See the two notes
+# above: why immutable is restricted to hashed names, and why neither header
+# name may also appear under `/*`.
+#
+# No Cross-Origin-Embedder-Policy, deliberately. It exists to unlock
+# SharedArrayBuffer and precise timers, which nothing here uses, and its only
+# other effect would be to break a cross-origin subresource on the day someone
+# adds one.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: same-origin

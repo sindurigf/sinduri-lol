@@ -1,0 +1,28 @@
+# Weekly update pull requests. Commits from Dependabot are exempt from the
+# sign-off and subject checks in scripts/check-commits.sh; the rest of the
+# required CI job still has to pass before a human merges.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Pinned exactly, with playwright-core in `overrides`; both move together
+      # by hand. playwright.config.ts says why.
+      - dependency-name: '@playwright/test'
+      - dependency-name: playwright-core
+      # @astrojs/check supports TypeScript 5 and 6 only.
+      - dependency-name: typescript
+        versions: ['>=7']
+      # Node 24 types, matching .nvmrc.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

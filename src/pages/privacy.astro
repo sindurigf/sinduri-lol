@@ -1,0 +1,150 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { CONTACT_EMAIL } from '../lib/contact';
+
+/*
+ * The privacy policy, which specification.website grades Required.
+ *
+ * IT IS SHORT BECAUSE THE ANSWER IS SHORT. This is a static site on
+ * Cloudflare Pages with no server-side code, no database, no accounts and no
+ * forms. It sets no cookies, uses no storage API, runs no analytics and loads
+ * nothing from a third-party origin: the fonts are served from this domain
+ * and the built output has no external subresource. Most of a privacy
+ * policy's usual length is disclosing things this site does not do.
+ *
+ * EVERY CLAIM ON THIS PAGE IS TESTED. A privacy policy is the easiest
+ * document on a site to make quietly false: it is written once, and then an
+ * embed, a CDN font or a hit counter is added and nothing notices the page
+ * still says otherwise. tests/privacy.spec.ts asserts each claim against the
+ * source and the build, naming the sentence that has stopped being true.
+ *
+ * WHAT IS DELIBERATELY NOT CLAIMED: anything about Cloudflare's own logging.
+ * Serving this site means Cloudflare receives the requests, and what they
+ * retain is their policy rather than ours, so "we log nothing" would read as
+ * "nothing is logged". The page says what is true and points at their policy.
+ *
+ * THE COPY IS FACTUAL DISCLOSURE, NOT EDITORIAL. Every sentence describes
+ * verifiable behaviour of the software, which is the line AGENTS.md draws.
+ * The wording is still worth Sinduri reading, because a privacy policy is a
+ * promise made on her behalf.
+ */
+
+/*
+ * The build date, not a date this page maintains. The page is rebuilt on
+ * every deploy, and a hand-written date would drift from the content it is
+ * meant to date.
+ */
+const lastUpdated = new Date().toISOString().slice(0, 10);
+
+const HOST = 'sinduri.lol';
+const CLOUDFLARE_PRIVACY = 'https://www.cloudflare.com/privacypolicy/';
+---
+
+<BaseLayout
+  title="Privacy | sinduri.lol"
+  description="This site sets no cookies, runs no analytics, and loads nothing from anywhere else."
+>
+  <section class="band py-24">
+    <div class="mx-auto max-w-page">
+      <h1 class="text-h1 text-gold">Privacy</h1>
+
+      <p class="mt-10 max-w-prose text-h3 font-bold text-text text-pretty">
+        This site sets no cookies, runs no analytics, and loads nothing from any
+        other domain. It collects nothing about you.
+      </p>
+
+      <p class="mt-8 max-w-prose text-muted text-pretty">
+        Last updated <time datetime={lastUpdated}>{lastUpdated}</time>.
+      </p>
+    </div>
+  </section>
+
+  <section class="band py-24">
+    <div class="mx-auto max-w-page">
+      <h2 class="text-h2 text-gold">What this site does not do</h2>
+
+      <ul class="mt-10 max-w-prose list-disc pl-6 text-muted marker:text-gold">
+        <li class="mt-3">
+          <strong class="text-text">No cookies.</strong> Nothing on {HOST} sets
+          a cookie, and nothing reads one.
+        </li>
+        <li class="mt-3">
+          <strong class="text-text">No browser storage.</strong> Nothing is
+          written to local storage, session storage or a database in your
+          browser.
+        </li>
+        <li class="mt-3">
+          <strong class="text-text">No analytics.</strong> There is no analytics
+          service, no tag manager, no pixel and no hit counter.
+        </li>
+        <li class="mt-3">
+          <strong class="text-text">No third-party requests.</strong> Loading a
+          page here contacts no other domain. The fonts are served from this
+          one, the images are built into it, and there are no embeds. The site's
+          own security policy blocks anything off-domain from loading at all.
+        </li>
+        <li class="mt-3">
+          <strong class="text-text">No accounts, and no forms.</strong> There is
+          nothing to sign up for and nothing to submit, so there is nothing for
+          this site to store about you.
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="band py-24">
+    <div class="mx-auto max-w-page">
+      <h2 class="text-h2 text-gold">Links away from here</h2>
+
+      <p class="mt-8 max-w-prose text-muted text-pretty">
+        The footer links to profiles on other sites, and posts may link
+        elsewhere. Those are ordinary links: nothing is sent when the page
+        loads, only when you follow one. Once you do, that site's own policy
+        applies and this one does not.
+      </p>
+
+      <h2 class="mt-20 text-h2 text-gold">Hosting</h2>
+
+      <p class="mt-8 max-w-prose text-muted text-pretty">
+        This site is served by Cloudflare Pages. Delivering a page means
+        Cloudflare receives the request for it, including your IP address, in
+        the same way any web server does. What they keep, and for how long, is
+        covered by{' '}
+        <a
+          href={CLOUDFLARE_PRIVACY}
+          class="underline decoration-gold underline-offset-4 hover:text-cyan"
+        >
+          Cloudflare's privacy policy
+        </a>{' '}
+        rather than by this one. Nothing here adds to it.
+      </p>
+
+      <h2 class="mt-20 text-h2 text-gold">Email</h2>
+
+      <p class="mt-8 max-w-prose text-muted text-pretty">
+        If you write to{' '}
+        <a
+          href={`mailto:${CONTACT_EMAIL}`}
+          class="underline decoration-gold underline-offset-4 hover:text-cyan"
+        >
+          {CONTACT_EMAIL}
+        </a>
+        , that message is kept in order to reply to it. It is not added to any
+        list and it is not passed on.
+      </p>
+
+      <h2 class="mt-20 text-h2 text-gold">Questions</h2>
+
+      <p class="mt-8 max-w-prose text-muted text-pretty">
+        Ask at{' '}
+        <a
+          href={`mailto:${CONTACT_EMAIL}`}
+          class="underline decoration-gold underline-offset-4 hover:text-cyan"
+        >
+          {CONTACT_EMAIL}
+        </a>
+        .
+      </p>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,1706 @@
+@import 'tailwindcss';
+
+@font-face {
+  /*
+   * Lexend, latin subset only, copied from @fontsource-variable/lexend's
+   * index.css. Importing that file instead emits all three subsets, and
+   * latin-ext and vietnamese were 48,316 bytes that no visit fetched
+   * (measured 2026-09-12, all 25 routes). The unicode-range is upstream's, so
+   * text outside it falls back to the next family in --font-sans rather than
+   * rendering wrong. Restoring the other two means importing the package's
+   * index.css in BaseLayout.astro again and deleting this rule.
+   */
+  font-family: 'Lexend Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/lexend/files/lexend-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+/*
+ * Tailwind scans from the repo root, so prose is read as markup: the design
+ * system skill's counter-examples (`text-[32px]`, `shadow-[8px_8px_0]`)
+ * shipped as real CSS. All four exclusions are load-bearing.
+ *
+ * The .md pattern also covers src/content/blog/, which is safe only while no
+ * post uses a class attribute. Narrow the pattern rather than dropping it, or
+ * the class goes missing in production alone.
+ */
+
+@source not '../../**/*.md';
+@source not '../../.claude';
+@source not '../../tests';
+@source not '../../scripts';
+
+/*
+ * Design tokens. Dark mode only; no light theme and no `dark:` variant setup.
+ *
+ * `static` because a plain @theme emits only the properties Tailwind sees used,
+ * so a token no page references yet is dropped and `var(--color-…)` resolves to
+ * nothing with no error anywhere. That is how --color-gold-muted disappeared.
+ */
+
+@theme static {
+  /* Colors */
+  --color-background: #131313;
+  --color-surface: #1a1a1a;
+  --color-deep: #0e0e0e;
+  --color-border: #5a87a8;
+  --color-text: #e5e2e1;
+  --color-muted: #d4c5ab;
+  --color-subtle: #9bb4c6;
+  --color-gold: #ffc000;
+  --color-cyan: #00dcfd;
+  /*
+   * Two pinks, split by role, not by size. Do not merge them.
+   *
+   * `pink` #FF007A measures 4.90 / 4.59 / 5.09 against background / surface /
+   * deep. That is AA for text but not AAA, so it is restricted to non-text:
+   * borders, hard offset shadows, and decorative fills, where SC 1.4.11 asks
+   * for 3:1 and it clears comfortably.
+   *
+   * `pink-text` #FF79B6 measures 7.66 / 7.18 / 7.96 on the same three surfaces.
+   * It is AAA at any size, so every pink glyph on the site uses it, including
+   * the section number.
+   *
+   * A role split holds at every size and survives a change to the type scale,
+   * which the WCAG large-text exemption does not.
+   */
+  --color-pink: #ff007a;
+  --color-pink-text: #ff79b6;
+  --color-darkcyan: #00363f;
+
+  /*
+   * The gold surface. Every token above fails on #FFC000, and not because of
+   * tone: L(#FFC000) is 0.5896, so everything readable on it is a near-black.
+   * This is an inverted set, not a variant. ARCHITECTURE.md has the ratios;
+   * .surface-gold below is the only supported way to build such a section.
+   *
+   * No `gold-subtle`: a third step would land near luminance 0.02 and read as
+   * gold-text. Below gold-muted, hierarchy here is weight and size.
+   */
+  /* 11.32 on #FFC000. Same hex as --color-background, a different job. If the
+   * background is retoned this must not follow; re-measure against gold. */
+  --color-gold-text: #131313;
+  /* 7.88 on #FFC000. */
+  --color-gold-muted: #3a3020;
+  /*
+   * 7.27 on #FFC000. Chosen over flat #131313, which both clear 1.4.11 several
+   * times over, because #131313 is already --color-gold-text and would paint
+   * every border the colour of the body copy.
+   */
+  --color-gold-border: #22394d;
+  /*
+   * 18.58 on .btn-gold-primary's #131313 fill; 1.64 on gold itself, so it
+   * never touches gold. Carries both the label and the inner focus ring on
+   * that control, as one token rather than two whites free to drift.
+   *
+   * Component-scoped on purpose: body copy is `text` #E5E2E1, because pure
+   * white halates on a dark ground. The name is what keeps it out of prose.
+   */
+  --color-gold-btn-label: #ffffff;
+
+  /* Header chrome. Translucent, so it stays a raw rgba rather than a hex. */
+  --color-header-bg: rgba(10, 10, 10, 0.94);
+
+  /* Typography */
+  /*
+   * 'Lexend Variable' is the family name exposed by @fontsource-variable/lexend.
+   * Weights 100-900 come from one wght axis file, the latin subset, declared in
+   * the @font-face at the top of this file and served from our own origin.
+   */
+  --font-sans:
+    'Lexend Variable', system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  /*
+   * Fluid heading scale. The floors are a reflow constraint, not a taste call
+   * (SC 1.4.10): headings are uppercased and nothing wraps a single word, so
+   * one long word in a 273px content box is the whole risk.
+   *
+   * 33px fits "PROFESSIONAL", a real blog category, with 15.80px to spare.
+   * 34px does not: "ACCESSIBILITY" is 270.91px there, 2.09px inside the box.
+   * ARCHITECTURE.md has the measured table and the h2/h3 reasoning.
+   *
+   * Do not raise a floor without re-running tests/reflow.spec.ts, and do not
+   * buy box by dropping the base gutter: that puts every line of body copy
+   * flush against the screen edge on every phone. The floors move; the gutter
+   * stays.
+   */
+  --text-h1: clamp(33px, 9vw, 104px);
+  --text-h1--line-height: 0.94;
+  /*
+   * The homepage hero's h1. Same floor and ceiling as text-h1, so it cannot
+   * change what happens at 305px; only the middle term is capped against
+   * height, because the hero is the one block asked to fit the viewport.
+   *
+   * 13svh is measured: it only bites on short-but-wide windows, taking 1280x720
+   * from 115.2px to 93.6px. Re-measure before moving it and re-run
+   * tests/hero-fit.spec.ts.
+   *
+   * `svh` not `vh`: on a phone `vh` is the viewport with the toolbars
+   * retracted, so a vh-sized hero is taller than the screen for as long as
+   * they are showing.
+   */
+  --text-hero-h1: clamp(33px, min(9vw, 13svh), 104px);
+  --text-hero-h1--line-height: 0.94;
+  /*
+   * The blog post title. Only the ceiling differs from text-h1: a post sits in
+   * a max-w-3xl measure that stops growing at 768px while 9vw keeps going, so
+   * at 104px a 12-character word overflows and break-word fires with no hyphen
+   * drawn. The first real post read "COMMUNITIE / S THAT" at 1280px.
+   *
+   * Do not lower this to 64px: it would read as one size with the .prose h2
+   * headings inside its own body.
+   */
+  --text-post-h1: clamp(33px, 9vw, 80px);
+  --text-post-h1--line-height: 0.94;
+  --text-h2: clamp(26px, 5.6vw, 64px);
+  --text-h2--line-height: 0.96;
+  --text-h3: clamp(20px, 2.6vw, 32px);
+  --text-h3--line-height: 1.15;
+  /*
+   * The sticker size. Not text-h3, which is a prose size; a sticker is one
+   * decorative word in a box and works by being large.
+   *
+   * Nothing uses this token directly today: the hero stickers take
+   * --text-hero-sticker. Kept because a declared token is a contract.
+   */
+  --text-sticker: clamp(24px, 2.1vw, 30px);
+  --text-sticker--line-height: 1.02;
+  /*
+   * The hero's stickers, height-aware like --text-hero-h1: at a flat 30px they
+   * keep their 1080p size while the name beside them shrinks, and a decoration
+   * that outgrows its heading reads as a mistake.
+   */
+  --text-hero-sticker: clamp(18px, min(2.1vw, 3.4svh), 30px);
+  --text-hero-sticker--line-height: 1.02;
+  --text-body: clamp(17px, 1.2vw, 19px);
+  --text-body--line-height: 1.62;
+  --text-label: 13px;
+  --text-label--line-height: 1.2;
+  /*
+   * The footer's copyright line. At the 13px of `text-label` it disappeared
+   * beside the 56px profile tiles; at 20px it holds its own, just under the
+   * 22px of the icons inside them. One line, so the line-height is a label's.
+   */
+  --text-copyright: 20px;
+  --text-copyright--line-height: 1.2;
+  /*
+   * Sized against the h1 or h2 it labels, and smaller than both at either end.
+   * A fixed 32px outgrew the h3 floor on narrow screens. No contrast argument
+   * here: it is pink-text, AAA at any size.
+   */
+  --text-section-number: clamp(21px, 2.4vw, 28px);
+  --text-section-number--line-height: 1;
+
+  /* Placeholder photography slots. Tokens because a component may not carry an
+   * arbitrary value. aspect-video is Tailwind's own and covers the hero. */
+  --aspect-portrait: 4 / 5;
+  --aspect-photo: 4 / 3;
+
+  --tracking-heading: -0.05em;
+  --tracking-heading-tight: -0.04em;
+  --tracking-label: 0.1em;
+  --tracking-label-wide: 0.14em;
+
+  /* Radius. Zero everywhere except the nav CTA and the logo tile. */
+  --radius-nav: 14px;
+
+  /* Hard offset shadows. Zero blur, zero spread. */
+  --shadow-hard-gold-8: 8px 8px 0 var(--color-gold);
+  --shadow-hard-gold-6: 6px 6px 0 var(--color-gold);
+  --shadow-hard-gold-4: 4px 4px 0 var(--color-gold);
+  --shadow-hard-pink-12: 12px 12px 0 var(--color-pink);
+  --shadow-hard-pink-8: 8px 8px 0 var(--color-pink);
+  --shadow-hard-cyan-8: 8px 8px 0 var(--color-cyan);
+  /* The footer's 56px profile tiles: an 8px offset there reads as a second
+   * tile rather than as a shadow. */
+  --shadow-hard-pink-6: 6px 6px 0 var(--color-pink);
+  --shadow-hard-cyan-6: 6px 6px 0 var(--color-cyan);
+
+  /*
+   * The inner half of .btn-gold-primary's two-tone focus ring: 18.58 against
+   * the fill on both sides. A shadow rather than an outline because an element
+   * gets one outline.
+   */
+  --inset-shadow-gold-btn-ring: inset 0 0 0 3px var(--color-gold-btn-label);
+
+  /*
+   * The current-page ring on .nav-cta. That control already spends a border and
+   * the gold hover shadow, so an inset ring is the one shape left.
+   *
+   * An inset ring touches two colours, so both are measured: 7.91 on the cyan
+   * fill, 3.42 on the border, against the 3.0 SC 1.4.11 asks.
+   */
+  --inset-shadow-cta-current: inset 0 0 0 4px var(--color-darkcyan);
+
+  /* Layout */
+  /*
+   * The content column. The structure is what aligns header, main and footer,
+   * not this value: all three carry the gutter outside and this token inside.
+   * Applying the gutter inside the column on one of them is invisible below the
+   * column width and diverges by exactly one gutter above it, which is how the
+   * header came to sit 24px inside main's at 1440px.
+   */
+  --container-page: 80rem;
+  /*
+   * The sticky header's height: clears the nav's 39.6px current-page box plus
+   * its 4px shadow, with air either side. Fixed pixels out of every viewport
+   * including a 720px one at 400% zoom, which is the reason not to grow it.
+   * scroll-margin-top is calc()'d from this, so SC 2.4.11 follows it.
+   */
+  --spacing-header: 96px;
+  /*
+   * The header row above `md`: wordmark, navigation, call to action.
+   *
+   * Two equal outer tracks with the navigation in an `auto` one between them,
+   * so the links sit on the page's centre line rather than wherever the two
+   * things either side of them happen to leave room.
+   *
+   * It is a token because this project allows no arbitrary values in a
+   * component, and `grid-cols-[1fr_auto_1fr]` is one. Below `md` the row goes
+   * back to `flex justify-between`: the navigation is hidden there, so a
+   * three-track grid would put the menu trigger in the middle track with an
+   * empty one after it.
+   */
+  --grid-template-columns-header: 1fr auto 1fr;
+  /*
+   * Two numbers because a card is a box inside a box: at 40px a side a card at
+   * 305px leaves 177px of content, where 24px leaves 209px. At 177px a real
+   * post title runs to six lines and the card becomes a column of fragments.
+   *
+   * The original reason, a mid-word break, expired when the h3 floor dropped
+   * to 20px. If the line count stops mattering too, make this one number.
+   */
+  --spacing-card-tight: 24px;
+  --spacing-card: 40px;
+  /*
+   * Gold-surface button padding, from the comps. The vertical number is also a
+   * conformance floor: a 13px label at 1.2 is a 15.6px line box, so the control
+   * renders 59.6px tall including its borders against the 24px SC 2.5.8 asks.
+   * Do not reduce it below 5px without re-measuring.
+   */
+  --spacing-btn-gold-y: 18px;
+  --spacing-btn-gold-x: 34px;
+
+  /*
+   * The SC 2.5.8 floor. Everything clears it by construction except
+   * `.prose li.link-item a`, which has no padding of its own to be sized by.
+   * Keep equal to MIN_TARGET in tests/target-size.spec.ts; if they disagree,
+   * the test is right.
+   */
+  --spacing-target: 24px;
+
+  /*
+   * The menu button's three bars in a 24x16 box. They end at 17px, one past the
+   * box, which is why they are absolutely positioned and the box does not clip
+   * them. The 7px offset is also what the two bars rotate about when open, so
+   * they cross at the centre rather than at their resting positions.
+   */
+  --spacing-menu-bar: 3px;
+  --spacing-menu-bar-mid: 7px;
+  --spacing-menu-bar-end: 14px;
+
+  /* The header fill is not fully opaque, so content shows through as it scrolls
+   * under; 10px keeps it from competing with the wordmark and nav labels. */
+  --blur-header: 10px;
+}
+
+@layer base {
+  /*
+   * Tailwind v4 defaults every border to currentColor. Every border in this
+   * design uses the `border` token, so make that the default instead.
+   */
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
+    border-radius: 0;
+  }
+
+  html {
+    background-color: var(--color-background);
+    -webkit-text-size-adjust: 100%;
+    /*
+     * Governs what the UA paints and no stylesheet reaches: scrollbar,
+     * spellcheck underline, selection, unstyled form controls. Without it they
+     * are painted light; the visible half was a white scrollbar trough.
+     *
+     * `dark` alone, never `dark light`: the pair claims the page handles both,
+     * and there are no light tokens here. BaseLayout's <meta> says the same in
+     * the head, where it applies before this file arrives; both are needed.
+     */
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    /*
+     * 400, not 300. Light strokes on a dark ground halate: the type blooms and
+     * smears, worst for low-vision and astigmatic readers. The variable axis
+     * still offers 300, but not for continuous prose.
+     */
+    font-weight: 400;
+    line-height: 1.62;
+  }
+
+  /*
+   * Three layers keep a heading from forcing a horizontal scroll at 320px: the
+   * type floors above, `hyphens` for an author-placed soft hyphen, and
+   * overflow-wrap as the guarantee. The floors keep the last one from firing;
+   * it breaks anywhere, mid-syllable, with no hyphen drawn.
+   *
+   * NEVER set `hyphens: none` on a heading. Automatic hyphenation is already
+   * dead here, because Chromium consults its lowercase dictionary after
+   * text-transform and finds nothing for an uppercased word. What `none` would
+   * kill is the soft hyphen, U+00AD, which is a DOM character rather than a
+   * lookup, survives the transform, and wins over overflow-wrap. Measured: at
+   * 36px in a 250px box "acces&shy;sibility" breaks ACCES- / SIBILITY, and
+   * under `none` overflows at 287.33px.
+   */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-transform: uppercase;
+    font-weight: 900;
+    letter-spacing: var(--tracking-heading);
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+
+  h1 {
+    font-size: var(--text-h1);
+    line-height: 0.94;
+  }
+
+  h2 {
+    font-size: var(--text-h2);
+    line-height: 0.96;
+  }
+
+  h3 {
+    font-size: var(--text-h3);
+    line-height: 1.02;
+    font-weight: 800;
+    letter-spacing: var(--tracking-heading-tight);
+  }
+
+  a {
+    color: var(--color-gold);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-cyan);
+  }
+
+  /*
+   * SC 1.4.1, for links in running text. The rule above strips the underline,
+   * which is right for a nav item or a button and wrong inside a sentence,
+   * where colour is the only signal left: gold against muted is 1.03:1.
+   *
+   * Scoped by `:not([class])` because Markdown links arrive without a class
+   * while every link that is already a box carries one. Known cost: giving a
+   * prose link a class silently drops its underline.
+   */
+  .prose a,
+  p a:not([class]),
+  li a:not([class]) {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 2px;
+  }
+
+  /*
+   * One focus indicator for the whole site. Gold measures 11.32 / 10.60 / 11.76
+   * against background / surface / deep.
+   *
+   * The offset is not cosmetic: gold on the gold button is 1.00:1, so a flush
+   * ring would be invisible on .btn-primary. Never set outline-offset to 0.
+   */
+  :focus-visible {
+    outline: 3px solid var(--color-gold);
+    outline-offset: 3px;
+  }
+
+  /*
+   * SC 2.4.11. The sticky header covers whatever the browser scrolls to the top
+   * of the viewport.
+   *
+   * The selector must stay every focusable element, not just `:target, [id]`:
+   * almost nothing focusable here has an id, so that version left the tab order
+   * uncovered and controls came back entirely under the header. It fails only
+   * when Shift-Tabbing, because tabbing forward scrolls up from the bottom edge
+   * and never nears the header.
+   */
+  :target,
+  [id],
+  :where(a[href], button, input, select, textarea, summary, [tabindex]) {
+    scroll-margin-top: calc(var(--spacing-header) + 1rem);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-block border-4 border-border bg-gold px-8 py-4
+      text-label font-black uppercase tracking-label text-background
+      shadow-hard-pink-12;
+  }
+
+  .btn-secondary {
+    @apply inline-block border-4 border-border bg-surface px-8 py-4
+      text-label font-black uppercase tracking-label text-text
+      shadow-hard-gold-6;
+  }
+
+  /*
+   * The no-JavaScript navigation, rendered by Header.astro after the header.
+   *
+   * Hidden unless scripting is off. `scripting: none` does what a <noscript>
+   * block did here, without the element WAVE reports as an alert: it shows
+   * the list and hides the menu trigger, which cannot open anything without
+   * JavaScript. `md:hidden` on the list still wins above `md`, where the
+   * primary nav does this job, because utilities come after components. The
+   * comment in Header.astro says what this relies on and who it leaves out;
+   * tests/no-script.spec.ts measures it with scripting off and on.
+   */
+  .noscript-nav {
+    display: none;
+  }
+
+  @media (scripting: none) {
+    .noscript-nav {
+      display: block;
+    }
+
+    .mobile-menu-island {
+      display: none;
+    }
+  }
+
+  /*
+   * The navigation's call to action, in one place because it is rendered in
+   * two: the header row and the mobile dialog.
+   *
+   * The class carries what makes it that control, the fill, the border, the
+   * radius and the label type, and each call site adds its own box. The
+   * header one is a row item, the dialog one is a full-width block with a top
+   * margin; those differ, the identity does not. Written out twice the two
+   * came apart, one carrying a hover state and neither marking itself as the
+   * current page. A shared class is what makes the state rules below reach
+   * every rendering rather than whichever one someone edited.
+   *
+   * The rules are here rather than utilities in the markup because
+   * `box-shadow` is one property: a `hover:` utility naming the gold shadow
+   * would replace the current-page ring while the pointer was over the
+   * control, on the one page where that ring is the only thing saying you are
+   * already there. Being in the same layer lets source order settle it.
+   * See --inset-shadow-cta-current for what the ring measures.
+   */
+  .nav-cta {
+    @apply rounded-nav border-4 border-border bg-cyan
+      text-label font-black uppercase tracking-label text-darkcyan;
+  }
+
+  .nav-cta:hover {
+    box-shadow: var(--shadow-hard-gold-4);
+  }
+
+  .nav-cta[aria-current='page'],
+  .nav-cta[aria-current='page']:hover {
+    box-shadow: var(--inset-shadow-cta-current);
+  }
+
+  /*
+   * The page gutter, declared once and applied to the header, <main> and the
+   * footer, so no page can forget it. `px-6` on the blog routes alone is how
+   * "PROFESSIONAL" came to overflow by 37px.
+   *
+   * Only the base 16px is load-bearing: the heading floors are calibrated
+   * against what it leaves at 305px and 320px, both far below `sm`. Changing
+   * `px-4` means redoing that arithmetic and re-running tests/reflow.spec.ts;
+   * the `sm` step is free.
+   *
+   * Widening this is the wrong lever for breathing room. Last time the cause
+   * was hero decorations anchored to the VIEWPORT rather than the content
+   * column, which no gutter can fix.
+   */
+  .page-gutter {
+    @apply px-4 sm:px-6;
+  }
+
+  /*
+   * A full-bleed band inside <main>.
+   *
+   * Most sections in the comps carry their own background (`#0E0E0E`
+   * alternating with `#131313`, and `#FFC000` on Career) and run edge to
+   * edge, while their text stays in the same measure as everything else.
+   * <main> carries the one page gutter, so a band breaks out of it with
+   * negative inline margins and re-applies it inside itself.
+   *
+   * The four values are duplicated from .page-gutter and must move with both
+   * of its breakpoints: a band that kept `sm:-mx-6` after the gutter moved
+   * would sit inside the page edge on every viewport from 640px up, which
+   * reads as a rendering artefact rather than a bug. Anything that needs the
+   * gutter without the negative margins should use `.page-gutter` itself.
+   * They are written out rather than composed, because @apply resolves
+   * utilities and .page-gutter is a component class.
+   *
+   * This does not change the content box the heading floors are calibrated
+   * against: -mx-4 widens the band into <main>'s own padding, and px-4 puts
+   * the same 273px box back inside it. tests/reflow.spec.ts measures <main>,
+   * so a band that got this wrong fails on the box width rather than waiting
+   * for a long enough heading.
+   */
+  .band {
+    @apply -mx-4 px-4 sm:-mx-6 sm:px-6;
+  }
+
+  /*
+   * The homepage hero, the one section asked to fit the viewport.
+   *
+   * `min-height`, never `height`, and nothing is clipped: it has to grow past
+   * the viewport at 200% zoom and under the text-spacing override rather than
+   * trap its own content. `overflow-hidden` crops the FIELD, which is
+   * decoration meant to bleed off every edge.
+   *
+   * `svh`, with `vh` first as the fallback. Not `dvh`, which would track the
+   * toolbar and reflow the page mid-scroll, regenerating the canvas each time;
+   * not `lvh`, which is taller than the screen on arrival, so the pause control
+   * would load under the browser's own toolbar.
+   */
+  .hero {
+    min-height: calc(100vh - var(--spacing-header));
+    min-height: calc(100svh - var(--spacing-header));
+    --hero-pad-block: clamp(12px, 3svh, 144px);
+
+    padding-block: var(--hero-pad-block);
+
+    --hero-gap: clamp(10px, 2.2svh, 40px);
+
+    /*
+     * The row's own vertical inset. Declared here beside the section's padding
+     * rather than on `.hero-stack`, because the sticker column needs both to
+     * work out how much room the pause control has. See `.hero-stack` for why
+     * it is this number.
+     */
+    --hero-stack-inset: clamp(8px, 9svh, 100px);
+
+    /*
+     * How far above the hero's bottom edge anything in the sticker column must
+     * stop, so it clears the pause control: the button's own 2.5rem, its 1.5rem
+     * offset from the edge, and 1rem of air, which is also what keeps the
+     * sticker's 8px offset shadow off the button. See `.hero-marks`.
+     */
+    --hero-control-clearance: calc(2.5rem + 1.5rem + 1rem);
+
+    /*
+     * How far the type sits in from the edge of the content column, and how far
+     * the stickers sit in from the other one. The comp puts the name 16px
+     * inside the 1280px column and the stickers about 30px inside the far side;
+     * both are expressed here so the two cannot drift apart when one is
+     * adjusted.
+     */
+    --hero-inset: clamp(0px, 1.4vw, 18px);
+
+    @apply isolate flex flex-col;
+  }
+
+  /*
+   * The field: absolutely positioned, full bleed, behind everything. Three
+   * canvases in draw order, with the front one above the hare and below the
+   * type, so nearby stems pass in front of it and behind the heading.
+   *
+   * Behind is not the same as clear. A stem painted behind a glyph still sits
+   * beside it, and contrast is measured against those pixels: the h1 holds
+   * 3.93:1 at worst, and the 13-16px tagline that used to sit here fell to
+   * 1.25:1 and moved to the About teaser. Anything placed over the field needs
+   * measuring against the canvas, not against `background`.
+   *
+   * NO `z-index` here. One would make a stacking context, which drops the pause
+   * button's z-30 to ranking among the canvases only: the button stays visible
+   * and keyboard-reachable while a click goes to `.hero-stack` instead.
+   * `a pointer press on the control stops it` in tests/motion.spec.ts fails if
+   * one comes back.
+   */
+  .hero-field {
+    @apply pointer-events-none absolute inset-0;
+  }
+
+  .hero-field-layer {
+    @apply absolute inset-0 block h-full w-full;
+  }
+
+  /*
+   * The pause control SC 2.2.2 requires. `pointer-events-auto` because
+   * `.hero-field` turns them off for the canvases.
+   *
+   * Below `sm` it sits in the TOP corner, beside the short first line of the
+   * name. In the bottom corner it covered 24x26px of the last "I" of
+   * GUNTUPALLI with no scrolling able to uncover it, at 320x256 under the
+   * text-spacing override.
+   *
+   * From `sm` up it keeps the bottom corner, lifted by however far the hero
+   * runs past the fold: the hero grows rather than clipping, so a control
+   * pinned to its bottom would load off screen while the motion played above.
+   * That difference is zero whenever the hero fits, so it never lifts further.
+   */
+  .hero-motion-toggle {
+    @apply pointer-events-auto top-4 right-4 z-30 sm:right-6;
+  }
+
+  @media (width >= 40rem) {
+    .hero-motion-toggle {
+      top: auto;
+      bottom: 1.5rem;
+      bottom: max(1.5rem, calc(100% + var(--spacing-header) - 100svh + 1.5rem));
+    }
+  }
+
+  /*
+   * FORCED COLORS takes the field away, deliberately.
+   *
+   * A canvas is a bitmap and Windows High Contrast does not repaint bitmaps,
+   * so the field would survive as steel-blue line work on a user-chosen
+   * background it was never checked against. Hiding it leaves the name and
+   * the two stickers on the forced background, which is what that mode is
+   * for. The pause control goes with it: with nothing moving there is nothing
+   * to pause.
+   */
+  @media (forced-colors: active) {
+    .hero-field {
+      @apply hidden;
+    }
+  }
+
+  /* The type and the two stickers, on one row that fills the section. */
+  .hero-stack {
+    gap: var(--hero-gap);
+
+    /*
+     * Where the type sits in the band. The horizon is at 51% of the section
+     * whatever the type does, and top-aligning inside the section's own padding
+     * starts the heading at 3% with a dead band above the horizon.
+     *
+     * On the row rather than either column, so the type and the stickers cannot
+     * drift apart. `svh` so it gives way on a short screen.
+     *
+     * `items-stretch`, not `items-center`: the two columns answer to the
+     * section's height independently, and centring would collapse both to their
+     * content and put the stickers in the middle.
+     */
+    padding-block: var(--hero-stack-inset);
+
+    @apply relative z-20 flex w-full flex-1 flex-col items-stretch justify-start;
+  }
+
+  /*
+   * The name, as one block against the left edge of the column.
+   *
+   * `min-w-0` for the reason `.card` has it: this is a flex item containing
+   * the word GUNTUPALLI, and a flex item's `min-width: auto` resolves to its
+   * min-content width, which `overflow-wrap: break-word` does not reduce.
+   * Without it the block grows past the column at 320px and the page scrolls
+   * sideways.
+   *
+   * No top padding on purpose. The comp puts the name 19% down the band, and
+   * a percentage of a section whose height is the viewport looks right at
+   * 1440x780 and puts the heading below the fold at 900x500. It starts at the
+   * top of the flow instead and the row's inset does the rest.
+   */
+  .hero-plate {
+    padding-inline-start: var(--hero-inset);
+
+    @apply flex min-w-0 flex-col justify-start;
+  }
+
+  /*
+   * The two brand words. A column against the right of the content area from
+   * `sm` up, and a row under the name below it: the spare width beside the name
+   * is 51px at 320px against the ~110px a column needs.
+   *
+   * They drop into a row rather than vanishing. Removing them below `lg` left
+   * the brand words missing from every phone and tablet.
+   *
+   * No height guard, because the ROW is what pushed the hero 36px past the fold
+   * at 844x390 and took the pause control off screen; the column costs only two
+   * stickers' height.
+   *
+   * `pt-3` because a rotated box's corners reach past its layout box.
+   * One set of elements in both layouts: duplicating per breakpoint would put
+   * the same words in the DOM twice for anything that does not read `display`.
+   */
+  .hero-marks {
+    padding-inline-start: var(--hero-inset);
+
+    @apply flex flex-row flex-wrap items-center gap-x-6 gap-y-4 pt-3;
+  }
+
+  .hero-sticker {
+    font-size: var(--text-hero-sticker);
+    line-height: var(--text-hero-sticker--line-height);
+
+    @apply border-4 px-4 py-2 font-extrabold uppercase;
+  }
+
+  @media (width >= 40rem) {
+    .hero-stack {
+      @apply flex-row justify-between;
+    }
+
+    /*
+     * `padding-block-end` keeps `Ridet` off the pause control, and only where
+     * it has to. The column pins `Ridet` to the bottom of the row, in the
+     * same corner as the button. On a tall screen the section's padding and
+     * the row's inset already put 108px between them at 1440x900. On a phone
+     * held sideways they come to 47px against the 80px the button needs, and
+     * `Ridet` sat directly under it at 844x390.
+     *
+     * So this is the clearance minus what the padding already provides, and
+     * never negative. It is zero at 1440x900 and 1280x720, so the desktop
+     * layout does not move, and it grows only on the screens short enough to
+     * need it.
+     */
+    .hero-marks {
+      padding-inline-start: 0;
+      padding-inline-end: var(--hero-inset);
+      padding-block-end: max(
+        0px,
+        calc(
+          var(--hero-control-clearance) - var(--hero-pad-block) -
+            var(--hero-stack-inset)
+        )
+      );
+
+      @apply shrink-0 flex-col flex-nowrap items-end justify-between pt-0;
+    }
+  }
+
+  /*
+   * `min-w-0` is not spacing and it is not defensive. It is the fix for a
+   * defect that only appears once a card holds a long word.
+   *
+   * A grid or flex item defaults to `min-width: auto`, which resolves to its
+   * min-content width, and `overflow-wrap: break-word`, the guarantee the
+   * whole reflow story rests on, does NOT reduce min-content: it permits a
+   * break during layout and changes no intrinsic size. So a card containing
+   * the word PROFESSIONAL grows its own grid track past the container instead
+   * of breaking inside it, and the page scrolls sideways at 320px.
+   *
+   * Measured at a 305px viewport under the SC 1.4.12 text-spacing override,
+   * which pushes PROFESSIONAL from 202.6px to 255.6px: the single `auto`
+   * track computed to 316.45px in a 273px container and the card overflowed
+   * the page by 27px, so the heading floors were being measured against a box
+   * that had stopped being 273px. `min-w-0` puts the track back to 273.
+   *
+   * It lives on `.card` because the card is the recurring grid item here. It
+   * is inert anywhere else: a block element's min-width is already 0.
+   */
+  .card {
+    @apply min-w-0 border-8 border-border bg-surface p-card-tight sm:p-card;
+  }
+
+  /*
+   * The section rule. A short bar at the head of a section, replacing the
+   * full-bleed 8px line that used to run between every one. That line ran the
+   * full width of the viewport while everything it separated sat in a capped,
+   * centred column, so it framed the page rather than punctuating it, and it
+   * was doing all the separating: the two grounds either side measure
+   * 1.039:1, which is no step at all.
+   *
+   * Deliberately not a divider. It sits at the top of a section rather than
+   * between two, it is 96px rather than the full width, and it rotates
+   * through gold, cyan and pink so it reads as a chapter mark. `pink`
+   * #FF007A is the right pink and `pink-text` is not: this is a non-text
+   * element, which is the split those two tokens exist for.
+   *
+   * It must sit inside a column-width box to line up with the text below it.
+   * A band is full-bleed, so a rule placed directly in one aligns to the
+   * viewport instead. Every use is wrapped for that reason, including in the
+   * sections whose column is a grid or a flex row, where a bare first child
+   * would become a track or an item instead of a rule.
+   */
+  .section-rule {
+    @apply mb-12 block h-2 w-24;
+  }
+
+  /*
+   * A pill. `rounded-full` is the second of the two radius exceptions on this
+   * site, beside `rounded-nav`; see the radius rule in the design system
+   * skill. It is permitted because a pill and a circle are shapes in their
+   * own right rather than a softened box, which is what the zero-radius rule
+   * exists to prevent.
+   *
+   * Not interactive, so SC 2.5.8 does not apply. It is a label in a frame.
+   */
+  .pill {
+    @apply inline-flex items-center rounded-full border-4 border-border
+      bg-surface px-5 py-1.5;
+  }
+
+  /*
+   * Rendered Markdown.
+   *
+   * Tailwind's preflight removes list markers, list indentation and every
+   * heading and paragraph margin, and this project has no typography plugin.
+   * Without these rules a post body is one undifferentiated column of text
+   * whose lists are lists only in the accessibility tree.
+   *
+   * Headings keep the site's uppercase treatment from @layer base, so a long
+   * word in a post heading is subject to the same reflow arithmetic and the
+   * same soft-hyphen rule as a page heading. tests/reflow.spec.ts walks h1,
+   * h2 and h3 on every route, post routes included.
+   */
+  .prose > :first-child {
+    @apply mt-0;
+  }
+
+  .prose h2 {
+    @apply mt-16 text-h2 text-text;
+  }
+
+  .prose h3 {
+    @apply mt-12 text-h3 text-text;
+  }
+
+  .prose p {
+    @apply mt-6 text-body text-muted;
+  }
+
+  .prose :is(ul, ol) {
+    @apply mt-6 pl-6 text-muted;
+  }
+
+  .prose ul {
+    @apply list-disc;
+  }
+
+  .prose ol {
+    @apply list-decimal;
+  }
+
+  .prose li {
+    @apply mt-3;
+  }
+
+  /* The marker is the only thing separating a list item from a paragraph. */
+  .prose li::marker {
+    color: var(--color-gold);
+  }
+
+  /*
+   * A list item that is nothing but a link, for SC 2.5.8.
+   *
+   * `link-item` is put on the `li` at build time by the rehype plugin in
+   * src/plugins/link-list-item.mjs, which explains why the distinction cannot
+   * be drawn in CSS: a prose link inside a sentence takes the criterion's
+   * inline exception and must keep its inline box, and no selector can tell
+   * the two apart, because CSS cannot ask whether an element has text of its
+   * own.
+   *
+   * `inline-block` is what makes the box sizeable at all; an inline element
+   * ignores `min-height` and is 21px tall whatever the leading around it.
+   * The descendant selector rather than the child one is for
+   * `- **[Contribution days](...)**`, where the link sits inside a `strong`.
+   *
+   * The line box at `--text-body` and 1.62 already comes to 27.5px, so the
+   * floor is not doing the work today. It is here so that tightening the
+   * leading fails visibly in tests/target-size.spec.ts instead of dropping
+   * the target under 24px on a change that looks purely typographic.
+   */
+  .prose li.link-item a {
+    display: inline-block;
+    min-height: var(--spacing-target);
+  }
+
+  .prose strong {
+    @apply font-black text-text;
+  }
+
+  /*
+   * Blockquote, table and hr. The three block elements a real post uses that
+   * the rules above do not cover.
+   *
+   * Preflight leaves all three worse than unstyled. A blockquote keeps its
+   * role in the accessibility tree and loses every visual cue that it is a
+   * quotation; `hr` is reset to `border: 0 solid` with a 1px top, a hairline
+   * nothing beside the 4px and 8px rules the rest of the site draws; and a
+   * table keeps `border-collapse: separate` with no borders at all, so its
+   * columns are a grid to a screen reader and an unaligned wall of words to
+   * everyone else, which is the failure mode of the missing list markers
+   * above.
+   *
+   * `mt-6` on all three, matching `.prose p`, so a block element and a
+   * paragraph sit on the same rhythm.
+   */
+  .prose blockquote {
+    @apply mt-6 border-l-8 border-gold pl-6;
+  }
+
+  /*
+   * Quoted text is `text` rather than `muted`, which is what separates it
+   * from the paragraph above it once the border is out of the picture: in
+   * forced-colors, where the border is repainted to the system colour, and
+   * for a reader who does not see the gold. It is also why the quote is not
+   * set in italic: Lexend Variable ships no italic face, so an italic here
+   * would be a browser-synthesised oblique of a 900-capable variable font.
+   */
+  .prose blockquote p {
+    @apply text-text;
+  }
+
+  .prose blockquote > :first-child {
+    @apply mt-0;
+  }
+
+  .prose hr {
+    @apply mt-16 border-0 border-t-8 border-border;
+  }
+
+  /*
+   * `table-layout: fixed` is load-bearing for reflow, not cosmetic. Automatic
+   * layout sizes a column to its widest cell, so a two-column table in the
+   * 273px box at 305px is decided by the longest phrase in it and the
+   * document scrolls sideways, which tests/reflow.spec.ts fails on. Fixed
+   * layout splits the width evenly and wraps instead.
+   *
+   * `hyphens: auto` is inert on this site's headings, because Chromium
+   * consults its lowercase dictionary after `text-transform: uppercase` and
+   * finds nothing. Cell text is not transformed, so here the dictionary
+   * applies and it does what it says. This is the one place in the design
+   * where automatic hyphenation is worth setting.
+   */
+  .prose table {
+    @apply mt-6 w-full border-4 border-border text-body text-muted;
+    border-collapse: collapse;
+    table-layout: fixed;
+    hyphens: auto;
+  }
+
+  /*
+   * `wrap-anywhere` breaks a word that cannot fit its cell rather than let it
+   * run across the border into the next column. Under the SC 1.4.12
+   * text-spacing override at 320px, "Communicate" in the real post's table
+   * ran 34.5px past its cell (the WCAG-EM audit, 2026-09-11). Hyphenation
+   * from `hyphens: auto` on the table is still tried first; this only acts
+   * where a word has no break opportunity left to offer.
+   */
+  .prose :is(th, td) {
+    @apply border-4 border-border px-4 py-3 text-left align-top wrap-anywhere;
+  }
+
+  /*
+   * `th` carries the header row on `surface`, one of the three dark grounds
+   * `text` is verified against. Not uppercased: `.label` and the headings get
+   * `text-transform` from @layer base, and applying it here would widen every
+   * header word inside a column that is already the narrowest box on the
+   * page.
+   */
+  .prose th {
+    @apply bg-surface font-black text-text;
+  }
+
+  /*
+   * The gold surface, and the only supported way to build one. Four site-wide
+   * rules are wrong on this ground and three fail silently:
+   *
+   *   1. TEXT. `text` is 1.27 on gold.
+   *   2. LINKS. Painted `gold` (1.00) and `cyan` on hover (1.01), so invisible.
+   *      Underlined here and nowhere else: darkcyan measures 1.42 against the
+   *      body colour, under the 3:1 that would let colour carry it alone, so
+   *      the underline is what satisfies SC 1.4.1. Do not remove it.
+   *   3. FOCUS. The ring's 3px offset saves it elsewhere by putting the dark
+   *      page background either side; here the gap is gold too.
+   *   4. BORDERS. Default `border` is 2.34 on gold.
+   *
+   * An explicit utility still beats the subtree default, so `border-border`
+   * written inside a gold section is a bug this class cannot stop.
+   * tests/gold-surface.spec.ts is what catches it.
+   *
+   * .btn-primary and .btn-secondary must not be used here: the first is a
+   * 1.00:1 fill, the second carries a 2.34 border and a 1.00 gold shadow.
+   */
+  .surface-gold {
+    @apply bg-gold text-gold-text;
+  }
+
+  .surface-gold,
+  .surface-gold *,
+  .surface-gold ::before,
+  .surface-gold ::after {
+    border-color: var(--color-gold-border);
+  }
+
+  .surface-gold a {
+    color: var(--color-darkcyan);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .surface-gold a:hover {
+    color: var(--color-gold-text);
+  }
+
+  /*
+   * Higher specificity than the base :focus-visible, and in a later layer, so
+   * it wins twice over. Offset stays 3px; the gap is gold and gold-text
+   * measures 11.32 against it.
+   */
+  .surface-gold :focus-visible {
+    outline-color: var(--color-gold-text);
+  }
+
+  /*
+   * Gold-surface buttons. Scoped to .surface-gold so that using one elsewhere
+   * renders it unstyled, which is loudly wrong rather than quietly wrong.
+   *
+   * Measured against what each colour actually touches: primary label 18.58 on
+   * its own fill, primary fill 11.32 on gold, secondary label and border both
+   * 11.32 on gold.
+   *
+   * The border is `gold-text`, not `gold-border`: the only exception to the
+   * subtree default, so the control reads as one solid block.
+   *
+   * The pink shadow measures 2.31 on gold, under SC 1.4.11, and is acceptable
+   * only because it carries no meaning. Never let an offset shadow become the
+   * thing that delimits a control.
+   */
+  .surface-gold .btn-gold-primary {
+    @apply inline-block border-4 border-gold-text bg-gold-text
+      px-btn-gold-x py-btn-gold-y text-label font-black uppercase
+      tracking-label text-gold-btn-label shadow-hard-pink-8;
+  }
+
+  .surface-gold .btn-gold-secondary {
+    @apply inline-block border-4 border-gold-text bg-transparent
+      px-btn-gold-x py-btn-gold-y text-label font-black uppercase
+      tracking-label text-gold-text;
+  }
+
+  /*
+   * A two-tone focus ring, on this one control only: its ring colour is its own
+   * fill, so ring-against-fill is 1.00 and only the 3px offset made it visible.
+   * That put the whole indicator on one property staying non-zero. Two rings
+   * instead, one for each thing it can abut: inner #FFFFFF on the fill at
+   * 18.58, outer #131313 on gold at 11.32.
+   *
+   * The pink shadow is folded in, not replaced: box-shadow is one property, so
+   * naming only the ring would delete the resting decoration for as long as the
+   * button had focus.
+   */
+  .surface-gold .btn-gold-primary:focus-visible {
+    box-shadow: var(--inset-shadow-gold-btn-ring), var(--shadow-hard-pink-8);
+  }
+
+  /*
+   * The base layer underlines links on this surface, which is right for a
+   * link in prose and wrong for a button: the border and fill already
+   * distinguish these, and an underline under a 0.1em-tracked uppercase label
+   * reads as damage. SC 1.4.1 is satisfied by the box, not by the colour, so
+   * removing it here costs nothing.
+   */
+  .surface-gold a.btn-gold-primary,
+  .surface-gold a.btn-gold-secondary {
+    text-decoration: none;
+  }
+
+  .surface-gold a.btn-gold-primary:hover {
+    color: var(--color-gold-btn-label);
+  }
+
+  .surface-gold a.btn-gold-secondary:hover {
+    color: var(--color-gold-text);
+  }
+
+  .label {
+    @apply text-label font-black uppercase tracking-label;
+  }
+
+  .label-wide {
+    @apply text-label font-black uppercase tracking-label-wide;
+  }
+
+  /* text-pink-text, never text-pink. See the token comment in @theme. */
+  .section-number {
+    @apply text-section-number font-extrabold text-pink-text;
+  }
+
+  /*
+   * First focusable element on the page. Translated off-screen until focused,
+   * then back into view so a sighted keyboard user can see where they landed.
+   * Not `sr-only` and not `display: none`: both stay hidden on focus.
+   */
+  .skip-link {
+    @apply absolute left-4 top-4 z-60 border-4 border-border bg-gold px-6 py-4
+      text-label font-black uppercase tracking-label text-background;
+
+    transform: translateY(calc(-100% - 1.5rem));
+  }
+
+  .skip-link:focus,
+  .skip-link:focus-visible {
+    transform: translateY(0);
+  }
+
+  /*
+   * The spinning badge. One instance today, the Contact page at 28s from the
+   * comps, linear and infinite. `.spin-pace-hero` stays because 'hero' is
+   * still `SpinBadge`'s default `pace`, and a default pointing at a deleted
+   * class would fall back silently rather than loudly.
+   *
+   * The animation is applied by src/components/ui/SpinBadge.vue AFTER the
+   * island mounts, never by the server-rendered HTML. That is what makes the
+   * SC 2.2.2 claim true: the pause control is JavaScript, so if the island
+   * never hydrates there must be no motion for it to have failed to stop.
+   *
+   * The component also refuses to animate when `prefers-reduced-motion:
+   * reduce` matches, so the reduced-motion block at the end of this file is a
+   * backstop here rather than the mechanism, and no pause button is rendered
+   * into a page with nothing moving on it. A hidden-but-focusable control
+   * would be worse than no control.
+   *
+   * The durations live here rather than in @theme because they are two
+   * instances of one effect, not a value the design reuses, the same reason
+   * .mobile-menu-dialog keeps its sizing in the component.
+   */
+  .spin-badge {
+    animation: slowspin var(--spin-duration, 24s) linear infinite;
+  }
+
+  .spin-badge[data-paused='true'] {
+    animation-play-state: paused;
+  }
+
+  .spin-pace-hero {
+    --spin-duration: 24s;
+  }
+
+  .spin-pace-contact {
+    --spin-duration: 28s;
+  }
+
+  /*
+   * The pause control SC 2.2.2 requires, wherever motion needs one. Square,
+   * 4px border, gold on `surface`, per the comps.
+   *
+   * 40x40 CSS px, past the 24px of SC 2.5.8 without leaning on the spacing
+   * exception, and it keeps that size at every viewport: a target that
+   * shrinks with the thing it controls fails on the screens where it is
+   * hardest to hit.
+   *
+   * `bg-surface` rather than the comps' #131313. The control sits on the page
+   * background, which is #131313, so an opaque fill of that colour would
+   * leave the 4px border as the only thing delimiting it. The border clears
+   * SC 1.4.11 on its own (`border` is 4.84 on #131313), but this project has
+   * already decided, in tests/gold-surface.spec.ts, that a control whose
+   * opaque fill matches the ground behind it is a defect rather than a style.
+   * `surface` #1A1A1A gives it a fill and a border.
+   *
+   * Appearance only. Position comes from a second class at every call site,
+   * because two single-class rules on one element are resolved by their order
+   * in the STYLESHEET, not in the class attribute, so a positioning class
+   * would silently lose to whichever rule was written later. SpinBadge.vue's
+   * `borderClass` prop exists for the same reason and has the longer note.
+   */
+  .motion-toggle {
+    @apply absolute grid h-10 w-10 place-items-center border-4 border-border
+      bg-surface text-gold;
+  }
+
+  /* Hung off the corner of the badge it pauses. */
+  .motion-toggle-corner {
+    @apply -bottom-3 -right-3;
+  }
+
+  .motion-toggle:hover {
+    @apply bg-gold text-background;
+  }
+
+  /*
+   * The Career hero watermark, placed as design/Career.dc.html has it: 700px
+   * wide, opacity 0.09, right: -150px, top: 20px, pointer-events: none.
+   *
+   * Authored CSS rather than utilities because none of those numbers is a
+   * design value the site reuses; they are one placement of one asset, and
+   * they would be four arbitrary values in the markup, which this project
+   * does not allow. Same reason .mobile-menu-dialog keeps its sizing in the
+   * component.
+   *
+   * `badge-dark.png` is #111111 artwork, which measures 11.50 on gold and
+   * 1.02 on the page background: the gold hero is the only ground on this
+   * site a -dark asset can sit on. The suffix names the artwork colour, not
+   * the target surface. See the asset table in ARCHITECTURE.md.
+   *
+   * At 0.09 this is a texture, not an image. It takes alt="" and must never
+   * become the only carrier of anything. The section holding it is
+   * overflow-hidden, which keeps the -150px from scrolling the page sideways
+   * at 320px.
+   */
+  .career-watermark {
+    position: absolute;
+    top: 20px;
+    right: -150px;
+    width: 700px;
+    max-width: none;
+    height: auto;
+    opacity: 0.09;
+    pointer-events: none;
+  }
+
+  /* ---------------------------------------------------------------------------
+     THE FOOTER. Footer.astro says what is in it and why; this is how it is laid
+     out. The numbers are the footer comp's, and they only mean anything
+     together, which is why they are here as one block rather than as tokens.
+
+     Three layouts. On a phone every link is its own row and the stickers are
+     two staggered rows above the copyright. From `sm` the badge and the two
+     link columns sit side by side and the stickers are one row. From `lg` the
+     links take the stickers' own grid: the pages start above the first tile
+     and the policies above the fifth, so the links, the stickers and the hare
+     above them share one set of columns.
+  --------------------------------------------------------------------------- */
+
+  /*
+   * THE FIELD: the stems from src/assets/footer-field.svg over a fade from the
+   * page background into `deep`, so the page runs into the footer without a
+   * hard edge. The tile is 1440x150 and is scaled to the field's height, so on
+   * a phone, where the field is 112px, the stems are drawn three quarters the
+   * size and packed closer, as in the comp.
+   */
+  .footer-field {
+    height: 112px;
+    background-image:
+      url('../assets/footer-field.svg'),
+      linear-gradient(var(--color-background), var(--color-deep));
+    background-repeat: repeat-x, no-repeat;
+    background-position:
+      left bottom,
+      0 0;
+    background-size:
+      auto 100%,
+      100% 100%;
+  }
+
+  /*
+   * THE SLEEPING HARE. Its viewBox is in its own units: x = 0 at its middle
+   * and y = 0 on the ground, 114 wide from -60 to 54, 64 tall from -58 to 6.
+   * `--hare-scale` is how many CSS px one unit is, so every offset here is in
+   * those units and follows the scale. The ground is 4px above the field's
+   * bottom edge, where the stems root.
+   *
+   * Below `lg` it lies two thirds of the way across. From `lg` it is centred
+   * over the sticker row: seven 56px tiles and six 24px gaps are 536px, ending
+   * 6px short of the column to leave room for the last tile's shadow, so the
+   * row's middle is 274px in from the column's right edge.
+   *
+   * Every shape is filled with `deep`, so it covers the stems behind it as the
+   * canvas in the comp did, and outlined in `text`.
+   */
+  .footer-hare {
+    --hare-scale: 1;
+
+    position: absolute;
+    left: calc(66% - 60px * var(--hare-scale));
+    bottom: calc(4px - 6px * var(--hare-scale));
+    width: calc(114px * var(--hare-scale));
+    height: calc(64px * var(--hare-scale));
+    overflow: visible;
+    color: var(--color-text);
+    fill: var(--color-deep);
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .footer-hare .hare-shadow {
+    fill: var(--color-border);
+    fill-opacity: 0.18;
+    stroke: none;
+  }
+
+  /* The far ear, half seen through the near one. */
+  .footer-hare .hare-far {
+    opacity: 0.55;
+  }
+
+  .footer-hare .hare-line {
+    fill: none;
+  }
+
+  .footer-hare .hare-nose {
+    fill: currentColor;
+    stroke: none;
+  }
+
+  .footer-links {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /*
+   * THE BADGE STANDS IN THE STEMS. A negative top margin lifts it into the
+   * field, and a disc of `deep` behind the medallion stops the stems at its
+   * edge instead of letting them show through its transparent middle. The disc
+   * is as wide as the badge, square, and sits at its bottom, which is where the
+   * medallion is; the ring on top needs nothing. It is a circle, so it takes
+   * the `rounded-full` exception; see Radius in the design system skill.
+   *
+   * `width: fit-content` keeps the disc to the badge. As a grid item on a
+   * phone the box would otherwise stretch to the column, and the disc with it.
+   */
+  .footer-badge {
+    position: relative;
+    width: fit-content;
+    margin-top: -86px;
+  }
+
+  .footer-badge::before {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    aspect-ratio: 1;
+    background: var(--color-deep);
+
+    @apply rounded-full;
+  }
+
+  .footer-badge img {
+    position: relative;
+    width: auto;
+    height: 170px;
+  }
+
+  /*
+   * One link per row on a phone, each a full-width target 41.6px tall: the
+   * 15.6px line box of a 13px label and 13px above and below it. There is no
+   * gap between the two lists, so nothing but colour marks where the pages end
+   * and the policies begin.
+   */
+  .footer-pages {
+    margin-top: 20px;
+  }
+
+  .footer-pages a,
+  .footer-policies a {
+    display: block;
+    padding-block: 13px;
+  }
+
+  .footer-base {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    margin-top: 36px;
+    padding-block: 28px 40px;
+    border-top: 4px solid var(--color-border);
+  }
+
+  .footer-copyright {
+    font-size: var(--text-copyright);
+    line-height: var(--text-copyright--line-height);
+    text-align: center;
+
+    @apply font-black uppercase tracking-label text-subtle;
+  }
+
+  /* On a phone the stickers come first and the copyright closes the page. */
+  .footer-social {
+    order: -1;
+  }
+
+  /*
+   * Two rows on a phone, four and three, the second offset by half a tile and
+   * half a gap so it sits centred under the first. The offset moves the whole
+   * row: offsetting only its first tile once pushed it into its neighbour.
+   * The padding is room for the tilt and the shadow, so neither is clipped.
+   */
+  .footer-stickers {
+    display: grid;
+    grid-template-columns: repeat(4, 48px);
+    gap: 22px 20px;
+    padding: 6px 6px 14px;
+  }
+
+  .footer-stickers li:nth-child(n + 5) {
+    position: relative;
+    left: 34px;
+  }
+
+  /*
+   * THE TILES. The tilt is a custom property so hover can straighten a tile
+   * without knowing which one it is. Three colourways, cycling:
+   *
+   *   cyan    icon `darkcyan`, 7.91 on cyan; edge `border`, 5.02 on deep
+   *   surface icon `pink-text`, 7.18 on surface; edge `pink`, 5.09 on deep
+   *   gold    icon `gold-text`, 11.32 on gold; the fill is the edge, 12.6
+   *
+   * The pink icon is `pink-text`, not `pink`: it is a glyph that carries the
+   * link's meaning, which is the role the text pink exists for.
+   *
+   * The colour is set here in the components layer, which the base layer's
+   * `a:hover { color: cyan }` cannot beat. That matters: cyan on the cyan tile
+   * would make the icon vanish under the pointer.
+   */
+  .footer-sticker {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--color-border);
+    rotate: var(--tilt, 0deg);
+    transition: rotate 150ms ease-out;
+  }
+
+  .footer-sticker:hover {
+    rotate: 0deg;
+  }
+
+  .footer-sticker svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+  }
+
+  .footer-stickers li:nth-child(3n + 1) .footer-sticker {
+    background: var(--color-cyan);
+    color: var(--color-darkcyan);
+    box-shadow: var(--shadow-hard-pink-6);
+  }
+
+  .footer-stickers li:nth-child(3n + 2) .footer-sticker {
+    background: var(--color-surface);
+    color: var(--color-pink-text);
+    border-color: var(--color-pink);
+    box-shadow: var(--shadow-hard-cyan-6);
+  }
+
+  .footer-stickers li:nth-child(3n) .footer-sticker {
+    background: var(--color-gold);
+    color: var(--color-gold-text);
+    border-color: var(--color-gold-text);
+    box-shadow: var(--shadow-hard-pink-6);
+  }
+
+  .footer-stickers li:nth-child(1) {
+    --tilt: -5deg;
+  }
+  .footer-stickers li:nth-child(2) {
+    --tilt: 4deg;
+  }
+  .footer-stickers li:nth-child(3) {
+    --tilt: -3deg;
+  }
+  .footer-stickers li:nth-child(4) {
+    --tilt: 6deg;
+  }
+  .footer-stickers li:nth-child(5) {
+    --tilt: -4deg;
+  }
+  .footer-stickers li:nth-child(6) {
+    --tilt: 3deg;
+  }
+  .footer-stickers li:nth-child(7) {
+    --tilt: -6deg;
+  }
+
+  @media (width >= 40rem) {
+    .footer-field {
+      height: 150px;
+    }
+
+    .footer-hare {
+      --hare-scale: 1.35;
+    }
+
+    .footer-links {
+      grid-template-columns: repeat(3, auto);
+      justify-content: start;
+      column-gap: 48px;
+    }
+
+    .footer-badge {
+      align-self: start;
+      margin-top: -118px;
+    }
+
+    .footer-badge img {
+      height: 250px;
+    }
+
+    /* Both lists start on one line, 18px under the stems. */
+    .footer-pages,
+    .footer-policies {
+      align-self: start;
+      margin-top: 0;
+      padding-top: 18px;
+    }
+
+    /* 29.6px targets: the 15.6px line box and 7px above and below. */
+    .footer-pages a,
+    .footer-policies a {
+      padding-block: 7px;
+    }
+
+    .footer-base {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 24px 28px;
+      margin-top: 48px;
+    }
+
+    .footer-copyright {
+      text-align: left;
+    }
+
+    .footer-social {
+      order: 0;
+    }
+
+    .footer-stickers {
+      grid-template-columns: repeat(7, 56px);
+      gap: 24px;
+      padding: 6px 6px 10px 0;
+    }
+
+    .footer-stickers li:nth-child(n + 5) {
+      left: 0;
+    }
+
+    .footer-sticker {
+      width: 56px;
+      height: 56px;
+    }
+  }
+
+  @media (width >= 48rem) {
+    .footer-links {
+      column-gap: 96px;
+    }
+  }
+
+  /*
+   * THE STICKERS' GRID. A tile and its gap are 80px, so the fifth tile starts
+   * 4 x 80 = 320px after the first; the row is 7 x 56 + 6 x 24 + 6 = 542px
+   * wide, which leaves 222px for the policies. The first track takes the rest
+   * and holds the badge.
+   */
+  @media (width >= 64rem) {
+    .footer-hare {
+      left: auto;
+      right: calc(274px - 54px * var(--hare-scale));
+    }
+
+    .footer-links {
+      grid-template-columns: minmax(0, 1fr) 320px 222px;
+      column-gap: 0;
+    }
+  }
+
+  /*
+   * FORCED COLOURS. The browser swaps the author palette for the reader's
+   * own, and three things in the footer would fight it.
+   *
+   * Chromium gives inline SVG `forced-color-adjust: preserve-parent-color` by
+   * default: it follows the forced palette only through `currentColor` and
+   * keeps the author's colours otherwise. tests/forced-colors.spec.ts allows
+   * nothing but `auto`, and the hare shows why: its outline is `text`, not
+   * the `currentColor` of anything forced. So the SVGs go back to `auto` and
+   * take system colours below. `auto` does not force an SVG's `fill`, so the
+   * icons are given `LinkText` directly; measured without it they kept
+   * `darkcyan`, which would vanish on a dark theme.
+   *
+   * The field's picture and the disc under the badge are author colours too.
+   * The stems are dropped for the reader's Canvas, the disc goes with them, and
+   * the hare is redrawn as a line in the reader's text colour. The badge is a
+   * white PNG and cannot be recoloured, so on a light theme it fades out; that
+   * is acceptable only because it is decoration, with alt="".
+   */
+  .footer-hare,
+  .footer-hare *,
+  .footer-sticker svg,
+  .footer-sticker svg * {
+    forced-color-adjust: auto;
+  }
+
+  @media (forced-colors: active) {
+    .footer-field {
+      background-image: none;
+    }
+
+    .footer-badge::before {
+      display: none;
+    }
+
+    .footer-hare {
+      color: CanvasText;
+      fill: Canvas;
+    }
+
+    .footer-hare .hare-shadow {
+      display: none;
+    }
+
+    .footer-sticker svg {
+      fill: LinkText;
+    }
+  }
+}
+
+/*
+ * Top level rather than inside a layer, so nothing about cascade layers can
+ * affect whether the browser sees the keyframes at all.
+ */
+@keyframes slowspin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion. Anything animated must honour this; see the design system
+   skill.
+
+   Necessary, not sufficient. SC 2.2.2 Pause, Stop, Hide asks for a control
+   the user can operate, not an OS setting: a reader who has not set this
+   preference, or who is distracted by the motion in the moment, gets nothing
+   from a media query. The two things that animate, the spinning badge and the
+   homepage hero field, each carry a keyboard-operable pause control
+   (SpinBadge.vue, HeroField.vue). This block is the backstop for anything
+   animated that is neither of them.
+
+   Neither relies on it in either direction: each component reads
+   `prefers-reduced-motion` itself. The badge never starts and the field is
+   drawn once and held, so a reader with the preference set sees a still
+   picture and no pause control, rather than an animation neutralised to
+   0.01ms with a dead button beside it.
+--------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

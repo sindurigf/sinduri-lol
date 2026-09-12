@@ -1,0 +1,74 @@
+# build output
+dist/
+
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+.env.*
+!.env.example
+
+# cloudflare
+.wrangler/
+.dev.vars
+
+# editors
+.DS_Store
+.idea/
+*.swp
+
+# playwright
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# design comps, including the CV PDF: never committed
+design/
+
+# claude code, per-machine and not shared
+.claude/*.local.json
+
+# Git worktrees created by agent sessions. `git worktree add` puts a whole
+# second checkout here, on its own branch, so tracking it would commit a nested
+# copy of the repository into the repository. Prettier reads this file too,
+# which also keeps `prettier --write .` from reformatting another branch's
+# working tree.
+.claude/worktrees/
+
+# scratch and atomic-write temp files
+*.tmp
+*.tmp.*
+
+# Local scratch kept inside the repo so it survives a session but is never
+# committed. `tmp/hero-explorations/` holds every hero comp built during the
+# design rounds, so a rejected direction can be reopened without rebuilding it;
+# see the INDEX.md in there. Same reasoning as design/: useful to hand, not
+# something the repository should carry.
+tmp/
+
+# Per-session agent scaffolding. Written fresh by each agent run for that run's
+# reader, so committing them would mean every session overwriting the last
+# one's, and a repository full of stale advice.
+#
+# TODO.md is deliberately not here. It is the durable checklist,
+# .claude/hooks/todo-context.sh prints an index of it into every session, and
+# that hook exits silently when the file is absent, so an uncommitted TODO.md
+# is one machine's private note that vanishes on clone.
+#
+# If something in one of these turns out to be durable, move it into TODO.md,
+# AI.md or ACCESSIBILITY.md before the file is regenerated.
+PLAN.md
+QUESTIONS.md
+SESSION.md

@@ -1,0 +1,213 @@
+---
+// Self-hosted Lexend: global.css declares the one @font-face, and Vite bundles
+// the woff2 from the package. No third-party font CDN is used.
+import '../styles/global.css';
+/*
+ * The theme colour, read out of `--color-background` at build time. It lives
+ * in src/lib/theme-color.ts because the web app manifest needs the same value
+ * and neither file may name the hex itself.
+ */
+import { themeColor } from '../lib/theme-color';
+/*
+ * The same woff2 the @font-face in global.css names, imported for its URL so
+ * it can be preloaded. `?url` gives the hashed path Vite emits, so it cannot
+ * go stale the way a literal filename would; that hash changes whenever the
+ * font package does. It is the only subset the site ships.
+ */
+import lexendLatin from '@fontsource-variable/lexend/files/lexend-latin-wght-normal.woff2?url';
+import { structuredData } from '../lib/structured-data';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  /*
+   * Suppresses <link rel="canonical">. Default false: every real page wants
+   * one, so this has to be asked for.
+   *
+   * It exists for src/pages/404.astro. A canonical link claims this URL is
+   * the preferred address for this content, and a 404 is served from every
+   * wrong address there is, so one there points every dead URL at itself.
+   *
+   * Deliberately no `noindex` prop beside it: the 404 status already tells a
+   * crawler not to index the response, and a meta robots tag would be a
+   * weaker second statement. tests/not-found.spec.ts asserts the status.
+   */
+  noCanonical?: boolean;
+}
+
+const SITE_NAME = 'sinduri.lol';
+
+// 1200x630, in the repo at public/images/og-default.png. See the asset table
+// in ARCHITECTURE.md for how it is composited.
+const DEFAULT_OG_IMAGE = '/images/og-default.png';
+
+/*
+ * One image and one alt serve every page, so the card carries no per-page
+ * information and the alt names the site rather than describing the artwork.
+ * A post can still set `ogImage`; none does. Per-post images are a later
+ * decision, for when the posts are real.
+ *
+ * tests/seo.spec.ts checks the declared size against each file, so a post
+ * bringing a different image fails there until these follow it.
+ */
+const OG_IMAGE_WIDTH = 1200;
+const OG_IMAGE_HEIGHT = 630;
+const OG_IMAGE_ALT = 'The sinduri.lol logo';
+const OG_LOCALE = 'en_GB';
+
+const {
+  title,
+  description,
+  ogImage = DEFAULT_OG_IMAGE,
+  noCanonical = false,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImageUrl = new URL(ogImage, Astro.site);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/*
+      Both of these control paint the stylesheet does not, and both sit above
+      <title> so they are in the first bytes the parser reads.
+
+      color-scheme tells the UA to render its own widgets dark: the scrollbar,
+      form controls, the selection colour. global.css declares the same thing,
+      but a stylesheet is a separate request and the scrollbar exists before
+      it arrives. See that declaration for why the value is `dark` alone.
+
+      theme-color tints the browser chrome around the page, mostly the address
+      bar on Android. One value and no media-queried second one, because this
+      design has one scheme.
+    */}
+    {/*
+      Preload the font the first paint needs.
+
+      The @font-face rule is in the stylesheet, a separate request, so without
+      this the font is not discovered until the CSS has arrived and parsed.
+      Every heading is Lexend at weight 900, up to 104px in the hero, so the
+      swap is the largest text on the page changing shape after load.
+      `font-display: swap` keeps the text readable throughout, which makes
+      this polish rather than a fix.
+
+      `crossorigin` is required, even though the file is same-origin. Fonts
+      are fetched in CORS mode, which `as="font"` selects, so a preload
+      without it is a different request from the one the font rule makes: the
+      browser downloads the file twice and uses the second, which is worse
+      than no preload.
+    */}
+    <link
+      rel="preload"
+      href={lexendLatin}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content={themeColor} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {!noCanonical && <link rel="canonical" href={canonical} />}
+
+    {/*
+      The icon set. Order is not preference: a browser picks by `sizes` and
+      type, so each declaration has to be true about the file it points at.
+
+      `favicon.ico` really does carry all three of 16, 32 and 48, rebuilt from
+      the icon pack's own PNGs; the pack's own file was a single 16x16 frame
+      declared as 32x32. If it is regenerated, check that `identify
+      favicon.ico` reports three frames.
+
+      The 16 and 32 PNGs are a filled silhouette of the mark rather than the
+      line art, whose strokes fall under a pixel below 48px. 48 and up is the
+      line art, which is why the small sizes exist as their own files rather
+      than being left to the SVG.
+
+      No `media="(prefers-color-scheme: light)"` variants. This design is dark
+      only, and the mark is a dark glyph on a full-bleed gold square, which
+      reads on either tab strip.
+    */}
+    {/*
+      Sitemap discovery, for anything handed a page rather than an origin;
+      robots.txt carries the same URL for crawlers. Both name
+      `sitemap-index.xml`, which is what @astrojs/sitemap emits: an index plus
+      a numbered file, never a bare `sitemap.xml`. tests/sitemap.spec.ts holds
+      all three to the same name.
+    */}
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="/favicon.ico"
+      sizes="16x16 32x32 48x48"
+    />
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    {/* 180x180, full-bleed. iOS rounds the corners itself; do not pre-round. */}
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    {/* Generated by src/pages/site.webmanifest.ts, not a file in public/. */}
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={OG_LOCALE} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content={String(OG_IMAGE_WIDTH)} />
+    <meta property="og:image:height" content={String(OG_IMAGE_HEIGHT)} />
+    <meta property="og:image:alt" content={OG_IMAGE_ALT} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content={OG_IMAGE_ALT} />
+
+    {/*
+      JSON-LD, describing the site and its author. Inline with no CSP hash:
+      `script-src` does not gate a data block the browser never executes,
+      measured in Chromium and Firefox rather than assumed.
+      src/lib/structured-data.ts carries the reasoning.
+    */}
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(
+        structuredData(new URL(Astro.site ?? canonical)),
+      )}
+    ></script>
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body class="flex min-h-screen flex-col">
+    {/* Must be the first focusable element on the page (SC 2.4.1). */}
+    <a class="skip-link" href="#main-content">
+      Skip to main content
+    </a>
+    <Header />
+    {/*
+      tabindex="-1" so the skip link actually moves focus here. Without it
+      document.activeElement stays on <body>: Chrome still sets the sequential
+      focus starting point, so the next Tab skips the header, but focus and a
+      screen reader's cursor never enter main. -1 keeps it out of the tab
+      order.
+
+      The page gutter lives here, not on each page's container, so every route
+      presents the same content box, which is the box the heading floors in
+      global.css are calibrated against. See the .page-gutter comment.
+    */}
+    <main id="main-content" tabindex="-1" class="page-gutter flex-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

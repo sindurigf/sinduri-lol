@@ -1,0 +1,82 @@
+---
+import { Image } from 'astro:assets';
+import bunnyDark from '../assets/bunny-dark.png';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { DENSITIES } from '../lib/image-densities';
+
+/*
+ * Cloudflare Pages serves dist/404.html with a real 404 status for any path
+ * that does not match an asset. Without this file it serves index.html with a
+ * 200, so every typo and dead inbound link looks like a working homepage to a
+ * crawler, a link checker, and to anyone with no visual cue that the address
+ * was wrong.
+ *
+ * Astro emits this route as dist/404.html rather than dist/404/index.html,
+ * which is the filename Cloudflare looks for. tests/routes.ts derives routes
+ * from both shapes, so this one is not invisible to the suite.
+ *
+ * The mark below is decorative. `bunny-dark` is #111111 artwork, 11.50:1 on
+ * gold and 1.02:1 on the page background, so the gold tile is what makes it
+ * visible. alt="" because the heading already says what the page is.
+ *
+ * `noCanonical` because this page answers every wrong address on the site,
+ * and a canonical link here would name each of those dead URLs as the
+ * preferred address for this content. Deliberately no `noindex` with it: the
+ * 404 status already tells a crawler not to index the response, and
+ * tests/not-found.spec.ts asserts that status.
+ *
+ * These notes are in the frontmatter rather than above <BaseLayout>, because
+ * a comment there is emitted between the doctype and <html> and shipped on
+ * every 404 response.
+ */
+
+/** The mark on the gold tile, drawn `h-12`. See the note in Header.astro. */
+const MARK_HEIGHT = 48;
+---
+
+<BaseLayout
+  title="Page not found | sinduri.lol"
+  description="That address does not lead anywhere on sinduri.lol."
+  noCanonical
+>
+  <div class="mx-auto max-w-page py-28">
+    <span class="flex h-24 w-24 rotate-3 items-center justify-center rounded-nav border-4 border-border bg-gold shadow-hard-pink-12">
+      {/* loading="eager": first element in <main>, always in view. */}
+      <Image
+        src={bunnyDark}
+        alt=""
+        height={MARK_HEIGHT}
+        densities={DENSITIES}
+        loading="eager"
+        class="h-12 w-auto"
+      />
+    </span>
+
+    {/*
+      A <div>, not a <p>. The status code is a label above the heading, not a
+      paragraph and not a heading itself: the <h1> below says what happened.
+      A short, large, bold <p> is what WAVE reports as a possible heading. See
+      tests/wave-alerts.spec.ts.
+    */}
+    <div class="section-number mt-14">404</div>
+    <h1 class="mt-4 -rotate-1 text-h1 text-gold">Page not found</h1>
+
+    <p class="mt-10 max-w-2xl text-body text-muted">
+      That address does not lead anywhere. It either moved, or it never existed.
+      Nothing here is broken on your end.
+    </p>
+
+    <ul class="mt-14 flex flex-wrap gap-6">
+      <li>
+        <a href="/" class="btn-primary">
+          Go to the homepage
+        </a>
+      </li>
+      <li>
+        <a href="/blog/" class="btn-secondary">
+          Read the blog
+        </a>
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

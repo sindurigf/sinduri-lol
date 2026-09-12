@@ -1,0 +1,172 @@
+---
+import type { BlogCategory } from '../content.config';
+import {
+  CATEGORY_FILTERS,
+  categoryLabel,
+  indexPageHref,
+  type BlogPost,
+} from '../lib/blog';
+import BlogCard from './BlogCard.astro';
+
+/*
+ * The post listing: the category filter, the cards, and the pager. Shared by
+ * /blog, /blog/page/<n> and every category route, so all three present the
+ * same controls in the same order and a reader who has learned one has learned
+ * all of them.
+ *
+ * THE FILTER IS SIX LINKS AND NO JAVASCRIPT.
+ *
+ * Each option is a real URL the site builds anyway, `/blog` and the five
+ * `/blog/<category>` routes, so filtering is navigation rather than state.
+ * The links are keyboard operable because they are links, the active option
+ * is `aria-current="page"` because the page it points at is the page you are
+ * on, every filtered view is shareable, and there is nothing to hydrate. A
+ * Vue island would have had to reimplement focus, state and the URL, and the
+ * five category pages would still have to exist.
+ *
+ * THE ACTIVE STATE IS NOT CARRIED BY COLOUR (SC 1.4.1). Three signals, two of
+ * them non-colour:
+ *
+ *   - `aria-current="page"`, the machine-readable one, which is not optional;
+ *   - a small square marker present on the active option and absent from the
+ *     others, which is the shape difference. It is aria-hidden: it
+ *     reinforces, it does not inform;
+ *   - the inverted gold fill, which on its own is insufficient.
+ */
+
+interface Props {
+  posts: BlogPost[];
+  /** null on the unfiltered index. */
+  activeCategory: BlogCategory | null;
+  currentPage: number;
+  totalPages: number;
+  /**
+   * The comps give the lead post a wide two-column treatment. Only the first
+   * page of the unfiltered index gets it; on page two it would be arbitrary,
+   * and on a category page there is no "lead" post to speak of.
+   */
+  featureFirst?: boolean;
+}
+
+const {
+  posts,
+  activeCategory,
+  currentPage,
+  totalPages,
+  featureFirst = false,
+} = Astro.props;
+
+const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+---
+
+{/*
+  Named, because this page carries two navs beyond the header's, and a
+  landmarks list of unlabelled "navigation" entries is a list of nothing.
+*/}
+<nav aria-label="Filter posts by category">
+  <ul class="flex flex-wrap gap-4">
+    {CATEGORY_FILTERS.map((option) => {
+      const isActive = option.category === activeCategory;
+      return (
+        <li>
+          <a
+            href={option.href}
+            aria-current={isActive ? 'page' : undefined}
+            class:list={[
+              'label flex items-center border-4 border-border px-5 py-3',
+              isActive
+                ? 'bg-gold text-background shadow-hard-pink-8'
+                : 'bg-surface text-text hover:bg-gold hover:text-background',
+            ]}
+          >
+            {isActive ? (
+              <span
+                aria-hidden="true"
+                class="mr-3 block size-2 bg-background"
+              />
+            ) : null}
+            {option.label}
+          </a>
+        </li>
+      );
+    })}
+  </ul>
+</nav>
+
+{posts.length === 0 ? (
+  <p class="mt-16 text-body text-muted">
+    Nothing filed under{' '}
+    {activeCategory === null ? 'this' : categoryLabel(activeCategory)} yet. Try
+    another category, or read <a href="/blog/">every post</a>.
+  </p>
+) : (
+  <ul class="mt-16 grid gap-10 lg:grid-cols-2">
+    {posts.map((post, index) => {
+      const feature = featureFirst && index === 0;
+      return (
+        <li class:list={['flex min-w-0', feature ? 'lg:col-span-2' : '']}>
+          <BlogCard
+            href={`/blog/${post.id}/`}
+            title={post.data.title}
+            teaser={post.data.teaser}
+            category={post.data.category}
+            date={post.data.date}
+            readingTime={post.data.readingTime}
+            featured={post.data.featured}
+            feature={feature}
+            headingLevel={2}
+            class="w-full"
+          />
+        </li>
+      );
+    })}
+  </ul>
+)}
+
+{totalPages > 1 ? (
+  <nav aria-label="Pagination" class="mt-20">
+    {/*
+        Page numbers only. A "Previous page" or "Next page" link sits beside a
+        number going to the same place, which is two adjacent links to one URL:
+        two tab stops for one destination, and WAVE's "Redundant link" alert.
+        See tests/wave-alerts.spec.ts.
+      */}
+    <ul class="flex flex-wrap items-center gap-4">
+      {pageNumbers.map((page) => {
+        const isCurrent = page === currentPage;
+        return (
+          <li>
+            {/*
+                The current page stays a link rather than becoming a <span>:
+                `aria-current="page"` says where you are, and a link that
+                drops out of the tab order when you reach it changes the
+                pager's shape under a keyboard user. The accessible name needs
+                the word "Page", and an aria-label would override the visible
+                number and break voice control, so it is visually hidden text
+                inside the link.
+              */}
+            <a
+              href={indexPageHref(page)}
+              aria-current={isCurrent ? 'page' : undefined}
+              class:list={[
+                'label flex items-center border-4 border-border px-5 py-3',
+                isCurrent
+                  ? 'bg-gold text-background shadow-hard-pink-8'
+                  : 'bg-surface text-text hover:bg-gold hover:text-background',
+              ]}
+            >
+              {isCurrent ? (
+                <span
+                  aria-hidden="true"
+                  class="mr-3 block size-2 bg-background"
+                />
+              ) : null}
+              <span class="sr-only">Page&nbsp;</span>
+              {page}
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </nav>
+) : null}
