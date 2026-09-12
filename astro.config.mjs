@@ -77,7 +77,20 @@ export default defineConfig({
      * tests/sitemap.spec.ts still asserts the error page is unadvertised,
      * which now guards the integration's behaviour rather than ours.
      */
-    sitemap(),
+    sitemap({
+      /*
+       * Two contact routes are deliberately unadvertised. /contact/sent/ is a
+       * confirmation: a crawler served it reads "Your message has been
+       * received", false for anyone who did not just send one. /contact/send/
+       * is the POST target, builds no page at all, and answers a GET with a
+       * redirect, so listing it points a crawler at nothing.
+       *
+       * The error page needs no filter: the integration drops status-code
+       * pages itself, before any filter runs.
+       */
+      filter: (page) =>
+        !page.endsWith('/contact/sent/') && !page.endsWith('/contact/send/'),
+    }),
   ],
 
   /*

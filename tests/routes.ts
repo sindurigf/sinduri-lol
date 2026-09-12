@@ -25,6 +25,15 @@ const PAGE_ROUTES = [
   '/about',
   '/career',
   '/contact',
+  /*
+   * The contact form's confirmation. Prerendered, so it is an asset like every
+   * other page and every suite that walks ROUTES measures it.
+   *
+   * `/contact/send/` is deliberately absent: it is the one on-demand route, it
+   * renders nothing for a GET, and it is not in the build for the route
+   * coverage test to find. tests/contact.spec.ts exercises it.
+   */
+  '/contact/sent',
   // Linked from the footer, so every suite that walks ROUTES measures them.
   '/accessibility',
   '/privacy',

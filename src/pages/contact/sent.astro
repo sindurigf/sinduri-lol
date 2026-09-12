@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { CONTACT_EMAIL } from '../../lib/contact';
+
+/*
+ * The contact form's confirmation. Prerendered, so a successful submission
+ * ends on a static asset with public/_headers applied, the same as every other
+ * page: only the failure path needs the Worker to render anything.
+ *
+ * Reached by a 303 from /contact/send/, which is what stops a refresh
+ * resubmitting the message.
+ *
+ * Copy is functional microcopy, so it is written rather than left as
+ * PLACEHOLDER: a confirmation that says nothing leaves a reader who cannot see
+ * the page change unsure whether anything happened.
+ */
+---
+
+<BaseLayout
+  title="Message sent | sinduri.lol"
+  description="Your message has been received."
+>
+  <section class="band py-24">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-gold"></span>
+    </div>
+
+    <div class="mx-auto max-w-3xl">
+      <h1 class="text-h1 text-text">Message sent</h1>
+
+      <p class="mt-8 text-body text-muted text-pretty">
+        Your message has been received. A reply will come to the email address
+        you gave, usually within a few days.
+      </p>
+
+      <p class="mt-6 text-body text-muted text-pretty">
+        Nothing else was stored, and you were not added to any list. If you need
+        to add something, write to{' '}
+        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+      </p>
+
+      <p class="mt-10">
+        <a class="btn-secondary" href="/contact/">
+          Back to contact
+        </a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

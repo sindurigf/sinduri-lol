@@ -1704,3 +1704,59 @@
     scroll-behavior: auto !important;
   }
 }
+
+@layer components {
+  /*
+   * Contact form controls. Nothing else on the site takes input.
+   *
+   * No focus rule: the site-wide :focus-visible outline covers them. No
+   * forced-colors rule either: every control here has a painted border and an
+   * opaque fill, which is what tests/forced-colors.spec.ts requires.
+   */
+  .field {
+    @apply mt-8 block;
+  }
+
+  .field-label {
+    @apply block text-label font-black uppercase tracking-label text-gold;
+  }
+
+  .field-control {
+    @apply mt-3 block w-full border-4 border-border bg-surface px-4 py-3
+      font-sans text-body text-text;
+  }
+
+  /*
+   * Not `field-sizing: content`: it collapses the box to one row before
+   * anything is typed, which is smaller than the control needs to look like
+   * somewhere to write.
+   */
+  textarea.field-control {
+    @apply min-h-40 resize-y;
+  }
+
+  /*
+   * A failing control is marked three ways, because colour alone fails SC
+   * 1.4.1: the border changes, aria-invalid is set, and the message below is
+   * text. Pink is a non-text use here and clears SC 1.4.11 on surface at 4.59.
+   */
+  .field-control[aria-invalid='true'] {
+    @apply border-pink;
+  }
+
+  .field-error {
+    @apply mt-3 text-body text-pink-text;
+  }
+
+  /*
+   * The error summary takes focus on render, so a reader lands on the problem
+   * rather than at the top of the page.
+   */
+  .error-summary {
+    @apply mt-8 border-8 border-pink bg-surface p-6;
+  }
+
+  .error-summary a {
+    @apply text-pink-text;
+  }
+}

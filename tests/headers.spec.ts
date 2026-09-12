@@ -675,6 +675,22 @@ test.describe('security headers', () => {
     expect(directive(csp, 'object-src')).toBe("object-src 'none'");
 
     /*
+     * `'self'` since the contact form landed, and no wider. It has to name the
+     * exact origin the form posts to: at `'none'` the browser blocks the
+     * submission with nothing on the page to say so, and at `*` the directive
+     * stops being a control at all.
+     *
+     * Verified not to be vacuous: set back to `'none'` this fails, and the
+     * form submission fails silently in a real browser with only a console
+     * message.
+     */
+    expect(
+      directive(csp, 'form-action'),
+      "form-action must be 'self'. The contact form at /contact/ posts to " +
+        '/contact/send/ on this origin; anything narrower blocks it silently.',
+    ).toBe("form-action 'self'");
+
+    /*
      * No http:// URL exists in the build to upgrade today, every reference
      * being same-origin and relative, so this is for the one pasted in later.
      * It rewrites such a URL to https before the request leaves, which beats

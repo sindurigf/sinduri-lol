@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { builtPages, DIST_DIR } from './routes';
 import { configuredSite } from './source';
+import { RETENTION_DAYS } from '../src/lib/contact-form';
 
 /**
  * The privacy policy, held to what the site actually does.
@@ -230,5 +231,44 @@ test.describe('the privacy policy is true', () => {
           'the same commit.',
       ).toContain(claim);
     }
+  });
+
+  test('the page discloses what the contact form stores', () => {
+    /*
+     * The form is the only thing on this site that stores anything about a
+     * visitor, so the page has to say so. Without this, deleting the section
+     * leaves a privacy page describing a site that collects nothing while the
+     * form keeps collecting, and every other test here still passes.
+     *
+     * Asserted on the rendered text rather than on prose: the retention period
+     * is read from the same constant the sweep uses, so the page and the code
+     * cannot disagree about it.
+     */
+    const privacy = builtPages().find((page) => page.route === PRIVACY_PAGE)!;
+    const text = readFileSync(privacy.file, 'utf8')
+      .slice(readFileSync(privacy.file, 'utf8').indexOf('<body'))
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ');
+
+    expect(
+      text,
+      '/privacy no longer names the contact form. It stores a name, an email ' +
+        'address and a message, so the page has to say that it does.',
+    ).toContain('contact form');
+
+    expect(
+      text,
+      `/privacy no longer states the ${RETENTION_DAYS}-day retention period ` +
+        'for stored messages. It is read from RETENTION_DAYS, so this fails ' +
+        'if the page stops rendering it or the constant changes without the ' +
+        'page following.',
+    ).toContain(`${RETENTION_DAYS} days`);
+
+    expect(
+      text.toLowerCase(),
+      '/privacy no longer says how to have a stored message deleted. A page ' +
+        'that records what it keeps without saying how to get it removed is ' +
+        'half a disclosure.',
+    ).toContain('removed');
   });
 });
