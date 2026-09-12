@@ -2,18 +2,6 @@ import { expect, test, type Page } from '@playwright/test';
 import { gotoSettled } from './settle';
 import { ROUTES } from './routes';
 
-/*
- * `bypassCSP` because the adapter makes `astro preview` serve through the
- * Worker, so `_headers` and its `style-src` now apply in preview where they
- * did not before, and `addStyleTag` below is blocked.
- *
- * It does not weaken what this file checks. A real text-spacing override comes
- * from a user stylesheet, which CSP does not govern, so injecting one past the
- * policy is the faithful emulation. tests/headers.spec.ts is what asserts the
- * policy itself, under its own server, and it does not bypass anything.
- */
-test.use({ bypassCSP: true });
-
 /**
  * SC 1.4.10 Reflow: content must not require scrolling in two directions at a
  * 320px viewport (1280px at 400% zoom). SC 1.4.12 Text Spacing: the same has to
