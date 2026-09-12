@@ -130,7 +130,7 @@ export const postRoutesFromContent = (
  * Routes present in the build, derived from its HTML files.
  *
  * Astro writes each page as `<route>/index.html`, except `src/pages/404.astro`,
- * which becomes `dist/client/404.html`, the file Cloudflare Pages serves when nothing
+ * which becomes `dist/client/404.html`, the file Workers serves when nothing
  * matches. Matching only `index.html` would drop `/404`, and the coverage test
  * would pass with the page deleted.
  */

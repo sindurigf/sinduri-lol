@@ -6,40 +6,30 @@ import { DIST_DIR } from './routes';
 
 /**
  * The site is static with no SPA fallback, so what a request for a path with
- * no file behind it returns is decided by the host. Cloudflare Pages serves
- * `404.html` from the build output with a 404 status if it is there, and falls
- * back to `index.html` with a 200 if it is not.
+ * no file behind it returns is decided by the host. Workers static assets
+ * serves `404.html` with a 404 status only when the file exists and
+ * `wrangler.jsonc` sets `not_found_handling: "404-page"`.
  *
- * That fallback is not hypothetical: measured against the deployed site on
- * 2026-09-04, before this page existed, every unknown path answered 200 with
- * the homepage. Crawlers index those URLs, link checkers pass them, and a
+ * Getting it wrong is not hypothetical: measured against the deployed site on
+ * 2026-09-04, still on Pages and before this page existed, every unknown path
+ * answered 200 with the homepage. Crawlers index those URLs, link checkers pass them, and a
  * screen reader user is read the homepage with nothing to say the address was
  * wrong.
  *
  * The route list is not enough. `/404` is in tests/routes.ts and other suites
- * visit it, but `astro preview` serves `dist/404.html` at that path directly
+ * visit it, but the suite's server serves `404.html` at that path directly
  * with a 200, so those assertions pass on the file existing and would keep
  * passing while unknown paths returned 200 forever.
  *
- * Preview answers an unknown path with a 404 whether or not this page exists:
- * with src/pages/404.astro deleted it returns its own "404: Not Found" body,
- * still with a 404 status. So in preview the body is what proves the page is
- * wired up, while the status is what matters in production. Both are asserted,
- * so neither host's behaviour is taken on trust.
- *
- * The artefact test is the load-bearing one for Cloudflare: `404.html` in the
- * build output is the whole of what stops the 200. Re-check the deployed site
- * with `curl` after a deploy; see README.
- *
- * Workers needs one more thing. Workers static assets does not look for
- * `404.html` on its own: it serves it only when `wrangler.jsonc` sets
- * `assets.not_found_handling` to `"404-page"`, so there the file and the
- * setting are both required and preview shows neither. The config test below
- * reads the setting.
+ * The suite's server answers an unknown path with a 404 whether or not this
+ * page exists, falling back to a plain "Not found" body. So locally the body is
+ * what proves the page is wired up, while the status is what matters in
+ * production. Both are asserted, and the artefact and config tests below cover
+ * the two things Workers needs. `npm run check:live` checks the deployed site.
  *
  * Proven able to fail: with src/pages/404.astro deleted and the site rebuilt,
  * the artefact test fails on the missing file and both path tests fail on the
- * body, preview's own page. With the `not_found_handling` line deleted from
+ * body. With the `not_found_handling` line deleted from
  * wrangler.jsonc, the config test failed with `Received: undefined`
  * (2026-09-11).
  */
@@ -77,14 +67,14 @@ const unknownPaths = (): string[] => [
 ];
 
 test.describe('unknown paths return 404', () => {
-  test('the build emits 404.html, which is what Cloudflare Pages reads', () => {
+  test('the build emits 404.html, which is what Workers serves', () => {
     const artefact = join(DIST_DIR, '404.html');
 
     expect(
       existsSync(artefact),
-      `${artefact} is missing. Cloudflare Pages falls back to serving ` +
-        `index.html with a 200 for every unknown path without it, which is ` +
-        `what the deployed site did before this page existed.`,
+      `${artefact} is missing. Without it every unknown path gets no page, ` +
+        `and on the deployed site before this page existed it got the ` +
+        `homepage with a 200.`,
     ).toBe(true);
   });
 

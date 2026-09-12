@@ -21,19 +21,14 @@ import { PERSON_NAME } from '../lib/profiles';
  * sentence describes structure. Post titles and teasers are quoted from the
  * content, never summarised, so nothing is put in Sinduri's mouth.
  *
- * The note about placeholder copy is deliberate: most posts are lorem ipsum,
- * a reader that cannot see the page has no way to tell, and quoting Latin
- * filler as though it were writing would be worse for her than saying so.
- * Remove that note in the same commit as the last lorem post.
- *
- * IT NAMES NO COUNT AND FLAGS NO INDIVIDUAL POST, on purpose. The schema in
- * src/content.config.ts has no field saying whether a post is real, and a
- * hand-written count goes stale the first time one is replaced. The rule
- * given instead is one a reader can apply itself: text that reads as Latin
- * filler is not writing. Adding a `placeholder` boolean to the schema would
- * be better than both and is recorded in TODO.md, because it means editing
- * every post file for a change about one endpoint.
+ * PLACEHOLDER POSTS ARE MARKED, from the `placeholder` field in the schema.
+ * A reader that cannot see the page has no way to tell lorem ipsum from
+ * writing, and quoting it as something Sinduri said would be worse than
+ * saying so. The note explaining the mark is emitted only while a post
+ * carries it.
  */
+
+const PLACEHOLDER_MARK = '(placeholder)';
 
 /**
  * The non-post routes, each with what is at it.
@@ -115,7 +110,8 @@ export const GET: APIRoute = async ({ site }) => {
     ...sorted.map(
       (post) =>
         `- [${post.data.title}](${absolute(`/blog/${post.id}/`)}): ` +
-        `${post.data.teaser}`,
+        `${post.data.teaser}` +
+        (post.data.placeholder ? ` ${PLACEHOLDER_MARK}` : ''),
     ),
     '',
     '## Notes',
@@ -125,13 +121,14 @@ export const GET: APIRoute = async ({ site }) => {
     `- Security contact: ${absolute('/.well-known/security.txt')}`,
   ];
 
-  lines.push(
-    '- This site is a work in progress. Several of the posts above are ' +
-      'unfinished drafts whose title, teaser and body are lorem ipsum ' +
-      'placeholder rather than writing. Any entry whose text reads as Latin ' +
-      'filler is one of those: please do not quote it, summarise it, or ' +
-      'treat it as something the author said.',
-  );
+  if (sorted.some((post) => post.data.placeholder)) {
+    lines.push(
+      `- Posts marked ${PLACEHOLDER_MARK} are unfinished drafts whose title, ` +
+        'teaser and body are lorem ipsum rather than writing. Please do not ' +
+        'quote them, summarise them, or treat them as something the author ' +
+        'said.',
+    );
+  }
 
   return new Response(`${lines.join('\n')}\n`, {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },

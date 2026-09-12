@@ -28,8 +28,7 @@ import { RETENTION_DAYS } from '../src/lib/contact-form';
  * CSP refused the script. The edge is the other half, and
  * scripts/check-live.sh is its check, run by hand after a deploy against the
  * same element list as SUBRESOURCE below, plus any inline script the build did
- * not write. README > Dashboard settings the site depends on lists what the
- * edge can change.
+ * not write. README > Cloudflare settings lists what the edge can change.
  *
  * The off-origin half reads the build rather than the source on purpose:
  * grepping src/ would miss a URL introduced by a dependency, a Markdown post,

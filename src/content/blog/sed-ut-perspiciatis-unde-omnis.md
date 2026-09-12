@@ -2,6 +2,7 @@
 title: 'Sed ut perspiciatis unde omnis'
 date: 2026-04-08
 category: 'personal-thoughts'
+placeholder: true
 tags: ['perspiciatis', 'natus', 'error']
 teaser: 'Iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis et quasi architecto.'
 featured: true

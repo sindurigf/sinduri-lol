@@ -2,6 +2,7 @@
 title: 'Quis nostrud exercitation ullamco laboris nisi'
 date: 2026-07-06
 category: 'travel'
+placeholder: true
 tags: ['ullamco', 'laboris', 'aliquip']
 teaser: 'Nisi ut aliquip ex ea commodo consequat, duis aute irure dolor in reprehenderit in voluptate velit esse cillum.'
 featured: true

@@ -18,16 +18,16 @@ import {
 /**
  * Security response headers, and the CSP in particular.
  *
- * `_headers` is authored at public/_headers and copied into dist/, where
- * Cloudflare Pages reads it. `astro preview` sends none of those headers, so a
- * run against the preview server cannot tell a working policy from an empty
- * file. This spec starts its own static server over dist/, attaches the
+ * `_headers` is authored at public/_headers and copied into dist/client/,
+ * where Workers static assets reads it. The suite's static server sends none
+ * of those headers, so a run against it cannot tell a working policy from an
+ * empty file. This spec starts its own static server over dist/, attaches the
  * headers parsed out of the built `_headers`, and drives a real browser at it.
  *
  * That proves the site can run under the policy as written: the island
  * hydrates, the fonts load, the mobile menu opens, the browser reports no
  * violation. It does not prove Cloudflare sends what the file says;
- * scripts/check-live.sh checks the deployed site (see README). On 2026-09-11
+ * scripts/check-live.sh checks the deployed site. On 2026-09-11
  * Cloudflare's zone HSTS setting was found replacing the value this file
  * asserts, while every test here passed.
  *
@@ -49,14 +49,14 @@ import {
  *     Expected 15552000, Received 31536000. Deleting the header fails that
  *     test and the required-header one.
  *
- * Two rules, and the hazard the second brings. Pages applies every matching
+ * Two rules, and the hazard the second brings. Cloudflare applies every matching
  * rule and the more specific one does not win: where two rules set the same
- * header name, Pages joins the values with a comma. That is useful for
+ * header name, Cloudflare joins the values with a comma. That is useful for
  * `X-Robots-Tag` and a silent corruption for every header here.
  * `Cross-Origin-Resource-Policy: same-origin, cross-origin` parses as nothing,
  * and a CSP joined to a second CSP is enforced as two policies at once, where
  * a resource must satisfy both. So the parser reads every rule and resolves a
- * path the way Pages does, and `no header is set by more than one rule` is the
+ * path the way Cloudflare does, and `no header is set by more than one rule` is the
  * assertion to read first if a header ever arrives looking like two stuck
  * together.
  */
@@ -247,7 +247,7 @@ test.describe('security headers', () => {
     expect(
       existsSync(HEADERS_FILE),
       `${HEADERS_FILE} is missing. It is authored at public/_headers and the ` +
-        `build copies it; Cloudflare Pages sends no headers without it.`,
+        `build copies it; Cloudflare sends no headers without it.`,
     ).toBe(true);
 
     rules = parseHeadersFile(readFileSync(HEADERS_FILE, 'utf8'));
@@ -279,7 +279,7 @@ test.describe('security headers', () => {
   });
 
   /**
-   * The guard on MIME above. This server stands in for Pages, and it can only
+   * The guard on MIME above. This server stands in for Cloudflare, and it can only
    * do that for file types it knows: anything else leaves here as
    * `application/octet-stream` under `nosniff`, which a browser drops on the
    * floor.
@@ -301,7 +301,7 @@ test.describe('security headers', () => {
     expect(
       [...extensions].filter((extension) => !(extension in MIME)).sort(),
       'the build emits a file type this spec cannot serve. Add it to MIME ' +
-        'with the type Cloudflare Pages sends, or this server answers with ' +
+        'with the type Cloudflare sends, or this server answers with ' +
         'application/octet-stream and nosniff makes the browser refuse it.',
     ).toEqual([]);
   });
@@ -567,7 +567,7 @@ test.describe('security headers', () => {
   /**
    * The second rule, end to end. Everything above reads the file; this asks a
    * browser what it actually received for a real asset the page pulled in,
-   * and checks the two rules resolved the way Pages resolves them rather than
+   * and checks the two rules resolved the way Cloudflare resolves them rather than
    * the way this test's own parser happens to.
    */
   test('a hashed asset is served cacheable and not embeddable', async ({
@@ -665,7 +665,7 @@ test.describe('security headers', () => {
       ).toBe('same-origin');
 
       /*
-       * The asset has to keep the site-wide policy as well. Pages merges the
+       * The asset has to keep the site-wide policy as well. Cloudflare merges the
        * rules rather than replacing one with the other, and a doubled header,
        * `nosniff, nosniff`, is the shape the merge failure takes.
        */

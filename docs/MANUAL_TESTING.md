@@ -52,7 +52,7 @@ cause is almost never the page:
   memory problem, not a layout regression.
 
 Re-measure before writing a result down, and note the conditions next to it.
-[README.md](../README.md) has the same rule for the automated suite.
+[AGENTS.md](../AGENTS.md) has the same rule for the automated suite.
 
 **Software.** Checked on this machine (Ubuntu 25.10, GNOME, Wayland):
 

@@ -23,6 +23,12 @@ const blog = defineCollection({
     title: z.string(),
     date: z.coerce.date(),
     category: z.enum(BLOG_CATEGORIES),
+    /*
+     * True while the post is lorem ipsum standing in for one not yet written.
+     * Required, not defaulted, so a new post has to say which it is.
+     * tests/llms-txt.spec.ts holds it to the text.
+     */
+    placeholder: z.boolean(),
     tags: z.array(z.string()).default([]),
     teaser: z.string(),
     ogImage: z.string().optional(),

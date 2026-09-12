@@ -11,15 +11,32 @@
   "name": "sinduri-lol",
   "compatibility_date": "2026-09-11",
 
+  // Logs only what the code writes with `console.error`: today, the reason a
+  // contact form submission could not be stored, and never the submission.
+  //
+  // Invocation logs off. They record "the Request, Response, and related
+  // metadata" for every call, and Cloudflare does not list which fields, so they
+  // cannot be shown not to hold the visitor's address, which /privacy says is
+  // never written down. Traces off: they record the user agent, country and ASN
+  // of every submission, and they are beta, billed from 2026-10-01.
+  //
+  // In this file rather than the dashboard, because a deploy replaces what the
+  // dashboard set: that is how a dashboard-only custom domain was lost.
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": false,
+    },
+  },
+
   // Off: the workers.dev address would be a second copy of the site.
   "workers_dev": false,
 
   // The apex, as a custom domain rather than a route pattern; without
   // `custom_domain` the entry is a pattern and attaches no hostname. In this
-  // file and not only in the dashboard, so a deploy never disagrees with it.
-  //
-  // A deploy fails while the domain is still attached to the Pages project,
-  // which is why this lands only after it has been removed there.
+  // file and not only in the dashboard: a deploy replaces the Worker's routes
+  // with this list, and removes a domain added only in the dashboard.
   "routes": [{ "pattern": "sinduri.lol", "custom_domain": true }],
 
   // The contact form's store, created with the EU jurisdiction, which cannot be

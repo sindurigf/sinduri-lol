@@ -7,6 +7,7 @@
 title: 'Consectetur adipiscing elit sed do repre­henderit tempor'
 date: 2026-07-08
 category: 'skincare'
+placeholder: true
 tags: ['consectetur', 'tempor']
 teaser: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat, duis aute irure dolor in reprehenderit.'
 featured: false

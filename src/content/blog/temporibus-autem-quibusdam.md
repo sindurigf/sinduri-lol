@@ -2,6 +2,7 @@
 title: 'Temporibus autem quibusdam et aut officiis'
 date: 2025-12-04
 category: 'open-source'
+placeholder: true
 tags: ['temporibus', 'officiis']
 teaser: 'Debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.'
 featured: false
