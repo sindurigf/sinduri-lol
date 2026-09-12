@@ -164,39 +164,26 @@ export default defineConfig({
   // output with `astro preview`, waits for the port, and tears it down. The
   // tests run against the real static build, not the dev server.
   webServer: {
-    command: `npm run build && npm run preview -- --port ${PORT} --ignore-lock`,
+    /*
+     * `scripts/preview-static.mjs`, not `astro preview`. Since the Cloudflare
+     * adapter landed, preview serves through the Worker, which applies
+     * `public/_headers` and so `upgrade-insecure-requests`. WebKit honours that
+     * on loopback where Chromium and Firefox do not, fetches every subresource
+     * over TLS from an http server, and loads nothing: 437 tests failed on
+     * timeouts and CI passed its 35-minute cap. That script carries the
+     * measurement and says what covers the headers instead.
+     */
+    command: `npm run build && node scripts/preview-static.mjs`,
     url: BASE_URL,
+    env: { PORT: String(PORT) },
 
     /*
      * Never reuse a server this run did not start. Reusing one makes
      * Playwright skip the whole command, `npm run build` included, so the
      * suite asserts against whatever dist/ last held: a run could pass on
-     * stale CSS and look identical to a real pass. Every run now rebuilds,
-     * which is the only way the assertions mean anything.
-     *
-     * The cost is that a preview server already on :4321 fails the run with
-     * "port is already used". That is the intended trade: stop it with
-     * `astro preview stop` and run again.
+     * stale CSS and look identical to a real pass.
      */
     reuseExistingServer: false,
-
-    /*
-     * `astro preview` forks itself into the background when it detects an AI
-     * coding agent (Astro 7 does this via `am-i-vibing`). Playwright sees the
-     * foreground process exit immediately and reports "Process from
-     * config.webServer exited early", so in an agent session, which is most of
-     * how this repo is developed, the suite cannot start its own server.
-     *
-     * ASTRO_PREVIEW_BACKGROUND is the marker Astro's launcher sets on the child
-     * it forks. Setting it here says "you are already that child", so the CLI
-     * skips agent detection and stays in the foreground. The name reads
-     * backwards from the outside: it does the opposite of what it sounds like.
-     *
-     * `--ignore-lock` goes with it: the foreground path otherwise writes a lock
-     * file and refuses to start if one is present, turning a leftover lock into
-     * a failed run.
-     */
-    env: { ASTRO_PREVIEW_BACKGROUND: '1' },
 
     timeout: 120_000,
     stdout: 'pipe',
