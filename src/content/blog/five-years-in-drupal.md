@@ -22,7 +22,7 @@ In January 2021, Klaus Purer brought me into the Drupal community. There is a Si
     <track kind="captions" src="/videos/journey.en.vtt" srclang="en" label="English" default>
     <a href="/videos/journey.mp4">Download the video of my Drupal journey (MP4, 5.4 MB)</a>
   </video>
-  <figcaption id="journey-video-description">A 40-second slideshow of my Drupal journey: DrupalCon Vienna, the Women in Drupal Award, the Splash Awards, Drupal Mountain Camp, the Jobiqo, Drupal Austria and drunomics teams. No speech. Music by Journey.</figcaption>
+  <figcaption id="journey-video-description">A 40-second slideshow of my Drupal journey: DrupalCon Vienna, the Women in Drupal Award, the Splash Awards, Drupal Mountain Camp, the Jobiqo, Drupal Austria and drunomics teams. No speech. Music: Don't Stop Believin' by Journey.</figcaption>
 </figure>
 
 ## Before Drupal
@@ -107,4 +107,4 @@ The Drupal community will forever hold my heart. You are the most amazing people
 
 ---
 
-Photo credits: [Daniel Lemon](https://danlemon.com/), [Paul Johnson](https://www.drupal.org/u/pdjohnson), [Joris Vercammen](https://www.drupal.org/u/borisson_), [Baris Tosun](https://www.drupal.org/u/rominronin), [Klaus Purer](https://klau.si/), [Alex Gruber](https://www.linkedin.com/in/alex-gruber-59617549/) and more. Music in the video by Journey.
+Photo credits: [Daniel Lemon](https://danlemon.com/), [Paul Johnson](https://www.drupal.org/u/pdjohnson), [Joris Vercammen](https://www.drupal.org/u/borisson_), [Baris Tosun](https://www.drupal.org/u/rominronin), [Klaus Purer](https://klau.si/), [Alex Gruber](https://www.linkedin.com/in/alex-gruber-59617549/) and more. Music in the video: Don't Stop Believin' by Journey. Everyone who helped make this site is on the [credits page](/credits/).
