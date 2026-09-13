@@ -2,22 +2,26 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { CONTACT_EMAIL } from '../lib/contact';
 import { RETENTION_DAYS } from '../lib/contact-form';
+import { UMAMI_HOST_URL } from '../lib/analytics';
 
 /*
  * The privacy policy, which specification.website grades Required.
  *
  * IT IS SHORT BECAUSE THE ANSWER IS SHORT. This is a static site on a
  * Cloudflare Worker with no accounts, and its one piece of server-side code
- * is the contact form, which stores what is sent in D1. It sets no cookies, uses no storage API, runs no analytics and loads
- * nothing from a third-party origin: the fonts are served from this domain
- * and the built output has no external subresource. Most of a privacy
- * policy's usual length is disclosing things this site does not do.
+ * is the contact form, which stores what is sent in D1. It sets no cookies,
+ * writes to no storage API and loads nothing from a third-party origin: the
+ * fonts and the analytics script are served from this domain and the built
+ * output has no external subresource. The one thing a page sends elsewhere is
+ * the visit count to Umami, which has its own section.
  *
  * EVERY CLAIM ON THIS PAGE IS TESTED. A privacy policy is the easiest
  * document on a site to make quietly false: it is written once, and then an
  * embed, a CDN font or a hit counter is added and nothing notices the page
  * still says otherwise. tests/privacy.spec.ts asserts each claim against the
  * source and the build, naming the sentence that has stopped being true.
+ * tests/analytics.spec.ts does the same for the "Visit counts" section,
+ * against what the tracker really sends.
  *
  * WHAT IS DELIBERATELY NOT CLAIMED: anything about Cloudflare's own logging.
  * Serving this site means Cloudflare receives the requests, and what they
@@ -39,6 +43,8 @@ const lastUpdated = new Date().toISOString().slice(0, 10);
 
 const HOST = 'sinduri.lol';
 const CLOUDFLARE_PRIVACY = 'https://www.cloudflare.com/privacypolicy/';
+const UMAMI_PRIVACY = 'https://umami.is/privacy';
+const UMAMI_HOST = new URL(UMAMI_HOST_URL).host;
 
 /*
  * How long Cloudflare keeps Workers logs and traces on the Free plan, set by
@@ -49,16 +55,17 @@ const WORKER_LOG_RETENTION_DAYS = 3;
 
 <BaseLayout
   title="Privacy | sinduri.lol"
-  description="This site sets no cookies, runs no analytics, and loads nothing from anywhere else."
+  description="This site sets no cookies, loads nothing from anywhere else, and counts visits with cookie-free analytics."
 >
   <section class="band py-24">
     <div class="mx-auto max-w-page">
       <h1 class="text-h1 text-gold">Privacy</h1>
 
       <p class="mt-10 max-w-prose text-h3 font-bold text-text text-pretty">
-        This site sets no cookies, runs no analytics, and loads nothing from any
-        other domain. The only thing it stores is what you type into the contact
-        form, and only so that there is something to reply to.
+        This site sets no cookies and loads nothing from any other domain. It
+        counts visits with Umami, which does not use cookies either. The only
+        thing it stores about you is what you type into the contact form, and
+        only so that there is something to reply to.
       </p>
 
       <p class="mt-8 max-w-prose text-muted text-pretty">
@@ -79,17 +86,15 @@ const WORKER_LOG_RETENTION_DAYS = 3;
         <li class="mt-3">
           <strong class="text-text">No browser storage.</strong> Nothing is
           written to local storage, session storage or a database in your
-          browser.
+          browser. The analytics script reads one local storage setting, named
+          umami.disabled, which is Umami's own off switch, and writes nothing.
         </li>
         <li class="mt-3">
-          <strong class="text-text">No analytics.</strong> There is no analytics
-          service, no tag manager, no pixel and no hit counter.
-        </li>
-        <li class="mt-3">
-          <strong class="text-text">No third-party requests.</strong> Loading a
-          page here contacts no other domain. The fonts are served from this
-          one, the images are built into it, and there are no embeds. The site's
-          own security policy blocks anything off-domain from loading at all.
+          <strong class="text-text">Nothing loaded from other domains.</strong>
+          Every file a page loads comes from this domain: the fonts, the images
+          and the analytics script. There are no embeds, no tag manager and no
+          advertising. The site's own security policy blocks anything off-domain
+          from loading at all.
         </li>
         <li class="mt-3">
           <strong class="text-text">No accounts.</strong> There is nothing to
@@ -102,7 +107,56 @@ const WORKER_LOG_RETENTION_DAYS = 3;
 
   <section class="band py-24">
     <div class="mx-auto max-w-page">
-      <h2 class="text-h2 text-gold">Links away from here</h2>
+      <h2 class="text-h2 text-gold">Visit counts</h2>
+
+      <p class="mt-8 max-w-prose text-muted text-pretty">
+        This site counts visits with{' '}
+        <a
+          href="https://umami.is/"
+          class="underline decoration-gold underline-offset-4 hover:text-cyan"
+        >
+          Umami
+        </a>
+        , an analytics service that uses no cookies and does not follow you from
+        site to site. The script runs from this domain, and what it sends goes
+        to Umami at {UMAMI_HOST}, which stores it on servers in the European
+        Union. It is the only place a page here sends anything to.
+      </p>
+
+      <p class="mt-6 max-w-prose text-muted text-pretty">
+        For each page you open, it sends the page's address and title, the
+        address of the page that linked you here if your browser shares it, your
+        screen size and your browser's language.
+      </p>
+
+      <p class="mt-6 max-w-prose text-muted text-pretty">
+        When you click a link or a button, it also sends what kind of control it
+        was, its label, which part of the page it is in and, for a link, where
+        it goes. For an email link the address is left out. Nothing you type is
+        ever sent, including what you write in the contact form.
+      </p>
+
+      <p class="mt-6 max-w-prose text-muted text-pretty">
+        Like any server, Umami receives your IP address and your browser's
+        details with each request. Umami says it uses the IP address to work out
+        your country, region and city, and your browser details to work out your
+        browser, operating system and type of device, and that it does not store
+        the IP address. How Umami handles that is covered by{' '}
+        <a
+          href={UMAMI_PRIVACY}
+          class="underline decoration-gold underline-offset-4 hover:text-cyan"
+        >
+          Umami's privacy policy
+        </a>
+        .
+      </p>
+
+      <p class="mt-6 max-w-prose text-muted text-pretty">
+        If your browser sends Do Not Track, nothing is sent at all. Blocking
+        JavaScript for this site stops it too.
+      </p>
+
+      <h2 class="mt-20 text-h2 text-gold">Links away from here</h2>
 
       <p class="mt-8 max-w-prose text-muted text-pretty">
         The footer links to profiles on other sites, and posts may link
