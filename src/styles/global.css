@@ -460,6 +460,19 @@
     outline: 3px solid var(--color-gold);
     outline-offset: 3px;
   }
+
+  /*
+   * Native media controls are tab stops inside the element's user-agent shadow
+   * tree. While one has focus the host does not match :focus-visible, and in
+   * one of the two engines tests/focus.spec.ts runs not :focus either;
+   * :focus-within matches in both. Without this a keyboard user tabbing
+   * through a video's controls sees no site ring. A mouse click shows it too,
+   * which costs nothing.
+   */
+  :is(video, audio)[controls]:is(:focus, :focus-within) {
+    outline: 3px solid var(--color-gold);
+    outline-offset: 3px;
+  }
 }
 
 @layer components {
@@ -977,6 +990,29 @@
 
   .prose hr {
     @apply mt-16 border-0 border-t-8 border-border;
+  }
+
+  /*
+   * A post photo, built from a markdown image by src/plugins/post-figure.mjs.
+   * `h-auto` because the `width` and `height` attributes are the master's,
+   * there to reserve the box, and would otherwise fix its height. The caption
+   * is the photo credit: `subtle`, AAA on all three dark grounds.
+   */
+  .prose figure {
+    @apply mt-10;
+  }
+
+  /*
+   * A ring rather than a border: a border is inside the box
+   * tests/image-size.spec.ts measures, and 16px of it on a 501px photo reads
+   * as the file being stretched. `mt-5` on the caption clears the ring.
+   */
+  .prose figure :is(img, video) {
+    @apply block h-auto w-full ring-8 ring-border;
+  }
+
+  .prose figcaption {
+    @apply mt-5 text-label text-subtle;
   }
 
   /*
