@@ -96,7 +96,7 @@ What is currently true:
   empty title and says nothing about two pages sharing one. All 25 titles are
   distinct, and every one except the homepage's names the page before the site.
 
-**None of the above says anything about the words.** Nineteen of the 27 built
+**None of the above says anything about the words.** Nineteen of the 28 built
 pages carry lorem ipsum, which is Latin inside a `lang="en"` document. On those
 nineteen the criteria that depend on real language are not merely untested but
 unassessable. See gap 3.
@@ -434,13 +434,13 @@ Stated honestly. This list is not filtered for how it looks.
    screen reader through one engine on one machine.
 
 3. **The copy is lorem ipsum, which is Latin inside a `lang="en"` document.**
-   It affects 19 of the 27 built pages, measured 2026-09-13 by counting
-   distinctive lorem words in the visible text of every page in `dist/`. Eight
+   It affects 19 of the 28 built pages, measured 2026-09-13 by counting
+   distinctive lorem words in the visible text of every page in `dist/`. Nine
    have none: `/career`, whose copy is transcribed from the published CV;
    `/about`, in Sinduri's own words; the two real posts at
    `/blog/open-source-is-not-just-code` and `/blog/five-years-in-drupal`;
-   `/accessibility`; `/privacy`; `/contact/sent`; and `/404`. The homepage
-   still carries lorem outside its About teaser.
+   `/credits`; `/accessibility`; `/privacy`; `/contact/sent`; and `/404`. The
+   homepage still carries lorem outside its About teaser.
 
    A screen reader takes its pronunciation from the language of the content.
    `<html lang="en">` is correct for the site and wrong for the words in it, so

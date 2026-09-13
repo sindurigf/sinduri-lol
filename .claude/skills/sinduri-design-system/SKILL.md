@@ -843,6 +843,12 @@ engine that matters for text inputs, which runs in CI only.
 Use `:focus-visible`, not `:focus`, so a mouse click does not leave a ring
 behind. Never rely on the browser default alone against these dark surfaces.
 
+**The one exception is native media controls.** A `<video controls>` holds its
+buttons in a user-agent shadow tree; while one has focus the host matches
+neither `:focus-visible` nor, in one engine, `:focus`. `global.css` rings
+`:is(video, audio)[controls]:is(:focus, :focus-within)` instead, and
+`tests/focus.spec.ts` steps through the controls to check it.
+
 ### The 3px offset is a mitigation, and it has an assumption in it
 
 The site-wide ring is `gold` with a 3px offset, and the offset is not spacing.
@@ -952,6 +958,10 @@ Rules:
 - Do not put an `aria-label` on an element that already has visible text; it
   overrides what the user sees and breaks voice control.
 - `alt=""` for decorative images. Never put a filename in `alt`.
+- **A photo on the page is a `Snapshot`**, not a hand-rolled tilted `<img>`:
+  it fixes the two shapes, the tilt and the hard shadow, and keeps a wide tile
+  from scrolling the page sideways at 305px. The tilt is static, so it is not
+  motion. See ARCHITECTURE.md, Photos and video.
 
 ### Alt text conventions
 

@@ -14,9 +14,10 @@ homepage.
 What is still placeholder is the **copy**, and it is lorem ipsum rather than
 the word `PLACEHOLDER`. That distinction matters here: lorem has full structure
 and unreadable words, so everything structural below is testable and only the
-language checks are not. Five of the 25 pages carry real English: `/career`,
-`/blog/open-source-is-not-just-code`, `/accessibility`, `/privacy` and `/404`.
-The other 20 carry lorem, measured 2026-09-11 in ACCESSIBILITY.md gap 7.
+language checks are not. Nine of the 28 pages carry real English: `/about`,
+`/career`, `/blog/open-source-is-not-just-code`, `/blog/five-years-in-drupal`,
+`/credits`, `/accessibility`, `/privacy`, `/contact/sent` and `/404`. The other
+19 carry lorem, measured 2026-09-13 in ACCESSIBILITY.md gap 3.
 
 **Setup.**
 
@@ -913,11 +914,16 @@ has been running under the WCAG tags all along. Its two siblings `duplicate-id`
 and `duplicate-id-active` are deprecated in axe 4.13 and do not run at all.
 
 **Not applicable to this site as it stands:** links opening in new tabs, since
-there is no `target=` attribute anywhere; captions, transcripts and audio
-description, since there is no video or audio; dragging movements, accessible
+there is no `target=` attribute anywhere; dragging movements, accessible
 authentication, redundant entry and consistent help, since there is no form, no
 login and no multi-step flow. Revisit each when the contact form lands. Data
 tables are no longer on this list: `/blog/open-source-is-not-just-code` has one.
+Nor are captions and media alternatives: `/blog/five-years-in-drupal` opens with
+a 40-second video. Its audio is music only, carried by a one-cue captions track,
+and a visible `figcaption` tied to the video by `aria-describedby` describes
+what it shows. By hand: play it with captions on and check the cue appears,
+and tab through its native controls in Chromium and Firefox, where the gold ring
+should stay on the video while focus moves inside it (SC 1.2.1, 1.2.2, 2.4.7).
 
 **Already satisfied by construction:** the `inert` behaviour behind an open
 dialog, because `MobileMenu.vue` uses a native `<dialog>` with `showModal()`
