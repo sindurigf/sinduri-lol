@@ -5,11 +5,11 @@
 #
 # The test suite reads dist/, but Cloudflare's dashboard can change what ships
 # without dist/ changing at all: five such changes were found on 2026-09-11,
-# three of them by accident, and README > Cloudflare settings lists them.
-# Assume there is a sixth. That is why the body rules below match a string
-# anywhere in the response rather than inside a tag shape decided in advance:
-# the grep that missed JavaScript Detections matched `cdn-cgi` only inside
-# script attributes.
+# three of them by accident, and docs/DEPLOYMENT.md > Cloudflare settings lists
+# them. Assume there is a sixth. That is why the body rules below match a
+# string anywhere in the response rather than inside a tag shape decided in
+# advance: the grep that missed JavaScript Detections matched `cdn-cgi` only
+# inside script attributes.
 #
 # What fails, per response:
 #

@@ -132,7 +132,7 @@ export default defineConfig({
    *
    * This is the one place CI runs something a local run does not, and this
    * repository otherwise treats that drift as a defect (see the .nvmrc
-   * reasoning in README). The difference is not a choice between two
+   * requirement in docs/DEVELOPMENT.md). The difference is not a choice between two
    * configurations: one machine cannot execute the binary, and a suite that is
    * red for a reason the developer cannot fix is worse than one that is honest
    * about where it ran.
