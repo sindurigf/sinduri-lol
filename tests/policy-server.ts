@@ -158,6 +158,15 @@ export const MIME: Record<string, string> = {
    * the host rather than more.
    */
   '.xml': 'application/xml',
+  /*
+   * The journey video in public/videos/, its two encodings and its captions.
+   * Not yet compared against the content type the edge sends for these three,
+   * which `npm run check:live` does not read; check with `curl -I` once they
+   * are deployed.
+   */
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.vtt': 'text/vtt; charset=utf-8',
 };
 
 /**

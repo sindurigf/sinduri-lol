@@ -560,7 +560,7 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
 | `src/assets/badge-white.png`   | White, RGB(255,255,255) | Dark surfaces        | `Footer.astro`, `SpinBadge.vue`, and the source the OG images were composited from |
 | `public/images/og-default.png` | Composite               | n/a                  | `BaseLayout.astro`, every page                                                     |
 
-### Photos
+### Photos and video
 
 - **Photos live in `src/assets/photos/`** (page photos) and
   **`src/assets/blog/<slug>/`** (a post's photos and `cover`). Each master is a
@@ -587,8 +587,14 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   `"Photo: Name"`, its `figcaption`.
 - **Credits** are in `src/lib/credits.ts`: each photographer's link, in
   Sinduri's order of preference (personal site, then Drupal.org, then
-  LinkedIn), and the site-name inspiration. A caption naming
+  LinkedIn), the site-name inspiration and the video's song. A caption naming
   someone listed there links them, and `/credits` lists them all.
+- **Video** is in `public/videos/`: an AV1 WebM, an H.264 MP4 fallback, a WebP
+  poster and a WebVTT captions file. Workers static assets answer a `Range`
+  request with the whole file and a `200` (measured on production, 2026-09-13),
+  and Safari and iOS will not play video without a `206`. Until a Worker
+  route serves `/videos/*` with range support, the video plays everywhere but
+  Apple browsers. Static assets are also capped at 25 MiB a file.
 
 Measured ratios for the two artwork colours, so the pairing is arithmetic
 rather than judgement:
