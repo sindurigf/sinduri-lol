@@ -6,46 +6,48 @@ import PlaceholderBox from '../components/PlaceholderBox.astro';
 import { DENSITIES } from '../lib/image-densities';
 
 /*
- * PLACEHOLDER COPY, per design/About.dc.html. Structure, layout, spacing and
- * hierarchy are the comp's; every heading, label and paragraph is lorem ipsum
- * at the length the comp's copy occupies. Nothing here is a claim about
- * Sinduri: an About page is the densest editorial copy on the site and none
- * of it is ours to write.
+ * Sinduri's own copy, built from her writing. Layout, spacing and hierarchy
+ * are design/About.dc.html's.
  *
- * One deliberate departure from the comp: its closing call to action is "Say
- * hello" pointing at Contact, and this one points at Career, as asked. The
- * label changes with the destination, because a button whose words do not
- * match where it goes is the worse defect.
+ * Two deliberate departures from the comp. The personal sections come before
+ * the story, because she wants the page to be about her first and her work
+ * second; the section rules keep the comp's gold, cyan, pink order by position.
+ * And the closing call to action points at Career rather than Contact, with a
+ * label that matches where it goes.
+ *
+ * Her voice uses few apostrophes: "I am", "it is". Keep that when editing.
  */
 
 /** The bunny roundel's mark, drawn `h-14`. See the note in Header.astro. */
 const ROUNDEL_MARK_HEIGHT = 56;
 
+const JOURNEY_POST_HREF = '/blog/five-years-in-drupal/';
+
 const INTERESTS = [
   {
-    value: 'MMXXIII',
+    value: 'Middle-earth',
     frame: 'border-gold',
     valueClass: 'text-gold',
-    body: 'Klausi lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore magna.',
+    body: 'Watching the extended versions of Lord of the Rings every year is a sacred tradition!',
   },
   {
-    value: 'Tria',
+    value: 'Fandoms',
     frame: 'border-cyan',
     valueClass: 'text-cyan',
-    body: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+    body: 'I am also a huge fan of Star Trek, One Piece and Star Wars.',
   },
   {
-    value: 'Consilium',
+    value: 'Three cats',
     frame: 'border-pink',
     valueClass: 'text-pink-text',
-    body: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    body: 'Minerva, the queen of the house. Hela, the conspirator. Rudra, the baby of the family.',
   },
 ] as const;
 ---
 
 <BaseLayout
   title="About | sinduri.lol"
-  description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+  description="Sinduri in Vienna: cats, Lord of the Rings, kindness, and how a civil engineer found her way into the Drupal community."
 >
   {/* ===================================================================
        HERO
@@ -56,26 +58,22 @@ const INTERESTS = [
         <span class="section-number" aria-hidden="true">
           01
         </span>
-        <h1 class="text-h1 text-text">Lorem ipsum</h1>
+        <h1 class="text-h1 text-text">About me</h1>
       </div>
 
       <div class="mt-14 grid gap-16 lg:grid-cols-2 lg:items-start">
         <div class="flex min-w-0 flex-col gap-8">
           <p class="text-h3 font-bold text-gold text-pretty">
-            Lorem ipsum dolor sit amet. Consectetur adipiscing elit sed do
-            eiusmod tempor incididunt ut labore.
+            Open source enthusiast in Vienna, cat lover, and a very serious Lord
+            of the Rings fan.
           </p>
           <p class="text-body text-muted text-pretty">
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-            nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur, excepteur sint occaecat cupidatat non proident sunt.
+            I moved to Vienna in 2017. I love cats, travelling, and long
+            evenings with my friends talking about nothing and anything.
           </p>
           <p class="text-body text-muted text-pretty">
-            Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-            accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae
-            ab illo inventore veritatis et quasi architecto beatae vitae dicta
-            sunt explicabo nemo enim ipsam.
+            I love food but I am a picky eater, and my music taste is all over
+            the place.
           </p>
         </div>
 
@@ -111,73 +109,33 @@ const INTERESTS = [
   </section>
 
   {/* ===================================================================
-       STORY
+       VALUES
        =================================================================== */}
   <section class="band py-24">
     <div class="mx-auto max-w-page">
       <span class="section-rule bg-gold"></span>
     </div>
 
-    <div class="mx-auto max-w-page">
-      <h2 class="text-h2 text-text">Lorem ipsum dolor sit</h2>
-
-      <div class="mt-14 grid gap-10 lg:grid-cols-2">
-        <div class="card shadow-hard-gold-8">
-          <p class="label-wide text-gold">
-            Lorem ipsum dolor sit amet consectetur
-          </p>
-          <p class="mt-6 text-body text-muted text-pretty">
-            Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut
-            fugit, sed quia consequuntur magni dolores eos qui ratione
-            voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem
-            ipsum quia dolor sit amet consectetur adipisci velit.
-          </p>
-        </div>
-
-        <div class="card shadow-hard-cyan-8">
-          <p class="label-wide text-cyan">Sed quia non</p>
-          <p class="mt-6 text-body text-muted text-pretty">
-            Numquam eius modi tempora incidunt ut labore et dolore magnam
-            aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum
-            exercitationem ullam corporis suscipit laboriosam nisi ut aliquid ex
-            ea commodi consequatur autem vel eum iure.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  {/* ===================================================================
-       VALUES
-       =================================================================== */}
-  <section class="band py-24">
-    <div class="mx-auto max-w-page">
-      <span class="section-rule bg-cyan"></span>
-    </div>
-
     <div class="mx-auto grid max-w-page gap-16 lg:grid-cols-2 lg:items-start">
       <div class="flex min-w-0 flex-col gap-6">
-        <h2 class="text-h2 text-text">Lorem ipsum dolor.</h2>
+        <h2 class="text-h2 text-text">Kindness first.</h2>
         <p class="text-body text-muted text-pretty">
-          Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse
-          quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo
-          voluptas nulla pariatur.
+          I believe everything can be said with empathy and kindness.
         </p>
         <p class="text-body text-muted text-pretty">
-          At vero eos et accusamus et iusto odio dignissimos ducimus qui
-          blanditiis praesentium voluptatum deleniti atque corrupti quos dolores
-          et quas molestias excepturi sint occaecati.
+          That is also what I love about open source. People contribute based on
+          passion and expertise, not hierarchy, and there is room for everyone.
         </p>
       </div>
 
       <div class="card shadow-hard-pink-8">
-        <p class="label-wide text-pink-text">Lorem ipsum dolor sit amet?</p>
+        <p class="label-wide text-pink-text">One thing I never do</p>
         <p class="mt-6 text-h3 font-bold text-text text-pretty">
-          Cupiditate non provident, similique sunt in culpa qui officia.
+          Say no to a challenge just because I do not know how to approach it.
         </p>
         <p class="mt-6 text-body text-muted text-pretty">
-          Deserunt mollitia animi, id est laborum et dolorum fuga. Et harum
-          quidem rerum facilis est et expedita distinctio nam libero tempore.
+          I commit to figuring it out and learning whatever it takes to make it
+          work.
         </p>
       </div>
     </div>
@@ -188,11 +146,11 @@ const INTERESTS = [
        =================================================================== */}
   <section class="band py-24">
     <div class="mx-auto max-w-page">
-      <span class="section-rule bg-pink"></span>
+      <span class="section-rule bg-cyan"></span>
     </div>
 
     <div class="mx-auto max-w-page">
-      <h2 class="text-h2 text-text">Lorem ipsum dolor sit amet elit.</h2>
+      <h2 class="text-h2 text-text">The important things.</h2>
 
       <ul class="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
         {INTERESTS.map((item) => (
@@ -209,18 +167,56 @@ const INTERESTS = [
           </li>
         ))}
       </ul>
+    </div>
+  </section>
+
+  {/* ===================================================================
+       STORY
+       =================================================================== */}
+  <section class="band py-24">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-pink"></span>
+    </div>
+
+    <div class="mx-auto max-w-page">
+      <h2 class="text-h2 text-text">
+        There is a Sinduri before Klausi and Drupal, and a Sinduri after.
+      </h2>
+
+      <div class="mt-14 grid gap-10 lg:grid-cols-2">
+        <div class="card shadow-hard-gold-8">
+          <p class="label-wide text-gold">Before</p>
+          <p class="mt-6 text-body text-muted text-pretty">
+            I studied civil engineering in India and environmental engineering
+            in the US. I always wanted to become a developer, but I never felt
+            ready until I moved to Vienna. Honestly, after a few German courses,
+            learning to code seemed much easier! A short Python course in 2019
+            showed me I loved programming, and a full-stack web development
+            course gave me the confidence to make the switch.
+          </p>
+        </div>
+
+        <div class="card shadow-hard-cyan-8">
+          <p class="label-wide text-cyan">After</p>
+          <p class="mt-6 text-body text-muted text-pretty">
+            In January 2021, Klaus Purer gave me a Drupal test. I had absolutely
+            no idea what Drupal was, but I did well enough to get the job. Since
+            then I have organised Drupal events, joined the Drupal Austria
+            board, where I am deputy marketing manager in 2026, and won the
+            Women in Drupal Award in 2025. I wrote the whole story down in
+            <a href={JOURNEY_POST_HREF}>Five years in Drupal</a>.
+          </p>
+        </div>
+      </div>
 
       <div class="card mt-14 shadow-hard-gold-8">
         <p class="text-h3 font-bold text-text text-pretty">
-          Cumque nihil impedit quo minus id quod maxime placeat facere possimus,
-          omnis voluptas assumenda est.
+          There is room for everyone in open source.
         </p>
         <p class="mt-8 max-w-4xl text-body text-muted text-pretty">
-          Omnis dolor repellendus temporibus autem quibusdam et aut officiis
-          debitis aut rerum necessitatibus saepe eveniet ut et voluptates
-          repudiandae sint et molestiae non recusandae. Itaque earum rerum hic
-          tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores
-          alias consequatur aut perferendis doloribus asperiores repellat.
+          Developers, designers, writers, marketers and managers. The skills you
+          build while contributing carry into every part of life. If you are
+          thinking about getting involved, come say hello.
         </p>
         <p class="mt-10">
           <a href="/career/" class="btn-primary">
