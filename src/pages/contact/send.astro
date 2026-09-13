@@ -128,9 +128,13 @@ if (result?.ok && !tooMany) {
     const sender = bindings.CONTACT_MAILER;
     const recipient = bindings.CONTACT_NOTIFY_TO;
 
-    if (!sender || !recipient) {
+    if (!sender) {
       console.error(
-        'contact: notification not sent: CONTACT_MAILER binding or CONTACT_NOTIFY_TO secret missing',
+        'contact: notification not sent: CONTACT_MAILER binding missing',
+      );
+    } else if (!recipient) {
+      console.error(
+        'contact: notification not sent: CONTACT_NOTIFY_TO secret missing',
       );
     } else {
       try {
