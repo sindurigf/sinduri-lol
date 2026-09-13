@@ -33,54 +33,62 @@ const LINK_ITEM = 'inline-flex min-h-target items-center';
   title="Credits | sinduri.lol"
   description="Where the name sinduri.lol comes from, who took the photos, and what the site is built with."
 >
-  <section class="band py-24">
+  <section class="band py-16">
     <div class="mx-auto max-w-page">
       <h1 class="text-h1 text-gold">Credits</h1>
 
-      <div class="card mt-14 max-w-4xl shadow-hard-pink-8">
+      <div class="card mt-12 shadow-hard-pink-8">
         <p class="label-wide text-pink-text">Where the name comes from</p>
-        <p class="mt-6 text-h3 font-bold text-text text-pretty">
-          Blame my fellow Drupalist and friend {NAME_INSPIRATION.name}. He has{' '}
-          <a href={NAME_INSPIRATION.href}>{NAME_INSPIRATION.site}</a>, I loved
-          it, so I stole the whole pattern: this site, and even my email
-          address, <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
-          Thank you, Norman!
+        <p class="mt-6 max-w-4xl text-h3 font-bold text-text text-pretty">
+          The inspiration for the name came from{' '}
+          <a href={NAME_INSPIRATION.href}>{NAME_INSPIRATION.site}</a>, the
+          website of my fellow Drupalist and friend {NAME_INSPIRATION.name}.
+        </p>
+        <p class="mt-6 max-w-prose text-body text-muted text-pretty">
+          I loved it so much that I used the same pattern for this site and even
+          my email address,{' '}
+          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. Thank you,
+          Norman!
         </p>
       </div>
     </div>
   </section>
 
-  <section class="band py-24">
-    <div class="mx-auto max-w-page">
-      <h2 class="text-h2 text-gold">Photos</h2>
+  <section class="band pb-24">
+    <div class="mx-auto grid max-w-page gap-12 lg:grid-cols-2">
+      <div class="card shadow-hard-cyan-8">
+        <h2 class="text-h3 text-cyan">Photos</h2>
 
-      <p class="mt-8 max-w-prose text-muted text-pretty">
-        Photos on this site and in its posts are by:
-      </p>
+        <p class="mt-4 text-body text-muted text-pretty">
+          Photos on this site and in its posts are by:
+        </p>
 
-      <ul class="mt-6 max-w-prose list-disc pl-6 text-muted marker:text-gold">
-        {photographers.map((photographer) => (
-          <li class="mt-3">
-            <a href={photographer.href} class={LINK_ITEM}>
-              {photographer.name}
-            </a>
-          </li>
-        ))}
-      </ul>
+        <ul class="mt-4 grid list-disc gap-x-10 pl-6 text-muted marker:text-gold sm:grid-cols-2">
+          {photographers.map((photographer) => (
+            <li>
+              <a href={photographer.href} class={LINK_ITEM}>
+                {photographer.name}
+              </a>
+            </li>
+          ))}
+        </ul>
 
-      <p class="mt-6 max-w-prose text-muted text-pretty">And more.</p>
+        <p class="mt-4 text-body text-muted text-pretty">And more.</p>
+      </div>
 
-      <h2 class="mt-20 text-h2 text-gold">Built with</h2>
+      <div class="card shadow-hard-gold-8">
+        <h2 class="text-h3 text-gold">Built with</h2>
 
-      <ul class="mt-8 max-w-prose list-disc pl-6 text-muted marker:text-gold">
-        {BUILT_WITH.map((tool) => (
-          <li class="mt-3">
-            <a href={tool.href} class={LINK_ITEM}>
-              {tool.name}
-            </a>
-          </li>
-        ))}
-      </ul>
+        <ul class="mt-4 grid list-disc gap-x-10 pl-6 text-muted marker:text-gold sm:grid-cols-2">
+          {BUILT_WITH.map((tool) => (
+            <li>
+              <a href={tool.href} class={LINK_ITEM}>
+                {tool.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   </section>
 </BaseLayout>
