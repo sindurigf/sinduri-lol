@@ -15,15 +15,7 @@ seoDescription: 'How a civil engineer in Vienna found Drupal, said yes to the co
 
 In January 2021, Klaus Purer brought me into the Drupal community. There is a Sinduri before Klausi and Drupal, and a Sinduri after. This is how one became the other.
 
-<figure class="post-figure">
-  <video controls preload="none" width="960" height="720" poster="/videos/journey-poster.webp" aria-describedby="journey-video-description">
-    <source src="/videos/journey.webm" type="video/webm; codecs=av01.0.04M.08,opus">
-    <source src="/videos/journey.mp4" type="video/mp4">
-    <track kind="captions" src="/videos/journey.en.vtt" srclang="en" label="English" default>
-    <a href="/videos/journey.mp4">Download the video of my Drupal journey (MP4, 5.4 MB)</a>
-  </video>
-  <figcaption id="journey-video-description">A 40-second slideshow of my Drupal journey: DrupalCon Vienna, the Women in Drupal Award, the Splash Awards, Drupal Mountain Camp, the Jobiqo, Drupal Austria and drunomics teams. No speech. Music: Don't Stop Believin' by Journey.</figcaption>
-</figure>
+![Sinduri holding her award next to Klaus Purer, in front of the DrupalCon Vienna backdrop.](../../assets/blog/five-years-in-drupal/with-klausi.jpg 'Photo: Klaus Purer')
 
 ## Before Drupal
 
@@ -83,8 +75,6 @@ Baddy Sonja Breidert, your kind words touched me deeply. Everything you do for t
 
 Klaus Purer, my mentor and dearest friend, where do I even begin? You brought me into Drupal when I knew absolutely nothing and championed every step forward. Your unwavering support has been fundamental to everything I have achieved.
 
-![Sinduri holding her award next to Klaus Purer, in front of the DrupalCon Vienna backdrop.](../../assets/blog/five-years-in-drupal/with-klausi.jpg 'Photo: Klaus Purer')
-
 The drunomics team, Wolfgang Ziegler, Oliver Berndt, and Jeremy Chinquist, thank you for helping me grow professionally while always supporting my volunteer work.
 
 My incredible cheerleaders and support system: Arthur Lorenz, Petar Basic, Alexandru Ieremia, Liopold D. Novelli, Petra Morawa-Zechner, thank you for your constant encouragement, which pushed me to grow in ways I never imagined possible.
@@ -107,4 +97,4 @@ The Drupal community will forever hold my heart. You are the most amazing people
 
 ---
 
-Photo credits: [Daniel Lemon](https://danlemon.com/), [Paul Johnson](https://www.drupal.org/u/pdjohnson), [Joris Vercammen](https://www.drupal.org/u/borisson_), [Baris Tosun](https://www.drupal.org/u/rominronin), [Klaus Purer](https://klau.si/), [Alex Gruber](https://www.linkedin.com/in/alex-gruber-59617549/) and more. Music in the video: Don't Stop Believin' by Journey. Everyone who helped make this site is on the [credits page](/credits/).
+Photo credits: [Daniel Lemon](https://danlemon.com/), [Paul Johnson](https://www.drupal.org/u/pdjohnson), [Joris Vercammen](https://www.drupal.org/u/borisson_), [Baris Tosun](https://www.drupal.org/u/rominronin), [Klaus Purer](https://klau.si/), [Alex Gruber](https://www.linkedin.com/in/alex-gruber-59617549/) and more. Everyone who helped make this site is on the [credits page](/credits/).

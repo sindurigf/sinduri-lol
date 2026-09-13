@@ -27,12 +27,6 @@ export const NAME_INSPIRATION = {
   site: 'norman.lol',
 } as const;
 
-/** The soundtrack of the journey video in the Five years in Drupal post. */
-export const JOURNEY_SONG = {
-  title: "Don't Stop Believin'",
-  artist: 'Journey',
-} as const;
-
 /** Who told Sinduri about Stitch and encouraged her to build this site. */
 export const ENCOURAGEMENT = {
   name: 'Arthur Lorenz',

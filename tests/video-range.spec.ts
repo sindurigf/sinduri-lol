@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import {
@@ -7,6 +7,7 @@ import {
   parseRange,
   sliceStream,
 } from '../src/lib/byte-range';
+import { serveVideo } from '../src/lib/video-range';
 
 /*
  * Byte ranges on /videos/*, which Safari and iOS need before they will play a
@@ -19,18 +20,37 @@ import {
  * there; that is the defect this file guards.
  *
  * Proven able to fail, 2026-09-13: with sliceStream returning after one chunk
- * instead of reading past the chunks ahead of `start`, three tests here fail,
- * as every range not starting at 0 did under wrangler dev before the fix. The
- * Content-Length assertions cover the other defect measured there: without
- * FixedLengthStream a 206 went out chunked, with no length.
+ * instead of reading past the chunks ahead of `start`, four tests here fail,
+ * the in-memory ones included, because the fake file streams in 64-byte
+ * pieces as the ASSETS binding does. That was the empty-body bug measured
+ * under wrangler dev before the fix.
  */
 
 const VIDEO_DIR = 'public/videos';
-const VIDEO = 'journey.mp4';
-const VIDEO_URL = `/videos/${VIDEO}`;
 const SIZE = 5_000;
 
-const file = readFileSync(join(VIDEO_DIR, VIDEO));
+/*
+ * The site ships no video today. The end-to-end half below needs a real file
+ * to request, so it runs against the first video in public/videos/ and skips,
+ * saying so, while there is none; the handler itself is covered either way by
+ * the in-memory half.
+ */
+const videoOnDisk = existsSync(VIDEO_DIR)
+  ? readdirSync(VIDEO_DIR).find((name) => /\.(mp4|webm)$/.test(name))
+  : undefined;
+
+const chunked = (
+  bytes: Uint8Array,
+  chunk: number,
+): ReadableStream<Uint8Array> =>
+  new ReadableStream({
+    start(controller) {
+      for (let at = 0; at < bytes.length; at += chunk) {
+        controller.enqueue(bytes.subarray(at, at + chunk));
+      }
+      controller.close();
+    },
+  });
 
 test.describe('parseRange', () => {
   test('reads a closed, an open and a suffix range', () => {
@@ -67,19 +87,6 @@ test.describe('parseRange', () => {
 });
 
 test.describe('sliceStream', () => {
-  const chunked = (
-    bytes: Uint8Array,
-    chunk: number,
-  ): ReadableStream<Uint8Array> =>
-    new ReadableStream({
-      start(controller) {
-        for (let at = 0; at < bytes.length; at += chunk) {
-          controller.enqueue(bytes.subarray(at, at + chunk));
-        }
-        controller.close();
-      },
-    });
-
   const collect = async (
     stream: ReadableStream<Uint8Array>,
   ): Promise<number[]> => [
@@ -105,7 +112,96 @@ test.describe('sliceStream', () => {
   });
 });
 
+test.describe('serveVideo, against an in-memory file', () => {
+  const FAKE_URL = 'https://sinduri.lol/videos/fake.mp4';
+  const fake = Uint8Array.from({ length: SIZE }, (_, index) => index % 251);
+  /* Streamed in pieces, as the ASSETS binding does, so offsets cross chunks. */
+  const ASSET_CHUNK = 64;
+
+  /*
+   * The two runtime globals the handler relies on: the sizes astro.config.mjs
+   * records, and the Workers FixedLengthStream, stood in for by a plain
+   * pass-through, since Node has neither.
+   */
+  test.beforeAll(() => {
+    Object.assign(globalThis, {
+      __VIDEO_SIZES__: { '/videos/fake.mp4': SIZE },
+      FixedLengthStream: class {
+        readonly readable: ReadableStream<Uint8Array>;
+        readonly writable: WritableStream<Uint8Array>;
+        constructor() {
+          ({ readable: this.readable, writable: this.writable } =
+            new TransformStream<Uint8Array, Uint8Array>());
+        }
+      },
+    });
+  });
+
+  const assets = {
+    fetch: async (): Promise<Response> =>
+      new Response(chunked(fake, ASSET_CHUNK), {
+        headers: { 'Content-Type': 'video/mp4', ETag: '"fake"' },
+      }),
+  };
+
+  const get = (headers: Record<string, string> = {}, method = 'GET') =>
+    serveVideo(new Request(FAKE_URL, { method, headers }), assets);
+
+  test('no Range is the whole file, advertising ranges', async () => {
+    const response = await get();
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Accept-Ranges')).toBe('bytes');
+    expect(response.headers.get('Content-Length')).toBe(String(SIZE));
+  });
+
+  for (const [header, start, end] of [
+    ['bytes=0-1', 0, 1],
+    ['bytes=1000-1999', 1000, 1999],
+    ['bytes=-500', SIZE - 500, SIZE - 1],
+    [`bytes=${SIZE - 10}-`, SIZE - 10, SIZE - 1],
+  ] as const) {
+    test(`${header} is a 206 with those bytes`, async () => {
+      const response = await get({ Range: header });
+      expect(response.status).toBe(206);
+      expect(response.headers.get('Content-Range')).toBe(
+        `bytes ${start}-${end}/${SIZE}`,
+      );
+      expect(response.headers.get('Content-Length')).toBe(
+        String(end - start + 1),
+      );
+      expect(new Uint8Array(await response.arrayBuffer())).toEqual(
+        fake.subarray(start, end + 1),
+      );
+    });
+  }
+
+  test('past the end is a 416 naming the size', async () => {
+    const response = await get({ Range: `bytes=${SIZE}-` });
+    expect(response.status).toBe(416);
+    expect(response.headers.get('Content-Range')).toBe(`bytes */${SIZE}`);
+  });
+
+  test('a stale If-Range, and a HEAD, behave', async () => {
+    expect(
+      (await get({ Range: 'bytes=0-1', 'If-Range': '"old"' })).status,
+    ).toBe(200);
+    const head = await get({ Range: 'bytes=0-9' }, 'HEAD');
+    expect(head.status).toBe(206);
+    expect(head.body).toBeNull();
+  });
+});
+
 test.describe('the Worker serves /videos/* with byte ranges', () => {
+  test.skip(
+    videoOnDisk === undefined,
+    'public/videos/ holds no video, so there is nothing to request',
+  );
+
+  const VIDEO_URL = `/videos/${videoOnDisk ?? ''}`;
+  const file = videoOnDisk
+    ? readFileSync(join(VIDEO_DIR, videoOnDisk))
+    : Buffer.alloc(0);
+
   test('the build records every video at its size on disk', () => {
     /*
      * astro.config.mjs defines __VIDEO_SIZES__ from public/videos/; a Range
@@ -154,7 +250,6 @@ test.describe('the Worker serves /videos/* with byte ranges', () => {
         `bytes ${start}-${end}/${file.length}`,
       );
       expect(Number(headers['content-length'])).toBe(end - start + 1);
-      expect(headers['content-type']).toBe('video/mp4');
       expect(
         Buffer.compare(await response.body(), file.subarray(start, end + 1)),
       ).toBe(0);

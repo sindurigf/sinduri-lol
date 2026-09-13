@@ -1,12 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { CONTACT_EMAIL } from '../lib/contact';
-import {
-  ENCOURAGEMENT,
-  JOURNEY_SONG,
-  NAME_INSPIRATION,
-  PHOTOGRAPHERS,
-} from '../lib/credits';
+import { ENCOURAGEMENT, NAME_INSPIRATION, PHOTOGRAPHERS } from '../lib/credits';
 
 /*
  * Who made what on this site. The site name story is Sinduri's own words and
@@ -17,8 +12,6 @@ import {
  * A list item that is nothing but a link gets `min-h-target`: the SC 2.5.8
  * inline exception does not reach a link with no sentence around it.
  */
-
-const JOURNEY_POST_HREF = '/blog/five-years-in-drupal/';
 
 const BUILT_WITH = [
   { name: 'Astro', href: 'https://astro.build/' },
@@ -87,7 +80,7 @@ const LINK_ITEM = 'inline-flex min-h-target items-center';
 
   <section class="band pb-24">
     <div class="mx-auto grid max-w-page gap-12 lg:grid-cols-2">
-      <div class="card shadow-hard-gold-8">
+      <div class="card shadow-hard-gold-8 lg:row-span-2">
         <h2 class="text-h3 text-gold">Photos</h2>
 
         <p class="mt-4 text-body text-muted text-pretty">
@@ -123,16 +116,7 @@ const LINK_ITEM = 'inline-flex min-h-target items-center';
       </div>
 
       <div class="card shadow-hard-cyan-8">
-        <h2 class="text-h3 text-cyan">Music</h2>
-
-        <p class="mt-4 text-body text-muted text-pretty">
-          The video in <a href={JOURNEY_POST_HREF}>Five years in Drupal</a> is
-          set to {JOURNEY_SONG.title} by {JOURNEY_SONG.artist}.
-        </p>
-      </div>
-
-      <div class="card shadow-hard-gold-8">
-        <h2 class="text-h3 text-gold">Built with</h2>
+        <h2 class="text-h3 text-cyan">Built with</h2>
 
         <ul class="mt-4 grid list-disc gap-x-10 pl-6 text-muted marker:text-gold sm:grid-cols-2">
           {BUILT_WITH.map((tool) => (

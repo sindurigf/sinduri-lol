@@ -589,12 +589,13 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   `"Photo: Name"`, its `figcaption`.
 - **Credits** are in `src/lib/credits.ts`: each photographer's link, in
   Sinduri's order of preference (personal site, then Drupal.org, then
-  LinkedIn), the site-name inspiration and the video's song. A caption naming
-  someone listed there links them, `/about` links its credited photos from the
-  same list, and `/credits` lists them all.
-- **Video** is in `public/videos/`: an AV1 WebM, an H.264 MP4 fallback, a WebP
-  poster and a WebVTT captions file. Static assets are capped at 25 MiB a
-  file. Workers static assets answer a `Range` request with the whole file and
+  LinkedIn), the site-name inspiration and who encouraged the site. A
+  caption naming someone listed there links them, `/about` links its credited
+  photos from the same list, and `/credits` lists them all.
+- **Video** goes in `public/videos/`, and none is published today: the post
+  that had one uses a photo instead. The serving below stays in place for the
+  next one. Encode an AV1 WebM with an H.264 MP4 fallback, a WebP poster and a
+  WebVTT captions file; static assets are capped at 25 MiB a file. Workers static assets answer a `Range` request with the whole file and
   a `200` (measured on production, 2026-09-13), and Safari and iOS will not
   play video without a `206`, so `/videos/*` is in `run_worker_first` and
   `src/lib/video-range.ts` slices the file: one `bytes` range, `416` past the
@@ -609,6 +610,9 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
     responses described under Security headers.
   - `tests/video-range.spec.ts` runs under the Worker config, since the static
     server the main suite uses ignores ranges just as production assets do.
+    Its handler tests use an in-memory file and always run; its end-to-end
+    tests request the first video in `public/videos/` and skip while there is
+    none.
 
 Measured ratios for the two artwork colours, so the pairing is arithmetic
 rather than judgement:
