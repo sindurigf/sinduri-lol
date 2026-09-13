@@ -16,7 +16,8 @@ npm run build && npx wrangler deploy --dry-run
 ```
 
 Run `npm run check:live` and `npm run check:live:console` after any deploy or
-dashboard change.
+dashboard change. The console check routes Umami's requests to a stand-in, so
+it adds nothing to the visit counts.
 
 **Custom domains belong in `wrangler.jsonc`.** A deploy replaces the Worker's
 routes with the file's, so a domain added only in the dashboard is removed.
@@ -52,6 +53,40 @@ Secrets, not the Build section, which the runtime never sees. Without it,
 messages are still stored and the endpoint logs which of the binding or the
 secret is missing.
 
+## Umami
+
+Visits are counted by Umami Cloud, in the account's EU region. The website ID,
+the collector host and the vendored tracker's date are in
+[`src/lib/analytics.ts`](../src/lib/analytics.ts); `/privacy` says what is
+sent.
+
+The tracker is a copy in `public/vendor/umami.js`, not loaded from Umami, and
+**it has to be checked by hand at least monthly**, and after any Umami
+changelog entry that mentions the tracker:
+
+```sh
+npm run check:umami
+```
+
+It exits 0 when the copy matches what Umami serves. When it does not, it leaves
+the new file in `tmp/umami-upstream.js` and prints the diff. Then, in one
+commit:
+
+1. Read the diff for new storage, new hosts, new data sent and new `data-*`
+   settings. `tests/privacy.spec.ts` fails on a storage write and
+   `tests/analytics.spec.ts` on an undisclosed payload field, but only a
+   reader sees a change in meaning.
+2. Copy `tmp/umami-upstream.js` over `public/vendor/umami.js`.
+3. Update `UMAMI_VENDORED_ON`, and `/privacy` if what is sent changed.
+4. Run the suite, then `npm run check:umami` again to see exit 0.
+
+If the collector host ever changes, `UMAMI_HOST_URL` and `connect-src` in
+`public/_headers` change together; `tests/headers.spec.ts` fails until they do.
+
+In the Umami dashboard the site is registered as `sinduri.lol`. The tracker's
+`data-domains` limits sending to that host, so local runs, the test suite and
+workers.dev previews are never counted.
+
 ## Hostnames
 
 `www.sinduri.lol` and `sinduri-lol.pages.dev` redirect to the apex with a 301
@@ -65,7 +100,7 @@ These live in the dashboard and change what ships without changing a file here.
 
 | Setting                   | Required state | Why                                                        |
 | ------------------------- | -------------- | ---------------------------------------------------------- |
-| Web Analytics             | Off            | Injects a third-party script `/privacy` says is not there  |
+| Web Analytics             | Off            | Injects a script from another domain; Umami does the job   |
 | Email Address Obfuscation | Off            | Rewrites `mailto:` links into a script-dependent page      |
 | JavaScript Detections     | On, forced     | Free plan; `no-transform` in `_headers` keeps it off pages |
 | Bot Fight Mode            | Off            | Challenges the crawlers `X-Robots-Tag` has to reach        |

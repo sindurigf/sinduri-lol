@@ -714,15 +714,30 @@ the spec did not send the header. `tests/contact.spec.ts` now does.
     default-src 'self';
     script-src 'self' <2 sha256 hashes>;
     style-src  'self' <1 sha256 hash>;
+    connect-src 'self' https://gateway.umami.is;
     object-src 'none'; base-uri 'none';
     form-action 'self'; frame-ancestors 'none';
     upgrade-insecure-requests
 
 No `'unsafe-inline'` and no `'unsafe-eval'`, and the site needs neither.
 Everything it loads is same-origin: the fonts are bundled by Fontsource and
-served from `/_astro/`, there is no third-party script, no analytics, no embed,
-and no `data:` URI in the build. Vue ships as the runtime-only build, so
-nothing compiles a template at runtime.
+served from `/_astro/`, the Umami tracker is a vendored copy under `/vendor/`,
+there is no embed, and no `data:` URI in the build. Vue ships as the
+runtime-only build, so nothing compiles a template at runtime.
+
+**`connect-src` is the one directive naming another origin**, Umami's
+collector, because that is where the tracker sends its events. It restates
+`'self'`, since naming the directive stops the fallback to `default-src`.
+`tests/headers.spec.ts` asserts it equals `UMAMI_HOST_URL` from
+`src/lib/analytics.ts`, and `/privacy` names the host. Why the tracker is
+vendored rather than loaded from Umami, and how the copy is kept current, is in
+that file and in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#umami).
+
+**Nothing is inlined.** `vite.build.assetsInlineLimit` is `0` in
+`astro.config.mjs`. Astro inlines a processed `<script>` under Vite's 4 KB
+default, which would put the click tracking in `src/scripts/track-clicks.ts`
+into every page as an inline block needing a hash that changes with every edit
+to it.
 
 **`form-action` is `'self'`, and was `'none'` until the contact form landed.**
 At `'none'` the browser blocks the submission of any form on the page, and the
