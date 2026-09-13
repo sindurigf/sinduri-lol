@@ -590,11 +590,22 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   LinkedIn), the site-name inspiration and the video's song. A caption naming
   someone listed there links them, and `/credits` lists them all.
 - **Video** is in `public/videos/`: an AV1 WebM, an H.264 MP4 fallback, a WebP
-  poster and a WebVTT captions file. Workers static assets answer a `Range`
-  request with the whole file and a `200` (measured on production, 2026-09-13),
-  and Safari and iOS will not play video without a `206`. Until a Worker
-  route serves `/videos/*` with range support, the video plays everywhere but
-  Apple browsers. Static assets are also capped at 25 MiB a file.
+  poster and a WebVTT captions file. Static assets are capped at 25 MiB a
+  file. Workers static assets answer a `Range` request with the whole file and
+  a `200` (measured on production, 2026-09-13), and Safari and iOS will not
+  play video without a `206`, so `/videos/*` is in `run_worker_first` and
+  `src/lib/video-range.ts` slices the file: one `bytes` range, `416` past the
+  end, `If-Range` honoured, anything else the whole file.
+  - The ASSETS binding streams a file without `Content-Length`, so the build
+    records each video's size in `__VIDEO_SIZES__` (`astro.config.mjs`); a
+    re-encoded video needs a rebuild, which every deploy is.
+  - A sliced body goes through `FixedLengthStream` so the `206` carries its
+    length; without it the response went out chunked.
+  - The asset response the Worker reads already carries the `_headers` rules,
+    so a ranged response keeps the CSP and `noindex`, unlike the generated
+    responses described under Security headers.
+  - `tests/video-range.spec.ts` runs under the Worker config, since the static
+    server the main suite uses ignores ranges just as production assets do.
 
 Measured ratios for the two artwork colours, so the pairing is arithmetic
 rather than judgement:
@@ -750,6 +761,10 @@ carries) to a path with no asset is answered by the asset layer and never
 invokes the Worker; a POST there is a 405. Opting out of prerendering is not
 enough. The contact form shipped broken this way while its spec passed, because
 the spec did not send the header. `tests/contact.spec.ts` now does.
+
+`/videos/*` is listed for a different reason: those paths are assets, and
+listing them is what lets the Worker answer byte ranges the asset layer
+ignores. See Photos and video.
 
 ### The CSP
 
