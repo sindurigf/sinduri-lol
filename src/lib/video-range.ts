@@ -30,11 +30,10 @@ declare const __VIDEO_SIZES__: Readonly<Record<string, number>>;
  * what makes a streamed body carry Content-Length. Without it a 206 goes out
  * chunked, and Safari's media loader is strict about partial responses.
  */
-declare class FixedLengthStream {
-  constructor(length: number);
+declare const FixedLengthStream: new (length: number) => {
   readonly readable: ReadableStream<Uint8Array>;
   readonly writable: WritableStream<Uint8Array>;
-}
+};
 
 const withLength = (
   body: ReadableStream<Uint8Array>,
