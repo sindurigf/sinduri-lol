@@ -444,6 +444,7 @@
   .prose a,
   p a:not([class]),
   li a:not([class]),
+  dd a:not([class]),
   figcaption a:not([class]) {
     text-decoration: underline;
     text-underline-offset: 0.2em;
