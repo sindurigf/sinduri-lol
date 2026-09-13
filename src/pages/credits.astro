@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { CONTACT_EMAIL } from '../lib/contact';
-import { ENCOURAGEMENT, NAME_INSPIRATION, PHOTOGRAPHERS } from '../lib/credits';
+import { NAME_INSPIRATION, PHOTOGRAPHERS, THANKS } from '../lib/credits';
 
 /*
  * Who made what on this site. The site name story is Sinduri's own words and
@@ -25,12 +25,12 @@ const DESIGNED_WITH = [
   {
     name: 'Stitch',
     href: 'https://stitch.withgoogle.com/',
-    role: 'for design',
+    role: 'For design',
   },
   {
     name: 'Claude Design',
     href: 'https://claude.com/product/design',
-    role: 'for refinement',
+    role: 'For refinement',
   },
 ] as const;
 
@@ -40,6 +40,14 @@ const photographers = Object.entries(PHOTOGRAPHERS).map(([name, href]) => ({
 }));
 
 const LINK_ITEM = 'inline-flex min-h-target items-center';
+
+/*
+ * A name with a line saying what it did is a `dl` entry, ruled from the next;
+ * a list of bare names keeps its bullets. The name is a `dt`, not a bold
+ * paragraph, so it is neither a fake heading nor a heading it is not.
+ */
+const RULED_ENTRY =
+  'border-t-4 border-border py-5 first:border-t-0 first:pt-0 last:pb-0';
 ---
 
 <BaseLayout
@@ -52,7 +60,7 @@ const LINK_ITEM = 'inline-flex min-h-target items-center';
 
       <div class="mt-12 grid gap-12 lg:grid-cols-2">
         <div class="card shadow-hard-pink-8">
-          <p class="label-wide text-pink-text">Where the name comes from</p>
+          <h2 class="label-wide text-pink-text">Where the name comes from</h2>
           <p class="mt-6 text-h3 font-bold text-text text-pretty">
             The inspiration for the name came from{' '}
             <a href={NAME_INSPIRATION.href}>{NAME_INSPIRATION.site}</a>, the
@@ -66,28 +74,42 @@ const LINK_ITEM = 'inline-flex min-h-target items-center';
           </p>
         </div>
 
+        {/*
+          Rules between the people rather than bullets, so each name can be set
+          as large as the name link in the card beside it. The link is alone in
+          its paragraph, which keeps the prose underline rule on it.
+        */}
         <div class="card shadow-hard-cyan-8">
-          <p class="label-wide text-cyan">Thank you</p>
-          <p class="mt-6 text-h3 font-bold text-text text-pretty">
-            Thank you to <a href={ENCOURAGEMENT.href}>{ENCOURAGEMENT.name}</a>{' '}
-            for sharing about Stitch and encouraging me to actually build this
-            website.
-          </p>
+          <h2 class="label-wide text-cyan">Thank you</h2>
+          <dl class="mt-6">
+            {THANKS.map((person) => (
+              <div class={RULED_ENTRY}>
+                <dt class="text-h3 font-bold">
+                  <a href={person.href} class={LINK_ITEM}>
+                    {person.name}
+                  </a>
+                </dt>
+                <dd class="mt-2 max-w-prose text-body text-muted text-pretty">
+                  {person.reason}
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </div>
     </div>
   </section>
 
   <section class="band pb-24">
-    <div class="mx-auto grid max-w-page gap-12 lg:grid-cols-2">
-      <div class="card shadow-hard-gold-8 lg:row-span-2">
-        <h2 class="text-h3 text-gold">Photos</h2>
+    <div class="mx-auto grid max-w-page gap-12 lg:grid-cols-3">
+      <div class="card shadow-hard-gold-8">
+        <h2 class="label-wide text-gold">Photos</h2>
 
-        <p class="mt-4 text-body text-muted text-pretty">
+        <p class="mt-6 text-body text-muted text-pretty">
           Photos on this site and in its posts are by:
         </p>
 
-        <ul class="mt-4 grid list-disc gap-x-10 pl-6 text-muted marker:text-gold sm:grid-cols-2">
+        <ul class="mt-4 list-disc pl-6 text-muted marker:text-gold">
           {photographers.map((photographer) => (
             <li>
               <a href={photographer.href} class={LINK_ITEM}>
@@ -101,24 +123,34 @@ const LINK_ITEM = 'inline-flex min-h-target items-center';
       </div>
 
       <div class="card shadow-hard-pink-8">
-        <h2 class="text-h3 text-pink-text">Design tools</h2>
+        <h2 class="label-wide text-pink-text">Design tools</h2>
 
-        <ul class="mt-4 list-disc pl-6 text-body text-muted marker:text-gold">
+        <dl class="mt-6">
           {DESIGNED_WITH.map((tool) => (
-            <li class="mt-3">
-              <a href={tool.href}>{tool.name}</a> {tool.role}
-            </li>
+            <div class={RULED_ENTRY}>
+              <dt class="text-body font-bold">
+                <a href={tool.href} class={LINK_ITEM}>
+                  {tool.name}
+                </a>
+              </dt>
+              <dd class="mt-1 text-body text-muted">{tool.role}</dd>
+            </div>
           ))}
-          <li class="mt-3">
-            Multiple artists on Fiverr and Upwork created and cleaned the logo
-          </li>
-        </ul>
+          <div class={RULED_ENTRY}>
+            <dt class="text-body font-bold text-text">
+              Multiple artists on Fiverr and Upwork
+            </dt>
+            <dd class="mt-1 text-body text-muted">
+              Created and cleaned the logo
+            </dd>
+          </div>
+        </dl>
       </div>
 
       <div class="card shadow-hard-cyan-8">
-        <h2 class="text-h3 text-cyan">Built with</h2>
+        <h2 class="label-wide text-cyan">Built with</h2>
 
-        <ul class="mt-4 grid list-disc gap-x-10 pl-6 text-muted marker:text-gold sm:grid-cols-2">
+        <ul class="mt-6 list-disc pl-6 text-muted marker:text-gold">
           {BUILT_WITH.map((tool) => (
             <li>
               <a href={tool.href} class={LINK_ITEM}>

@@ -27,8 +27,17 @@ export const NAME_INSPIRATION = {
   site: 'norman.lol',
 } as const;
 
-/** Who told Sinduri about Stitch and encouraged her to build this site. */
-export const ENCOURAGEMENT = {
-  name: 'Arthur Lorenz',
-  href: 'https://utor.io/',
-} as const;
+/** The people who got this site started, each with what they did. */
+export const THANKS = [
+  {
+    name: 'Arthur Lorenz',
+    href: 'https://utor.io/',
+    reason:
+      'Introduced me to Stitch and explained his workflow for static websites.',
+  },
+  {
+    name: 'Vincenzo Gambino',
+    href: 'https://www.gambinovincenzo.com/',
+    reason: 'Introduced me to Astro at a Drupal session.',
+  },
+] as const;
