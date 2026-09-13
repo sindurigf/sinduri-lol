@@ -589,7 +589,7 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   `"Photo: Name"`, its `figcaption`.
 - **Credits** are in `src/lib/credits.ts`: each photographer's link, in
   Sinduri's order of preference (personal site, then Drupal.org, then
-  LinkedIn), the site-name inspiration and who encouraged the site. A
+  LinkedIn), the site-name inspiration and the people thanked. A
   caption naming someone listed there links them, `/about` links its credited
   photos from the same list, and `/credits` lists them all.
 - **Video** goes in `public/videos/`, and none is published today: the post

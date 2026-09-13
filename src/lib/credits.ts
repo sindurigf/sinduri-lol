@@ -27,7 +27,7 @@ export const NAME_INSPIRATION = {
   site: 'norman.lol',
 } as const;
 
-/** The people who got this site started, each with what they did. */
+/** The people who taught or pointed Sinduri towards what built this site. */
 export const THANKS = [
   {
     name: 'Arthur Lorenz',
@@ -39,5 +39,16 @@ export const THANKS = [
     name: 'Vincenzo Gambino',
     href: 'https://www.gambinovincenzo.com/',
     reason: 'Introduced me to Astro at a Drupal session.',
+  },
+  {
+    name: 'Alexandru Teodor Ieremia',
+    href: 'https://www.linkedin.com/in/alexandru-teodor-ieremia-8581231b4/',
+    reason: 'Taught me about frontend and accessibility.',
+  },
+  {
+    name: 'Petra Morawa-Zechner',
+    href: 'https://diegestaltung.at/',
+    reason:
+      'Taught me about good design principles and sustainability in design.',
   },
 ] as const;
