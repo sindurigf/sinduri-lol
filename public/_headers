@@ -112,10 +112,14 @@
 # and which a Compression Rule cannot override. Measured 2026-09-13 on
 # production: the stylesheet went out at 43 KB, the Vue runtime at 57 KB and
 # the homepage at 31 KB, none of them encoded. The injection only ever touches
-# HTML, so the asset rules detach it and their files compress again. Pages
-# stay uncompressed: HTML paths have no pattern that separates them from
-# everything else, and a page without the injection is worth more than its
-# bytes. `npm run check:live` fails if an asset arrives unencoded.
+# HTML ("injected only in response to requests for HTML pages", in Cloudflare's
+# JavaScript Detections docs), so the asset rules detach it to let their files
+# be compressed. No measurement of this zone compressing them exists from
+# before `no-transform`; `npm run check:live` is that measurement, and fails if
+# an asset arrives unencoded. Cloudflare weakens a strong ETag when it
+# compresses, and `If-None-Match` still answers 304 with a weak one. Pages stay
+# uncompressed: HTML paths have no pattern that separates them from everything
+# else, and a page without the injection is worth more than its bytes.
 #
 # ---------------------------------------------------------------------------
 # The site is closed to search indexes, and this is the only thing doing it.
