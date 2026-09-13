@@ -36,6 +36,13 @@ const THUMB_SIZE = 56;
 const JOHANN_WIDTH = 256;
 
 /*
+ * 1x only. Astro caps a 2x candidate at the master, so it would ship the
+ * 278px file labelled 2x, and a 2x screen would draw it at 139px wide and
+ * stretch it to 256 (WebKit in CI, 2026-09-13). A larger photo lifts this.
+ */
+const JOHANN_DENSITIES = [1];
+
+/*
  * Only used to pick a file from WIDTHS; tests/image-size.spec.ts measures the
  * result. Each names the column the photo fills from `lg`, and the page
  * column below it.
@@ -238,7 +245,7 @@ const spreadNumber = (index: number): string =>
               src={withJohann}
               alt="Sinduri smiling with Johann, his arms wrapped around her."
               width={JOHANN_WIDTH}
-              densities={DENSITIES}
+              densities={JOHANN_DENSITIES}
               class="block aspect-portrait h-auto w-full object-cover"
             />
             <figcaption class="mag-caption">

@@ -14,11 +14,13 @@
 # What fails, per response:
 #
 #   1. Any header public/_headers sets for that path whose production value
-#      differs, with both values printed. The expected values are parsed out
-#      of the file, every matching rule applied and a repeated name joined
-#      with a comma the way Cloudflare does it, so this cannot drift from the file
-#      it guards. Headers the file does not set are not compared; Cloudflare
-#      adds several.
+#      differs, with both values printed, and any header a matching rule
+#      detaches with `! Name` that production still sends. The expected values
+#      are parsed out of the file, every matching rule applied in file order,
+#      its detached names deleted before its own values are set, and a
+#      repeated name joined with a comma the way Cloudflare does it, so this
+#      cannot drift from the file it guards. Headers the file neither sets nor
+#      detaches are not compared; Cloudflare adds several.
 #   2. `cdn-cgi` anywhere in the body. That namespace is where Cloudflare puts
 #      whatever it injects, so the rule is absolute, with no exceptions. It
 #      matches the bare word so that an escaped `\/cdn-cgi\/` is caught too.
@@ -33,6 +35,12 @@
 #      govern it.
 #   6. A status other than the one expected: 200, or 404 for a path that has
 #      no page.
+#   7. A stylesheet or script under /_astro/ or /vendor/ served without a
+#      Content-Encoding. Those rules detach `no-transform` so Cloudflare
+#      compresses them; public/_headers says why pages cannot be.
+#
+# Requests are sent as a browser sends them, Accept-Encoding included, and the
+# body is decoded before any rule reads it.
 #
 # Not caught: a change to the text of a file. Managed robots.txt, which the
 # edge served until 2026-09-11, added no script, no cdn-cgi and no header, so
@@ -54,6 +62,12 @@
 #
 # Rule 5 had never fired until the parser was fixed; see the note on
 # elements.awk below.
+#
+# Rule 7 and the detach half of rule 1 were verified the same way on
+# 2026-09-13, before the `! Cache-Control` lines were deployed: production
+# still sent `no-transform` on the stylesheet and the tracker, and the run
+# failed exactly four times, each asset once for the header and once for its
+# missing Content-Encoding, with every page passing.
 #
 # Run it after any deploy that changes public/_headers, and after any change in
 # the Cloudflare dashboard. It is not in CI because CI runs before the deploy,
@@ -120,9 +134,10 @@ trap 'exit 2' INT TERM
 # dashboard change. Sent with `Cache-Control: no-cache` for the same reason.
 CACHE_BUST="check-live=$(date +%s)-$$"
 
-# public/_headers as `pattern<TAB>name<TAB>value` lines, in file order. The
-# same grammar tests/headers.spec.ts parses: `#` comments, an unindented
-# pattern, indented `Name: value` lines under it.
+# public/_headers as `pattern<TAB>name<TAB>value` lines, in file order, with a
+# detach written as `pattern<TAB>!name<TAB>-`. The same grammar
+# tests/headers.spec.ts parses: `#` comments, an unindented pattern, indented
+# `Name: value` and `! Name` lines under it.
 cat > "$TMP/rules.awk" <<'AWK'
 {
   line = $0
@@ -135,6 +150,12 @@ line !~ /^[ \t]/ { pattern = line; next }
   if (pattern == "") {
     print "a header line comes before any pattern: " $0 > "/dev/stderr"
     exit 2
+  }
+  if (line ~ /^[ \t]+![ \t]*[^ \t:]+$/) {
+    name = line
+    sub(/^[ \t]+![ \t]*/, "", name)
+    printf "%s\t!%s\t-\n", pattern, tolower(name)
+    next
   }
   i = index(line, ":")
   if (i == 0) {
@@ -247,16 +268,26 @@ detail() {
 }
 
 # The headers Cloudflare sends for a path, as `name<TAB>value`: every matching rule
-# applies, and a name set by more than one of them is joined with a comma.
+# applies in file order, a detached name is deleted, and a name set by more
+# than one of them is joined with a comma. A name detached and never set again
+# is printed with the value DETACHED, meaning it must not be sent.
+DETACHED='(detached)'
 expected_for() {
   while IFS="$TAB" read -r pattern name value; do
     # Unquoted on purpose: the pattern is a glob, and in `case` a `*` matches
     # across `/`, which is how Cloudflare matches `/*` and `/_astro/*`.
     # shellcheck disable=SC2254
     case "$1" in $pattern) printf '%s\t%s\n' "$name" "$value" ;; esac
-  done < "$TMP/rules" | awk -F "$TAB" '
-    { if ($1 in v) v[$1] = v[$1] ", " $2; else { v[$1] = $2; order[++n] = $1 } }
-    END { for (i = 1; i <= n; i++) printf "%s\t%s\n", order[i], v[order[i]] }'
+  done < "$TMP/rules" | awk -F "$TAB" -v detached="$DETACHED" '
+    $1 ~ /^!/ { name = substr($1, 2); delete v[name]; gone[name] = 1; next }
+    {
+      if (!($1 in seen)) { seen[$1] = 1; order[++n] = $1 }
+      if ($1 in v) v[$1] = v[$1] ", " $2; else v[$1] = $2
+    }
+    END {
+      for (i = 1; i <= n; i++) if (order[i] in v) printf "%s\t%s\n", order[i], v[order[i]]
+      for (name in gone) if (!(name in v)) printf "%s\t%s\n", name, detached
+    }'
 }
 
 # A response header's value, repeated lines joined with a comma. Exits 1 when
@@ -300,6 +331,12 @@ directive_hashes() {
 check_headers() {
   expected_for "$1" > "$TMP/expected"
   while IFS="$TAB" read -r name want; do
+    if [ "$want" = "$DETACHED" ]; then
+      got=$(live_header "$name" "$2") || continue
+      fail "$1" "$name is sent, but public/_headers detaches it"
+      detail "production:      $got"
+      continue
+    fi
     if got=$(live_header "$name" "$2"); then
       [ "$got" = "$want" ] && continue
       fail "$1" "$name differs from public/_headers"
@@ -380,6 +417,14 @@ check_elements() {
     fail "$1" "no inline <script> or <style> was found; the parser matched nothing"
 }
 
+check_encoding() {
+  case "$1" in /_astro/* | /vendor/*) ;; *) return 0 ;; esac
+  case "$3" in text/css* | text/javascript* | application/javascript*) ;; *) return 0 ;; esac
+  live_header content-encoding "$2" >/dev/null && return 0
+  fail "$1" "served without Content-Encoding, so Cloudflare did not compress it"
+  detail "cache-control: $(live_header cache-control "$2" || echo '(not sent)')"
+}
+
 # $1 path, $2 expected status. Leaves the body at $LAST_BODY.
 check_response() {
   RESPONSES=$((RESPONSES + 1))
@@ -387,7 +432,7 @@ check_response() {
   url="$TARGET$1"
   case "$1" in *\?*) query="&$CACHE_BUST" ;; *) query="?$CACHE_BUST" ;; esac
 
-  status=$(curl --silent --show-error --max-time "$TIMEOUT_SECONDS" \
+  status=$(curl --silent --show-error --compressed --max-time "$TIMEOUT_SECONDS" \
     --user-agent "$USER_AGENT" --header "Accept: $ACCEPT" \
     --header 'Cache-Control: no-cache' \
     --dump-header "$out.raw" --output "$out.body" \
@@ -407,6 +452,7 @@ check_response() {
 
   content_type=$(live_header content-type "$out.head" || true)
   case "$content_type" in text/html*) check_elements "$1" "$out" ;; esac
+  check_encoding "$1" "$out.head" "$content_type"
 
   [ "$FAILURES" -ne "$before" ] || printf 'ok    %s\n' "$1"
 }
@@ -418,6 +464,8 @@ ASSET=$(grep -o '/_astro/[A-Za-z0-9._-]*\.css' "$LAST_BODY" | head -n 1 || true)
 [ -n "$ASSET" ] ||
   ASSET=$(grep -o '/_astro/[A-Za-z0-9._-]*' "$LAST_BODY" | head -n 1 || true)
 
+VENDOR_SCRIPT=$(grep -o '/vendor/[A-Za-z0-9._-]*\.js' "$LAST_BODY" | head -n 1 || true)
+
 check_response /privacy/ 200
 check_response "$POST_PATH" 200
 
@@ -425,6 +473,12 @@ if [ -n "$ASSET" ]; then
   check_response "$ASSET" 200
 else
   fail / "the homepage references nothing under /_astro/, so no hashed asset was checked"
+fi
+
+if [ -n "$VENDOR_SCRIPT" ]; then
+  check_response "$VENDOR_SCRIPT" 200
+else
+  fail / "the homepage references nothing under /vendor/, so the Umami tracker was not checked"
 fi
 
 check_response "$UNKNOWN_PATH" 404

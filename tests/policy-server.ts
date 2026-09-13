@@ -13,13 +13,23 @@ import { extname, join } from 'node:path';
 import type { Page } from '@playwright/test';
 import { DIST_DIR } from './routes';
 
-/** One `_headers` rule: a URL pattern and the headers indented under it. */
-export type Rule = { pattern: string; headers: Map<string, string> };
+/**
+ * One `_headers` rule: a URL pattern, the headers indented under it, and the
+ * names it detaches with a `! Name` line.
+ */
+export type Rule = {
+  pattern: string;
+  headers: Map<string, string>;
+  detached: Set<string>;
+};
+
+/** A `! Name` line: detach a header that an earlier matching rule set. */
+const DETACH = /^\s+!\s*([^\s:]+)\s*$/;
 
 /**
  * Cloudflare's `_headers` grammar, only as much of it as this file uses: `#`
- * comments, an unindented URL pattern, then the indented `Name: value` lines
- * that belong to it. Every rule is read, in file order.
+ * comments, an unindented URL pattern, then the indented `Name: value` and
+ * `! Name` lines that belong to it. Every rule is read, in file order.
  *
  * A header line before any pattern throws. Cloudflare would have nowhere to apply
  * it either, and dropping it silently here is how a header goes missing in
@@ -33,7 +43,22 @@ export const parseHeadersFile = (source: string): Rule[] => {
     if (line.trim() === '') continue;
 
     if (!/^\s/.test(line)) {
-      rules.push({ pattern: line.trim(), headers: new Map() });
+      rules.push({
+        pattern: line.trim(),
+        headers: new Map(),
+        detached: new Set(),
+      });
+      continue;
+    }
+
+    const rule = rules.at(-1);
+    if (!rule) {
+      throw new Error(`_headers has a header line before any pattern: ${raw}`);
+    }
+
+    const detach = DETACH.exec(line);
+    if (detach) {
+      rule.detached.add(detach[1]!.toLowerCase());
       continue;
     }
 
@@ -42,11 +67,6 @@ export const parseHeadersFile = (source: string): Rule[] => {
       throw new Error(
         `_headers line is neither a pattern nor a header: ${raw}`,
       );
-    }
-
-    const rule = rules.at(-1);
-    if (!rule) {
-      throw new Error(`_headers has a header line before any pattern: ${raw}`);
     }
 
     rule.headers.set(
@@ -81,11 +101,16 @@ export const matches = (pattern: string, pathname: string): boolean => {
 };
 
 /**
- * The headers Cloudflare would send for a path: every matching rule applies, and a
- * name set by two of them is joined with a comma. Reproducing the join, rather
- * than letting the later rule win, is what makes the corruption visible in `a
- * served response actually carries the headers` if `no header is set by more
- * than one rule` is ever weakened.
+ * The headers Cloudflare would send for a path: every matching rule applies, in
+ * file order, and a name set by two of them is joined with a comma. Reproducing
+ * the join, rather than letting the later rule win, is what makes the
+ * corruption visible in `a served response actually carries the headers` if
+ * `no header is set by more than one rule` is ever weakened.
+ *
+ * Within a rule, its detached names are deleted before its own values are set,
+ * so a rule can replace a value an earlier rule set. That order is the asset
+ * worker's, `attachCustomHeaders` in workers-shared, which wrangler bundles
+ * into node_modules/miniflare/dist/src/workers/assets/assets.worker.js.
  */
 export const headersFor = (
   rules: Rule[],
@@ -95,6 +120,8 @@ export const headersFor = (
 
   for (const rule of rules) {
     if (!matches(rule.pattern, pathname)) continue;
+
+    for (const name of rule.detached) out.delete(name);
 
     for (const [name, value] of rule.headers) {
       const existing = out.get(name);

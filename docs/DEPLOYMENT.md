@@ -106,6 +106,7 @@ These live in the dashboard and change what ships without changing a file here.
 | Web Analytics             | Off            | Injects a script from another domain; Umami does the job   |
 | Email Address Obfuscation | Off            | Rewrites `mailto:` links into a script-dependent page      |
 | JavaScript Detections     | On, forced     | Free plan; `no-transform` in `_headers` keeps it off pages |
+| Compression               | Default        | Assets only; `no-transform` on pages switches it off there |
 | Bot Fight Mode            | Off            | Challenges the crawlers `X-Robots-Tag` has to reach        |
 | Zone HSTS                 | Off            | Replaces the `Strict-Transport-Security` in `_headers`     |
 | Minimum TLS version       | 1.2            | 1.3 alone locks out older devices that cannot update       |
