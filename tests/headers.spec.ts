@@ -6,11 +6,12 @@ import { extname, join } from 'node:path';
 import { expect, test, type Response } from '@playwright/test';
 import { DIST_DIR } from './routes';
 import { waitForHydration } from './settle';
-import { UMAMI_HOST_URL } from '../src/lib/analytics';
+import { UMAMI_HOST_URL, UMAMI_SCRIPT_PATH } from '../src/lib/analytics';
 import {
   asServed,
   collectViolations,
   headersFor,
+  matches,
   MIME,
   parseHeadersFile,
   startServer,
@@ -75,17 +76,32 @@ const GLOBAL_PATTERN = '/*';
 const ASSET_PATTERN = '/_astro/*';
 
 /**
- * The one header two rules may both set. Cache-Control is a list of
- * independent directives, so Cloudflare's comma join composes it instead of
- * corrupting it; public/_headers says why each rule sets its part.
+ * The vendored Umami tracker. Unhashed, so it is revalidated like a page, but
+ * like `/_astro/*` it is not HTML, so it detaches `no-transform` to be
+ * compressed.
+ */
+const VENDOR_PATTERN = '/vendor/*';
+
+/**
+ * The one header two rules may both set, because `/_astro/*` detaches the
+ * value `/*` gave it before setting its own. public/_headers says why.
  */
 const JOINED_ON_PURPOSE = new Set(['cache-control']);
 
-/** What `/*` contributes: keeps JavaScript Detections out of every page. */
+/**
+ * What `/*` contributes: keeps JavaScript Detections out of every page, and
+ * also stops Cloudflare compressing whatever carries it.
+ */
 const NO_TRANSFORM = 'no-transform';
 
-/** What a hashed asset receives once both rules apply. */
-const ASSET_CACHE_CONTROL = 'no-transform, public, max-age=31536000, immutable';
+/** What a hashed asset receives: its caching, and no `no-transform`. */
+const ASSET_CACHE_CONTROL = 'public, max-age=31536000, immutable';
+
+/** The only rules allowed to detach a header, and the only header they may. */
+const DETACHED_ON_PURPOSE: Record<string, string[]> = {
+  [ASSET_PATTERN]: ['cache-control'],
+  [VENDOR_PATTERN]: ['cache-control'],
+};
 
 /** Every header the site is expected to send, checked by name. */
 const REQUIRED_HEADERS = [
@@ -284,13 +300,44 @@ test.describe('security headers', () => {
     await new Promise<void>((done) => server.close(() => done()));
   });
 
-  test('the build ships the two rules this file knows about', () => {
+  test('the build ships the three rules this file knows about', () => {
     expect(
       rules.map((rule) => rule.pattern),
       'a rule was added or renamed. Every rule has to be understood here, ' +
         'because the ones this test does not know about are the ones that ' +
         'can collide with the others in production and not in CI.',
-    ).toEqual([GLOBAL_PATTERN, ASSET_PATTERN]);
+    ).toEqual([GLOBAL_PATTERN, ASSET_PATTERN, VENDOR_PATTERN]);
+
+    expect(
+      matches(VENDOR_PATTERN, UMAMI_SCRIPT_PATH),
+      `UMAMI_SCRIPT_PATH (${UMAMI_SCRIPT_PATH}) is no longer under ` +
+        `${VENDOR_PATTERN}, so the tracker would be served with no-transform ` +
+        'and uncompressed.',
+    ).toBe(true);
+  });
+
+  test('only the asset rules detach a header, and only Cache-Control', () => {
+    /*
+     * A detach is a deletion, so on the wrong rule or the wrong name it removes
+     * a protection without any value looking wrong: `! Content-Security-Policy`
+     * under a pattern that matches pages ships them with no CSP at all.
+     *
+     * Verified not to be vacuous, 2026-09-13: `! X-Frame-Options` under `/*`
+     * fails this test, and dropping `! Cache-Control` from `/_astro/*` fails
+     * it together with the two caching tests below.
+     */
+    const detaching = Object.fromEntries(
+      rules
+        .filter((rule) => rule.detached.size > 0)
+        .map((rule) => [rule.pattern, [...rule.detached].sort()]),
+    );
+
+    expect(
+      detaching,
+      'a `! Name` line was added, moved or widened in public/_headers. Only ' +
+        'the asset rules may detach, and only the no-transform in ' +
+        'Cache-Control, which is safe to drop from files that are not HTML.',
+    ).toEqual(DETACHED_ON_PURPOSE);
   });
 
   /**
@@ -347,12 +394,13 @@ test.describe('security headers', () => {
     ).toEqual([]);
   });
 
-  test('every path carries no-transform, and assets keep their caching', () => {
+  test('pages carry no-transform, and assets drop it to be compressed', () => {
     /*
      * no-transform is the only thing keeping JavaScript Detections out of the
-     * HTML. Resolved the way Cloudflare resolves it, per kind of path, so a
-     * rule edit that drops it from pages, or garbles the joined asset value,
-     * fails here rather than in production.
+     * HTML, and it also stops Cloudflare compressing a response. Resolved the
+     * way Cloudflare resolves it, per kind of path, so a rule edit that drops
+     * it from pages, or leaves it on assets, fails here rather than in
+     * production.
      */
     for (const path of ['/', '/about/', '/404', '/no-such-page']) {
       expect(
@@ -365,8 +413,16 @@ test.describe('security headers', () => {
 
     expect(
       headersFor(rules, '/_astro/BaseLayout.css').get('cache-control'),
-      'a hashed asset should receive both rules joined into one valid list.',
+      'a hashed asset should receive its caching and not no-transform, which ' +
+        'would stop Cloudflare compressing it.',
     ).toBe(ASSET_CACHE_CONTROL);
+
+    expect(
+      headersFor(rules, UMAMI_SCRIPT_PATH).get('cache-control'),
+      `${UMAMI_SCRIPT_PATH} should carry no Cache-Control: not no-transform, ` +
+        'which would stop it compressing, and not a max-age, since its name ' +
+        'does not change with its bytes.',
+    ).toBeUndefined();
   });
 
   test('the asset rule caches immutably, and nothing else does', () => {
