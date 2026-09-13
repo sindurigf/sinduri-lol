@@ -1,5 +1,15 @@
+import { execFileSync } from 'node:child_process';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { LIMITS } from '../src/lib/contact-form';
+import ts from 'typescript';
+import { LIMITS, RETENTION_DAYS } from '../src/lib/contact-form';
+import {
+  NOTIFICATION_SENDER,
+  notificationFor,
+} from '../src/lib/contact-notification';
+import { retentionCutoff } from '../src/lib/contact-retention';
+import { NOTIFY_TO } from '../playwright.worker.config';
 
 /**
  * The contact form's endpoint, `/contact/send/`, which is the only route on
@@ -36,6 +46,68 @@ import { LIMITS } from '../src/lib/contact-form';
 const ENDPOINT = '/contact/send/';
 
 /*
+ * Where the local send_email simulator writes each message's text body, one
+ * directory per run. Production sends a real email; this is the local stand-in.
+ */
+const EMAIL_TEXT_ROOT = '.wrangler/tmp/email';
+
+/* Local only: wrangler and astro preview expose the cron handler here. */
+const SCHEDULED_HANDLER = '/cdn-cgi/handler/scheduled';
+
+const POLL_ATTEMPTS = 20;
+const POLL_INTERVAL_MS = 250;
+const DAY_MS = 86_400_000;
+
+const poll = async <T>(read: () => T | undefined): Promise<T | undefined> => {
+  for (let attempt = 0; attempt < POLL_ATTEMPTS; attempt += 1) {
+    const value = read();
+    if (value !== undefined) return value;
+    await new Promise((done) => setTimeout(done, POLL_INTERVAL_MS));
+  }
+  return undefined;
+};
+
+const capturedEmailTexts = (): string[] =>
+  existsSync(EMAIL_TEXT_ROOT)
+    ? readdirSync(EMAIL_TEXT_ROOT).flatMap((run) => {
+        const dir = join(EMAIL_TEXT_ROOT, run, 'email-text');
+        return existsSync(dir)
+          ? readdirSync(dir).map((file) =>
+              readFileSync(join(dir, file), 'utf8'),
+            )
+          : [];
+      })
+    : [];
+
+const localD1 = (sql: string): string =>
+  execFileSync(
+    'npx',
+    [
+      'wrangler',
+      'd1',
+      'execute',
+      'sinduri-lol',
+      '--local',
+      '--json',
+      '--command',
+      sql,
+    ],
+    { encoding: 'utf8' },
+  );
+
+const wranglerConfig = (): {
+  send_email?: { name: string; allowed_sender_addresses?: string[] }[];
+  triggers?: { crons?: string[] };
+} => {
+  const { config, error } = ts.parseConfigFileTextToJson(
+    'wrangler.jsonc',
+    readFileSync('wrangler.jsonc', 'utf8'),
+  );
+  if (error) throw new Error('wrangler.jsonc does not parse');
+  return config;
+};
+
+/*
  * Comfortably past the configured limit in wrangler.jsonc, so the assertion
  * does not sit on the exact boundary.
  */
@@ -65,8 +137,15 @@ const validFields = (): Record<string, string> => ({
  * without the header, passed, and the form was broken in production: curl got
  * a 303 and Chrome got a 405 (2026-09-12). `run_worker_first` in wrangler.jsonc
  * is the fix, and without it every POST below fails.
+ *
+ * `CF-Connecting-IP`: a distinct documentation address per request. The local
+ * runtime supplies one address for every request that lacks the header, so
+ * without this the tests share one rate limit and a second run inside its
+ * window answers 429 (measured 2026-09-13).
  */
+let requestCount = 0;
 const sameOrigin = (baseURL: string) => ({
+  'CF-Connecting-IP': `198.51.100.${(requestCount++ % 254) + 1}`,
   origin: baseURL,
   'sec-fetch-mode': 'navigate',
   'sec-fetch-dest': 'document',
@@ -204,12 +283,10 @@ test.describe('the contact endpoint', () => {
     /*
      * The limit is keyed on a hash of CF-Connecting-IP, which Cloudflare sets
      * and replaces at the edge, so a client cannot choose its own in
-     * production. Locally nothing sets it, and a request without one is not
-     * limited at all: keying them together made the whole machine one sender
-     * and returned 429 on the second local submission.
+     * production. Locally the header is honoured as sent.
      *
-     * A distinct address per run keeps this test from limiting the others, and
-     * from being limited by a previous run inside the same window.
+     * One fixed address for every attempt here, from a different range than
+     * sameOrigin's, so this test limits only itself.
      */
     const address = `203.0.113.${Math.floor(Math.random() * 254) + 1}`;
     const headers = { ...sameOrigin(baseURL!), 'CF-Connecting-IP': address };
@@ -230,6 +307,103 @@ test.describe('the contact endpoint', () => {
         'limited before the last one. Without this the form is an open relay ' +
         `into the inbox. Got: ${statuses.join(', ')}.`,
     ).toContain(429);
+  });
+
+  test('a stored message is emailed to the owner', async ({
+    request,
+    baseURL,
+  }) => {
+    const token = crypto.randomUUID();
+    const response = await request.post(ENDPOINT, {
+      form: { ...validFields(), message: `Notification check ${token}` },
+      maxRedirects: 0,
+      headers: sameOrigin(baseURL!),
+    });
+    expect(response.status()).toBe(303);
+
+    const email = await poll(() =>
+      capturedEmailTexts().find((text) => text.includes(token)),
+    );
+
+    expect(
+      email,
+      'a valid submission was stored but no notification email was sent, so ' +
+        'the owner would never learn it arrived.',
+    ).toBeDefined();
+    expect(email).toContain(
+      `From: ${validFields().name} <${validFields().email}>`,
+    );
+  });
+
+  test('the notification replies to the sender and keeps headers on one line', () => {
+    const message = notificationFor(
+      {
+        name: 'Ada\r\nBcc: victim@example.com',
+        email: 'ada@example.com',
+        body: 'Hello there, Sinduri.',
+      },
+      NOTIFY_TO,
+      new Date(0),
+    );
+
+    expect(
+      message.replyTo,
+      'Reply-To should be the sender, so replying from the inbox reaches them.',
+    ).toBe('ada@example.com');
+    expect(
+      message.subject,
+      'a name carrying a line break must not start a new header in the subject.',
+    ).toBe('Contact form: Ada Bcc: victim@example.com');
+    expect(message.to).toBe(NOTIFY_TO);
+  });
+
+  test('the notification sender is the one wrangler.jsonc allows', () => {
+    const binding = wranglerConfig().send_email?.find(
+      (entry) => entry.name === 'CONTACT_MAILER',
+    );
+
+    expect(
+      binding?.allowed_sender_addresses,
+      'the send_email binding rejects any sender it does not list, so a ' +
+        'mismatch here fails every notification in production only.',
+    ).toEqual([NOTIFICATION_SENDER.email]);
+  });
+
+  test('the retention sweep deletes only expired messages', async ({
+    request,
+  }) => {
+    expect(
+      wranglerConfig().triggers?.crons?.length,
+      'no cron trigger in wrangler.jsonc, so the sweep never runs and /privacy ' +
+        `promises a ${RETENTION_DAYS}-day deletion nothing performs.`,
+    ).toBeGreaterThan(0);
+
+    const now = Date.now();
+    const expired = `expired-${crypto.randomUUID()}`;
+    const current = `current-${crypto.randomUUID()}`;
+    localD1(
+      'INSERT INTO messages (id, name, email, body, created_at) VALUES ' +
+        `('${expired}', 'Old', 'old@example.com', 'expired', ${retentionCutoff(now) - DAY_MS}), ` +
+        `('${current}', 'New', 'new@example.com', 'current', ${retentionCutoff(now) + DAY_MS})`,
+    );
+
+    expect((await request.get(SCHEDULED_HANDLER)).status()).toBe(200);
+
+    const remaining = await poll(() => {
+      const rows = localD1(
+        `SELECT id FROM messages WHERE id IN ('${expired}', '${current}')`,
+      );
+      return rows.includes(expired) ? undefined : rows;
+    });
+
+    expect(
+      remaining,
+      `a message older than ${RETENTION_DAYS} days survived the sweep.`,
+    ).toBeDefined();
+    expect(
+      remaining,
+      'the sweep deleted a message still inside the retention period.',
+    ).toContain(current);
   });
 
   test("the response carries the site's security headers", async ({

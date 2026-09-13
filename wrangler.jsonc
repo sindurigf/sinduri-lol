@@ -2,7 +2,6 @@
 //
 // The @astrojs/cloudflare adapter reads this file at build time and writes a
 // redirect config to dist/client/wrangler.json, which is what wrangler deploys.
-// That generated file supplies the entry point, so there is no `main` here.
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
 
@@ -10,6 +9,15 @@
   // Builds refuses to deploy.
   "name": "sinduri-lol",
   "compatibility_date": "2026-09-11",
+
+  // Astro's handler plus the scheduled retention sweep. Without `main` the
+  // adapter supplies an entry with a fetch handler only, and the cron below
+  // would have nothing to call.
+  "main": "./src/worker.ts",
+
+  // Daily, at an arbitrary quiet minute. /privacy promises deletion after
+  // RETENTION_DAYS, so a day's lag is the most a message outlives it.
+  "triggers": { "crons": ["17 3 * * *"] },
 
   // Logs only what the code writes with `console.error`: today, the reason a
   // contact form submission could not be stored, and never the submission.
@@ -47,6 +55,16 @@
       "binding": "MESSAGES_DB",
       "database_name": "sinduri-lol",
       "database_id": "c664ffd5-976d-4b32-b17f-efa254825d54",
+    },
+  ],
+
+  // Sends the owner a copy of each stored message. Only from this address; the
+  // recipient is the CONTACT_NOTIFY_TO secret, which Email Routing only accepts
+  // when it is a verified destination address on this account.
+  "send_email": [
+    {
+      "name": "CONTACT_MAILER",
+      "allowed_sender_addresses": ["contact-form@sinduri.lol"],
     },
   ],
 

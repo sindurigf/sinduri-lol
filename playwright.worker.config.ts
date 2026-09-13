@@ -9,8 +9,8 @@ import { defineConfig } from '@playwright/test';
  * endpoint to post to. This config serves the build through `astro preview`
  * instead, which runs the Worker with local D1 and rate limiting bindings.
  *
- * Nothing here launches a browser: every test is an HTTP request, so it needs no
- * Playwright browser installed and runs in one project.
+ * Nothing here launches a browser: every test is an HTTP request or a local D1
+ * query, so it needs no Playwright browser installed and runs in one project.
  *
  * The table is created before preview starts. Local D1 state is empty on a fresh
  * checkout and in CI, and without the table every valid submission fails as a
@@ -19,6 +19,12 @@ import { defineConfig } from '@playwright/test';
  */
 
 const PORT = 4322;
+
+/*
+ * The notification recipient, a secret in production. Passed as process env,
+ * which wrangler reads only with CLOUDFLARE_INCLUDE_PROCESS_ENV set.
+ */
+export const NOTIFY_TO = 'owner@example.com';
 const BASE_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({
@@ -50,7 +56,11 @@ export default defineConfig({
      * foreground. `--ignore-lock` goes with it, or a leftover lock file fails
      * the run.
      */
-    env: { ASTRO_PREVIEW_BACKGROUND: '1' },
+    env: {
+      ASTRO_PREVIEW_BACKGROUND: '1',
+      CLOUDFLARE_INCLUDE_PROCESS_ENV: 'true',
+      CONTACT_NOTIFY_TO: NOTIFY_TO,
+    },
 
     reuseExistingServer: false,
     timeout: 120_000,
