@@ -53,6 +53,7 @@ export const CATEGORY_ROUTES = [
 
 /** Posts, from `src/pages/blog/[slug].astro`. Newest first. */
 export const POST_ROUTES = [
+  '/blog/five-years-in-drupal',
   '/blog/open-source-is-not-just-code',
   '/blog/lorem-ipsum-dolor-sit-amet',
   '/blog/consectetur-adipiscing-elit',
@@ -69,7 +70,7 @@ export const POST_ROUTES = [
 /**
  * The blog index: `/blog` (`src/pages/blog/index.astro`), then `/blog/page/<n>`
  * (`src/pages/blog/page/[page].astro`). `/blog/page/2` exists because the
- * index shows nine posts a page and there are eleven (2026-09-11).
+ * index shows nine posts a page and there are twelve (2026-09-13).
  *
  * The `page` segment avoids a collision: `/blog/[category]` and `/blog/[slug]`
  * already share the segment after `/blog`, so `/blog/2` would clash with any
