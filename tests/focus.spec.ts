@@ -89,7 +89,7 @@ const MAX_STOPS = 300;
  * would leave one of them quietly measuring a different site.
  */
 const FOCUSABLE_SELECTOR =
-  'a[href], button, input, select, textarea, summary, video[controls], audio[controls], [role="button"], [tabindex]:not([tabindex="-1"])';
+  'a[href], button, input, select, textarea, summary, [role="button"], [tabindex]:not([tabindex="-1"])';
 
 interface Stop {
   selector: string;
@@ -101,13 +101,6 @@ interface Stop {
   by: string | null;
   /** True when this element has already been focused during this walk. */
   repeat: boolean;
-  /**
-   * True when focus is still inside the media element it was on at the last
-   * press: a `<video controls>` holds one tab stop per native control in its
-   * user-agent shadow tree, and `document.activeElement` reports every one of
-   * them as the element itself.
-   */
-  inMedia: boolean;
   hasRing: boolean;
   outline: string;
   /** The ring measured against what is painted in the offset gap. */
@@ -151,9 +144,6 @@ const readFocused = (page: Page): Promise<Stop | null> =>
           'missing and the walk has no termination condition.',
       );
     }
-    const inMedia =
-      el.matches('video[controls], audio[controls]') &&
-      walkState.visited[walkState.visited.length - 1] === el;
     const repeat = walkState.visited.includes(el);
     if (!repeat) walkState.visited.push(el);
 
@@ -242,7 +232,6 @@ const readFocused = (page: Page): Promise<Stop | null> =>
 
     return {
       repeat,
-      inMedia,
       selector: label(el),
       text: (el.textContent ?? '').trim().replace(/\\s+/g, ' ').slice(0, 36),
       covered,
@@ -395,12 +384,6 @@ const walk = async (page: Page, key: 'Tab' | 'Shift+Tab'): Promise<Stop[]> => {
   for (let i = 0; i < MAX_STOPS; i += 1) {
     await settleScroll(page);
     const stop = await readFocused(page);
-
-    /* Still stepping through a media player's own controls. */
-    if (stop?.inMedia) {
-      await page.keyboard.press(key);
-      continue;
-    }
 
     /* Focus fell out of the document, or came round to somewhere it has been. */
     if (stop === null || stop.repeat) return stops;
