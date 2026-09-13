@@ -8,6 +8,7 @@
  */
 export const PHOTOGRAPHERS: Readonly<Record<string, string>> = {
   'Alex Gruber': 'https://www.linkedin.com/in/alex-gruber-59617549/',
+  'Andrey Pshenichny': 'https://andreys.info/',
   'Baris Tosun': 'https://www.drupal.org/u/rominronin',
   'Daniel Lemon': 'https://danlemon.com/',
   'Joris Vercammen': 'https://www.drupal.org/u/borisson_',

@@ -578,8 +578,10 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   solid column beside the portrait, because text on an image lands in axe's
   contrast "incomplete" bucket. Every photo box has the same aspect ratio as
   its file, since `object-cover` on a mismatched box reads to
-  `tests/image-size.spec.ts` as stretching. The Johann photo is drawn `w-64`
-  because its master is only 278px wide.
+  `tests/image-size.spec.ts` as stretching. The Johann photo is capped at
+  `max-w-64` because its master is only 278px wide. Each spread pairs its
+  columns to similar heights, putting photos under a short headline rather
+  than leaving an empty column beside a tall one.
 - **A markdown image** gets `widths` and `sizes` from
   `src/plugins/post-figure.mjs`, which sets `layout: 'full-width'` so Astro
   reads `image.breakpoints` in `astro.config.mjs`. An image alone in its
@@ -588,7 +590,8 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
 - **Credits** are in `src/lib/credits.ts`: each photographer's link, in
   Sinduri's order of preference (personal site, then Drupal.org, then
   LinkedIn), and the site-name inspiration. A caption naming
-  someone listed there links them, and `/credits` lists them all.
+  someone listed there links them, `/about` links its one credited photo from
+  the same list, and `/credits` lists them all.
 
 Measured ratios for the two artwork colours, so the pairing is arithmetic
 rather than judgement:
