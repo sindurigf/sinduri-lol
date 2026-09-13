@@ -1,5 +1,6 @@
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
@@ -26,14 +27,38 @@ import {
  *     tests/policy-server.ts. This catches what the repository causes.
  *   - Against production, with `npm run check:live:console`, which sets
  *     LIVE_ORIGIN. This is the only place something Cloudflare injects at the
- *     edge can be seen: on 2026-09-12 JavaScript Detections added an inline
- *     script to every HTML page whose hash changes per request, so no CSP hash
- *     can allow it, and every page logged a refusal. The fix for that is a zone
- *     setting, not a file in this repository, so the build run cannot catch it
- *     and the live run exists to.
+ *     edge can be seen.
+ *
+ * JavaScript Detections is exempt in the live run, because the Free plan
+ * cannot turn it off. It injects one inline script per page whose hash changes
+ * per request, so the CSP refuses it with one console error and one violation.
+ * Only a script matching the fingerprint in scripts/cloudflare-jsd.sha256 is
+ * exempt, and only its own error, which names that script's hash;
+ * scripts/check-live.sh explains the fingerprint.
  */
 
 const LIVE_ORIGIN = process.env.LIVE_ORIGIN?.replace(/\/$/, '');
+
+const JSD_FINGERPRINT = readFileSync(
+  'scripts/cloudflare-jsd.sha256',
+  'utf8',
+).trim();
+const JSD_TOKEN = /r:'[0-9a-f]*',t:'[A-Za-z0-9+/=]*'/g;
+const INLINE_SCRIPT = /<script>([\s\S]*?)<\/script>/g;
+const INLINE_SCRIPT_VIOLATION = /^script-src(-elem)? blocked inline /;
+
+const sha256 = (text: string): string =>
+  createHash('sha256').update(text).digest('base64');
+
+/** The CSP hashes of the JavaScript Detections scripts in a document. */
+const jsdHashes = (html: string): string[] =>
+  [...html.matchAll(INLINE_SCRIPT)]
+    .map((match) => match[1]!)
+    .filter(
+      (body) =>
+        sha256(body.replace(JSD_TOKEN, "r:'',t:''")) === JSD_FINGERPRINT,
+    )
+    .map(sha256);
 
 /*
  * Same mitigation as tests/headers.spec.ts, for the same Playwright bug: Firefox
@@ -92,11 +117,32 @@ test.describe('the browser console', () => {
 
       const violations = await collectViolations(page);
 
-      await page.goto(`${origin}${route}`);
+      const response = await page.goto(`${origin}${route}`);
       await waitForHydration(page);
 
+      const exempt = LIVE_ORIGIN
+        ? jsdHashes((await response?.text()) ?? '')
+        : [];
       expect(
-        [...problems, ...violations.map((v) => `CSP violation: ${v}`)],
+        exempt.length,
+        'JavaScript Detections injected more than once',
+      ).toBeLessThanOrEqual(1);
+
+      const reported = problems.filter(
+        (problem) =>
+          !exempt.some((hash) => problem.includes(`'sha256-${hash}'`)),
+      );
+      let inlineAllowance = problems.length - reported.length;
+      const unexplained = violations.filter((violation) => {
+        if (inlineAllowance > 0 && INLINE_SCRIPT_VIOLATION.test(violation)) {
+          inlineAllowance -= 1;
+          return false;
+        }
+        return true;
+      });
+
+      expect(
+        [...reported, ...unexplained.map((v) => `CSP violation: ${v}`)],
         `${route} on ${origin} is not clean. A console error here is one a ` +
           'reader sees in their browser and the suite otherwise would not.',
       ).toEqual([]);

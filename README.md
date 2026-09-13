@@ -100,13 +100,15 @@ through an account-level Bulk Redirect list, outside this repository.
 ### Cloudflare settings
 
 These live in the dashboard and change what ships without changing a file here.
-`npm run check:live` catches most of them.
+`npm run check:live` catches most of them. JavaScript Detections' inline script
+is refused by the CSP, one console error per page; `scripts/check-live.sh`
+explains why that is accepted and how the checks tell it apart.
 
 | Setting                   | Required state | Why                                                       |
 | ------------------------- | -------------- | --------------------------------------------------------- |
 | Web Analytics             | Off            | Injects a third-party script `/privacy` says is not there |
 | Email Address Obfuscation | Off            | Rewrites `mailto:` links into a script-dependent page     |
-| JavaScript Detections     | Off            | Injects an inline script the CSP blocks on every page     |
+| JavaScript Detections     | On, forced     | Free plan cannot disable it; the live checks exempt it    |
 | Bot Fight Mode            | Off            | Challenges the crawlers `X-Robots-Tag` has to reach       |
 | Zone HSTS                 | Off            | Replaces the `Strict-Transport-Security` in `_headers`    |
 

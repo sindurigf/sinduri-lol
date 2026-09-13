@@ -19,9 +19,9 @@
 #      with a comma the way Cloudflare does it, so this cannot drift from the file
 #      it guards. Headers the file does not set are not compared; Cloudflare
 #      adds several.
-#   2. `cdn-cgi` anywhere in the body. That namespace is where Cloudflare puts
-#      whatever it injects, so the rule is absolute, with no exceptions. It
-#      matches the bare word so that an escaped `\/cdn-cgi\/` is caught too.
+#   2. `cdn-cgi` anywhere in the body, outside the one exempt script below.
+#      That namespace is where Cloudflare puts whatever it injects. It matches
+#      the bare word so that an escaped `\/cdn-cgi\/` is caught too.
 #   3. `__cf_email__` or `email-protection` anywhere in the body.
 #   4. A script, stylesheet, image, frame or media element that fetches from
 #      another origin. It is the element list tests/privacy.spec.ts checks in
@@ -30,7 +30,7 @@
 #   5. An inline <script> or <style> whose sha256 is not in the CSP that
 #      public/_headers sends for that path, which means the build did not
 #      write it. JSON-LD is exempt: it never executes and script-src does not
-#      govern it.
+#      govern it. So is JavaScript Detections, below, in its exact shape only.
 #   6. A status other than the one expected: 200, or 404 for a path that has
 #      no page.
 #
@@ -38,12 +38,18 @@
 # edge served until 2026-09-11, added no script, no cdn-cgi and no header, so
 # no rule above saw it; it was found by reading the file.
 #
-# Known failure, expected as of 2026-09-11: rules 2 and 5 fail on every HTML
-# response. JavaScript Detections injects an inline script that loads
-# /cdn-cgi/challenge-platform/scripts/jsd/main.js, Bot Fight Mode is off, and
-# no dashboard setting was found that removes it. The CSP blocks the script,
-# at one console error per page. The rules are not relaxed to fit it: a check
-# that learns to ignore one injection is a check that ignores the next.
+# JavaScript Detections is exempt, because on the Free plan it cannot be turned
+# off: Cloudflare injects it for every zone whose bot product is Bot Fight
+# Mode, whether that toggle is on or not. It is one inline script per HTML page
+# that loads /cdn-cgi/challenge-platform/scripts/jsd/main.js; the CSP blocks it,
+# at one console error per page and no request.
+#
+# The exemption is a fingerprint, not a pattern: the script's sha256 once its
+# per-request token (`r:'...',t:'...'`) is blanked, kept in
+# scripts/cloudflare-jsd.sha256 and shared with tests/console.spec.ts. Anything
+# else injected still fails, a second copy fails, and so does this one the day
+# Cloudflare changes a byte of it. Re-fingerprint only after reading the new
+# script.
 #
 # Verified not to be vacuous on 2026-09-11, against https://sinduri.lol:
 # reverting the HSTS value in public/_headers made rule 1 fail on every
@@ -52,7 +58,11 @@
 # made rules 2 to 5 each fire and name the snippet; restoring both files
 # returned the run to the known failures above. A preview deployment outside
 # the zone, which gets none of its settings, passed with exit 0, which is what
-# production should report once JavaScript Detections stops injecting.
+# production reports now that JavaScript Detections is exempt.
+#
+# On 2026-09-13 the JavaScript Detections exemption was checked the same way:
+# with a wrong fingerprint in scripts/cloudflare-jsd.sha256, rules 2 and 5
+# failed on every HTML response again.
 #
 # Rule 5 had never fired until the parser was fixed; see the note on
 # elements.awk below.
@@ -84,6 +94,8 @@ TIMEOUT_SECONDS=20
 # what a reader receives.
 USER_AGENT='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36'
 ACCEPT='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+
+JSD_FINGERPRINT=$(cat scripts/cloudflare-jsd.sha256)
 
 TAB=$(printf '\t')
 FAILURES=0
@@ -291,6 +303,12 @@ sha256() {
   openssl dgst -sha256 -binary "$1" | base64 | tr -d '\n'
 }
 
+# A JavaScript Detections script's hash with its per-request token blanked.
+jsd_fingerprint() {
+  sed "s/r:'[0-9a-f]*',t:'[A-Za-z0-9+\/=]*'/r:'',t:''/g" "$1" |
+    openssl dgst -sha256 -binary | base64 | tr -d '\n'
+}
+
 # The sha256 sources in one CSP directive, without the quotes or the prefix.
 directive_hashes() {
   printf '%s\n' "$2" | tr ';' '\n' |
@@ -314,10 +332,13 @@ check_headers() {
   done < "$TMP/expected"
 }
 
+# Needs check_elements to have run first, for JSD_NEEDLES.
 check_strings() {
   for needle in cdn-cgi __cf_email__ email-protection; do
-    grep -qF -- "$needle" "$2" || continue
-    fail "$1" "\`$needle\` in the body, $(grep -oF -- "$needle" "$2" | wc -l | tr -d ' ') time(s)"
+    count=$(grep -oF -- "$needle" "$2" | wc -l | tr -d ' ')
+    [ "$needle" != cdn-cgi ] || count=$((count - JSD_NEEDLES))
+    [ "$count" -gt 0 ] || continue
+    fail "$1" "\`$needle\` in the body, $count time(s) outside the exempt script"
     LC_ALL=C grep -o ".\{0,50\}$needle.\{0,70\}" "$2" | head -n 3 |
       while IFS= read -r context; do detail "$context"; done
   done
@@ -364,10 +385,18 @@ check_elements() {
       allowed=$style_hashes directive=style-src
     fi
     printf '%s\n' "$allowed" | grep -qxF -- "$hash" && continue
+    if [ "$tag" = script ] && [ "$(jsd_fingerprint "$block")" = "$JSD_FINGERPRINT" ]; then
+      JSD_BLOCKS=$((JSD_BLOCKS + 1))
+      JSD_NEEDLES=$((JSD_NEEDLES + $(grep -oF cdn-cgi "$block" | wc -l | tr -d ' ')))
+      continue
+    fi
     fail "$1" "inline <$tag> the build did not write: its hash is not in $directive"
     detail "sha256-$hash"
     detail "$(tr '\n' ' ' < "$block" | cut -c1-120)"
   done < "$2.index"
+
+  [ "$JSD_BLOCKS" -le 1 ] ||
+    fail "$1" "JavaScript Detections injected $JSD_BLOCKS times; one is exempt"
 
   # A scan that stopped early has checked only part of the page, and must not
   # pass on the part it saw.
@@ -405,10 +434,12 @@ check_response() {
   fi
 
   check_headers "$1" "$out.head"
-  check_strings "$1" "$out.body"
 
+  JSD_BLOCKS=0
+  JSD_NEEDLES=0
   content_type=$(live_header content-type "$out.head" || true)
   case "$content_type" in text/html*) check_elements "$1" "$out" ;; esac
+  check_strings "$1" "$out.body"
 
   [ "$FAILURES" -ne "$before" ] || printf 'ok    %s\n' "$1"
 }
