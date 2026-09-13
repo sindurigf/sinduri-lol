@@ -68,11 +68,15 @@
 # browser can parse, and a CSP joined to a second CSP is enforced as two
 # policies at once, which is how a working policy becomes a blank page.
 #
-# So no header name appears under more than one pattern, with one exception.
-# `Cache-Control` is a list of independent directives, so joining is what it is
-# designed for: `/*` sets `no-transform` alone, `/_astro/*` sets its caching,
-# and an asset receives both. tests/headers.spec.ts asserts no other name is
-# shared, and the exact value each kind of path receives.
+# So no header name appears under more than one pattern, with one exception,
+# `Cache-Control`, which the two asset rules below detach with `! Cache-Control`
+# before any value of their own. The asset worker applies matching rules in file
+# order, each one deleting its detached names and then setting its own, so
+# `/_astro/*` receives only its caching and `/vendor/*` no Cache-Control at
+# all. Read from workers-shared's asset worker, which wrangler bundles:
+# `attachCustomHeaders` in node_modules/miniflare/dist/src/workers/assets/.
+# tests/headers.spec.ts asserts no other name is shared, and the exact value
+# each kind of path receives.
 #
 # ---------------------------------------------------------------------------
 # Why only /_astro/* is cached immutably.
@@ -87,10 +91,11 @@
 # way to reach in and clear it. Put an unhashed path under that rule and the
 # file is frozen, for a year, in every browser that visited before the mistake.
 #
-# Everything outside /_astro/* gets `no-transform` and nothing else, which
-# replaces the platform's `public, max-age=0, must-revalidate`. With no max-age
-# and no Last-Modified a browser has nothing to compute freshness from, so it
-# revalidates against the ETag, which is what a document at a stable URL wants.
+# Everything else gets `no-transform` and nothing more, which replaces the
+# platform's `public, max-age=0, must-revalidate`; `/vendor/*` gets no
+# Cache-Control at all. With no max-age and no Last-Modified a browser has
+# nothing to compute freshness from, so it revalidates against the ETag, which
+# is what a file at a stable URL wants.
 #
 # ---------------------------------------------------------------------------
 # `no-transform` is what keeps JavaScript Detections off every page.
@@ -102,6 +107,15 @@
 # Measured 2026-09-13 with a Transform Rule on `/` alone: the script was gone
 # from `/` in 3 of 3 requests, still on `/about/`, and the ETag came back.
 # `npm run check:live` fails if the script returns.
+#
+# It also switches off Cloudflare's compression, which honours `no-transform`
+# and which a Compression Rule cannot override. Measured 2026-09-13 on
+# production: the stylesheet went out at 43 KB, the Vue runtime at 57 KB and
+# the homepage at 31 KB, none of them encoded. The injection only ever touches
+# HTML, so the asset rules detach it and their files compress again. Pages
+# stay uncompressed: HTML paths have no pattern that separates them from
+# everything else, and a page without the injection is worth more than its
+# bytes. `npm run check:live` fails if an asset arrives unencoded.
 #
 # ---------------------------------------------------------------------------
 # The site is closed to search indexes, and this is the only thing doing it.
@@ -155,5 +169,12 @@
 # No Reporting-Endpoints either. It needs a collector to send reports to, and
 # there is none; a header naming a dead endpoint is worse than no header.
 /_astro/*
+  ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable
   Cross-Origin-Resource-Policy: same-origin
+
+# The vendored Umami tracker. Unhashed, so it is not cached immutably; it only
+# loses `no-transform`, so that it is compressed. src/lib/analytics.ts says why
+# it is vendored.
+/vendor/*
+  ! Cache-Control
