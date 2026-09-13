@@ -4,10 +4,10 @@ import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BlogCard from '../components/BlogCard.astro';
 import HeroField from '../components/ui/HeroField.vue';
-import PlaceholderBox from '../components/PlaceholderBox.astro';
+import laughing from '../assets/photos/sinduri-laughing.jpg';
 import { BLOG_CATEGORIES } from '../content.config';
 import { categoryLabel, getFeaturedPosts } from '../lib/blog';
-import { DENSITIES } from '../lib/image-densities';
+import { DENSITIES, WIDTHS } from '../lib/image-densities';
 
 /*
  * PLACEHOLDER COPY, WITH EXCEPTIONS THAT ARE REAL.
@@ -79,6 +79,12 @@ const CATEGORY_CARDS = [
       'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium.',
   },
 ] as const;
+
+/*
+ * The teaser photo column: half of `max-w-page` from `lg`, the full column
+ * below. Only used to pick a file from WIDTHS.
+ */
+const TEASER_PHOTO_SIZES = '(min-width: 64rem) min(50vw, 38rem), 100vw';
 
 const STATS = [
   {
@@ -241,7 +247,13 @@ const STATS = [
 
       <div class="mt-16 grid gap-16 lg:grid-cols-2 lg:items-start">
         <div class="relative">
-          <PlaceholderBox ratio="square" label="workspace photo" />
+          <Image
+            src={laughing}
+            alt="Sinduri and a friend laughing, each holding a bottle."
+            widths={WIDTHS}
+            sizes={TEASER_PHOTO_SIZES}
+            class="block aspect-square h-auto w-full border-8 border-border object-cover"
+          />
           {/*
             The bunny mark on its gold tile, as in the comp. `bunny-dark` is
             #111111 artwork: 11.50 on gold and 1.02 on the page background, so

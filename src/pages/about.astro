@@ -2,8 +2,14 @@
 import { Image } from 'astro:assets';
 import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PlaceholderBox from '../components/PlaceholderBox.astro';
-import { DENSITIES } from '../lib/image-densities';
+import portrait from '../assets/photos/sinduri-drupalcon.jpg';
+import starTrek from '../assets/photos/sinduri-star-trek.jpg';
+import withJohann from '../assets/photos/sinduri-johann.jpg';
+import bicycle from '../assets/photos/sinduri-bicycle.jpg';
+import beach from '../assets/photos/sinduri-beach.jpg';
+import lake from '../assets/photos/sinduri-lake.jpg';
+import { CONTACT_EMAIL } from '../lib/contact';
+import { DENSITIES, WIDTHS } from '../lib/image-densities';
 
 /*
  * Sinduri's own copy, built from her writing. Layout, spacing and hierarchy
@@ -21,6 +27,53 @@ import { DENSITIES } from '../lib/image-densities';
 /** The bunny roundel's mark, drawn `h-14`. See the note in Header.astro. */
 const ROUNDEL_MARK_HEIGHT = 56;
 
+/** The Fandoms card photo, drawn `size-24`. */
+const FANDOM_PHOTO_SIZE = 96;
+
+/** A snapshot tile, drawn `w-56 h-72`. */
+const SNAPSHOT_WIDTH = 224;
+const SNAPSHOT_HEIGHT = 288;
+
+/*
+ * The tilts and shadows alternate by hand rather than by index, so the wall
+ * reads as pinned up rather than as a pattern. Rotation is static, so it is
+ * not motion and needs no reduced-motion override.
+ */
+const SNAPSHOTS = [
+  {
+    src: withJohann,
+    alt: 'Sinduri smiling with Johann, his arms wrapped around her.',
+    caption: 'Johann, my husband and the non-Drupaler who always has my back.',
+    tilt: '-rotate-2',
+    shadow: 'shadow-hard-gold-8',
+  },
+  {
+    src: bicycle,
+    alt: 'Sinduri laughing as she rides a bicycle with a basket down a tree-lined path.',
+    tilt: 'rotate-1',
+    shadow: 'shadow-hard-cyan-8',
+  },
+  {
+    src: beach,
+    alt: 'Sinduri standing in the waves on a beach with her arms spread wide.',
+    tilt: '-rotate-1',
+    shadow: 'shadow-hard-pink-8',
+  },
+  {
+    src: lake,
+    alt: 'Sinduri in a pink dress on a balcony, with trees and a lake behind her.',
+    tilt: 'rotate-2',
+    shadow: 'shadow-hard-gold-8',
+  },
+] as const;
+
+/*
+ * The portrait column: half of `max-w-page` from `lg`, the full column below.
+ * Only used to pick a file from WIDTHS; tests/image-size.spec.ts measures the
+ * result.
+ */
+const PORTRAIT_SIZES = '(min-width: 64rem) min(50vw, 38rem), 100vw';
+
 const JOURNEY_POST_HREF = '/blog/five-years-in-drupal/';
 
 const INTERESTS = [
@@ -35,6 +88,10 @@ const INTERESTS = [
     frame: 'border-cyan',
     valueClass: 'text-cyan',
     body: 'I am also a huge fan of Star Trek, One Piece and Star Wars.',
+    photo: {
+      src: starTrek,
+      alt: 'Sinduri smiling in a Star Trek uniform.',
+    },
   },
   {
     value: 'Three cats',
@@ -75,10 +132,23 @@ const INTERESTS = [
             I love food but I am a picky eater, and my music taste is all over
             the place.
           </p>
+          <p class="text-body text-muted text-pretty">
+            The name of this site was inspired by fellow Drupalist Norman
+            Kämper-Leymann and <a href="https://norman.lol/">norman.lol</a>. I
+            even stole the idea for my email address,{' '}
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+          </p>
         </div>
 
         <div class="relative">
-          <PlaceholderBox ratio="portrait" label="portrait" />
+          <Image
+            src={portrait}
+            alt="Sinduri laughing at DrupalCon, wearing glasses and a mossbo name badge."
+            widths={WIDTHS}
+            sizes={PORTRAIT_SIZES}
+            loading="eager"
+            class="block aspect-portrait h-auto w-full border-8 border-border object-cover"
+          />
           {/*
             The offset frame from the comp, drawn as a second border rather
             than a shadow. Decoration with no meaning, so pointer-events-none
@@ -160,10 +230,45 @@ const INTERESTS = [
               item.frame,
             ]}
           >
+            {'photo' in item && (
+              <Image
+                src={item.photo.src}
+                alt={item.photo.alt}
+                height={FANDOM_PHOTO_SIZE}
+                width={FANDOM_PHOTO_SIZE}
+                densities={DENSITIES}
+                class="size-24 rounded-full border-4 border-border object-cover"
+              />
+            )}
             <span class:list={['text-h3 font-extrabold', item.valueClass]}>
               {item.value}
             </span>
             <p class="text-body text-muted text-pretty">{item.body}</p>
+          </li>
+        ))}
+      </ul>
+
+      <ul class="mt-20 flex flex-wrap justify-center gap-12">
+        {SNAPSHOTS.map((snapshot) => (
+          <li class:list={['w-56', snapshot.tilt]}>
+            <figure>
+              <Image
+                src={snapshot.src}
+                alt={snapshot.alt}
+                width={SNAPSHOT_WIDTH}
+                height={SNAPSHOT_HEIGHT}
+                densities={DENSITIES}
+                class:list={[
+                  'block h-72 w-56 border-4 border-border object-cover',
+                  snapshot.shadow,
+                ]}
+              />
+              {'caption' in snapshot && (
+                <figcaption class="mt-5 text-label text-subtle text-pretty">
+                  {snapshot.caption}
+                </figcaption>
+              )}
+            </figure>
           </li>
         ))}
       </ul>
