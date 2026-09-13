@@ -416,38 +416,44 @@ layer, so plain `<a>` elements are already correct.
 `src/content.config.ts` defines one collection, `blog`, loaded with `glob()`
 from `src/content/blog/**/*.md`.
 
-| Field            | Type            | Required | Default |
-| ---------------- | --------------- | -------- | ------- |
-| `title`          | string          | yes      |         |
-| `date`           | date            | yes      |         |
-| `category`       | enum, see below | yes      |         |
-| `placeholder`    | boolean         | yes      |         |
-| `tags`           | string[]        | no       | `[]`    |
-| `teaser`         | string          | yes      |         |
-| `ogImage`        | string          | no       |         |
-| `featured`       | boolean         | no       | `false` |
-| `readingTime`    | number          | no       |         |
-| `seoTitle`       | string          | no       |         |
-| `seoDescription` | string          | no       |         |
+| Field            | Type            | Required     | Default |
+| ---------------- | --------------- | ------------ | ------- |
+| `title`          | string          | yes          |         |
+| `date`           | date            | yes          |         |
+| `category`       | enum, see below | yes          |         |
+| `placeholder`    | boolean         | yes          |         |
+| `tags`           | string[]        | no           | `[]`    |
+| `teaser`         | string          | yes          |         |
+| `ogImage`        | string          | no           |         |
+| `featured`       | boolean         | no           | `false` |
+| `readingTime`    | number          | no           |         |
+| `seoTitle`       | string          | no           |         |
+| `seoDescription` | string          | no           |         |
+| `cover`          | image           | no           |         |
+| `coverAlt`       | string          | with `cover` |         |
 
 Categories: `skincare`, `travel`, `personal-thoughts`, `professional-journey`,
 `open-source`. Exported as `BLOG_CATEGORIES`: import it rather than retyping
 the list.
 
-Eleven posts, across all five categories. One,
-`open-source-is-not-just-code.md`, is real. **The other ten are lorem ipsum**
+`cover` is a path relative to the post, resized by `astro:assets`, and shown
+only on a card a listing gives the wide `feature` treatment; without one that
+card keeps its `PlaceholderBox`. The schema refuses a `cover` without
+`coverAlt`.
+
+Twelve posts, across all five categories. Two, `open-source-is-not-just-code.md`
+and `five-years-in-drupal.md`, are real. **The other ten are lorem ipsum**
 and carry `placeholder: true`, which `/llms.txt` marks and
 `tests/llms-txt.spec.ts` holds to each post's text. They were seeded so the
 listing has something to exercise: the index paginates at `POSTS_PER_PAGE`, 9,
-so eleven is the smallest count that makes a second page
-exist, and the titles, teasers, `featured` flags and `readingTime` values
+so ten is the smallest count that makes a second page exist, and the titles, teasers, `featured` flags and `readingTime` values
 deliberately span both extremes, so a card is tested at a ten-character title
 and at a seventy-character one.
 
-Every placeholder is dated before the real post, on purpose. Listings are
-newest first, so that date is what puts the real post at the head of `/blog`,
-of `/blog/open-source` and of the homepage featured row. A placeholder dated
-after 2026-07-10 pushes it down again.
+Every placeholder is dated before the real posts, on purpose. Listings are
+newest first, so that date is what puts the real posts at the head of `/blog`,
+of their category listings and of the homepage featured row. A placeholder
+dated after 2026-07-10 pushes them down again.
 
 The lorem is Latin inside a `lang="en"` document, recorded as a known gap in
 [ACCESSIBILITY.md](ACCESSIBILITY.md) §7.
@@ -553,6 +559,36 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
 | `src/assets/bunny-white.png`   | White, RGB(255,255,255) | Dark surfaces        | Reserved. Not emitted                                                              |
 | `src/assets/badge-white.png`   | White, RGB(255,255,255) | Dark surfaces        | `Footer.astro`, `SpinBadge.vue`, and the source the OG images were composited from |
 | `public/images/og-default.png` | Composite               | n/a                  | `BaseLayout.astro`, every page                                                     |
+
+### Photos
+
+- **Photos live in `src/assets/photos/`** (page photos) and
+  **`src/assets/blog/<slug>/`** (a post's photos and `cover`). Each master is a
+  JPEG cropped to the shape it is drawn at, at twice that size, with its
+  metadata stripped: one source had GPS coordinates. `astro:assets` turns them
+  into WebP; keeping the masters JPEG avoids compressing each photo twice.
+- **A fixed-size photo** passes its drawn size and `DENSITIES`. **A fluid one**
+  passes `WIDTHS` and a `sizes` attribute, both in
+  `src/lib/image-densities.ts`. `WIDTHS` steps by no more than 1.5x, the
+  oversize limit in `tests/image-size.spec.ts`.
+- **`/about` is set as a magazine issue**: a cover whose cover lines are the
+  page's table of contents, then four spreads, each with a running head, a
+  kicker, a headline and its photos. The vocabulary is the `.mag-` classes in
+  `global.css`. Nothing is set over a photograph: the cover puts its text in a
+  solid column beside the portrait, because text on an image lands in axe's
+  contrast "incomplete" bucket. Every photo box has the same aspect ratio as
+  its file, since `object-cover` on a mismatched box reads to
+  `tests/image-size.spec.ts` as stretching. The Johann photo is drawn `w-64`
+  because its master is only 278px wide.
+- **A markdown image** gets `widths` and `sizes` from
+  `src/plugins/post-figure.mjs`, which sets `layout: 'full-width'` so Astro
+  reads `image.breakpoints` in `astro.config.mjs`. An image alone in its
+  paragraph with a title becomes a `figure`, and the title, such as
+  `"Photo: Name"`, its `figcaption`.
+- **Credits** are in `src/lib/credits.ts`: each photographer's link, in
+  Sinduri's order of preference (personal site, then Drupal.org, then
+  LinkedIn), and the site-name inspiration. A caption naming
+  someone listed there links them, and `/credits` lists them all.
 
 Measured ratios for the two artwork colours, so the pairing is arithmetic
 rather than judgement:
@@ -789,9 +825,12 @@ Two exceptions, both Sinduri's own words:
 
 Not lorem either, and not waiting:
 
-- **The one real post**, `open-source-is-not-just-code.md`.
-- **`/accessibility` and `/privacy`**, whose copy is factual disclosure rather
-  than editorial.
+- **`/about` and the homepage About teaser**, in Sinduri's own words.
+- **The two real posts**, `open-source-is-not-just-code.md` and
+  `five-years-in-drupal.md`.
+- **`/accessibility`, `/privacy` and `/credits`**, whose copy is factual
+  disclosure rather than editorial, apart from the site-name story that opens
+  `/credits`, which is Sinduri's.
 - **The 404 page**, which is functional microcopy.
 
 Still outstanding:
@@ -816,9 +855,10 @@ Still outstanding:
   address remain on purpose. That half has no test and cannot have one: read the
   PDF.
 
-- **Every photograph.** Three slots are `PlaceholderBox`: the workspace square
-  in the homepage About teaser, the About portrait, and the post artwork in
-  `BlogCard`.
+- **Post artwork.** The About portrait and the homepage About teaser photo are
+  real. The one `PlaceholderBox` left is the post artwork in a `feature`
+  `BlogCard`, for every post without a `cover`; `five-years-in-drupal.md` has
+  one.
 
   The Career conference photo is not among them. `/career` has no placement for
   it at all. Adding that placement is a build decision about whether the section

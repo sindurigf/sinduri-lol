@@ -168,6 +168,8 @@ const GOLD_ROUTES: Record<string, number> = {
   '/career': 2,
   /* Its closing band, pointing at /about. */
   '/contact': 1,
+  /* The fact file box, which holds a heading and no controls. */
+  '/about': 0,
 };
 
 /** The route the reflow checks at the bottom of this file use. */

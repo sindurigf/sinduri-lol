@@ -10,3 +10,13 @@
  * tests/image-size.spec.ts fails when a class and its number drift apart.
  */
 export const DENSITIES = [1, 2];
+
+/**
+ * The widths a fluid image is generated at, for an image whose drawn size
+ * follows the layout rather than a size class. No step between neighbours is
+ * larger than 1.5x, the oversize limit in tests/image-size.spec.ts, so the
+ * file the browser picks is never more than that over its box. Astro drops
+ * any width larger than the master.
+ * Markdown images get the same list through src/plugins/post-figure.mjs.
+ */
+export const WIDTHS = [320, 480, 640, 960, 1280, 1536];

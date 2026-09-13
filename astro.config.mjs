@@ -8,6 +8,8 @@ import tailwindcss from '@tailwindcss/vite';
 import { satteri } from '@astrojs/markdown-satteri';
 
 import { linkListItem } from './src/plugins/link-list-item.mjs';
+import { postFigure } from './src/plugins/post-figure.mjs';
+import { WIDTHS } from './src/lib/image-densities.ts';
 
 // https://astro.build/config
 export default defineConfig({
@@ -102,13 +104,21 @@ export default defineConfig({
    * A list item that is nothing but a link gets a class here, so `.prose`
    * can size it to SC 2.5.8. The plugin's own comment says why this cannot
    * be a CSS selector, and why it is a Sätteri visitor rather than a rehype
-   * plugin.
+   * plugin. A post image gets `widths`, `sizes` and, from its title, a
+   * captioned figure; see src/plugins/post-figure.mjs.
    *
    * `satteri()` is what Astro 7 defaults this option to, so naming it here
    * changes nothing but the plugin list.
    */
+  /*
+   * Read only by images with a `layout`, which today is only the markdown
+   * images src/plugins/post-figure.mjs marks. A component <Image> passes
+   * DENSITIES or WIDTHS itself and is unaffected.
+   */
+  image: { breakpoints: WIDTHS },
+
   markdown: {
-    processor: satteri({ hastPlugins: [linkListItem] }),
+    processor: satteri({ hastPlugins: [linkListItem, postFigure] }),
   },
 
   vite: {

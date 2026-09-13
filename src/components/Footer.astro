@@ -60,6 +60,7 @@ const SOCIAL_LINKS = [
 const POLICY_LINKS = [
   { href: '/accessibility/', label: 'Accessibility' },
   { href: '/privacy/', label: 'Privacy' },
+  { href: '/credits/', label: 'Credits' },
 ] as const;
 
 const SITE_NAME = 'sinduri.lol';
@@ -140,9 +141,9 @@ const copyright = `© ${currentYear} ${SITE_NAME}`;
 
         {/*
           Two navs, and their labels are what keep them useful. "Site" is
-          where else this is; "Site policies" is what this site claims about
-          itself. A reader listing landmarks sees distinct names, and
-          "Privacy" never reads as one more page of content.
+          where else this is; "About this site" is what the site says about
+          itself: its policies and its credits. A reader listing landmarks sees
+          distinct names, and "Privacy" never reads as one more page of content.
 
           It duplicates the header's destinations on purpose: a footer nav is
           for someone who has reached the bottom of a long page.
@@ -161,12 +162,13 @@ const copyright = `© ${currentYear} ${SITE_NAME}`;
         </nav>
 
         {/*
-          The two statements the site makes about itself. They sit on every
-          page because a policy nobody can reach is the same as no policy.
+          What the site says about itself. They sit on every page because a
+          policy nobody can reach is the same as no policy, and a credit nobody
+          can reach is not much of a thank you.
           `subtle` rather than `text` sets them apart from the pages without
           an underline; it is AAA on `deep`, 8.95.
         */}
-        <nav aria-label="Site policies" class="footer-policies">
+        <nav aria-label="About this site" class="footer-policies">
           <ul>
             {POLICY_LINKS.map((link) => (
               <li>

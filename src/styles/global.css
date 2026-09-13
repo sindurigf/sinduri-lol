@@ -980,6 +980,29 @@
   }
 
   /*
+   * A post photo, built from a markdown image by src/plugins/post-figure.mjs.
+   * `h-auto` because the `width` and `height` attributes are the master's,
+   * there to reserve the box, and would otherwise fix its height. The caption
+   * is the photo credit: `subtle`, AAA on all three dark grounds.
+   */
+  .prose figure {
+    @apply mt-10;
+  }
+
+  /*
+   * A ring rather than a border: a border is inside the box
+   * tests/image-size.spec.ts measures, and 16px of it on a 501px photo reads
+   * as the file being stretched. `mt-5` on the caption clears the ring.
+   */
+  .prose figure img {
+    @apply block h-auto w-full ring-8 ring-border;
+  }
+
+  .prose figcaption {
+    @apply mt-5 text-label text-subtle;
+  }
+
+  /*
    * `table-layout: fixed` is load-bearing for reflow, not cosmetic. Automatic
    * layout sizes a column to its widest cell, so a two-column table in the
    * 273px box at 305px is decided by the longest phrase in it and the
@@ -1767,5 +1790,138 @@
 
   .error-summary a {
     @apply text-pink-text;
+  }
+}
+
+/*
+ * The About page, set as a magazine issue: a cover whose cover lines are the
+ * page's table of contents, then one spread per section, each opened by a
+ * running head, a kicker and a headline.
+ *
+ * Nothing sits on top of a photograph. The cover puts its text in a solid
+ * column beside the portrait rather than over it, so every foreground has a
+ * flat ground axe can measure; text over an image lands in contrast
+ * "incomplete", which tests/contrast-incomplete.spec.ts fails.
+ */
+@layer components {
+  .mag-cover {
+    @apply grid gap-10 lg:items-end;
+  }
+
+  @media (width >= 64rem) {
+    .mag-cover {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    }
+
+    .mag-spread-5-7 {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    }
+
+    .mag-spread-7-5 {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+
+    .mag-spread-4-8 {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    }
+
+    .mag-essay {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    }
+
+    /*
+     * Two columns only on wide screens, and only because each block is short:
+     * a reader should never have to scroll back up to start the next column.
+     */
+    .mag-columns {
+      columns: 2;
+      column-gap: 3rem;
+      column-rule: 4px solid var(--color-surface);
+    }
+  }
+
+  .mag-dateline {
+    @apply flex flex-wrap items-baseline justify-between gap-3 border-b-4 border-text pb-3;
+  }
+
+  .mag-runhead {
+    @apply flex flex-wrap justify-between gap-3 border-b-4 border-border py-3 text-label font-black uppercase text-subtle;
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .mag-kicker {
+    @apply text-label font-black uppercase text-gold;
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .mag-standfirst {
+    @apply text-h3 font-light text-text text-pretty;
+    max-width: 34ch;
+  }
+
+  .mag-coverline {
+    @apply grid gap-1 border-l-4 border-gold pl-4 text-text;
+    text-decoration: none;
+  }
+
+  .mag-coverline:hover .mag-coverline-title {
+    @apply text-cyan;
+  }
+
+  .mag-coverline-title {
+    @apply text-body font-black uppercase leading-tight;
+  }
+
+  /*
+   * A gold initial on a spread's first paragraph. Visual only: the letter is
+   * still the first character of the text, so nothing is read twice.
+   */
+  .mag-dropcap::first-letter {
+    float: left;
+    padding: 0.06em 0.12em 0 0;
+    font-size: 4.2em;
+    font-weight: 900;
+    line-height: 0.82;
+    color: var(--color-gold);
+  }
+
+  .mag-quote {
+    @apply text-h2 uppercase text-text text-balance;
+  }
+
+  .mag-quote-mark {
+    @apply block text-h1 font-black text-pink;
+    line-height: 0.6;
+  }
+
+  .mag-caption {
+    @apply mt-3 text-label text-subtle text-pretty;
+  }
+
+  .mag-facts > div {
+    @apply grid items-center gap-x-6 gap-y-1 border-t-4 border-border py-4;
+  }
+
+  .mag-facts > div:last-child {
+    @apply border-b-4;
+  }
+
+  @media (width >= 40rem) {
+    .mag-facts > div {
+      grid-template-columns: minmax(8rem, 2fr) minmax(0, 5fr);
+    }
+  }
+
+  .mag-facts dt {
+    @apply text-label font-black uppercase text-subtle;
+    letter-spacing: var(--tracking-label-wide);
+  }
+
+  .mag-facts dd {
+    @apply m-0 text-body font-bold text-text;
+  }
+
+  .mag-columns > div {
+    break-inside: avoid;
   }
 }

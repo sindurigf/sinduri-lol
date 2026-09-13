@@ -952,6 +952,10 @@ Rules:
 - Do not put an `aria-label` on an element that already has visible text; it
   overrides what the user sees and breaks voice control.
 - `alt=""` for decorative images. Never put a filename in `alt`.
+- **Never set text over a photograph.** Put it beside the photo on a flat
+  token ground, as the `/about` cover does: text on an image cannot be
+  measured, and `tests/contrast-incomplete.spec.ts` fails it. See
+  ARCHITECTURE.md, Photos.
 
 ### Alt text conventions
 

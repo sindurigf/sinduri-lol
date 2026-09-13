@@ -1,232 +1,474 @@
 ---
 import { Image } from 'astro:assets';
-import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PlaceholderBox from '../components/PlaceholderBox.astro';
-import { DENSITIES } from '../lib/image-densities';
+import portrait from '../assets/photos/sinduri-pride.jpg';
+import lake from '../assets/photos/sinduri-lake.jpg';
+import bicycle from '../assets/photos/sinduri-bicycle.jpg';
+import bestFriendSelfie from '../assets/photos/best-friend-selfie.jpg';
+import bestFriendBeach from '../assets/photos/best-friend-beach.jpg';
+import withJohann from '../assets/photos/sinduri-johann.jpg';
+import starTrek from '../assets/photos/sinduri-star-trek.jpg';
+import minerva from '../assets/photos/minerva.jpg';
+import hela from '../assets/photos/hela.jpg';
+import rudra from '../assets/photos/rudra.jpg';
+import mountainCamp from '../assets/photos/drupal-mountain-camp.jpg';
+import friendsMossWall from '../assets/photos/friends-moss-wall.jpg';
+import escapeRoom from '../assets/photos/escape-room.jpg';
+import { DENSITIES, WIDTHS } from '../lib/image-densities';
 
 /*
- * PLACEHOLDER COPY, per design/About.dc.html. Structure, layout, spacing and
- * hierarchy are the comp's; every heading, label and paragraph is lorem ipsum
- * at the length the comp's copy occupies. Nothing here is a claim about
- * Sinduri: an About page is the densest editorial copy on the site and none
- * of it is ours to write.
+ * Sinduri's own copy, set as a magazine issue: a cover, then four spreads.
+ * The cover lines are the table of contents and link to the spreads, and the
+ * spread titles echo her tagline, Open Source Enthusiast and Positivity
+ * Advocate. The magazine vocabulary (running head, kicker, standfirst, drop
+ * cap, pull quote) is in global.css under `.mag-`.
  *
- * One deliberate departure from the comp: its closing call to action is "Say
- * hello" pointing at Contact, and this one points at Career, as asked. The
- * label changes with the destination, because a button whose words do not
- * match where it goes is the worse defect.
+ * Her voice uses few apostrophes: "I am", "it is". Keep that when editing,
+ * and add no line she has not said or approved.
  */
 
-/** The bunny roundel's mark, drawn `h-14`. See the note in Header.astro. */
-const ROUNDEL_MARK_HEIGHT = 56;
+const JOURNEY_POST_HREF = '/blog/five-years-in-drupal/';
 
-const INTERESTS = [
+/** The Fandoms thumbnail, drawn `size-14`. */
+const THUMB_SIZE = 56;
+
+/** The Johann photo, drawn `w-64`; its master is only 278px wide. */
+const JOHANN_WIDTH = 256;
+
+/*
+ * 1x only. Astro caps a 2x candidate at the master, so it would ship the
+ * 278px file labelled 2x, and a 2x screen would draw it at 139px wide and
+ * stretch it to 256 (WebKit in CI, 2026-09-13). A larger photo lifts this.
+ */
+const JOHANN_DENSITIES = [1];
+
+/*
+ * Only used to pick a file from WIDTHS; tests/image-size.spec.ts measures the
+ * result. Each names the column the photo fills from `lg`, and the page
+ * column below it.
+ */
+const SIZES = {
+  cover: '(min-width: 64rem) 46rem, 100vw',
+  sideColumn: '(min-width: 64rem) 32rem, 100vw',
+  sidePair: '(min-width: 64rem) 16rem, 50vw',
+  third: '(min-width: 64rem) 16rem, (min-width: 40rem) 33vw, 100vw',
+  essayLead: '(min-width: 64rem) 52rem, 100vw',
+  essaySide: '(min-width: 64rem) 26rem, 100vw',
+} as const;
+
+const SPREADS = [
   {
-    value: 'MMXXIII',
-    frame: 'border-gold',
-    valueClass: 'text-gold',
-    body: 'Klausi lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore magna.',
+    id: 'vienna',
+    title: 'Vienna since 2017',
+    teaser: 'Cats, friends and long evenings',
   },
   {
-    value: 'Tria',
-    frame: 'border-cyan',
-    valueClass: 'text-cyan',
-    body: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+    id: 'positivity',
+    title: 'Positivity advocate',
+    teaser: 'Why we should all be a bit kinder',
   },
   {
-    value: 'Consilium',
-    frame: 'border-pink',
-    valueClass: 'text-pink-text',
-    body: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    id: 'important-things',
+    title: 'The important things',
+    teaser: 'Middle-earth, fandoms and three cats',
+  },
+  {
+    id: 'open-source',
+    title: 'Open source enthusiast',
+    teaser: 'A Sinduri before Drupal, and after',
   },
 ] as const;
+
+const CATS = [
+  {
+    src: minerva,
+    name: 'Minerva',
+    role: 'the queen of the house.',
+    alt: 'Minerva, a tabby cat, curled up on a blanket.',
+  },
+  {
+    src: hela,
+    name: 'Hela',
+    role: 'the conspirator.',
+    alt: 'Hela, a white calico cat, asleep against a plush toy.',
+  },
+  {
+    src: rudra,
+    name: 'Rudra',
+    role: 'the baby of the family.',
+    alt: 'Rudra, a black cat, having his head stroked.',
+  },
+] as const;
+
+const SPREAD_NUMBER_DIGITS = 2;
+const spreadNumber = (index: number): string =>
+  String(index + 1).padStart(SPREAD_NUMBER_DIGITS, '0');
 ---
 
 <BaseLayout
   title="About | sinduri.lol"
-  description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+  description="Sinduri in Vienna: cats, Lord of the Rings, positivity, and how a civil engineer found her way into the Drupal community."
 >
   {/* ===================================================================
-       HERO
+       COVER
        =================================================================== */}
-  <section class="band py-24">
+  <section class="band py-16">
     <div class="mx-auto max-w-page">
-      <div class="flex flex-wrap items-baseline gap-x-5 gap-y-2">
-        <span class="section-number" aria-hidden="true">
-          01
+      <div class="mag-cover">
+        <div class="flex min-w-0 flex-col gap-10">
+          <p class="mag-dateline">
+            <span class="mag-kicker text-text">sinduri.lol</span>
+            <span class="mag-kicker text-muted">Vienna · Since 2017</span>
+          </p>
+
+          <div class="flex flex-col gap-6">
+            <h1 class="text-h1 text-text">About me</h1>
+            <p class="text-h3 font-black text-gold text-pretty">
+              Open source enthusiast in Vienna, cat lover, and a very serious
+              Lord of the Rings fan.
+            </p>
+          </div>
+
+          <nav aria-label="In this issue">
+            <ol class="grid gap-5">
+              {SPREADS.map((spread, index) => (
+                <li>
+                  <a href={`#${spread.id}`} class="mag-coverline">
+                    <span class="mag-kicker">{spreadNumber(index)}</span>
+                    <span class="mag-coverline-title">{spread.title}</span>
+                    <span class="text-label text-muted">{spread.teaser}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </div>
+
+        <Image
+          src={bicycle}
+          alt="Sinduri laughing as she rides a bicycle with a basket down a tree-lined path."
+          widths={WIDTHS}
+          sizes={SIZES.cover}
+          loading="eager"
+          class="block aspect-portrait h-auto w-full object-cover"
+        />
+      </div>
+    </div>
+  </section>
+
+  {/* ===================================================================
+       01 VIENNA SINCE 2017
+       =================================================================== */}
+  <section class="band pb-24" id={SPREADS[0].id}>
+    <div class="mx-auto max-w-page">
+      <p class="mag-runhead" aria-hidden="true">
+        <span>
+          <span class="text-text">01</span> · {SPREADS[0].title}
         </span>
-        <h1 class="text-h1 text-text">Lorem ipsum</h1>
-      </div>
+        <span>sinduri.lol</span>
+      </p>
 
-      <div class="mt-14 grid gap-16 lg:grid-cols-2 lg:items-start">
-        <div class="flex min-w-0 flex-col gap-8">
-          <p class="text-h3 font-bold text-gold text-pretty">
-            Lorem ipsum dolor sit amet. Consectetur adipiscing elit sed do
-            eiusmod tempor incididunt ut labore.
-          </p>
-          <p class="text-body text-muted text-pretty">
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-            nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur, excepteur sint occaecat cupidatat non proident sunt.
-          </p>
-          <p class="text-body text-muted text-pretty">
-            Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-            accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae
-            ab illo inventore veritatis et quasi architecto beatae vitae dicta
-            sunt explicabo nemo enim ipsam.
+      <div class="mag-spread-7-5 mt-14 grid gap-14 lg:items-start">
+        <div class="flex min-w-0 flex-col gap-6">
+          <p class="mag-kicker">Home</p>
+          <h2 id="spread-vienna" class="text-h1 text-text">
+            Vienna <span class="text-gold">since 2017</span>
+          </h2>
+          <p class="mag-standfirst">
+            I moved to Vienna in 2017. I love cats, travelling, and long
+            evenings with my friends talking about nothing and anything.
           </p>
         </div>
 
-        <div class="relative">
-          <PlaceholderBox ratio="portrait" label="portrait" />
-          {/*
-            The offset frame from the comp, drawn as a second border rather
-            than a shadow. Decoration with no meaning, so pointer-events-none
-            and out of the accessibility tree. `pink` is right here because it
-            is a border and never a glyph.
-          */}
-          <span
-            aria-hidden="true"
-            class="pointer-events-none absolute -left-3 -top-3 hidden size-full border-8 border-pink sm:block"
-          ></span>
-          {/*
-            `sm:-right-6`, the width of the `sm` gutter, so the roundel
-            overhangs the frame as far as the page allows and no further.
-            Anything past the gutter scrolls the page sideways from 640px up.
-          */}
-          <span class="absolute -bottom-8 -right-2 flex size-28 items-center justify-center rounded-full border-8 border-border bg-gold shadow-hard-cyan-8 sm:-right-6">
+        <div class="flex min-w-0 flex-col gap-6">
+          <figure>
             <Image
-              src={bunnyDark}
-              alt=""
-              height={ROUNDEL_MARK_HEIGHT}
-              densities={DENSITIES}
-              class="h-14 w-auto"
+              src={lake}
+              alt="Sinduri in a pink dress on a balcony, with trees and a lake behind her."
+              widths={WIDTHS}
+              sizes={SIZES.sideColumn}
+              class="block aspect-portrait h-auto w-full object-cover"
             />
-          </span>
+            <figcaption class="mag-caption">
+              <strong class="text-text">Travelling.</strong>
+            </figcaption>
+          </figure>
+          <figure>
+            <div class="grid grid-cols-2 gap-3">
+              <Image
+                src={bestFriendSelfie}
+                alt="Sinduri taking a selfie with her best friend, Hemu."
+                widths={WIDTHS}
+                sizes={SIZES.sidePair}
+                class="block aspect-square h-auto w-full object-cover"
+              />
+              <Image
+                src={bestFriendBeach}
+                alt="Sinduri and her best friend Hemu walking on a beach."
+                widths={WIDTHS}
+                sizes={SIZES.sidePair}
+                class="block aspect-square h-auto w-full object-cover"
+              />
+            </div>
+            <figcaption class="mag-caption">
+              <strong class="text-text">My best friend,</strong> Hemu.
+            </figcaption>
+          </figure>
         </div>
       </div>
     </div>
   </section>
 
   {/* ===================================================================
-       STORY
+       02 POSITIVITY ADVOCATE
        =================================================================== */}
-  <section class="band py-24">
+  <section class="band pb-24" id={SPREADS[1].id}>
     <div class="mx-auto max-w-page">
-      <span class="section-rule bg-gold"></span>
-    </div>
+      <p class="mag-runhead" aria-hidden="true">
+        <span>
+          <span class="text-text">02</span> · {SPREADS[1].title}
+        </span>
+        <span>sinduri.lol</span>
+      </p>
 
-    <div class="mx-auto max-w-page">
-      <h2 class="text-h2 text-text">Lorem ipsum dolor sit</h2>
-
-      <div class="mt-14 grid gap-10 lg:grid-cols-2">
-        <div class="card shadow-hard-gold-8">
-          <p class="label-wide text-gold">
-            Lorem ipsum dolor sit amet consectetur
-          </p>
-          <p class="mt-6 text-body text-muted text-pretty">
-            Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut
-            fugit, sed quia consequuntur magni dolores eos qui ratione
-            voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem
-            ipsum quia dolor sit amet consectetur adipisci velit.
-          </p>
+      <div class="mag-spread-5-7 mt-14 grid gap-14 lg:items-start">
+        <div class="flex min-w-0 flex-col gap-10">
+          <Image
+            src={portrait}
+            alt="Sinduri smiling, with a rainbow painted on her cheek and rainbow wings behind her."
+            widths={WIDTHS}
+            sizes={SIZES.sideColumn}
+            class="block aspect-portrait h-auto w-full object-cover"
+          />
+          <figure class="w-64 max-w-full">
+            <Image
+              src={withJohann}
+              alt="Sinduri smiling with Johann, his arms wrapped around her."
+              width={JOHANN_WIDTH}
+              densities={JOHANN_DENSITIES}
+              class="block aspect-portrait h-auto w-full object-cover"
+            />
+            <figcaption class="mag-caption">
+              <strong class="text-text">Johann,</strong> my husband and the
+              non-Drupaler who always has my back.
+            </figcaption>
+          </figure>
         </div>
 
-        <div class="card shadow-hard-cyan-8">
-          <p class="label-wide text-cyan">Sed quia non</p>
-          <p class="mt-6 text-body text-muted text-pretty">
-            Numquam eius modi tempora incidunt ut labore et dolore magnam
-            aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum
-            exercitationem ullam corporis suscipit laboriosam nisi ut aliquid ex
-            ea commodi consequatur autem vel eum iure.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  {/* ===================================================================
-       VALUES
-       =================================================================== */}
-  <section class="band py-24">
-    <div class="mx-auto max-w-page">
-      <span class="section-rule bg-cyan"></span>
-    </div>
-
-    <div class="mx-auto grid max-w-page gap-16 lg:grid-cols-2 lg:items-start">
-      <div class="flex min-w-0 flex-col gap-6">
-        <h2 class="text-h2 text-text">Lorem ipsum dolor.</h2>
-        <p class="text-body text-muted text-pretty">
-          Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse
-          quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo
-          voluptas nulla pariatur.
-        </p>
-        <p class="text-body text-muted text-pretty">
-          At vero eos et accusamus et iusto odio dignissimos ducimus qui
-          blanditiis praesentium voluptatum deleniti atque corrupti quos dolores
-          et quas molestias excepturi sint occaecati.
-        </p>
-      </div>
-
-      <div class="card shadow-hard-pink-8">
-        <p class="label-wide text-pink-text">Lorem ipsum dolor sit amet?</p>
-        <p class="mt-6 text-h3 font-bold text-text text-pretty">
-          Cupiditate non provident, similique sunt in culpa qui officia.
-        </p>
-        <p class="mt-6 text-body text-muted text-pretty">
-          Deserunt mollitia animi, id est laborum et dolorum fuga. Et harum
-          quidem rerum facilis est et expedita distinctio nam libero tempore.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  {/* ===================================================================
-       INTERESTS AND FUN FACTS
-       =================================================================== */}
-  <section class="band py-24">
-    <div class="mx-auto max-w-page">
-      <span class="section-rule bg-pink"></span>
-    </div>
-
-    <div class="mx-auto max-w-page">
-      <h2 class="text-h2 text-text">Lorem ipsum dolor sit amet elit.</h2>
-
-      <ul class="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-        {INTERESTS.map((item) => (
-          <li
-            class:list={[
-              'flex min-w-0 flex-col gap-4 border-8 bg-background p-8',
-              item.frame,
-            ]}
-          >
-            <span class:list={['text-h3 font-extrabold', item.valueClass]}>
-              {item.value}
+        <div class="flex min-w-0 flex-col gap-6">
+          <p class="mag-kicker">What I believe</p>
+          <h2 id="spread-positivity" class="text-h1 text-text">
+            Positivity <span class="text-gold">advocate</span>
+          </h2>
+          <blockquote class="mt-4">
+            <span class="mag-quote-mark" aria-hidden="true">
+              &ldquo;
             </span>
-            <p class="text-body text-muted text-pretty">{item.body}</p>
-          </li>
-        ))}
-      </ul>
+            <p class="mag-quote">
+              We should all be a bit kinder and more empathetic.
+            </p>
+          </blockquote>
+          <p class="max-w-prose text-body text-muted text-pretty">
+            That is also what I love about open source: people contribute based
+            on passion and expertise, not hierarchy, and there is room for
+            everyone.
+          </p>
+          <div class="mt-4 flex flex-col gap-2 border-t-4 border-border pt-5">
+            <p class="mag-kicker text-pink-text">One thing I never do</p>
+            <p class="text-h3 font-bold text-text text-pretty">
+              Say no to a challenge just because I do not know how to approach
+              it.
+            </p>
+            <p class="max-w-prose text-body text-muted text-pretty">
+              I commit to figuring it out and learning whatever it takes to make
+              it work.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-      <div class="card mt-14 shadow-hard-gold-8">
-        <p class="text-h3 font-bold text-text text-pretty">
-          Cumque nihil impedit quo minus id quod maxime placeat facere possimus,
-          omnis voluptas assumenda est.
+  {/* ===================================================================
+       03 THE IMPORTANT THINGS
+       =================================================================== */}
+  <section class="band pb-24" id={SPREADS[2].id}>
+    <div class="mx-auto max-w-page">
+      <p class="mag-runhead" aria-hidden="true">
+        <span>
+          <span class="text-text">03</span> · {SPREADS[2].title}
+        </span>
+        <span>sinduri.lol</span>
+      </p>
+
+      <div class="mag-spread-4-8 mt-14 grid gap-14 lg:items-start">
+        <div class="surface-gold flex flex-col gap-3 p-8">
+          <p class="mag-kicker text-gold-text">Fact file</p>
+          <h2 id="spread-important" class="text-h3">
+            The important things
+          </h2>
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-12">
+          <dl class="mag-facts">
+            <div>
+              <dt>Sacred tradition</dt>
+              <dd>
+                Lord of the Rings
+                <span class="block text-label font-normal text-muted">
+                  The extended versions, every year
+                </span>
+              </dd>
+            </div>
+            <div>
+              <dt>Fandoms</dt>
+              <dd class="flex items-center justify-between gap-4">
+                Star Trek, One Piece, Star Wars
+                <Image
+                  src={starTrek}
+                  alt="Sinduri in a Star Trek uniform."
+                  width={THUMB_SIZE}
+                  height={THUMB_SIZE}
+                  densities={DENSITIES}
+                  class="size-14 rounded-full object-cover"
+                />
+              </dd>
+            </div>
+            <div>
+              <dt>Food</dt>
+              <dd>
+                Love it
+                <span class="block text-label font-normal text-muted">
+                  But I am a picky eater
+                </span>
+              </dd>
+            </div>
+            <div>
+              <dt>Music</dt>
+              <dd>All over the place</dd>
+            </div>
+          </dl>
+
+          <div class="flex flex-col gap-4">
+            <p class="mag-kicker">Three cats</p>
+            <ul class="grid gap-4 sm:grid-cols-3">
+              {CATS.map((cat) => (
+                <li>
+                  <figure>
+                    <Image
+                      src={cat.src}
+                      alt={cat.alt}
+                      widths={WIDTHS}
+                      sizes={SIZES.third}
+                      class="block aspect-square h-auto w-full object-cover"
+                    />
+                    <figcaption class="mag-caption">
+                      <strong class="text-text">{cat.name},</strong> {cat.role}
+                    </figcaption>
+                  </figure>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ===================================================================
+       04 OPEN SOURCE ENTHUSIAST
+       =================================================================== */}
+  <section class="band pb-24" id={SPREADS[3].id}>
+    <div class="mx-auto max-w-page">
+      <p class="mag-runhead" aria-hidden="true">
+        <span>
+          <span class="text-text">04</span> · {SPREADS[3].title}
+        </span>
+        <span>sinduri.lol</span>
+      </p>
+
+      <div class="mt-14 flex flex-col gap-6">
+        <p class="mag-kicker">The story</p>
+        <h2 id="spread-open-source" class="text-h1 text-text">
+          Open source <span class="text-gold">enthusiast</span>
+        </h2>
+        <p class="mag-standfirst">
+          There is a Sinduri before Klausi and Drupal, and a Sinduri after.
         </p>
-        <p class="mt-8 max-w-4xl text-body text-muted text-pretty">
-          Omnis dolor repellendus temporibus autem quibusdam et aut officiis
-          debitis aut rerum necessitatibus saepe eveniet ut et voluptates
-          repudiandae sint et molestiae non recusandae. Itaque earum rerum hic
-          tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores
-          alias consequatur aut perferendis doloribus asperiores repellat.
+      </div>
+
+      <div class="mag-columns mt-10 max-w-5xl">
+        <div class="mb-8">
+          <p class="mag-kicker mb-2">Before</p>
+          <p class="mag-dropcap text-body text-muted text-pretty">
+            I studied civil engineering in India and environmental engineering
+            in the US. I always wanted to become a developer, but I never felt
+            ready until I moved to Vienna. Honestly, after a few German courses,
+            learning to code seemed much easier! A short Python course in 2019
+            showed me I loved programming, and a full-stack web development
+            course gave me the confidence to make the switch.
+          </p>
+        </div>
+        <div class="mb-8">
+          <p class="mag-kicker mb-2">After</p>
+          <p class="text-body text-muted text-pretty">
+            In January 2021, Klaus Purer gave me a Drupal test. I had absolutely
+            no idea what Drupal was, but I did well enough to get the job. Since
+            then I have organised Drupal events, joined the Drupal Austria
+            board, where I am deputy marketing manager in 2026, and won the
+            Women in Drupal Award in 2025.
+          </p>
+        </div>
+      </div>
+
+      <div class="mag-essay mt-10 grid gap-4">
+        <figure>
+          <Image
+            src={mountainCamp}
+            alt="The Drupal Mountain Camp group photo: a crowd of attendees standing in the snow."
+            widths={WIDTHS}
+            sizes={SIZES.essayLead}
+            class="block aspect-video h-auto w-full object-cover"
+          />
+          <figcaption class="mag-caption">
+            <strong class="text-text">Drupal Mountain Camp.</strong>
+          </figcaption>
+        </figure>
+        <div class="flex flex-col gap-4">
+          <figure>
+            <Image
+              src={friendsMossWall}
+              alt="Sinduri between two friends in front of a moss wall, all three looking up and laughing."
+              widths={WIDTHS}
+              sizes={SIZES.essaySide}
+              class="block aspect-photo h-auto w-full object-cover"
+            />
+            <figcaption class="mag-caption">
+              <strong class="text-text">With friends.</strong>
+            </figcaption>
+          </figure>
+          <figure>
+            <Image
+              src={escapeRoom}
+              alt="Sinduri with a group after an escape room, two of them holding Mission Complete signs."
+              widths={WIDTHS}
+              sizes={SIZES.essaySide}
+              class="block aspect-photo h-auto w-full object-cover"
+            />
+            <figcaption class="mag-caption">
+              <strong class="text-text">Mission complete.</strong>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="mt-14 flex flex-wrap items-center justify-between gap-6 border-t-4 border-border pt-6">
+        <p class="text-body text-text">
+          Continue reading: <a href={JOURNEY_POST_HREF}>Five years in Drupal</a>
         </p>
-        <p class="mt-10">
-          <a href="/career/" class="btn-primary">
-            See my career
-          </a>
-        </p>
+        <a href="/career/" class="btn-primary">
+          See my career
+        </a>
       </div>
     </div>
   </section>

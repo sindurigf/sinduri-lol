@@ -4,16 +4,17 @@ import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BlogCard from '../components/BlogCard.astro';
 import HeroField from '../components/ui/HeroField.vue';
-import PlaceholderBox from '../components/PlaceholderBox.astro';
+import portrait from '../assets/photos/sinduri-studio.jpg';
 import { BLOG_CATEGORIES } from '../content.config';
 import { categoryLabel, getFeaturedPosts } from '../lib/blog';
-import { DENSITIES } from '../lib/image-densities';
+import { DENSITIES, WIDTHS } from '../lib/image-densities';
 
 /*
- * PLACEHOLDER COPY, WITH TWO EXCEPTIONS THAT ARE REAL.
+ * PLACEHOLDER COPY, WITH EXCEPTIONS THAT ARE REAL.
  *
- * The name in the hero and the About teaser's heading are Sinduri's own
- * words. Every other paragraph, heading and card description is lorem ipsum
+ * The name in the hero, the page description and the whole About teaser are
+ * Sinduri's own words. Every other paragraph, heading and card description is
+ * lorem ipsum
  * at the length the comp's copy occupies, so the layout is stress-tested at
  * the sizes it will carry. The brand strings, the five category names and the
  * functional microcopy on the controls are structural, not copy.
@@ -79,11 +80,21 @@ const CATEGORY_CARDS = [
   },
 ] as const;
 
+/*
+ * The teaser photo column: half of `max-w-page` from `lg`, the full column
+ * below. Only used to pick a file from WIDTHS.
+ */
+const TEASER_PHOTO_SIZES = '(min-width: 64rem) min(50vw, 38rem), 100vw';
+
 const STATS = [
-  { value: 'Duis', label: 'Lorem ipsum dolor', frame: 'border-gold text-gold' },
   {
-    value: 'Aute',
-    label: 'Sit amet consectetur',
+    value: '3 cats',
+    label: '1 queen, 1 conspirator, 1 baby',
+    frame: 'border-gold text-gold',
+  },
+  {
+    value: '1 ring',
+    label: 'Rules my calendar every year',
     frame: 'border-cyan text-cyan',
   },
 ] as const;
@@ -91,7 +102,7 @@ const STATS = [
 
 <BaseLayout
   title="Sinduri Guntupalli | Open Source Enthusiast, Positivity Advocate"
-  description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+  description="Sinduri Guntupalli in Vienna: open source enthusiast, Drupal community organiser, cat lover and a very serious Lord of the Rings fan."
 >
   {/* ===================================================================
        HERO
@@ -236,7 +247,13 @@ const STATS = [
 
       <div class="mt-16 grid gap-16 lg:grid-cols-2 lg:items-start">
         <div class="relative">
-          <PlaceholderBox ratio="square" label="workspace photo" />
+          <Image
+            src={portrait}
+            alt="Sinduri smiling in a studio portrait, standing against a dark wall beside a teal block."
+            widths={WIDTHS}
+            sizes={TEASER_PHOTO_SIZES}
+            class="block aspect-square h-auto w-full border-8 border-border object-cover"
+          />
           {/*
             The bunny mark on its gold tile, as in the comp. `bunny-dark` is
             #111111 artwork: 11.50 on gold and 1.02 on the page background, so
@@ -260,15 +277,13 @@ const STATS = [
 
         <div class="card mt-12 shadow-hard-pink-8 lg:mt-16">
           <p class="text-h3 font-bold text-text text-pretty">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua veniam.
+            Civil engineer, environmental engineer, and then Vienna, where my
+            tech journey began.
           </p>
 
           <p class="mt-8 text-body text-muted text-pretty">
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-            nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur sint occaecat.
+            I found Drupal in 2021, and the community has held my heart ever
+            since. I help organise events and serve on the Drupal Austria board.
           </p>
 
           <ul class="mt-10 grid gap-6 sm:grid-cols-2">
@@ -286,9 +301,8 @@ const STATS = [
           </ul>
 
           <p class="mt-10 text-body text-muted text-pretty">
-            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
-            officia deserunt mollit anim id est laborum. Sed ut perspiciatis
-            unde omnis iste natus error sit voluptatem accusantium doloremque.
+            I believe everything can be said with empathy and kindness, and I
+            try to live that at work, in the community and with my friends.
           </p>
 
           <p class="mt-10">
