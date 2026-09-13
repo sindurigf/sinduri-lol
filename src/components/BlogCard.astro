@@ -1,7 +1,10 @@
 ---
 import type { BlogCategory } from '../content.config';
 import { categoryLabel } from '../lib/blog';
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
 import PlaceholderBox from './PlaceholderBox.astro';
+import { WIDTHS } from '../lib/image-densities';
 
 /*
  * One post, as a card. Used by the homepage featured row, the blog index, and
@@ -54,6 +57,9 @@ interface Props {
   /** The wide, two-column treatment the comps give the lead post. */
   feature?: boolean;
   headingLevel?: 2 | 3;
+  /** Shown only on a `feature` card, where the placeholder box would be. */
+  cover?: ImageMetadata;
+  coverAlt?: string;
   class?: string;
 }
 
@@ -67,10 +73,18 @@ const {
   featured = false,
   feature = false,
   headingLevel = 3,
+  cover,
+  coverAlt = '',
   class: className = '',
 } = Astro.props;
 
 const Heading = `h${headingLevel}` as 'h2' | 'h3';
+
+/*
+ * The cover column: half the card from `md`, the whole card below. Only used
+ * to pick a file from WIDTHS; tests/image-size.spec.ts measures the result.
+ */
+const COVER_SIZES = '(min-width: 48rem) min(45vw, 36rem), 100vw';
 
 const accent = ACCENTS[CATEGORY_ACCENT[category]];
 
@@ -121,7 +135,15 @@ const readableDate = date.toLocaleDateString(DATE_LOCALE, DATE_FORMAT);
       </p>
     </div>
 
-    {feature ? (
+    {feature && cover ? (
+      <Image
+        src={cover}
+        alt={coverAlt}
+        widths={WIDTHS}
+        sizes={COVER_SIZES}
+        class="mt-2 block aspect-photo h-auto w-full border-4 border-border object-cover"
+      />
+    ) : feature ? (
       <PlaceholderBox ratio="photo" label="post artwork" class="mt-2" />
     ) : null}
   </div>

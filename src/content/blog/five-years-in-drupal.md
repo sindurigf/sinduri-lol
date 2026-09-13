@@ -8,6 +8,8 @@ teaser: 'In January 2021, Klaus Purer brought me into the Drupal community. Ther
 featured: true
 readingTime: 6
 seoTitle: 'Five Years in Drupal'
+cover: '../../assets/blog/five-years-in-drupal/cover.jpg'
+coverAlt: 'Sinduri and a friend laughing together, each holding a bottle.'
 seoDescription: 'How a civil engineer in Vienna found Drupal, said yes to the community, and won the Women in Drupal Award at DrupalCon Vienna.'
 ---
 
@@ -105,4 +107,4 @@ The Drupal community will forever hold my heart. You are the most amazing people
 
 ---
 
-Photo credits: Daniel Lemon, Paul Johnson, Joris Vercammen, Baris Tosun, Klaus Purer, Alex Gruber and more. Music in the video by Journey.
+Photo credits: [Daniel Lemon](https://danlemon.com/), [Paul Johnson](https://www.drupal.org/u/pdjohnson), [Joris Vercammen](https://www.drupal.org/u/borisson_), [Baris Tosun](https://www.drupal.org/u/rominronin), [Klaus Purer](https://klau.si/), [Alex Gruber](https://www.linkedin.com/in/alex-gruber-59617549/) and more. Music in the video by Journey.

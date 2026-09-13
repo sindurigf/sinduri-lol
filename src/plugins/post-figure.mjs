@@ -17,7 +17,13 @@
  *
  * Only an image alone in its paragraph becomes a figure; an image inside a
  * sentence keeps its title attribute and its paragraph.
+ *
+ * A credit naming someone in PHOTOGRAPHERS (src/lib/credits.ts) links their
+ * name. The link sits in a line of text, so it takes the SC 2.5.8 inline
+ * exception tests/target-size.spec.ts implements.
  */
+
+import { PHOTOGRAPHERS, PHOTO_CREDIT_PREFIX } from '../lib/credits.ts';
 
 /* The prose measure, `max-w-3xl`, and the full viewport below it. */
 const SIZES = '(min-width: 48rem) 48rem, 100vw';
@@ -35,6 +41,24 @@ const isElement = (node, tagName) =>
   node?.type === 'element' && node.tagName === tagName;
 
 const text = (value) => ({ type: 'text', value });
+
+const captionChildren = (caption) => {
+  if (!caption.startsWith(PHOTO_CREDIT_PREFIX)) return [text(caption)];
+
+  const name = caption.slice(PHOTO_CREDIT_PREFIX.length);
+  const href = PHOTOGRAPHERS[name];
+  if (href === undefined) return [text(caption)];
+
+  return [
+    text(PHOTO_CREDIT_PREFIX),
+    {
+      type: 'element',
+      tagName: 'a',
+      properties: { href },
+      children: [text(name)],
+    },
+  ];
+};
 
 export const postFigure = {
   name: 'post-figure',
@@ -75,7 +99,7 @@ export const postFigure = {
             type: 'element',
             tagName: 'figcaption',
             properties: {},
-            children: [text(caption)],
+            children: captionChildren(caption),
           },
         ],
       });
