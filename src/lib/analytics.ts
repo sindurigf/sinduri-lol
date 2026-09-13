@@ -36,6 +36,13 @@ export const UMAMI_VENDORED_ON = '2026-09-13';
  */
 export const UMAMI_HOST_URL = 'https://gateway.umami.is';
 
+/*
+ * How long Umami Cloud keeps the counts, set by the Hobby plan rather than by
+ * anything here, and read off the account's Billing page on 2026-09-13. A plan
+ * change changes it, and /privacy renders this value.
+ */
+export const UMAMI_RETENTION_MONTHS = 6;
+
 /** Public by design: it is in every page's HTML. */
 export const UMAMI_WEBSITE_ID = '5d1a79cf-b9cc-409e-a43e-df37d881e314';
 
@@ -55,9 +62,10 @@ export const CLICK_EVENTS = {
 export type ClickEventName = (typeof CLICK_EVENTS)[keyof typeof CLICK_EVENTS];
 
 /*
- * Umami bills each event data property as one event, so a click costs four:
- * the event and these three. Add a property only when it answers a question
- * the other three cannot.
+ * Umami bills each event data property as one event, so a click costs up to
+ * four: the event and these three. The Hobby plan allows 100K events a month,
+ * which is 25K clicks with no page views at all. Add a property only when it
+ * answers a question the other three cannot.
  */
 export type ClickEventData = {
   label: string;

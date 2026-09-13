@@ -4,7 +4,11 @@ import { expect, test } from '@playwright/test';
 import { builtPages, DIST_DIR } from './routes';
 import { configuredSite } from './source';
 import { RETENTION_DAYS } from '../src/lib/contact-form';
-import { UMAMI_HOST_URL, UMAMI_SCRIPT_PATH } from '../src/lib/analytics';
+import {
+  UMAMI_HOST_URL,
+  UMAMI_RETENTION_MONTHS,
+  UMAMI_SCRIPT_PATH,
+} from '../src/lib/analytics';
 
 /**
  * The privacy policy, held to what the site actually does.
@@ -299,6 +303,13 @@ test.describe('the privacy policy is true', () => {
       section,
       '/privacy no longer says Umami stores the counts in the European Union.',
     ).toContain('European Union');
+
+    expect(
+      section,
+      `/privacy no longer states Umami's ${UMAMI_RETENTION_MONTHS}-month ` +
+        'retention. It is read from UMAMI_RETENTION_MONTHS, so this fails if ' +
+        'the page stops rendering it.',
+    ).toContain(`keeps it for ${UMAMI_RETENTION_MONTHS} months`);
 
     expect(
       section,

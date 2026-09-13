@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { CONTACT_EMAIL } from '../lib/contact';
 import { RETENTION_DAYS } from '../lib/contact-form';
-import { UMAMI_HOST_URL } from '../lib/analytics';
+import { UMAMI_HOST_URL, UMAMI_RETENTION_MONTHS } from '../lib/analytics';
 
 /*
  * The privacy policy, which specification.website grades Required.
@@ -120,7 +120,8 @@ const WORKER_LOG_RETENTION_DAYS = 3;
         , an analytics service that uses no cookies and does not follow you from
         site to site. The script runs from this domain, and what it sends goes
         to Umami at {UMAMI_HOST}, which stores it on servers in the European
-        Union. It is the only place a page here sends anything to.
+        Union and keeps it for {UMAMI_RETENTION_MONTHS} months. It is the only
+        place a page here sends anything to.
       </p>
 
       <p class="mt-6 max-w-prose text-muted text-pretty">

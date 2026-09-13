@@ -55,10 +55,13 @@ secret is missing.
 
 ## Umami
 
-Visits are counted by Umami Cloud, in the account's EU region. The website ID,
-the collector host and the vendored tracker's date are in
-[`src/lib/analytics.ts`](../src/lib/analytics.ts); `/privacy` says what is
-sent.
+Visits are counted by Umami Cloud, in the account's EU region, on the free Hobby
+plan: 100K events a month, up to 3 websites, 6 months of retention. A page view
+is one event and a click up to four, since each event data property is billed as
+one. `/privacy` states the retention from `UMAMI_RETENTION_MONTHS`, so a plan
+change means editing that constant. The website ID, the collector host and the
+vendored tracker's date are in
+[`src/lib/analytics.ts`](../src/lib/analytics.ts); `/privacy` says what is sent.
 
 The tracker is a copy in `public/vendor/umami.js`, not loaded from Umami, and
 **it has to be checked by hand at least monthly**, and after any Umami
