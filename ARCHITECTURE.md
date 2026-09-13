@@ -571,10 +571,15 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   passes `WIDTHS` and a `sizes` attribute, both in
   `src/lib/image-densities.ts`. `WIDTHS` steps by no more than 1.5x, the
   oversize limit in `tests/image-size.spec.ts`.
-- **`Snapshot.astro`** is the tilted, hard-shadowed photo scattered through
-  `/about`: two shapes, upright 224x288 and wide 288x224. A wide tile is capped
-  at the column and only tilted from `sm`, because a rotated 288px box scrolls
-  the page sideways at 305px.
+- **`/about` is set as a magazine issue**: a cover whose cover lines are the
+  page's table of contents, then four spreads, each with a running head, a
+  kicker, a headline and its photos. The vocabulary is the `.mag-` classes in
+  `global.css`. Nothing is set over a photograph: the cover puts its text in a
+  solid column beside the portrait, because text on an image lands in axe's
+  contrast "incomplete" bucket. Every photo box has the same aspect ratio as
+  its file, since `object-cover` on a mismatched box reads to
+  `tests/image-size.spec.ts` as stretching. The Johann photo is drawn `w-64`
+  because its master is only 278px wide.
 - **A markdown image** gets `widths` and `sizes` from
   `src/plugins/post-figure.mjs`, which sets `layout: 'full-width'` so Astro
   reads `image.breakpoints` in `astro.config.mjs`. An image alone in its

@@ -500,20 +500,23 @@ its nav is not in the accessibility tree; and the no-JavaScript fallback nav in
 either. At 305px, or with scripting off, the numbers below are different by
 design and this section is not the place to check that.
 
-- [ ] `Alt+Shift+M` lists exactly **seven** landmarks, in this order:
-      banner, navigation "Primary", main, contentinfo, navigation "Site",
-      navigation "About this site", navigation "Social". Nothing unnamed, nothing
+- [ ] `Alt+Shift+M` lists exactly **eight** landmarks, in this order:
+      banner, navigation "Primary", main, navigation "In this issue" (the cover
+      lines), contentinfo, navigation "Site", navigation "About this site",
+      navigation "Social". Nothing unnamed, nothing
       duplicated. Three navigations inside contentinfo is deliberate, and they
       are labelled apart because merging them would put "Privacy" among the
       profiles, where it reads as another place to find her.
       Listed: `__________________________________________` → SC 1.3.1
 
-- [ ] `M` from the top steps through those seven in that order.
+- [ ] `M` from the top steps through those eight in that order.
       Heard: `___________________________________________` → SC 1.3.1
-- [ ] `Alt+Shift+H` lists exactly **five** headings on `/about`: the `h1`,
-      the three `h2` in the body, and the `h3` "There is room for everyone in
-      open source." on the closing card under the last `h2`; the footer has
-      none. One `h1`, announced first, no skipped level. The words are real
+- [ ] `Alt+Shift+H` lists exactly **five** headings on `/about`: the `h1`
+      "About me" on the cover and one `h2` per spread (Vienna since 2017,
+      Positivity advocate, The important things, Open source enthusiast); the
+      footer has none. One `h1`, announced first, no skipped level. The cover
+      lines are a nav named "In this issue", and each should scroll to its
+      spread with the heading clear of the sticky header. The words are real
       English, so judge them as prose as well as structure.
       Listed: `__________________________________________` → SC 1.3.1, 2.4.6
 
@@ -630,7 +633,8 @@ nested under its own `h2`.
 - [ ] `H` from `Ctrl+Home` walks the same 26 in the same order, and each
       announcement carries its level.
       Heard, first two: `________________________________` → SC 1.3.1
-- [ ] `Alt+Shift+M` lists the same seven landmarks as `/about` in 6.6. The
+- [ ] `Alt+Shift+M` lists the landmarks `/about` has in 6.6, less its
+      navigation "In this issue": seven. The
       `<article>` in `BlogLayout` is not a landmark and must not appear.
       Listed: `__________________________________________` → SC 1.3.1
 - [ ] `M` to `main`, then `Down` repeatedly. Reading order matches visual

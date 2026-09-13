@@ -958,10 +958,10 @@ Rules:
 - Do not put an `aria-label` on an element that already has visible text; it
   overrides what the user sees and breaks voice control.
 - `alt=""` for decorative images. Never put a filename in `alt`.
-- **A photo on the page is a `Snapshot`**, not a hand-rolled tilted `<img>`:
-  it fixes the two shapes, the tilt and the hard shadow, and keeps a wide tile
-  from scrolling the page sideways at 305px. The tilt is static, so it is not
-  motion. See ARCHITECTURE.md, Photos and video.
+- **Never set text over a photograph.** Put it beside the photo on a flat
+  token ground, as the `/about` cover does: text on an image cannot be
+  measured, and `tests/contrast-incomplete.spec.ts` fails it. See
+  ARCHITECTURE.md, Photos and video.
 
 ### Alt text conventions
 
