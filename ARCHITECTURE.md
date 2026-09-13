@@ -578,8 +578,10 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   solid column beside the portrait, because text on an image lands in axe's
   contrast "incomplete" bucket. Every photo box has the same aspect ratio as
   its file, since `object-cover` on a mismatched box reads to
-  `tests/image-size.spec.ts` as stretching. The Johann photo is drawn `w-64`
-  because its master is only 278px wide.
+  `tests/image-size.spec.ts` as stretching. The Johann photo is capped at
+  `max-w-64` because its master is only 278px wide. Each spread pairs its
+  columns to similar heights, putting photos under a short headline rather
+  than leaving an empty column beside a tall one.
 - **A markdown image** gets `widths` and `sizes` from
   `src/plugins/post-figure.mjs`, which sets `layout: 'full-width'` so Astro
   reads `image.breakpoints` in `astro.config.mjs`. An image alone in its
@@ -587,8 +589,9 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   `"Photo: Name"`, its `figcaption`.
 - **Credits** are in `src/lib/credits.ts`: each photographer's link, in
   Sinduri's order of preference (personal site, then Drupal.org, then
-  LinkedIn), the site-name inspiration and the video's song. A caption naming
-  someone listed there links them, and `/credits` lists them all.
+  LinkedIn), the site-name inspiration and the people thanked. A
+  caption naming someone listed there links them, `/about` links its credited
+  photos from the same list, and `/credits` lists them all.
 - **Video** goes in `public/videos/`, and none is published today: the post
   that had one uses a photo instead. The serving below stays in place for the
   next one. Encode an AV1 WebM with an H.264 MP4 fallback, a WebP poster and a

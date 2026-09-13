@@ -8,11 +8,13 @@
  */
 export const PHOTOGRAPHERS: Readonly<Record<string, string>> = {
   'Alex Gruber': 'https://www.linkedin.com/in/alex-gruber-59617549/',
+  'Andrey Pshenichny': 'https://andreys.info/',
   'Baris Tosun': 'https://www.drupal.org/u/rominronin',
   'Daniel Lemon': 'https://danlemon.com/',
   'Joris Vercammen': 'https://www.drupal.org/u/borisson_',
   'Klaus Purer': 'https://klau.si/',
   'Paul Johnson': 'https://www.drupal.org/u/pdjohnson',
+  'Tdm Dilip': 'https://www.instagram.com/tdmdilip/',
 };
 
 /** The prefix a markdown image title starts with to name its photographer. */
@@ -24,3 +26,29 @@ export const NAME_INSPIRATION = {
   href: 'https://norman.lol/',
   site: 'norman.lol',
 } as const;
+
+/** The people who taught or pointed Sinduri towards what built this site. */
+export const THANKS = [
+  {
+    name: 'Arthur Lorenz',
+    href: 'https://utor.io/',
+    reason:
+      'Introduced me to Stitch and explained his workflow for static websites.',
+  },
+  {
+    name: 'Vincenzo Gambino',
+    href: 'https://www.gambinovincenzo.com/',
+    reason: 'Introduced me to Astro at a Drupal session.',
+  },
+  {
+    name: 'Alexandru Teodor Ieremia',
+    href: 'https://www.linkedin.com/in/alexandru-teodor-ieremia-8581231b4/',
+    reason: 'Taught me about frontend and accessibility.',
+  },
+  {
+    name: 'Petra Morawa-Zechner',
+    href: 'https://diegestaltung.at/',
+    reason:
+      'Taught me about good design principles and sustainability in design.',
+  },
+] as const;

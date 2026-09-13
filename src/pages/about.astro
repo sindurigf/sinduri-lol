@@ -14,6 +14,11 @@ import rudra from '../assets/photos/rudra.jpg';
 import mountainCamp from '../assets/photos/drupal-mountain-camp.jpg';
 import friendsMossWall from '../assets/photos/friends-moss-wall.jpg';
 import escapeRoom from '../assets/photos/escape-room.jpg';
+import kannurSea from '../assets/photos/kannur-sea.jpg';
+import prideWithFriend from '../assets/photos/pride-with-friend.jpg';
+import dosa from '../assets/photos/sinduri-dosa.jpg';
+import lectureHall from '../assets/photos/drupal-lecture-hall.jpg';
+import { PHOTOGRAPHERS } from '../lib/credits';
 import { DENSITIES, WIDTHS } from '../lib/image-densities';
 
 /*
@@ -32,7 +37,7 @@ const JOURNEY_POST_HREF = '/blog/five-years-in-drupal/';
 /** The Fandoms thumbnail, drawn `size-14`. */
 const THUMB_SIZE = 56;
 
-/** The Johann photo, drawn `w-64`; its master is only 278px wide. */
+/** The Johann photo, drawn at most `max-w-64`; its master is only 278px wide. */
 const JOHANN_WIDTH = 256;
 
 /*
@@ -51,10 +56,16 @@ const SIZES = {
   cover: '(min-width: 64rem) 46rem, 100vw',
   sideColumn: '(min-width: 64rem) 32rem, 100vw',
   sidePair: '(min-width: 64rem) 16rem, 50vw',
-  third: '(min-width: 64rem) 16rem, (min-width: 40rem) 33vw, 100vw',
+  friendsPair: '(min-width: 64rem) 14rem, (min-width: 40rem) 33vw, 50vw',
+  friendsSingle: '(min-width: 64rem) 14rem, (min-width: 40rem) 33vw, 100vw',
+  food: '(min-width: 64rem) 19rem, (min-width: 40rem) 24rem, 100vw',
+  cat: '(min-width: 64rem) 19rem, (min-width: 40rem) 33vw, 100vw',
   essayLead: '(min-width: 64rem) 52rem, 100vw',
   essaySide: '(min-width: 64rem) 26rem, 100vw',
 } as const;
+
+const COVER_PHOTOGRAPHER = 'Tdm Dilip';
+const LECTURE_HALL_PHOTOGRAPHER = 'Andrey Pshenichny';
 
 const SPREADS = [
   {
@@ -144,14 +155,20 @@ const spreadNumber = (index: number): string =>
           </nav>
         </div>
 
-        <Image
-          src={bicycle}
-          alt="Sinduri laughing as she rides a bicycle with a basket down a tree-lined path."
-          widths={WIDTHS}
-          sizes={SIZES.cover}
-          loading="eager"
-          class="block aspect-portrait h-auto w-full object-cover"
-        />
+        <figure class="min-w-0">
+          <Image
+            src={bicycle}
+            alt="Sinduri laughing as she rides a bicycle with a basket down a tree-lined path."
+            widths={WIDTHS}
+            sizes={SIZES.cover}
+            loading="eager"
+            class="block aspect-portrait h-auto w-full object-cover"
+          />
+          <figcaption class="mag-caption">
+            Photo:{' '}
+            <a href={PHOTOGRAPHERS[COVER_PHOTOGRAPHER]}>{COVER_PHOTOGRAPHER}</a>
+          </figcaption>
+        </figure>
       </div>
     </div>
   </section>
@@ -159,7 +176,7 @@ const spreadNumber = (index: number): string =>
   {/* ===================================================================
        01 VIENNA SINCE 2017
        =================================================================== */}
-  <section class="band pb-24" id={SPREADS[0].id}>
+  <section class="band pb-20" id={SPREADS[0].id}>
     <div class="mx-auto max-w-page">
       <p class="mag-runhead" aria-hidden="true">
         <span>
@@ -168,53 +185,73 @@ const spreadNumber = (index: number): string =>
         <span>sinduri.lol</span>
       </p>
 
-      <div class="mag-spread-7-5 mt-14 grid gap-14 lg:items-start">
-        <div class="flex min-w-0 flex-col gap-6">
-          <p class="mag-kicker">Home</p>
-          <h2 id="spread-vienna" class="text-h1 text-text">
-            Vienna <span class="text-gold">since 2017</span>
-          </h2>
-          <p class="mag-standfirst">
-            I moved to Vienna in 2017. I love cats, travelling, and long
-            evenings with my friends talking about nothing and anything.
-          </p>
+      {/*
+        The photo row sits under the headline in the wide column, so the tall
+        portrait beside it is matched by text and photos rather than by an
+        empty column.
+      */}
+      <div class="mag-spread-7-5 mt-10 grid gap-10 lg:items-start">
+        <div class="flex min-w-0 flex-col gap-10">
+          <div class="flex flex-col gap-6">
+            <p class="mag-kicker">Home</p>
+            <h2 id="spread-vienna" class="text-h1 text-text">
+              Vienna <span class="text-gold">since 2017</span>
+            </h2>
+            <p class="mag-standfirst">
+              I moved to Vienna in 2017. I love cats, travelling, and long
+              evenings with my friends talking about nothing and anything.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <figure class="col-span-2">
+              <div class="grid grid-cols-2 gap-3">
+                <Image
+                  src={bestFriendSelfie}
+                  alt="Sinduri taking a selfie with her best friend, Hemu."
+                  widths={WIDTHS}
+                  sizes={SIZES.friendsPair}
+                  class="block aspect-square h-auto w-full object-cover"
+                />
+                <Image
+                  src={bestFriendBeach}
+                  alt="Sinduri and her best friend Hemu walking on a beach."
+                  widths={WIDTHS}
+                  sizes={SIZES.friendsPair}
+                  class="block aspect-square h-auto w-full object-cover"
+                />
+              </div>
+              <figcaption class="mag-caption">
+                <strong class="text-text">My best friend,</strong> Hemu.
+              </figcaption>
+            </figure>
+            <figure class="col-span-2 sm:col-span-1">
+              <Image
+                src={kannurSea}
+                alt="Sinduri standing at the edge of the sea with her arms spread wide, a wave breaking behind her."
+                widths={WIDTHS}
+                sizes={SIZES.friendsSingle}
+                class="block aspect-square h-auto w-full object-cover"
+              />
+              <figcaption class="mag-caption">
+                <strong class="text-text">Kannur,</strong> Kerala.
+              </figcaption>
+            </figure>
+          </div>
         </div>
 
-        <div class="flex min-w-0 flex-col gap-6">
-          <figure>
-            <Image
-              src={lake}
-              alt="Sinduri in a pink dress on a balcony, with trees and a lake behind her."
-              widths={WIDTHS}
-              sizes={SIZES.sideColumn}
-              class="block aspect-portrait h-auto w-full object-cover"
-            />
-            <figcaption class="mag-caption">
-              <strong class="text-text">Travelling.</strong>
-            </figcaption>
-          </figure>
-          <figure>
-            <div class="grid grid-cols-2 gap-3">
-              <Image
-                src={bestFriendSelfie}
-                alt="Sinduri taking a selfie with her best friend, Hemu."
-                widths={WIDTHS}
-                sizes={SIZES.sidePair}
-                class="block aspect-square h-auto w-full object-cover"
-              />
-              <Image
-                src={bestFriendBeach}
-                alt="Sinduri and her best friend Hemu walking on a beach."
-                widths={WIDTHS}
-                sizes={SIZES.sidePair}
-                class="block aspect-square h-auto w-full object-cover"
-              />
-            </div>
-            <figcaption class="mag-caption">
-              <strong class="text-text">My best friend,</strong> Hemu.
-            </figcaption>
-          </figure>
-        </div>
+        <figure class="min-w-0">
+          <Image
+            src={lake}
+            alt="Sinduri in a pink dress on a balcony, with trees and a lake behind her."
+            widths={WIDTHS}
+            sizes={SIZES.sideColumn}
+            class="block aspect-portrait h-auto w-full object-cover"
+          />
+          <figcaption class="mag-caption">
+            <strong class="text-text">Travelling.</strong>
+          </figcaption>
+        </figure>
       </div>
     </div>
   </section>
@@ -222,7 +259,7 @@ const spreadNumber = (index: number): string =>
   {/* ===================================================================
        02 POSITIVITY ADVOCATE
        =================================================================== */}
-  <section class="band pb-24" id={SPREADS[1].id}>
+  <section class="band pb-20" id={SPREADS[1].id}>
     <div class="mx-auto max-w-page">
       <p class="mag-runhead" aria-hidden="true">
         <span>
@@ -231,22 +268,36 @@ const spreadNumber = (index: number): string =>
         <span>sinduri.lol</span>
       </p>
 
-      <div class="mag-spread-5-7 mt-14 grid gap-14 lg:items-start">
-        <div class="flex min-w-0 flex-col gap-10">
-          <Image
-            src={portrait}
-            alt="Sinduri smiling, with a rainbow painted on her cheek and rainbow wings behind her."
-            widths={WIDTHS}
-            sizes={SIZES.sideColumn}
-            class="block aspect-portrait h-auto w-full object-cover"
-          />
-          <figure class="w-64 max-w-full">
+      <div class="mag-spread-5-7 mt-10 grid gap-10 lg:items-center">
+        <div class="flex min-w-0 flex-col gap-6">
+          <figure>
+            <div class="grid grid-cols-2 gap-3">
+              <Image
+                src={portrait}
+                alt="Sinduri smiling, with a rainbow painted on her cheek and rainbow wings behind her."
+                widths={WIDTHS}
+                sizes={SIZES.sidePair}
+                class="block aspect-portrait h-auto w-full object-cover"
+              />
+              <Image
+                src={prideWithFriend}
+                alt="Sinduri leaning on a friend's shoulder at Pride, both smiling into the camera."
+                widths={WIDTHS}
+                sizes={SIZES.sidePair}
+                class="block aspect-portrait h-auto w-full object-cover"
+              />
+            </div>
+            <figcaption class="mag-caption">
+              <strong class="text-text">Pride,</strong> with a friend.
+            </figcaption>
+          </figure>
+          <figure class="grid grid-cols-2 items-end gap-3">
             <Image
               src={withJohann}
               alt="Sinduri smiling with Johann, his arms wrapped around her."
               width={JOHANN_WIDTH}
               densities={JOHANN_DENSITIES}
-              class="block aspect-portrait h-auto w-full object-cover"
+              class="block aspect-portrait h-auto w-full max-w-64 object-cover"
             />
             <figcaption class="mag-caption">
               <strong class="text-text">Johann,</strong> my husband and the
@@ -292,7 +343,7 @@ const spreadNumber = (index: number): string =>
   {/* ===================================================================
        03 THE IMPORTANT THINGS
        =================================================================== */}
-  <section class="band pb-24" id={SPREADS[2].id}>
+  <section class="band pb-20" id={SPREADS[2].id}>
     <div class="mx-auto max-w-page">
       <p class="mag-runhead" aria-hidden="true">
         <span>
@@ -301,55 +352,71 @@ const spreadNumber = (index: number): string =>
         <span>sinduri.lol</span>
       </p>
 
-      <div class="mag-spread-4-8 mt-14 grid gap-14 lg:items-start">
-        <div class="surface-gold flex flex-col gap-3 p-8">
-          <p class="mag-kicker text-gold-text">Fact file</p>
+      <div class="mt-10 flex flex-col gap-10">
+        <div class="surface-gold flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 p-card-tight sm:p-8">
           <h2 id="spread-important" class="text-h3">
             The important things
           </h2>
+          <p class="mag-kicker text-gold-text">Fact file</p>
         </div>
 
-        <div class="flex min-w-0 flex-col gap-12">
-          <dl class="mag-facts">
-            <div>
-              <dt>Sacred tradition</dt>
-              <dd>
-                Lord of the Rings
-                <span class="block text-label font-normal text-muted">
-                  The extended versions, every year
-                </span>
-              </dd>
-            </div>
-            <div>
-              <dt>Fandoms</dt>
-              <dd class="flex items-center justify-between gap-4">
-                Star Trek, One Piece, Star Wars
-                <Image
-                  src={starTrek}
-                  alt="Sinduri in a Star Trek uniform."
-                  width={THUMB_SIZE}
-                  height={THUMB_SIZE}
-                  densities={DENSITIES}
-                  class="size-14 rounded-full object-cover"
-                />
-              </dd>
-            </div>
-            <div>
-              <dt>Food</dt>
-              <dd>
-                Love it
-                <span class="block text-label font-normal text-muted">
-                  But I am a picky eater
-                </span>
-              </dd>
-            </div>
-            <div>
-              <dt>Music</dt>
-              <dd>All over the place</dd>
-            </div>
-          </dl>
+        <dl class="mag-facts">
+          <div>
+            <dt>Sacred tradition</dt>
+            <dd>
+              Lord of the Rings
+              <span class="block text-label font-normal text-muted">
+                The extended versions, every year
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt>Fandoms</dt>
+            <dd class="flex items-center justify-between gap-4">
+              Star Trek, One Piece, Star Wars
+              <Image
+                src={starTrek}
+                alt="Sinduri in a Star Trek uniform."
+                width={THUMB_SIZE}
+                height={THUMB_SIZE}
+                densities={DENSITIES}
+                class="size-14 rounded-full object-cover"
+              />
+            </dd>
+          </div>
+          <div>
+            <dt>Food</dt>
+            <dd>
+              Love it
+              <span class="block text-label font-normal text-muted">
+                But I am a picky eater
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt>Music</dt>
+            <dd>All over the place</dd>
+          </div>
+        </dl>
 
+        <div class="grid gap-10 lg:grid-cols-4 lg:gap-4">
           <div class="flex flex-col gap-4">
+            <p class="mag-kicker">Food</p>
+            <figure class="sm:max-w-sm lg:max-w-none">
+              <Image
+                src={dosa}
+                alt="Sinduri, eyes closed, about to take a bite of dosa with her hand."
+                widths={WIDTHS}
+                sizes={SIZES.food}
+                class="block aspect-square h-auto w-full object-cover"
+              />
+              <figcaption class="mag-caption">
+                <strong class="text-text">Dosa.</strong> Love it.
+              </figcaption>
+            </figure>
+          </div>
+
+          <div class="flex flex-col gap-4 lg:col-span-3">
             <p class="mag-kicker">Three cats</p>
             <ul class="grid gap-4 sm:grid-cols-3">
               {CATS.map((cat) => (
@@ -359,7 +426,7 @@ const spreadNumber = (index: number): string =>
                       src={cat.src}
                       alt={cat.alt}
                       widths={WIDTHS}
-                      sizes={SIZES.third}
+                      sizes={SIZES.cat}
                       class="block aspect-square h-auto w-full object-cover"
                     />
                     <figcaption class="mag-caption">
@@ -378,7 +445,7 @@ const spreadNumber = (index: number): string =>
   {/* ===================================================================
        04 OPEN SOURCE ENTHUSIAST
        =================================================================== */}
-  <section class="band pb-24" id={SPREADS[3].id}>
+  <section class="band pb-20" id={SPREADS[3].id}>
     <div class="mx-auto max-w-page">
       <p class="mag-runhead" aria-hidden="true">
         <span>
@@ -387,7 +454,7 @@ const spreadNumber = (index: number): string =>
         <span>sinduri.lol</span>
       </p>
 
-      <div class="mt-14 flex flex-col gap-6">
+      <div class="mt-10 flex flex-col gap-6">
         <p class="mag-kicker">The story</p>
         <h2 id="spread-open-source" class="text-h1 text-text">
           Open source <span class="text-gold">enthusiast</span>
@@ -397,28 +464,46 @@ const spreadNumber = (index: number): string =>
         </p>
       </div>
 
-      <div class="mag-columns mt-10 max-w-5xl">
-        <div class="mb-8">
-          <p class="mag-kicker mb-2">Before</p>
-          <p class="mag-dropcap text-body text-muted text-pretty">
-            I studied civil engineering in India and environmental engineering
-            in the US. I always wanted to become a developer, but I never felt
-            ready until I moved to Vienna. Honestly, after a few German courses,
-            learning to code seemed much easier! A short Python course in 2019
-            showed me I loved programming, and a full-stack web development
-            course gave me the confidence to make the switch.
-          </p>
+      <div class="mag-spread-7-5 mt-10 grid gap-10 lg:items-start">
+        <div class="mag-columns">
+          <div class="mb-8">
+            <p class="mag-kicker mb-2">Before</p>
+            <p class="mag-dropcap text-body text-muted text-pretty">
+              I studied civil engineering in India and environmental engineering
+              in the US. I always wanted to become a developer, but I never felt
+              ready until I moved to Vienna. Honestly, after a few German
+              courses, learning to code seemed much easier! A short Python
+              course in 2019 showed me I loved programming, and a full-stack web
+              development course gave me the confidence to make the switch.
+            </p>
+          </div>
+          <div class="mb-8">
+            <p class="mag-kicker mb-2">After</p>
+            <p class="text-body text-muted text-pretty">
+              In January 2021, Klaus Purer gave me a Drupal test. I had
+              absolutely no idea what Drupal was, but I did well enough to get
+              the job. Since then I have organised Drupal events, joined the
+              Drupal Austria board, where I am deputy marketing manager in 2026,
+              and won the Women in Drupal Award in 2025.
+            </p>
+          </div>
         </div>
-        <div class="mb-8">
-          <p class="mag-kicker mb-2">After</p>
-          <p class="text-body text-muted text-pretty">
-            In January 2021, Klaus Purer gave me a Drupal test. I had absolutely
-            no idea what Drupal was, but I did well enough to get the job. Since
-            then I have organised Drupal events, joined the Drupal Austria
-            board, where I am deputy marketing manager in 2026, and won the
-            Women in Drupal Award in 2025.
-          </p>
-        </div>
+
+        <figure class="min-w-0">
+          <Image
+            src={lectureHall}
+            alt="Sinduri standing and clapping in a lecture hall full of Drupal event attendees."
+            widths={WIDTHS}
+            sizes={SIZES.sideColumn}
+            class="block aspect-photo h-auto w-full object-cover"
+          />
+          <figcaption class="mag-caption">
+            <strong class="text-text">The Drupal community.</strong> Photo:{' '}
+            <a href={PHOTOGRAPHERS[LECTURE_HALL_PHOTOGRAPHER]}>
+              {LECTURE_HALL_PHOTOGRAPHER}
+            </a>
+          </figcaption>
+        </figure>
       </div>
 
       <div class="mag-essay mt-10 grid gap-4">
@@ -462,7 +547,7 @@ const spreadNumber = (index: number): string =>
         </div>
       </div>
 
-      <div class="mt-14 flex flex-wrap items-center justify-between gap-6 border-t-4 border-border pt-6">
+      <div class="mt-12 flex flex-wrap items-center justify-between gap-6 border-t-4 border-border pt-6">
         <p class="text-body text-text">
           Continue reading: <a href={JOURNEY_POST_HREF}>Five years in Drupal</a>
         </p>

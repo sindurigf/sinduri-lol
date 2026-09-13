@@ -3,6 +3,7 @@ import { badgeImage } from '../lib/badge-image';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SpinBadge from '../components/ui/SpinBadge.vue';
 import ContactForm from '../components/ContactForm.astro';
+import { CONTACT_EMAIL } from '../lib/contact';
 
 /*
  * PLACEHOLDER COPY, per design/Contact.dc.html. Headings, the standfirst and
@@ -18,7 +19,7 @@ import ContactForm from '../components/ContactForm.astro';
  * blocks the submission silently, with nothing on the page to say so.
  */
 
-const EMAIL = 'lol@sinduri.lol';
+const EMAIL = CONTACT_EMAIL;
 
 const CONTACT_METHODS = [
   {
@@ -57,11 +58,11 @@ const REASONS = [
   description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 >
   {/* ===================================================================
-       HERO
+       INTRO
        =================================================================== */}
-  <section class="band py-24">
-    <div class="mx-auto grid max-w-page gap-16 lg:grid-cols-2 lg:items-start">
-      <div class="min-w-0">
+  <section class="band py-16">
+    <div class="mx-auto grid max-w-page items-center gap-12 lg:grid-cols-12">
+      <div class="min-w-0 lg:col-span-8">
         <h1 class="text-h1 text-gold">Lorem ipsum.</h1>
 
         <p class="mt-8 max-w-xl text-body text-muted text-pretty">
@@ -69,45 +70,9 @@ const REASONS = [
           incididunt ut labore et dolore magna aliqua, ut enim ad minim veniam
           quis nostrud exercitation ullamco.
         </p>
-
-        {/*
-          The whole card is the link here, unlike the blog cards, because of
-          the length of the resulting name: a blog card would read as its
-          category, reading time, title and a forty-word teaser in one string,
-          where this reads as "Email lol@sinduri.lol", which is what the
-          control is. The arrow is decoration and out of the tree.
-        */}
-        <ul class="mt-12 flex flex-col gap-6">
-          {CONTACT_METHODS.map((method) => (
-            <li class="flex min-w-0">
-              <a
-                href={method.href}
-                class:list={[
-                  'flex w-full min-w-0 items-center justify-between gap-6 border-8 border-border bg-surface p-card-tight text-text sm:p-8',
-                  method.shadow,
-                ]}
-              >
-                <span class="flex min-w-0 flex-col gap-2">
-                  <span class:list={['label-wide', method.accent]}>
-                    {method.label}
-                  </span>
-                  <span class="text-h3 font-extrabold text-text">
-                    {method.value}
-                  </span>
-                </span>
-                <span
-                  aria-hidden="true"
-                  class:list={['text-h3 leading-none', method.accent]}
-                >
-                  &rarr;
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
       </div>
 
-      <div class="flex min-w-0 flex-col items-center gap-12">
+      <div class="flex min-w-0 justify-center lg:col-span-4 lg:justify-end">
         {/*
           The 28s pace, `.spin-pace-contact` in global.css. client:load
           because the animation is applied by the island on mount, so the
@@ -123,8 +88,78 @@ const REASONS = [
           borderClass="border-8"
           shadowClass="shadow-hard-cyan-8"
         />
+      </div>
+    </div>
+  </section>
 
-        <div class="card w-full">
+  {/* ===================================================================
+       FORM AND DIRECT ROUTES
+       =================================================================== */}
+  {/*
+    The form comes first in source order as well as on the left, so the
+    reading order at one column matches the two-column reading order.
+  */}
+  <section class="band pb-24">
+    <div class="mx-auto grid max-w-page gap-16 lg:grid-cols-12 lg:items-start">
+      <div class="card min-w-0 shadow-hard-gold-8 lg:col-span-7">
+        <h2 class="text-h2 text-text">Write to me</h2>
+
+        {/*
+          Functional microcopy. Says what happens to the message and names the
+          way round the form, because a form is not everyone's way in.
+        */}
+        <p class="mt-6 text-body text-muted text-pretty">
+          This goes to the same inbox as the email address on this page. If
+          something on this site blocks you, that is worth sending even if you
+          cannot say which part is wrong, and you do not need to explain why you
+          are writing.
+        </p>
+
+        <ContactForm />
+      </div>
+
+      <div class="flex min-w-0 flex-col gap-12 lg:col-span-5">
+        <div>
+          <h2 class="label-wide text-gold">Or find me here</h2>
+
+          {/*
+            The whole card is the link here, unlike the blog cards, because of
+            the length of the resulting name: a blog card would read as its
+            category, reading time, title and a forty-word teaser in one
+            string, where this reads as "Email lol@sinduri.lol", which is what
+            the control is. The arrow is decoration and out of the tree.
+          */}
+          <ul class="mt-6 flex flex-col gap-6">
+            {CONTACT_METHODS.map((method) => (
+              <li class="flex min-w-0">
+                <a
+                  href={method.href}
+                  class:list={[
+                    'flex w-full min-w-0 items-center justify-between gap-6 border-8 border-border bg-surface p-card-tight text-text',
+                    method.shadow,
+                  ]}
+                >
+                  <span class="flex min-w-0 flex-col gap-2">
+                    <span class:list={['label-wide', method.accent]}>
+                      {method.label}
+                    </span>
+                    <span class="text-h3 font-extrabold text-text">
+                      {method.value}
+                    </span>
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    class:list={['text-h3 leading-none', method.accent]}
+                  >
+                    &rarr;
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="card">
           <h2 class="label-wide text-gold">Lorem ipsum dolor sit</h2>
           <ul class="mt-6 list-disc pl-6 text-muted marker:text-gold">
             {REASONS.map((reason) => (
@@ -133,31 +168,6 @@ const REASONS = [
           </ul>
         </div>
       </div>
-    </div>
-  </section>
-
-  {/* ===================================================================
-       THE FORM
-       =================================================================== */}
-  <section class="band py-24">
-    <div class="mx-auto max-w-page">
-      <span class="section-rule bg-gold"></span>
-    </div>
-
-    <div class="mx-auto max-w-3xl">
-      <h2 class="text-h2 text-text">Write instead</h2>
-
-      {/*
-        Functional microcopy. Says what happens to the message and names the
-        way round the form, because a form is not everyone's way in.
-      */}
-      <p class="mt-8 text-body text-muted text-pretty">
-        This goes to the same inbox as the address above. If something on this
-        site blocks you, that is worth sending even if you cannot say which part
-        is wrong, and you do not need to explain why you are writing.
-      </p>
-
-      <ContactForm />
     </div>
   </section>
 

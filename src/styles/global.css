@@ -443,7 +443,9 @@
    */
   .prose a,
   p a:not([class]),
-  li a:not([class]) {
+  li a:not([class]),
+  dd a:not([class]),
+  figcaption a:not([class]) {
     text-decoration: underline;
     text-underline-offset: 0.2em;
     text-decoration-thickness: 2px;
@@ -1911,12 +1913,16 @@
     @apply mt-3 text-label text-subtle text-pretty;
   }
 
-  .mag-facts > div {
-    @apply grid items-center gap-x-6 gap-y-1 border-t-4 border-border py-4;
+  /*
+   * The closing rule is on the list rather than on its last fact, so it still
+   * spans the whole width when the facts sit in two columns.
+   */
+  .mag-facts {
+    @apply grid border-b-4 border-border lg:grid-cols-2 lg:gap-x-12;
   }
 
-  .mag-facts > div:last-child {
-    @apply border-b-4;
+  .mag-facts > div {
+    @apply grid items-center gap-x-6 gap-y-1 border-t-4 border-border py-4;
   }
 
   @media (width >= 40rem) {
