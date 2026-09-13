@@ -590,8 +590,8 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
 - **Credits** are in `src/lib/credits.ts`: each photographer's link, in
   Sinduri's order of preference (personal site, then Drupal.org, then
   LinkedIn), the site-name inspiration and the video's song. A caption naming
-  someone listed there links them, `/about` links its one credited photo from
-  the same list, and `/credits` lists them all.
+  someone listed there links them, `/about` links its credited photos from the
+  same list, and `/credits` lists them all.
 - **Video** is in `public/videos/`: an AV1 WebM, an H.264 MP4 fallback, a WebP
   poster and a WebVTT captions file. Static assets are capped at 25 MiB a
   file. Workers static assets answer a `Range` request with the whole file and

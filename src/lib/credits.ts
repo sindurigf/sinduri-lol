@@ -14,6 +14,7 @@ export const PHOTOGRAPHERS: Readonly<Record<string, string>> = {
   'Joris Vercammen': 'https://www.drupal.org/u/borisson_',
   'Klaus Purer': 'https://klau.si/',
   'Paul Johnson': 'https://www.drupal.org/u/pdjohnson',
+  'Tdm Dilip': 'https://www.instagram.com/tdmdilip/',
 };
 
 /** The prefix a markdown image title starts with to name its photographer. */

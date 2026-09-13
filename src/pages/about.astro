@@ -64,6 +64,7 @@ const SIZES = {
   essaySide: '(min-width: 64rem) 26rem, 100vw',
 } as const;
 
+const COVER_PHOTOGRAPHER = 'Tdm Dilip';
 const LECTURE_HALL_PHOTOGRAPHER = 'Andrey Pshenichny';
 
 const SPREADS = [
@@ -154,14 +155,20 @@ const spreadNumber = (index: number): string =>
           </nav>
         </div>
 
-        <Image
-          src={bicycle}
-          alt="Sinduri laughing as she rides a bicycle with a basket down a tree-lined path."
-          widths={WIDTHS}
-          sizes={SIZES.cover}
-          loading="eager"
-          class="block aspect-portrait h-auto w-full object-cover"
-        />
+        <figure class="min-w-0">
+          <Image
+            src={bicycle}
+            alt="Sinduri laughing as she rides a bicycle with a basket down a tree-lined path."
+            widths={WIDTHS}
+            sizes={SIZES.cover}
+            loading="eager"
+            class="block aspect-portrait h-auto w-full object-cover"
+          />
+          <figcaption class="mag-caption">
+            Photo:{' '}
+            <a href={PHOTOGRAPHERS[COVER_PHOTOGRAPHER]}>{COVER_PHOTOGRAPHER}</a>
+          </figcaption>
+        </figure>
       </div>
     </div>
   </section>
