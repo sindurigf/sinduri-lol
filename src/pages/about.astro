@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import portrait from '../assets/photos/sinduri-pride.jpg';
 import lake from '../assets/photos/sinduri-lake.jpg';
@@ -36,6 +37,9 @@ const JOURNEY_POST_HREF = '/blog/five-years-in-drupal/';
 
 /** The Fandoms thumbnail, drawn `size-14`. */
 const THUMB_SIZE = 56;
+
+/** The bunny roundel's mark, drawn `h-14`, as on the homepage. */
+const ROUNDEL_MARK_HEIGHT = 56;
 
 /** The Johann photo, drawn at most `max-w-64`; its master is only 278px wide. */
 const JOHANN_WIDTH = 256;
@@ -76,7 +80,7 @@ const SPREADS = [
   {
     id: 'positivity',
     title: 'Positivity advocate',
-    teaser: 'Why we should all be a bit kinder',
+    teaser: 'Kindness, laughter and Lepus Ridet',
   },
   {
     id: 'important-things',
@@ -335,6 +339,35 @@ const spreadNumber = (index: number): string =>
               it work.
             </p>
           </div>
+        </div>
+      </div>
+
+      {/*
+        Full width under both columns rather than a third box in the text
+        column, which would leave the photos a column short. The roundel is the
+        homepage's bunny tile; alt="" because the kicker beside it names it.
+      */}
+      <div class="mt-14 flex flex-col gap-8 border-t-4 border-border pt-10 sm:flex-row sm:items-center">
+        <span class="flex size-28 shrink-0 items-center justify-center rounded-full border-8 border-border bg-gold shadow-hard-cyan-8">
+          <Image
+            src={bunnyDark}
+            alt=""
+            height={ROUNDEL_MARK_HEIGHT}
+            densities={DENSITIES}
+            class="h-14 w-auto"
+          />
+        </span>
+        <div class="flex min-w-0 flex-col gap-2">
+          <p class="mag-kicker text-pink-text">Why Lepus Ridet</p>
+          <p class="text-h3 font-bold text-text text-pretty">
+            My pet name is Bunny. That is what my family and close friends call
+            me.
+          </p>
+          <p class="max-w-prose text-body text-muted text-pretty">
+            I try to always laugh and find fun in everything I do, and that is
+            where Lepus Ridet comes from: it is Latin for &ldquo;the hare
+            laughs&rdquo;.
+          </p>
         </div>
       </div>
     </div>

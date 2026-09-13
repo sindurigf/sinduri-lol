@@ -33,22 +33,24 @@ export const THANKS = [
     name: 'Arthur Lorenz',
     href: 'https://utor.io/',
     reason:
-      'Introduced me to Stitch and explained his workflow for static websites.',
+      'Thank you for showing me Stitch and your workflow for static websites, and for encouraging me to actually build my own!',
   },
   {
     name: 'Vincenzo Gambino',
     href: 'https://www.gambinovincenzo.com/',
-    reason: 'Introduced me to Astro at a Drupal session.',
+    reason:
+      'Thank you for introducing me to Astro at a Drupal session. I am so amazed by its performance!',
   },
   {
     name: 'Alexandru Teodor Ieremia',
     href: 'https://www.linkedin.com/in/alexandru-teodor-ieremia-8581231b4/',
-    reason: 'Taught me about frontend and accessibility.',
+    reason:
+      'Taught me frontend and accessibility, and I tried to use what I learned while building this site.',
   },
   {
     name: 'Petra Morawa-Zechner',
     href: 'https://diegestaltung.at/',
     reason:
-      'Taught me about good design principles and sustainability in design.',
+      'Taught me good design principles and how to think about sustainability in design.',
   },
 ] as const;
