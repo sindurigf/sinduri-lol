@@ -286,6 +286,19 @@ test.describe('the privacy policy is true', () => {
         'inbox hosted by Google. src/pages/contact/send.astro still sends one.',
     ).toMatch(/copy is emailed[^.]*Google/);
 
+    /*
+     * wrangler.jsonc turns on Workers logs and traces, which record each
+     * submission's request, browser and location for a few days.
+     */
+    expect(
+      text,
+      '/privacy no longer says that requests to the Worker are logged with ' +
+        'the browser and approximate location, and for how long. ' +
+        'wrangler.jsonc still enables logs and traces.',
+    ).toMatch(
+      /logged[^.]*Cloudflare account[\s\S]*deleted automatically after \d+ days/,
+    );
+
     expect(
       text.toLowerCase(),
       '/privacy no longer says how to have a stored message deleted. A page ' +

@@ -19,14 +19,13 @@
   // RETENTION_DAYS, so a day's lag is the most a message outlives it.
   "triggers": { "crons": ["17 3 * * *"] },
 
-  // Logs only what the code writes with `console.error`: today, the reason a
-  // contact form submission could not be stored, and never the submission.
-  //
-  // Invocation logs off. They record "the Request, Response, and related
-  // metadata" for every call, and Cloudflare does not list which fields, so they
-  // cannot be shown not to hold the visitor's address, which /privacy says is
-  // never written down. Traces off: they record the user agent, country and ASN
-  // of every submission, and they are beta, billed from 2026-10-01.
+  // Logs, invocation logs and traces, kept 3 days on the Free plan. Only
+  // requests that run Worker code are recorded: the contact endpoint and the
+  // cron, not static assets. Invocation logs hold the request and response,
+  // fields unlisted by Cloudflare, so possibly the visitor's address; traces
+  // hold user agent, city, country and ASN. /privacy discloses both, under
+  // WORKER_LOG_RETENTION_DAYS. Traces count toward usage from 2026-10-01; the
+  // Free plan includes 200,000 events a day.
   //
   // In this file rather than the dashboard, because a deploy replaces what the
   // dashboard set: that is how a dashboard-only custom domain was lost.
@@ -34,7 +33,13 @@
     "logs": {
       "enabled": true,
       "head_sampling_rate": 1,
-      "invocation_logs": false,
+      "invocation_logs": true,
+      "persist": true,
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
     },
   },
 
