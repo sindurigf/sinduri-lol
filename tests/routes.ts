@@ -37,6 +37,7 @@ const PAGE_ROUTES = [
   // Linked from the footer, so every suite that walks ROUTES measures them.
   '/accessibility',
   '/privacy',
+  '/credits',
 ] as const;
 
 /**

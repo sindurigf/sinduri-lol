@@ -1,0 +1,95 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { CONTACT_EMAIL } from '../lib/contact';
+import { JOURNEY_SONG, NAME_INSPIRATION, PHOTOGRAPHERS } from '../lib/credits';
+
+/*
+ * Who made what on this site. The site name story is Sinduri's own words and
+ * leads the page, because she wanted it somewhere visible; everything below
+ * it is factual attribution read from src/lib/credits.ts, the same list the
+ * photo captions in posts link from.
+ *
+ * A list item that is nothing but a link gets `min-h-target`: the SC 2.5.8
+ * inline exception does not reach a link with no sentence around it.
+ */
+
+const JOURNEY_POST_HREF = '/blog/five-years-in-drupal/';
+
+const BUILT_WITH = [
+  { name: 'Astro', href: 'https://astro.build/' },
+  { name: 'Vue', href: 'https://vuejs.org/' },
+  { name: 'Tailwind CSS', href: 'https://tailwindcss.com/' },
+  { name: 'Lexend', href: 'https://www.lexend.com/' },
+  { name: 'Cloudflare Workers', href: 'https://workers.cloudflare.com/' },
+] as const;
+
+const photographers = Object.entries(PHOTOGRAPHERS).map(([name, href]) => ({
+  name,
+  href,
+}));
+
+const LINK_ITEM = 'inline-flex min-h-target items-center';
+---
+
+<BaseLayout
+  title="Credits | sinduri.lol"
+  description="Where the name sinduri.lol comes from, who took the photos, and what the site is built with."
+>
+  <section class="band py-24">
+    <div class="mx-auto max-w-page">
+      <h1 class="text-h1 text-gold">Credits</h1>
+
+      <div class="card mt-14 max-w-4xl shadow-hard-pink-8">
+        <p class="label-wide text-pink-text">Where the name comes from</p>
+        <p class="mt-6 text-h3 font-bold text-text text-pretty">
+          The name of this site was inspired by fellow Drupalist{' '}
+          {NAME_INSPIRATION.name} and{' '}
+          <a href={NAME_INSPIRATION.href}>{NAME_INSPIRATION.site}</a>. I even
+          stole the idea for my email address,{' '}
+          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band py-24">
+    <div class="mx-auto max-w-page">
+      <h2 class="text-h2 text-gold">Photos</h2>
+
+      <p class="mt-8 max-w-prose text-muted text-pretty">
+        Photos on this site and in its posts are by:
+      </p>
+
+      <ul class="mt-6 max-w-prose list-disc pl-6 text-muted marker:text-gold">
+        {photographers.map((photographer) => (
+          <li class="mt-3">
+            <a href={photographer.href} class={LINK_ITEM}>
+              {photographer.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <p class="mt-6 max-w-prose text-muted text-pretty">And more.</p>
+
+      <h2 class="mt-20 text-h2 text-gold">Music</h2>
+
+      <p class="mt-8 max-w-prose text-muted text-pretty">
+        The video in <a href={JOURNEY_POST_HREF}>Five years in Drupal</a> is set
+        to {JOURNEY_SONG.title} by {JOURNEY_SONG.artist}.
+      </p>
+
+      <h2 class="mt-20 text-h2 text-gold">Built with</h2>
+
+      <ul class="mt-8 max-w-prose list-disc pl-6 text-muted marker:text-gold">
+        {BUILT_WITH.map((tool) => (
+          <li class="mt-3">
+            <a href={tool.href} class={LINK_ITEM}>
+              {tool.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>

@@ -17,3 +17,16 @@ export const PHOTOGRAPHERS: Readonly<Record<string, string>> = {
 
 /** The prefix a markdown image title starts with to name its photographer. */
 export const PHOTO_CREDIT_PREFIX = 'Photo: ';
+
+/** Whose site this one's name, and its email address, were borrowed from. */
+export const NAME_INSPIRATION = {
+  name: 'Norman Kämper-Leymann',
+  href: 'https://norman.lol/',
+  site: 'norman.lol',
+} as const;
+
+/** The soundtrack of the journey video in the Five years in Drupal post. */
+export const JOURNEY_SONG = {
+  title: "Don't Stop Believin'",
+  artist: 'Journey',
+} as const;

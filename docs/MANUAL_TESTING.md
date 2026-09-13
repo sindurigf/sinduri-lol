@@ -501,7 +501,7 @@ design and this section is not the place to check that.
 
 - [ ] `Alt+Shift+M` lists exactly **seven** landmarks, in this order:
       banner, navigation "Primary", main, contentinfo, navigation "Site",
-      navigation "Site policies", navigation "Social". Nothing unnamed, nothing
+      navigation "About this site", navigation "Social". Nothing unnamed, nothing
       duplicated. Three navigations inside contentinfo is deliberate, and they
       are labelled apart because merging them would put "Privacy" among the
       profiles, where it reads as another place to find her.
