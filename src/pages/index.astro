@@ -4,7 +4,7 @@ import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BlogCard from '../components/BlogCard.astro';
 import HeroField from '../components/ui/HeroField.vue';
-import laughing from '../assets/photos/sinduri-laughing.jpg';
+import portrait from '../assets/photos/sinduri-studio.jpg';
 import { BLOG_CATEGORIES } from '../content.config';
 import { categoryLabel, getFeaturedPosts } from '../lib/blog';
 import { DENSITIES, WIDTHS } from '../lib/image-densities';
@@ -248,8 +248,8 @@ const STATS = [
       <div class="mt-16 grid gap-16 lg:grid-cols-2 lg:items-start">
         <div class="relative">
           <Image
-            src={laughing}
-            alt="Sinduri and a friend laughing, each holding a bottle."
+            src={portrait}
+            alt="Sinduri smiling in a studio portrait, standing against a dark wall beside a teal block."
             widths={WIDTHS}
             sizes={TEASER_PHOTO_SIZES}
             class="block aspect-square h-auto w-full border-8 border-border object-cover"
