@@ -128,7 +128,9 @@ const CLOUDFLARE_PRIVACY = 'https://www.cloudflare.com/privacypolicy/';
         email address and message you type, so that there is something to reply
         to. Nothing else is recorded with it: no IP address, no browser, no
         referrer, and no identifier of any kind. It is stored in a database
-        restricted to the European Union.
+        restricted to the European Union, and a copy is emailed to the site
+        owner's inbox, which is hosted by Google, so that the message is seen
+        and can be answered.
       </p>
 
       <p class="mt-6 max-w-prose text-muted text-pretty">
@@ -140,8 +142,9 @@ const CLOUDFLARE_PRIVACY = 'https://www.cloudflare.com/privacypolicy/';
       </p>
 
       <p class="mt-6 max-w-prose text-muted text-pretty">
-        Messages are deleted after {RETENTION_DAYS} days. To have yours removed
-        sooner, write to{' '}
+        Messages are deleted from the database after {RETENTION_DAYS} days. The
+        emailed copy is kept like any other email, for as long as it is needed
+        to reply. To have both removed sooner, write to{' '}
         <a
           href={`mailto:${CONTACT_EMAIL}`}
           class="underline decoration-gold underline-offset-4 hover:text-cyan"

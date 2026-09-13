@@ -276,6 +276,16 @@ test.describe('the privacy policy is true', () => {
         'write is owed that.',
     ).toContain('European Union');
 
+    /*
+     * Each stored message is also emailed to an inbox Google hosts, which is a
+     * second place it lives and a second company that holds it.
+     */
+    expect(
+      text,
+      '/privacy no longer says that a copy of each message is emailed to an ' +
+        'inbox hosted by Google. src/pages/contact/send.astro still sends one.',
+    ).toMatch(/copy is emailed[^.]*Google/);
+
     expect(
       text.toLowerCase(),
       '/privacy no longer says how to have a stored message deleted. A page ' +
