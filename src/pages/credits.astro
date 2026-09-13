@@ -34,6 +34,21 @@ const DESIGNED_WITH = [
   },
 ] as const;
 
+const GUIDES = [
+  {
+    name: 'ACCESSIBILITY.md',
+    href: 'https://github.com/mgifford/ACCESSIBILITY.md',
+    author: { name: 'Mike Gifford', href: 'https://ox.ca/' },
+    use: 'The format this site uses for its accessibility statement.',
+  },
+  {
+    name: 'The Website Specification',
+    href: 'https://specification.website/',
+    author: { name: 'Joost de Valk', href: 'https://joost.blog/' },
+    use: 'The checklist used to check the SEO, security and agent readiness of this site.',
+  },
+] as const;
+
 const photographers = Object.entries(PHOTOGRAPHERS).map(([name, href]) => ({
   name,
   href,
@@ -101,7 +116,7 @@ const RULED_ENTRY =
   </section>
 
   <section class="band pb-24">
-    <div class="mx-auto grid max-w-page gap-12 lg:grid-cols-3">
+    <div class="mx-auto grid max-w-page gap-12 lg:grid-cols-2">
       <div class="card shadow-hard-gold-8">
         <h2 class="label-wide text-gold">Photos</h2>
 
@@ -148,7 +163,27 @@ const RULED_ENTRY =
       </div>
 
       <div class="card shadow-hard-cyan-8">
-        <h2 class="label-wide text-cyan">Built with</h2>
+        <h2 class="label-wide text-cyan">Guides</h2>
+
+        <dl class="mt-6">
+          {GUIDES.map((guide) => (
+            <div class={RULED_ENTRY}>
+              <dt class="text-body font-bold">
+                <a href={guide.href} class={LINK_ITEM}>
+                  {guide.name}
+                </a>
+              </dt>
+              <dd class="mt-1 text-body text-muted text-pretty">
+                By <a href={guide.author.href}>{guide.author.name}</a>.{' '}
+                {guide.use}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      <div class="card shadow-hard-gold-8">
+        <h2 class="label-wide text-gold">Built with</h2>
 
         <ul class="mt-6 list-disc pl-6 text-muted marker:text-gold">
           {BUILT_WITH.map((tool) => (
