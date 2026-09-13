@@ -6,6 +6,7 @@ import { extname, join } from 'node:path';
 import { expect, test, type Response } from '@playwright/test';
 import { DIST_DIR } from './routes';
 import { waitForHydration } from './settle';
+import { UMAMI_HOST_URL } from '../src/lib/analytics';
 import {
   asServed,
   collectViolations,
@@ -546,6 +547,19 @@ test.describe('security headers', () => {
       "form-action must be 'self'. The contact form at /contact/ posts to " +
         '/contact/send/ on this origin; anything narrower blocks it silently.',
     ).toBe("form-action 'self'");
+
+    /*
+     * Exactly this origin and Umami's collector. A value that drifts from
+     * UMAMI_HOST_URL refuses every analytics event silently, and a wider one
+     * lets the page send data somewhere /privacy does not name.
+     */
+    expect(
+      directive(csp, 'connect-src'),
+      `connect-src must be 'self' plus UMAMI_HOST_URL (${UMAMI_HOST_URL}) ` +
+        'from src/lib/analytics.ts. /privacy names Umami as the only other ' +
+        'place a page sends anything, so a new origin needs that page edited ' +
+        'in the same commit.',
+    ).toBe(`connect-src 'self' ${UMAMI_HOST_URL}`);
 
     /*
      * No http:// URL exists in the build to upgrade today, every reference
