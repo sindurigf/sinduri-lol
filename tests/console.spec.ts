@@ -28,9 +28,9 @@ import {
  *     LIVE_ORIGIN. This is the only place something Cloudflare injects at the
  *     edge can be seen: on 2026-09-12 JavaScript Detections added an inline
  *     script to every HTML page whose hash changes per request, so no CSP hash
- *     can allow it, and every page logged a refusal. The fix for that is a zone
- *     setting, not a file in this repository, so the build run cannot catch it
- *     and the live run exists to.
+ *     can allow it, and every page logged a refusal. `Cache-Control:
+ *     no-transform` in public/_headers stops the injection, and only the live
+ *     run would notice it returning.
  */
 
 const LIVE_ORIGIN = process.env.LIVE_ORIGIN?.replace(/\/$/, '');

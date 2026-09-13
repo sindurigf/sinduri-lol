@@ -1004,7 +1004,7 @@ failure is bad in a specific way:
 Widen it to the exact origin the form posts to, never to `*`. If the form posts
 same-origin, `form-action 'self'` is the value. Add an assertion to
 `tests/headers.spec.ts` for whatever it becomes, and update the CSP section in
-`ARCHITECTURE.md` and the header table in `README.md` in the same commit.
+`ARCHITECTURE.md` and its header table in the same commit.
 
 The same rule applies to any other directive that is currently `'none'` because
 nothing needs it yet: `object-src`, `base-uri`, `frame-ancestors`. A `'none'`
