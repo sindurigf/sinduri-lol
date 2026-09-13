@@ -4,6 +4,11 @@ import { expect, test } from '@playwright/test';
 import { builtPages, DIST_DIR } from './routes';
 import { configuredSite } from './source';
 import { RETENTION_DAYS } from '../src/lib/contact-form';
+import {
+  UMAMI_HOST_URL,
+  UMAMI_RETENTION_MONTHS,
+  UMAMI_SCRIPT_PATH,
+} from '../src/lib/analytics';
 
 /**
  * The privacy policy, held to what the site actually does.
@@ -16,6 +21,10 @@ import { RETENTION_DAYS } from '../src/lib/contact-form';
  * names the sentence that has stopped being true. Read this file before adding
  * anything that talks to another origin: the page needs an edit in the same
  * commit.
+ *
+ * What Umami receives is asserted in tests/analytics.spec.ts, against the
+ * requests the tracker really makes. This file checks the page still says it,
+ * and that the vendored tracker writes nothing to the browser.
  *
  * Cloudflare's logging is deliberately not asserted. The page says requests
  * reach them and points at their policy, which is a statement about someone
@@ -47,20 +56,40 @@ import { RETENTION_DAYS } from '../src/lib/contact-form';
  *     at first: the check read the whole document, and the page's own <meta
  *     name="description"> carries three of the four claim strings, so a
  *     summary in the head was satisfying a test about the body.
+ *
+ * And 2026-09-13, for what Umami added:
+ *
+ *   - appending `localStorage.setItem(...)` to public/vendor/umami.js fails
+ *     "nothing sets a cookie or writes to browser storage", naming the file;
+ *   - rewording the Do Not Track sentence on the page fails "the page
+ *     discloses the visit counting".
  */
 
 const SRC_DIR = 'src';
 const PRIVACY_PAGE = '/privacy';
 
 /**
- * The four claims the page makes, as they appear in its `<strong>` labels,
- * lower-cased and without the trailing full stop. Each has an assertion above.
+ * The three tested claims the page makes, as they appear in its `<strong>`
+ * labels, lower-cased and without the trailing full stop. Each has an
+ * assertion below.
  */
 const CLAIMS = [
   'no cookies',
   'no browser storage',
-  'no analytics',
-  'no third-party requests',
+  'nothing loaded from other domains',
+];
+
+/*
+ * The vendored tracker is minified third-party code, so it is held to writes
+ * rather than to mentions: it reads `umami.disabled` from localStorage, which
+ * the page discloses, and must never set anything. `document.cookie` appears
+ * in no form at all, read or write.
+ */
+const TRACKER_WRITES = [
+  /\.setItem\s*\(/,
+  /document\.cookie/,
+  /sessionStorage/,
+  /indexedDB/,
 ];
 
 /**
@@ -153,6 +182,13 @@ test.describe('the privacy policy is true', () => {
       }
     }
 
+    const tracker = readFileSync(join('public', UMAMI_SCRIPT_PATH), 'utf8');
+    for (const pattern of TRACKER_WRITES) {
+      if (pattern.test(tracker)) {
+        offenders.push(`public${UMAMI_SCRIPT_PATH}: ${pattern.source}`);
+      }
+    }
+
     expect(
       offenders,
       '/privacy says "Nothing on sinduri.lol sets a cookie, and nothing ' +
@@ -188,7 +224,7 @@ test.describe('the privacy policy is true', () => {
 
     expect(
       offenders,
-      '/privacy says "Loading a page here contacts no other domain". The ' +
+      '/privacy says "Every file a page loads comes from this domain". The ' +
         'build now fetches something off-origin:\n  ' +
         offenders.join('\n  ') +
         '\nOrdinary <a href> links are not counted, because they send ' +
@@ -204,17 +240,18 @@ test.describe('the privacy policy is true', () => {
      * deleting a sentence is the other way to make the two agree.
      *
      * It matches the <strong> labels, not loose substrings. Searching the body
-     * text for "no analytics" could not fail: the sentence explaining the
-     * claim reads "There is no analytics service", so rewriting the label to
-     * say the opposite left the phrase in place one word later.
+     * text for "no analytics", a claim the page used to make, could not fail:
+     * the sentence explaining it read "There is no analytics service", so
+     * rewriting the label to say the opposite left the phrase in place one
+     * word later.
      */
     const privacy = builtPages().find((page) => page.route === PRIVACY_PAGE)!;
     const html = readFileSync(privacy.file, 'utf8');
 
     /*
-     * The body only: the page's <meta name="description"> carries three of the
-     * four claim strings, so reading the whole document let a summary in the
-     * head satisfy a test about the body.
+     * The body only: the page's <meta name="description"> carries claim
+     * strings too, so reading the whole document let a summary in the head
+     * satisfy a test about the body.
      */
     const body = html.slice(html.indexOf('<body'));
     const labels = [...body.matchAll(/<strong[^>]*>([^<]+)<\/strong>/g)].map(
@@ -233,10 +270,64 @@ test.describe('the privacy policy is true', () => {
     }
   });
 
+  test('the page discloses the visit counting', () => {
+    /*
+     * The one place a page sends anything off this domain, so the one section
+     * a reader most needs. Each assertion is a fact another file fixes: the
+     * host is UMAMI_HOST_URL, the region is the Umami account's, and Do Not
+     * Track is the tracker's `data-do-not-track`, which
+     * tests/analytics.spec.ts proves stops sending.
+     */
+    const privacy = builtPages().find((page) => page.route === PRIVACY_PAGE)!;
+    const html = readFileSync(privacy.file, 'utf8');
+    const text = html
+      .slice(html.indexOf('<body'))
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ');
+
+    const section = text.slice(text.indexOf('Visit counts'));
+
+    expect(
+      text,
+      '/privacy no longer has its "Visit counts" section. Every page loads ' +
+        'the Umami tracker, so the page has to say what it sends.',
+    ).toContain('Visit counts');
+
+    expect(
+      section,
+      `/privacy no longer names ${new URL(UMAMI_HOST_URL).host}, the only ` +
+        "origin in the CSP's connect-src besides this one.",
+    ).toContain(new URL(UMAMI_HOST_URL).host);
+
+    expect(
+      section,
+      '/privacy no longer says Umami stores the counts in the European Union.',
+    ).toContain('European Union');
+
+    expect(
+      section,
+      `/privacy no longer states Umami's ${UMAMI_RETENTION_MONTHS}-month ` +
+        'retention. It is read from UMAMI_RETENTION_MONTHS, so this fails if ' +
+        'the page stops rendering it.',
+    ).toContain(`keeps it for ${UMAMI_RETENTION_MONTHS} months`);
+
+    expect(
+      section,
+      '/privacy no longer says that clicks on links and buttons are counted. ' +
+        'src/scripts/track-clicks.ts still sends them.',
+    ).toMatch(/click a link or a button/);
+
+    expect(
+      section,
+      '/privacy no longer says that Do Not Track stops sending. The tracker ' +
+        'still carries data-do-not-track, so the reader is owed the way out.',
+    ).toContain('Do Not Track');
+  });
+
   test('the page discloses what the contact form stores', () => {
     /*
-     * The form is the only thing on this site that stores anything about a
-     * visitor, so the page has to say so. Without this, deleting the section
+     * The form is the only thing on this site that stores what a visitor
+     * wrote, so the page has to say so. Without this, deleting the section
      * leaves a privacy page describing a site that collects nothing while the
      * form keeps collecting, and every other test here still passes.
      *

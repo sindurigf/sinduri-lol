@@ -16,6 +16,11 @@ import { themeColor } from '../lib/theme-color';
  */
 import lexendLatin from '@fontsource-variable/lexend/files/lexend-latin-wght-normal.woff2?url';
 import { structuredData } from '../lib/structured-data';
+import {
+  UMAMI_HOST_URL,
+  UMAMI_SCRIPT_PATH,
+  UMAMI_WEBSITE_ID,
+} from '../lib/analytics';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
@@ -66,6 +71,11 @@ const {
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
+/*
+ * The tracker's `data-domains`: only the production host counts. localhost,
+ * the test servers and any preview deployment send nothing.
+ */
+const analyticsDomain = Astro.site?.hostname ?? '';
 const ogImageUrl = new URL(ogImage, Astro.site);
 ---
 
@@ -186,6 +196,28 @@ const ogImageUrl = new URL(ogImage, Astro.site);
         structuredData(new URL(Astro.site ?? canonical)),
       )}
     ></script>
+    {/*
+      Visit counting. src/lib/analytics.ts says why the tracker is a vendored
+      copy and how to keep it current; /privacy says what it sends.
+
+      `is:inline` so Astro leaves the tag alone: the tracker reads its
+      settings from `document.currentScript`, which exists only for a classic
+      script with these attributes on it, not for a bundled module.
+
+      `data-do-not-track` sends nothing from a browser with Do Not Track on.
+      `data-exclude-hash` drops the fragment, so the skip link and in-page
+      anchors are not counted as separate pages.
+    */}
+    <script
+      is:inline
+      defer
+      src={UMAMI_SCRIPT_PATH}
+      data-website-id={UMAMI_WEBSITE_ID}
+      data-host-url={UMAMI_HOST_URL}
+      data-domains={analyticsDomain}
+      data-do-not-track="true"
+      data-exclude-hash="true"
+    ></script>
     <meta name="generator" content={Astro.generator} />
   </head>
   <body class="flex min-h-screen flex-col">
@@ -209,5 +241,8 @@ const ogImageUrl = new URL(ogImage, Astro.site);
       <slot />
     </main>
     <Footer />
+    <script>
+      import '../scripts/track-clicks';
+    </script>
   </body>
 </html>

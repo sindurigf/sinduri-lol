@@ -32,9 +32,12 @@ up; everything else works under `npm run dev`.
 | `npm run test:worker`        | The contact endpoint and retention sweep, with a local D1      |
 | `npm run check:live`         | Production headers and markup against this repository          |
 | `npm run check:live:console` | Every production route in a browser, failing on console errors |
+| `npm run check:umami`        | The vendored Umami tracker against the one Umami serves today  |
 
 `check:live` and `check:live:console` read the deployed site, so they run by
-hand after a deploy, never in CI. [AGENTS.md](../AGENTS.md) lists what has to
+hand after a deploy, never in CI. `check:umami` reads Umami's site and runs by
+hand at least monthly; [DEPLOYMENT.md](DEPLOYMENT.md#umami) says what to do when
+it fails. [AGENTS.md](../AGENTS.md) lists what has to
 pass before a change is done.
 
 ## Project layout
@@ -49,9 +52,11 @@ src/
   lib/              Shared TypeScript
   pages/            File-based routes
   plugins/          Markdown plugins
+  scripts/          Browser modules that are not islands: click tracking
   styles/           Design tokens, base layer, component classes
   worker.ts         Worker entry: Astro's handler and the retention sweep
 public/             Static files served from the site root, including _headers
+                    and the vendored Umami tracker in vendor/
 migrations/         D1 schema
 scripts/            Convention checks and the live-site check
 tests/              Playwright specs
