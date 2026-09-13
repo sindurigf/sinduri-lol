@@ -2,12 +2,19 @@
 import { Image } from 'astro:assets';
 import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import portrait from '../assets/photos/sinduri-drupalcon.jpg';
+import portrait from '../assets/photos/sinduri-pride.jpg';
 import starTrek from '../assets/photos/sinduri-star-trek.jpg';
+import cat from '../assets/photos/cat.jpg';
 import withJohann from '../assets/photos/sinduri-johann.jpg';
 import bicycle from '../assets/photos/sinduri-bicycle.jpg';
 import beach from '../assets/photos/sinduri-beach.jpg';
 import lake from '../assets/photos/sinduri-lake.jpg';
+import friendsMossWall from '../assets/photos/friends-moss-wall.jpg';
+import friendSelfie from '../assets/photos/friend-selfie.jpg';
+import escapeRoom from '../assets/photos/escape-room.jpg';
+import friendsDinner from '../assets/photos/friends-dinner.jpg';
+import tableFootball from '../assets/photos/table-football.jpg';
+import mountainCampTable from '../assets/photos/mountain-camp-table.jpg';
 import { CONTACT_EMAIL } from '../lib/contact';
 import { DENSITIES, WIDTHS } from '../lib/image-densities';
 
@@ -27,12 +34,17 @@ import { DENSITIES, WIDTHS } from '../lib/image-densities';
 /** The bunny roundel's mark, drawn `h-14`. See the note in Header.astro. */
 const ROUNDEL_MARK_HEIGHT = 56;
 
-/** The Fandoms card photo, drawn `size-24`. */
-const FANDOM_PHOTO_SIZE = 96;
+/** An interest card photo, drawn `size-24`. */
+const INTEREST_PHOTO_SIZE = 96;
 
-/** A snapshot tile, drawn `w-56 h-72`. */
-const SNAPSHOT_WIDTH = 224;
-const SNAPSHOT_HEIGHT = 288;
+/*
+ * A snapshot tile is one of two shapes, each a fixed box the file is cropped
+ * to, so the wall mixes upright and wide photos without stretching either.
+ */
+const SNAPSHOT_SHAPES = {
+  upright: { width: 224, height: 288, box: 'h-72 w-56', tile: 'w-56' },
+  wide: { width: 288, height: 224, box: 'h-56 w-72', tile: 'w-72' },
+} as const;
 
 /*
  * The tilts and shadows alternate by hand rather than by index, so the wall
@@ -42,27 +54,73 @@ const SNAPSHOT_HEIGHT = 288;
 const SNAPSHOTS = [
   {
     src: withJohann,
+    shape: 'upright',
     alt: 'Sinduri smiling with Johann, his arms wrapped around her.',
     caption: 'Johann, my husband and the non-Drupaler who always has my back.',
     tilt: '-rotate-2',
     shadow: 'shadow-hard-gold-8',
   },
   {
-    src: bicycle,
-    alt: 'Sinduri laughing as she rides a bicycle with a basket down a tree-lined path.',
+    src: friendsDinner,
+    shape: 'wide',
+    alt: 'Sinduri and a table of friends at an outdoor dinner, all smiling at the camera.',
     tilt: 'rotate-1',
     shadow: 'shadow-hard-cyan-8',
   },
   {
-    src: beach,
-    alt: 'Sinduri standing in the waves on a beach with her arms spread wide.',
+    src: bicycle,
+    shape: 'upright',
+    alt: 'Sinduri laughing as she rides a bicycle with a basket down a tree-lined path.',
     tilt: '-rotate-1',
     shadow: 'shadow-hard-pink-8',
   },
   {
-    src: lake,
-    alt: 'Sinduri in a pink dress on a balcony, with trees and a lake behind her.',
+    src: escapeRoom,
+    shape: 'wide',
+    alt: 'Sinduri with a group of six after an escape room, two of them holding Mission Complete signs.',
     tilt: 'rotate-2',
+    shadow: 'shadow-hard-gold-8',
+  },
+  {
+    src: friendsMossWall,
+    shape: 'upright',
+    alt: 'Sinduri between two friends in front of a moss wall, all three looking up and laughing.',
+    tilt: '-rotate-2',
+    shadow: 'shadow-hard-cyan-8',
+  },
+  {
+    src: tableFootball,
+    shape: 'wide',
+    alt: 'Sinduri and friends lined up along a very long table football table in a tent.',
+    tilt: 'rotate-1',
+    shadow: 'shadow-hard-pink-8',
+  },
+  {
+    src: beach,
+    shape: 'upright',
+    alt: 'Sinduri standing in the waves on a beach with her arms spread wide.',
+    tilt: '-rotate-1',
+    shadow: 'shadow-hard-gold-8',
+  },
+  {
+    src: mountainCampTable,
+    shape: 'wide',
+    alt: 'Sinduri and friends crowded around a table in red light at Drupal Mountain Camp.',
+    tilt: 'rotate-2',
+    shadow: 'shadow-hard-cyan-8',
+  },
+  {
+    src: friendSelfie,
+    shape: 'upright',
+    alt: 'Sinduri taking a selfie with a friend.',
+    tilt: '-rotate-2',
+    shadow: 'shadow-hard-pink-8',
+  },
+  {
+    src: lake,
+    shape: 'upright',
+    alt: 'Sinduri in a pink dress on a balcony, with trees and a lake behind her.',
+    tilt: 'rotate-1',
     shadow: 'shadow-hard-gold-8',
   },
 ] as const;
@@ -98,6 +156,10 @@ const INTERESTS = [
     frame: 'border-pink',
     valueClass: 'text-pink-text',
     body: 'Minerva, the queen of the house. Hela, the conspirator. Rudra, the baby of the family.',
+    photo: {
+      src: cat,
+      alt: 'A tabby cat curled up on a blanket, looking at the camera.',
+    },
   },
 ] as const;
 ---
@@ -143,7 +205,7 @@ const INTERESTS = [
         <div class="relative">
           <Image
             src={portrait}
-            alt="Sinduri laughing at DrupalCon, wearing glasses and a mossbo name badge."
+            alt="Sinduri smiling, with a rainbow painted on her cheek and rainbow wings behind her."
             widths={WIDTHS}
             sizes={PORTRAIT_SIZES}
             loading="eager"
@@ -234,8 +296,8 @@ const INTERESTS = [
               <Image
                 src={item.photo.src}
                 alt={item.photo.alt}
-                height={FANDOM_PHOTO_SIZE}
-                width={FANDOM_PHOTO_SIZE}
+                height={INTEREST_PHOTO_SIZE}
+                width={INTEREST_PHOTO_SIZE}
                 densities={DENSITIES}
                 class="size-24 rounded-full border-4 border-border object-cover"
               />
@@ -250,16 +312,19 @@ const INTERESTS = [
 
       <ul class="mt-20 flex flex-wrap justify-center gap-12">
         {SNAPSHOTS.map((snapshot) => (
-          <li class:list={['w-56', snapshot.tilt]}>
+          <li
+            class:list={[SNAPSHOT_SHAPES[snapshot.shape].tile, snapshot.tilt]}
+          >
             <figure>
               <Image
                 src={snapshot.src}
                 alt={snapshot.alt}
-                width={SNAPSHOT_WIDTH}
-                height={SNAPSHOT_HEIGHT}
+                width={SNAPSHOT_SHAPES[snapshot.shape].width}
+                height={SNAPSHOT_SHAPES[snapshot.shape].height}
                 densities={DENSITIES}
                 class:list={[
-                  'block h-72 w-56 border-4 border-border object-cover',
+                  'block border-4 border-border object-cover',
+                  SNAPSHOT_SHAPES[snapshot.shape].box,
                   snapshot.shadow,
                 ]}
               />
