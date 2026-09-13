@@ -38,21 +38,19 @@
 # edge served until 2026-09-11, added no script, no cdn-cgi and no header, so
 # no rule above saw it; it was found by reading the file.
 #
-# Known failure, expected as of 2026-09-11: rules 2 and 5 fail on every HTML
-# response. JavaScript Detections injects an inline script that loads
-# /cdn-cgi/challenge-platform/scripts/jsd/main.js, Bot Fight Mode is off, and
-# no dashboard setting was found that removes it. The CSP blocks the script,
-# at one console error per page. The rules are not relaxed to fit it: a check
-# that learns to ignore one injection is a check that ignores the next.
+# JavaScript Detections, which the Free plan cannot turn off, fails rules 2 and
+# 5 on every HTML response the moment `Cache-Control: no-transform` stops
+# reaching it; public/_headers says why. The rules are not relaxed for it: a
+# check that learns to ignore one injection is a check that ignores the next.
 #
 # Verified not to be vacuous on 2026-09-11, against https://sinduri.lol:
 # reverting the HSTS value in public/_headers made rule 1 fail on every
 # response; appending a beacon <script>, an email-protection link with a
 # __cf_email__ span, a cross-origin <img> and an unhashed <style> to each body
 # made rules 2 to 5 each fire and name the snippet; restoring both files
-# returned the run to the known failures above. A preview deployment outside
-# the zone, which gets none of its settings, passed with exit 0, which is what
-# production should report once JavaScript Detections stops injecting.
+# returned the run to the JavaScript Detections failures then expected. A
+# preview deployment outside the zone, which gets none of its settings, passed
+# with exit 0.
 #
 # Rule 5 had never fired until the parser was fixed; see the note on
 # elements.awk below.

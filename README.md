@@ -114,13 +114,13 @@ through an account-level Bulk Redirect list, outside this repository.
 These live in the dashboard and change what ships without changing a file here.
 `npm run check:live` catches most of them.
 
-| Setting                   | Required state | Why                                                       |
-| ------------------------- | -------------- | --------------------------------------------------------- |
-| Web Analytics             | Off            | Injects a third-party script `/privacy` says is not there |
-| Email Address Obfuscation | Off            | Rewrites `mailto:` links into a script-dependent page     |
-| JavaScript Detections     | Off            | Injects an inline script the CSP blocks on every page     |
-| Bot Fight Mode            | Off            | Challenges the crawlers `X-Robots-Tag` has to reach       |
-| Zone HSTS                 | Off            | Replaces the `Strict-Transport-Security` in `_headers`    |
+| Setting                   | Required state | Why                                                        |
+| ------------------------- | -------------- | ---------------------------------------------------------- |
+| Web Analytics             | Off            | Injects a third-party script `/privacy` says is not there  |
+| Email Address Obfuscation | Off            | Rewrites `mailto:` links into a script-dependent page      |
+| JavaScript Detections     | On, forced     | Free plan; `no-transform` in `_headers` keeps it off pages |
+| Bot Fight Mode            | Off            | Challenges the crawlers `X-Robots-Tag` has to reach        |
+| Zone HSTS                 | Off            | Replaces the `Strict-Transport-Security` in `_headers`     |
 
 ## Branch protection
 

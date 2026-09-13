@@ -9,6 +9,7 @@ import { waitForHydration } from './settle';
 import {
   asServed,
   collectViolations,
+  headersFor,
   MIME,
   parseHeadersFile,
   startServer,
@@ -71,6 +72,19 @@ const GLOBAL_PATTERN = '/*';
  * content hash, and therefore the only one that may be cached immutably.
  */
 const ASSET_PATTERN = '/_astro/*';
+
+/**
+ * The one header two rules may both set. Cache-Control is a list of
+ * independent directives, so Cloudflare's comma join composes it instead of
+ * corrupting it; public/_headers says why each rule sets its part.
+ */
+const JOINED_ON_PURPOSE = new Set(['cache-control']);
+
+/** What `/*` contributes: keeps JavaScript Detections out of every page. */
+const NO_TRANSFORM = 'no-transform';
+
+/** What a hashed asset receives once both rules apply. */
+const ASSET_CACHE_CONTROL = 'no-transform, public, max-age=31536000, immutable';
 
 /** Every header the site is expected to send, checked by name. */
 const REQUIRED_HEADERS = [
@@ -312,6 +326,7 @@ test.describe('security headers', () => {
 
     for (const rule of rules) {
       for (const name of rule.headers.keys()) {
+        if (JOINED_ON_PURPOSE.has(name)) continue;
         seen.set(name, [...(seen.get(name) ?? []), rule.pattern]);
       }
     }
@@ -329,6 +344,28 @@ test.describe('security headers', () => {
         'Cross-Origin-Resource-Policy parses as none. Move the header so it ' +
         'appears under one pattern only.',
     ).toEqual([]);
+  });
+
+  test('every path carries no-transform, and assets keep their caching', () => {
+    /*
+     * no-transform is the only thing keeping JavaScript Detections out of the
+     * HTML. Resolved the way Cloudflare resolves it, per kind of path, so a
+     * rule edit that drops it from pages, or garbles the joined asset value,
+     * fails here rather than in production.
+     */
+    for (const path of ['/', '/about/', '/404', '/no-such-page']) {
+      expect(
+        headersFor(rules, path).get('cache-control'),
+        `${path} would not carry Cache-Control: ${NO_TRANSFORM}, so ` +
+          'Cloudflare injects JavaScript Detections into it and the CSP ' +
+          'refuses the script on every load.',
+      ).toBe(NO_TRANSFORM);
+    }
+
+    expect(
+      headersFor(rules, '/_astro/BaseLayout.css').get('cache-control'),
+      'a hashed asset should receive both rules joined into one valid list.',
+    ).toBe(ASSET_CACHE_CONTROL);
   });
 
   test('the asset rule caches immutably, and nothing else does', () => {
@@ -657,7 +694,7 @@ test.describe('security headers', () => {
       const path = new URL(response.url()).pathname;
 
       expect(received['cache-control'], `${path} is not cached`).toBe(
-        'public, max-age=31536000, immutable',
+        ASSET_CACHE_CONTROL,
       );
       expect(
         received['cross-origin-resource-policy'],

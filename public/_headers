@@ -57,10 +57,11 @@
 # browser can parse, and a CSP joined to a second CSP is enforced as two
 # policies at once, which is how a working policy becomes a blank page.
 #
-# So no header name appears under more than one pattern. `Cache-Control` and
-# `Cross-Origin-Resource-Policy` are set only under `/_astro/*`; every other
-# header only under `/*`. tests/headers.spec.ts asserts the two rules share no
-# header name.
+# So no header name appears under more than one pattern, with one exception.
+# `Cache-Control` is a list of independent directives, so joining is what it is
+# designed for: `/*` sets `no-transform` alone, `/_astro/*` sets its caching,
+# and an asset receives both. tests/headers.spec.ts asserts no other name is
+# shared, and the exact value each kind of path receives.
 #
 # ---------------------------------------------------------------------------
 # Why only /_astro/* is cached immutably.
@@ -75,8 +76,21 @@
 # way to reach in and clear it. Put an unhashed path under that rule and the
 # file is frozen, for a year, in every browser that visited before the mistake.
 #
-# The HTML deliberately gets no Cache-Control. The platform default
-# revalidates, which is what a document at a stable URL wants.
+# Everything outside /_astro/* gets `no-transform` and nothing else, which
+# replaces the platform's `public, max-age=0, must-revalidate`. With no max-age
+# and no Last-Modified a browser has nothing to compute freshness from, so it
+# revalidates against the ETag, which is what a document at a stable URL wants.
+#
+# ---------------------------------------------------------------------------
+# `no-transform` is what keeps JavaScript Detections off every page.
+#
+# The Free plan cannot turn that feature off. It injects an inline script into
+# every HTML response, with a per-request token no CSP hash can allow, so every
+# page logged a CSP refusal, and it stripped the HTML's ETag. Cloudflare skips
+# the injection when the response carries `Cache-Control: no-transform`.
+# Measured 2026-09-13 with a Transform Rule on `/` alone: the script was gone
+# from `/` in 3 of 3 requests, still on `/about/`, and the ETag came back.
+# `npm run check:live` fails if the script returns.
 #
 # ---------------------------------------------------------------------------
 # The site is closed to search indexes, and this is the only thing doing it.
@@ -115,6 +129,7 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin
   X-Robots-Tag: noindex
+  Cache-Control: no-transform
 
 # Build output, and only build output. Every filename Vite emits here carries a
 # content hash, which is what makes both of these safe. See the two notes
