@@ -123,5 +123,16 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    build: {
+      /*
+       * Never inline. Astro inlines a processed <script> under Vite's 4 KB
+       * default, and an inline script needs a sha256 in the CSP that changes
+       * with every edit to it: src/scripts/track-clicks.ts shipped inline and
+       * would have. At 0 it is a hashed file under /_astro/, which `'self'`
+       * already allows. The same limit would turn a small imported asset into
+       * a data: URI the CSP refuses, so this closes that too.
+       */
+      assetsInlineLimit: 0,
+    },
   },
 });

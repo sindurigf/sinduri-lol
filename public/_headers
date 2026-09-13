@@ -28,6 +28,17 @@
 # Astro runtime. ARCHITECTURE.md > "The hashes go stale" has the rest.
 #
 # ---------------------------------------------------------------------------
+# `connect-src` names one other origin: Umami's collector.
+#
+# The tracker itself is served from this origin, so `script-src` stays `'self'`
+# and it is only the data the tracker sends that leaves. `'self'` is restated
+# because naming the directive stops it falling back to `default-src`.
+# UMAMI_HOST_URL in src/lib/analytics.ts is the same value, and
+# tests/headers.spec.ts fails when the two differ, since a mismatch refuses
+# every event with nothing on the page to show it. /privacy discloses the
+# host, so widening this means editing that page in the same commit.
+#
+# ---------------------------------------------------------------------------
 # HSTS is 180 days with includeSubDomains, and still without preload.
 #
 # It is the one header here that a browser keeps after the response is gone:
@@ -121,7 +132,7 @@
 # ---------------------------------------------------------------------------
 
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-QzWFZi+FLIx23tnm9SBU4aEgx4x8DsuASP07mfqol/c=' 'sha256-Ya0pUYrC7nM5Cn/056TyVuEiz6dFGrzmkWzgON0pF0U='; style-src 'self' 'sha256-vv9IoKo7BSLbWcUHr3tNmfNVmm5L/9Cfn2H6LMk7/ow='; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-QzWFZi+FLIx23tnm9SBU4aEgx4x8DsuASP07mfqol/c=' 'sha256-Ya0pUYrC7nM5Cn/056TyVuEiz6dFGrzmkWzgON0pF0U='; style-src 'self' 'sha256-vv9IoKo7BSLbWcUHr3tNmfNVmm5L/9Cfn2H6LMk7/ow='; connect-src 'self' https://gateway.umami.is; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=15552000; includeSubDomains
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff

@@ -92,7 +92,7 @@ export const GET: APIRoute = async ({ site }) => {
   const lines = [
     `# ${site.host}`,
     '',
-    `> The personal site of ${PERSON_NAME}. Static, no tracking, no cookies.`,
+    `> The personal site of ${PERSON_NAME}. Static, no cookies, cookie-free visit counts.`,
     '',
     '## Pages',
     '',

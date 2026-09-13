@@ -62,13 +62,8 @@ tmp/
 # reader, so committing them would mean every session overwriting the last
 # one's, and a repository full of stale advice.
 #
-# TODO.md is deliberately not here. It is the durable checklist,
-# .claude/hooks/todo-context.sh prints an index of it into every session, and
-# that hook exits silently when the file is absent, so an uncommitted TODO.md
-# is one machine's private note that vanishes on clone.
-#
-# If something in one of these turns out to be durable, move it into TODO.md,
-# AI.md or ACCESSIBILITY.md before the file is regenerated.
+# If something in one of these turns out to be durable, move it into
+# ARCHITECTURE.md or ACCESSIBILITY.md before the file is regenerated.
 PLAN.md
 QUESTIONS.md
 SESSION.md

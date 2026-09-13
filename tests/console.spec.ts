@@ -10,6 +10,7 @@ import {
   parseHeadersFile,
   startServer,
 } from './policy-server';
+import { fakeCollector } from './umami';
 
 /**
  * Every route loads without a console error, an uncaught exception, a CSP
@@ -90,6 +91,12 @@ test.describe('the browser console', () => {
         }
       });
 
+      /*
+       * Against production the tracker really runs, and every route here
+       * would be a page view in the dashboard. The stand-in keeps the request
+       * and the CSP check on it, and keeps it out of the numbers.
+       */
+      await fakeCollector(page.context());
       const violations = await collectViolations(page);
 
       await page.goto(`${origin}${route}`);
