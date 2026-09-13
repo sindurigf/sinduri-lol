@@ -39,6 +39,12 @@ const lastUpdated = new Date().toISOString().slice(0, 10);
 
 const HOST = 'sinduri.lol';
 const CLOUDFLARE_PRIVACY = 'https://www.cloudflare.com/privacypolicy/';
+
+/*
+ * How long Cloudflare keeps Workers logs and traces on the Free plan, set by
+ * the platform rather than by wrangler.jsonc. A plan change changes it.
+ */
+const WORKER_LOG_RETENTION_DAYS = 3;
 ---
 
 <BaseLayout
@@ -118,7 +124,17 @@ const CLOUDFLARE_PRIVACY = 'https://www.cloudflare.com/privacypolicy/';
         >
           Cloudflare's privacy policy
         </a>{' '}
-        rather than by this one. Nothing here adds to it.
+        rather than by this one.
+      </p>
+
+      <p class="mt-6 max-w-prose text-muted text-pretty">
+        Requests that run this site's own code, which in practice means sending
+        the contact form, are also logged to this site's Cloudflare account so
+        that problems can be fixed. A log entry holds the request and response,
+        which can include your IP address, and your browser and approximate
+        location: city, country and network provider. Logs are deleted
+        automatically after {WORKER_LOG_RETENTION_DAYS} days and are not stored
+        with your message. Loading a page in a browser is not logged this way.
       </p>
 
       <h2 class="mt-20 text-h2 text-gold">The contact form</h2>
@@ -137,7 +153,7 @@ const CLOUDFLARE_PRIVACY = 'https://www.cloudflare.com/privacypolicy/';
         To stop the form being used for bulk submissions, the number of
         submissions from one network address is limited. That check reads your
         address, hashes it together with the current date, and keeps only the
-        hash for as long as the limit runs. The address itself is never written
+        hash for as long as the limit runs. The check does not write the address
         down, and the hash is not stored with your message or linked to it.
       </p>
 
