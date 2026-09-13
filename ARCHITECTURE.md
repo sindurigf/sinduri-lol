@@ -808,8 +808,3 @@ Still outstanding:
   The Career conference photo is not among them. `/career` has no placement for
   it at all. Adding that placement is a build decision about whether the section
   exists, not a matter of swapping a placeholder for a photograph.
-
-- **Email notification for the contact form.** Submissions are stored in D1 and
-  read from there. Routing one to a mailbox needs an Email Routing `send_email`
-  binding and a verified destination address, neither of which can be exercised
-  locally, so it is deliberately not written yet.

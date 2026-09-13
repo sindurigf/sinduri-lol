@@ -2,10 +2,10 @@
  * The Worker bindings the contact endpoint uses, typed structurally.
  *
  * Declared here rather than by installing @cloudflare/workers-types: these are
- * the only two bindings this site has, and three method signatures is less to
+ * the only bindings this site has, and a handful of signatures is less to
  * carry than a dependency whose types cover the whole platform.
  *
- * Both are optional. A binding missing at runtime is a deploy that is not
+ * All are optional. A binding missing at runtime is a deploy that is not
  * finished, and the endpoint says so rather than behaving as though the
  * message was received.
  */
@@ -24,9 +24,34 @@ export interface RateLimiter {
   limit(options: { key: string }): Promise<{ success: boolean }>;
 }
 
+export interface EmailAddress {
+  email: string;
+  name?: string;
+}
+
+/** The subset of the send_email builder API the notification uses. */
+export interface EmailMessageBuilder {
+  to: string;
+  from: EmailAddress;
+  replyTo: string;
+  subject: string;
+  text: string;
+}
+
+/** The Workers send_email binding. */
+export interface SendEmail {
+  send(message: EmailMessageBuilder): Promise<{ messageId: string }>;
+}
+
 export interface ContactEnv {
   MESSAGES_DB?: D1Database;
   CONTACT_RATE_LIMIT?: RateLimiter;
+  CONTACT_MAILER?: SendEmail;
+  /*
+   * The site owner's inbox, a secret so the address stays out of this public
+   * repository. It must be a verified Email Routing destination address.
+   */
+  CONTACT_NOTIFY_TO?: string;
 }
 
 /**
@@ -40,10 +65,8 @@ export interface ContactEnv {
  *
  * Null when there is no address. `CF-Connecting-IP` is set by Cloudflare and
  * any client-supplied copy is replaced at the edge, so it is always present in
- * production and absent only when nothing is in front of this Worker, which
- * means local dev. Keying every such request the same would rate limit the
- * whole machine as one sender, which is what it did: two local submissions in
- * a row returned 429.
+ * production. Keying every request without one the same would rate limit
+ * every such sender as one.
  */
 export const rateLimitKey = async (
   request: Request,

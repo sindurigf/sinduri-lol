@@ -5,6 +5,7 @@ import { CONTACT_EMAIL } from '../../lib/contact';
 import { looksAutomated, validateSubmission } from '../../lib/contact-form';
 import { env } from 'cloudflare:workers';
 import { rateLimitKey, type ContactEnv } from '../../lib/contact-env';
+import { notificationFor } from '../../lib/contact-notification';
 import { applyGlobalHeaders } from '../../lib/response-headers';
 
 /*
@@ -120,6 +121,30 @@ if (result?.ok && !tooMany) {
   }
 
   if (!storageFailed) {
+    /*
+     * After the row is written, and never a reason to fail the submission:
+     * the message is already stored and readable in D1.
+     */
+    const sender = bindings.CONTACT_MAILER;
+    const recipient = bindings.CONTACT_NOTIFY_TO;
+
+    if (!sender || !recipient) {
+      console.error(
+        'contact: notification not sent: CONTACT_MAILER binding or CONTACT_NOTIFY_TO secret missing',
+      );
+    } else {
+      try {
+        await sender.send(
+          notificationFor(result.value, recipient, new Date(now)),
+        );
+      } catch (error) {
+        console.error(
+          'contact: notification not sent:',
+          error instanceof Error ? error.message : String(error),
+        );
+      }
+    }
+
     return Astro.redirect(SENT_PAGE, 303);
   }
 

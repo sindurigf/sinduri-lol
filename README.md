@@ -94,6 +94,18 @@ creation and which `/privacy` states. Recreate it with
 npx wrangler d1 execute sinduri-lol --remote --file migrations/0001_create_messages.sql
 ```
 
+**Contact form email** needs Email Routing enabled on the zone, the owner's
+inbox added and verified as a destination address, and that address stored as
+a secret:
+
+```sh
+npx wrangler secret put CONTACT_NOTIFY_TO
+```
+
+Without the secret, messages are still stored and the endpoint logs that no
+notification was sent. A daily cron trigger deletes messages older than the
+retention period `/privacy` states.
+
 `www.sinduri.lol` and `sinduri-lol.pages.dev` redirect to the apex with a 301
 through an account-level Bulk Redirect list, outside this repository.
 
