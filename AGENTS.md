@@ -130,5 +130,6 @@ against lorem as provisional in both.
 - [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) — the by-hand checklist that
   closes the gaps in ACCESSIBILITY.md §7
 - `.claude/skills/sinduri-design-system/` — the design system as a skill
+- `.claude/rules/` — rules for Claude Code only
 - `design/` — the design comps, gitignored, structural reference for every page
 - `tmp/` — local scratch, gitignored, including the task checklist
