@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Snapshot from '../components/Snapshot.astro';
 import portrait from '../assets/photos/sinduri-pride.jpg';
 import starTrek from '../assets/photos/sinduri-star-trek.jpg';
 import cat from '../assets/photos/cat.jpg';
@@ -12,10 +13,7 @@ import lake from '../assets/photos/sinduri-lake.jpg';
 import friendsMossWall from '../assets/photos/friends-moss-wall.jpg';
 import friendSelfie from '../assets/photos/friend-selfie.jpg';
 import escapeRoom from '../assets/photos/escape-room.jpg';
-import friendsDinner from '../assets/photos/friends-dinner.jpg';
-import tableFootball from '../assets/photos/table-football.jpg';
 import mountainCampTable from '../assets/photos/mountain-camp-table.jpg';
-import { CONTACT_EMAIL } from '../lib/contact';
 import { DENSITIES, WIDTHS } from '../lib/image-densities';
 
 /*
@@ -36,94 +34,6 @@ const ROUNDEL_MARK_HEIGHT = 56;
 
 /** An interest card photo, drawn `size-24`. */
 const INTEREST_PHOTO_SIZE = 96;
-
-/*
- * A snapshot tile is one of two shapes, each a fixed box the file is cropped
- * to, so the wall mixes upright and wide photos without stretching either.
- */
-const SNAPSHOT_SHAPES = {
-  upright: { width: 224, height: 288, box: 'h-72 w-56', tile: 'w-56' },
-  wide: { width: 288, height: 224, box: 'h-56 w-72', tile: 'w-72' },
-} as const;
-
-/*
- * The tilts and shadows alternate by hand rather than by index, so the wall
- * reads as pinned up rather than as a pattern. Rotation is static, so it is
- * not motion and needs no reduced-motion override.
- */
-const SNAPSHOTS = [
-  {
-    src: withJohann,
-    shape: 'upright',
-    alt: 'Sinduri smiling with Johann, his arms wrapped around her.',
-    caption: 'Johann, my husband and the non-Drupaler who always has my back.',
-    tilt: '-rotate-2',
-    shadow: 'shadow-hard-gold-8',
-  },
-  {
-    src: friendsDinner,
-    shape: 'wide',
-    alt: 'Sinduri and a table of friends at an outdoor dinner, all smiling at the camera.',
-    tilt: 'rotate-1',
-    shadow: 'shadow-hard-cyan-8',
-  },
-  {
-    src: bicycle,
-    shape: 'upright',
-    alt: 'Sinduri laughing as she rides a bicycle with a basket down a tree-lined path.',
-    tilt: '-rotate-1',
-    shadow: 'shadow-hard-pink-8',
-  },
-  {
-    src: escapeRoom,
-    shape: 'wide',
-    alt: 'Sinduri with a group of six after an escape room, two of them holding Mission Complete signs.',
-    tilt: 'rotate-2',
-    shadow: 'shadow-hard-gold-8',
-  },
-  {
-    src: friendsMossWall,
-    shape: 'upright',
-    alt: 'Sinduri between two friends in front of a moss wall, all three looking up and laughing.',
-    tilt: '-rotate-2',
-    shadow: 'shadow-hard-cyan-8',
-  },
-  {
-    src: tableFootball,
-    shape: 'wide',
-    alt: 'Sinduri and friends lined up along a very long table football table in a tent.',
-    tilt: 'rotate-1',
-    shadow: 'shadow-hard-pink-8',
-  },
-  {
-    src: beach,
-    shape: 'upright',
-    alt: 'Sinduri standing in the waves on a beach with her arms spread wide.',
-    tilt: '-rotate-1',
-    shadow: 'shadow-hard-gold-8',
-  },
-  {
-    src: mountainCampTable,
-    shape: 'wide',
-    alt: 'Sinduri and friends crowded around a table in red light at Drupal Mountain Camp.',
-    tilt: 'rotate-2',
-    shadow: 'shadow-hard-cyan-8',
-  },
-  {
-    src: friendSelfie,
-    shape: 'upright',
-    alt: 'Sinduri taking a selfie with a friend.',
-    tilt: '-rotate-2',
-    shadow: 'shadow-hard-pink-8',
-  },
-  {
-    src: lake,
-    shape: 'upright',
-    alt: 'Sinduri in a pink dress on a balcony, with trees and a lake behind her.',
-    tilt: 'rotate-1',
-    shadow: 'shadow-hard-gold-8',
-  },
-] as const;
 
 /*
  * The portrait column: half of `max-w-page` from `lg`, the full column below.
@@ -194,12 +104,23 @@ const INTERESTS = [
             I love food but I am a picky eater, and my music taste is all over
             the place.
           </p>
-          <p class="text-body text-muted text-pretty">
-            The name of this site was inspired by fellow Drupalist Norman
-            Kämper-Leymann and <a href="https://norman.lol/">norman.lol</a>. I
-            even stole the idea for my email address,{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
-          </p>
+          <div class="mt-6 flex flex-wrap gap-10 sm:ml-4">
+            <Snapshot
+              src={bicycle}
+              shape="upright"
+              tilt="left"
+              shadow="cyan"
+              alt="Sinduri laughing as she rides a bicycle with a basket down a tree-lined path."
+            />
+            <Snapshot
+              src={friendSelfie}
+              shape="upright"
+              tilt="slightRight"
+              shadow="gold"
+              class="sm:mt-12"
+              alt="Sinduri taking a selfie with a friend."
+            />
+          </div>
         </div>
 
         <div class="relative">
@@ -258,17 +179,36 @@ const INTERESTS = [
           That is also what I love about open source. People contribute based on
           passion and expertise, not hierarchy, and there is room for everyone.
         </p>
+        <Snapshot
+          src={withJohann}
+          shape="upright"
+          tilt="slightLeft"
+          shadow="gold"
+          class="mt-6 sm:ml-8"
+          alt="Sinduri smiling with Johann, his arms wrapped around her."
+          caption="Johann, my husband and the non-Drupaler who always has my back."
+        />
       </div>
 
-      <div class="card shadow-hard-pink-8">
-        <p class="label-wide text-pink-text">One thing I never do</p>
-        <p class="mt-6 text-h3 font-bold text-text text-pretty">
-          Say no to a challenge just because I do not know how to approach it.
-        </p>
-        <p class="mt-6 text-body text-muted text-pretty">
-          I commit to figuring it out and learning whatever it takes to make it
-          work.
-        </p>
+      <div class="flex min-w-0 flex-col">
+        <div class="card shadow-hard-pink-8">
+          <p class="label-wide text-pink-text">One thing I never do</p>
+          <p class="mt-6 text-h3 font-bold text-text text-pretty">
+            Say no to a challenge just because I do not know how to approach it.
+          </p>
+          <p class="mt-6 text-body text-muted text-pretty">
+            I commit to figuring it out and learning whatever it takes to make
+            it work.
+          </p>
+        </div>
+        <Snapshot
+          src={friendsMossWall}
+          shape="upright"
+          tilt="right"
+          shadow="cyan"
+          class="relative -mt-8 self-end sm:mr-10"
+          alt="Sinduri between two friends in front of a moss wall, all three looking up and laughing."
+        />
       </div>
     </div>
   </section>
@@ -282,7 +222,17 @@ const INTERESTS = [
     </div>
 
     <div class="mx-auto max-w-page">
-      <h2 class="text-h2 text-text">The important things.</h2>
+      <div class="flex flex-wrap items-end justify-between gap-10">
+        <h2 class="text-h2 text-text">The important things.</h2>
+        <Snapshot
+          src={escapeRoom}
+          shape="wide"
+          tilt="slightRight"
+          shadow="pink"
+          class="sm:mr-6"
+          alt="Sinduri with a group of six after an escape room, two of them holding Mission Complete signs."
+        />
+      </div>
 
       <ul class="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
         {INTERESTS.map((item) => (
@@ -306,34 +256,6 @@ const INTERESTS = [
               {item.value}
             </span>
             <p class="text-body text-muted text-pretty">{item.body}</p>
-          </li>
-        ))}
-      </ul>
-
-      <ul class="mt-20 flex flex-wrap justify-center gap-12">
-        {SNAPSHOTS.map((snapshot) => (
-          <li
-            class:list={[SNAPSHOT_SHAPES[snapshot.shape].tile, snapshot.tilt]}
-          >
-            <figure>
-              <Image
-                src={snapshot.src}
-                alt={snapshot.alt}
-                width={SNAPSHOT_SHAPES[snapshot.shape].width}
-                height={SNAPSHOT_SHAPES[snapshot.shape].height}
-                densities={DENSITIES}
-                class:list={[
-                  'block border-4 border-border object-cover',
-                  SNAPSHOT_SHAPES[snapshot.shape].box,
-                  snapshot.shadow,
-                ]}
-              />
-              {'caption' in snapshot && (
-                <figcaption class="mt-5 text-label text-subtle text-pretty">
-                  {snapshot.caption}
-                </figcaption>
-              )}
-            </figure>
           </li>
         ))}
       </ul>
@@ -373,10 +295,36 @@ const INTERESTS = [
             no idea what Drupal was, but I did well enough to get the job. Since
             then I have organised Drupal events, joined the Drupal Austria
             board, where I am deputy marketing manager in 2026, and won the
-            Women in Drupal Award in 2025. I wrote the whole story down in
+            Women in Drupal Award in 2025. I wrote the whole story down in{' '}
             <a href={JOURNEY_POST_HREF}>Five years in Drupal</a>.
           </p>
         </div>
+      </div>
+
+      <div class="mt-14 flex flex-wrap items-start justify-around gap-10">
+        <Snapshot
+          src={beach}
+          shape="upright"
+          tilt="slightLeft"
+          shadow="pink"
+          alt="Sinduri standing in the waves on a beach with her arms spread wide."
+        />
+        <Snapshot
+          src={mountainCampTable}
+          shape="wide"
+          tilt="right"
+          shadow="gold"
+          class="sm:mt-16"
+          alt="Sinduri and friends crowded around a table in red light at Drupal Mountain Camp."
+        />
+        <Snapshot
+          src={lake}
+          shape="upright"
+          tilt="left"
+          shadow="cyan"
+          class="sm:mt-6"
+          alt="Sinduri in a pink dress on a balcony, with trees and a lake behind her."
+        />
       </div>
 
       <div class="card mt-14 shadow-hard-gold-8">
