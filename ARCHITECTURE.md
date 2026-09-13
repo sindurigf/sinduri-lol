@@ -560,7 +560,7 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
 | `src/assets/badge-white.png`   | White, RGB(255,255,255) | Dark surfaces        | `Footer.astro`, `SpinBadge.vue`, and the source the OG images were composited from |
 | `public/images/og-default.png` | Composite               | n/a                  | `BaseLayout.astro`, every page                                                     |
 
-### Photos
+### Photos and video
 
 - **Photos live in `src/assets/photos/`** (page photos) and
   **`src/assets/blog/<slug>/`** (a post's photos and `cover`). Each master is a
@@ -589,9 +589,26 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   `"Photo: Name"`, its `figcaption`.
 - **Credits** are in `src/lib/credits.ts`: each photographer's link, in
   Sinduri's order of preference (personal site, then Drupal.org, then
-  LinkedIn), and the site-name inspiration. A caption naming
+  LinkedIn), the site-name inspiration and the video's song. A caption naming
   someone listed there links them, `/about` links its one credited photo from
   the same list, and `/credits` lists them all.
+- **Video** is in `public/videos/`: an AV1 WebM, an H.264 MP4 fallback, a WebP
+  poster and a WebVTT captions file. Static assets are capped at 25 MiB a
+  file. Workers static assets answer a `Range` request with the whole file and
+  a `200` (measured on production, 2026-09-13), and Safari and iOS will not
+  play video without a `206`, so `/videos/*` is in `run_worker_first` and
+  `src/lib/video-range.ts` slices the file: one `bytes` range, `416` past the
+  end, `If-Range` honoured, anything else the whole file.
+  - The ASSETS binding streams a file without `Content-Length`, so the build
+    records each video's size in `__VIDEO_SIZES__` (`astro.config.mjs`); a
+    re-encoded video needs a rebuild, which every deploy is.
+  - A sliced body goes through `FixedLengthStream` so the `206` carries its
+    length; without it the response went out chunked.
+  - The asset response the Worker reads already carries the `_headers` rules,
+    so a ranged response keeps the CSP and `noindex`, unlike the generated
+    responses described under Security headers.
+  - `tests/video-range.spec.ts` runs under the Worker config, since the static
+    server the main suite uses ignores ranges just as production assets do.
 
 Measured ratios for the two artwork colours, so the pairing is arithmetic
 rather than judgement:
@@ -747,6 +764,10 @@ carries) to a path with no asset is answered by the asset layer and never
 invokes the Worker; a POST there is a 405. Opting out of prerendering is not
 enough. The contact form shipped broken this way while its spec passed, because
 the spec did not send the header. `tests/contact.spec.ts` now does.
+
+`/videos/*` is listed for a different reason: those paths are assets, and
+listing them is what lets the Worker answer byte ranges the asset layer
+ignores. See Photos and video.
 
 ### The CSP
 

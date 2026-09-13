@@ -107,7 +107,7 @@ const undersizedTargets = (page: Page): Promise<UndersizedTarget[]> =>
     const out: UndersizedTarget[] = [];
 
     for (const el of document.querySelectorAll(
-      'a[href], button, input, select, textarea, summary, [role="button"], [tabindex]:not([tabindex="-1"])',
+      'a[href], button, input, select, textarea, summary, video[controls], audio[controls], [role="button"], [tabindex]:not([tabindex="-1"])',
     )) {
       const box = el.getBoundingClientRect();
       if (box.width === 0 && box.height === 0) continue;

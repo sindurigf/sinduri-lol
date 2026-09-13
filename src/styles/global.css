@@ -461,6 +461,19 @@
     outline: 3px solid var(--color-gold);
     outline-offset: 3px;
   }
+
+  /*
+   * Native media controls are tab stops inside the element's user-agent shadow
+   * tree. While one has focus the host does not match :focus-visible, and in
+   * one of the two engines tests/focus.spec.ts runs not :focus either;
+   * :focus-within matches in both. Without this a keyboard user tabbing
+   * through a video's controls sees no site ring. A mouse click shows it too,
+   * which costs nothing.
+   */
+  :is(video, audio)[controls]:is(:focus, :focus-within) {
+    outline: 3px solid var(--color-gold);
+    outline-offset: 3px;
+  }
 }
 
 @layer components {
@@ -995,7 +1008,7 @@
    * tests/image-size.spec.ts measures, and 16px of it on a 501px photo reads
    * as the file being stretched. `mt-5` on the caption clears the ring.
    */
-  .prose figure img {
+  .prose figure :is(img, video) {
     @apply block h-auto w-full ring-8 ring-border;
   }
 
