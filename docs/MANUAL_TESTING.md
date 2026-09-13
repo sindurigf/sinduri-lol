@@ -509,12 +509,11 @@ design and this section is not the place to check that.
 
 - [ ] `M` from the top steps through those seven in that order.
       Heard: `___________________________________________` → SC 1.3.1
-- [ ] `Alt+Shift+H` lists exactly **four** headings on `/about`: the `h1`
-      and the three `h2` in the body; the footer has none. One `h1`,
-      announced first, no skipped level. The text is lorem, so judge the
-      structure and not the words; `/privacy` (six headings) and
-      `/accessibility` (five) are the two routes where the words are real
-      English and worth listening to as prose.
+- [ ] `Alt+Shift+H` lists exactly **five** headings on `/about`: the `h1`,
+      the three `h2` in the body, and the `h3` "There is room for everyone in
+      open source." on the closing card under the last `h2`; the footer has
+      none. One `h1`, announced first, no skipped level. The words are real
+      English, so judge them as prose as well as structure.
       Listed: `__________________________________________` → SC 1.3.1, 2.4.6
 
 - [ ] `G` from `Ctrl+Home` reaches the header bunny mark and announces
