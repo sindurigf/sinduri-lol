@@ -48,7 +48,7 @@ export default defineConfig({
   testDir: './tests',
   /* Needs the Worker, which this suite's static server is not; see
    * playwright.worker.config.ts. */
-  testIgnore: 'contact.spec.ts',
+  testIgnore: ['contact.spec.ts', 'video-range.spec.ts'],
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   /*

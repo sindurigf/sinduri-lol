@@ -1,4 +1,6 @@
 // @ts-check
+import { existsSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { defineConfig } from 'astro/config';
 
 import cloudflare from '@astrojs/cloudflare';
@@ -10,6 +12,24 @@ import { satteri } from '@astrojs/markdown-satteri';
 import { linkListItem } from './src/plugins/link-list-item.mjs';
 import { postFigure } from './src/plugins/post-figure.mjs';
 import { WIDTHS } from './src/lib/image-densities.ts';
+
+const VIDEO_DIR = 'public/videos';
+const VIDEO_URL_PREFIX = '/videos/';
+
+/*
+ * Each video's size in bytes, keyed by URL, for src/lib/video-range.ts. A
+ * byte range needs the file's length, and the ASSETS binding streams a file
+ * without a Content-Length (measured under wrangler dev, 2026-09-13), so the
+ * build records it instead of the Worker reading a whole video to count it.
+ */
+const videoSizes = existsSync(VIDEO_DIR)
+  ? Object.fromEntries(
+      readdirSync(VIDEO_DIR).map((file) => [
+        `${VIDEO_URL_PREFIX}${file}`,
+        statSync(join(VIDEO_DIR, file)).size,
+      ]),
+    )
+  : {};
 
 // https://astro.build/config
 export default defineConfig({
@@ -123,6 +143,7 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    define: { __VIDEO_SIZES__: JSON.stringify(videoSizes) },
     build: {
       /*
        * Never inline. Astro inlines a processed <script> under Vite's 4 KB

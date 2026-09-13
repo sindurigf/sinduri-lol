@@ -843,6 +843,12 @@ engine that matters for text inputs, which runs in CI only.
 Use `:focus-visible`, not `:focus`, so a mouse click does not leave a ring
 behind. Never rely on the browser default alone against these dark surfaces.
 
+**The one exception is native media controls.** A `<video controls>` holds its
+buttons in a user-agent shadow tree; while one has focus the host matches
+neither `:focus-visible` nor, in one engine, `:focus`. `global.css` rings
+`:is(video, audio)[controls]:is(:focus, :focus-within)` instead, and
+`tests/focus.spec.ts` steps through the controls to check it.
+
 ### The 3px offset is a mitigation, and it has an assumption in it
 
 The site-wide ring is `gold` with a 3px offset, and the offset is not spacing.
@@ -955,7 +961,7 @@ Rules:
 - **Never set text over a photograph.** Put it beside the photo on a flat
   token ground, as the `/about` cover does: text on an image cannot be
   measured, and `tests/contrast-incomplete.spec.ts` fails it. See
-  ARCHITECTURE.md, Photos.
+  ARCHITECTURE.md, Photos and video.
 
 ### Alt text conventions
 

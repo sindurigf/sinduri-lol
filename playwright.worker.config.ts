@@ -29,7 +29,7 @@ const BASE_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: 'contact.spec.ts',
+  testMatch: ['contact.spec.ts', 'video-range.spec.ts'],
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   workers: 1,

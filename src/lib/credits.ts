@@ -24,3 +24,9 @@ export const NAME_INSPIRATION = {
   href: 'https://norman.lol/',
   site: 'norman.lol',
 } as const;
+
+/** The soundtrack of the journey video in the Five years in Drupal post. */
+export const JOURNEY_SONG = {
+  title: "Don't Stop Believin'",
+  artist: 'Journey',
+} as const;
