@@ -12,6 +12,7 @@ import { satteri } from '@astrojs/markdown-satteri';
 import { linkListItem } from './src/plugins/link-list-item.mjs';
 import { postFigure } from './src/plugins/post-figure.mjs';
 import { WIDTHS } from './src/lib/image-densities.ts';
+import { isAdvertised, readPosts } from './src/lib/sitemap-filter.ts';
 
 const VIDEO_DIR = 'public/videos';
 const VIDEO_URL_PREFIX = '/videos/';
@@ -30,6 +31,9 @@ const videoSizes = existsSync(VIDEO_DIR)
       ]),
     )
   : {};
+
+/** Every post's slug and category, for the sitemap filter. */
+const posts = readPosts();
 
 // https://astro.build/config
 export default defineConfig({
@@ -106,17 +110,12 @@ export default defineConfig({
      */
     sitemap({
       /*
-       * Two contact routes are deliberately unadvertised. /contact/sent/ is a
-       * confirmation: a crawler served it reads "Your message has been
-       * received", false for anyone who did not just send one. /contact/send/
-       * is the POST target, builds no page at all, and answers a GET with a
-       * redirect, so listing it points a crawler at nothing.
-       *
-       * The error page needs no filter: the integration drops status-code
-       * pages itself, before any filter runs.
+       * Leaves out the two contact routes and any category listing with no
+       * posts; src/lib/sitemap-filter.ts says why for each. The posts are read
+       * once, when the config loads. The error page needs no filter: the
+       * integration drops status-code pages itself, before any filter runs.
        */
-      filter: (page) =>
-        !page.endsWith('/contact/sent/') && !page.endsWith('/contact/send/'),
+      filter: (page) => isAdvertised(page, posts),
     }),
   ],
 
