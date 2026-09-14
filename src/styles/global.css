@@ -1807,3 +1807,34 @@
     @apply text-pink-text;
   }
 }
+
+/*
+ * The 404 page's starfield: a still night sky of token-coloured points on the
+ * deep surface. Decoration only, and no text is set on it, because text over a
+ * background image cannot be measured and tests/contrast-incomplete.spec.ts
+ * fails it. It does not move, so SC 2.2.2 asks nothing of it.
+ */
+@layer components {
+  .starfield {
+    background-color: var(--color-deep);
+    background-image:
+      radial-gradient(3px 3px at 12% 18%, var(--color-text), transparent),
+      radial-gradient(2px 2px at 28% 72%, var(--color-muted), transparent),
+      radial-gradient(3px 3px at 44% 36%, var(--color-cyan), transparent),
+      radial-gradient(2px 2px at 58% 84%, var(--color-text), transparent),
+      radial-gradient(3px 3px at 71% 22%, var(--color-gold), transparent),
+      radial-gradient(2px 2px at 83% 58%, var(--color-text), transparent),
+      radial-gradient(3px 3px at 91% 12%, var(--color-muted), transparent),
+      radial-gradient(2px 2px at 8% 88%, var(--color-cyan), transparent),
+      radial-gradient(2px 2px at 36% 8%, var(--color-text), transparent),
+      radial-gradient(3px 3px at 64% 64%, var(--color-text), transparent),
+      radial-gradient(2px 2px at 19% 48%, var(--color-gold), transparent),
+      radial-gradient(2px 2px at 77% 92%, var(--color-muted), transparent),
+      radial-gradient(2px 2px at 5% 34%, var(--color-text), transparent),
+      radial-gradient(3px 3px at 52% 12%, var(--color-text), transparent),
+      radial-gradient(2px 2px at 95% 76%, var(--color-cyan), transparent),
+      radial-gradient(2px 2px at 40% 94%, var(--color-text), transparent),
+      radial-gradient(3px 3px at 24% 28%, var(--color-muted), transparent),
+      radial-gradient(2px 2px at 87% 38%, var(--color-text), transparent);
+  }
+}

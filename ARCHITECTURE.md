@@ -330,7 +330,7 @@ varies by reader as well as by browser, and has not been tested here.
 
   `rounded-nav` (14px) is the **softened-box** exception: the nav CTA button in
   `Header.astro` and `MobileMenu.vue`, the logo tile in `Header.astro`, and the
-  larger copy of that tile at the head of `404.astro`. The third is the same
+  larger copy of that tile in the starfield panel of `404.astro`. The third is the same
   object drawn twice, not a new use. The exception belongs to the logo tile
   wherever it is drawn; a tile that is not a copy of it does not qualify,
   however much it looks like one.
