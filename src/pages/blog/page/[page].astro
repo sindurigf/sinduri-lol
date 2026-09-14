@@ -61,7 +61,7 @@ const { posts, page, totalPages } = Astro.props as Props;
 
 <BaseLayout
   title={`Blog, page ${page} | sinduri.lol`}
-  description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+  description={`Page ${page} of posts by Sinduri Guntupalli on open source, her professional journey, travel, skincare and personal thoughts.`}
 >
   <div class="mx-auto max-w-page py-28">
     {/*
@@ -80,7 +80,7 @@ const { posts, page, totalPages } = Astro.props as Props;
       this page from /blog, and a reader arriving from a search result or a
       bookmark has nothing else to say which slice of the archive this is.
     */}
-    <h1 class="mt-6 text-h1 text-text">Lorem ipsum, page {page}</h1>
+    <h1 class="mt-6 text-h1 text-text">Blog, page {page}</h1>
 
     <div class="mt-12">
       <BlogListing
