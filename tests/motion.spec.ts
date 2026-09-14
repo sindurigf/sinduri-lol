@@ -238,6 +238,9 @@ const HERO_PLAY_NAME = /play the hero animation/i;
 /** How long to let the field run between the two samples. */
 const HERO_SAMPLE_MS = 350;
 
+/** How long a running field has to show a repaint, polled, before it fails. */
+const HERO_REPAINT_TIMEOUT_MS = 5_000;
+
 /** The frame-rate test offers the field one second of frames at this rate. */
 const HERO_PUMP_HZ = 60;
 const HERO_PUMP_FRAMES = 60;
@@ -352,7 +355,7 @@ test.describe('the hero field on /', () => {
     await expect
       .poll(async () => (await fieldFingerprint(page))!.signature, {
         message: 'the field is not repainting',
-        timeout: 5_000,
+        timeout: HERO_REPAINT_TIMEOUT_MS,
       })
       .not.toBe(first!.signature);
 
@@ -392,11 +395,22 @@ test.describe('the hero field on /', () => {
     await page.keyboard.press('Enter');
     await expect(field).toHaveAttribute('data-hero-motion', 'running');
     const resumed = await fieldFingerprint(page);
-    await page.waitForTimeout(HERO_SAMPLE_MS);
-    expect(
-      (await fieldFingerprint(page))!.signature,
-      'pressing play did not restart the field',
-    ).not.toBe(resumed!.signature);
+    /*
+     * Polled for the reason the first repaint is: resuming goes through the
+     * same `start()`, and its first drawn frame can be late in WebKit. A fixed
+     * HERO_SAMPLE_MS sample failed here in CI, twice in a row, on a branch
+     * that did not touch the homepage (2026-09-14).
+     *
+     * Proven able to fail, 2026-09-14, chromium: with `toggle()` no longer
+     * calling `start()`, it failed "pressing play did not restart the field".
+     * Restored, chromium and firefox passed.
+     */
+    await expect
+      .poll(async () => (await fieldFingerprint(page))!.signature, {
+        message: 'pressing play did not restart the field',
+        timeout: HERO_REPAINT_TIMEOUT_MS,
+      })
+      .not.toBe(resumed!.signature);
   });
 
   /*
