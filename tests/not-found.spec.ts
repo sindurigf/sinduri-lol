@@ -34,7 +34,7 @@ import { DIST_DIR } from './routes';
  * (2026-09-11).
  */
 
-const NOT_FOUND_HEADING = /page not found/i;
+const NOT_FOUND_HEADING = /these are not the droids you are looking for/i;
 const WRANGLER_CONFIG = 'wrangler.jsonc';
 const WORKERS_NOT_FOUND_HANDLING = '404-page';
 

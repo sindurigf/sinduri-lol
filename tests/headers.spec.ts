@@ -456,45 +456,6 @@ test.describe('security headers', () => {
     ).toMatch(/\bimmutable\b/);
   });
 
-  /**
-   * The site is closed to search indexes until somebody opens it
-   * deliberately.
-   *
-   * Unusually for this file, it guards a restriction rather than a protection,
-   * because losing this one is silent: a launched site with the `noindex`
-   * forgotten looks correct in every browser and is simply absent from every
-   * search engine. Removing it has to fail here so it is a deliberate act with
-   * a commit message. When the site launches, delete this test in the same
-   * commit as the header; TODO.md carries it as a launch item.
-   *
-   * It is a header rather than a <meta name="robots"> so it also covers the
-   * PDFs, llms.txt and the sitemap. It is set under `/*` only, because
-   * Cloudflare comma-joins a name set by two matching rules.
-   */
-  test('the site is still closed to search indexes', () => {
-    expect(
-      headers.get('x-robots-tag'),
-      'X-Robots-Tag: noindex is missing. If this is the launch, delete this ' +
-        'test in the same commit and say so. If it is not, the site is now ' +
-        'indexable and nothing else would have told you.',
-    ).toBe('noindex');
-
-    /*
-     * robots.txt must stay permissive for the header above to mean anything.
-     * A crawler told not to fetch never receives the noindex, and the URL can
-     * still be listed from an external link, so the combination is strictly
-     * weaker than the header alone.
-     */
-    const robots = readFileSync(join(DIST_DIR, 'robots.txt'), 'utf8');
-    expect(
-      robots,
-      'robots.txt now disallows crawling. That does not reinforce the ' +
-        'noindex header, it defeats it: a crawler that will not fetch the ' +
-        'page never learns the page is noindex, and the URL can still be ' +
-        'listed on the strength of a link from elsewhere.',
-    ).not.toMatch(/^Disallow:\s*\/\s*$/m);
-  });
-
   test('the isolation headers are set, and COEP is not', () => {
     expect(
       headers.get('cross-origin-opener-policy'),

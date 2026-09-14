@@ -330,7 +330,7 @@ varies by reader as well as by browser, and has not been tested here.
 
   `rounded-nav` (14px) is the **softened-box** exception: the nav CTA button in
   `Header.astro` and `MobileMenu.vue`, the logo tile in `Header.astro`, and the
-  larger copy of that tile at the head of `404.astro`. The third is the same
+  larger copy of that tile in the starfield panel of `404.astro`. The third is the same
   object drawn twice, not a new use. The exception belongs to the logo tile
   wherever it is drawn; a tile that is not a copy of it does not qualify,
   however much it looks like one.
@@ -595,7 +595,7 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   - A sliced body goes through `FixedLengthStream` so the `206` carries its
     length; without it the response went out chunked.
   - The asset response the Worker reads already carries the `_headers` rules,
-    so a ranged response keeps the CSP and `noindex`, unlike the generated
+    so a ranged response keeps the CSP, unlike the generated
     responses described under Security headers.
   - `tests/video-range.spec.ts` runs under the Worker config, since the static
     server the main suite uses ignores ranges just as production assets do.

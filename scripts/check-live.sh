@@ -38,6 +38,8 @@
 #   7. A stylesheet or script under /_astro/ or /vendor/ served without a
 #      Content-Encoding. Those rules detach `no-transform` so Cloudflare
 #      compresses them; public/_headers says why pages cannot be.
+#   8. /sitemap.xml not answering a 301 to /sitemap-index.xml, the rule in
+#      public/_redirects.
 #
 # Requests are sent as a browser sends them, Accept-Encoding included, and the
 # body is decoded before any rule reads it.
@@ -482,6 +484,26 @@ else
 fi
 
 check_response "$UNKNOWN_PATH" 404
+
+# public/_redirects sends the conventional sitemap name to the index the
+# integration writes. The static server the test suite uses ignores that file,
+# so this is the only place the redirect is checked.
+SITEMAP_ALIAS=/sitemap.xml
+SITEMAP_TARGET=/sitemap-index.xml
+REDIRECT_STATUS=301
+RESPONSES=$((RESPONSES + 1))
+alias_result=$(curl --silent --show-error --max-time "$TIMEOUT_SECONDS" \
+  --user-agent "$USER_AGENT" --output /dev/null \
+  --write-out '%{http_code} %{redirect_url}' "$TARGET$SITEMAP_ALIAS") ||
+  die "could not fetch $TARGET$SITEMAP_ALIAS"
+alias_status=${alias_result%% *}
+alias_location=${alias_result#* }
+if [ "$alias_status" != "$REDIRECT_STATUS" ] ||
+  [ "$alias_location" != "$TARGET$SITEMAP_TARGET" ]; then
+  fail "$SITEMAP_ALIAS" "expected $REDIRECT_STATUS to $TARGET$SITEMAP_TARGET, got $alias_status to ${alias_location:-nothing}"
+else
+  printf 'ok    %s\n' "$SITEMAP_ALIAS"
+fi
 
 if [ "$FAILURES" -gt 0 ]; then
   echo

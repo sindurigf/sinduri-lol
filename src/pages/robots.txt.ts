@@ -45,11 +45,6 @@ export const GET: APIRoute = ({ site }) => {
   }
 
   const body = [
-    '# This site is not open to search indexes yet. Crawling is allowed on',
-    '# purpose: every response carries `X-Robots-Tag: noindex`, and a crawler',
-    '# that is not allowed to fetch a page never learns the page is noindex.',
-    '# See the note in public/_headers before changing either.',
-    '',
     'User-agent: *',
     'Allow: /',
     '',

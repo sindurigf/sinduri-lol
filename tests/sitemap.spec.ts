@@ -1,7 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { builtPages, DIST_DIR, routesFromBuild } from './routes';
+import {
+  builtPages,
+  CATEGORY_ROUTES,
+  DIST_DIR,
+  postCountByCategory,
+  routesFromBuild,
+} from './routes';
 import { configuredSite } from './source';
 
 /**
@@ -39,6 +45,11 @@ import { configuredSite } from './source';
  *     is not advertised", the intended overlap: the first names the surplus
  *     URL, the second the reason it matters.
  *
+ * And on 2026-09-14, with `isAdvertised` in src/lib/sitemap-filter.ts made to
+ * list every category: "a category is advertised only while it holds a post"
+ * failed naming /blog/skincare, and "the sitemap lists every page and only
+ * pages" failed with the three empty categories as surplus.
+ *
  * That last mutation is artificial because nothing here implements the
  * exclusion. @astrojs/sitemap drops status-code pages itself, before any
  * filter runs, so `the error page is not advertised` guards a dependency's
@@ -60,11 +71,20 @@ const SITEMAP_PATH = '/sitemap-index.xml';
  */
 /*
  * Built, and deliberately not advertised. `/404` is dropped by the integration
- * itself; `/contact/sent` is dropped by the filter in astro.config.mjs,
- * because a crawler served a confirmation reads that a message it never sent
- * was received.
+ * itself; `/contact/sent` and every category listing with no posts are dropped
+ * by src/lib/sitemap-filter.ts. The empty categories are worked out here from
+ * the Markdown, independently of that file, so the two cannot agree by sharing
+ * a bug.
  */
-const EXCLUDED_ROUTES = ['/404', '/contact/sent'];
+const EMPTY_CATEGORY_ROUTES = CATEGORY_ROUTES.filter(
+  (route) =>
+    (postCountByCategory().get(route.replace('/blog/', '')) ?? 0) === 0,
+);
+const EXCLUDED_ROUTES: string[] = [
+  '/404',
+  '/contact/sent',
+  ...EMPTY_CATEGORY_ROUTES,
+];
 const EXCLUDED_ROUTE = EXCLUDED_ROUTES[0]!;
 
 /** Every `<loc>` in the built sitemap, as pathnames, sorted. */
@@ -215,6 +235,21 @@ test.describe('robots.txt and the sitemap', () => {
         'built is one a crawler will be served a 404 for; a page built and ' +
         'not listed is one it may never hear about.',
     ).toEqual(expected);
+  });
+
+  test('a category is advertised only while it holds a post', () => {
+    const listed = sitemapPaths(configuredSite());
+
+    for (const route of CATEGORY_ROUTES) {
+      const empty = EMPTY_CATEGORY_ROUTES.includes(route);
+      expect(
+        listed.includes(asSitemapPath(route)),
+        empty
+          ? `the sitemap advertises ${route}, which has no posts and only ` +
+              'says "No posts yet"'
+          : `the sitemap leaves out ${route}, which has posts to find`,
+      ).toBe(!empty);
+    }
   });
 
   test('the error page is not advertised', () => {

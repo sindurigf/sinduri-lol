@@ -1059,7 +1059,7 @@ exactly three things:
    `Header.astro` and `MobileMenu.vue`, and the radius is declared once for
    both rather than in each of them
 2. the logo tile in `Header.astro`
-3. the bunny tile at the head of `404.astro`. It is the logo tile drawn a second
+3. the bunny tile on `404.astro`, in its starfield panel. It is the logo tile drawn a second
    time, not a new element: the same mark on the same gold tile, with the same
    `border-4` and `rotate-3`, at 96px where the header draws 48px, and with its
    pink hard shadow scaled to match (`shadow-hard-pink-12` against `-8`). The
