@@ -89,16 +89,16 @@ What is currently true:
   painted border or an opaque background, links are painted distinctly from
   body text, and the focus ring keeps a non-zero width.
 - Reduced motion is checked site-wide. Zero elements animate under
-  `prefers-reduced-motion: reduce` across all 25 routes. That walk reads
+  `prefers-reduced-motion: reduce` across all 17 routes. That walk reads
   computed styles, which a `<canvas>` is invisible to, so the homepage hero is
   measured separately by fingerprinting its pixels.
 - Every page names itself. axe's `document-title` fires only on a missing or
-  empty title and says nothing about two pages sharing one. All 25 titles are
+  empty title and says nothing about two pages sharing one. All 17 titles are
   distinct, and every one except the homepage's names the page before the site.
 
-**None of the above says anything about the words.** Nineteen of the 28 built
+**None of the above says anything about the words.** Two of the 17 built
 pages carry lorem ipsum, which is Latin inside a `lang="en"` document. On those
-nineteen the criteria that depend on real language are not merely untested but
+two the criteria that depend on real language are not merely untested but
 unassessable. See gap 3.
 
 Passing axe is not conformance. See section 6.
@@ -434,13 +434,12 @@ Stated honestly. This list is not filtered for how it looks.
    screen reader through one engine on one machine.
 
 3. **The copy is lorem ipsum, which is Latin inside a `lang="en"` document.**
-   It affects 19 of the 28 built pages, measured 2026-09-13 by counting
-   distinctive lorem words in the visible text of every page in `dist/`. Nine
-   have none: `/career`, whose copy is transcribed from the published CV;
-   `/about`, in Sinduri's own words; the two real posts at
-   `/blog/open-source-is-not-just-code` and `/blog/five-years-in-drupal`;
-   `/credits`; `/accessibility`; `/privacy`; `/contact/sent`; and `/404`. The
-   homepage still carries lorem outside its About teaser.
+   It affects 2 of the 17 built pages, measured 2026-09-14 by counting
+   distinctive lorem words in the visible text of every page in `dist/`: the
+   homepage, outside its About teaser, and the heading and standfirst of
+   `/blog`. The ten placeholder posts were removed that day, so the blog now
+   holds the two real posts, and the three categories without one say
+   "No posts yet". Every other page is real English.
 
    A screen reader takes its pronunciation from the language of the content.
    `<html lang="en">` is correct for the site and wrong for the words in it, so

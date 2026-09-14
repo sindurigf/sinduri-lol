@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import portrait from '../assets/photos/sinduri-pride.jpg';
+import rainbowPortrait from '../assets/photos/sinduri-pride.jpg';
 import lake from '../assets/photos/sinduri-lake.jpg';
 import bicycle from '../assets/photos/sinduri-bicycle.jpg';
 import bestFriendSelfie from '../assets/photos/best-friend-selfie.jpg';
@@ -16,21 +16,21 @@ import mountainCamp from '../assets/photos/drupal-mountain-camp.jpg';
 import friendsMossWall from '../assets/photos/friends-moss-wall.jpg';
 import escapeRoom from '../assets/photos/escape-room.jpg';
 import kannurSea from '../assets/photos/kannur-sea.jpg';
-import prideWithFriend from '../assets/photos/pride-with-friend.jpg';
+import withFriend from '../assets/photos/pride-with-friend.jpg';
 import dosa from '../assets/photos/sinduri-dosa.jpg';
 import lectureHall from '../assets/photos/drupal-lecture-hall.jpg';
 import { PHOTOGRAPHERS } from '../lib/credits';
 import { DENSITIES, WIDTHS } from '../lib/image-densities';
 
 /*
- * Sinduri's own copy, set as a magazine issue: a cover, then four spreads.
- * The cover lines are the table of contents and link to the spreads, and the
- * spread titles echo her tagline, Open Source Enthusiast and Positivity
- * Advocate. The magazine vocabulary (running head, kicker, standfirst, drop
- * cap, pull quote) is in global.css under `.mag-`.
+ * Sinduri's own copy, told in order: who she is, what she believes, her
+ * people and places, the important things, and her path into Drupal last.
+ * Sections use the site's own vocabulary (section rule, pill, card, hard
+ * shadow) so the page reads as part of the same site as the homepage.
  *
  * Her voice uses few apostrophes: "I am", "it is". Keep that when editing,
- * and add no line she has not said or approved.
+ * and add no line she has not said or approved. Nothing here is framed as
+ * Pride; the two rainbow photos sit uncaptioned among the other photos.
  */
 
 const JOURNEY_POST_HREF = '/blog/five-years-in-drupal/';
@@ -41,7 +41,7 @@ const THUMB_SIZE = 56;
 /** The bunny roundel's mark, drawn `h-14`, as on the homepage. */
 const ROUNDEL_MARK_HEIGHT = 56;
 
-/** The Johann photo, drawn at most `max-w-64`; its master is only 278px wide. */
+/** The Johann photo, drawn `w-64`; its master is only 278px wide. */
 const JOHANN_WIDTH = 256;
 
 /*
@@ -53,44 +53,81 @@ const JOHANN_DENSITIES = [1];
 
 /*
  * Only used to pick a file from WIDTHS; tests/image-size.spec.ts measures the
- * result. Each names the column the photo fills from `lg`, and the page
- * column below it.
+ * result. Each names the column the photo fills from `lg`, then below it.
  */
 const SIZES = {
-  cover: '(min-width: 64rem) 46rem, 100vw',
-  sideColumn: '(min-width: 64rem) 32rem, 100vw',
-  sidePair: '(min-width: 64rem) 16rem, 50vw',
-  friendsPair: '(min-width: 64rem) 14rem, (min-width: 40rem) 33vw, 50vw',
-  friendsSingle: '(min-width: 64rem) 14rem, (min-width: 40rem) 33vw, 100vw',
-  food: '(min-width: 64rem) 19rem, (min-width: 40rem) 24rem, 100vw',
-  cat: '(min-width: 64rem) 19rem, (min-width: 40rem) 33vw, 100vw',
-  essayLead: '(min-width: 64rem) 52rem, 100vw',
-  essaySide: '(min-width: 64rem) 26rem, 100vw',
+  hero: '(min-width: 64rem) 40rem, 100vw',
+  pair: '(min-width: 64rem) 17rem, 45vw',
+  masonry: '(min-width: 64rem) 26rem, (min-width: 40rem) 50vw, 100vw',
+  food: '(min-width: 40rem) 24rem, 100vw',
+  cat: '(min-width: 64rem) 24rem, (min-width: 40rem) 30vw, 100vw',
+  side: '(min-width: 64rem) 32rem, 100vw',
 } as const;
 
 const COVER_PHOTOGRAPHER = 'Tdm Dilip';
 const LECTURE_HALL_PHOTOGRAPHER = 'Andrey Pshenichny';
 
-const SPREADS = [
+const SECTIONS = [
+  { id: 'believe', title: 'What I believe' },
+  { id: 'people', title: 'People and places' },
+  { id: 'important-things', title: 'The important things' },
+  { id: 'drupal', title: 'Engineer to Drupal' },
+] as const;
+
+/*
+ * A caption under a photo, and a photo's frame. Photos take a border and no
+ * shadow: shadows are kept for the cards, so the cards stay the objects that
+ * stand forward.
+ */
+const CAPTION = 'mt-3 text-body text-muted text-pretty';
+const PHOTO = 'block h-auto w-full border-4 border-border object-cover';
+
+/*
+ * Photos from her life outside work, in a masonry of CSS columns so each keeps
+ * its own shape. The two rainbow photos have no caption, as she asked.
+ */
+const PLACES = [
   {
-    id: 'vienna',
-    title: 'Vienna since 2017',
-    teaser: 'Cats, friends and long evenings',
+    src: lake,
+    alt: 'Sinduri in a pink dress on a balcony, with trees and a lake behind her.',
+    aspect: 'aspect-portrait',
+    lead: 'Travelling.',
+    rest: '',
   },
   {
-    id: 'positivity',
-    title: 'Positivity advocate',
-    teaser: 'Kindness, laughter and Lepus Ridet',
+    src: friendsMossWall,
+    alt: 'Sinduri between two friends in front of a moss wall, all three looking up and laughing.',
+    aspect: 'aspect-photo',
+    lead: 'With friends.',
+    rest: '',
   },
   {
-    id: 'important-things',
-    title: 'The important things',
-    teaser: 'Middle-earth, fandoms and three cats',
+    src: rainbowPortrait,
+    alt: 'Sinduri smiling, with a rainbow painted on her cheek and rainbow wings behind her.',
+    aspect: 'aspect-portrait',
+    lead: '',
+    rest: '',
   },
   {
-    id: 'open-source',
-    title: 'Open source enthusiast',
-    teaser: 'A Sinduri before Drupal, and after',
+    src: kannurSea,
+    alt: 'Sinduri standing at the edge of the sea with her arms spread wide, a wave breaking behind her.',
+    aspect: 'aspect-square',
+    lead: 'Kannur,',
+    rest: 'Kerala.',
+  },
+  {
+    src: escapeRoom,
+    alt: 'Sinduri with a group after an escape room, two of them holding Mission Complete signs.',
+    aspect: 'aspect-photo',
+    lead: 'Mission complete.',
+    rest: '',
+  },
+  {
+    src: withFriend,
+    alt: 'Sinduri leaning on a friend’s shoulder, both smiling into the camera.',
+    aspect: 'aspect-portrait',
+    lead: '',
+    rest: '',
   },
 ] as const;
 
@@ -115,9 +152,9 @@ const CATS = [
   },
 ] as const;
 
-const SPREAD_NUMBER_DIGITS = 2;
-const spreadNumber = (index: number): string =>
-  String(index + 1).padStart(SPREAD_NUMBER_DIGITS, '0');
+/** A link in the "On this page" row: its own 24px target, like the nav. */
+const JUMP_LINK =
+  'label inline-flex min-h-target items-center border-4 border-border bg-surface px-4 py-2 text-text hover:text-cyan';
 ---
 
 <BaseLayout
@@ -125,333 +162,316 @@ const spreadNumber = (index: number): string =>
   description="Sinduri in Vienna: cats, Lord of the Rings, positivity, and how a civil engineer found her way into the Drupal community."
 >
   {/* ===================================================================
-       COVER
+       WHO I AM
        =================================================================== */}
   <section class="band py-16">
-    <div class="mx-auto max-w-page">
-      <div class="mag-cover">
-        <div class="flex min-w-0 flex-col gap-10">
-          <p class="mag-dateline">
-            <span class="mag-kicker text-text">sinduri.lol</span>
-            <span class="mag-kicker text-muted">Vienna · Since 2017</span>
+    <div class="mx-auto grid max-w-page gap-14 lg:grid-cols-2 lg:items-center">
+      <div class="flex min-w-0 flex-col gap-8">
+        <p class="pill self-start">
+          <span class="label-wide text-gold">Vienna since 2017</span>
+        </p>
+
+        <div class="flex flex-col gap-6">
+          <h1 class="text-h1 text-text">About me</h1>
+          <p class="text-h3 font-black text-gold text-pretty">
+            Open source enthusiast in Vienna, cat lover, and a very serious Lord
+            of the Rings fan.
           </p>
-
-          <div class="flex flex-col gap-6">
-            <h1 class="text-h1 text-text">About me</h1>
-            <p class="text-h3 font-black text-gold text-pretty">
-              Open source enthusiast in Vienna, cat lover, and a very serious
-              Lord of the Rings fan.
-            </p>
-          </div>
-
-          <nav aria-label="In this issue">
-            <ol class="grid gap-5">
-              {SPREADS.map((spread, index) => (
-                <li>
-                  <a href={`#${spread.id}`} class="mag-coverline">
-                    <span class="mag-kicker">{spreadNumber(index)}</span>
-                    <span class="mag-coverline-title">{spread.title}</span>
-                    <span class="text-label text-muted">{spread.teaser}</span>
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </nav>
         </div>
 
-        <figure class="min-w-0">
+        <div class="card shadow-hard-pink-8">
+          <p class="label-wide text-pink-text">Why Lepus Ridet</p>
+          <p class="mt-4 text-h3 font-bold text-text text-pretty">
+            My pet name is Bunny. That is what my family and close friends call
+            me.
+          </p>
+          <p class="mt-4 max-w-prose text-body text-muted text-pretty">
+            I try to always laugh and find fun in everything I do, and that is
+            where Lepus Ridet comes from: it is Latin for &ldquo;the hare
+            laughs&rdquo;.
+          </p>
+        </div>
+
+        <nav aria-label="On this page">
+          <ul class="flex flex-wrap gap-3">
+            {SECTIONS.map((section) => (
+              <li>
+                <a href={`#${section.id}`} class={JUMP_LINK}>
+                  {section.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+
+      <figure class="min-w-0">
+        {/*
+          The roundel sits on the photo's top-left corner, where the column
+          edge is inside the page at every width; `sm:-left-6` is the `sm`
+          gutter, as on the homepage, so it never scrolls the page sideways.
+          alt="" because the Lepus Ridet card beside it names the mark.
+        */}
+        <div class="relative">
           <Image
             src={bicycle}
             alt="Sinduri laughing as she rides a bicycle with a basket down a tree-lined path."
             widths={WIDTHS}
-            sizes={SIZES.cover}
+            sizes={SIZES.hero}
             loading="eager"
-            class="block aspect-portrait h-auto w-full object-cover"
+            class="block aspect-portrait h-auto w-full border-8 border-border object-cover shadow-hard-gold-8"
           />
-          <figcaption class="mag-caption">
-            Photo:{' '}
-            <a href={PHOTOGRAPHERS[COVER_PHOTOGRAPHER]}>{COVER_PHOTOGRAPHER}</a>
-          </figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  {/* ===================================================================
-       01 VIENNA SINCE 2017
-       =================================================================== */}
-  <section class="band pb-20" id={SPREADS[0].id}>
-    <div class="mx-auto max-w-page">
-      <p class="mag-runhead" aria-hidden="true">
-        <span>
-          <span class="text-text">01</span> · {SPREADS[0].title}
-        </span>
-        <span>sinduri.lol</span>
-      </p>
-
-      {/*
-        The photo row sits under the headline in the wide column, so the tall
-        portrait beside it is matched by text and photos rather than by an
-        empty column.
-      */}
-      <div class="mag-spread-7-5 mt-10 grid gap-10 lg:items-start">
-        <div class="flex min-w-0 flex-col gap-10">
-          <div class="flex flex-col gap-6">
-            <p class="mag-kicker">Home</p>
-            <h2 id="spread-vienna" class="text-h1 text-text">
-              Vienna <span class="text-gold">since 2017</span>
-            </h2>
-            <p class="mag-standfirst">
-              I moved to Vienna in 2017. I love cats, travelling, and long
-              evenings with my friends talking about nothing and anything.
-            </p>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <figure class="col-span-2">
-              <div class="grid grid-cols-2 gap-3">
-                <Image
-                  src={bestFriendSelfie}
-                  alt="Sinduri taking a selfie with her best friend, Hemu."
-                  widths={WIDTHS}
-                  sizes={SIZES.friendsPair}
-                  class="block aspect-square h-auto w-full object-cover"
-                />
-                <Image
-                  src={bestFriendBeach}
-                  alt="Sinduri and her best friend Hemu walking on a beach."
-                  widths={WIDTHS}
-                  sizes={SIZES.friendsPair}
-                  class="block aspect-square h-auto w-full object-cover"
-                />
-              </div>
-              <figcaption class="mag-caption">
-                <strong class="text-text">My best friend,</strong> Hemu.
-              </figcaption>
-            </figure>
-            <figure class="col-span-2 sm:col-span-1">
-              <Image
-                src={kannurSea}
-                alt="Sinduri standing at the edge of the sea with her arms spread wide, a wave breaking behind her."
-                widths={WIDTHS}
-                sizes={SIZES.friendsSingle}
-                class="block aspect-square h-auto w-full object-cover"
-              />
-              <figcaption class="mag-caption">
-                <strong class="text-text">Kannur,</strong> Kerala.
-              </figcaption>
-            </figure>
-          </div>
-        </div>
-
-        <figure class="min-w-0">
-          <Image
-            src={lake}
-            alt="Sinduri in a pink dress on a balcony, with trees and a lake behind her."
-            widths={WIDTHS}
-            sizes={SIZES.sideColumn}
-            class="block aspect-portrait h-auto w-full object-cover"
-          />
-          <figcaption class="mag-caption">
-            <strong class="text-text">Travelling.</strong>
-          </figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  {/* ===================================================================
-       02 POSITIVITY ADVOCATE
-       =================================================================== */}
-  <section class="band pb-20" id={SPREADS[1].id}>
-    <div class="mx-auto max-w-page">
-      <p class="mag-runhead" aria-hidden="true">
-        <span>
-          <span class="text-text">02</span> · {SPREADS[1].title}
-        </span>
-        <span>sinduri.lol</span>
-      </p>
-
-      <div class="mag-spread-5-7 mt-10 grid gap-10 lg:items-center">
-        <div class="flex min-w-0 flex-col gap-6">
-          <figure>
-            <div class="grid grid-cols-2 gap-3">
-              <Image
-                src={portrait}
-                alt="Sinduri smiling, with a rainbow painted on her cheek and rainbow wings behind her."
-                widths={WIDTHS}
-                sizes={SIZES.sidePair}
-                class="block aspect-portrait h-auto w-full object-cover"
-              />
-              <Image
-                src={prideWithFriend}
-                alt="Sinduri leaning on a friend's shoulder at Pride, both smiling into the camera."
-                widths={WIDTHS}
-                sizes={SIZES.sidePair}
-                class="block aspect-portrait h-auto w-full object-cover"
-              />
-            </div>
-            <figcaption class="mag-caption">
-              <strong class="text-text">Pride,</strong> with a friend.
-            </figcaption>
-          </figure>
-          <figure class="grid grid-cols-2 items-end gap-3">
+          <span class="absolute -left-2 -top-8 flex size-28 items-center justify-center rounded-full border-8 border-border bg-gold shadow-hard-cyan-8 sm:-left-6">
             <Image
-              src={withJohann}
-              alt="Sinduri smiling with Johann, his arms wrapped around her."
-              width={JOHANN_WIDTH}
-              densities={JOHANN_DENSITIES}
-              class="block aspect-portrait h-auto w-full max-w-64 object-cover"
+              src={bunnyDark}
+              alt=""
+              height={ROUNDEL_MARK_HEIGHT}
+              densities={DENSITIES}
+              class="h-14 w-auto"
             />
-            <figcaption class="mag-caption">
-              <strong class="text-text">Johann,</strong> my husband and the
-              non-Drupaler who always has my back.
-            </figcaption>
-          </figure>
+          </span>
         </div>
+        <figcaption class:list={[CAPTION, 'mt-5']}>
+          Photo:{' '}
+          <a href={PHOTOGRAPHERS[COVER_PHOTOGRAPHER]}>{COVER_PHOTOGRAPHER}</a>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
 
-        <div class="flex min-w-0 flex-col gap-6">
-          <p class="mag-kicker">What I believe</p>
-          <h2 id="spread-positivity" class="text-h1 text-text">
-            Positivity <span class="text-gold">advocate</span>
-          </h2>
-          <blockquote class="mt-4">
-            <span class="mag-quote-mark" aria-hidden="true">
-              &ldquo;
-            </span>
-            <p class="mag-quote">
-              We should all be a bit kinder and more empathetic.
-            </p>
-          </blockquote>
-          <p class="max-w-prose text-body text-muted text-pretty">
-            That is also what I love about open source: people contribute based
-            on passion and expertise, not hierarchy, and there is room for
-            everyone.
+  {/* ===================================================================
+       WHAT I BELIEVE
+       =================================================================== */}
+  <section
+    class="band py-20"
+    id={SECTIONS[0].id}
+    aria-labelledby="believe-heading"
+  >
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-pink"></span>
+    </div>
+
+    <div class="mx-auto max-w-page">
+      <p class="pill">
+        <span class="label-wide text-gold">What I believe</span>
+      </p>
+      <h2 id="believe-heading" class="mt-6 text-h2 text-text">
+        Positivity advocate
+      </h2>
+
+      <div class="mt-12 grid gap-10 lg:grid-cols-2">
+        {/*
+          THE GOLD STATEMENT. `.surface-gold` supplies the foreground and the
+          border colour for the subtree; nothing inside names a dark-set token.
+          It holds no control, which is why tests/gold-surface.spec.ts counts
+          zero on this route.
+        */}
+        <blockquote class="surface-gold flex min-w-0 flex-col justify-center border-8 p-card-tight shadow-hard-pink-8 sm:p-card">
+          <p class="text-h2 font-black text-pretty">
+            We should all be a bit kinder and more empathetic.
           </p>
-          <div class="mt-4 flex flex-col gap-2 border-t-4 border-border pt-5">
-            <p class="mag-kicker text-pink-text">One thing I never do</p>
-            <p class="text-h3 font-bold text-text text-pretty">
+        </blockquote>
+
+        <div class="flex min-w-0 flex-col gap-10">
+          <div class="card shadow-hard-cyan-8">
+            <p class="label-wide text-cyan">Room for everyone</p>
+            <p class="mt-4 max-w-prose text-body text-muted text-pretty">
+              That is also what I love about open source: people contribute
+              based on passion and expertise, not hierarchy, and there is room
+              for everyone.
+            </p>
+          </div>
+
+          <div class="card shadow-hard-gold-8">
+            <p class="label-wide text-gold">One thing I never do</p>
+            <p class="mt-4 text-h3 font-bold text-text text-pretty">
               Say no to a challenge just because I do not know how to approach
               it.
             </p>
-            <p class="max-w-prose text-body text-muted text-pretty">
+            <p class="mt-4 max-w-prose text-body text-muted text-pretty">
               I commit to figuring it out and learning whatever it takes to make
               it work.
             </p>
           </div>
         </div>
       </div>
-
-      {/*
-        Full width under both columns rather than a third box in the text
-        column, which would leave the photos a column short. The roundel is the
-        homepage's bunny tile; alt="" because the kicker beside it names it.
-      */}
-      <div class="mt-14 flex flex-col gap-8 border-t-4 border-border pt-10 sm:flex-row sm:items-center">
-        <span class="flex size-28 shrink-0 items-center justify-center rounded-full border-8 border-border bg-gold shadow-hard-cyan-8">
-          <Image
-            src={bunnyDark}
-            alt=""
-            height={ROUNDEL_MARK_HEIGHT}
-            densities={DENSITIES}
-            class="h-14 w-auto"
-          />
-        </span>
-        <div class="flex min-w-0 flex-col gap-2">
-          <p class="mag-kicker text-pink-text">Why Lepus Ridet</p>
-          <p class="text-h3 font-bold text-text text-pretty">
-            My pet name is Bunny. That is what my family and close friends call
-            me.
-          </p>
-          <p class="max-w-prose text-body text-muted text-pretty">
-            I try to always laugh and find fun in everything I do, and that is
-            where Lepus Ridet comes from: it is Latin for &ldquo;the hare
-            laughs&rdquo;.
-          </p>
-        </div>
-      </div>
     </div>
   </section>
 
   {/* ===================================================================
-       03 THE IMPORTANT THINGS
+       PEOPLE AND PLACES
        =================================================================== */}
-  <section class="band pb-20" id={SPREADS[2].id}>
+  <section
+    class="band py-20"
+    id={SECTIONS[1].id}
+    aria-labelledby="people-heading"
+  >
     <div class="mx-auto max-w-page">
-      <p class="mag-runhead" aria-hidden="true">
-        <span>
-          <span class="text-text">03</span> · {SPREADS[2].title}
-        </span>
-        <span>sinduri.lol</span>
+      <span class="section-rule bg-cyan"></span>
+    </div>
+
+    <div class="mx-auto max-w-page">
+      <p class="pill">
+        <span class="label-wide text-gold">Home</span>
+      </p>
+      <h2 id="people-heading" class="mt-6 text-h2 text-text">
+        People and places
+      </h2>
+      <p class="mt-6 max-w-2xl text-h3 font-normal text-muted text-pretty">
+        I moved to Vienna in 2017. I love cats, travelling, and long evenings
+        with my friends talking about nothing and anything.
       </p>
 
-      <div class="mt-10 flex flex-col gap-10">
-        <div class="surface-gold flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 p-card-tight sm:p-8">
-          <h2 id="spread-important" class="text-h3">
-            The important things
-          </h2>
-          <p class="mag-kicker text-gold-text">Fact file</p>
+      <div class="mt-12 grid gap-10 lg:grid-cols-2">
+        <figure class="card flex flex-col gap-6 shadow-hard-gold-8 sm:flex-row sm:items-end">
+          <Image
+            src={withJohann}
+            alt="Sinduri smiling with Johann, his arms wrapped around her."
+            width={JOHANN_WIDTH}
+            densities={JOHANN_DENSITIES}
+            class="block aspect-portrait h-auto w-64 max-w-full shrink-0 border-4 border-border object-cover"
+          />
+          <figcaption class="text-body text-muted text-pretty">
+            <strong class="block text-h3 font-bold text-text">Johann</strong>
+            My husband and the non-Drupaler who always has my back.
+          </figcaption>
+        </figure>
+
+        <figure class="card flex flex-col gap-6 shadow-hard-pink-8">
+          <div class="grid grid-cols-2 gap-3">
+            <Image
+              src={bestFriendSelfie}
+              alt="Sinduri taking a selfie with her best friend, Hemu."
+              widths={WIDTHS}
+              sizes={SIZES.pair}
+              class:list={[PHOTO, 'aspect-square']}
+            />
+            <Image
+              src={bestFriendBeach}
+              alt="Sinduri and her best friend Hemu walking on a beach."
+              widths={WIDTHS}
+              sizes={SIZES.pair}
+              class:list={[PHOTO, 'aspect-square']}
+            />
+          </div>
+          <figcaption class="text-body text-muted text-pretty">
+            <strong class="block text-h3 font-bold text-text">Hemu</strong>
+            My best friend.
+          </figcaption>
+        </figure>
+      </div>
+
+      <ul class="mt-10 gap-6 sm:columns-2 lg:columns-3">
+        {PLACES.map((place) => (
+          <li class="mb-6 break-inside-avoid">
+            <figure>
+              <Image
+                src={place.src}
+                alt={place.alt}
+                widths={WIDTHS}
+                sizes={SIZES.masonry}
+                class:list={[PHOTO, place.aspect]}
+              />
+              {place.lead && (
+                <figcaption class={CAPTION}>
+                  <strong class="text-text">{place.lead}</strong>
+                  {place.rest && ` ${place.rest}`}
+                </figcaption>
+              )}
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {/* ===================================================================
+       THE IMPORTANT THINGS
+       =================================================================== */}
+  <section
+    class="band py-20"
+    id={SECTIONS[2].id}
+    aria-labelledby="important-heading"
+  >
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-gold"></span>
+    </div>
+
+    <div class="mx-auto max-w-page">
+      <p class="pill">
+        <span class="label-wide text-gold">Fact file</span>
+      </p>
+      <h2 id="important-heading" class="mt-6 text-h2 text-text">
+        The important things
+      </h2>
+
+      {/*
+        One description list laid out as tiles. Each fact is a `dt` and `dd`,
+        so a short bold value is never a paragraph that reads as a heading.
+      */}
+      <dl class="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="card shadow-hard-gold-8 sm:col-span-2">
+          <dt class="label-wide text-gold">Sacred tradition</dt>
+          <dd class="mt-4">
+            <span class="block text-h3 font-bold text-text">
+              Lord of the Rings
+            </span>
+            <span class="mt-2 block text-body text-muted">
+              The extended versions, every year
+            </span>
+          </dd>
         </div>
 
-        <dl class="mag-facts">
-          <div>
-            <dt>Sacred tradition</dt>
-            <dd>
-              Lord of the Rings
-              <span class="block text-label font-normal text-muted">
-                The extended versions, every year
-              </span>
-            </dd>
-          </div>
-          <div>
-            <dt>Fandoms</dt>
-            <dd class="flex items-center justify-between gap-4">
+        <div class="card shadow-hard-cyan-8 sm:col-span-2">
+          <dt class="label-wide text-cyan">Fandoms</dt>
+          <dd class="mt-4 flex items-start justify-between gap-4">
+            <span class="block text-h3 font-bold text-text text-pretty">
               Star Trek, One Piece, Star Wars
-              <Image
-                src={starTrek}
-                alt="Sinduri in a Star Trek uniform."
-                width={THUMB_SIZE}
-                height={THUMB_SIZE}
-                densities={DENSITIES}
-                class="size-14 rounded-full object-cover"
-              />
-            </dd>
-          </div>
-          <div>
-            <dt>Food</dt>
-            <dd>
-              Love it
-              <span class="block text-label font-normal text-muted">
+            </span>
+            <Image
+              src={starTrek}
+              alt="Sinduri in a Star Trek uniform."
+              width={THUMB_SIZE}
+              height={THUMB_SIZE}
+              densities={DENSITIES}
+              class="size-14 shrink-0 rounded-full object-cover"
+            />
+          </dd>
+        </div>
+
+        <div class="card shadow-hard-gold-8 sm:col-span-2">
+          <dt class="label-wide text-gold">Music</dt>
+          <dd class="mt-4 text-h3 font-bold text-text">All over the place</dd>
+        </div>
+
+        {/*
+          Food is placed in the right-hand column across the three rows the
+          other facts take on the left; it comes after them in the source, so
+          reading order runs down the left and then the right.
+        */}
+        <div class="card shadow-hard-pink-8 sm:col-span-2 lg:col-start-3 lg:row-span-3 lg:row-start-1">
+          <dt class="label-wide text-pink-text">Food</dt>
+          <dd class="mt-4 flex flex-col gap-6">
+            <span class="block">
+              <span class="block text-h3 font-bold text-text">Love it</span>
+              <span class="mt-2 block text-body text-muted">
                 But I am a picky eater
               </span>
-            </dd>
-          </div>
-          <div>
-            <dt>Music</dt>
-            <dd>All over the place</dd>
-          </div>
-        </dl>
+            </span>
+            <Image
+              src={dosa}
+              alt="Sinduri, eyes closed, about to take a bite of dosa with her hand."
+              widths={WIDTHS}
+              sizes={SIZES.food}
+              class:list={[PHOTO, 'aspect-square max-w-sm']}
+            />
+          </dd>
+        </div>
 
-        <div class="grid gap-10 lg:grid-cols-4 lg:gap-4">
-          <div class="flex flex-col gap-4">
-            <p class="mag-kicker">Food</p>
-            <figure class="sm:max-w-sm lg:max-w-none">
-              <Image
-                src={dosa}
-                alt="Sinduri, eyes closed, about to take a bite of dosa with her hand."
-                widths={WIDTHS}
-                sizes={SIZES.food}
-                class="block aspect-square h-auto w-full object-cover"
-              />
-              <figcaption class="mag-caption">
-                <strong class="text-text">Dosa.</strong> Love it.
-              </figcaption>
-            </figure>
-          </div>
-
-          <div class="flex flex-col gap-4 lg:col-span-3">
-            <p class="mag-kicker">Three cats</p>
-            <ul class="grid gap-4 sm:grid-cols-3">
+        <div class="card shadow-hard-cyan-8 sm:col-span-2 lg:col-span-4">
+          <dt class="label-wide text-cyan">Three cats</dt>
+          <dd class="mt-6">
+            <ul class="grid gap-6 sm:grid-cols-3">
               {CATS.map((cat) => (
                 <li>
                   <figure>
@@ -460,48 +480,49 @@ const spreadNumber = (index: number): string =>
                       alt={cat.alt}
                       widths={WIDTHS}
                       sizes={SIZES.cat}
-                      class="block aspect-square h-auto w-full object-cover"
+                      class:list={[PHOTO, 'aspect-square']}
                     />
-                    <figcaption class="mag-caption">
+                    <figcaption class={CAPTION}>
                       <strong class="text-text">{cat.name},</strong> {cat.role}
                     </figcaption>
                   </figure>
                 </li>
               ))}
             </ul>
-          </div>
+          </dd>
         </div>
-      </div>
+      </dl>
     </div>
   </section>
 
   {/* ===================================================================
-       04 OPEN SOURCE ENTHUSIAST
+       ENGINEER TO DRUPAL
        =================================================================== */}
-  <section class="band pb-20" id={SPREADS[3].id}>
+  <section
+    class="band pb-24 pt-20"
+    id={SECTIONS[3].id}
+    aria-labelledby="drupal-heading"
+  >
     <div class="mx-auto max-w-page">
-      <p class="mag-runhead" aria-hidden="true">
-        <span>
-          <span class="text-text">04</span> · {SPREADS[3].title}
-        </span>
-        <span>sinduri.lol</span>
+      <span class="section-rule bg-pink"></span>
+    </div>
+
+    <div class="mx-auto max-w-page">
+      <p class="pill">
+        <span class="label-wide text-gold">Open source enthusiast</span>
+      </p>
+      <h2 id="drupal-heading" class="mt-6 text-h2 text-text">
+        Engineer to Drupal
+      </h2>
+      <p class="mt-6 max-w-2xl text-h3 font-normal text-muted text-pretty">
+        There is a Sinduri before Klausi and Drupal, and a Sinduri after.
       </p>
 
-      <div class="mt-10 flex flex-col gap-6">
-        <p class="mag-kicker">The story</p>
-        <h2 id="spread-open-source" class="text-h1 text-text">
-          Open source <span class="text-gold">enthusiast</span>
-        </h2>
-        <p class="mag-standfirst">
-          There is a Sinduri before Klausi and Drupal, and a Sinduri after.
-        </p>
-      </div>
-
-      <div class="mag-spread-7-5 mt-10 grid gap-10 lg:items-start">
-        <div class="mag-columns">
-          <div class="mb-8">
-            <p class="mag-kicker mb-2">Before</p>
-            <p class="mag-dropcap text-body text-muted text-pretty">
+      <div class="mt-12 grid gap-10 lg:grid-cols-12 lg:items-start">
+        <div class="flex min-w-0 flex-col gap-10 lg:col-span-7">
+          <div class="card shadow-hard-gold-8">
+            <p class="label-wide text-gold">Before</p>
+            <p class="mt-4 text-body text-muted text-pretty">
               I studied civil engineering in India and environmental engineering
               in the US. I always wanted to become a developer, but I never felt
               ready until I moved to Vienna. Honestly, after a few German
@@ -510,9 +531,10 @@ const spreadNumber = (index: number): string =>
               development course gave me the confidence to make the switch.
             </p>
           </div>
-          <div class="mb-8">
-            <p class="mag-kicker mb-2">After</p>
-            <p class="text-body text-muted text-pretty">
+
+          <div class="card shadow-hard-cyan-8">
+            <p class="label-wide text-cyan">After</p>
+            <p class="mt-4 text-body text-muted text-pretty">
               In January 2021, Klaus Purer gave me a Drupal test. I had
               absolutely no idea what Drupal was, but I did well enough to get
               the job. Since then I have organised Drupal events, joined the
@@ -522,65 +544,38 @@ const spreadNumber = (index: number): string =>
           </div>
         </div>
 
-        <figure class="min-w-0">
-          <Image
-            src={lectureHall}
-            alt="Sinduri standing and clapping in a lecture hall full of Drupal event attendees."
-            widths={WIDTHS}
-            sizes={SIZES.sideColumn}
-            class="block aspect-photo h-auto w-full object-cover"
-          />
-          <figcaption class="mag-caption">
-            <strong class="text-text">The Drupal community.</strong> Photo:{' '}
-            <a href={PHOTOGRAPHERS[LECTURE_HALL_PHOTOGRAPHER]}>
-              {LECTURE_HALL_PHOTOGRAPHER}
-            </a>
-          </figcaption>
-        </figure>
-      </div>
-
-      <div class="mag-essay mt-10 grid gap-4">
-        <figure>
-          <Image
-            src={mountainCamp}
-            alt="The Drupal Mountain Camp group photo: a crowd of attendees standing in the snow."
-            widths={WIDTHS}
-            sizes={SIZES.essayLead}
-            class="block aspect-video h-auto w-full object-cover"
-          />
-          <figcaption class="mag-caption">
-            <strong class="text-text">Drupal Mountain Camp.</strong>
-          </figcaption>
-        </figure>
-        <div class="flex flex-col gap-4">
+        <div class="flex min-w-0 flex-col gap-8 lg:col-span-5">
           <figure>
             <Image
-              src={friendsMossWall}
-              alt="Sinduri between two friends in front of a moss wall, all three looking up and laughing."
+              src={lectureHall}
+              alt="Sinduri standing and clapping in a lecture hall full of Drupal event attendees."
               widths={WIDTHS}
-              sizes={SIZES.essaySide}
-              class="block aspect-photo h-auto w-full object-cover"
+              sizes={SIZES.side}
+              class:list={[PHOTO, 'aspect-photo']}
             />
-            <figcaption class="mag-caption">
-              <strong class="text-text">With friends.</strong>
+            <figcaption class={CAPTION}>
+              <strong class="text-text">The Drupal community.</strong> Photo:{' '}
+              <a href={PHOTOGRAPHERS[LECTURE_HALL_PHOTOGRAPHER]}>
+                {LECTURE_HALL_PHOTOGRAPHER}
+              </a>
             </figcaption>
           </figure>
           <figure>
             <Image
-              src={escapeRoom}
-              alt="Sinduri with a group after an escape room, two of them holding Mission Complete signs."
+              src={mountainCamp}
+              alt="The Drupal Mountain Camp group photo: a crowd of attendees standing in the snow."
               widths={WIDTHS}
-              sizes={SIZES.essaySide}
-              class="block aspect-photo h-auto w-full object-cover"
+              sizes={SIZES.side}
+              class:list={[PHOTO, 'aspect-video']}
             />
-            <figcaption class="mag-caption">
-              <strong class="text-text">Mission complete.</strong>
+            <figcaption class={CAPTION}>
+              <strong class="text-text">Drupal Mountain Camp.</strong>
             </figcaption>
           </figure>
         </div>
       </div>
 
-      <div class="mt-12 flex flex-wrap items-center justify-between gap-6 border-t-4 border-border pt-6">
+      <div class="mt-14 flex flex-wrap items-center justify-between gap-6 border-t-4 border-border pt-8">
         <p class="text-body text-text">
           Continue reading: <a href={JOURNEY_POST_HREF}>Five years in Drupal</a>
         </p>
