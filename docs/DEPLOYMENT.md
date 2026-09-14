@@ -103,8 +103,9 @@ apex, `google-site-verification=...`, added in the Cloudflare dashboard on
 2026-09-14. Deleting it unverifies the property. It adds nothing to the site:
 no tag, script or file, and no request from a visitor's browser to Google, so
 `/privacy` has nothing to disclose about it. Search Console's reports come from
-Google Search itself. While `X-Robots-Tag: noindex` is in `public/_headers`,
-it will report every page as excluded by noindex.
+Google Search itself. The site opened to search indexes on 2026-09-14, when
+`X-Robots-Tag: noindex` came out of `public/_headers`; submit
+`https://sinduri.lol/sitemap-index.xml` there so Google finds every page.
 
 ## Cloudflare settings
 
@@ -117,7 +118,7 @@ These live in the dashboard and change what ships without changing a file here.
 | Email Address Obfuscation | Off            | Rewrites `mailto:` links into a script-dependent page      |
 | JavaScript Detections     | On, forced     | Free plan; `no-transform` in `_headers` keeps it off pages |
 | Compression               | Default        | Assets only; `no-transform` on pages switches it off there |
-| Bot Fight Mode            | Off            | Challenges the crawlers `X-Robots-Tag` has to reach        |
+| Bot Fight Mode            | Off            | Challenges the search engine crawlers the site wants       |
 | Zone HSTS                 | Off            | Replaces the `Strict-Transport-Security` in `_headers`     |
 | Minimum TLS version       | 1.2            | 1.3 alone locks out older devices that cannot update       |
 

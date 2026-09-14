@@ -595,7 +595,7 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   - A sliced body goes through `FixedLengthStream` so the `206` carries its
     length; without it the response went out chunked.
   - The asset response the Worker reads already carries the `_headers` rules,
-    so a ranged response keeps the CSP and `noindex`, unlike the generated
+    so a ranged response keeps the CSP, unlike the generated
     responses described under Security headers.
   - `tests/video-range.spec.ts` runs under the Worker config, since the static
     server the main suite uses ignores ranges just as production assets do.

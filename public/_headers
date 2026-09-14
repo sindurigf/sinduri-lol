@@ -122,31 +122,10 @@
 # else, and a page without the injection is worth more than its bytes.
 #
 # ---------------------------------------------------------------------------
-# The site is closed to search indexes, and this is the only thing doing it.
-#
-# `X-Robots-Tag: noindex` on `/*` is a header rather than a <meta> tag because
-# a meta robots tag exists only in HTML, so it would say nothing about the CV
-# PDF, the talk PDF, llms.txt or the sitemap. One header covers all of them.
-#
-# robots.txt is deliberately still permissive, and the two are not the same
-# instruction. `Disallow` stops a crawler fetching a URL; `noindex` stops it
-# listing one. A crawler told not to fetch a page never receives this header,
-# so it never learns the page is noindex, and the URL can still appear in
-# results on the strength of a link elsewhere. Allowing the crawl is what makes
-# the noindex arrive; adding `Disallow: /` to robots.txt is strictly weaker.
-# The sitemap is generated and advertised for the same reason: it is how a
-# crawler finds the pages to discover this header on.
-#
-# ---------------------------------------------------------------------------
-# Removing this is a launch step and it will not remind you.
-#
-# A forgotten noindex fails silently: the site launches, looks right in every
-# browser, and is absent from every search engine until somebody checks the
-# response headers. No tool can flag it, because a site that does not want to
-# be indexed is a legitimate state.
-#
-# tests/headers.spec.ts therefore asserts the header is present, so deleting it
-# takes a deliberate edit with a failing test attached.
+# The site is open to search indexes since 2026-09-14. It was closed by
+# `X-Robots-Tag: noindex` here until launch. If it ever needs closing again,
+# use that header rather than `Disallow` in robots.txt: a crawler told not to
+# fetch a page never sees a noindex, and can still list the URL from a link.
 # ---------------------------------------------------------------------------
 
 /*
@@ -157,7 +136,6 @@
   X-Frame-Options: DENY
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin
-  X-Robots-Tag: noindex
   Cache-Control: no-transform
 
 # Build output, and only build output. Every filename Vite emits here carries a

@@ -29,9 +29,8 @@ import { NOTIFY_TO } from '../playwright.worker.config';
  * VERIFIED NOT TO BE VACUOUS, by breaking each rule in turn:
  *
  *   - removing `applyGlobalHeaders` from send.astro fails "the response
- *     carries the site's security headers" naming X-Robots-Tag, which is the
- *     one that would otherwise make this the single indexable page on a
- *     noindex site;
+ *     carries the site's security headers" naming the CSP, which every asset
+ *     response carries and a Worker response does not get for free;
  *   - returning 200 instead of 422 fails "a rejected submission answers 422";
  *   - dropping `value={values.name}` from ContactForm fails "a rejected
  *     submission keeps what was typed", which is the whole reason this route
@@ -422,13 +421,6 @@ test.describe('the contact endpoint', () => {
     });
 
     const headers = response.headers();
-
-    expect(
-      headers['x-robots-tag'],
-      'the on-demand route is missing X-Robots-Tag. public/_headers does not ' +
-        'reach a Worker response, so without this it is the one indexable ' +
-        'page on a site that is otherwise closed to search engines.',
-    ).toBe('noindex');
 
     expect(
       headers['content-security-policy'],

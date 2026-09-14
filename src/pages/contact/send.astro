@@ -26,8 +26,8 @@ export const prerender = false;
 
 /*
  * public/_headers does not reach a response the Worker builds, so this route
- * sets those headers itself. Without this it would ship with no CSP and, more
- * quietly, no X-Robots-Tag, and be the one indexable page on a noindex site.
+ * sets those headers itself. Without this it would ship with no CSP, no HSTS
+ * and none of the other headers every other response carries.
  */
 applyGlobalHeaders(Astro.response.headers);
 

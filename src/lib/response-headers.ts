@@ -3,8 +3,7 @@
  *
  * Cloudflare applies public/_headers to static asset responses only, never to
  * anything Worker code generates, so a route that opts out of prerendering
- * loses every header in that file: the CSP, HSTS, and the X-Robots-Tag that is
- * the only thing keeping this site out of search indexes.
+ * loses every header in that file: the CSP, HSTS and the rest.
  *
  * Parsed out of the file at build time rather than restated here. Two copies
  * of a CSP drift, and the one that drifts silently is the one nothing renders.
@@ -49,7 +48,7 @@ const parsed = parseGlobalRule(headersFile);
 
 /*
  * Throwing is the point. An empty map would ship an on-demand page with no
- * CSP and no noindex, and nothing about the rendered page would look wrong.
+ * CSP, and nothing about the rendered page would look wrong.
  */
 if (Object.keys(parsed).length === 0) {
   throw new Error(
