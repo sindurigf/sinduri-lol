@@ -571,17 +571,17 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   passes `WIDTHS` and a `sizes` attribute, both in
   `src/lib/image-densities.ts`. `WIDTHS` steps by no more than 1.5x, the
   oversize limit in `tests/image-size.spec.ts`.
-- **`/about` is set as a magazine issue**: a cover whose cover lines are the
-  page's table of contents, then four spreads, each with a running head, a
-  kicker, a headline and its photos. The vocabulary is the `.mag-` classes in
-  `global.css`. Nothing is set over a photograph: the cover puts its text in a
-  solid column beside the portrait, because text on an image lands in axe's
-  contrast "incomplete" bucket. Every photo box has the same aspect ratio as
-  its file, since `object-cover` on a mismatched box reads to
-  `tests/image-size.spec.ts` as stretching. The Johann photo is capped at
-  `max-w-64` because its master is only 278px wide. Each spread pairs its
-  columns to similar heights, putting photos under a short headline rather
-  than leaving an empty column beside a tall one.
+- **`/about` tells Sinduri's story in order**: who she is, what she
+  believes, people and places, the important things, and her path into Drupal
+  last. It uses the site's own vocabulary, the section rule, pill, card and
+  hard shadow, rather than a page-specific one. Nothing is set over a
+  photograph, because text on an image lands in axe's contrast "incomplete"
+  bucket. Photos take a border and no shadow, so the cards stay the objects
+  that stand forward. Every photo box has the same aspect ratio as its file,
+  since `object-cover` on a mismatched box reads to `tests/image-size.spec.ts`
+  as stretching; that is also why the places are a masonry of CSS columns
+  rather than a grid of fixed rows. The Johann photo is drawn `w-64` because
+  its master is only 278px wide.
 - **A markdown image** gets `widths` and `sizes` from
   `src/plugins/post-figure.mjs`, which sets `layout: 'full-width'` so Astro
   reads `image.breakpoints` in `astro.config.mjs`. An image alone in its
