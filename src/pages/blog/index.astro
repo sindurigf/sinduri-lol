@@ -8,9 +8,8 @@ import { getSortedPosts, pageCount, postsOnPage } from '../../lib/blog';
  * and render the same component with a different slice; the note there says
  * why the pager lives under an extra path segment.
  *
- * PLACEHOLDER COPY. The heading and standfirst are lorem ipsum at the length
- * the comp's copy occupies. The five category names in the filter are real,
- * because they are the content model rather than copy.
+ * The heading and standfirst name what the blog holds, in the five categories
+ * of the content model, and claim nothing about posts that do not exist yet.
  */
 
 const posts = await getSortedPosts();
@@ -19,19 +18,18 @@ const totalPages = pageCount(posts.length);
 
 <BaseLayout
   title="Blog | sinduri.lol"
-  description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+  description="Sinduri Guntupalli writes about open source, her professional journey, travel, skincare and personal thoughts."
 >
   <div class="mx-auto max-w-page py-28">
     <p class="pill">
       <span class="label-wide text-gold">Writing</span>
     </p>
 
-    <h1 class="mt-8 text-h1 text-text">Lorem ipsum.</h1>
+    <h1 class="mt-8 text-h1 text-text">Blog</h1>
 
     <p class="mt-8 max-w-2xl text-body text-muted text-pretty">
-      Dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-      incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis
-      nostrud exercitation.
+      Posts about open source, my professional journey, travel, skincare and
+      personal thoughts. Pick a category below, or read everything.
     </p>
 
     <div class="mt-12">

@@ -11,12 +11,9 @@ Every page is built and renders its full structure; `BlogCard` renders on
 `/blog`, on the category listings that hold a post and on the
 homepage.
 
-What is still placeholder is the **copy**, and it is lorem ipsum rather than
-the word `PLACEHOLDER`. That distinction matters here: lorem has full structure
-and unreadable words, so everything structural below is testable and only the
-language checks are not. Two of the 17 pages still carry lorem, the homepage
-and the `/blog` heading, measured 2026-09-14 in ACCESSIBILITY.md gap 3; the
-other 15 carry real English. The pager is not built while every post fits on
+Every page carries real English since 2026-09-14, so the language checks below
+can be run as well as the structural ones; ACCESSIBILITY.md gap 3 records how
+the lorem ipsum was removed. The pager is not built while every post fits on
 one page, so its checks below wait for a tenth post.
 
 **Setup.**

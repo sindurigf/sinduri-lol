@@ -96,6 +96,16 @@ workers.dev previews are never counted.
 through an account-level Bulk Redirect list, outside this repository. The Pages
 project is kept with builds disabled: deleting it frees the `pages.dev` name.
 
+## Google Search Console
+
+The domain is verified in Google Search Console by a DNS TXT record on the
+apex, `google-site-verification=...`, added in the Cloudflare dashboard on
+2026-09-14. Deleting it unverifies the property. It adds nothing to the site:
+no tag, script or file, and no request from a visitor's browser to Google, so
+`/privacy` has nothing to disclose about it. Search Console's reports come from
+Google Search itself. While `X-Robots-Tag: noindex` is in `public/_headers`,
+it will report every page as excluded by noindex.
+
 ## Cloudflare settings
 
 These live in the dashboard and change what ships without changing a file here.

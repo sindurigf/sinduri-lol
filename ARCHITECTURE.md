@@ -829,18 +829,19 @@ from `_headers` because of the file's parsing or a dashboard setting. That is
 
 ## Not built yet
 
-Every route is built. What is not real is the copy: every heading, paragraph,
-card description, teaser and post body outside the lists below is lorem ipsum
-at the length the comps' real copy occupies.
+Every route is built, and no page carries lorem ipsum since 2026-09-14. The
+homepage section headings, featured intro and category descriptions, and the
+`/blog` heading and standfirst, are drawn from Sinduri's copy on `/about` and
+are the lines most worth her rewriting in her own words.
 
-Two exceptions, both Sinduri's own words:
+Sinduri's own words:
 
 - The **tagline**, now the heading of the homepage About teaser.
 - **`/career` entirely**, transcribed from the published CV. The page and the
   PDF have to be edited in the same commit: no test compares the sentences on
   the page against the sentences in the file.
 
-Not lorem either, and not waiting:
+Also real:
 
 - **`/about` and the homepage About teaser**, in Sinduri's own words.
 - **The two real posts**, `open-source-is-not-just-code.md` and

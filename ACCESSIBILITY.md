@@ -96,10 +96,9 @@ What is currently true:
   empty title and says nothing about two pages sharing one. All 17 titles are
   distinct, and every one except the homepage's names the page before the site.
 
-**None of the above says anything about the words.** Two of the 17 built
-pages carry lorem ipsum, which is Latin inside a `lang="en"` document. On those
-two the criteria that depend on real language are not merely untested but
-unassessable. See gap 3.
+**None of the above says anything about the words.** Every page now carries
+real English, but whether it is plain, clear and in a sensible reading order
+has not been assessed by a person. See section 6.
 
 Passing axe is not conformance. See section 6.
 
@@ -390,8 +389,8 @@ performed.
 - **Zoom to 400%, by hand.** Resizing a viewport is not zooming.
 - **Browsers other than Chromium, by hand.** No person has used the site in
   Firefox, and headless WebKit is not Safari.
-- **Cognitive load, plain language and reading order**, since the real content
-  does not exist yet.
+- **Cognitive load, plain language and reading order.** The copy is real on
+  every page since 2026-09-14, and nobody has read it for these yet.
 
 ## 7. Known gaps
 
@@ -433,30 +432,14 @@ Stated honestly. This list is not filtered for how it looks.
    heard, in which browser, at which versions, and not deleted. Orca is one
    screen reader through one engine on one machine.
 
-3. **The copy is lorem ipsum, which is Latin inside a `lang="en"` document.**
-   It affects 2 of the 17 built pages, measured 2026-09-14 by counting
-   distinctive lorem words in the visible text of every page in `dist/`: the
-   homepage, outside its About teaser, and the heading and standfirst of
-   `/blog`. The ten placeholder posts were removed that day, so the blog now
-   holds the two real posts, and the three categories without one say
-   "No posts yet". Every other page is real English.
-
-   A screen reader takes its pronunciation from the language of the content.
-   `<html lang="en">` is correct for the site and wrong for the words in it, so
-   every heading, paragraph, teaser and post body is announced with English
-   pronunciation rules applied to Latin. For someone listening, that is most of
-   what they receive.
-
-   **The fix is real copy, not a language attribute.** Marking the placeholder
-   `lang="la"` would make the announcement more accurate and the situation
-   worse: it would claim the site deliberately publishes Latin, it would have
-   to be unpicked from every element later, and it would silence the oddness
-   that signals the copy is unfinished.
-
-   Two consequences: section 6's plain-language bullet is unassessable rather
-   than merely untested, and SC 3.1.2 Language of Parts is not currently
-   satisfied for this content. It will stop applying when the real copy lands
-   rather than needing a fix of its own.
+3. **Closed 2026-09-14: no page carries lorem ipsum any more.** Measured by
+   counting distinctive lorem words in the visible text of all 17 pages in
+   `dist/`: none has one. The ten placeholder posts were removed, and the last
+   placeholder copy, on the homepage and `/blog`, was replaced with text drawn
+   from `/about`. Lorem had been Latin inside a `lang="en"` document, announced
+   with English pronunciation, and it left SC 3.1.2 Language of Parts
+   unsatisfied and the plain-language bullet in section 6 unassessable. Both
+   now apply to real English, which nobody has yet assessed by hand.
 
 4. **The gold surface has never been looked at by a person.** `/career` renders
    the hero as `.surface-gold` and `/contact` closes with a `.surface-gold`
