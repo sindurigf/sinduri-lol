@@ -1,15 +1,26 @@
 import { expect, test, type Page } from '@playwright/test';
 import { gotoSettled } from './settle';
-import { CATEGORY_ROUTES, POSTS_PER_PAGE, POST_ROUTES } from './routes';
+import {
+  CATEGORY_ROUTES,
+  POSTS_PER_PAGE,
+  POST_ROUTES,
+  postCountByCategory,
+} from './routes';
 import { MIN_TARGET } from './wcag';
 
 /**
  * The blog index: pagination, and the category filter.
  *
- * Neither can be verified by a single post, which is why placeholders were
- * seeded: with one post there is no second page to be unreachable and no
- * category to be inactive, so every assertion below would have passed against
- * a listing that did neither. 11 posts, 1 of them real, as of 2026-09-11.
+ * Pagination cannot be verified while every post fits on one page, so its
+ * block skips itself until there are more than POSTS_PER_PAGE posts, and the
+ * block after it asserts the single page instead. The placeholder posts that
+ * used to fill a second page were removed on 2026-09-14; two real posts remain.
+ * Empty categories are checked for their empty state, against the count the
+ * Markdown says each category should hold.
+ *
+ * Proven able to fail, 2026-09-14, chromium: with `data-empty-listing` removed
+ * from BlogListing.astro, /blog/skincare, /blog/travel and
+ * /blog/personal-thoughts failed "has no posts and should say so".
  *
  * What this asserts that reading the component cannot:
  *
@@ -29,6 +40,7 @@ import { MIN_TARGET } from './wcag';
 
 const POST_COUNT = POST_ROUTES.length;
 const LAST_PAGE_COUNT = POST_COUNT - POSTS_PER_PAGE;
+const PAGINATES = POST_COUNT > POSTS_PER_PAGE;
 
 /** The href of every post card on the page, in render order. */
 const cardHrefs = (page: Page): Promise<string[]> =>
@@ -39,6 +51,11 @@ const cardHrefs = (page: Page): Promise<string[]> =>
   );
 
 test.describe('the blog index paginates', () => {
+  test.skip(
+    !PAGINATES,
+    `every post fits on one page (${POST_COUNT} of ${POSTS_PER_PAGE}), so there is no second page to test`,
+  );
+
   test('page one holds exactly one page of posts', async ({ page }) => {
     await gotoSettled(page, '/blog');
 
@@ -143,6 +160,25 @@ test.describe('the blog index paginates', () => {
   });
 });
 
+test.describe('the blog index while every post fits on one page', () => {
+  test.skip(PAGINATES, 'the index paginates; the block above covers it');
+
+  test('lists every post exactly once, with no pager', async ({ page }) => {
+    await gotoSettled(page, '/blog');
+
+    const hrefs = await cardHrefs(page);
+    expect(
+      hrefs.sort(),
+      '/blog should list every post once while they fit on one page',
+    ).toEqual(POST_ROUTES.map((route) => `${route}/`).sort());
+
+    await expect(
+      page.getByRole('navigation', { name: /pagination/i }),
+      'a pager with one page offers a single link to the page you are on',
+    ).toHaveCount(0);
+  });
+});
+
 test.describe('the category filter', () => {
   /**
    * The active option, and how it is marked.
@@ -200,8 +236,10 @@ test.describe('the category filter', () => {
     expect(filter.currentHasMarker).toBe(true);
   });
 
+  const counts = postCountByCategory();
+
   for (const route of CATEGORY_ROUTES) {
-    test(`${route} marks its own option, and its posts are all in that category`, async ({
+    test(`${route} marks its own option, and lists its posts or says it has none`, async ({
       page,
     }) => {
       await gotoSettled(page, route);
@@ -228,10 +266,26 @@ test.describe('the category filter', () => {
         ].map((el) => (el.textContent ?? '').trim().toLowerCase()),
       );
 
+      const expected = counts.get(route.replace('/blog/', '')) ?? 0;
       expect(
         labels.length,
-        `${route} should list at least one post`,
-      ).toBeGreaterThan(0);
+        `${route} should list the ${expected} post(s) its Markdown files it under`,
+      ).toBe(expected);
+
+      const empty = page.locator('[data-empty-listing]');
+      if (expected === 0) {
+        await expect(
+          empty,
+          `${route} has no posts and should say so`,
+        ).toBeVisible();
+        await expect(empty).toContainText(/no posts yet/i);
+        return;
+      }
+
+      await expect(
+        empty,
+        `${route} lists posts and shows the empty state as well`,
+      ).toHaveCount(0);
       expect(
         [...new Set(labels)],
         `${route} listed a post from another category`,

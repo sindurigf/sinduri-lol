@@ -56,28 +56,19 @@ export const CATEGORY_ROUTES = [
 export const POST_ROUTES = [
   '/blog/five-years-in-drupal',
   '/blog/open-source-is-not-just-code',
-  '/blog/lorem-ipsum-dolor-sit-amet',
-  '/blog/consectetur-adipiscing-elit',
-  '/blog/ut-enim-ad',
-  '/blog/quis-nostrud-exercitation-ullamco',
-  '/blog/duis-aute-irure-dolor',
-  '/blog/excepteur-sint-occaecat',
-  '/blog/sed-ut-perspiciatis-unde-omnis',
-  '/blog/nemo-enim-ipsam-voluptatem',
-  '/blog/neque-porro-quisquam-est',
-  '/blog/temporibus-autem-quibusdam',
 ] as const;
 
 /**
  * The blog index: `/blog` (`src/pages/blog/index.astro`), then `/blog/page/<n>`
- * (`src/pages/blog/page/[page].astro`). `/blog/page/2` exists because the
- * index shows nine posts a page and there are twelve (2026-09-13).
+ * (`src/pages/blog/page/[page].astro`). There is no `/blog/page/2` while every
+ * post fits on one page: nine a page, two posts (2026-09-14). Add it back here
+ * when the tenth post lands, and the route coverage test says so if it is not.
  *
  * The `page` segment avoids a collision: `/blog/[category]` and `/blog/[slug]`
  * already share the segment after `/blog`, so `/blog/2` would clash with any
  * numeric category or slug.
  */
-const INDEX_ROUTES = ['/blog', '/blog/page/2'] as const;
+const INDEX_ROUTES = ['/blog'] as const;
 
 export const ROUTES = [
   ...PAGE_ROUTES,
@@ -126,6 +117,29 @@ export const postRoutesFromContent = (
     .filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
     .map((entry) => `/blog/${entry.name.replace(/\.md$/, '')}`)
     .sort();
+};
+
+/**
+ * How many posts each category holds, read from the Markdown frontmatter.
+ *
+ * Source, not `dist/`, so it is safe at collection time. A category listing is
+ * checked against this, so a category that should list posts cannot pass by
+ * showing its empty state instead.
+ */
+export const postCountByCategory = (
+  contentDir = BLOG_CONTENT_DIR,
+): Map<string, number> => {
+  const counts = new Map<string, number>();
+  for (const name of readdirSync(contentDir)) {
+    if (!name.endsWith('.md')) continue;
+    const source = readFileSync(join(contentDir, name), 'utf8');
+    const category = /^category:\s*'?([a-z-]+)'?\s*$/m.exec(source)?.[1];
+    if (!category) {
+      throw new Error(`${name} has no category in its frontmatter.`);
+    }
+    counts.set(category, (counts.get(category) ?? 0) + 1);
+  }
+  return counts;
 };
 
 /**

@@ -8,16 +8,16 @@ what currently exists.
 layouts and components they are built from.
 
 Every page is built and renders its full structure; `BlogCard` renders on
-`/blog`, on the paginated pages, on the five category listings and on the
+`/blog`, on the category listings that hold a post and on the
 homepage.
 
 What is still placeholder is the **copy**, and it is lorem ipsum rather than
 the word `PLACEHOLDER`. That distinction matters here: lorem has full structure
 and unreadable words, so everything structural below is testable and only the
-language checks are not. Nine of the 28 pages carry real English: `/about`,
-`/career`, `/blog/open-source-is-not-just-code`, `/blog/five-years-in-drupal`,
-`/credits`, `/accessibility`, `/privacy`, `/contact/sent` and `/404`. The other
-19 carry lorem, measured 2026-09-13 in ACCESSIBILITY.md gap 3.
+language checks are not. Two of the 17 pages still carry lorem, the homepage
+and the `/blog` heading, measured 2026-09-14 in ACCESSIBILITY.md gap 3; the
+other 15 carry real English. The pager is not built while every post fits on
+one page, so its checks below wait for a tenth post.
 
 **Setup.**
 
@@ -840,7 +840,8 @@ used anywhere on this site, so a change to nav spacing cannot break 2.5.8.
 - [ ] Footer profile tiles are 56x56, 48x48 on a phone. → pass
 - [ ] Mobile menu links at 320px are ≥24px tall. → pass, they are 34px+ type
 - [ ] **The breadcrumb link above the `<h1>` on blog routes**: the category
-      link on every post, and "All posts" on `/blog/page/2`. It was the last
+      link on every post, and "All posts" on `/blog/page/<n>` once the index
+      paginates. It was the last
       target passing only by the spacing exception, at 87x16 and 179x16.
       `inline-block py-2 -my-2` takes each to **31.6px** tall: the padding
       grows the hit area and the matching negative margin keeps the layout box

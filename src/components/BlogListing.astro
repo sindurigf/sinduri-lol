@@ -93,12 +93,21 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
   </ul>
 </nav>
 
+{/*
+  The empty state keeps the filter above it, so a reader can still reach the
+  categories that do have posts. `data-empty-listing` is what
+  tests/blog.spec.ts looks for; the label is small, so it is not a heading
+  WAVE would guess at.
+*/}
 {posts.length === 0 ? (
-  <p class="mt-16 text-body text-muted">
-    Nothing filed under{' '}
-    {activeCategory === null ? 'this' : categoryLabel(activeCategory)} yet. Try
-    another category, or read <a href="/blog/">every post</a>.
-  </p>
+  <div class="card mt-16 shadow-hard-cyan-8" data-empty-listing>
+    <p class="label-wide text-cyan">No posts yet</p>
+    <p class="mt-4 max-w-prose text-body text-muted text-pretty">
+      Nothing is filed under{' '}
+      {activeCategory === null ? 'the blog' : categoryLabel(activeCategory)} so
+      far. Try another category, or read <a href="/blog/">every post</a>.
+    </p>
+  </div>
 ) : (
   <ul class="mt-16 grid gap-10 lg:grid-cols-2">
     {posts.map((post, index) => {

@@ -441,27 +441,16 @@ only on a card a listing gives the wide `feature` treatment; without one that
 card keeps its `PlaceholderBox`. The schema refuses a `cover` without
 `coverAlt`.
 
-Twelve posts, across all five categories. Two, `open-source-is-not-just-code.md`
-and `five-years-in-drupal.md`, are real. **The other ten are lorem ipsum**
-and carry `placeholder: true`, which `/llms.txt` marks and
-`tests/llms-txt.spec.ts` holds to each post's text. They were seeded so the
-listing has something to exercise: the index paginates at `POSTS_PER_PAGE`, 9,
-so ten is the smallest count that makes a second page exist, and the titles, teasers, `featured` flags and `readingTime` values
-deliberately span both extremes, so a card is tested at a ten-character title
-and at a seventy-character one.
+Two posts, both real: `open-source-is-not-just-code.md` and
+`five-years-in-drupal.md`. The ten lorem ipsum posts that were seeded to
+exercise the listing were removed on 2026-09-14. The three categories without
+a post keep their route and show a "No posts yet" state, and the index does not
+build `/blog/page/<n>` until there are more than `POSTS_PER_PAGE`, 9, posts.
+`tests/blog.spec.ts` skips its pagination block until then and checks each
+category listing against the post count in the Markdown.
 
-Every placeholder is dated before the real posts, on purpose. Listings are
-newest first, so that date is what puts the real posts at the head of `/blog`,
-of their category listings and of the homepage featured row. A placeholder
-dated after 2026-07-10 pushes them down again.
-
-The lorem is Latin inside a `lang="en"` document, recorded as a known gap in
-[ACCESSIBILITY.md](ACCESSIBILITY.md) §7.
-
-`consectetur-adipiscing-elit.md` carries a literal U+00AD in its frontmatter
-title, which is the only form that survives there. The character is invisible
-in an editor, and writing `&shy;` instead builds to a visible `&SHY;` on the
-page.
+The `placeholder` field stays in the schema. `/llms.txt` marks any post that
+sets it, and `tests/llms-txt.spec.ts` holds the field to each post's text.
 
 ## Conventions
 
