@@ -26,6 +26,12 @@ routes with the file's, so a domain added only in the dashboard is removed.
 the zone's settings, so they cannot show a zone feature such as JavaScript
 Detections; test those on production.
 
+**Preview URLs are set in `wrangler.jsonc`, not the dashboard.** `preview_urls`
+defaults to `workers_dev`, which is off, so a dashboard toggle lasts only until
+the next deploy from `main`. Anyone with a preview URL can open it, and a
+preview uses the production bindings: a contact form sent from one is stored
+in the production D1 database and emailed like any other.
+
 ## D1
 
 The database is in the EU jurisdiction, which cannot be changed after creation
