@@ -1,8 +1,6 @@
-import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
-import ts from 'typescript';
 import { LIMITS, RETENTION_DAYS } from '../src/lib/contact-form';
 import {
   NOTIFICATION_SENDER,
@@ -10,13 +8,20 @@ import {
 } from '../src/lib/contact-notification';
 import { retentionCutoff } from '../src/lib/contact-retention';
 import { NOTIFY_TO } from '../playwright.worker.config';
+import {
+  DAY_MS,
+  SCHEDULED_HANDLER,
+  localD1,
+  poll,
+  sameOrigin,
+  wranglerConfig,
+} from './worker-requests';
 
 /**
- * The contact form's endpoint, `/contact/send/`, which is the only route on
- * this site that is not prerendered.
+ * The contact form's endpoint, `/contact/send/`, which is not prerendered.
  *
- * Everything else in the suite walks built HTML or drives a browser at a
- * static asset. Nothing else exercises a POST, so without this file the
+ * The browser suite walks built HTML or drives a browser at a static asset.
+ * It exercises no POST, so without this file the
  * endpoint's behaviour is asserted nowhere: validation, the honeypot, the
  * status codes, and the headers the Worker has to set for itself because
  * public/_headers does not reach a response Worker code builds.
@@ -50,22 +55,6 @@ const ENDPOINT = '/contact/send/';
  */
 const EMAIL_TEXT_ROOT = '.wrangler/tmp/email';
 
-/* Local only: wrangler and astro preview expose the cron handler here. */
-const SCHEDULED_HANDLER = '/cdn-cgi/handler/scheduled';
-
-const POLL_ATTEMPTS = 20;
-const POLL_INTERVAL_MS = 250;
-const DAY_MS = 86_400_000;
-
-const poll = async <T>(read: () => T | undefined): Promise<T | undefined> => {
-  for (let attempt = 0; attempt < POLL_ATTEMPTS; attempt += 1) {
-    const value = read();
-    if (value !== undefined) return value;
-    await new Promise((done) => setTimeout(done, POLL_INTERVAL_MS));
-  }
-  return undefined;
-};
-
 const capturedEmailTexts = (): string[] =>
   existsSync(EMAIL_TEXT_ROOT)
     ? readdirSync(EMAIL_TEXT_ROOT).flatMap((run) => {
@@ -77,34 +66,6 @@ const capturedEmailTexts = (): string[] =>
           : [];
       })
     : [];
-
-const localD1 = (sql: string): string =>
-  execFileSync(
-    'npx',
-    [
-      'wrangler',
-      'd1',
-      'execute',
-      'sinduri-lol',
-      '--local',
-      '--json',
-      '--command',
-      sql,
-    ],
-    { encoding: 'utf8' },
-  );
-
-const wranglerConfig = (): {
-  send_email?: { name: string; allowed_sender_addresses?: string[] }[];
-  triggers?: { crons?: string[] };
-} => {
-  const { config, error } = ts.parseConfigFileTextToJson(
-    'wrangler.jsonc',
-    readFileSync('wrangler.jsonc', 'utf8'),
-  );
-  if (error) throw new Error('wrangler.jsonc does not parse');
-  return config;
-};
 
 /*
  * Comfortably past the configured limit in wrangler.jsonc, so the assertion
@@ -119,37 +80,6 @@ const validFields = (): Record<string, string> => ({
   name: 'Ada Lovelace',
   email: 'ada@example.com',
   message: 'x'.repeat(LIMITS.bodyMin + 20),
-});
-
-/*
- * The headers a browser sends when it submits this form, so every request here
- * takes the route a real submission takes. `request.post` sends none of them
- * unless told.
- *
- * `Origin`: Astro rejects a cross-origin form POST to an on-demand route with
- * 403, its CSRF protection, on by default.
- *
- * `Sec-Fetch-Mode: navigate`: the one that decides routing. With
- * `not_found_handling` set and a compatibility date from 2025-04-01, Cloudflare
- * answers a navigation request to a path with no asset from the asset layer
- * without invoking the Worker, and a POST there is a 405. This spec first ran
- * without the header, passed, and the form was broken in production: curl got
- * a 303 and Chrome got a 405 (2026-09-12). `run_worker_first` in wrangler.jsonc
- * is the fix, and without it every POST below fails.
- *
- * `CF-Connecting-IP`: a distinct documentation address per request. The local
- * runtime supplies one address for every request that lacks the header, so
- * without this the tests share one rate limit and a second run inside its
- * window answers 429 (measured 2026-09-13).
- */
-let requestCount = 0;
-const sameOrigin = (baseURL: string) => ({
-  'CF-Connecting-IP': `198.51.100.${(requestCount++ % 254) + 1}`,
-  origin: baseURL,
-  'sec-fetch-mode': 'navigate',
-  'sec-fetch-dest': 'document',
-  'sec-fetch-site': 'same-origin',
-  accept: 'text/html,application/xhtml+xml',
 });
 
 /*
