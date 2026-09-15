@@ -762,6 +762,18 @@ the spec did not send the header. `tests/contact.spec.ts` now does.
 listing them is what lets the Worker answer byte ranges the asset layer
 ignores. See Photos and video.
 
+**The comment moderation routes carry a working link in their URL.**
+`/comments/review/` and `/comments/reply/` are opened from a signed link in the
+owner's notification email, so `applyPrivateHeaders` in
+`src/lib/response-headers.ts` adds `Cache-Control: no-store`,
+`Referrer-Policy: strict-origin` and `X-Robots-Tag: noindex` over the global
+headers, and the pages pass `noAnalytics` to BaseLayout, because the Umami
+tracker reports the full URL, query string included. The referrer policy is not
+`no-referrer`: that makes a browser send `Origin: null` with the page's own form
+POST, and Astro's CSRF check refuses it. A GET on either page only shows the
+comment; mail scanners open links on arrival, so every action is a POST.
+`tests/comments.spec.ts` covers both.
+
 ### The CSP
 
     default-src 'self';

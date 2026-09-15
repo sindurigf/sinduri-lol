@@ -1,0 +1,74 @@
+---
+import type { CommentRow } from '../lib/comment-store';
+
+/*
+ * A comment as the owner sees it before deciding: which post, who, the email
+ * if one was given, and the text exactly as written. Used by the two owner
+ * pages only; readers never see this view, and the email must never leave it.
+ */
+
+interface Props {
+  comment: CommentRow;
+  parent: CommentRow | null;
+}
+
+const { comment, parent } = Astro.props;
+
+/*
+ * The path, not the post's title. Reading the blog collection from an
+ * on-demand route bundles every post image at its original size into
+ * dist/client, measured at 9 photos and 2.8 MB on 2026-09-15.
+ */
+const postUrl = `/blog/${comment.post_slug}/`;
+
+const DATE_LOCALE = 'en-GB';
+const DATE_FORMAT: Intl.DateTimeFormatOptions = {
+  dateStyle: 'long',
+  timeStyle: 'short',
+  timeZone: 'UTC',
+};
+
+const written = new Date(comment.created_at);
+---
+
+<dl class="mt-10 space-y-5">
+  <div>
+    <dt class="label text-subtle">Post</dt>
+    <dd class="mt-1 text-body text-text">
+      <a href={postUrl}>{postUrl}</a>
+    </dd>
+  </div>
+  <div>
+    <dt class="label text-subtle">Name</dt>
+    <dd class="mt-1 text-body text-text">{comment.name}</dd>
+  </div>
+  <div>
+    <dt class="label text-subtle">Email</dt>
+    <dd class="mt-1 text-body text-text">{comment.email ?? 'Not given'}</dd>
+  </div>
+  <div>
+    <dt class="label text-subtle">Written</dt>
+    <dd class="mt-1 text-body text-text">
+      <time datetime={written.toISOString()}>
+        {written.toLocaleString(DATE_LOCALE, DATE_FORMAT)} UTC
+      </time>
+    </dd>
+  </div>
+  {parent && (
+    <div>
+      <dt class="label text-subtle">In reply to</dt>
+      <dd class="mt-1 text-body text-text">{parent.name}</dd>
+    </div>
+  )}
+  <div>
+    <dt class="label text-subtle">Status</dt>
+    <dd class="mt-1 text-body text-text">
+      {comment.status === 'pending' ? 'Waiting for review' : 'Published'}
+    </dd>
+  </div>
+</dl>
+
+<h2 class="mt-12 text-h3 text-text">Comment</h2>
+<div class="mt-4 border-4 border-border bg-surface p-6">
+  <p class="whitespace-pre-line text-body text-text">{comment.body}</p>
+</div>

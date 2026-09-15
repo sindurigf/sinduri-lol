@@ -11,5 +11,6 @@
  */
 declare module 'cloudflare:workers' {
   import type { ContactEnv } from './lib/contact-env';
-  export const env: ContactEnv;
+  import type { CommentEnv } from './lib/comment-env';
+  export const env: ContactEnv & CommentEnv;
 }

@@ -1,0 +1,226 @@
+---
+import { env } from 'cloudflare:workers';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CommentPreview from '../../components/CommentPreview.astro';
+import { usableSigningKey } from '../../lib/comment-links';
+import {
+  DONE_PARAM,
+  LINK_PARAM,
+  PROBLEM_MESSAGE,
+  PROBLEM_STATUS,
+  REBUILD_MESSAGE,
+  REBUILD_PARAM,
+  isRebuildResult,
+  resolveLink,
+  type LinkProblem,
+} from '../../lib/comment-moderation';
+import {
+  approveComment,
+  findComment,
+  rejectComment,
+  type CommentRow,
+} from '../../lib/comment-store';
+import { requestRebuild } from '../../lib/deploy-hook';
+import { applyPrivateHeaders } from '../../lib/response-headers';
+
+/*
+ * Where the owner approves or rejects a comment, opened from the "Review"
+ * link in the notification email. On-demand, owner-only, and never linked
+ * from the site.
+ *
+ * A GET only shows the comment. Mail scanners open every link in a message
+ * as it arrives, so a link that acted on its own would decide for the owner;
+ * the decision is the POST from the buttons on this page. After it, a 303
+ * back here with `done` set, so a refresh cannot post it twice.
+ */
+export const prerender = false;
+
+applyPrivateHeaders(Astro.response.headers);
+
+const PAGE = '/comments/review/';
+const DECISION_FIELD = 'decision';
+const DECISIONS = ['approve', 'reject'] as const;
+type Decision = (typeof DECISIONS)[number];
+
+const now = Date.now();
+const database = env.MESSAGES_DB;
+const signingKey = usableSigningKey(env.COMMENTS_SIGNING_KEY);
+
+let unavailable = false;
+let storeFailed = false;
+let problem: LinkProblem | null = null;
+let comment: CommentRow | null = null;
+let parent: CommentRow | null = null;
+let token = '';
+
+const done = Astro.url.searchParams.get(DONE_PARAM);
+const rebuild = Astro.url.searchParams.get(REBUILD_PARAM);
+const approved = done === 'approve' && isRebuildResult(rebuild);
+const rejected = done === 'reject';
+
+if (!approved && !rejected) {
+  if (!database || !signingKey) {
+    console.error(
+      'comments: review unavailable: MESSAGES_DB or a usable COMMENTS_SIGNING_KEY missing',
+    );
+    unavailable = true;
+    Astro.response.status = 503;
+  } else {
+    let decision: Decision | null = null;
+
+    if (Astro.request.method === 'POST') {
+      const form = await Astro.request.formData().catch(() => null);
+      const submitted = form?.get(DECISION_FIELD);
+      token = String(form?.get(LINK_PARAM) ?? '');
+      decision = DECISIONS.includes(submitted as Decision)
+        ? (submitted as Decision)
+        : null;
+      if (!decision) problem = 'invalid';
+    } else {
+      token = Astro.url.searchParams.get(LINK_PARAM) ?? '';
+    }
+
+    try {
+      const resolved = problem
+        ? null
+        : await resolveLink(database, signingKey, token, 'review', now);
+
+      if (resolved && !resolved.ok) problem = resolved.problem;
+
+      if (resolved?.ok && decision) {
+        const result =
+          decision === 'approve'
+            ? await approveComment(database, resolved.claims, now)
+            : await rejectComment(database, resolved.claims);
+
+        if (result === 'done') {
+          const target = new URL(PAGE, Astro.url);
+          target.searchParams.set(DONE_PARAM, decision);
+          if (decision === 'approve') {
+            target.searchParams.set(
+              REBUILD_PARAM,
+              await requestRebuild(env.COMMENTS_DEPLOY_HOOK),
+            );
+          }
+          return Astro.redirect(`${target.pathname}${target.search}`, 303);
+        }
+
+        /* 'not-pending' falls through: the reload below says which it is. */
+        if (result === 'link-used') problem = 'used';
+      }
+
+      if (resolved?.ok && !problem) {
+        comment = await findComment(database, resolved.claims.commentId);
+        if (!comment) problem = 'gone';
+      }
+
+      if (comment?.parent_id) {
+        parent = await findComment(database, comment.parent_id);
+      }
+
+      if (problem) Astro.response.status = PROBLEM_STATUS[problem];
+    } catch (error) {
+      /*
+       * Each action is one D1 batch, so a failure part way changed nothing
+       * and the link still works.
+       */
+      console.error(
+        'comments: review failed:',
+        error instanceof Error ? error.message : String(error),
+      );
+      storeFailed = true;
+      comment = null;
+      Astro.response.status = 503;
+    }
+  }
+}
+
+const heading = approved
+  ? 'Comment approved'
+  : rejected
+    ? 'Comment rejected'
+    : 'Review a comment';
+---
+
+<BaseLayout
+  title={`${heading} | sinduri.lol`}
+  description="Approve or reject a comment."
+  noCanonical
+  noAnalytics
+>
+  <section class="band py-24">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-gold"></span>
+    </div>
+
+    <div class="mx-auto max-w-3xl">
+      <h1 class="text-h1 text-text">{heading}</h1>
+
+      {approved && isRebuildResult(rebuild) && (
+        <p class="mt-8 text-body text-muted text-pretty">
+          {REBUILD_MESSAGE[rebuild]}
+        </p>
+      )}
+
+      {rejected && (
+        <p class="mt-8 text-body text-muted text-pretty">
+          The comment has been deleted and will not be published.
+        </p>
+      )}
+
+      {unavailable && (
+        <p class="mt-8 text-body text-muted text-pretty">
+          Comment moderation is not set up on this deploy yet, so nothing can be
+          approved or rejected.
+        </p>
+      )}
+
+      {storeFailed && (
+        <p class="mt-8 text-body text-muted text-pretty">
+          The comment store could not be reached, so nothing was changed. Open
+          the link again in a few minutes.
+        </p>
+      )}
+
+      {problem && (
+        <p class="mt-8 text-body text-muted text-pretty">
+          {PROBLEM_MESSAGE[problem]}
+        </p>
+      )}
+
+      {comment && !problem && (
+        <>
+          <CommentPreview comment={comment} parent={parent} />
+
+          {comment.status === 'pending' ? (
+            <form method="post" action={PAGE} class="mt-10">
+              <input type="hidden" name={LINK_PARAM} value={token} />
+              <div class="flex flex-wrap gap-6">
+                <button
+                  class="btn-primary"
+                  type="submit"
+                  name={DECISION_FIELD}
+                  value="approve"
+                >
+                  Approve and publish
+                </button>
+                <button
+                  class="btn-secondary"
+                  type="submit"
+                  name={DECISION_FIELD}
+                  value="reject"
+                >
+                  Reject and delete
+                </button>
+              </div>
+            </form>
+          ) : (
+            <p class="mt-10 text-body text-muted text-pretty">
+              This comment is already published.
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  </section>
+</BaseLayout>

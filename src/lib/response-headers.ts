@@ -67,3 +67,29 @@ export const applyGlobalHeaders = (headers: Headers): Headers => {
   }
   return headers;
 };
+
+/*
+ * For the owner-only comment routes, whose URLs can carry a moderation link:
+ * no cache may keep the page, no index may list it, and no Referer may carry
+ * the link to the next page. `no-transform` is kept from the global rule;
+ * public/_headers says why.
+ *
+ * `strict-origin`, not `no-referrer`. Under `no-referrer` a browser sends
+ * `Origin: null` with the page's own form POST, and Astro's CSRF check
+ * answers 403, so no button on the page works; measured in Chromium
+ * 2026-09-15. Nor `same-origin`: the next page on the site would read the
+ * full URL from document.referrer, and the Umami tracker reports it.
+ */
+const PRIVATE_HEADERS: Readonly<Record<string, string>> = {
+  'Cache-Control': 'no-store, no-transform',
+  'Referrer-Policy': 'strict-origin',
+  'X-Robots-Tag': 'noindex',
+};
+
+/** Applies PRIVATE_HEADERS over the global headers. */
+export const applyPrivateHeaders = (headers: Headers): Headers => {
+  for (const [name, value] of Object.entries(PRIVATE_HEADERS)) {
+    headers.set(name, value);
+  }
+  return applyGlobalHeaders(headers);
+};

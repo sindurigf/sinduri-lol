@@ -41,6 +41,12 @@ interface Props {
    * weaker second statement. tests/not-found.spec.ts asserts the status.
    */
   noCanonical?: boolean;
+  /*
+   * Leaves out the visit counter. For the owner-only comment pages, whose URLs
+   * carry a moderation link: the tracker reports the full URL, query included,
+   * to Umami, which would put a working link in a third party's records.
+   */
+  noAnalytics?: boolean;
 }
 
 const SITE_NAME = 'sinduri.lol';
@@ -68,6 +74,7 @@ const {
   description,
   ogImage = DEFAULT_OG_IMAGE,
   noCanonical = false,
+  noAnalytics = false,
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -208,16 +215,18 @@ const ogImageUrl = new URL(ogImage, Astro.site);
       `data-exclude-hash` drops the fragment, so the skip link and in-page
       anchors are not counted as separate pages.
     */}
-    <script
-      is:inline
-      defer
-      src={UMAMI_SCRIPT_PATH}
-      data-website-id={UMAMI_WEBSITE_ID}
-      data-host-url={UMAMI_HOST_URL}
-      data-domains={analyticsDomain}
-      data-do-not-track="true"
-      data-exclude-hash="true"
-    ></script>
+    {!noAnalytics && (
+      <script
+        is:inline
+        defer
+        src={UMAMI_SCRIPT_PATH}
+        data-website-id={UMAMI_WEBSITE_ID}
+        data-host-url={UMAMI_HOST_URL}
+        data-domains={analyticsDomain}
+        data-do-not-track="true"
+        data-exclude-hash="true"
+      ></script>
+    )}
     <meta name="generator" content={Astro.generator} />
   </head>
   <body class="flex min-h-screen flex-col">
