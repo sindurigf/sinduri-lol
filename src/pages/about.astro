@@ -52,16 +52,19 @@ const JOHANN_WIDTH = 256;
 const JOHANN_DENSITIES = [1];
 
 /*
- * Only used to pick a file from WIDTHS; tests/image-size.spec.ts measures the
- * result. Each names the column the photo fills from `lg`, then below it.
+ * Only used to pick a file from WIDTHS. Each is the width the photo is drawn
+ * at from `lg`, `sm` and below, net of the page gutter, card padding and
+ * column gaps, and capped where `max-w-page` stops growing.
+ * tests/image-size.spec.ts fails when one drifts from the layout.
  */
 const SIZES = {
-  hero: '(min-width: 64rem) 40rem, 100vw',
-  pair: '(min-width: 64rem) 17rem, 45vw',
-  masonry: '(min-width: 64rem) 26rem, (min-width: 40rem) 50vw, 100vw',
-  food: '(min-width: 40rem) 24rem, 100vw',
-  cat: '(min-width: 64rem) 24rem, (min-width: 40rem) 30vw, 100vw',
-  side: '(min-width: 64rem) 32rem, 100vw',
+  hero: '(min-width: 64rem) min(calc(50vw - 3.25rem), 38.25rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)',
+  pair: '(min-width: 64rem) min(calc(25vw - 4.75rem), 16rem), (min-width: 40rem) calc(50vw - 4.875rem), calc(50vw - 3.375rem)',
+  masonry:
+    '(min-width: 64rem) min(calc(33.45vw - 2rem), 25.75rem), (min-width: 40rem) calc(50vw - 2.25rem), calc(100vw - 2rem)',
+  food: 'min(calc(100vw - 6rem), 24rem)',
+  cat: '(min-width: 40rem) min(calc(33.45vw - 4rem), 23.75rem), calc(100vw - 6rem)',
+  side: '(min-width: 64rem) min(calc(42vw - 2.875rem), 31.875rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)',
 } as const;
 
 const COVER_PHOTOGRAPHER = 'Tdm Dilip';

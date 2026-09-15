@@ -25,8 +25,12 @@
 
 import { PHOTOGRAPHERS, PHOTO_CREDIT_PREFIX } from '../lib/credits.ts';
 
-/* The prose measure, `max-w-3xl`, and the full viewport below it. */
-const SIZES = '(min-width: 48rem) 48rem, 100vw';
+/*
+ * The prose measure, `max-w-3xl`, from the viewport where it fits inside the
+ * gutter; the viewport net of the gutter below it.
+ */
+const SIZES =
+  '(min-width: 51rem) 48rem, (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)';
 
 /*
  * `full-width` takes its candidates from `image.breakpoints` in

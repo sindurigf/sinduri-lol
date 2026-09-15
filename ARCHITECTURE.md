@@ -559,7 +559,9 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
 - **A fixed-size photo** passes its drawn size and `DENSITIES`. **A fluid one**
   passes `WIDTHS` and a `sizes` attribute, both in
   `src/lib/image-densities.ts`. `WIDTHS` steps by no more than 1.5x, the
-  oversize limit in `tests/image-size.spec.ts`.
+  oversize limit in `tests/image-size.spec.ts`. The `sizes` value is the
+  width the photo is drawn at, net of gutter, padding and gaps, rather than
+  `100vw`; the same spec fails when it runs more than 1.1x over.
 - **`/about` tells Sinduri's story in order**: who she is, what she
   believes, people and places, the important things, and her path into Drupal
   last. It uses the site's own vocabulary, the section rule, pill, card and

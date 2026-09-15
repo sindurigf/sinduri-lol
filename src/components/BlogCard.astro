@@ -81,10 +81,12 @@ const {
 const Heading = `h${headingLevel}` as 'h2' | 'h3';
 
 /*
- * The cover column: half the card from `md`, the whole card below. Only used
- * to pick a file from WIDTHS; tests/image-size.spec.ts measures the result.
+ * The cover column: half the card from `md`, the whole card below, net of the
+ * gutter and card padding. Only used to pick a file from WIDTHS;
+ * tests/image-size.spec.ts fails when it drifts from the layout.
  */
-const COVER_SIZES = '(min-width: 48rem) min(45vw, 36rem), 100vw';
+const COVER_SIZES =
+  '(min-width: 48rem) min(calc(50vw - 5.75rem), 35.75rem), (min-width: 40rem) calc(100vw - 9rem), calc(100vw - 6rem)';
 
 const accent = ACCENTS[CATEGORY_ACCENT[category]];
 
