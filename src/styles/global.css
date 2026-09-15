@@ -192,6 +192,13 @@
   --text-copyright: 20px;
   --text-copyright--line-height: 1.2;
   /*
+   * The name that signs off the footer, "Lepus Ridet". Not text-h3, which is a
+   * prose size; this is one line of display type and has to stay one line in
+   * the 288px phone box, where 32px uppercase Lexend 900 is about 250px wide.
+   */
+  --text-footer-name: clamp(32px, 3vw, 40px);
+  --text-footer-name--line-height: 1;
+  /*
    * Sized against the h1 or h2 it labels, and smaller than both at either end.
    * A fixed 32px outgrew the h3 floor on narrow screens. No contrast argument
    * here: it is pink-text, AAA at any size.
@@ -1309,126 +1316,35 @@
 
   /* ---------------------------------------------------------------------------
      THE FOOTER. Footer.astro says what is in it and why; this is how it is laid
-     out. The numbers are the footer comp's, and they only mean anything
-     together, which is why they are here as one block rather than as tokens.
+     out. The numbers only mean anything together, which is why they are here
+     as one block rather than as tokens.
 
-     Three layouts. On a phone every link is its own row and the stickers are
-     two staggered rows above the copyright. From `sm` the badge and the two
-     link columns sit side by side and the stickers are one row. From `lg` the
-     links take the stickers' own grid: the pages start above the first tile
-     and the policies above the fifth, so the links, the stickers and the hare
-     above them share one set of columns.
+     Three layouts. Below `md` everything stacks in source order, centred
+     except the links, which stay full-width rows, and the stickers are two
+     staggered rows. From `md` the name and the stickers share the first
+     column, the pages and the policies take one each, and the three columns
+     are spread with equal gaps between them. From `lg` the tiles grow to 56px
+     and the whole footer is inset 32px from the column on both sides, so its
+     outer edges sit a little in from the header's.
   --------------------------------------------------------------------------- */
 
-  /*
-   * THE FIELD: the stems from src/assets/footer-field.svg over a fade from the
-   * page background into `deep`, so the page runs into the footer without a
-   * hard edge. The tile is 1440x150 and is scaled to the field's height, so on
-   * a phone, where the field is 112px, the stems are drawn three quarters the
-   * size and packed closer, as in the comp.
-   */
-  .footer-field {
-    height: 112px;
-    background-image:
-      url('../assets/footer-field.svg'),
-      linear-gradient(var(--color-background), var(--color-deep));
-    background-repeat: repeat-x, no-repeat;
-    background-position:
-      left bottom,
-      0 0;
-    background-size:
-      auto 100%,
-      100% 100%;
+  .footer-inner {
+    padding-top: 48px;
   }
 
-  /*
-   * THE SLEEPING HARE. Its viewBox is in its own units: x = 0 at its middle
-   * and y = 0 on the ground, 114 wide from -60 to 54, 64 tall from -58 to 6.
-   * `--hare-scale` is how many CSS px one unit is, so every offset here is in
-   * those units and follows the scale. The ground is 4px above the field's
-   * bottom edge, where the stems root.
-   *
-   * Below `lg` it lies two thirds of the way across. From `lg` it is centred
-   * over the sticker row: seven 56px tiles and six 24px gaps are 536px, ending
-   * 6px short of the column to leave room for the last tile's shadow, so the
-   * row's middle is 274px in from the column's right edge.
-   *
-   * Every shape is filled with `deep`, so it covers the stems behind it as the
-   * canvas in the comp did, and outlined in `text`.
-   */
-  .footer-hare {
-    --hare-scale: 1;
-
-    position: absolute;
-    left: calc(66% - 60px * var(--hare-scale));
-    bottom: calc(4px - 6px * var(--hare-scale));
-    width: calc(114px * var(--hare-scale));
-    height: calc(64px * var(--hare-scale));
-    overflow: visible;
-    color: var(--color-text);
-    fill: var(--color-deep);
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .footer-hare .hare-shadow {
-    fill: var(--color-border);
-    fill-opacity: 0.18;
-    stroke: none;
-  }
-
-  /* The far ear, half seen through the near one. */
-  .footer-hare .hare-far {
-    opacity: 0.55;
-  }
-
-  .footer-hare .hare-line {
-    fill: none;
-  }
-
-  .footer-hare .hare-nose {
-    fill: currentColor;
-    stroke: none;
-  }
-
-  .footer-links {
+  .footer-top {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
   }
 
-  /*
-   * THE BADGE STANDS IN THE STEMS. A negative top margin lifts it into the
-   * field, and a disc of `deep` behind the medallion stops the stems at its
-   * edge instead of letting them show through its transparent middle. The disc
-   * is as wide as the badge, square, and sits at its bottom, which is where the
-   * medallion is; the ring on top needs nothing. It is a circle, so it takes
-   * the `rounded-full` exception; see Radius in the design system skill.
-   *
-   * `width: fit-content` keeps the disc to the badge. As a grid item on a
-   * phone the box would otherwise stretch to the column, and the disc with it.
-   */
-  .footer-badge {
-    position: relative;
-    width: fit-content;
-    margin-top: -86px;
-  }
+  .footer-name {
+    font-size: var(--text-footer-name);
+    line-height: var(--text-footer-name--line-height);
+    letter-spacing: var(--tracking-heading-tight);
+    text-align: center;
 
-  .footer-badge::before {
-    content: '';
-    position: absolute;
-    inset: auto 0 0 0;
-    aspect-ratio: 1;
-    background: var(--color-deep);
-
-    @apply rounded-full;
-  }
-
-  .footer-badge img {
-    position: relative;
-    width: auto;
-    height: 170px;
+    @apply font-black uppercase text-text;
   }
 
   /*
@@ -1437,8 +1353,13 @@
    * gap between the two lists, so nothing but colour marks where the pages end
    * and the policies begin.
    */
+  .footer-pages,
+  .footer-policies {
+    justify-self: stretch;
+  }
+
   .footer-pages {
-    margin-top: 20px;
+    margin-top: 28px;
   }
 
   .footer-pages a,
@@ -1447,27 +1368,8 @@
     padding-block: 13px;
   }
 
-  .footer-base {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 14px;
-    margin-top: 36px;
-    padding-block: 28px 40px;
-    border-top: 4px solid var(--color-border);
-  }
-
-  .footer-copyright {
-    font-size: var(--text-copyright);
-    line-height: var(--text-copyright--line-height);
-    text-align: center;
-
-    @apply font-black uppercase tracking-label text-subtle;
-  }
-
-  /* On a phone the stickers come first and the copyright closes the page. */
   .footer-social {
-    order: -1;
+    margin-top: 32px;
   }
 
   /*
@@ -1565,36 +1467,110 @@
     --tilt: -6deg;
   }
 
-  @media (width >= 40rem) {
-    .footer-field {
-      height: 150px;
+  .footer-base {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    margin-top: 28px;
+  }
+
+  .footer-copyright {
+    font-size: var(--text-copyright);
+    line-height: var(--text-copyright--line-height);
+    text-align: center;
+
+    @apply font-black uppercase tracking-label text-subtle;
+  }
+
+  /*
+   * THE TUFT. 266 by 102 in its own units, drawn at 220px wide on a phone and
+   * at 1:1 from `md`. The hare's ground is 8 units above the bottom of the
+   * viewBox, which is room for its shadow, so it lies on the footer's bottom
+   * edge. Gold with `gold-text` lines is 11.32; the shadow is `pink` and pure
+   * decoration.
+   */
+  .footer-tuft {
+    display: block;
+    width: 220px;
+    height: auto;
+    overflow: visible;
+  }
+
+  .footer-tuft .tuft-back {
+    fill: var(--color-border);
+  }
+
+  .footer-tuft .tuft-front {
+    fill: var(--color-subtle);
+  }
+
+  .footer-tuft .hare-shadow {
+    fill: var(--color-pink);
+  }
+
+  .footer-tuft .hare {
+    fill: var(--color-gold);
+    stroke: var(--color-gold-text);
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .footer-tuft .hare-line {
+    fill: none;
+  }
+
+  .footer-tuft .hare-nose {
+    fill: var(--color-gold-text);
+    stroke: none;
+  }
+
+  /*
+   * THE COLUMNS. Source order is name, pages, policies, stickers; the pages
+   * and policies span both rows, so the stickers drop under the name and a
+   * row-major reading of the grid is still the source order.
+   *
+   * `justify-content: space-between` makes the two gaps equal and puts the
+   * name on the left edge and the policies on the right. The 32px column gap
+   * is only the floor: at 768px the three columns need 697px of the 720px
+   * content box, and a 48px floor overflowed it.
+   */
+  @media (width >= 48rem) {
+    .footer-inner {
+      padding-top: 56px;
     }
 
-    .footer-hare {
-      --hare-scale: 1.35;
-    }
-
-    .footer-links {
+    .footer-top {
       grid-template-columns: repeat(3, auto);
-      justify-content: start;
-      column-gap: 48px;
+      grid-template-rows: auto 1fr;
+      justify-content: space-between;
+      justify-items: start;
+      align-items: start;
+      column-gap: 32px;
     }
 
-    .footer-badge {
-      align-self: start;
-      margin-top: -118px;
+    .footer-name {
+      grid-column: 1;
+      grid-row: 1;
+      text-align: left;
     }
 
-    .footer-badge img {
-      height: 250px;
-    }
-
-    /* Both lists start on one line, 18px under the stems. */
+    /* Both lists start level with the name's cap height. */
     .footer-pages,
     .footer-policies {
-      align-self: start;
+      grid-row: 1 / span 2;
+      justify-self: start;
       margin-top: 0;
-      padding-top: 18px;
+      padding-top: 6px;
+    }
+
+    .footer-pages {
+      grid-column: 2;
+    }
+
+    .footer-policies {
+      grid-column: 3;
     }
 
     /* 29.6px targets: the 15.6px line box and 7px above and below. */
@@ -1603,30 +1579,47 @@
       padding-block: 7px;
     }
 
-    .footer-base {
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 24px 28px;
-      margin-top: 48px;
-    }
-
-    .footer-copyright {
-      text-align: left;
-    }
-
     .footer-social {
-      order: 0;
+      grid-column: 1;
+      grid-row: 2;
+      margin-top: 22px;
     }
 
     .footer-stickers {
-      grid-template-columns: repeat(7, 56px);
-      gap: 24px;
+      grid-template-columns: repeat(7, 48px);
+      gap: 16px;
       padding: 6px 6px 10px 0;
     }
 
     .footer-stickers li:nth-child(n + 5) {
       left: 0;
+    }
+
+    .footer-base {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 8px;
+    }
+
+    .footer-copyright {
+      padding-bottom: 20px;
+      text-align: left;
+    }
+
+    .footer-tuft {
+      width: 266px;
+    }
+  }
+
+  @media (width >= 64rem) {
+    .footer-inner {
+      padding-inline: 32px;
+    }
+
+    .footer-stickers {
+      grid-template-columns: repeat(7, 56px);
+      gap: 24px;
     }
 
     .footer-sticker {
@@ -1635,71 +1628,41 @@
     }
   }
 
-  @media (width >= 48rem) {
-    .footer-links {
-      column-gap: 96px;
-    }
-  }
-
-  /*
-   * THE STICKERS' GRID. A tile and its gap are 80px, so the fifth tile starts
-   * 4 x 80 = 320px after the first; the row is 7 x 56 + 6 x 24 + 6 = 542px
-   * wide, which leaves 222px for the policies. The first track takes the rest
-   * and holds the badge.
-   */
-  @media (width >= 64rem) {
-    .footer-hare {
-      left: auto;
-      right: calc(274px - 54px * var(--hare-scale));
-    }
-
-    .footer-links {
-      grid-template-columns: minmax(0, 1fr) 320px 222px;
-      column-gap: 0;
-    }
-  }
-
   /*
    * FORCED COLOURS. The browser swaps the author palette for the reader's
-   * own, and three things in the footer would fight it.
+   * own, and the two SVGs would fight it.
    *
    * Chromium gives inline SVG `forced-color-adjust: preserve-parent-color` by
    * default: it follows the forced palette only through `currentColor` and
    * keeps the author's colours otherwise. tests/forced-colors.spec.ts allows
-   * nothing but `auto`, and the hare shows why: its outline is `text`, not
-   * the `currentColor` of anything forced. So the SVGs go back to `auto` and
-   * take system colours below. `auto` does not force an SVG's `fill`, so the
-   * icons are given `LinkText` directly; measured without it they kept
-   * `darkcyan`, which would vanish on a dark theme.
+   * nothing but `auto`, so the SVGs go back to `auto` and take system colours
+   * below. `auto` does not force an SVG's `fill`, so the icons are given
+   * `LinkText` directly; measured without it they kept `darkcyan`, which
+   * would vanish on a dark theme.
    *
-   * The field's picture and the disc under the badge are author colours too.
-   * The stems are dropped for the reader's Canvas, the disc goes with them, and
-   * the hare is redrawn as a line in the reader's text colour. The badge is a
-   * white PNG and cannot be recoloured, so on a light theme it fades out; that
-   * is acceptable only because it is decoration, with alt="".
+   * The tuft is redrawn in the reader's text colour on their Canvas, and the
+   * pink shadow, which would be a second hare in the same colour, is dropped.
    */
-  .footer-hare,
-  .footer-hare *,
+  .footer-tuft,
+  .footer-tuft *,
   .footer-sticker svg,
   .footer-sticker svg * {
     forced-color-adjust: auto;
   }
 
   @media (forced-colors: active) {
-    .footer-field {
-      background-image: none;
+    .footer-tuft .tuft-back,
+    .footer-tuft .tuft-front,
+    .footer-tuft .hare-nose {
+      fill: CanvasText;
     }
 
-    .footer-badge::before {
-      display: none;
-    }
-
-    .footer-hare {
-      color: CanvasText;
+    .footer-tuft .hare {
       fill: Canvas;
+      stroke: CanvasText;
     }
 
-    .footer-hare .hare-shadow {
+    .footer-tuft .hare-shadow {
       display: none;
     }
 

@@ -468,6 +468,7 @@ Do not add breakpoint steps.
 | Body                   | `text-body`                               | 400    |
 | Label / tag            | `text-label`                              | 900    |
 | Copyright              | `text-copyright`                          | 900    |
+| Footer name            | `text-footer-name`                        | 900    |
 | Section number         | `text-section-number`                     | 800    |
 
 Headings must not skip levels. One `<h1>` per page.
@@ -530,8 +531,7 @@ Below it H1:H2 narrows to 1.269 (33:26, from 367px down) while H2:H3 stays
 
 **One content box, declared once.** The horizontal gutter is `.page-gutter`
 (`px-4 sm:px-6`) and it is applied to the three landmarks: the header, `<main>`
-in `BaseLayout.astro`, and the footer, where it sits on the two blocks inside
-`<footer>` rather than on the element itself. The no-JavaScript navigation after
+in `BaseLayout.astro`, and the `<footer>` element. The no-JavaScript navigation after
 the header carries it too. **Only the base `px-4` is
 load-bearing.** `sm` is 640px, so at the viewports the floors are measured at,
 only `px-4` applies; the `sm` step is ordinary spacing and can change freely.
@@ -972,16 +972,12 @@ another.
 | Image                                   | Alt                     |
 | --------------------------------------- | ----------------------- |
 | Header bunny mark, inside the home link | `Lepus Ridet mark`      |
-| Footer badge, standing in the stems     | `""`                    |
 | Badge standing alone as the only name   | `Sinduri — Lepus Ridet` |
 | Large decorative watermark badges       | `""`                    |
 
-The footer badge is `alt=""` because the copyright line in the same footer
-already reads "© 2026 sinduri.lol". Naming the badge would announce the same
-thing twice and add nothing. Do not "fix" it by giving it a name. It used to sit
-directly beside that line and is now a large mark standing in the field above
-it; the reasoning did not change with the move, and `tests/footer.spec.ts`
-asserts the empty alt.
+The footer carries no image. "Lepus Ridet" there is real text, a `<div lang="la">`
+rather than a heading or a paragraph, and the hare in its tuft is an `aria-hidden` inline SVG.
+`tests/footer.spec.ts` asserts both, and that the footer has no `<img>`.
 
 ---
 
@@ -1069,8 +1065,7 @@ exactly three things:
 
 **`rounded-full` is the circle-and-pill exception.** It applies to the spinning
 badge frame (`SpinBadge.vue`), the bunny roundel in the homepage About teaser
-and on the About page, `.pill`, and the disc behind the footer badge that stops
-the stems at the medallion's edge.
+and on the About page, and `.pill`.
 
 The two are not degrees of the same thing and the second is not a loophole in
 the first. `rounded-nav` softens a rectangle, which is the move this design
