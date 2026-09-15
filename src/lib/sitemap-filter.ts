@@ -14,9 +14,16 @@ const POSTS_DIR = 'src/content/blog';
  * Two contact routes are deliberately unadvertised. /contact/sent/ is a
  * confirmation: a crawler served it reads "Your message has been received",
  * false for anyone who did not just send one. /contact/send/ is the POST
- * target, builds no page at all, and answers a GET with a redirect.
+ * target, builds no page at all, and answers a GET with a redirect. The two
+ * comment moderation pages are for the owner, opened from a signed link, and
+ * show a crawler nothing but an invalid-link message.
  */
-const UNADVERTISED_PATHS = ['/contact/sent/', '/contact/send/'];
+const UNADVERTISED_PATHS = [
+  '/contact/sent/',
+  '/contact/send/',
+  '/comments/review/',
+  '/comments/reply/',
+];
 
 /** `/blog/<segment>/`: a post, a category listing, or the pager's parent. */
 const BLOG_CHILD = /^\/blog\/([^/]+)\/$/;

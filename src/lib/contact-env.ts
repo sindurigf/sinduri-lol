@@ -1,5 +1,6 @@
 /*
- * The Worker bindings the contact endpoint uses, typed structurally.
+ * The Worker bindings the contact endpoint uses, typed structurally. The
+ * comment routes add theirs in src/lib/comment-env.ts.
  *
  * Declared here rather than by installing @cloudflare/workers-types: these are
  * the only bindings this site has, and a handful of signatures is less to
@@ -10,13 +11,25 @@
  * message was received.
  */
 
+export interface D1Result<Row = Record<string, unknown>> {
+  results: Row[];
+  meta: { changes: number };
+}
+
 export interface D1PreparedStatement {
   bind(...values: unknown[]): D1PreparedStatement;
-  run(): Promise<unknown>;
+  run(): Promise<D1Result>;
+  first<Row = Record<string, unknown>>(): Promise<Row | null>;
+  all<Row = Record<string, unknown>>(): Promise<D1Result<Row>>;
 }
 
 export interface D1Database {
   prepare(query: string): D1PreparedStatement;
+  /*
+   * One transaction: a statement that fails rolls back every statement in the
+   * batch, which is what makes a moderation link single-use.
+   */
+  batch(statements: D1PreparedStatement[]): Promise<D1Result[]>;
 }
 
 /** The Workers rate limiting binding. */

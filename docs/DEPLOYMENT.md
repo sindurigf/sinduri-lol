@@ -40,10 +40,34 @@ and which `/privacy` states. Recreate it with
 
 ```sh
 npx wrangler d1 execute sinduri-lol --remote --file migrations/0001_create_messages.sql
+npx wrangler d1 execute sinduri-lol --remote --file migrations/0002_create_comments.sql
 ```
 
 A daily cron trigger deletes messages older than the retention period
-`/privacy` states.
+`/privacy` states, clears commenter email addresses at the same age, and
+deletes comments nobody moderated once their links have expired.
+
+## Comment moderation
+
+Three runtime secrets, under the Worker's Settings > Variables and Secrets:
+
+```sh
+npx wrangler secret put COMMENTS_SIGNING_KEY
+npx wrangler secret put COMMENTS_EXPORT_KEY
+npx wrangler secret put COMMENTS_DEPLOY_HOOK
+```
+
+- `COMMENTS_SIGNING_KEY` signs the moderation links. At least 32 characters;
+  `openssl rand -base64 48` gives one. Changing it invalidates every link
+  already sent.
+- `COMMENTS_EXPORT_KEY` is the bearer key for `/comments/export`, also at least
+  32 characters.
+- `COMMENTS_DEPLOY_HOOK` is the URL of a deploy hook for `main`, created under
+  the Worker's Settings > Builds > Deploy Hooks. The URL is the credential.
+
+Without the first two, the moderation pages and the export answer 503 and say
+what is missing. Without the hook, an approval still publishes the row and the
+page says the rebuild did not start.
 
 ## Contact form email
 

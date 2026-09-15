@@ -1,0 +1,245 @@
+---
+import { env } from 'cloudflare:workers';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CommentPreview from '../../components/CommentPreview.astro';
+import {
+  COMMENT_FIELDS,
+  COMMENT_LIMITS,
+  OWNER_NAME,
+  validateOwnerReply,
+  type CommentFieldError,
+} from '../../lib/comment-form';
+import { usableSigningKey } from '../../lib/comment-links';
+import {
+  DONE_PARAM,
+  LINK_PARAM,
+  PROBLEM_MESSAGE,
+  PROBLEM_STATUS,
+  REBUILD_MESSAGE,
+  REBUILD_PARAM,
+  isRebuildResult,
+  resolveLink,
+  type LinkProblem,
+} from '../../lib/comment-moderation';
+import {
+  findComment,
+  publishOwnerReply,
+  type CommentRow,
+} from '../../lib/comment-store';
+import { requestRebuild } from '../../lib/deploy-hook';
+import { applyPrivateHeaders } from '../../lib/response-headers';
+
+/*
+ * Where the owner replies to a comment as Sinduri, opened from the "Reply as
+ * Sinduri" link in the notification email. The reply is published at once,
+ * marked as the owner's, which is what the public form can never do: anyone
+ * can type the name, only this link can set the mark.
+ *
+ * The same shape as review.astro: a GET shows, a POST acts, and a 303 after
+ * it stops a refresh posting twice.
+ */
+export const prerender = false;
+
+applyPrivateHeaders(Astro.response.headers);
+
+const PAGE = '/comments/reply/';
+const REPLY_ID = 'owner-reply';
+const DONE_VALUE = 'reply';
+
+const now = Date.now();
+const database = env.MESSAGES_DB;
+const signingKey = usableSigningKey(env.COMMENTS_SIGNING_KEY);
+
+let unavailable = false;
+let storeFailed = false;
+let problem: LinkProblem | null = null;
+let comment: CommentRow | null = null;
+let parent: CommentRow | null = null;
+let token = '';
+let errors: CommentFieldError[] = [];
+let typed = '';
+
+const rebuild = Astro.url.searchParams.get(REBUILD_PARAM);
+const replied =
+  Astro.url.searchParams.get(DONE_PARAM) === DONE_VALUE &&
+  isRebuildResult(rebuild);
+
+if (!replied) {
+  if (!database || !signingKey) {
+    console.error(
+      'comments: reply unavailable: MESSAGES_DB or a usable COMMENTS_SIGNING_KEY missing',
+    );
+    unavailable = true;
+    Astro.response.status = 503;
+  } else {
+    let form: FormData | null = null;
+
+    if (Astro.request.method === 'POST') {
+      form = await Astro.request.formData().catch(() => null);
+      token = String(form?.get(LINK_PARAM) ?? '');
+      if (!form) problem = 'invalid';
+    } else {
+      token = Astro.url.searchParams.get(LINK_PARAM) ?? '';
+    }
+
+    try {
+      const resolved = problem
+        ? null
+        : await resolveLink(database, signingKey, token, 'reply', now);
+
+      if (resolved && !resolved.ok) problem = resolved.problem;
+
+      if (resolved?.ok && form) {
+        const result = validateOwnerReply(form);
+
+        if (result.ok) {
+          const published = await publishOwnerReply(
+            database,
+            resolved.claims,
+            resolved.comment,
+            result.value,
+            now,
+          );
+
+          if (published === 'done') {
+            const target = new URL(PAGE, Astro.url);
+            target.searchParams.set(DONE_PARAM, DONE_VALUE);
+            target.searchParams.set(
+              REBUILD_PARAM,
+              await requestRebuild(env.COMMENTS_DEPLOY_HOOK),
+            );
+            return Astro.redirect(`${target.pathname}${target.search}`, 303);
+          }
+
+          problem = 'used';
+        } else {
+          errors = result.errors;
+          typed = result.submitted.body ?? '';
+          Astro.response.status = 422;
+        }
+      }
+
+      if (resolved?.ok && !problem) {
+        comment = resolved.comment;
+        if (comment.parent_id) {
+          parent = await findComment(database, comment.parent_id);
+        }
+      }
+
+      if (problem) Astro.response.status = PROBLEM_STATUS[problem];
+    } catch (error) {
+      /* One D1 batch, so a failure part way published nothing. */
+      console.error(
+        'comments: reply failed:',
+        error instanceof Error ? error.message : String(error),
+      );
+      storeFailed = true;
+      comment = null;
+      Astro.response.status = 503;
+    }
+  }
+}
+
+const bodyError = errors.find((error) => error.field === 'body')?.message;
+const heading = replied ? 'Reply published' : `Reply as ${OWNER_NAME}`;
+---
+
+<BaseLayout
+  title={`${heading} | sinduri.lol`}
+  description="Reply to a comment."
+  noCanonical
+  noAnalytics
+>
+  <section class="band py-24">
+    <div class="mx-auto max-w-page">
+      <span class="section-rule bg-gold"></span>
+    </div>
+
+    <div class="mx-auto max-w-3xl">
+      <h1 class="text-h1 text-text">{heading}</h1>
+
+      {replied && isRebuildResult(rebuild) && (
+        <p class="mt-8 text-body text-muted text-pretty">
+          {REBUILD_MESSAGE[rebuild]}
+        </p>
+      )}
+
+      {unavailable && (
+        <p class="mt-8 text-body text-muted text-pretty">
+          Comment moderation is not set up on this deploy yet, so no reply can
+          be published.
+        </p>
+      )}
+
+      {storeFailed && (
+        <p class="mt-8 text-body text-muted text-pretty">
+          The comment store could not be reached, so nothing was published. Open
+          the link again in a few minutes.
+        </p>
+      )}
+
+      {problem && (
+        <p class="mt-8 text-body text-muted text-pretty">
+          {PROBLEM_MESSAGE[problem]}
+        </p>
+      )}
+
+      {comment && !problem && (
+        <>
+          <CommentPreview comment={comment} parent={parent} />
+
+          {bodyError && (
+            <div class="error-summary" role="alert" tabindex="-1" autofocus>
+              <h2 class="text-h3 text-text">
+                There is one problem with this reply
+              </h2>
+              <ul class="mt-4 list-disc pl-6">
+                <li class="mt-2 text-body">
+                  <a href={`#${REPLY_ID}`}>{bodyError}</a>
+                </li>
+              </ul>
+            </div>
+          )}
+
+          <form method="post" action={PAGE} class="mt-10">
+            <input type="hidden" name={LINK_PARAM} value={token} />
+
+            <div class="field">
+              <label class="field-label" for={REPLY_ID}>
+                Your reply
+              </label>
+              <textarea
+                class="field-control"
+                id={REPLY_ID}
+                name={COMMENT_FIELDS.body}
+                rows="6"
+                maxlength={COMMENT_LIMITS.bodyMax}
+                required
+                aria-invalid={bodyError ? 'true' : undefined}
+                aria-describedby={
+                  bodyError
+                    ? `${REPLY_ID}-error ${REPLY_ID}-hint`
+                    : `${REPLY_ID}-hint`
+                }
+              >{typed}</textarea>
+              <p class="mt-3 text-body text-muted" id={`${REPLY_ID}-hint`}>
+                Published straight away under the name {OWNER_NAME}.
+                {comment.status === 'pending' &&
+                  ' Publishing also approves the comment above.'}
+              </p>
+              {bodyError && (
+                <p class="field-error" id={`${REPLY_ID}-error`}>
+                  {bodyError}
+                </p>
+              )}
+            </div>
+
+            <button class="btn-primary mt-10" type="submit">
+              Publish reply
+            </button>
+          </form>
+        </>
+      )}
+    </div>
+  </section>
+</BaseLayout>

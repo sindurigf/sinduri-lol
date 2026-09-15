@@ -1,8 +1,9 @@
 import { defineConfig } from '@playwright/test';
 
 /*
- * The one spec that needs the Worker: tests/contact.spec.ts, which POSTs to the
- * contact endpoint and reads the rows it stores.
+ * The specs that need the Worker: tests/contact.spec.ts and
+ * tests/comments.spec.ts, which POST to on-demand routes and read the rows they
+ * store, and tests/video-range.spec.ts.
  *
  * It cannot run under playwright.config.ts. That suite is served by
  * scripts/preview-static.mjs, deliberately header-free and static, which has no
@@ -12,10 +13,10 @@ import { defineConfig } from '@playwright/test';
  * Nothing here launches a browser: every test is an HTTP request or a local D1
  * query, so it needs no Playwright browser installed and runs in one project.
  *
- * The table is created before preview starts. Local D1 state is empty on a fresh
- * checkout and in CI, and without the table every valid submission fails as a
+ * The tables are created before preview starts. Local D1 state is empty on a
+ * fresh checkout and in CI, and without the tables every write fails as a
  * storage error. `IF NOT EXISTS` makes it safe to repeat on a local machine that
- * already has it.
+ * already has them.
  */
 
 const PORT = 4322;
@@ -27,9 +28,28 @@ const PORT = 4322;
 export const NOTIFY_TO = 'owner@example.com';
 const BASE_URL = `http://localhost:${PORT}`;
 
+/*
+ * The comment secrets, test values at the minimum lengths the routes accept.
+ * tests/comments.spec.ts signs links with the same key.
+ */
+export const COMMENTS_SIGNING_KEY = 'test-signing-key-'.padEnd(32, 'x');
+export const COMMENTS_EXPORT_KEY = 'test-export-key-'.padEnd(32, 'x');
+
+/*
+ * The deploy hook, pointed at a stub tests/comments.spec.ts listens on, so an
+ * approval's rebuild request can be observed without starting a real build.
+ */
+export const DEPLOY_HOOK_PORT = 4323;
+export const DEPLOY_HOOK_PATH = '/deploy-hook';
+
+const MIGRATIONS = [
+  'migrations/0001_create_messages.sql',
+  'migrations/0002_create_comments.sql',
+];
+
 export default defineConfig({
   testDir: './tests',
-  testMatch: ['contact.spec.ts', 'video-range.spec.ts'],
+  testMatch: ['contact.spec.ts', 'comments.spec.ts', 'video-range.spec.ts'],
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   workers: 1,
@@ -44,7 +64,10 @@ export default defineConfig({
   webServer: {
     command:
       'npm run build' +
-      ' && npx wrangler d1 execute sinduri-lol --local --file migrations/0001_create_messages.sql' +
+      MIGRATIONS.map(
+        (file) =>
+          ` && npx wrangler d1 execute sinduri-lol --local --file ${file}`,
+      ).join('') +
       ` && npm run preview -- --port ${PORT} --ignore-lock`,
     url: BASE_URL,
 
@@ -60,6 +83,9 @@ export default defineConfig({
       ASTRO_PREVIEW_BACKGROUND: '1',
       CLOUDFLARE_INCLUDE_PROCESS_ENV: 'true',
       CONTACT_NOTIFY_TO: NOTIFY_TO,
+      COMMENTS_SIGNING_KEY,
+      COMMENTS_EXPORT_KEY,
+      COMMENTS_DEPLOY_HOOK: `http://127.0.0.1:${DEPLOY_HOOK_PORT}${DEPLOY_HOOK_PATH}`,
     },
 
     reuseExistingServer: false,
