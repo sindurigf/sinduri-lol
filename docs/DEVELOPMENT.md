@@ -44,7 +44,7 @@ pass before a change is done.
 
 ```
 src/
-  assets/           Images and the footer field SVG, processed by the build
+  assets/           Images, processed by the build
   components/       Astro components; ui/ holds the Vue islands
   content/blog/     Blog posts as Markdown
   content.config.ts Content collection schema

@@ -90,8 +90,8 @@ Chrome, 1280px, `/`. Start with focus in the address bar, then Tab.
 - [ ] Shift+Tab all the way back out. The order reverses exactly and you exit
       the top of the page. → SC 2.1.2
 - [ ] No stop swallows Tab, Escape, or arrow keys. → SC 2.1.2
-- [ ] The footer badge is **never** a tab stop and is never announced. It is
-      decorative. → SC 1.1.1
+- [ ] The hare in the footer is **never** a tab stop and is never announced. It
+      is decorative. → SC 1.1.1
 
 ## 2. MobileMenu, keyboard only
 
@@ -520,9 +520,9 @@ design and this section is not the place to check that.
 - [ ] `G` from `Ctrl+Home` reaches the header bunny mark and announces
       "Lepus Ridet mark".
       Heard: `___________________________________________` → SC 1.1.1
-- [ ] `G` again finds **no second image**. The footer badge is `alt=""` and
-      must be silent. "Sinduri", "badge", or a filename means the empty alt
-      has been broken.
+- [ ] `G` again finds **no second image**. The footer hare is `aria-hidden`
+      and must be silent. "Hare", "graphic", or "image" means it has been
+      exposed.
       Heard: `___________________________________________` → SC 1.1.1
 - [ ] Reach the **About** link with `K`. A pass announces it as the current
       page, not merely as a link.
