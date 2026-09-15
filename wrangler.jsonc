@@ -46,6 +46,11 @@
   // Off: the workers.dev address would be a second copy of the site.
   "workers_dev": false,
 
+  // On, and stated: it defaults to `workers_dev`, so leaving it out turns pull
+  // request previews off on every production deploy, whatever the dashboard
+  // says. docs/DEPLOYMENT.md says what a preview shares with production.
+  "preview_urls": true,
+
   // The apex, as a custom domain rather than a route pattern; without
   // `custom_domain` the entry is a pattern and attaches no hostname. In this
   // file and not only in the dashboard: a deploy replaces the Worker's routes
