@@ -72,9 +72,11 @@ const CATEGORY_CARDS = [
 
 /*
  * The teaser photo column: half of `max-w-page` from `lg`, the full column
- * below. Only used to pick a file from WIDTHS.
+ * below, net of the gutter. Only used to pick a file from WIDTHS;
+ * tests/image-size.spec.ts fails when it drifts from the layout.
  */
-const TEASER_PHOTO_SIZES = '(min-width: 64rem) min(50vw, 38rem), 100vw';
+const TEASER_PHOTO_SIZES =
+  '(min-width: 64rem) min(calc(50vw - 3.5rem), 38rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)';
 
 const STATS = [
   {

@@ -182,9 +182,16 @@ const OPEN_SOURCE = [
       browser reserves the box before the image loads; the CSS width wins.
 
       loading="eager", overriding <Image>'s lazy default: it is in the first
-      viewport on every load of this route.
+      viewport on every load of this route. fetchpriority="high" because it is
+      also the route's LCP element.
     */}
-    <Image class="career-watermark" src={badgeDark} alt="" loading="eager" />
+    <Image
+      class="career-watermark"
+      src={badgeDark}
+      alt=""
+      loading="eager"
+      fetchpriority="high"
+    />
 
     <div class="relative z-10 mx-auto max-w-page">
       <div class="flex flex-wrap items-baseline gap-x-5 gap-y-2">
