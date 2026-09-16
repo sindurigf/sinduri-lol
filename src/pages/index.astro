@@ -6,7 +6,7 @@ import BlogCard from '../components/BlogCard.astro';
 import HeroField from '../components/ui/HeroField.vue';
 import portrait from '../assets/photos/sinduri-studio.jpg';
 import { BLOG_CATEGORIES } from '../content.config';
-import { categoryLabel, getFeaturedPosts } from '../lib/blog';
+import { categoryAccent, categoryLabel, getFeaturedPosts } from '../lib/blog';
 import { DENSITIES, WIDTHS } from '../lib/image-densities';
 
 /*
@@ -26,45 +26,33 @@ const ROUNDEL_MARK_HEIGHT = 56;
 /*
  * The comps show four category cards; there are five categories. Derived from
  * BLOG_CATEGORIES rather than transcribed, so a category cannot go missing
- * from the homepage.
- *
- * The accent classes are written out per category rather than composed,
- * because Tailwind scans source text and would never see `border-${accent}`.
+ * from the homepage. The accent comes from categoryAccent, so a tile matches
+ * its category everywhere else on the site.
  */
 const CATEGORY_CARDS = [
   {
     category: BLOG_CATEGORIES[0],
-    tile: 'bg-gold text-background',
-    shadow: 'shadow-hard-gold-8',
     glyph: '✦',
     teaser: 'Skincare routines, products and what works for me.',
   },
   {
     category: BLOG_CATEGORIES[1],
-    tile: 'bg-cyan text-darkcyan',
-    shadow: 'shadow-hard-cyan-8',
     glyph: '✈',
     teaser: 'Places I have travelled to, from Kerala to Vienna and beyond.',
   },
   {
     category: BLOG_CATEGORIES[2],
-    tile: 'bg-pink text-background',
-    shadow: 'shadow-hard-pink-8',
     glyph: '❋',
     teaser: 'Kindness, empathy and whatever else is on my mind.',
   },
   {
     category: BLOG_CATEGORIES[3],
-    tile: 'bg-gold text-background',
-    shadow: 'shadow-hard-gold-8',
     glyph: '◆',
     teaser:
       'From civil engineering to Drupal, and what I keep learning on the way.',
   },
   {
     category: BLOG_CATEGORIES[4],
-    tile: 'bg-cyan text-darkcyan',
-    shadow: 'shadow-hard-cyan-8',
     glyph: '</>',
     teaser: 'Drupal, community events and why there is room for everyone.',
   },
@@ -338,7 +326,7 @@ const STATS = [
           <li
             class:list={[
               'card flex flex-col',
-              card.shadow,
+              categoryAccent(card.category).shadow,
               index === 0 ? 'sm:col-span-2 lg:col-span-2' : '',
             ]}
           >
@@ -346,7 +334,7 @@ const STATS = [
               aria-hidden="true"
               class:list={[
                 'flex size-16 -rotate-6 items-center justify-center border-4 border-border text-section-number font-black leading-none',
-                card.tile,
+                categoryAccent(card.category).tile,
               ]}
             >
               {card.glyph}

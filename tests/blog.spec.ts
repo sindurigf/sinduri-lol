@@ -343,3 +343,92 @@ test.describe('the category filter', () => {
     }
   });
 });
+
+/**
+ * A category is one colour everywhere it appears: its homepage tile, every
+ * post card, and the category link above a post title. Three surfaces used to
+ * keep three maps, and four of the five categories disagreed between them.
+ *
+ * The expected colours are copied here because src/lib/blog.ts reaches
+ * `astro:content`, which Playwright cannot import.
+ *
+ * Proven able to fail, 2026-09-16, chromium: with personal-thoughts mapped to
+ * gold in src/lib/blog.ts, "each homepage tile uses its category colour"
+ * failed expecting rgb(255, 0, 122) and receiving rgb(255, 192, 0).
+ */
+const GOLD = { text: 'rgb(255, 192, 0)', fill: 'rgb(255, 192, 0)' };
+const CYAN = { text: 'rgb(0, 220, 253)', fill: 'rgb(0, 220, 253)' };
+const PINK = { text: 'rgb(255, 121, 182)', fill: 'rgb(255, 0, 122)' };
+
+const CATEGORY_COLOURS: Record<string, typeof GOLD> = {
+  'open-source': GOLD,
+  'professional-journey': GOLD,
+  skincare: CYAN,
+  travel: CYAN,
+  'personal-thoughts': PINK,
+};
+
+const shadowColour = (boxShadow: string): string =>
+  boxShadow.match(/rgb\([^)]*\)/)?.[0] ?? boxShadow;
+
+const categoryOf = (href: string): string =>
+  href.replace(/^\/blog\//, '').replace(/\/$/, '');
+
+test.describe('category colours', () => {
+  test('every category has an expected colour', () => {
+    expect(Object.keys(CATEGORY_COLOURS).sort()).toEqual(
+      CATEGORY_ROUTES.map(categoryOf).sort(),
+    );
+  });
+
+  test('each homepage tile uses its category colour', async ({ page }) => {
+    await gotoSettled(page, '/');
+
+    for (const [category, colour] of Object.entries(CATEGORY_COLOURS)) {
+      const tile = page.locator('li.card', {
+        has: page.locator(`h3 a[href="/blog/${category}/"]`),
+      });
+      await expect(tile, `${category} tile`).toHaveCount(1);
+
+      const shadow = await tile.evaluate(
+        (el) => getComputedStyle(el).boxShadow,
+      );
+      expect(shadowColour(shadow), `${category} tile shadow`).toBe(colour.fill);
+
+      await expect(
+        tile.locator('span[aria-hidden="true"]').first(),
+        `${category} glyph tile`,
+      ).toHaveCSS('background-color', colour.fill);
+    }
+  });
+
+  for (const route of POST_ROUTES) {
+    test(`${route} and its card use its category colour`, async ({ page }) => {
+      await gotoSettled(page, route);
+
+      const link = page.locator('main p.label a[href^="/blog/"]').first();
+      const category = categoryOf((await link.getAttribute('href')) ?? '');
+      const colour = CATEGORY_COLOURS[category];
+      expect(colour, `unknown category "${category}"`).toBeDefined();
+      await expect(link, 'category link above the title').toHaveCSS(
+        'color',
+        colour!.text,
+      );
+
+      await gotoSettled(page, `/blog/${category}`);
+      const card = page.locator('article.card', {
+        has: page.locator(`h2 a[href^="${route}"]`),
+      });
+      await expect(card, `card for ${route}`).toHaveCount(1);
+
+      const shadow = await card.evaluate(
+        (el) => getComputedStyle(el).boxShadow,
+      );
+      expect(shadowColour(shadow), 'card shadow').toBe(colour!.fill);
+      await expect(card.locator('p.label').first(), 'card label').toHaveCSS(
+        'color',
+        colour!.text,
+      );
+    });
+  }
+});

@@ -73,6 +73,47 @@ export const categoryLabel = (category: BlogCategory | string): string => {
   return words.charAt(0).toUpperCase() + words.slice(1);
 };
 
+/*
+ * One accent per category, used by every surface that shows a category, so a
+ * category is the same colour wherever it appears. Complete class names
+ * because Tailwind scans source text: a composed `text-${accent}` is
+ * invisible to it.
+ *
+ * On `surface` #1A1A1A: gold 10.60, cyan 10.49, pink-text 7.18. `pink-text`
+ * and never `pink` for a glyph, `pink` and never `pink-text` for a fill or a
+ * shadow; see the two-pinks rule in the design system.
+ */
+const ACCENTS = {
+  gold: {
+    text: 'text-gold',
+    shadow: 'shadow-hard-gold-8',
+    tile: 'bg-gold text-background',
+  },
+  cyan: {
+    text: 'text-cyan',
+    shadow: 'shadow-hard-cyan-8',
+    tile: 'bg-cyan text-darkcyan',
+  },
+  pink: {
+    text: 'text-pink-text',
+    shadow: 'shadow-hard-pink-8',
+    tile: 'bg-pink text-background',
+  },
+} as const;
+
+export type CategoryAccent = (typeof ACCENTS)[keyof typeof ACCENTS];
+
+const CATEGORY_ACCENT: Record<BlogCategory, keyof typeof ACCENTS> = {
+  'open-source': 'gold',
+  'professional-journey': 'gold',
+  skincare: 'cyan',
+  travel: 'cyan',
+  'personal-thoughts': 'pink',
+};
+
+export const categoryAccent = (category: BlogCategory): CategoryAccent =>
+  ACCENTS[CATEGORY_ACCENT[category]];
+
 export const CATEGORY_FILTERS: readonly CategoryFilterOption[] = [
   { label: 'All posts', href: '/blog/', category: null },
   ...BLOG_CATEGORIES.map((category) => ({

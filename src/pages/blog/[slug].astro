@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BlogLayout from '../../layouts/BlogLayout.astro';
+import { categoryAccent } from '../../lib/blog';
 
 interface Props {
   post: CollectionEntry<'blog'>;
@@ -31,6 +32,7 @@ const DATE_FORMAT: Intl.DateTimeFormatOptions = {
 const formattedDate = date.toLocaleDateString(DATE_LOCALE, DATE_FORMAT);
 const machineDate = date.toISOString().slice(0, 10);
 const categoryLabel = category.replaceAll('-', ' ');
+const accent = categoryAccent(category);
 ---
 
 <BlogLayout
@@ -52,7 +54,10 @@ const categoryLabel = category.replaceAll('-', ' ');
       below does not move.
     */}
     <p class="label text-subtle">
-      <a href={`/blog/${category}/`} class="-my-2 inline-block py-2 text-gold">
+      <a
+        href={`/blog/${category}/`}
+        class:list={['-my-2 inline-block py-2', accent.text]}
+      >
         {categoryLabel}
       </a>
     </p>
