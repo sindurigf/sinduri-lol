@@ -280,8 +280,8 @@ wrong rather than quietly wrong.
 | `primary`   | `gold-text` | `gold-btn-label` | 4px `gold-text` | `shadow-hard-pink-8` |
 | `secondary` | transparent | `gold-text`      | 4px `gold-text` | none                 |
 
-Both are 13px / weight 900 / 0.1em / uppercase with 18px 34px of padding, from
-the comps. Measured, each colour against what it is actually adjacent to:
+Both are `text-button` (13px on a desktop, up to 15px on a phone) / weight 900
+/ 0.1em / uppercase with 18px 34px of padding, from the comps. Measured, each colour against what it is actually adjacent to:
 
 | Measurement                             | Ratio     | Needs |
 | --------------------------------------- | --------- | ----- |

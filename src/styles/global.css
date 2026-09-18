@@ -176,6 +176,14 @@
   --text-label: 13px;
   --text-label--line-height: 1.2;
   /*
+   * Button labels. The label size on a desktop, but larger on a phone, where
+   * a 13px uppercase label on a thumb-sized control read as too small: 15px
+   * up to about 400px wide, easing to 13px by 1200px. Fluid rather than a
+   * breakpoint step, like every other size here.
+   */
+  --text-button: clamp(13px, calc(16px - 0.25vw), 15px);
+  --text-button--line-height: 1.2;
+  /*
    * The footer's copyright line. At the 13px of `text-label` it disappeared
    * beside the 56px profile tiles; at 20px it holds its own, just under the
    * 22px of the icons inside them. One line, so the line-height is a label's.
@@ -297,7 +305,8 @@
   /*
    * Gold-surface button padding, from the comps. The vertical number is also a
    * conformance floor: a 13px label at 1.2 is a 15.6px line box, so the control
-   * renders 59.6px tall including its borders against the 24px SC 2.5.8 asks.
+   * renders 59.6px tall including its borders against the 24px SC 2.5.8 asks,
+   * and 62px on a phone, where `text-button` reaches 15px.
    * Do not reduce it below 5px without re-measuring.
    */
   --spacing-btn-gold-y: 18px;
@@ -494,14 +503,24 @@
 @layer components {
   .btn-primary {
     @apply inline-block border-4 border-border bg-gold px-8 py-4
-      text-label font-black uppercase tracking-label text-background
+      text-button font-black uppercase tracking-label text-background
       shadow-hard-pink-12;
   }
 
   .btn-secondary {
     @apply inline-block border-4 border-border bg-surface px-8 py-4
-      text-label font-black uppercase tracking-label text-text
+      text-button font-black uppercase tracking-label text-text
       shadow-hard-gold-6;
+  }
+
+  /*
+   * A row of buttons. When the row wraps, the next button would sit 16px
+   * under the one above, and that one's 12px hard shadow fills most of the
+   * gap, so two buttons read as touching. The vertical gap clears the shadow
+   * with room to spare; the horizontal one is the ordinary inline gap.
+   */
+  .actions {
+    @apply flex flex-wrap items-start gap-x-inline gap-y-8;
   }
 
   /*
@@ -1165,13 +1184,13 @@
    */
   .surface-gold .btn-gold-primary {
     @apply inline-block border-4 border-gold-text bg-gold-text
-      px-btn-gold-x py-btn-gold-y text-label font-black uppercase
+      px-btn-gold-x py-btn-gold-y text-button font-black uppercase
       tracking-label text-gold-btn-label shadow-hard-pink-8;
   }
 
   .surface-gold .btn-gold-secondary {
     @apply inline-block border-4 border-gold-text bg-transparent
-      px-btn-gold-x py-btn-gold-y text-label font-black uppercase
+      px-btn-gold-x py-btn-gold-y text-button font-black uppercase
       tracking-label text-gold-text;
   }
 

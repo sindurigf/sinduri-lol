@@ -362,9 +362,12 @@ Hard offset shadow utilities, all zero blur and zero spread:
 Defined in `@layer components` in `src/styles/global.css`:
 
 - `.btn-primary`: gold background, background-coloured text, `border-4`,
-  `12px 12px 0` pink shadow, 13px / 900 / 0.1em uppercase
+  `12px 12px 0` pink shadow, `text-button` / 900 / 0.1em uppercase.
+  `text-button` is 13px on a desktop and up to 15px on a phone
 - `.btn-secondary`: surface background, text-coloured text, `border-4`,
   `6px 6px 0` gold shadow
+- `.actions`: a row of buttons. Its 32px vertical gap clears the 12px shadow
+  when the row wraps
 - `.card`: surface background, `border-8`, 24px padding below `sm` and 40px
   from `sm` up. The split is a measure decision: at 40px a side the content box
   is 177px at a 305px viewport, where a real post title runs to six lines;
