@@ -5,7 +5,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import BlogCard from '../components/BlogCard.astro';
 import HeroField from '../components/ui/HeroField.vue';
 import portrait from '../assets/photos/sinduri-studio.jpg';
-import { BLOG_CATEGORIES } from '../content.config';
+import { BLOG_CATEGORIES, type BlogCategory } from '../content.config';
 import {
   categoryAccent,
   categoryLabel,
@@ -16,10 +16,14 @@ import { DENSITIES, WIDTHS } from '../lib/image-densities';
 
 /*
  * The name in the hero, the page description and the whole About teaser are
- * Sinduri's own words. The section headings, the featured intro and the five
- * category descriptions are drawn from her copy on /about and kept short, so
- * they claim nothing that page does not. The brand strings, the five category
+ * Sinduri's own words. The section headings and the five category
+ * descriptions are drawn from her copy on /about and kept short, so they
+ * claim nothing that page does not. The brand strings, the five category
  * names and the functional microcopy on the controls are structural, not copy.
+ *
+ * The teaser is a preview, not a second telling: the kindness line is the one
+ * /about opens its beliefs with, and the Drupal story stays at one paragraph
+ * because /about, /career and the journey post already tell it in full.
  */
 
 const FEATURED_LIMIT = 3;
@@ -31,28 +35,27 @@ const ROUNDEL_MARK_HEIGHT = 56;
 /*
  * The comps show four category cards; there are five categories. Derived from
  * BLOG_CATEGORIES rather than transcribed, so a category cannot go missing
- * from the homepage. The accent comes from categoryAccent, so a tile matches
- * its category everywhere else on the site.
+ * from the homepage, and the Record makes a category without a glyph a type
+ * error. The accent comes from categoryAccent, so a tile matches its category
+ * everywhere else on the site.
+ *
+ * The lead card spans two columns, so it goes to the topic the tagline opens
+ * with rather than to whichever category BLOG_CATEGORIES happens to list first.
  */
+const CATEGORY_GLYPHS: Record<BlogCategory, string> = {
+  skincare: '✦',
+  travel: '✈',
+  'personal-thoughts': '❋',
+  'professional-journey': '◆',
+  'open-source': '</>',
+};
+
+const LEAD_CATEGORY: BlogCategory = 'open-source';
+
 const CATEGORY_CARDS = [
-  { category: BLOG_CATEGORIES[0], glyph: '✦' },
-  {
-    category: BLOG_CATEGORIES[1],
-    glyph: '✈',
-  },
-  {
-    category: BLOG_CATEGORIES[2],
-    glyph: '❋',
-  },
-  {
-    category: BLOG_CATEGORIES[3],
-    glyph: '◆',
-  },
-  {
-    category: BLOG_CATEGORIES[4],
-    glyph: '</>',
-  },
-] as const;
+  LEAD_CATEGORY,
+  ...BLOG_CATEGORIES.filter((category) => category !== LEAD_CATEGORY),
+].map((category) => ({ category, glyph: CATEGORY_GLYPHS[category] }));
 
 /*
  * The teaser photo column: half of `max-w-page` from `lg`, the full column
@@ -197,29 +200,24 @@ const STATS = [
     </div>
 
     <div class="mx-auto max-w-page">
-      <div class="flex flex-wrap items-baseline gap-x-5 gap-y-2">
-        <span class="section-number" aria-hidden="true">
-          01
-        </span>
-        {/*
-          The tagline, as this section's heading. Sinduri's own words.
+      {/*
+        The tagline, as this section's heading. Sinduri's own words.
 
-          It is here rather than in the hero because there it was 13 to 16px
-          text over the moving field, where the stems behind it took it to
-          1.25:1 against the 4.5:1 SC 1.4.3 asks of text that size. On this
-          flat ground, at heading size, it passes.
+        It is here rather than in the hero because there it was 13 to 16px
+        text over the moving field, where the stems behind it took it to
+        1.25:1 against the 4.5:1 SC 1.4.3 asks of text that size. On this
+        flat ground, at heading size, it passes.
 
-          Two block spans, one per role, with a visually hidden comma between
-          them rather than a bare space, so anything reading the text gets
-          "Open Source Enthusiast, Positivity Advocate" and not one run-on
-          string. Same reason as the `{' '}` in the <h1> above.
-        */}
-        <h2 class="text-h2 text-text">
-          <span class="block">Open Source Enthusiast</span>
-          <span class="sr-only">,</span>{' '}
-          <span class="block">Positivity Advocate</span>
-        </h2>
-      </div>
+        Two block spans, one per role, with a visually hidden comma between
+        them rather than a bare space, so anything reading the text gets
+        "Open Source Enthusiast, Positivity Advocate" and not one run-on
+        string. Same reason as the `{' '}` in the <h1> above.
+      */}
+      <h2 class="text-h2 text-text">
+        <span class="block">Open Source Enthusiast</span>
+        <span class="sr-only">,</span>{' '}
+        <span class="block">Positivity Advocate</span>
+      </h2>
 
       <div class="mt-16 grid gap-16 lg:grid-cols-2 lg:items-start">
         <div class="relative">
@@ -253,13 +251,7 @@ const STATS = [
 
         <div class="card mt-12 shadow-hard-pink-8 lg:mt-16">
           <p class="text-h3 font-bold text-text text-pretty">
-            Civil engineer, environmental engineer, and then Vienna, where my
-            tech journey began.
-          </p>
-
-          <p class="mt-8 text-body text-muted text-pretty">
-            I found Drupal in 2021, and the community has held my heart ever
-            since. I help organise events and serve on the Drupal Austria board.
+            We should all be a bit kinder and more empathetic.
           </p>
 
           <ul class="mt-10 grid gap-6 sm:grid-cols-2">
@@ -277,8 +269,9 @@ const STATS = [
           </ul>
 
           <p class="mt-10 text-body text-muted text-pretty">
-            I believe everything can be said with empathy and kindness, and I
-            try to live that at work, in the community and with my friends.
+            I discovered Drupal in 2021, and the community has held my heart
+            ever since. I help organise events and serve on the Drupal Austria
+            board.
           </p>
 
           <p class="mt-10">
@@ -301,17 +294,7 @@ const STATS = [
 
     <div class="mx-auto max-w-page">
       <div class="flex flex-wrap items-end justify-between gap-8">
-        <div>
-          <p class="pill">
-            <span class="label-wide text-gold">Topics</span>
-          </p>
-          <div class="mt-6 flex flex-wrap items-baseline gap-x-5 gap-y-2">
-            <span class="section-number" aria-hidden="true">
-              02
-            </span>
-            <h2 class="text-h2 text-text">What I write about</h2>
-          </div>
-        </div>
+        <h2 class="text-h2 text-text">What I write about</h2>
         <a href="/blog/" class="btn-secondary">
           View all posts
         </a>
@@ -363,17 +346,7 @@ const STATS = [
     </div>
 
     <div class="mx-auto max-w-page">
-      <div class="flex flex-wrap items-baseline gap-x-5 gap-y-2">
-        <span class="section-number" aria-hidden="true">
-          03
-        </span>
-        <h2 class="text-h2 text-text">Featured posts</h2>
-      </div>
-
-      <p class="mt-8 max-w-2xl text-body text-muted text-pretty">
-        Where I would start: my path into Drupal, and what I have learned about
-        the open source communities around it.
-      </p>
+      <h2 class="text-h2 text-text">Featured posts</h2>
 
       {/*
         As many columns as there are featured posts, up to FEATURED_LIMIT, so
@@ -404,6 +377,15 @@ const STATS = [
           </li>
         ))}
       </ul>
+
+      <p class="mt-14 flex flex-wrap gap-6">
+        <a href="/career/" class="btn-primary">
+          See my career
+        </a>
+        <a href="/contact/" class="btn-secondary">
+          Get in touch
+        </a>
+      </p>
     </div>
   </section>
 </BaseLayout>
