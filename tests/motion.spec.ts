@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { gotoSettled } from './settle';
+import { gotoSettled, sweepTimeout } from './settle';
 import { readFileSync } from 'node:fs';
 import { builtPages, islandRoutesFromBuild, ROUTES } from './routes';
 import { MIN_TARGET } from './wcag';
@@ -678,7 +678,9 @@ test.describe('the hero field on /', () => {
  * Elements still moving under the preference across ROUTES, 2026-09-05: zero.
  * Recorded so a later non-zero reads as a change.
  */
+
 test('nothing anywhere still moves under reduced motion', async ({ page }) => {
+  test.setTimeout(sweepTimeout(ROUTES.length));
   await page.emulateMedia({ reducedMotion: 'reduce' });
 
   const moving: string[] = [];

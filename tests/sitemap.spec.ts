@@ -265,27 +265,33 @@ test.describe('robots.txt and the sitemap', () => {
    * green sitemap test asserting the page is hidden, while the page asks to be
    * listed everywhere a crawler finds a link to it.
    *
+   * Every excluded route but `/404`, which is served with a 404 status and says
+   * nothing more: the tag listings, the empty categories and the contact
+   * confirmation are all served with a 200.
+   *
    * Proven able to fail, 2026-09-18, chromium: with the `noindex` prop removed
    * from the tag route this failed on /blog/tag/career missing the meta tag;
    * with the TAG_PREFIX check removed from src/lib/sitemap-filter.ts it failed
-   * on /blog/tag/career being advertised. It stops at the first tag either
-   * way, so the message names one route and the cause is in every one.
+   * on /blog/tag/career being advertised. It stops at the first route either
+   * way, so the message names one route and the cause may be in several.
    */
-  test('the tag listings are not advertised', () => {
+  test('every page kept out of the sitemap says noindex itself', () => {
     const listed = sitemapPaths(configuredSite());
     const pages = builtHtml();
 
-    for (const route of TAG_ROUTES) {
+    for (const route of EXCLUDED_ROUTES.filter((r) => r !== '/404')) {
       expect(
         listed.includes(asSitemapPath(route)),
         `the sitemap advertises ${route}, which asks not to be indexed`,
       ).toBe(false);
 
       expect(
-        pages.get(route) ?? '',
+        /<meta name="robots" content="([^"]*)">/.exec(
+          pages.get(route) ?? '',
+        )?.[1],
         `${route} is kept out of the sitemap, so it has to say noindex ` +
-          'itself: a crawler reaching it from a post would otherwise list it.',
-      ).toContain('<meta name="robots" content="noindex, follow">');
+          'itself: a crawler reaching it from a link would otherwise list it.',
+      ).toBe('noindex, follow');
     }
   });
 
