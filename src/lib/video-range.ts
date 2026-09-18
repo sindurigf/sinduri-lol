@@ -18,7 +18,7 @@ import {
  * still served by the asset layer directly.
  */
 
-export const VIDEO_PATH_PREFIX = '/videos/';
+const VIDEO_PATH_PREFIX = '/videos/';
 
 /*
  * Byte sizes by URL, recorded by astro.config.mjs at build time: the ASSETS

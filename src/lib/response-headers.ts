@@ -58,7 +58,7 @@ if (Object.keys(parsed).length === 0) {
 }
 
 /** Every `/*` header from public/_headers, for a response the Worker builds. */
-export const GLOBAL_HEADERS: Readonly<Record<string, string>> = parsed;
+const GLOBAL_HEADERS: Readonly<Record<string, string>> = parsed;
 
 /** Applies them to a response's headers, leaving anything already set alone. */
 export const applyGlobalHeaders = (headers: Headers): Headers => {

@@ -21,7 +21,7 @@ up; everything else works under `npm run dev`.
 
 | Command                      | Does                                                           |
 | ---------------------------- | -------------------------------------------------------------- |
-| `npm run dev`                | Dev server at `http://localhost:4321`                          |
+| `npm run dev`                | Dev server at `http://localhost:4340`                          |
 | `npm run build`              | Build to `dist/client` (assets) and `dist/server` (Worker)     |
 | `npm run preview`            | Serve the build through the Worker runtime                     |
 | `npm run typecheck`          | `astro check`                                                  |
@@ -39,6 +39,13 @@ hand after a deploy, never in CI. `check:umami` reads Umami's site and runs by
 hand at least monthly; [DEPLOYMENT.md](DEPLOYMENT.md#umami) says what to do when
 it fails. [AGENTS.md](../AGENTS.md) lists what has to
 pass before a change is done.
+
+Two environment variables, both optional:
+
+- `LIVE_ORIGIN` points `check:live:console` at another deployment, such as a
+  preview URL. It defaults to `https://sinduri.lol`.
+- `PORT` sets the port of `node scripts/preview-static.mjs` when you run it by
+  hand. It defaults to 4321. `test:a11y` always uses 4321 and ignores it.
 
 `dev` and `build` pass `--force`, which clears Astro's content cache. Astro
 invalidates that cache when the Astro config, the content config or its own

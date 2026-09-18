@@ -19,14 +19,16 @@ one page, so its checks below wait for a tenth post.
 **Setup.**
 
 ```sh
-npm run build && npm run preview   # http://localhost:4321
+npm run build && npm run preview   # http://localhost:4340
 ```
 
-**Stop that server before running `npm run test:a11y`.** The suite now sets
-`reuseExistingServer: false`, so it always builds and serves its own copy and
-refuses to start over a server already on :4321. That is deliberate: reusing
-one meant skipping `npm run build`, so a run could pass against the previous
-build. `astro preview stop` clears it.
+`dev` and `preview` serve on 4340, set in `astro.config.mjs`, so this server
+can stay up while `npm run test:a11y` and `npm run test:worker` run. Those two
+bind 4321 and 4322 with `reuseExistingServer: false`, so each always builds
+and serves its own copy and refuses to start over anything already on its
+port. If 4340 is taken, Astro moves to the next free port and its log says
+which. The daemon's own "running at" line repeats 4340 regardless, so read
+`astro preview logs`.
 
 Record results in section 7 of [ACCESSIBILITY.md](../ACCESSIBILITY.md). A gap
 is closed by testing it, not by fixing it.
@@ -42,7 +44,7 @@ cause is almost never the page:
   version produced a number.
 - A stale server. Astro 7 backgrounds `dev` and `preview` when it detects an AI
   coding agent, so a daemon from an earlier session can still be answering on
-  :4321 while you believe you are looking at a fresh build.
+  :4340 while you believe you are looking at a fresh build.
   `ps aux | grep astro`.
 - Zoom and text scaling left set from the previous section. §3 and §7 both
   change it, and neither resets it for you.
@@ -262,7 +264,7 @@ the Firefox snap). It is present on this machine at version 155.
 Build and serve, in one terminal:
 
 ```sh
-npm run build && npm run preview   # http://localhost:4321
+npm run build && npm run preview   # http://localhost:4340
 ```
 
 Start Orca with a log, in a second terminal:
@@ -384,7 +386,7 @@ from the one being asked. Read the value, write it down, and leave it on
 
 **6.4.2 A nav link, Firefox.** The control.
 
-1. Firefox at 1280px, full screen, on `http://localhost:4321/about`.
+1. Firefox at 1280px, full screen, on `http://localhost:4340/about`.
 2. Click once on empty page background, so the reading cursor is in the
    document rather than in the browser chrome.
 3. `Ctrl+Home`.
@@ -443,7 +445,7 @@ case.
 - [ ] A heading. `/privacy`, `Ctrl+Home`, then `H` to the `<h1>`, which reads
       `Privacy` in the markup.
       Heard: `___________________________________________`
-- [ ] A button label. `http://localhost:4321/404`, then `K` to "Go to the
+- [ ] A button label. `http://localhost:4340/404`, then `K` to "Go to the
       homepage", which `.btn-primary` uppercases.
       Heard: `___________________________________________`
 - [ ] The 6.4.3 link again at the other verbosity: `Orca+V`, repeat, `Orca+V`
@@ -461,7 +463,7 @@ and not only focus. A skip link that moves the sequential focus point but
 leaves the screen reader's cursor at the top of the document has skipped
 nothing for the person using it.
 
-Firefox at 1280px on `http://localhost:4321/`. Click into the address bar, then
+Firefox at 1280px on `http://localhost:4340/`. Click into the address bar, then
 press `Tab` once.
 
 - [ ] It is announced, and it is the first thing announced.
@@ -488,7 +490,7 @@ Press `Enter`.
 
 ### 6.6 Header, footer, landmarks and headings
 
-Firefox at 1280px on `http://localhost:4321/about`.
+Firefox at 1280px on `http://localhost:4340/about`.
 
 **Counts measured 2026-09-11 against the build, at 1280px with JavaScript on.**
 Both conditions matter. At that width `MobileMenu`'s island is `md:hidden`, so
@@ -552,7 +554,7 @@ at 320. **Detach the developer tools into their own window first** (the tools'
 meatball menu → Dock side → Separate Window): a docked panel sits in the same
 accessibility tree as the page, and Orca will read into it.
 
-Firefox at 320px on `http://localhost:4321/`. `Ctrl+Home`, then `Tab` three
+Firefox at 320px on `http://localhost:4340/`. `Ctrl+Home`, then `Tab` three
 times: skip link, logo, menu button. The desktop nav is `display: none` here,
 so it is not in the way.
 
@@ -600,7 +602,7 @@ so it is not in the way.
 
 ### 6.8 A blog post: heading order and landmarks
 
-`http://localhost:4321/blog/open-source-is-not-just-code`, Firefox at 1280px.
+`http://localhost:4340/blog/open-source-is-not-just-code`, Firefox at 1280px.
 It is the one real post, the largest page in the build, and the route with the
 most headings: 26, across three levels. The copy is real English, so the words
 are worth listening to as well as the structure.
@@ -651,7 +653,7 @@ nested under its own `h2`.
 
 ### 6.9 The 404 page
 
-`http://localhost:4321/404`, Firefox at 1280px. This page answers every wrong
+`http://localhost:4340/404`, Firefox at 1280px. This page answers every wrong
 address on the deployed site, so it is the one page someone can arrive at with
 no idea why. Whether the announcement says so is the entire check.
 
