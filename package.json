@@ -6,8 +6,8 @@
     "node": ">=22.19.0"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "astro dev --force",
+    "build": "astro build --force",
     "preview": "astro preview",
     "typecheck": "astro check",
     "format": "prettier --write .",
