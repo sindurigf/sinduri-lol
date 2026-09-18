@@ -847,6 +847,19 @@ the spec did not send the header. `tests/contact.spec.ts` now does.
 listing them is what lets the Worker answer byte ranges the asset layer
 ignores. See Photos and video.
 
+### Speculation rules
+
+`Speculation-Rules: "/speculationrules.json"` prefetches a same-origin page
+once a pointer rests on its link, in Chromium. The rules are a file named by a
+header rather than an inline `<script type="speculationrules">`, because the
+file is outside the CSP while the inline block would need a hash that goes
+stale on every edit. They prefetch and never prerender: a prerendered page runs
+the Umami tracker, which would count a visit nobody made. They leave out
+`/contact/send/`, `/videos/`, PDFs and download links. The file's own rule in
+`_headers` sets `application/speculationrules+json`, without which Chromium
+loads no rule set at all; `tests/served-types.spec.ts` checks both through the
+Worker.
+
 ### The CSP
 
 ```text

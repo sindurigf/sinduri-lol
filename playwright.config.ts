@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import { TEST_PORT } from './tests/ports';
+import { WORKER_SPECS } from './playwright.worker.config';
 
 /*
  * WebKit is defined in CI, and locally only when asked for. The note on
@@ -76,7 +77,7 @@ export default defineConfig({
   testDir: './tests',
   /* Needs the Worker, which this suite's static server is not; see
    * playwright.worker.config.ts. */
-  testIgnore: ['contact.spec.ts', 'video-range.spec.ts'],
+  testIgnore: [...WORKER_SPECS],
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   /*

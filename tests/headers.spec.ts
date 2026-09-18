@@ -83,6 +83,12 @@ const ASSET_PATTERN = '/_astro/*';
 const VENDOR_PATTERN = '/vendor/*';
 
 /**
+ * The speculation rules file. Its own rule only sets the Content-Type a
+ * browser requires before it will read the rules.
+ */
+const SPECULATION_PATTERN = '/speculationrules.json';
+
+/**
  * The one header two rules may both set, because `/_astro/*` detaches the
  * value `/*` gave it before setting its own. public/_headers says why.
  */
@@ -445,13 +451,18 @@ test.describe('security headers', () => {
     await new Promise<void>((done) => server.close(() => done()));
   });
 
-  test('the build ships the three rules this file knows about', () => {
+  test('the build ships the four rules this file knows about', () => {
     expect(
       rules.map((rule) => rule.pattern),
       'a rule was added or renamed. Every rule has to be understood here, ' +
         'because the ones this test does not know about are the ones that ' +
         'can collide with the others in production and not in CI.',
-    ).toEqual([GLOBAL_PATTERN, ASSET_PATTERN, VENDOR_PATTERN]);
+    ).toEqual([
+      GLOBAL_PATTERN,
+      ASSET_PATTERN,
+      VENDOR_PATTERN,
+      SPECULATION_PATTERN,
+    ]);
 
     expect(
       matches(VENDOR_PATTERN, UMAMI_SCRIPT_PATH),

@@ -130,6 +130,18 @@
 # carries the same sitemap and feed links, for readers handed HTML.
 #
 # ---------------------------------------------------------------------------
+# `Speculation-Rules` points at /speculationrules.json, which prefetches a
+# same-origin page once a pointer rests on its link. A rules file named by this
+# header is not subject to the CSP, where an inline
+# `<script type="speculationrules">` would need a hash that goes stale on every
+# edit. Prefetch, never prerender: a prerendered page runs the vendored Umami
+# tracker, which does not check `document.prerendering`, and would count a
+# visit nobody made. The file must be served as
+# `application/speculationrules+json` or the browser ignores it, hence the rule
+# for it below; `tests/served-types.spec.ts` checks the asset worker honours
+# it. Chromium only, so it is an enhancement and nothing depends on it.
+#
+# ---------------------------------------------------------------------------
 # The site is open to search indexes since 2026-09-14. It was closed by
 # `X-Robots-Tag: noindex` here until launch. If it ever needs closing again,
 # use that header rather than `Disallow` in robots.txt: a crawler told not to
@@ -145,6 +157,7 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin
   Cache-Control: no-transform
+  Speculation-Rules: "/speculationrules.json"
   Link: </llms.txt>; rel="describedby"; type="text/plain", </sitemap-index.xml>; rel="sitemap"; type="application/xml", </rss.xml>; rel="alternate"; type="application/rss+xml"
 
 # Build output, and only build output. Every filename Vite emits here carries a
@@ -169,3 +182,8 @@
 # it is vendored.
 /vendor/*
   ! Cache-Control
+
+# The speculation rules file. Its type decides whether a browser reads it at
+# all; see the note above.
+/speculationrules.json
+  Content-Type: application/speculationrules+json
