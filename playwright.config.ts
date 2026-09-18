@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { TEST_PORT } from './tests/ports';
 
 /*
  * WebKit is defined in CI, and locally only when asked for. The note on
@@ -68,7 +69,7 @@ const FIREFOX_PREFS = {
   'browser.tabs.remote.useCrossOriginOpenerPolicy': false,
 };
 
-const PORT = 4321;
+const PORT = TEST_PORT;
 const BASE_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({

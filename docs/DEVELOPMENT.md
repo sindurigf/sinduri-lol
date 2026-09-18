@@ -40,12 +40,16 @@ hand at least monthly; [DEPLOYMENT.md](DEPLOYMENT.md#umami) says what to do when
 it fails. [AGENTS.md](../AGENTS.md) lists what has to
 pass before a change is done.
 
-Two environment variables, both optional:
+Four environment variables, all optional:
 
 - `LIVE_ORIGIN` points `check:live:console` at another deployment, such as a
   preview URL. It defaults to `https://sinduri.lol`.
 - `PORT` sets the port of `node scripts/preview-static.mjs` when you run it by
-  hand. It defaults to 4321. `test:a11y` always uses 4321 and ignores it.
+  hand. It defaults to 4321. `test:a11y` ignores it and uses `TEST_PORT`.
+- `TEST_PORT` and `TEST_WORKER_PORT` move `test:a11y` and `test:worker` off
+  their defaults, 4321 and 4322. Set them when another checkout on the same
+  machine is running its suites: `TEST_PORT=4331 TEST_WORKER_PORT=4332 npm run
+test:a11y`. A value that is not a port from 1024 to 65535 stops the run.
 
 `dev` and `build` pass `--force`, which clears Astro's content cache. Astro
 invalidates that cache when the Astro config, the content config or its own

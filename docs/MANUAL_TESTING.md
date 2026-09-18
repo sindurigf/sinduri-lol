@@ -24,7 +24,8 @@ npm run build && npm run preview   # http://localhost:4340
 
 `dev` and `preview` serve on 4340, set in `astro.config.mjs`, so this server
 can stay up while `npm run test:a11y` and `npm run test:worker` run. Those two
-bind 4321 and 4322 with `reuseExistingServer: false`, so each always builds
+bind 4321 and 4322 by default (`TEST_PORT` and `TEST_WORKER_PORT` move them;
+see [DEVELOPMENT.md](DEVELOPMENT.md)) with `reuseExistingServer: false`, so each always builds
 and serves its own copy and refuses to start over anything already on its
 port. If 4340 is taken, Astro moves to the next free port and its log says
 which. The daemon's own "running at" line repeats 4340 regardless, so read

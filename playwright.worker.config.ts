@@ -1,4 +1,5 @@
 import { defineConfig } from '@playwright/test';
+import { TEST_WORKER_PORT } from './tests/ports';
 
 /*
  * The one spec that needs the Worker: tests/contact.spec.ts, which POSTs to the
@@ -18,7 +19,7 @@ import { defineConfig } from '@playwright/test';
  * already has it.
  */
 
-const PORT = 4322;
+const PORT = TEST_WORKER_PORT;
 
 /*
  * The notification recipient, a secret in production. Passed as process env,

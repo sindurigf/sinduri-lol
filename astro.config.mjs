@@ -36,9 +36,9 @@ const videoSizes = existsSync(VIDEO_DIR)
 const posts = readPosts();
 
 /*
- * For `dev` and `preview`. Kept off 4321 and 4322, which `test:a11y` and
- * `test:worker` bind with `reuseExistingServer: false`: a local server on
- * either stops those suites starting.
+ * For `dev` and `preview`. Kept off 4321 and 4322, the default ports
+ * `test:a11y` and `test:worker` bind with `reuseExistingServer: false`: a local
+ * server on either stops those suites starting.
  */
 const LOCAL_SERVER_PORT = 4340;
 
