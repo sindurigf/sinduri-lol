@@ -1,4 +1,5 @@
 import {
+  type ByteRange,
   UNSATISFIABLE,
   WHOLE_FILE,
   contentRange,
@@ -85,6 +86,52 @@ const rangeStillValid = (request: Request, asset: Response): boolean => {
   return ifRange === asset.headers.get('ETag');
 };
 
+type Body = ReadableStream<Uint8Array>;
+
+const drained = async (body: Body): Promise<null> => {
+  await body.cancel();
+  return null;
+};
+
+const wholeFile = async (
+  asset: Response,
+  body: Body,
+  headers: Headers,
+  size: number,
+  isHead: boolean,
+): Promise<Response> =>
+  new Response(isHead ? await drained(body) : withLength(body, size), {
+    status: asset.status,
+    headers,
+  });
+
+const unsatisfiable = async (
+  body: Body,
+  headers: Headers,
+  size: number,
+): Promise<Response> => {
+  await drained(body);
+  headers.set('Content-Range', unsatisfiedRange(size));
+  headers.delete('Content-Length');
+  return new Response(null, { status: HTTP_RANGE_NOT_SATISFIABLE, headers });
+};
+
+const partial = async (
+  body: Body,
+  headers: Headers,
+  range: ByteRange,
+  size: number,
+  isHead: boolean,
+): Promise<Response> => {
+  const length = range.end - range.start + 1;
+  headers.set('Content-Range', contentRange(range, size));
+  headers.set('Content-Length', String(length));
+  return new Response(
+    isHead ? await drained(body) : withLength(sliceStream(body, range), length),
+    { status: HTTP_PARTIAL_CONTENT, headers },
+  );
+};
+
 export const serveVideo = async (
   request: Request,
   assets: AssetsBinding,
@@ -95,7 +142,8 @@ export const serveVideo = async (
   const isHead = request.method === 'HEAD';
 
   const size = __VIDEO_SIZES__[new URL(request.url).pathname] ?? 0;
-  if (!asset.ok || asset.body === null || size <= 0) return asset;
+  const { body } = asset;
+  if (!asset.ok || body === null || size <= 0) return asset;
 
   const headers = new Headers(asset.headers);
   headers.set('Accept-Ranges', 'bytes');
@@ -106,31 +154,8 @@ export const serveVideo = async (
     : WHOLE_FILE;
 
   if (range === WHOLE_FILE) {
-    if (isHead) await asset.body.cancel();
-    return new Response(isHead ? null : withLength(asset.body, size), {
-      status: asset.status,
-      headers,
-    });
+    return wholeFile(asset, body, headers, size, isHead);
   }
-
-  if (range === UNSATISFIABLE) {
-    await asset.body.cancel();
-    headers.set('Content-Range', unsatisfiedRange(size));
-    headers.delete('Content-Length');
-    return new Response(null, { status: HTTP_RANGE_NOT_SATISFIABLE, headers });
-  }
-
-  const length = range.end - range.start + 1;
-  headers.set('Content-Range', contentRange(range, size));
-  headers.set('Content-Length', String(length));
-
-  if (isHead) {
-    await asset.body.cancel();
-    return new Response(null, { status: HTTP_PARTIAL_CONTENT, headers });
-  }
-
-  return new Response(withLength(sliceStream(asset.body, range), length), {
-    status: HTTP_PARTIAL_CONTENT,
-    headers,
-  });
+  if (range === UNSATISFIABLE) return unsatisfiable(body, headers, size);
+  return partial(body, headers, range, size, isHead);
 };
