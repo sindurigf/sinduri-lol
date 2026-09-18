@@ -1,12 +1,13 @@
 ---
+import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
-import bunnyDark from '../assets/bunny-dark.png';
+import Roundel from './Roundel.astro';
+import { WIDTHS } from '../lib/image-densities';
 
 /*
- * The opening of a section page: Career, Credits, and Blog with every
- * listing under it. A dark plate tilted half a degree, like the stickers on
- * the homepage, with a thin `border` edge and a hard gold shadow, and the
- * bunny roundel from the homepage and /about on its bottom corner. The
+ * The opening of every page except Home and 404. A dark plate tilted half a
+ * degree, like the stickers on the homepage, with a thin `border` edge and a
+ * hard gold shadow, and the bunny roundel on its bottom corner. The
  * plate's own edge and shadow end the hero; nothing else separates it from
  * the page. The tilt lives in `.page-hero-plate` in global.css.
  *
@@ -26,49 +27,103 @@ interface Props {
   /*
    * `h2` for a title that is data rather than a chosen string: a tag is one
    * long word no soft hyphen can be written into, and `text-h1`'s 33px floor
-   * does not fit `sustainability` in the 273px box. The level stays h1.
+   * does not fit `sustainability` in the 273px box. `post` for a blog post's
+   * title; see `--text-post-h1`. The level stays h1 in every case.
    */
-  titleSize?: 'h1' | 'h2';
+  titleSize?: 'h1' | 'h2' | 'post';
+  /*
+   * A page that opens with a photo. The plate keeps its size and sits over
+   * the photo's left edge, with the roundel on the seam between them, rather
+   * than taking the photo inside it: inside, the plate grew to the photo's
+   * height and the photo shrank to a thumbnail.
+   */
+  image?: ImageMetadata;
+  imageAlt?: string;
 }
 
-const { title, titleSize = 'h1' } = Astro.props;
+const { title, titleSize = 'h1', image, imageAlt = '' } = Astro.props;
 
-const TITLE_CLASS = { h1: 'text-h1', h2: 'text-h2' } as const;
+const TITLE_CLASS = {
+  h1: 'text-h1',
+  h2: 'text-h2',
+  post: 'text-post-h1',
+} as const;
 
 /*
- * The mark is drawn `h-12` in the `size-24` roundel below `lg` and `h-16` in
- * the `size-32` one from it, so its files are chosen by drawn width: 458x900
- * at 48px and 64px tall is about 25px and 33px wide. tests/image-size.spec.ts
- * fails when these drift from the classes.
+ * A page can replace the roundel with its own corner mark, as Contact does
+ * with the spinning badge. The badge is larger, so the plate reserves more
+ * room beside and below it.
  */
-const ROUNDEL_MARK_WIDTHS = [25, 33, 50, 66];
-const ROUNDEL_MARK_SIZES = '(min-width: 64rem) 33px, 25px';
+const hasOwnMark = Astro.slots.has('mark');
+
+/*
+ * The photo column: five of twelve tracks of `max-w-page` from `lg`, the full
+ * column below it, net of the gutter. Only used to pick a file from WIDTHS;
+ * tests/image-size.spec.ts fails when it drifts from the layout.
+ */
+const IMAGE_SIZES =
+  '(min-width: 64rem) min(calc((100vw - 3rem) * 0.4167), 33.34rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)';
 ---
 
 {/*
-  `pb-16` and `lg:pb-20` are the roundel's overhang below the plate, half of
-  its 96px and 128px plus its 8px shadow, so the next section starts clear.
+  The bottom padding is the mark's overhang below the plate: half the roundel's
+  96px and 128px, or the badge's 160px and 192px, plus its 8px shadow, so the
+  next section starts clear. With a photo the plate is not the lowest thing,
+  so the photo's own caption ends the hero.
 */}
-<section class="band overflow-x-clip pb-16 pt-16 lg:pb-20 lg:pt-20">
-  <div class="mx-auto max-w-page">
-    <div class="page-hero-plate relative -mx-4 border-4 border-border bg-surface px-4 pb-20 pt-10 shadow-hard-gold-8 sm:mx-0 sm:p-card sm:pb-24 lg:pb-card lg:pr-48">
+<section
+  class:list={[
+    'band overflow-x-clip pt-16 lg:pt-20',
+    image ? 'pb-10' : hasOwnMark ? 'pb-24 lg:pb-28' : 'pb-16 lg:pb-20',
+  ]}
+>
+  <div
+    class:list={[
+      'mx-auto max-w-page',
+      image && 'lg:grid lg:grid-cols-12 lg:items-center',
+    ]}
+  >
+    <div
+      class:list={[
+        'page-hero-plate relative -mx-4 border-4 border-border bg-surface px-4 pb-20 pt-10 shadow-hard-gold-8 sm:mx-0 sm:p-card sm:pb-24 lg:pb-card',
+        image
+          ? 'z-10 lg:col-span-8 lg:col-start-1 lg:row-start-1 lg:pr-28'
+          : hasOwnMark
+            ? 'sm:pb-28 lg:pr-64'
+            : 'lg:pr-48',
+      ]}
+    >
       <div class="page-hero-level">
         <slot name="eyebrow" />
         <h1 class:list={[TITLE_CLASS[titleSize], 'text-gold']}>{title}</h1>
         <slot />
       </div>
 
-      {/* alt="" because the header wordmark already names the site. */}
-      <span class="absolute bottom-0 right-4 flex size-24 translate-y-1/2 rotate-12 items-center justify-center rounded-full border-8 border-border bg-gold shadow-hard-cyan-8 sm:right-10 lg:size-32">
-        <Image
-          src={bunnyDark}
-          alt=""
-          widths={ROUNDEL_MARK_WIDTHS}
-          sizes={ROUNDEL_MARK_SIZES}
-          loading="eager"
-          class="h-12 w-auto lg:h-16"
-        />
-      </span>
+      <div
+        class:list={[
+          'absolute bottom-0 right-4 translate-y-1/2 sm:right-10',
+          image && 'lg:right-0 lg:translate-x-1/2',
+        ]}
+      >
+        {hasOwnMark ? <slot name="mark" /> : <Roundel eager />}
+      </div>
     </div>
+
+    {image && (
+      <figure class="mt-20 lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:mt-0">
+        <Image
+          src={image}
+          alt={imageAlt}
+          widths={WIDTHS}
+          sizes={IMAGE_SIZES}
+          loading="eager"
+          fetchpriority="high"
+          class="block h-auto w-full border-4 border-border object-cover"
+        />
+        <figcaption class="mt-3 text-body text-muted">
+          <slot name="credit" />
+        </figcaption>
+      </figure>
+    )}
   </div>
 </section>
