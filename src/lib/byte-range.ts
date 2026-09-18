@@ -24,6 +24,13 @@ export type RangeResult = ByteRange | typeof WHOLE_FILE | typeof UNSATISFIABLE;
 
 const SINGLE_BYTE_RANGE = /^bytes=(\d*)-(\d*)$/;
 
+/* `bytes=-500`: the final 500 bytes. */
+const suffixRange = (last: string, size: number): RangeResult => {
+  const suffix = Number(last);
+  if (suffix === 0) return UNSATISFIABLE;
+  return { start: Math.max(0, size - suffix), end: size - 1 };
+};
+
 export const parseRange = (
   header: string | null,
   size: number,
@@ -36,15 +43,9 @@ export const parseRange = (
   const [, first = '', last = ''] = match;
   if (first === '' && last === '') return WHOLE_FILE;
 
+  if (first === '') return suffixRange(last, size);
+
   const lastByte = size - 1;
-
-  /* `bytes=-500`: the final 500 bytes. */
-  if (first === '') {
-    const suffix = Number(last);
-    if (suffix === 0) return UNSATISFIABLE;
-    return { start: Math.max(0, size - suffix), end: lastByte };
-  }
-
   const start = Number(first);
   if (start > lastByte) return UNSATISFIABLE;
 
