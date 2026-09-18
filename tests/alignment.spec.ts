@@ -1,6 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { POST_ROUTES, ROUTES } from './routes';
-import { sweepTimeout } from './settle';
+import { ROUTES } from './routes';
 
 /**
  * The header, <main> and the footer put their content on the same two vertical
@@ -72,49 +71,16 @@ const VIEWPORT_HEIGHT = 900;
  */
 const EPSILON = 0.5;
 
-/**
- * Blog posts set their own, narrower measure.
- *
- * `src/pages/blog/[slug].astro` wraps its body in a prose column rather than
- * the page column, because a full-width column is the wrong line length for
- * continuous reading. These routes have no page column in <main> at all, so
- * they get the containment assertion below instead: the narrow column sits
- * inside the page column and centred on it, rather than wandering off its own
- * way.
- *
- * The list is imported rather than retyped, and the "exception list matches
- * the build" test below derives the real set from the rendered pages and
- * compares, so a page that silently loses its column fails there rather than
- * quietly skipping the alignment assertion forever.
- */
-const PROSE_COLUMN_ROUTES: readonly string[] = POST_ROUTES;
-
 type Edges = { left: number; right: number };
 type RegionColumns = {
   page: Edges | null;
-  /**
-   * The first bounded element in document order, so the OUTERMOST bounded
-   * column and not the innermost: querySelectorAll walks the tree in
-   * pre-order, so an ancestor comes back before its descendants.
-   *
-   * Outermost is the column the region itself establishes, which is what the
-   * containment and centring assertions below are about. On a prose route it
-   * is also the measure today, because src/pages/blog/[slug].astro wraps the
-   * post directly in `max-w-3xl`; a narrower wrapper would move this
-   * measurement to the wrapper and still ask a true question about the
-   * region's own column.
-   *
-   * A wrapper as wide as the page column would stop the route being a prose
-   * route at all, and that is caught elsewhere: `page` above would stop
-   * being null, and the PROSE_COLUMN_ROUTES branch below requires null.
-   */
-  outerColumn: Edges | null;
   hasRegion: boolean;
 };
 
 /**
- * The page column inside a landmark, plus the outermost bounded column of
- * any width.
+ * The page column inside a landmark. Every route has one: blog posts used to
+ * set a narrower measure instead, and since they open with PageHero they share
+ * the page column like everything else.
  *
  * The page column is identified by its used max-width matching
  * `--container-page`, resolved through the root font size because the token is
@@ -128,7 +94,7 @@ const columnsIn = async (
 ): Promise<RegionColumns> =>
   page.evaluate((sel) => {
     const region = document.querySelector(sel);
-    if (!region) return { page: null, outerColumn: null, hasRegion: false };
+    if (!region) return { page: null, hasRegion: false };
 
     const rootPx = parseFloat(
       getComputedStyle(document.documentElement).fontSize,
@@ -161,7 +127,6 @@ const columnsIn = async (
 
     return {
       page: pageColumn ? edgesOf(pageColumn) : null,
-      outerColumn: bounded.length ? edgesOf(bounded[0]) : null,
       hasRegion: true,
     };
   }, selector);
@@ -189,42 +154,6 @@ const expectEdgesMatchHeader = (
   expect(
     Math.abs(edges.right - hdr.right),
     `${name} and header disagree on the right edge, ${report(edges)}`,
-  ).toBeLessThanOrEqual(EPSILON);
-};
-
-/*
- * A prose route: main deliberately has no page column, so the
- * assertion is containment rather than equality. The measure must
- * sit inside the page column and be centred on it, which is what
- * says it is a narrower column of the same layout rather than a
- * column that has drifted out of it.
- */
-const expectProseInsidePageColumn = (
-  route: string,
-  main: RegionColumns,
-  hdr: Edges,
-  report: Report,
-): void => {
-  expect(
-    main.page,
-    `${route} is listed as a prose route but <main> has a page ` +
-      `column; either the page changed or PROSE_COLUMN_ROUTES is stale`,
-  ).toBeNull();
-
-  const prose = main.outerColumn as Edges;
-  expect(prose, `${route} <main> has no bounded column`).not.toBeNull();
-
-  expect(
-    prose.left,
-    `prose column starts left of the page column, ${report(prose)}`,
-  ).toBeGreaterThanOrEqual(hdr.left - EPSILON);
-  expect(
-    prose.right,
-    `prose column ends right of the page column, ${report(prose)}`,
-  ).toBeLessThanOrEqual(hdr.right + EPSILON);
-  expect(
-    Math.abs(prose.left - hdr.left - (hdr.right - prose.right)),
-    `prose column is not centred in the page column, ${report(prose)}`,
   ).toBeLessThanOrEqual(EPSILON);
 };
 
@@ -262,11 +191,6 @@ for (const width of WIDE_VIEWPORTS) {
 
         expectEdgesMatchHeader('footer', ftr, hdr, report);
 
-        if (PROSE_COLUMN_ROUTES.includes(route)) {
-          expectProseInsidePageColumn(route, main, hdr, report);
-          return;
-        }
-
         expect(
           main.page,
           `${route} <main> has no page column at ${width}px`,
@@ -276,33 +200,6 @@ for (const width of WIDE_VIEWPORTS) {
     }
   });
 }
-
-/**
- * The guard on the exception list.
- *
- * PROSE_COLUMN_ROUTES turns an assertion off, so it has to be impossible to
- * widen by accident. This walks every route and derives the real set of pages
- * whose <main> carries no page column, then compares. A page that lost its
- * column through an editing mistake lands in the derived set, does not match
- * the literal, and fails here rather than silently skipping the alignment
- * assertion for the rest of the repository's life.
- */
-test.describe('the exception list matches the build', () => {
-  test.use({ viewport: { width: 1440, height: VIEWPORT_HEIGHT } });
-
-  test('only blog posts opt out of the page column', async ({ page }) => {
-    test.setTimeout(sweepTimeout(ROUTES.length));
-    const withoutPageColumn: string[] = [];
-
-    for (const route of ROUTES) {
-      await page.goto(route);
-      const main = await columnsIn(page, 'main');
-      if (!main.page) withoutPageColumn.push(route);
-    }
-
-    expect(withoutPageColumn.sort()).toEqual([...PROSE_COLUMN_ROUTES].sort());
-  });
-});
 
 /**
  * The guard on the guard.

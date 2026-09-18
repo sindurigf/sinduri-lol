@@ -22,13 +22,13 @@ const totalPages = pageCount(posts.length);
   description="I write about open source, my professional journey, travel, skincare and personal thoughts. Every post, newest first."
 >
   <PageHero title="Blog">
-    <p class="mt-8 max-w-2xl text-body text-muted text-pretty">
+    <p class="standfirst">
       Posts about open source, my professional journey, travel, skincare and
       personal thoughts. Pick a category below, or read everything.
     </p>
   </PageHero>
 
-  <div class="mx-auto max-w-page pb-28 pt-16">
+  <div class="mx-auto max-w-page py-section">
     <BlogListing
       posts={postsOnPage(posts, 1)}
       filter={{ kind: 'all' }}
