@@ -11,7 +11,9 @@ import { builtHtml } from './routes';
  *
  * built to "Klaus Purerand Drupal". Nothing else catches it: axe, the type
  * checker and the formatter all pass. The fix is an explicit `{' '}` after the
- * tag. Found in three places on 2026-09-18: /about twice and /privacy once.
+ * tag. Found in four places on 2026-09-18, /about three times and /privacy
+ * once, and a fifth, before a `<span lang="la">`, written and caught the same
+ * day while moving /about onto Section; `span` joined the opening side then.
  *
  * It reads dist/ rather than driving a browser, inside the test body only; see
  * tests/routes.ts.
@@ -22,9 +24,15 @@ import { builtHtml } from './routes';
  */
 const INLINE = 'a|strong|em|b|i|code';
 
+/*
+ * `span` only on the opening side: a closing `</span>` is routinely followed
+ * straight by text, after the empty square marker in the blog filter.
+ */
+const OPENING = `${INLINE}|span`;
+
 /** A closing inline tag with a letter straight after it, or a letter straight before an opening one. */
 const GLUED = new RegExp(
-  `</(?:${INLINE})>[A-Za-z]|[A-Za-z]<(?:${INLINE})[\\s>]`,
+  `</(?:${INLINE})>[A-Za-z]|[A-Za-z]<(?:${OPENING})[\\s>]`,
   'g',
 );
 
