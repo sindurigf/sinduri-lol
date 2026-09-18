@@ -55,7 +55,7 @@ const ACTION = '/contact/send/';
   </div>
 )}
 
-<form method="post" action={ACTION} class="mt-10">
+<form method="post" action={ACTION} class:list={[errors.length > 0 && 'mt-10']}>
   <div class="field">
     <label class="field-label" for="contact-name">
       Name
