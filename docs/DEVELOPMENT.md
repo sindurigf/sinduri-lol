@@ -21,7 +21,7 @@ up; everything else works under `npm run dev`.
 
 | Command                      | Does                                                           |
 | ---------------------------- | -------------------------------------------------------------- |
-| `npm run dev`                | Dev server at `http://localhost:4321`                          |
+| `npm run dev`                | Dev server at `http://localhost:4340`                          |
 | `npm run build`              | Build to `dist/client` (assets) and `dist/server` (Worker)     |
 | `npm run preview`            | Serve the build through the Worker runtime                     |
 | `npm run typecheck`          | `astro check`                                                  |

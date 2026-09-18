@@ -35,9 +35,18 @@ const videoSizes = existsSync(VIDEO_DIR)
 /** Every post's slug and category, for the sitemap filter. */
 const posts = readPosts();
 
+/*
+ * For `dev` and `preview`. Kept off 4321 and 4322, which `test:a11y` and
+ * `test:worker` bind with `reuseExistingServer: false`: a local server on
+ * either stops those suites starting.
+ */
+const LOCAL_SERVER_PORT = 4340;
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://sinduri.lol',
+
+  server: { port: LOCAL_SERVER_PORT },
 
   /*
    * Static by default: every page is prerendered to an asset. The adapter is
