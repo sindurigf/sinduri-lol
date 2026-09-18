@@ -372,6 +372,7 @@ Defined in `@layer components` in `src/styles/global.css`:
 - `.section-rule`: a 96px x 8px bar at the head of a section, rotating through
   gold, cyan and pink. It must sit inside a column-width box, because a band is
   full-bleed and a rule placed directly in one aligns to the viewport instead.
+  `SectionRule.astro` renders it inside that box; use it rather than the class.
   It replaced a full-bleed line between sections, which framed the page rather
   than punctuating it and was doing all the separating on its own (the grounds
   either side measured 1.039:1)
