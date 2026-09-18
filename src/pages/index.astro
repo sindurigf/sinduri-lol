@@ -7,6 +7,7 @@ import HeroField from '../components/ui/HeroField.vue';
 import portrait from '../assets/photos/sinduri-studio.jpg';
 import { BLOG_CATEGORIES, type BlogCategory } from '../content.config';
 import {
+  cardProps,
   categoryAccent,
   categoryLabel,
   CATEGORY_TEASERS,
@@ -364,13 +365,7 @@ const STATS = [
         {featured.map((post) => (
           <li class="flex min-w-0">
             <BlogCard
-              href={`/blog/${post.id}/`}
-              title={post.data.title}
-              teaser={post.data.teaser}
-              category={post.data.category}
-              date={post.data.date}
-              readingTime={post.data.readingTime}
-              featured={post.data.featured}
+              {...cardProps(post)}
               headingLevel={3}
               class="w-full"
             />
