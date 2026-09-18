@@ -91,22 +91,18 @@ type Decided = {
   blockedBy: string | null;
 };
 
-/**
- * Resolve, in the page, what a reader actually sees behind each node axe could
- * not score. One evaluate for the whole list rather than one per node.
- */
-const decide = (page: Page, selectors: string[]): Promise<Decided[]> =>
-  page.evaluate(`(() => {
-    ${PAGE_HELPERS}
-
+/** In-page source: the thresholds and a colour formatter for the decider. */
+const IN_PAGE_CONSTANTS = `
     const LARGE_PX = ${LARGE_TEXT_PX};
     const LARGE_BOLD_PX = ${LARGE_TEXT_BOLD_PX};
     const AA_TEXT = ${AA_TEXT};
     const AA_LARGE = ${AA_LARGE};
 
     const rgb = (c) => (c === null ? null : 'rgb(' + Math.round(c.r) + ', ' + Math.round(c.g) + ', ' + Math.round(c.b) + ')');
+`;
 
-    return ${JSON.stringify(selectors)}.map((selector) => {
+/** In-page source: decide one node axe could not score. */
+const DECIDE_NODE = `(selector) => {
       const element = document.querySelector(selector);
       const base = { selector, text: '', ratio: null, floor: AA_TEXT, large: false, foreground: '', background: null, blockedBy: null };
       if (!element) return { ...base, blockedBy: 'element not found' };
@@ -155,7 +151,17 @@ const decide = (page: Page, selectors: string[]): Promise<Decided[]> =>
         background: rgb(background),
         ratio: ratio(over(foreground, background), background),
       };
-    });
+    }`;
+
+/**
+ * Resolve, in the page, what a reader actually sees behind each node axe could
+ * not score. One evaluate for the whole list rather than one per node.
+ */
+const decide = (page: Page, selectors: string[]): Promise<Decided[]> =>
+  page.evaluate(`(() => {
+    ${PAGE_HELPERS}
+${IN_PAGE_CONSTANTS}
+    return ${JSON.stringify(selectors)}.map(${DECIDE_NODE});
   })()`) as Promise<Decided[]>;
 
 const report = (route: string, failures: Decided[]): string =>

@@ -239,6 +239,13 @@ test.describe('the category filter', () => {
 
   const counts = postCountByCategory();
 
+  const cardCategoryLabels = (page: Page): Promise<string[]> =>
+    page.evaluate(() =>
+      [
+        ...document.querySelectorAll('article.card p.label > span:first-child'),
+      ].map((el) => (el.textContent ?? '').trim().toLowerCase()),
+    );
+
   for (const route of CATEGORY_ROUTES) {
     test(`${route} marks its own option, and lists its posts or says it has none`, async ({
       page,
@@ -259,13 +266,7 @@ test.describe('the category filter', () => {
        * what makes the filter a filter rather than six links to the same list.
        */
       const label = route.replace('/blog/', '').replaceAll('-', ' ');
-      const labels = await page.evaluate(() =>
-        [
-          ...document.querySelectorAll(
-            'article.card p.label > span:first-child',
-          ),
-        ].map((el) => (el.textContent ?? '').trim().toLowerCase()),
-      );
+      const labels = await cardCategoryLabels(page);
 
       const expected = counts.get(route.replace('/blog/', '')) ?? 0;
       expect(

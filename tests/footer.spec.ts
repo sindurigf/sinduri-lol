@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { SOCIAL_PROFILES } from '../src/lib/profiles';
 import { gotoSettled } from './settle';
 
@@ -48,6 +48,89 @@ const EXPECTED_PROFILES = [
   })),
   { name: 'Email', href: 'mailto:' },
 ];
+
+const measureLayout = (page: Page) =>
+  page.evaluate(() => {
+    const rect = (selector: string) =>
+      (document.querySelector(selector) as Element).getBoundingClientRect();
+    /* A list's box is as wide as its column; its links are not. */
+    const inkRight = (selector: string) =>
+      Math.max(
+        ...[...document.querySelectorAll(selector)].map(
+          (el) => el.getBoundingClientRect().right,
+        ),
+      );
+    const column = rect('footer .max-w-page');
+    const name = rect('.footer-name');
+    const stickers = rect('.footer-stickers');
+    return {
+      column: { left: column.left, right: column.right },
+      name: { left: name.left, right: name.right, top: name.top },
+      nameMiddle: (name.left + name.right) / 2,
+      identityRight: Math.max(name.right, stickers.right),
+      stickersTop: stickers.top,
+      pages: {
+        left: rect('.footer-pages').left,
+        right: inkRight('.footer-pages a'),
+        top: rect('.footer-pages').top,
+      },
+      policies: {
+        left: rect('.footer-policies').left,
+        right: inkRight('.footer-policies a'),
+        top: rect('.footer-policies').top,
+      },
+      copyrightTop: rect('.footer-copyright').top,
+      tuft: rect('.footer-tuft'),
+    };
+  });
+
+type Layout = Awaited<ReturnType<typeof measureLayout>>;
+
+const expectPhoneStack = (m: Layout): void => {
+  /* The phone stack, in source order: nothing is reordered. */
+  const tops = [
+    m.name.top,
+    m.pages.top,
+    m.policies.top,
+    m.stickersTop,
+    m.copyrightTop,
+    m.tuft.top,
+  ];
+  expect(tops, 'the phone stack is out of order').toEqual(
+    [...tops].sort((a, b) => a - b),
+  );
+  expect(
+    Math.abs(m.nameMiddle - (m.column.left + m.column.right) / 2),
+    'Lepus Ridet should be centred',
+  ).toBeLessThanOrEqual(TOLERANCE);
+  expect(
+    Math.abs(m.pages.left - m.column.left),
+    'the links should start at the column edge, as full-width rows',
+  ).toBeLessThanOrEqual(TOLERANCE);
+};
+
+const expectColumns = (m: Layout, width: number): void => {
+  const inset = width >= WIDE_FROM ? WIDE_INSET : 0;
+  expect(
+    Math.abs(m.name.left - (m.column.left + inset)),
+    `Lepus Ridet should start ${inset}px inside the column`,
+  ).toBeLessThanOrEqual(TOLERANCE);
+  expect(
+    Math.abs(m.policies.right - (m.column.right - inset)),
+    `the policies should end ${inset}px inside the column`,
+  ).toBeLessThanOrEqual(TOLERANCE);
+  expect(
+    Math.abs(m.tuft.right - (m.column.right - inset)),
+    `the tuft should end ${inset}px inside the column`,
+  ).toBeLessThanOrEqual(TOLERANCE);
+
+  const firstGap = m.pages.left - m.identityRight;
+  const secondGap = m.policies.left - m.pages.right;
+  expect(
+    Math.abs(firstGap - secondGap),
+    `the column gaps are ${firstGap.toFixed(1)} and ${secondGap.toFixed(1)}`,
+  ).toBeLessThanOrEqual(TOLERANCE);
+};
 
 for (const width of WIDTHS) {
   test.describe(`the footer at ${width}px`, () => {
@@ -171,84 +254,14 @@ for (const width of WIDTHS) {
     });
 
     test('the layout for this width', async ({ page }) => {
-      const m = await page.evaluate(() => {
-        const rect = (selector: string) =>
-          (document.querySelector(selector) as Element).getBoundingClientRect();
-        /* A list's box is as wide as its column; its links are not. */
-        const inkRight = (selector: string) =>
-          Math.max(
-            ...[...document.querySelectorAll(selector)].map(
-              (el) => el.getBoundingClientRect().right,
-            ),
-          );
-        const column = rect('footer .max-w-page');
-        const name = rect('.footer-name');
-        const stickers = rect('.footer-stickers');
-        return {
-          column: { left: column.left, right: column.right },
-          name: { left: name.left, right: name.right, top: name.top },
-          nameMiddle: (name.left + name.right) / 2,
-          identityRight: Math.max(name.right, stickers.right),
-          stickersTop: stickers.top,
-          pages: {
-            left: rect('.footer-pages').left,
-            right: inkRight('.footer-pages a'),
-            top: rect('.footer-pages').top,
-          },
-          policies: {
-            left: rect('.footer-policies').left,
-            right: inkRight('.footer-policies a'),
-            top: rect('.footer-policies').top,
-          },
-          copyrightTop: rect('.footer-copyright').top,
-          tuft: rect('.footer-tuft'),
-        };
-      });
+      const m = await measureLayout(page);
 
       if (width < COLUMNS_FROM) {
-        /* The phone stack, in source order: nothing is reordered. */
-        const tops = [
-          m.name.top,
-          m.pages.top,
-          m.policies.top,
-          m.stickersTop,
-          m.copyrightTop,
-          m.tuft.top,
-        ];
-        expect(tops, 'the phone stack is out of order').toEqual(
-          [...tops].sort((a, b) => a - b),
-        );
-        expect(
-          Math.abs(m.nameMiddle - (m.column.left + m.column.right) / 2),
-          'Lepus Ridet should be centred',
-        ).toBeLessThanOrEqual(TOLERANCE);
-        expect(
-          Math.abs(m.pages.left - m.column.left),
-          'the links should start at the column edge, as full-width rows',
-        ).toBeLessThanOrEqual(TOLERANCE);
+        expectPhoneStack(m);
         return;
       }
 
-      const inset = width >= WIDE_FROM ? WIDE_INSET : 0;
-      expect(
-        Math.abs(m.name.left - (m.column.left + inset)),
-        `Lepus Ridet should start ${inset}px inside the column`,
-      ).toBeLessThanOrEqual(TOLERANCE);
-      expect(
-        Math.abs(m.policies.right - (m.column.right - inset)),
-        `the policies should end ${inset}px inside the column`,
-      ).toBeLessThanOrEqual(TOLERANCE);
-      expect(
-        Math.abs(m.tuft.right - (m.column.right - inset)),
-        `the tuft should end ${inset}px inside the column`,
-      ).toBeLessThanOrEqual(TOLERANCE);
-
-      const firstGap = m.pages.left - m.identityRight;
-      const secondGap = m.policies.left - m.pages.right;
-      expect(
-        Math.abs(firstGap - secondGap),
-        `the column gaps are ${firstGap.toFixed(1)} and ${secondGap.toFixed(1)}`,
-      ).toBeLessThanOrEqual(TOLERANCE);
+      expectColumns(m, width);
     });
 
     test('the copyright line', async ({ page }) => {

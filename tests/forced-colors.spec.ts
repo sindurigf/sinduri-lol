@@ -105,6 +105,17 @@ const parseRgb = (value: string): Rgb | null => {
 const NON_LINK_CONTROLS =
   'button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"]):not(a)';
 
+const emulateForcedColours = async (
+  page: Page,
+): Promise<{ matches: boolean; body: string }> => {
+  await page.emulateMedia({ forcedColors: 'active' });
+
+  return page.evaluate(() => ({
+    matches: matchMedia('(forced-colors: active)').matches,
+    body: getComputedStyle(document.body).color,
+  }));
+};
+
 /**
  * Assert the emulation is on, in both halves. Every test calls this first.
  *
@@ -119,12 +130,7 @@ const NON_LINK_CONTROLS =
  * stylesheet asked for.
  */
 const forceColours = async (page: Page, route: string): Promise<void> => {
-  await page.emulateMedia({ forcedColors: 'active' });
-
-  const state = await page.evaluate(() => ({
-    matches: matchMedia('(forced-colors: active)').matches,
-    body: getComputedStyle(document.body).color,
-  }));
+  const state = await emulateForcedColours(page);
 
   expect(
     state.matches,
@@ -206,6 +212,56 @@ const withoutABoundary = (page: Page): Promise<Unbounded[]> =>
     return out;
   }, NON_LINK_CONTROLS) as Promise<Unbounded[]>;
 
+const listUnbounded = (unbounded: Unbounded[]): string =>
+  unbounded
+    .map((c) => `  <${c.tag} display:${c.display}> ${JSON.stringify(c.text)}`)
+    .join('\n');
+
+const optedOutElements = (page: Page): Promise<string[]> =>
+  page.evaluate(() =>
+    [...document.querySelectorAll('*')]
+      .filter((element) => {
+        const value = getComputedStyle(element).forcedColorAdjust;
+        return Boolean(value) && value !== 'auto';
+      })
+      .map(
+        (element) =>
+          `<${element.tagName.toLowerCase()} class="${element.getAttribute('class') ?? ''}">`,
+      )
+      .slice(0, 10),
+  );
+
+const contentLinkColours = (page: Page) =>
+  page.evaluate(() => {
+    /*
+     * A link inside <main>, and the selector is deliberately not a list.
+     * `querySelector('main a[href], a[href]')` reads as "a content link,
+     * or any link if there is none" and is not that: a selector list
+     * resolves in document order, so the second half always wins and it
+     * measures the skip link or the header wordmark. The exemption being
+     * defended covers prose links in the page body, so the page body is
+     * what has to be measured.
+     */
+    const link = document.querySelector('main a[href]');
+    return {
+      body: getComputedStyle(document.body).color,
+      link: link ? getComputedStyle(link).color : null,
+      /*
+       * innerText rather than textContent. The contact cards put their
+       * label, address and arrow in separate elements with no whitespace
+       * between them once the HTML is minified, so textContent returned
+       * "Emaillol@sinduri.lol→" and a failure message read as gibberish.
+       * innerText is the rendered text, which puts the breaks back.
+       */
+      text: link
+        ? ((link as HTMLElement).innerText || link.textContent || '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 60)
+        : null,
+    };
+  });
+
 /**
  * The floor under the skip below, and the reason the skip cannot quietly
  * become universal.
@@ -227,12 +283,7 @@ test('every engine that can force colours still does, and webkit still cannot', 
   browserName,
 }) => {
   await gotoSettled(page, '/');
-  await page.emulateMedia({ forcedColors: 'active' });
-
-  const state = await page.evaluate(() => ({
-    matches: matchMedia('(forced-colors: active)').matches,
-    body: getComputedStyle(document.body).color,
-  }));
+  const state = await emulateForcedColours(page);
 
   expect(
     state.matches,
@@ -315,18 +366,7 @@ test.describe('forced colours', () => {
       await gotoSettled(page, route);
       await forceColours(page, route);
 
-      const optedOut = await page.evaluate(() =>
-        [...document.querySelectorAll('*')]
-          .filter((element) => {
-            const value = getComputedStyle(element).forcedColorAdjust;
-            return Boolean(value) && value !== 'auto';
-          })
-          .map(
-            (element) =>
-              `<${element.tagName.toLowerCase()} class="${element.getAttribute('class') ?? ''}">`,
-          )
-          .slice(0, 10),
-      );
+      const optedOut = await optedOutElements(page);
       expect(
         optedOut,
         `${route} has element(s) with forced-color-adjust other than auto. ` +
@@ -340,43 +380,10 @@ test.describe('forced colours', () => {
         `${route} has non-link control(s) with neither a painted border nor ` +
           `an opaque background in forced colours, where box-shadow paints ` +
           `nothing. They have no edges for a reader in this mode:\n` +
-          unbounded
-            .map(
-              (c) =>
-                `  <${c.tag} display:${c.display}> ${JSON.stringify(c.text)}`,
-            )
-            .join('\n'),
+          listUnbounded(unbounded),
       ).toEqual([]);
 
-      const colours = await page.evaluate(() => {
-        /*
-         * A link inside <main>, and the selector is deliberately not a list.
-         * `querySelector('main a[href], a[href]')` reads as "a content link,
-         * or any link if there is none" and is not that: a selector list
-         * resolves in document order, so the second half always wins and it
-         * measures the skip link or the header wordmark. The exemption being
-         * defended covers prose links in the page body, so the page body is
-         * what has to be measured.
-         */
-        const link = document.querySelector('main a[href]');
-        return {
-          body: getComputedStyle(document.body).color,
-          link: link ? getComputedStyle(link).color : null,
-          /*
-           * innerText rather than textContent. The contact cards put their
-           * label, address and arrow in separate elements with no whitespace
-           * between them once the HTML is minified, so textContent returned
-           * "Emaillol@sinduri.lol→" and a failure message read as gibberish.
-           * innerText is the rendered text, which puts the breaks back.
-           */
-          text: link
-            ? ((link as HTMLElement).innerText || link.textContent || '')
-                .replace(/\s+/g, ' ')
-                .trim()
-                .slice(0, 60)
-            : null,
-        };
-      });
+      const colours = await contentLinkColours(page);
 
       expect(
         colours.link,
@@ -438,12 +445,7 @@ test.describe('forced colours', () => {
       unbounded,
       `the open mobile menu has non-link control(s) with no boundary in ` +
         `forced colours:\n` +
-        unbounded
-          .map(
-            (c) =>
-              `  <${c.tag} display:${c.display}> ${JSON.stringify(c.text)}`,
-          )
-          .join('\n'),
+        listUnbounded(unbounded),
     ).toEqual([]);
   });
 });
