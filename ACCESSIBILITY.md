@@ -266,8 +266,8 @@ Neither `.btn-primary` nor `.btn-secondary` may be used on this surface.
 `.btn-primary` is `bg-gold`, a 1.00:1 fill; `.btn-secondary` carries
 `border-border` (2.34 on gold) and a gold offset shadow (1.00 on gold).
 `.btn-gold-primary` and `.btn-gold-secondary` are the pair the comps specify.
-Both render 59.6px tall, a 15.6px line box with 18px of padding and a 4px
-border either side, so each passes SC 2.5.8 on its own size without the spacing
+Both render 60.8px tall on a desktop and 63.2px on a phone: a `text-button`
+line box of 16.8px to 19.2px, with 18px of padding and a 4px border either side, so each passes SC 2.5.8 on its own size without the spacing
 exception. The border is part of the target.
 
 **The pink offset shadow on the primary button measures 2.31 on gold**, under

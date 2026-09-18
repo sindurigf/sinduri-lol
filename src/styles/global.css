@@ -176,12 +176,12 @@
   --text-label: 13px;
   --text-label--line-height: 1.2;
   /*
-   * Button labels. The label size on a desktop, but larger on a phone, where
-   * a 13px uppercase label on a thumb-sized control read as too small: 15px
-   * up to about 400px wide, easing to 13px by 1200px. Fluid rather than a
-   * breakpoint step, like every other size here.
+   * Button labels. A step above the 13px label, which read as too small on
+   * a control, and larger again on a phone: 16px up to about 400px wide,
+   * easing to 14px by 1200px. Fluid rather than a breakpoint step, like every
+   * other size here.
    */
-  --text-button: clamp(13px, calc(16px - 0.25vw), 15px);
+  --text-button: clamp(14px, calc(17px - 0.25vw), 16px);
   --text-button--line-height: 1.2;
   /*
    * The footer's copyright line. At the 13px of `text-label` it disappeared
@@ -304,9 +304,9 @@
   --spacing-inline: clamp(16px, 2vw, 24px);
   /*
    * Gold-surface button padding, from the comps. The vertical number is also a
-   * conformance floor: a 13px label at 1.2 is a 15.6px line box, so the control
-   * renders 59.6px tall including its borders against the 24px SC 2.5.8 asks,
-   * and 62px on a phone, where `text-button` reaches 15px.
+   * conformance floor: `text-button` at 14px and 1.2 is a 16.8px line box, so
+   * the control renders 60.8px tall including its borders against the 24px
+   * SC 2.5.8 asks, and 63.2px on a phone, where the label reaches 16px.
    * Do not reduce it below 5px without re-measuring.
    */
   --spacing-btn-gold-y: 18px;
