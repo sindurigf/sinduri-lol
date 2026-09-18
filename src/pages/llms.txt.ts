@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
+import type { BlogPost } from '../lib/blog';
 import { CONTACT_EMAIL } from '../lib/contact';
 import { PERSON_NAME } from '../lib/profiles';
 
@@ -70,6 +71,44 @@ const ROUTE_NOTES: { path: string; label: string; note: string }[] = [
   { path: '/contact/', label: 'Contact', note: 'How to get in touch.' },
 ];
 
+type Absolute = (path: string) => string;
+
+/*
+ * Newest first, matching the blog index. src/lib/blog.ts owns that ordering
+ * for the rendered routes; this re-derives it rather than importing, because
+ * that module also reaches for Astro rendering internals this endpoint has no
+ * use for.
+ */
+const newestFirst = (posts: readonly BlogPost[]): BlogPost[] =>
+  [...posts].sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+/*
+ * Titles and teasers are quoted, never summarised: summarising would put words
+ * in Sinduri's mouth in a file whose audience cannot check them against the
+ * page.
+ */
+const postLine = (post: BlogPost, absolute: Absolute): string =>
+  `- [${post.data.title}](${absolute(`/blog/${post.id}/`)}): ` +
+  `${post.data.teaser}` +
+  (post.data.placeholder ? ` ${PLACEHOLDER_MARK}` : '');
+
+const noteLines = (
+  posts: readonly BlogPost[],
+  absolute: Absolute,
+): string[] => [
+  `- Contact: ${CONTACT_EMAIL}`,
+  `- Full URL list: ${absolute('/sitemap-index.xml')}`,
+  `- Security contact: ${absolute('/.well-known/security.txt')}`,
+  ...(posts.some((post) => post.data.placeholder)
+    ? [
+        `- Posts marked ${PLACEHOLDER_MARK} are unfinished drafts whose title, ` +
+          'teaser and body are lorem ipsum rather than writing. Please do not ' +
+          'quote them, summarise them, or treat them as something the author ' +
+          'said.',
+      ]
+    : []),
+];
+
 export const GET: APIRoute = async ({ site }) => {
   if (!site) {
     throw new Error(
@@ -78,18 +117,8 @@ export const GET: APIRoute = async ({ site }) => {
     );
   }
 
-  const absolute = (path: string): string => new URL(path, site).href;
-
-  const posts = await getCollection('blog');
-  /*
-   * Newest first, matching the blog index. src/lib/blog.ts owns that
-   * ordering for the rendered routes; this re-derives it rather than
-   * importing, because that module also reaches for Astro rendering
-   * internals this endpoint has no use for.
-   */
-  const sorted = [...posts].sort(
-    (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
-  );
+  const absolute: Absolute = (path) => new URL(path, site).href;
+  const posts = newestFirst(await getCollection('blog'));
 
   const lines = [
     `# ${site.host}`,
@@ -104,33 +133,12 @@ export const GET: APIRoute = async ({ site }) => {
     '',
     '## Posts',
     '',
-    /*
-     * Titles and teasers are quoted, never summarised: summarising would put
-     * words in Sinduri's mouth in a file whose audience cannot check them
-     * against the page.
-     */
-    ...sorted.map(
-      (post) =>
-        `- [${post.data.title}](${absolute(`/blog/${post.id}/`)}): ` +
-        `${post.data.teaser}` +
-        (post.data.placeholder ? ` ${PLACEHOLDER_MARK}` : ''),
-    ),
+    ...posts.map((post) => postLine(post, absolute)),
     '',
     '## Notes',
     '',
-    `- Contact: ${CONTACT_EMAIL}`,
-    `- Full URL list: ${absolute('/sitemap-index.xml')}`,
-    `- Security contact: ${absolute('/.well-known/security.txt')}`,
+    ...noteLines(posts, absolute),
   ];
-
-  if (sorted.some((post) => post.data.placeholder)) {
-    lines.push(
-      `- Posts marked ${PLACEHOLDER_MARK} are unfinished drafts whose title, ` +
-        'teaser and body are lorem ipsum rather than writing. Please do not ' +
-        'quote them, summarise them, or treat them as something the author ' +
-        'said.',
-    );
-  }
 
   return new Response(`${lines.join('\n')}\n`, {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },
