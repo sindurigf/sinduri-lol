@@ -19,8 +19,8 @@ import type { APIRoute } from 'astro';
  * specification.website grades that Recommended, but a `Disallow` aimed at
  * GPTBot, CCBot, ClaudeBot and the rest is a decision about how Sinduri's
  * writing may be used, not a technical default an agent should pick. Leaving
- * it out is permissive by omission, not by choice; TODO.md records it as a
- * question rather than as work.
+ * it out is permissive by omission, not by choice: the question is still
+ * open, and it is hers to answer.
  *
  * There is nothing else to disallow. Every route the build emits is public,
  * and `/404` is kept out of the sitemap rather than out of robots: `Disallow`

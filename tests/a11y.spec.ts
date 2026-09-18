@@ -18,8 +18,8 @@ import { AXE_TAGS, REFLOW_VIEWPORT } from './wcag';
  * rules is a success criterion, so folding them into AXE_TAGS would report a
  * `region` or `heading-order` regression as a failure of a test named
  * "WCAG 2.2 AA", which is not what broke. Keeping the sets apart means the
- * failure names which of the two things you did. TODO.md > Considered and
- * declined cites this as the argument against merging the axe passes.
+ * failure names which of the two things you did, and that is the argument
+ * against merging the two axe passes.
  *
  * Advisory is not lesser. `heading-order`, `landmark-one-main`, `region` and
  * `skip-link` are the structure a screen reader navigates by.

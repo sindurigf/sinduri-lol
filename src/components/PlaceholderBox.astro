@@ -2,9 +2,8 @@
 /*
  * A bordered box standing in for an image that does not exist yet.
  *
- * Every photographic slot in the comps is an image placeholder and no asset
- * has been supplied for any of them. The images the repo does have
- * (`bunny-*.png`, `badge-*.png`) are marks, not photographs.
+ * Its one use is a featured BlogCard whose post has no `cover`, since `cover`
+ * is optional in the content schema.
  *
  * So the box renders at the right aspect ratio, in the right border, and says
  * what belongs in it. That beats three worse options: omitting the slot,
@@ -20,14 +19,8 @@
  */
 
 const RATIOS = {
-  /* 16 / 9, Tailwind's own. Unused. */
-  video: 'aspect-video',
   /* 4 / 3. The post artwork in BlogCard. */
   photo: 'aspect-photo',
-  /* 4 / 5. Unused. */
-  portrait: 'aspect-portrait',
-  /* 1 / 1. Unused. */
-  square: 'aspect-square',
 } as const;
 
 interface Props {

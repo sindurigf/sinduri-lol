@@ -103,7 +103,7 @@ export const REFERENCE_ASPECT = REFERENCE_WIDTH / REFERENCE_HEIGHT;
 export const HORIZON_RATIO = 398 / REFERENCE_HEIGHT;
 
 /** Where the nearest ground lands, comfortably below the bottom edge. */
-export const GROUND_RATIO = 930 / REFERENCE_HEIGHT;
+const GROUND_RATIO = 930 / REFERENCE_HEIGHT;
 
 /** How much of the reference box lies between the horizon and the nearest ground. */
 export const GROUND_SPAN = GROUND_RATIO - HORIZON_RATIO;

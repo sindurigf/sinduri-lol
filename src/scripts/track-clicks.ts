@@ -89,7 +89,7 @@ const describeLink = (
   };
 };
 
-export const describeClick = (
+const describeClick = (
   target: EventTarget | null,
   origin: string,
 ): { name: ClickEventName; data: ClickEventData } | null => {

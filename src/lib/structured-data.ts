@@ -19,12 +19,10 @@ import { PERSON_NAME, SOCIAL_PROFILES } from './profiles';
  * silently absent. WebKit cannot run on this machine, so CI checks the third
  * engine; if it disagrees the failure is harmless, because nothing on the
  * page reads the block. `type="speculationrules"` IS subject to script-src,
- * which is why TODO.md defers it rather than sitting it next to this.
+ * so speculation rules cannot be inlined beside this the same way.
  *
- * WHAT IS DELIBERATELY NOT HERE. No `BlogPosting` per post. It was held back
- * while most posts were lorem ipsum (2026-09-12); the placeholders were
- * removed on 2026-09-14 and the two posts left are real, so TODO.md's item
- * for it is now unblocked rather than done.
+ * WHAT IS NOT HERE YET. No `BlogPosting` per post. Nothing blocks it: it is
+ * unbuilt, not declined.
  *
  * Nothing here is newly public. The name is the homepage <h1>, and the
  * profile URLs and the address are in the footer of every page. Structured

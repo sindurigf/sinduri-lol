@@ -6,7 +6,7 @@ import { expect } from '@playwright/test';
  * copy cannot make an assertion pass. Call these inside test bodies.
  */
 export const GLOBAL_CSS = 'src/styles/global.css';
-export const ASTRO_CONFIG = 'astro.config.mjs';
+const ASTRO_CONFIG = 'astro.config.mjs';
 
 /**
  * A colour token's hex from global.css, lower-cased. The same pattern
