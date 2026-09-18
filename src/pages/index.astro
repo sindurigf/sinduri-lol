@@ -12,6 +12,7 @@ import {
   categoryAccent,
   categoryLabel,
   CATEGORY_TEASERS,
+  getCategoriesWithPosts,
   getFeaturedPosts,
 } from '../lib/blog';
 import { WIDTHS } from '../lib/image-densities';
@@ -51,10 +52,27 @@ const CATEGORY_GLYPHS: Record<BlogCategory, string> = {
 
 const LEAD_CATEGORY: BlogCategory = 'open-source';
 
+const withPosts = await getCategoriesWithPosts();
+
 const CATEGORY_CARDS = [
   LEAD_CATEGORY,
   ...BLOG_CATEGORIES.filter((category) => category !== LEAD_CATEGORY),
-].map((category) => ({ category, glyph: CATEGORY_GLYPHS[category] }));
+]
+  .filter((category) => withPosts.has(category))
+  .map((category) => ({ category, glyph: CATEGORY_GLYPHS[category] }));
+
+/*
+ * The lead card spans two columns only where the cards after it then fill
+ * whole rows: two columns from `sm`, three from `lg`. With a fixed span, two
+ * categories left the second card alone in half a row at `sm`.
+ */
+const SM_COLUMNS = 2;
+const LG_COLUMNS = 3;
+const LEAD_SPAN = 2;
+const leadSpansSm = (CATEGORY_CARDS.length - 1) % SM_COLUMNS === 0;
+const leadSpansLg =
+  CATEGORY_CARDS.length >= LEAD_SPAN &&
+  (CATEGORY_CARDS.length - LEAD_SPAN) % LG_COLUMNS === 0;
 
 /*
  * The teaser photo column: half of `max-w-page` from `lg`, the full column
@@ -270,7 +288,8 @@ const STATS = [
           class:list={[
             'card flex flex-col',
             categoryAccent(card.category).shadow,
-            index === 0 ? 'sm:col-span-2 lg:col-span-2' : '',
+            index === 0 && leadSpansSm && 'sm:col-span-2',
+            index === 0 && leadSpansLg && 'lg:col-span-2',
           ]}
         >
           <span
