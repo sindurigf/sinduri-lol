@@ -148,6 +148,47 @@ const withoutComments = (source: string): string =>
     .replace(/<!--[\s\S]*?-->/g, (m) => m.replace(/[^\n]/g, ' '))
     .replace(/^[ \t]*\/\/.*$/gm, (m) => m.replace(/[^\n]/g, ' '));
 
+const privacyBodyText = (): string => {
+  const privacy = builtPages().find((page) => page.route === PRIVACY_PAGE)!;
+  const html = readFileSync(privacy.file, 'utf8');
+  return html
+    .slice(html.indexOf('<body'))
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ');
+};
+
+const expectCopiesDisclosed = (text: string): void => {
+  /*
+   * Each stored message is also emailed to an inbox Google hosts, which is a
+   * second place it lives and a second company that holds it.
+   */
+  expect(
+    text,
+    '/privacy no longer says that a copy of each message is emailed to an ' +
+      'inbox hosted by Google. src/pages/contact/send.astro still sends one.',
+  ).toMatch(/copy is emailed[^.]*Google/);
+
+  /*
+   * wrangler.jsonc turns on Workers logs and traces, which record each
+   * submission's request, browser and location for a few days.
+   */
+  expect(
+    text,
+    '/privacy no longer says that requests to the Worker are logged with ' +
+      'the browser and approximate location, and for how long. ' +
+      'wrangler.jsonc still enables logs and traces.',
+  ).toMatch(
+    /logged[^.]*Cloudflare account[\s\S]*deleted automatically after \d+ days/,
+  );
+
+  expect(
+    text.toLowerCase(),
+    '/privacy no longer says how to have a stored message deleted. A page ' +
+      'that records what it keeps without saying how to get it removed is ' +
+      'half a disclosure.',
+  ).toContain('removed');
+};
+
 test.describe('the privacy policy is true', () => {
   test('the page is built and reachable from every page', () => {
     const pages = builtPages();
@@ -278,12 +319,7 @@ test.describe('the privacy policy is true', () => {
      * Track is the tracker's `data-do-not-track`, which
      * tests/analytics.spec.ts proves stops sending.
      */
-    const privacy = builtPages().find((page) => page.route === PRIVACY_PAGE)!;
-    const html = readFileSync(privacy.file, 'utf8');
-    const text = html
-      .slice(html.indexOf('<body'))
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ');
+    const text = privacyBodyText();
 
     const section = text.slice(text.indexOf('Visit counts'));
 
@@ -335,11 +371,7 @@ test.describe('the privacy policy is true', () => {
      * is read from the same constant the sweep uses, so the page and the code
      * cannot disagree about it.
      */
-    const privacy = builtPages().find((page) => page.route === PRIVACY_PAGE)!;
-    const text = readFileSync(privacy.file, 'utf8')
-      .slice(readFileSync(privacy.file, 'utf8').indexOf('<body'))
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ');
+    const text = privacyBodyText();
 
     expect(
       text,
@@ -368,34 +400,6 @@ test.describe('the privacy policy is true', () => {
         'write is owed that.',
     ).toContain('European Union');
 
-    /*
-     * Each stored message is also emailed to an inbox Google hosts, which is a
-     * second place it lives and a second company that holds it.
-     */
-    expect(
-      text,
-      '/privacy no longer says that a copy of each message is emailed to an ' +
-        'inbox hosted by Google. src/pages/contact/send.astro still sends one.',
-    ).toMatch(/copy is emailed[^.]*Google/);
-
-    /*
-     * wrangler.jsonc turns on Workers logs and traces, which record each
-     * submission's request, browser and location for a few days.
-     */
-    expect(
-      text,
-      '/privacy no longer says that requests to the Worker are logged with ' +
-        'the browser and approximate location, and for how long. ' +
-        'wrangler.jsonc still enables logs and traces.',
-    ).toMatch(
-      /logged[^.]*Cloudflare account[\s\S]*deleted automatically after \d+ days/,
-    );
-
-    expect(
-      text.toLowerCase(),
-      '/privacy no longer says how to have a stored message deleted. A page ' +
-        'that records what it keeps without saying how to get it removed is ' +
-        'half a disclosure.',
-    ).toContain('removed');
+    expectCopiesDisclosed(text);
   });
 });

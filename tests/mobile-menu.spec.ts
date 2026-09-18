@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { gotoSettled } from './settle';
 import { REFLOW_VIEWPORT } from './wcag';
 
@@ -81,6 +81,24 @@ test.describe('mobile menu at 320px', () => {
 const OVERFLOW_VIEWPORT = { width: 320, height: 256 };
 const MAX_TAB_PRESSES = 20;
 
+const readRing = (page: Page) =>
+  page.evaluate(() => {
+    const el = document.activeElement as HTMLElement | null;
+    if (!el || el === document.body) return null;
+    const box = el.getBoundingClientRect();
+    const style = getComputedStyle(el);
+    const reach =
+      parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
+    return {
+      stop: el.id || el.textContent?.trim() || el.tagName,
+      offscreen:
+        box.left - reach < 0 ||
+        box.top - reach < 0 ||
+        box.right + reach > window.innerWidth ||
+        box.bottom + reach > window.innerHeight,
+    };
+  });
+
 test.describe('mobile menu when its content overflows', () => {
   test.use({ viewport: OVERFLOW_VIEWPORT });
 
@@ -109,22 +127,7 @@ test.describe('mobile menu when its content overflows', () => {
             ),
         );
       }
-      const ring = await page.evaluate(() => {
-        const el = document.activeElement as HTMLElement | null;
-        if (!el || el === document.body) return null;
-        const box = el.getBoundingClientRect();
-        const style = getComputedStyle(el);
-        const reach =
-          parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
-        return {
-          stop: el.id || el.textContent?.trim() || el.tagName,
-          offscreen:
-            box.left - reach < 0 ||
-            box.top - reach < 0 ||
-            box.right + reach > window.innerWidth ||
-            box.bottom + reach > window.innerHeight,
-        };
-      });
+      const ring = await readRing(page);
       if (!ring) continue;
       if (rings.some((seen) => seen.stop === ring.stop)) break;
       rings.push(ring);

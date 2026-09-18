@@ -1,6 +1,7 @@
 ---
 import type { BlogCategory } from '../content.config';
 import {
+  cardProps,
   CATEGORY_FILTERS,
   categoryLabel,
   indexPageHref,
@@ -139,13 +140,7 @@ const emptyState =
       return (
         <li class:list={['flex min-w-0', feature ? 'lg:col-span-2' : '']}>
           <BlogCard
-            href={`/blog/${post.id}/`}
-            title={post.data.title}
-            teaser={post.data.teaser}
-            category={post.data.category}
-            date={post.data.date}
-            readingTime={post.data.readingTime}
-            featured={post.data.featured}
+            {...cardProps(post)}
             feature={feature}
             cover={post.data.cover}
             coverAlt={post.data.coverAlt}

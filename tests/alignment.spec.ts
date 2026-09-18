@@ -92,7 +92,22 @@ const PROSE_COLUMN_ROUTES: readonly string[] = POST_ROUTES;
 type Edges = { left: number; right: number };
 type RegionColumns = {
   page: Edges | null;
-  /** The first bounded element in document order; see columnsIn. */
+  /**
+   * The first bounded element in document order, so the OUTERMOST bounded
+   * column and not the innermost: querySelectorAll walks the tree in
+   * pre-order, so an ancestor comes back before its descendants.
+   *
+   * Outermost is the column the region itself establishes, which is what the
+   * containment and centring assertions below are about. On a prose route it
+   * is also the measure today, because src/pages/blog/[slug].astro wraps the
+   * post directly in `max-w-3xl`; a narrower wrapper would move this
+   * measurement to the wrapper and still ask a true question about the
+   * region's own column.
+   *
+   * A wrapper as wide as the page column would stop the route being a prose
+   * route at all, and that is caught elsewhere: `page` above would stop
+   * being null, and the PROSE_COLUMN_ROUTES branch below requires null.
+   */
   outerColumn: Edges | null;
   hasRegion: boolean;
 };
@@ -144,28 +159,74 @@ const columnsIn = async (
         0.5,
     );
 
-    /*
-     * Document order, so bounded[0] is the OUTERMOST bounded column and not
-     * the innermost: querySelectorAll walks the tree in pre-order, so an
-     * ancestor comes back before its descendants.
-     *
-     * Outermost is the column the region itself establishes, which is what the
-     * containment and centring assertions below are about. On a prose route it
-     * is also the measure today, because src/pages/blog/[slug].astro wraps the
-     * post directly in `max-w-3xl`; a narrower wrapper would move this
-     * measurement to the wrapper and still ask a true question about the
-     * region's own column.
-     *
-     * A wrapper as wide as the page column would stop the route being a prose
-     * route at all, and that is caught elsewhere: `page` above would stop
-     * being null, and the PROSE_COLUMN_ROUTES branch below requires null.
-     */
     return {
       page: pageColumn ? edgesOf(pageColumn) : null,
       outerColumn: bounded.length ? edgesOf(bounded[0]) : null,
       hasRegion: true,
     };
   }, selector);
+
+type Report = (m: Edges) => string;
+
+const reportFor =
+  (width: number, route: string, hdr: Edges, ftr: Edges): Report =>
+  (m) =>
+    `at ${width}px on ${route}: ` +
+    `header ${hdr.left.toFixed(1)}..${hdr.right.toFixed(1)}, ` +
+    `main ${m.left.toFixed(1)}..${m.right.toFixed(1)}, ` +
+    `footer ${ftr.left.toFixed(1)}..${ftr.right.toFixed(1)}`;
+
+const expectEdgesMatchHeader = (
+  name: 'footer' | 'main',
+  edges: Edges,
+  hdr: Edges,
+  report: Report,
+): void => {
+  expect(
+    Math.abs(edges.left - hdr.left),
+    `${name} and header disagree on the left edge, ${report(edges)}`,
+  ).toBeLessThanOrEqual(EPSILON);
+  expect(
+    Math.abs(edges.right - hdr.right),
+    `${name} and header disagree on the right edge, ${report(edges)}`,
+  ).toBeLessThanOrEqual(EPSILON);
+};
+
+/*
+ * A prose route: main deliberately has no page column, so the
+ * assertion is containment rather than equality. The measure must
+ * sit inside the page column and be centred on it, which is what
+ * says it is a narrower column of the same layout rather than a
+ * column that has drifted out of it.
+ */
+const expectProseInsidePageColumn = (
+  route: string,
+  main: RegionColumns,
+  hdr: Edges,
+  report: Report,
+): void => {
+  expect(
+    main.page,
+    `${route} is listed as a prose route but <main> has a page ` +
+      `column; either the page changed or PROSE_COLUMN_ROUTES is stale`,
+  ).toBeNull();
+
+  const prose = main.outerColumn as Edges;
+  expect(prose, `${route} <main> has no bounded column`).not.toBeNull();
+
+  expect(
+    prose.left,
+    `prose column starts left of the page column, ${report(prose)}`,
+  ).toBeGreaterThanOrEqual(hdr.left - EPSILON);
+  expect(
+    prose.right,
+    `prose column ends right of the page column, ${report(prose)}`,
+  ).toBeLessThanOrEqual(hdr.right + EPSILON);
+  expect(
+    Math.abs(prose.left - hdr.left - (hdr.right - prose.right)),
+    `prose column is not centred in the page column, ${report(prose)}`,
+  ).toBeLessThanOrEqual(EPSILON);
+};
 
 for (const width of WIDE_VIEWPORTS) {
   test.describe(`content columns line up at ${width}px`, () => {
@@ -197,51 +258,12 @@ for (const width of WIDE_VIEWPORTS) {
 
         const hdr = header.page as Edges;
         const ftr = footer.page as Edges;
+        const report = reportFor(width, route, hdr, ftr);
 
-        const report = (m: Edges): string =>
-          `at ${width}px on ${route}: ` +
-          `header ${hdr.left.toFixed(1)}..${hdr.right.toFixed(1)}, ` +
-          `main ${m.left.toFixed(1)}..${m.right.toFixed(1)}, ` +
-          `footer ${ftr.left.toFixed(1)}..${ftr.right.toFixed(1)}`;
-
-        expect(
-          Math.abs(ftr.left - hdr.left),
-          `footer and header disagree on the left edge, ${report(ftr)}`,
-        ).toBeLessThanOrEqual(EPSILON);
-        expect(
-          Math.abs(ftr.right - hdr.right),
-          `footer and header disagree on the right edge, ${report(ftr)}`,
-        ).toBeLessThanOrEqual(EPSILON);
+        expectEdgesMatchHeader('footer', ftr, hdr, report);
 
         if (PROSE_COLUMN_ROUTES.includes(route)) {
-          /*
-           * A prose route: main deliberately has no page column, so the
-           * assertion is containment rather than equality. The measure must
-           * sit inside the page column and be centred on it, which is what
-           * says it is a narrower column of the same layout rather than a
-           * column that has drifted out of it.
-           */
-          expect(
-            main.page,
-            `${route} is listed as a prose route but <main> has a page ` +
-              `column; either the page changed or PROSE_COLUMN_ROUTES is stale`,
-          ).toBeNull();
-
-          const prose = main.outerColumn as Edges;
-          expect(prose, `${route} <main> has no bounded column`).not.toBeNull();
-
-          expect(
-            prose.left,
-            `prose column starts left of the page column, ${report(prose)}`,
-          ).toBeGreaterThanOrEqual(hdr.left - EPSILON);
-          expect(
-            prose.right,
-            `prose column ends right of the page column, ${report(prose)}`,
-          ).toBeLessThanOrEqual(hdr.right + EPSILON);
-          expect(
-            Math.abs(prose.left - hdr.left - (hdr.right - prose.right)),
-            `prose column is not centred in the page column, ${report(prose)}`,
-          ).toBeLessThanOrEqual(EPSILON);
+          expectProseInsidePageColumn(route, main, hdr, report);
           return;
         }
 
@@ -249,16 +271,7 @@ for (const width of WIDE_VIEWPORTS) {
           main.page,
           `${route} <main> has no page column at ${width}px`,
         ).not.toBeNull();
-        const mn = main.page as Edges;
-
-        expect(
-          Math.abs(mn.left - hdr.left),
-          `main and header disagree on the left edge, ${report(mn)}`,
-        ).toBeLessThanOrEqual(EPSILON);
-        expect(
-          Math.abs(mn.right - hdr.right),
-          `main and header disagree on the right edge, ${report(mn)}`,
-        ).toBeLessThanOrEqual(EPSILON);
+        expectEdgesMatchHeader('main', main.page as Edges, hdr, report);
       });
     }
   });

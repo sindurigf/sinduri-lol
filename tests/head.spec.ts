@@ -68,6 +68,74 @@ const metaContent = (html: string, name: string): string | null => {
   return match ? match[1] : null;
 };
 
+const forEachBuiltRoute = (
+  pages: Map<string, string>,
+  check: (route: string, html: string) => void,
+): void => {
+  const checked: string[] = [];
+
+  for (const route of ROUTES) {
+    const html = pages.get(route);
+    expect(html, `${route} was not found in the build`).toBeTruthy();
+    checked.push(route);
+    check(route, html!);
+  }
+
+  expect(
+    checked,
+    'the per-route walk visited a different set of routes than ROUTES. It ' +
+      'passes vacuously if that list is ever empty.',
+  ).toEqual([...ROUTES]);
+};
+
+const expectOneFontPreload = (route: string, html: string): void => {
+  const preloads = [
+    ...html.matchAll(/<link[^>]*rel=["']preload["'][^>]*>/gi),
+  ].map((match) => match[0]);
+
+  const fonts = preloads.filter((tag) => /as=["']font["']/i.test(tag));
+
+  /*
+   * Exactly one, and it is the only subset the build ships: global.css
+   * declares the latin @font-face and nothing imports the package's CSS,
+   * which would emit latin-ext and vietnamese as well.
+   */
+  expect
+    .soft(
+      fonts.length,
+      `${route} preloads ${fonts.length} fonts. It should preload one: ` +
+        'the latin subset, which is the only one the build emits.',
+    )
+    .toBe(1);
+
+  if (fonts.length !== 1) return;
+
+  const href = /href=["']([^"']+)["']/i.exec(fonts[0]!)?.[1];
+  expect.soft(href, `${route} has a font preload with no href`).toBeTruthy();
+
+  if (href) {
+    expect
+      .soft(
+        existsSync(join(DIST_DIR, href.replace(/^\//, ''))),
+        `${route} preloads ${href}, which the build did not emit. The ` +
+          'href comes from a `?url` import so it should track the hashed ' +
+          'filename; a literal path here would rot on the next font ' +
+          'package update.',
+      )
+      .toBe(true);
+  }
+
+  expect
+    .soft(
+      /\bcrossorigin\b/i.test(fonts[0]!),
+      `${route} preloads a font without \`crossorigin\`. Fonts are ` +
+        'fetched in CORS mode, so this preload is a different request ' +
+        'from the one the @font-face rule makes: the browser fetches the ' +
+        'file twice and uses the second. Slower than no preload at all.',
+    )
+    .toBe(true);
+};
+
 test.describe('the font the first paint needs is preloaded', () => {
   /**
    * The two ways a font preload goes wrong, both silent.
@@ -95,68 +163,7 @@ test.describe('the font the first paint needs is preloaded', () => {
    * run, and `checked` is the floor against a vacuous pass.
    */
   test('every route preloads exactly one font, correctly', () => {
-    const pages = builtHtml();
-    const checked: string[] = [];
-
-    for (const route of ROUTES) {
-      const html = pages.get(route);
-      expect(html, `${route} was not found in the build`).toBeTruthy();
-      checked.push(route);
-
-      const preloads = [
-        ...html!.matchAll(/<link[^>]*rel=["']preload["'][^>]*>/gi),
-      ].map((match) => match[0]);
-
-      const fonts = preloads.filter((tag) => /as=["']font["']/i.test(tag));
-
-      /*
-       * Exactly one, and it is the only subset the build ships: global.css
-       * declares the latin @font-face and nothing imports the package's CSS,
-       * which would emit latin-ext and vietnamese as well.
-       */
-      expect
-        .soft(
-          fonts.length,
-          `${route} preloads ${fonts.length} fonts. It should preload one: ` +
-            'the latin subset, which is the only one the build emits.',
-        )
-        .toBe(1);
-
-      if (fonts.length !== 1) continue;
-
-      const href = /href=["']([^"']+)["']/i.exec(fonts[0]!)?.[1];
-      expect
-        .soft(href, `${route} has a font preload with no href`)
-        .toBeTruthy();
-
-      if (href) {
-        expect
-          .soft(
-            existsSync(join(DIST_DIR, href.replace(/^\//, ''))),
-            `${route} preloads ${href}, which the build did not emit. The ` +
-              'href comes from a `?url` import so it should track the hashed ' +
-              'filename; a literal path here would rot on the next font ' +
-              'package update.',
-          )
-          .toBe(true);
-      }
-
-      expect
-        .soft(
-          /\bcrossorigin\b/i.test(fonts[0]!),
-          `${route} preloads a font without \`crossorigin\`. Fonts are ` +
-            'fetched in CORS mode, so this preload is a different request ' +
-            'from the one the @font-face rule makes: the browser fetches the ' +
-            'file twice and uses the second. Slower than no preload at all.',
-        )
-        .toBe(true);
-    }
-
-    expect(
-      checked,
-      'the per-route walk visited a different set of routes than ROUTES. It ' +
-        'passes vacuously if that list is ever empty.',
-    ).toEqual([...ROUTES]);
+    forEachBuiltRoute(builtHtml(), expectOneFontPreload);
   });
 });
 
@@ -197,42 +204,24 @@ test.describe('the document head declares the colour scheme', () => {
    * lists passes, so without it an empty ROUTES would leave this green.
    */
   test('every route declares the dark colour scheme', () => {
-    const pages = builtHtml();
-    const checked: string[] = [];
-
-    for (const route of ROUTES) {
-      const html = pages.get(route);
-      expect(html, `${route} was not found in the build`).toBeTruthy();
-      checked.push(route);
-
+    forEachBuiltRoute(builtHtml(), (route, html) => {
       expect
         .soft(
-          metaContent(html!, 'color-scheme'),
+          metaContent(html, 'color-scheme'),
           `${route} should carry <meta name="color-scheme" content="dark">, ` +
             'so the scrollbar and any unstyled control are painted dark from ' +
             'the first byte rather than from the stylesheet.',
         )
         .toBe('dark');
-    }
-
-    expect(
-      checked,
-      'the per-route walk visited a different set of routes than ROUTES. It ' +
-        'passes vacuously if that list is ever empty.',
-    ).toEqual([...ROUTES]);
+    });
   });
 
   test('every route tints the browser chrome with the background token', () => {
     const pages = builtHtml();
     const background = cssColorToken('--color-background');
-    const checked: string[] = [];
 
-    for (const route of ROUTES) {
-      const html = pages.get(route);
-      expect(html, `${route} was not found in the build`).toBeTruthy();
-      checked.push(route);
-
-      const themeColor = metaContent(html!, 'theme-color');
+    forEachBuiltRoute(pages, (route, html) => {
+      const themeColor = metaContent(html, 'theme-color');
       expect
         .soft(themeColor, `${route} should carry <meta name="theme-color">.`)
         .not.toBeNull();
@@ -246,12 +235,6 @@ test.describe('the document head declares the colour scheme', () => {
             'two cannot drift.',
         )
         .toBe(background);
-    }
-
-    expect(
-      checked,
-      'the per-route walk visited a different set of routes than ROUTES. It ' +
-        'passes vacuously if that list is ever empty.',
-    ).toEqual([...ROUTES]);
+    });
   });
 });

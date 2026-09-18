@@ -261,7 +261,7 @@ test.describe('search results', () => {
     ...TAG_ROUTES.map((route) => route),
   ];
 
-  test('every route describes itself in its own words', () => {
+  const tallyDescriptions = () => {
     const short: string[] = [];
     const long: string[] = [];
     const missing: string[] = [];
@@ -290,6 +290,12 @@ test.describe('search results', () => {
         short.push(`${route} (${description.length})`);
       }
     }
+
+    return { short, long, missing, byDescription };
+  };
+
+  test('every route describes itself in its own words', () => {
+    const { short, long, missing, byDescription } = tallyDescriptions();
 
     expect(missing, 'route(s) with no description').toEqual([]);
     expect(

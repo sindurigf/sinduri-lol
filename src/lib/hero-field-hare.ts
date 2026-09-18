@@ -145,6 +145,70 @@ export const hopFrame = (
   };
 };
 
+/* The far-side legs, a little behind the near ones and at low opacity. */
+const drawFarLegs = (ctx: CanvasRenderingContext2D, frame: HopFrame): void => {
+  ctx.globalAlpha = 0.45;
+  ctx.save();
+  ctx.translate(-4, 0);
+  hindLeg(ctx, frame.tuckHind);
+  ctx.restore();
+  ctx.save();
+  ctx.translate(-5, 0);
+  foreLeg(ctx, frame.tuckFore);
+  ctx.restore();
+  ctx.globalAlpha = 1;
+};
+
+const drawEars = (ctx: CanvasRenderingContext2D, frame: HopFrame): void => {
+  const ears: readonly (readonly [number, number, number, number, number])[] = [
+    [24, -27, frame.earFar, 5.2, 27],
+    [26, -28, frame.earNear, 6, 31],
+  ];
+  for (const [ex, ey, angle, width, length] of ears) {
+    ctx.save();
+    ctx.translate(ex, ey);
+    ctx.rotate(angle);
+    earPath(ctx, length, width);
+    ctx.stroke();
+    /* The inner fold, which is what stops an ear reading as a leaf. */
+    ctx.beginPath();
+    ctx.moveTo(0, -3);
+    ctx.quadraticCurveTo(width * 0.3, -length * 0.55, 0, -length * 0.82);
+    ctx.stroke();
+    ctx.restore();
+  }
+};
+
+const drawBody = (
+  ctx: CanvasRenderingContext2D,
+  palette: HeroPalette,
+): void => {
+  ctx.fillStyle = palette.background;
+  bodyPath(ctx);
+  ctx.fill();
+  bodyPath(ctx);
+  ctx.stroke();
+
+  /* Scut, knocked out of the body the same way. */
+  ctx.beginPath();
+  ctx.arc(-33, -9, 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+};
+
+const drawFace = (
+  ctx: CanvasRenderingContext2D,
+  palette: HeroPalette,
+): void => {
+  ctx.fillStyle = palette.text;
+  ctx.beginPath();
+  ctx.arc(31, -20, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(45, -15, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+};
+
 /*
  * Draw order matters more than any single line here. The far-side legs go
  * down first at low opacity, then the ears, then the near legs, and only
@@ -168,57 +232,12 @@ export const drawHare = (
   ctx.strokeStyle = palette.text;
   ctx.lineWidth = 2.1;
 
-  ctx.globalAlpha = 0.45;
-  ctx.save();
-  ctx.translate(-4, 0);
-  hindLeg(ctx, frame.tuckHind);
-  ctx.restore();
-  ctx.save();
-  ctx.translate(-5, 0);
-  foreLeg(ctx, frame.tuckFore);
-  ctx.restore();
-  ctx.globalAlpha = 1;
-
-  const ears: readonly (readonly [number, number, number, number, number])[] = [
-    [24, -27, frame.earFar, 5.2, 27],
-    [26, -28, frame.earNear, 6, 31],
-  ];
-  for (const [ex, ey, angle, width, length] of ears) {
-    ctx.save();
-    ctx.translate(ex, ey);
-    ctx.rotate(angle);
-    earPath(ctx, length, width);
-    ctx.stroke();
-    /* The inner fold, which is what stops an ear reading as a leaf. */
-    ctx.beginPath();
-    ctx.moveTo(0, -3);
-    ctx.quadraticCurveTo(width * 0.3, -length * 0.55, 0, -length * 0.82);
-    ctx.stroke();
-    ctx.restore();
-  }
-
+  drawFarLegs(ctx, frame);
+  drawEars(ctx, frame);
   hindLeg(ctx, frame.tuckHind);
   foreLeg(ctx, frame.tuckFore);
-
-  ctx.fillStyle = palette.background;
-  bodyPath(ctx);
-  ctx.fill();
-  bodyPath(ctx);
-  ctx.stroke();
-
-  /* Scut, knocked out of the body the same way. */
-  ctx.beginPath();
-  ctx.arc(-33, -9, 6, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = palette.text;
-  ctx.beginPath();
-  ctx.arc(31, -20, 2.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(45, -15, 1.5, 0, Math.PI * 2);
-  ctx.fill();
+  drawBody(ctx, palette);
+  drawFace(ctx, palette);
 
   ctx.restore();
 };

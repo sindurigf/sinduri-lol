@@ -64,6 +64,46 @@ const fileAt = async (path) => {
   }
 };
 
+const HTML = TYPES['.html'];
+
+/** What to answer for a path already confined to the build directory. */
+const resolve = async (path, search) => {
+  const direct = await fileAt(join(ROOT, path));
+  if (direct)
+    return { status: 200, type: TYPES[extname(direct)] ?? '', file: direct };
+
+  /*
+   * `/404` to `404.html`, with a 200. `astro preview` does this for any page
+   * emitted as a bare `.html`, and tests/routes.ts lists `/404` so the error
+   * page is scanned like any other route. The 404 STATUS is a different claim,
+   * asserted by tests/not-found.spec.ts against a path with no page at all.
+   */
+  const asHtml = await fileAt(join(ROOT, `${path}.html`));
+  if (asHtml) return { status: 200, type: HTML, file: asHtml };
+
+  /*
+   * `/about` to `/about/`, which is what both Pages and Workers do and what
+   * every spec walking ROUTES relies on. Workers answers 307; the value is not
+   * asserted anywhere, and `tests/seo.spec.ts` checks the trailing slash in the
+   * built links rather than the redirect.
+   */
+  const index = await fileAt(join(ROOT, path, 'index.html'));
+  if (index && !path.endsWith('/')) {
+    return { status: 307, location: `${path}/${search}` };
+  }
+  if (index) return { status: 200, type: HTML, file: index };
+
+  /*
+   * `not_found_handling: "404-page"` in wrangler.jsonc, reproduced.
+   * tests/not-found.spec.ts asserts the status, not just the body.
+   */
+  return {
+    status: 404,
+    type: HTML,
+    file: await fileAt(join(ROOT, '404.html')),
+  };
+};
+
 const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', 'http://localhost');
 
@@ -73,52 +113,14 @@ const server = createServer(async (req, res) => {
     '',
   );
 
-  const direct = await fileAt(join(ROOT, path));
-  if (direct) {
-    res.writeHead(200, { 'content-type': TYPES[extname(direct)] ?? '' });
-    res.end(await readFile(direct));
-    return;
-  }
-
-  /*
-   * `/404` to `404.html`, with a 200. `astro preview` does this for any page
-   * emitted as a bare `.html`, and tests/routes.ts lists `/404` so the error
-   * page is scanned like any other route. The 404 STATUS is a different claim,
-   * asserted by tests/not-found.spec.ts against a path with no page at all.
-   */
-  const asHtml = await fileAt(join(ROOT, `${path}.html`));
-  if (asHtml) {
-    res.writeHead(200, { 'content-type': TYPES['.html'] });
-    res.end(await readFile(asHtml));
-    return;
-  }
-
-  /*
-   * `/about` to `/about/`, which is what both Pages and Workers do and what
-   * every spec walking ROUTES relies on. Workers answers 307; the value is not
-   * asserted anywhere, and `tests/seo.spec.ts` checks the trailing slash in the
-   * built links rather than the redirect.
-   */
-  if (!path.endsWith('/') && (await fileAt(join(ROOT, path, 'index.html')))) {
-    res.writeHead(307, { location: `${path}/${url.search}` });
+  const answer = await resolve(path, url.search);
+  if (answer.location) {
+    res.writeHead(answer.status, { location: answer.location });
     res.end();
     return;
   }
-
-  const index = await fileAt(join(ROOT, path, 'index.html'));
-  if (index) {
-    res.writeHead(200, { 'content-type': TYPES['.html'] });
-    res.end(await readFile(index));
-    return;
-  }
-
-  /*
-   * `not_found_handling: "404-page"` in wrangler.jsonc, reproduced.
-   * tests/not-found.spec.ts asserts the status, not just the body.
-   */
-  const notFound = await fileAt(join(ROOT, '404.html'));
-  res.writeHead(404, { 'content-type': TYPES['.html'] });
-  res.end(notFound ? await readFile(notFound) : 'Not found');
+  res.writeHead(answer.status, { 'content-type': answer.type });
+  res.end(answer.file ? await readFile(answer.file) : 'Not found');
 });
 
 server.listen(PORT, '127.0.0.1', () => {

@@ -23,6 +23,17 @@ export const getSortedPosts = async (): Promise<BlogPost[]> =>
 export const getFeaturedPosts = async (limit: number): Promise<BlogPost[]> =>
   (await getSortedPosts()).filter((post) => post.data.featured).slice(0, limit);
 
+/** The props every post card takes straight from the post. */
+export const cardProps = (post: BlogPost) => ({
+  href: `/blog/${post.id}/`,
+  title: post.data.title,
+  teaser: post.data.teaser,
+  category: post.data.category,
+  date: post.data.date,
+  readingTime: post.data.readingTime,
+  featured: post.data.featured,
+});
+
 export const pageCount = (total: number): number =>
   Math.max(1, Math.ceil(total / POSTS_PER_PAGE));
 

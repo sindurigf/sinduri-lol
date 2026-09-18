@@ -190,12 +190,11 @@ const goldRoutesFromBuild = (): string[] =>
     .map((page) => page.route)
     .sort();
 
-/** Every element whose own text sits directly on a gold background. */
-const textOnGold = (page: Page) =>
-  page.evaluate(`(() => {
-    ${PAGE_HELPERS}
+/** Every element under `root` whose own text sits directly on a gold background. */
+const TEXT_ON_GOLD_IN = `
+  const textOnGoldIn = (root) => {
     const out = [];
-    for (const element of document.querySelectorAll('*')) {
+    for (const element of root.querySelectorAll('*')) {
       if (!hasOwnText(element)) continue;
       const background = effectiveBackground(element);
       if (!isGold(background)) continue;
@@ -209,9 +208,70 @@ const textOnGold = (page: Page) =>
       });
     }
     return out;
-  })()`) as Promise<
-    { selector: string; colour: string; ratio: number; text: string }[]
-  >;
+  };
+`;
+
+type TextOnGold = {
+  selector: string;
+  colour: string;
+  ratio: number;
+  text: string;
+};
+
+/** Every element whose own text sits directly on a gold background. */
+const textOnGold = (page: Page) =>
+  page.evaluate(`(() => {
+    ${PAGE_HELPERS}
+    ${TEXT_ON_GOLD_IN}
+    return textOnGoldIn(document);
+  })()`) as Promise<TextOnGold[]>;
+
+type TokenOnGold = { variable: string; value: string; ratio: number | null };
+
+/** Each custom property's raw value and its ratio against #FFC000. */
+const measureTokensOnGold = (page: Page, variables: string[]) =>
+  page.evaluate(
+    `(([gold, variables]) => {
+      ${PAGE_HELPERS}
+      const root = getComputedStyle(document.documentElement);
+      const ground = fromHex(gold);
+      return variables.map((variable) => {
+        const value = root.getPropertyValue(variable).trim();
+        const colour = value.startsWith('#') ? fromHex(value) : parse(value);
+        return {
+          variable,
+          value,
+          ratio: colour === null ? null : Number(ratio(colour, ground).toFixed(2)),
+        };
+      });
+    })(${JSON.stringify([GOLD, variables])})`,
+  ) as Promise<TokenOnGold[]>;
+
+/**
+ * Mounts `html` in a `.surface-gold` host inside main, runs `readout` with
+ * `host` in scope, and removes the host before returning what it returned.
+ */
+const mountOnGold = <T>(page: Page, html: string, readout: string) =>
+  page.evaluate(`(() => {
+    ${PAGE_HELPERS}
+    const host = document.createElement('div');
+    host.className = 'surface-gold';
+    host.innerHTML = ${JSON.stringify(html)};
+    document.querySelector('main').append(host);
+    const result = (() => {
+      ${readout}
+    })();
+    host.remove();
+    return result;
+  })()`) as Promise<T>;
+
+const PRIMARY_BUTTON =
+  '<a data-role="primary" class="btn-gold-primary" href="/cv.pdf">Download CV</a>';
+
+const GOLD_BUTTONS =
+  PRIMARY_BUTTON +
+  ' ' +
+  '<a data-role="secondary" class="btn-gold-secondary" href="/contact">Get in touch</a>';
 
 /**
  * The prose copies of the table above, and why they are checked here.
@@ -315,6 +375,652 @@ const documentedRatios = (doc: string): DocumentedRatio[] => {
   return out;
 };
 
+/** Every documented row that disagrees with the live CSS, as a report line. */
+const driftFromCss = (
+  documented: DocumentedRatio[],
+  live: Map<string, TokenOnGold>,
+): string[] => {
+  const wrong: string[] = [];
+
+  for (const row of documented) {
+    const actual = live.get(row.variable);
+
+    if (actual === undefined || actual.value === '') {
+      wrong.push(
+        `${row.doc}:${row.line}  \`${row.token}\` — ${row.variable} is not ` +
+          `defined in global.css`,
+      );
+      continue;
+    }
+
+    if (normaliseHex(actual.value) !== row.hex) {
+      wrong.push(
+        `${row.doc}:${row.line}  \`${row.token}\` — documented ${row.hex}, ` +
+          `CSS says ${actual.value}`,
+      );
+    }
+
+    if (actual.ratio === null || Math.abs(actual.ratio - row.ratio) > 0.05) {
+      wrong.push(
+        `${row.doc}:${row.line}  \`${row.token}\` — documented ${row.ratio} ` +
+          `against ${GOLD}, measured ${actual.ratio}`,
+      );
+    }
+  }
+
+  return wrong;
+};
+
+type GoldWalk = {
+  section: boolean;
+  controls: number;
+  invisible: InvisibleControl[];
+};
+
+/**
+ * The one failure on this surface that measuring text cannot find.
+ * .btn-primary is `bg-gold`, so on a gold ground it is a 1.00:1 fill: an
+ * invisible control. Its LABEL still passes, because `.surface-gold a`
+ * repaints it darkcyan at 8.00 on gold, so every text-contrast rule,
+ * this file's own route check above, and AccessLint at AAA all report it
+ * clean. The boundary of a control is not something a text rule
+ * evaluates, hence this check, by measurement rather than by class name.
+ *
+ * EVERY gold section on the route, not just the first, so that walking
+ * them does not depend on how many a page has.
+ */
+const walkGoldSections = (page: Page) =>
+  page.evaluate(`(() => {
+    ${PAGE_HELPERS}
+    const sections = [...document.querySelectorAll('.surface-gold')];
+    if (sections.length === 0) return { section: false, controls: 0, invisible: [] };
+    return {
+      section: true,
+      controls: sections.reduce(
+        (total, node) =>
+          total + node.querySelectorAll('a, button, [role="button"]').length,
+        0,
+      ),
+      invisible: sections.flatMap((node) => invisibleControls(node)),
+    };
+  })()`) as Promise<GoldWalk>;
+
+/*
+ * Non-vacuity, on every route that has a gold section. Without this the
+ * assertion below passes on an empty list for every route forever,
+ * which is exactly what it did for the whole time no page used the
+ * class.
+ */
+const expectGoldSectionWalked = (route: string, walked: GoldWalk) => {
+  if (!(route in GOLD_ROUTES)) return;
+  expect(
+    walked.section,
+    `${route} has no .surface-gold section. It is listed in ` +
+      `GOLD_ROUTES, so losing it makes the invisible-control check ` +
+      `below vacuous on this route rather than failing anywhere.`,
+  ).toBe(true);
+  expect(
+    walked.controls,
+    `${route} should put ${GOLD_ROUTES[route]} controls on the gold ` +
+      `ground for this check to walk`,
+  ).toBe(GOLD_ROUTES[route]);
+};
+
+/*
+ * Inline styles, not utilities. Tailwind only emits a utility it finds
+ * in a scanned source, and no page uses text-gold-muted yet, so a
+ * class here would test whether Tailwind scans this file rather than
+ * whether the token is right. The class under test, .surface-gold, is
+ * authored CSS in @layer components and is always emitted.
+ */
+const INVERTED_SET_FIXTURE =
+  '<p data-role="body">Body copy</p>' +
+  '<p data-role="muted" style="color: var(--color-gold-muted)">Secondary copy</p>' +
+  '<a data-role="link" href="/">A link</a>' +
+  '<div data-role="bordered" style="border-width:8px;border-style:solid">Bordered box</div>';
+
+const INVERTED_SET_READOUT = `
+  const pick = (role) => host.querySelector('[data-role="' + role + '"]');
+  const ground = effectiveBackground(pick('body'));
+
+  const link = pick('link');
+  link.focus();
+  const linkStyle = getComputedStyle(link);
+
+  const against = (colour) => {
+    const parsed = parse(colour);
+    return parsed === null ? null : Number(ratio(parsed, ground).toFixed(2));
+  };
+
+  return {
+    groundIsGold: isGold(ground),
+    ground: getComputedStyle(pick('body')).backgroundColor,
+    body: against(getComputedStyle(pick('body')).color),
+    muted: against(getComputedStyle(pick('muted')).color),
+    link: against(linkStyle.color),
+    linkUnderline: linkStyle.textDecorationLine,
+    linkVsBody: (() => {
+      const a = parse(linkStyle.color);
+      const b = parse(getComputedStyle(pick('body')).color);
+      return a && b ? Number(ratio(a, b).toFixed(2)) : null;
+    })(),
+    outline: against(linkStyle.outlineColor),
+    bordered: against(getComputedStyle(pick('bordered')).borderTopColor),
+  };
+`;
+
+type InvertedSetReadout = {
+  groundIsGold: boolean;
+  ground: string;
+  body: number | null;
+  muted: number | null;
+  link: number | null;
+  linkUnderline: string;
+  linkVsBody: number | null;
+  outline: number | null;
+  bordered: number | null;
+};
+
+const expectLinksOnGold = (result: InvertedSetReadout) => {
+  expect(
+    result.link,
+    'links on .surface-gold. The base layer paints every <a> gold, which is ' +
+      '1.00 on this ground, so the override in .surface-gold is the only ' +
+      'thing making them visible.',
+  ).toBeGreaterThanOrEqual(AAA_TEXT);
+
+  /*
+   * The link colour is only 1.42 against the body colour, far under the 3:1
+   * that would let colour carry the distinction on its own, so SC 1.4.1
+   * needs the underline. Asserted rather than trusted because removing it is
+   * a one-word edit that changes nothing visible to whoever makes it.
+   */
+  expect(
+    result.linkVsBody,
+    'link colour versus body colour on .surface-gold',
+  ).toBeLessThan(NON_TEXT);
+  expect(
+    result.linkUnderline,
+    'links on .surface-gold must be underlined: their colour alone does not ' +
+      'distinguish them from body copy (SC 1.4.1)',
+  ).toContain('underline');
+};
+
+const MEASURE_GOLD_BUTTON = `
+  const gold = fromHex('${GOLD}');
+
+  const measure = (element) => {
+    const style = getComputedStyle(element);
+    element.focus();
+    const focused = getComputedStyle(element);
+    const box = element.getBoundingClientRect();
+
+    const fill = parse(style.backgroundColor);
+    const label = parse(style.color);
+    const border = parse(style.borderTopColor);
+    const ring = parse(focused.outlineColor);
+
+    // A transparent fill means the label sits on whatever is behind it.
+    const ground = fill !== null && fill.a === 1 ? fill : gold;
+
+    return {
+      fillIsTransparent: fill === null || fill.a === 0,
+      fillCss: style.backgroundColor,
+      borderCss: style.borderTopColor,
+      labelCss: style.color,
+      borderWidth: parseFloat(style.borderTopWidth),
+      underline: style.textDecorationLine,
+      width: Number(box.width.toFixed(1)),
+      height: Number(box.height.toFixed(1)),
+      outlineOffset: parseFloat(focused.outlineOffset),
+      outlineWidth: parseFloat(focused.outlineWidth),
+      // The label against the surface it actually sits on.
+      labelOnGround: Number(ratio(label, ground).toFixed(2)),
+      // What identifies the control against the gold surface: the fill for
+      // a filled button, the border for a transparent one.
+      boundaryOnGold: Number(
+        ratio(fill !== null && fill.a === 1 ? fill : border, gold).toFixed(2),
+      ),
+      borderOnGold: Number(ratio(border, gold).toFixed(2)),
+      ringOnGold: Number(ratio(ring, gold).toFixed(2)),
+      borderMatchesFill:
+        fill !== null && border !== null && fill.a === 1
+          ? fill.r === border.r && fill.g === border.g && fill.b === border.b
+          : null,
+    };
+  };
+`;
+
+const GOLD_BUTTONS_READOUT = `
+  const pick = (role) => host.querySelector('[data-role="' + role + '"]');
+  const primary = pick('primary');
+  const secondary = pick('secondary');
+  ${MEASURE_GOLD_BUTTON}
+
+  return {
+    groundIsGold: isGold(effectiveBackground(host)),
+    primary: measure(primary),
+    secondary: measure(secondary),
+  };
+`;
+
+type GoldButton = Record<string, number | string | boolean | null>;
+
+const expectGoldButtonBox = (name: string, button: GoldButton) => {
+  expect(
+    button.borderWidth,
+    `.${name} lost its border. It is what delimits the secondary button ` +
+      `against gold, and what makes the primary read as one solid block.`,
+  ).toBe(4);
+
+  expect(
+    button.labelOnGround,
+    `.${name} label against the surface it actually sits on (SC 1.4.3)`,
+  ).toBeGreaterThanOrEqual(AAA_TEXT);
+
+  expect(
+    button.boundaryOnGold,
+    `.${name} against the gold ground (SC 1.4.11). This is what identifies ` +
+      `the control: its fill if it has one, its border if it does not. ` +
+      `The pink offset shadow is decoration and measures 2.31 on gold, so ` +
+      `it must never be the thing carrying this.`,
+  ).toBeGreaterThanOrEqual(NON_TEXT);
+
+  /*
+   * SC 2.5.8, on the target's own size. The spacing exception is not
+   * relied on anywhere on this site and is not going to start here.
+   */
+  expect(
+    button.height,
+    `.${name} target height (SC 2.5.8)`,
+  ).toBeGreaterThanOrEqual(24);
+  expect(
+    button.width,
+    `.${name} target width (SC 2.5.8)`,
+  ).toBeGreaterThanOrEqual(24);
+};
+
+const expectGoldButtonRingAndLabel = (name: string, button: GoldButton) => {
+  expect(
+    button.ringOnGold,
+    `.${name} focus ring against the gold ground (SC 1.4.11)`,
+  ).toBeGreaterThanOrEqual(NON_TEXT);
+
+  /*
+   * The ring is `gold-text`, which is exactly the primary button's fill
+   * and both buttons' border colour. Flush against the element it would
+   * measure 1.00, and the 3px offset is what puts gold on either side of
+   * it.
+   *
+   * Kept, and deliberately redundant on the primary. The two-tone ring
+   * carries the indicator now: verified by setting outline-offset: 0 on
+   * .surface-gold :focus-visible, where this assertion fails and the
+   * two-tone ring test passes, because the inner #FFFFFF ring is still
+   * 18.58 against the fill. The offset is still right and still asserted;
+   * it is no longer load-bearing.
+   */
+  expect(
+    button.outlineOffset,
+    `.${name} focus ring offset. The ring colour is the same as this ` +
+      `button's border, so with no offset it sits flush against a colour ` +
+      `it matches. On .btn-gold-primary the inner ring now covers that ` +
+      `case; this assertion keeps the offset honest rather than carrying ` +
+      `the indicator on its own.`,
+  ).toBeGreaterThan(0);
+  expect(button.outlineWidth, `.${name} focus ring width`).toBeGreaterThan(0);
+
+  expect(
+    button.underline,
+    `.${name} must not be underlined. The base .surface-gold rule ` +
+      `underlines links, which is right in prose and wrong under a ` +
+      `0.1em-tracked uppercase label inside a bordered box.`,
+  ).not.toContain('underline');
+};
+
+const RINGS_AT_ZERO_OFFSET = `
+  const ringsAtZeroOffset = (button, fill) => {
+    /*
+     * The failure this whole rule exists to prevent. Forced on the element
+     * rather than assumed, so what is asserted is the rendered result of
+     * outline-offset: 0 and not a description of it.
+     */
+    button.style.outlineOffset = '0px';
+    const measured = focusRingsAgainstFill(button, fill);
+    button.style.outlineOffset = '';
+    return measured;
+  };
+`;
+
+const FOCUS_RING_READOUT = `
+  ${RINGS_AT_ZERO_OFFSET}
+  const button = host.querySelector('[data-role="primary"]');
+  const root = getComputedStyle(document.documentElement);
+  const pink = fromHex(root.getPropertyValue('--color-pink').trim());
+  const gold = fromHex('${GOLD}');
+
+  button.focus();
+  const focused = getComputedStyle(button);
+  const fill = parse(focused.backgroundColor);
+  const layers = shadowLayers(focused.boxShadow);
+  const inner = layers.find((layer) => layer.inset) ?? null;
+  const offsetShadow = layers.find((layer) => !layer.inset) ?? null;
+  const outline = parse(focused.outlineColor);
+  const atZeroOffset = ringsAtZeroOffset(button, fill);
+
+  return {
+    fillCss: focused.backgroundColor,
+    boxShadowCss: focused.boxShadow,
+    layerCount: layers.length,
+
+    innerRingCss: inner === null ? null : inner.text,
+    innerRingOnFill:
+      inner === null || inner.colour === null
+        ? null
+        : Number(ratio(inner.colour, fill).toFixed(2)),
+
+    offsetShadowCss: offsetShadow === null ? null : offsetShadow.text,
+    offsetShadowIsPink:
+      offsetShadow === null || offsetShadow.colour === null
+        ? false
+        : offsetShadow.colour.r === pink.r &&
+          offsetShadow.colour.g === pink.g &&
+          offsetShadow.colour.b === pink.b,
+
+    outlineWidth: parseFloat(focused.outlineWidth),
+    outlineOnGold:
+      outline === null ? null : Number(ratio(outline, gold).toFixed(2)),
+    outlineOnFill:
+      outline === null ? null : Number(ratio(outline, fill).toFixed(2)),
+
+    atZeroOffset,
+    bestAtZeroOffset: atZeroOffset.reduce(
+      (best, layer) => (layer.ratio > best ? layer.ratio : best),
+      0,
+    ),
+  };
+`;
+
+type FocusRingReadout = {
+  fillCss: string;
+  boxShadowCss: string;
+  layerCount: number;
+  innerRingCss: string | null;
+  innerRingOnFill: number | null;
+  offsetShadowCss: string | null;
+  offsetShadowIsPink: boolean;
+  outlineWidth: number;
+  outlineOnGold: number | null;
+  outlineOnFill: number | null;
+  atZeroOffset: { layer: string; ratio: number }[];
+  bestAtZeroOffset: number;
+};
+
+/*
+ * BOTH RINGS AND THE PINK SHADOW, ALL THREE AT ONCE. box-shadow is one
+ * property, so a :focus-visible rule that names only the ring silently
+ * deletes the resting decoration for as long as the button has focus.
+ */
+const expectFocusLayers = (result: FocusRingReadout) => {
+  expect(
+    result.layerCount,
+    `.btn-gold-primary on focus must carry two box-shadow layers, the inner ` +
+      `ring and the pink offset shadow. Measured: ${result.boxShadowCss}`,
+  ).toBe(2);
+
+  expect(
+    result.innerRingCss,
+    `.btn-gold-primary has no inset ring on focus. It is the half of the ` +
+      `indicator that does not depend on outline-offset. Measured ` +
+      `box-shadow: ${result.boxShadowCss}`,
+  ).not.toBeNull();
+
+  expect(
+    result.offsetShadowIsPink,
+    `.btn-gold-primary lost its pink offset shadow on focus. The ring folds ` +
+      `into box-shadow rather than replacing it, or the resting decoration ` +
+      `disappears at exactly the moment someone is looking at the control. ` +
+      `Measured: ${result.boxShadowCss}`,
+  ).toBe(true);
+
+  expect(
+    result.outlineWidth,
+    '.btn-gold-primary lost its outer ring on focus',
+  ).toBeGreaterThan(0);
+};
+
+/*
+ * The two documented numbers, pinned the way the token table above is
+ * pinned, so retoning either colour fails here as well as in the docs.
+ */
+const expectDocumentedRingRatios = (result: FocusRingReadout) => {
+  expect(
+    result.innerRingOnFill,
+    `the inner ring against .btn-gold-primary's own fill ${result.fillCss}`,
+  ).toBeCloseTo(18.58, 1);
+  expect(result.innerRingOnFill).toBeGreaterThanOrEqual(NON_TEXT);
+
+  expect(
+    result.outlineOnGold,
+    'the outer ring against the gold ground, which is what the 3px offset ' +
+      'gap shows',
+  ).toBeCloseTo(11.32, 1);
+  expect(result.outlineOnGold).toBeGreaterThanOrEqual(NON_TEXT);
+
+  /*
+   * The reason this test exists. The outer ring is the same colour as the
+   * fill, so on its own it measures 1.00 against the control it is marking
+   * and the offset is the only thing saving it. Asserted so that the number
+   * is on the record rather than described.
+   */
+  expect(
+    result.outlineOnFill,
+    'the outer ring against the fill. It is `gold-text`, the same colour as ' +
+      'the fill and the border, so this is expected to be 1.00 — which is ' +
+      'why a second ring is needed and why the offset used to be the whole ' +
+      'indicator.',
+  ).toBeCloseTo(1.0, 1);
+};
+
+const MEASURE_GOLD_CONTROL = `
+  const ringRatios = (fill, outline, inner) => ({
+    // The outer ring against the gold the 3px offset gap exposes.
+    outlineOnGold:
+      outline === null ? null : Number(ratio(outline, gold).toFixed(2)),
+    // The outer ring against the control it marks. 1.00 on the
+    // primary, which is the entire reason the inner ring exists.
+    outlineOnFill:
+      outline === null || fill === null || fill.a !== 1
+        ? null
+        : Number(ratio(outline, fill).toFixed(2)),
+    innerRingOnFill:
+      inner === null || inner.colour === null || fill === null || fill.a !== 1
+        ? null
+        : Number(ratio(inner.colour, fill).toFixed(2)),
+  });
+
+  const measureControl = (el) => {
+    const resting = getComputedStyle(el);
+    const fill = parse(resting.backgroundColor);
+    el.focus();
+    // Read while the element still has focus. Moving this below the
+    // blur() is how the first version of this test reported that a
+    // focused button had not taken focus.
+    const tookFocus = document.activeElement === el;
+    /*
+     * getComputedStyle returns a LIVE declaration, so every value that
+     * exists only under :focus-visible has to be read into a plain
+     * number before the blur below. Reading them after it is how the
+     * first version of this test reported an outline-offset of 0 on a
+     * button whose offset is 3px.
+     */
+    const focused = getComputedStyle(el);
+    const box = el.getBoundingClientRect();
+    const outline = parse(focused.outlineColor);
+    const outlineWidth = parseFloat(focused.outlineWidth);
+    const outlineOffset = parseFloat(focused.outlineOffset);
+    const inner = shadowLayers(focused.boxShadow).find((l) => l.inset) ?? null;
+    el.blur();
+
+    return {
+      selector: describe(el),
+      focused: tookFocus,
+      width: Number(box.width.toFixed(1)),
+      height: Number(box.height.toFixed(1)),
+      fillIsOpaque: fill !== null && fill.a === 1,
+      // What identifies the control against gold: its fill, or its border.
+      boundaryOnGold: Number(
+        ratio(
+          fill !== null && fill.a === 1 ? fill : parse(resting.borderTopColor),
+          gold,
+        ).toFixed(2),
+      ),
+      outlineWidth,
+      outlineOffset,
+      ...ringRatios(fill, outline, inner),
+    };
+  };
+`;
+
+const GOLD_ROUTE_READOUT = `(() => {
+  ${PAGE_HELPERS}
+  ${TEXT_ON_GOLD_IN}
+  const gold = fromHex('${GOLD}');
+  const section = document.querySelector('.surface-gold');
+  if (section === null) return null;
+
+  const main = document.querySelector('main');
+  const mainStyle = getComputedStyle(main);
+  ${MEASURE_GOLD_CONTROL}
+
+  const controls = [...section.querySelectorAll('a, button')].map((el) =>
+    measureControl(el),
+  );
+
+  return {
+    controls,
+    textOnGold: textOnGoldIn(section),
+    documentScrollWidth: document.documentElement.scrollWidth,
+    documentClientWidth: document.documentElement.clientWidth,
+    contentBox:
+      main.clientWidth -
+      parseFloat(mainStyle.paddingLeft) -
+      parseFloat(mainStyle.paddingRight),
+  };
+})()`;
+
+type GoldControl = {
+  selector: string;
+  focused: boolean;
+  width: number;
+  height: number;
+  fillIsOpaque: boolean;
+  boundaryOnGold: number;
+  outlineWidth: number;
+  outlineOffset: number;
+  outlineOnGold: number | null;
+  outlineOnFill: number | null;
+  innerRingOnFill: number | null;
+};
+
+type GoldRouteReadout = {
+  controls: GoldControl[];
+  textOnGold: TextOnGold[];
+  documentScrollWidth: number;
+  documentClientWidth: number;
+  contentBox: number;
+};
+
+const expectGoldRouteLayout = (
+  measured: GoldRouteReadout,
+  width: number,
+  contentBox: number,
+) => {
+  expect(
+    measured.controls.length,
+    `${GOLD_ROUTE} should render ${GOLD_ROUTES[GOLD_ROUTE]} controls on gold`,
+  ).toBe(GOLD_ROUTES[GOLD_ROUTE]);
+
+  /* Reflow. The document must not scroll sideways. */
+  expect(measured.contentBox, `${GOLD_ROUTE} content box at ${width}px`).toBe(
+    contentBox,
+  );
+  expect(
+    measured.documentScrollWidth,
+    `${GOLD_ROUTE} scrolls sideways at ${width}px (SC 1.4.10)`,
+  ).toBeLessThanOrEqual(measured.documentClientWidth);
+
+  /* Every string on the gold ground, from the real markup. */
+  expect(
+    measured.textOnGold.length,
+    `nothing with text was found on the gold ground on ${GOLD_ROUTE}`,
+  ).toBeGreaterThan(0);
+  const unreadable = measured.textOnGold.filter((e) => e.ratio < AA_TEXT);
+  expect(
+    unreadable,
+    `text on #FFC000 below ${AA_TEXT}:1 in the real gold section:\n` +
+      unreadable
+        .map((e) => `  ${e.selector} at ${e.ratio}:1 — "${e.text}"`)
+        .join('\n'),
+  ).toEqual([]);
+};
+
+const expectControlBox = (control: GoldControl) => {
+  expect(
+    control.focused,
+    `${control.selector} did not take focus, so its indicator was never ` +
+      `measured`,
+  ).toBe(true);
+
+  expect(
+    control.boundaryOnGold,
+    `${control.selector} against the gold ground (SC 1.4.11)`,
+  ).toBeGreaterThanOrEqual(NON_TEXT);
+
+  expect(
+    control.height,
+    `${control.selector} target height (SC 2.5.8)`,
+  ).toBeGreaterThanOrEqual(24);
+  expect(
+    control.width,
+    `${control.selector} target width (SC 2.5.8)`,
+  ).toBeGreaterThanOrEqual(24);
+};
+
+const expectControlFocusRing = (control: GoldControl) => {
+  expect(
+    control.outlineWidth,
+    `${control.selector} has no focus ring in situ (SC 2.4.7)`,
+  ).toBeGreaterThan(0);
+  expect(
+    control.outlineOffset,
+    `${control.selector} focus ring offset`,
+  ).toBeGreaterThan(0);
+  expect(
+    control.outlineOnGold,
+    `${control.selector} focus ring against the gold the offset gap ` +
+      `exposes (SC 1.4.11)`,
+  ).toBeGreaterThanOrEqual(NON_TEXT);
+
+  /*
+   * The primary button is the one whose ring colour equals its own
+   * opaque fill. Asserted on the real control, not on the fixture: the
+   * outer ring measures 1.00 against the thing it is marking, and the
+   * inner white ring is what makes the indicator survive that.
+   */
+  if (!control.fillIsOpaque) return;
+  expect(
+    control.outlineOnFill,
+    `${control.selector} outer ring against its own fill. Expected ` +
+      `1.00 — the ring is gold-text and so is the fill — which is why ` +
+      `there has to be a second ring.`,
+  ).toBeCloseTo(1.0, 1);
+  expect(
+    control.innerRingOnFill,
+    `${control.selector} has no inner ring, so its entire focus ` +
+      `indicator rests on outline-offset staying non-zero`,
+  ).toBeCloseTo(18.58, 1);
+};
+
 test.describe('the gold surface exception', () => {
   /**
    * The Markdown copies, measured against the same live CSS the RATIOS table
@@ -348,52 +1054,16 @@ test.describe('the gold surface exception', () => {
       ).toBeGreaterThan(0);
     }
 
-    const measured = (await page.evaluate(
-      `(([gold, variables]) => {
-        ${PAGE_HELPERS}
-        const root = getComputedStyle(document.documentElement);
-        const ground = fromHex(gold);
-        return variables.map((variable) => {
-          const value = root.getPropertyValue(variable).trim();
-          const colour = value.startsWith('#') ? fromHex(value) : parse(value);
-          return {
-            variable,
-            value: value.toLowerCase(),
-            ratio: colour === null ? null : Number(ratio(colour, ground).toFixed(2)),
-          };
-        });
-      })(${JSON.stringify([GOLD, [...new Set(documented.map((r) => r.variable))]])})`,
-    )) as { variable: string; value: string; ratio: number | null }[];
+    const measured = (
+      await measureTokensOnGold(page, [
+        ...new Set(documented.map((r) => r.variable)),
+      ])
+    ).map((row) => ({ ...row, value: row.value.toLowerCase() }));
 
-    const live = new Map(measured.map((row) => [row.variable, row]));
-
-    const wrong: string[] = [];
-
-    for (const row of documented) {
-      const actual = live.get(row.variable);
-
-      if (actual === undefined || actual.value === '') {
-        wrong.push(
-          `${row.doc}:${row.line}  \`${row.token}\` — ${row.variable} is not ` +
-            `defined in global.css`,
-        );
-        continue;
-      }
-
-      if (normaliseHex(actual.value) !== row.hex) {
-        wrong.push(
-          `${row.doc}:${row.line}  \`${row.token}\` — documented ${row.hex}, ` +
-            `CSS says ${actual.value}`,
-        );
-      }
-
-      if (actual.ratio === null || Math.abs(actual.ratio - row.ratio) > 0.05) {
-        wrong.push(
-          `${row.doc}:${row.line}  \`${row.token}\` — documented ${row.ratio} ` +
-            `against ${GOLD}, measured ${actual.ratio}`,
-        );
-      }
-    }
+    const wrong = driftFromCss(
+      documented,
+      new Map(measured.map((row) => [row.variable, row])),
+    );
 
     expect(
       wrong,
@@ -408,22 +1078,10 @@ test.describe('the gold surface exception', () => {
   test('the documented ratios against #FFC000 still hold', async ({ page }) => {
     await page.goto('/');
 
-    const measured = (await page.evaluate(
-      `(([gold, variables]) => {
-        ${PAGE_HELPERS}
-        const root = getComputedStyle(document.documentElement);
-        const ground = fromHex(gold);
-        return variables.map((variable) => {
-          const value = root.getPropertyValue(variable).trim();
-          const colour = value.startsWith('#') ? fromHex(value) : parse(value);
-          return {
-            variable,
-            value,
-            ratio: colour === null ? null : Number(ratio(colour, ground).toFixed(2)),
-          };
-        });
-      })(${JSON.stringify([GOLD, RATIOS.map((r) => r.variable)])})`,
-    )) as { variable: string; value: string; ratio: number | null }[];
+    const measured = await measureTokensOnGold(
+      page,
+      RATIOS.map((r) => r.variable),
+    );
 
     for (const [index, row] of measured.entries()) {
       const documented = RATIOS[index];
@@ -473,56 +1131,9 @@ test.describe('the gold surface exception', () => {
           `this file stopped matching, not that the page is clean.`,
       ).toBeGreaterThan(0);
 
-      /*
-       * The one failure on this surface that measuring text cannot find.
-       * .btn-primary is `bg-gold`, so on a gold ground it is a 1.00:1 fill: an
-       * invisible control. Its LABEL still passes, because `.surface-gold a`
-       * repaints it darkcyan at 8.00 on gold, so every text-contrast rule,
-       * this file's own route check above, and AccessLint at AAA all report it
-       * clean. The boundary of a control is not something a text rule
-       * evaluates, hence this check, by measurement rather than by class name.
-       *
-       * EVERY gold section on the route, not just the first, so that walking
-       * them does not depend on how many a page has.
-       */
-      const walked = (await page.evaluate(`(() => {
-        ${PAGE_HELPERS}
-        const sections = [...document.querySelectorAll('.surface-gold')];
-        if (sections.length === 0) return { section: false, controls: 0, invisible: [] };
-        return {
-          section: true,
-          controls: sections.reduce(
-            (total, node) =>
-              total + node.querySelectorAll('a, button, [role="button"]').length,
-            0,
-          ),
-          invisible: sections.flatMap((node) => invisibleControls(node)),
-        };
-      })()`)) as {
-        section: boolean;
-        controls: number;
-        invisible: InvisibleControl[];
-      };
+      const walked = await walkGoldSections(page);
 
-      /*
-       * Non-vacuity, on every route that has a gold section. Without this the
-       * assertion below passes on an empty list for every route forever,
-       * which is exactly what it did for the whole time no page used the
-       * class.
-       */
-      if (route in GOLD_ROUTES) {
-        expect(
-          walked.section,
-          `${route} has no .surface-gold section. It is listed in ` +
-            `GOLD_ROUTES, so losing it makes the invisible-control check ` +
-            `below vacuous on this route rather than failing anywhere.`,
-        ).toBe(true);
-        expect(
-          walked.controls,
-          `${route} should put ${GOLD_ROUTES[route]} controls on the gold ` +
-            `ground for this check to walk`,
-        ).toBe(GOLD_ROUTES[route]);
-      }
+      expectGoldSectionWalked(route, walked);
 
       expect(
         walked.invisible,
@@ -553,66 +1164,11 @@ test.describe('the gold surface exception', () => {
   test('.surface-gold supplies the inverted set', async ({ page }) => {
     await page.goto('/');
 
-    const result = (await page.evaluate(`(() => {
-      ${PAGE_HELPERS}
-
-      const host = document.createElement('div');
-      host.className = 'surface-gold';
-      /*
-       * Inline styles, not utilities. Tailwind only emits a utility it finds
-       * in a scanned source, and no page uses text-gold-muted yet, so a
-       * class here would test whether Tailwind scans this file rather than
-       * whether the token is right. The class under test, .surface-gold, is
-       * authored CSS in @layer components and is always emitted.
-       */
-      host.innerHTML =
-        '<p data-role="body">Body copy</p>' +
-        '<p data-role="muted" style="color: var(--color-gold-muted)">Secondary copy</p>' +
-        '<a data-role="link" href="/">A link</a>' +
-        '<div data-role="bordered" style="border-width:8px;border-style:solid">Bordered box</div>';
-      document.querySelector('main').append(host);
-
-      const pick = (role) => host.querySelector('[data-role="' + role + '"]');
-      const ground = effectiveBackground(pick('body'));
-
-      const link = pick('link');
-      link.focus();
-      const linkStyle = getComputedStyle(link);
-
-      const against = (colour) => {
-        const parsed = parse(colour);
-        return parsed === null ? null : Number(ratio(parsed, ground).toFixed(2));
-      };
-
-      const readout = {
-        groundIsGold: isGold(ground),
-        ground: getComputedStyle(pick('body')).backgroundColor,
-        body: against(getComputedStyle(pick('body')).color),
-        muted: against(getComputedStyle(pick('muted')).color),
-        link: against(linkStyle.color),
-        linkUnderline: linkStyle.textDecorationLine,
-        linkVsBody: (() => {
-          const a = parse(linkStyle.color);
-          const b = parse(getComputedStyle(pick('body')).color);
-          return a && b ? Number(ratio(a, b).toFixed(2)) : null;
-        })(),
-        outline: against(linkStyle.outlineColor),
-        bordered: against(getComputedStyle(pick('bordered')).borderTopColor),
-      };
-
-      host.remove();
-      return readout;
-    })()`)) as {
-      groundIsGold: boolean;
-      ground: string;
-      body: number | null;
-      muted: number | null;
-      link: number | null;
-      linkUnderline: string;
-      linkVsBody: number | null;
-      outline: number | null;
-      bordered: number | null;
-    };
+    const result = await mountOnGold<InvertedSetReadout>(
+      page,
+      INVERTED_SET_FIXTURE,
+      INVERTED_SET_READOUT,
+    );
 
     expect(
       result.groundIsGold,
@@ -627,28 +1183,7 @@ test.describe('the gold surface exception', () => {
       'text-gold-muted on .surface-gold',
     ).toBeGreaterThanOrEqual(AAA_TEXT);
 
-    expect(
-      result.link,
-      'links on .surface-gold. The base layer paints every <a> gold, which is ' +
-        '1.00 on this ground, so the override in .surface-gold is the only ' +
-        'thing making them visible.',
-    ).toBeGreaterThanOrEqual(AAA_TEXT);
-
-    /*
-     * The link colour is only 1.42 against the body colour, far under the 3:1
-     * that would let colour carry the distinction on its own, so SC 1.4.1
-     * needs the underline. Asserted rather than trusted because removing it is
-     * a one-word edit that changes nothing visible to whoever makes it.
-     */
-    expect(
-      result.linkVsBody,
-      'link colour versus body colour on .surface-gold',
-    ).toBeLessThan(NON_TEXT);
-    expect(
-      result.linkUnderline,
-      'links on .surface-gold must be underlined: their colour alone does not ' +
-        'distinguish them from body copy (SC 1.4.1)',
-    ).toContain('underline');
+    expectLinksOnGold(result);
 
     expect(
       result.outline,
@@ -680,75 +1215,11 @@ test.describe('the gold surface exception', () => {
   }) => {
     await page.goto('/');
 
-    const result = (await page.evaluate(`(() => {
-      ${PAGE_HELPERS}
-
-      const host = document.createElement('div');
-      host.className = 'surface-gold';
-      host.innerHTML =
-        '<a data-role="primary" class="btn-gold-primary" href="/cv.pdf">Download CV</a> ' +
-        '<a data-role="secondary" class="btn-gold-secondary" href="/contact">Get in touch</a>';
-      document.querySelector('main').append(host);
-
-      const pick = (role) => host.querySelector('[data-role="' + role + '"]');
-      const primary = pick('primary');
-      const secondary = pick('secondary');
-      const gold = fromHex('${GOLD}');
-
-      const measure = (element) => {
-        const style = getComputedStyle(element);
-        element.focus();
-        const focused = getComputedStyle(element);
-        const box = element.getBoundingClientRect();
-
-        const fill = parse(style.backgroundColor);
-        const label = parse(style.color);
-        const border = parse(style.borderTopColor);
-        const ring = parse(focused.outlineColor);
-
-        // A transparent fill means the label sits on whatever is behind it.
-        const ground = fill !== null && fill.a === 1 ? fill : gold;
-
-        return {
-          fillIsTransparent: fill === null || fill.a === 0,
-          fillCss: style.backgroundColor,
-          borderCss: style.borderTopColor,
-          labelCss: style.color,
-          borderWidth: parseFloat(style.borderTopWidth),
-          underline: style.textDecorationLine,
-          width: Number(box.width.toFixed(1)),
-          height: Number(box.height.toFixed(1)),
-          outlineOffset: parseFloat(focused.outlineOffset),
-          outlineWidth: parseFloat(focused.outlineWidth),
-          // The label against the surface it actually sits on.
-          labelOnGround: Number(ratio(label, ground).toFixed(2)),
-          // What identifies the control against the gold surface: the fill for
-          // a filled button, the border for a transparent one.
-          boundaryOnGold: Number(
-            ratio(fill !== null && fill.a === 1 ? fill : border, gold).toFixed(2),
-          ),
-          borderOnGold: Number(ratio(border, gold).toFixed(2)),
-          ringOnGold: Number(ratio(ring, gold).toFixed(2)),
-          borderMatchesFill:
-            fill !== null && border !== null && fill.a === 1
-              ? fill.r === border.r && fill.g === border.g && fill.b === border.b
-              : null,
-        };
-      };
-
-      const readout = {
-        groundIsGold: isGold(effectiveBackground(host)),
-        primary: measure(primary),
-        secondary: measure(secondary),
-      };
-
-      host.remove();
-      return readout;
-    })()`)) as {
+    const result = await mountOnGold<{
       groundIsGold: boolean;
-      primary: Record<string, number | string | boolean | null>;
-      secondary: Record<string, number | string | boolean | null>;
-    };
+      primary: GoldButton;
+      secondary: GoldButton;
+    }>(page, GOLD_BUTTONS, GOLD_BUTTONS_READOUT);
 
     expect(result.groundIsGold, 'the fixture is not on a gold ground').toBe(
       true,
@@ -758,74 +1229,8 @@ test.describe('the gold surface exception', () => {
       ['btn-gold-primary', result.primary],
       ['btn-gold-secondary', result.secondary],
     ] as const) {
-      expect(
-        button.borderWidth,
-        `.${name} lost its border. It is what delimits the secondary button ` +
-          `against gold, and what makes the primary read as one solid block.`,
-      ).toBe(4);
-
-      expect(
-        button.labelOnGround,
-        `.${name} label against the surface it actually sits on (SC 1.4.3)`,
-      ).toBeGreaterThanOrEqual(AAA_TEXT);
-
-      expect(
-        button.boundaryOnGold,
-        `.${name} against the gold ground (SC 1.4.11). This is what identifies ` +
-          `the control: its fill if it has one, its border if it does not. ` +
-          `The pink offset shadow is decoration and measures 2.31 on gold, so ` +
-          `it must never be the thing carrying this.`,
-      ).toBeGreaterThanOrEqual(NON_TEXT);
-
-      /*
-       * SC 2.5.8, on the target's own size. The spacing exception is not
-       * relied on anywhere on this site and is not going to start here.
-       */
-      expect(
-        button.height,
-        `.${name} target height (SC 2.5.8)`,
-      ).toBeGreaterThanOrEqual(24);
-      expect(
-        button.width,
-        `.${name} target width (SC 2.5.8)`,
-      ).toBeGreaterThanOrEqual(24);
-
-      expect(
-        button.ringOnGold,
-        `.${name} focus ring against the gold ground (SC 1.4.11)`,
-      ).toBeGreaterThanOrEqual(NON_TEXT);
-
-      /*
-       * The ring is `gold-text`, which is exactly the primary button's fill
-       * and both buttons' border colour. Flush against the element it would
-       * measure 1.00, and the 3px offset is what puts gold on either side of
-       * it.
-       *
-       * Kept, and deliberately redundant on the primary. The two-tone ring
-       * carries the indicator now: verified by setting outline-offset: 0 on
-       * .surface-gold :focus-visible, where this assertion fails and the
-       * two-tone ring test passes, because the inner #FFFFFF ring is still
-       * 18.58 against the fill. The offset is still right and still asserted;
-       * it is no longer load-bearing.
-       */
-      expect(
-        button.outlineOffset,
-        `.${name} focus ring offset. The ring colour is the same as this ` +
-          `button's border, so with no offset it sits flush against a colour ` +
-          `it matches. On .btn-gold-primary the inner ring now covers that ` +
-          `case; this assertion keeps the offset honest rather than carrying ` +
-          `the indicator on its own.`,
-      ).toBeGreaterThan(0);
-      expect(button.outlineWidth, `.${name} focus ring width`).toBeGreaterThan(
-        0,
-      );
-
-      expect(
-        button.underline,
-        `.${name} must not be underlined. The base .surface-gold rule ` +
-          `underlines links, which is right in prose and wrong under a ` +
-          `0.1em-tracked uppercase label inside a bordered box.`,
-      ).not.toContain('underline');
+      expectGoldButtonBox(name, button);
+      expectGoldButtonRingAndLabel(name, button);
     }
 
     /*
@@ -868,85 +1273,11 @@ test.describe('the gold surface exception', () => {
   }) => {
     await page.goto('/');
 
-    const result = (await page.evaluate(`(() => {
-      ${PAGE_HELPERS}
-
-      const host = document.createElement('div');
-      host.className = 'surface-gold';
-      host.innerHTML =
-        '<a data-role="primary" class="btn-gold-primary" href="/cv.pdf">Download CV</a>';
-      document.querySelector('main').append(host);
-
-      const button = host.querySelector('[data-role="primary"]');
-      const root = getComputedStyle(document.documentElement);
-      const pink = fromHex(root.getPropertyValue('--color-pink').trim());
-      const gold = fromHex('${GOLD}');
-
-      button.focus();
-      const focused = getComputedStyle(button);
-      const fill = parse(focused.backgroundColor);
-      const layers = shadowLayers(focused.boxShadow);
-      const inner = layers.find((layer) => layer.inset) ?? null;
-      const offsetShadow = layers.find((layer) => !layer.inset) ?? null;
-      const outline = parse(focused.outlineColor);
-
-      /*
-       * The failure this whole rule exists to prevent. Forced on the element
-       * rather than assumed, so what is asserted is the rendered result of
-       * outline-offset: 0 and not a description of it.
-       */
-      button.style.outlineOffset = '0px';
-      const atZeroOffset = focusRingsAgainstFill(button, fill);
-      button.style.outlineOffset = '';
-
-      const readout = {
-        fillCss: focused.backgroundColor,
-        boxShadowCss: focused.boxShadow,
-        layerCount: layers.length,
-
-        innerRingCss: inner === null ? null : inner.text,
-        innerRingOnFill:
-          inner === null || inner.colour === null
-            ? null
-            : Number(ratio(inner.colour, fill).toFixed(2)),
-
-        offsetShadowCss: offsetShadow === null ? null : offsetShadow.text,
-        offsetShadowIsPink:
-          offsetShadow === null || offsetShadow.colour === null
-            ? false
-            : offsetShadow.colour.r === pink.r &&
-              offsetShadow.colour.g === pink.g &&
-              offsetShadow.colour.b === pink.b,
-
-        outlineWidth: parseFloat(focused.outlineWidth),
-        outlineOnGold:
-          outline === null ? null : Number(ratio(outline, gold).toFixed(2)),
-        outlineOnFill:
-          outline === null ? null : Number(ratio(outline, fill).toFixed(2)),
-
-        atZeroOffset,
-        bestAtZeroOffset: atZeroOffset.reduce(
-          (best, layer) => (layer.ratio > best ? layer.ratio : best),
-          0,
-        ),
-      };
-
-      host.remove();
-      return readout;
-    })()`)) as {
-      fillCss: string;
-      boxShadowCss: string;
-      layerCount: number;
-      innerRingCss: string | null;
-      innerRingOnFill: number | null;
-      offsetShadowCss: string | null;
-      offsetShadowIsPink: boolean;
-      outlineWidth: number;
-      outlineOnGold: number | null;
-      outlineOnFill: number | null;
-      atZeroOffset: { layer: string; ratio: number }[];
-      bestAtZeroOffset: number;
-    };
+    const result = await mountOnGold<FocusRingReadout>(
+      page,
+      PRIMARY_BUTTON,
+      FOCUS_RING_READOUT,
+    );
 
     /*
      * The headline claim, asserted first on purpose. Every other assertion in
@@ -967,67 +1298,8 @@ test.describe('the gold surface exception', () => {
           .join('\n'),
     ).toBeGreaterThanOrEqual(NON_TEXT);
 
-    /*
-     * BOTH RINGS AND THE PINK SHADOW, ALL THREE AT ONCE. box-shadow is one
-     * property, so a :focus-visible rule that names only the ring silently
-     * deletes the resting decoration for as long as the button has focus.
-     */
-    expect(
-      result.layerCount,
-      `.btn-gold-primary on focus must carry two box-shadow layers, the inner ` +
-        `ring and the pink offset shadow. Measured: ${result.boxShadowCss}`,
-    ).toBe(2);
-
-    expect(
-      result.innerRingCss,
-      `.btn-gold-primary has no inset ring on focus. It is the half of the ` +
-        `indicator that does not depend on outline-offset. Measured ` +
-        `box-shadow: ${result.boxShadowCss}`,
-    ).not.toBeNull();
-
-    expect(
-      result.offsetShadowIsPink,
-      `.btn-gold-primary lost its pink offset shadow on focus. The ring folds ` +
-        `into box-shadow rather than replacing it, or the resting decoration ` +
-        `disappears at exactly the moment someone is looking at the control. ` +
-        `Measured: ${result.boxShadowCss}`,
-    ).toBe(true);
-
-    expect(
-      result.outlineWidth,
-      '.btn-gold-primary lost its outer ring on focus',
-    ).toBeGreaterThan(0);
-
-    /*
-     * The two documented numbers, pinned the way the token table above is
-     * pinned, so retoning either colour fails here as well as in the docs.
-     */
-    expect(
-      result.innerRingOnFill,
-      `the inner ring against .btn-gold-primary's own fill ${result.fillCss}`,
-    ).toBeCloseTo(18.58, 1);
-    expect(result.innerRingOnFill).toBeGreaterThanOrEqual(NON_TEXT);
-
-    expect(
-      result.outlineOnGold,
-      'the outer ring against the gold ground, which is what the 3px offset ' +
-        'gap shows',
-    ).toBeCloseTo(11.32, 1);
-    expect(result.outlineOnGold).toBeGreaterThanOrEqual(NON_TEXT);
-
-    /*
-     * The reason this test exists. The outer ring is the same colour as the
-     * fill, so on its own it measures 1.00 against the control it is marking
-     * and the offset is the only thing saving it. Asserted so that the number
-     * is on the record rather than described.
-     */
-    expect(
-      result.outlineOnFill,
-      'the outer ring against the fill. It is `gold-text`, the same colour as ' +
-        'the fill and the border, so this is expected to be 1.00 — which is ' +
-        'why a second ring is needed and why the offset used to be the whole ' +
-        'indicator.',
-    ).toBeCloseTo(1.0, 1);
+    expectFocusLayers(result);
+    expectDocumentedRingRatios(result);
   });
 
   /**
@@ -1048,113 +1320,9 @@ test.describe('the gold surface exception', () => {
       await page.setViewportSize({ width, height: 900 });
       await gotoSettled(page, GOLD_ROUTE);
 
-      const result = (await page.evaluate(`(() => {
-        ${PAGE_HELPERS}
-        const gold = fromHex('${GOLD}');
-        const section = document.querySelector('.surface-gold');
-        if (section === null) return null;
-
-        const main = document.querySelector('main');
-        const mainStyle = getComputedStyle(main);
-
-        const controls = [...section.querySelectorAll('a, button')].map((el) => {
-          const resting = getComputedStyle(el);
-          const fill = parse(resting.backgroundColor);
-          el.focus();
-          // Read while the element still has focus. Moving this below the
-          // blur() is how the first version of this test reported that a
-          // focused button had not taken focus.
-          const tookFocus = document.activeElement === el;
-          /*
-           * getComputedStyle returns a LIVE declaration, so every value that
-           * exists only under :focus-visible has to be read into a plain
-           * number before the blur below. Reading them after it is how the
-           * first version of this test reported an outline-offset of 0 on a
-           * button whose offset is 3px.
-           */
-          const focused = getComputedStyle(el);
-          const box = el.getBoundingClientRect();
-          const outline = parse(focused.outlineColor);
-          const outlineWidth = parseFloat(focused.outlineWidth);
-          const outlineOffset = parseFloat(focused.outlineOffset);
-          const inner = shadowLayers(focused.boxShadow).find((l) => l.inset) ?? null;
-          el.blur();
-
-          return {
-            selector: describe(el),
-            focused: tookFocus,
-            width: Number(box.width.toFixed(1)),
-            height: Number(box.height.toFixed(1)),
-            fillIsOpaque: fill !== null && fill.a === 1,
-            // What identifies the control against gold: its fill, or its border.
-            boundaryOnGold: Number(
-              ratio(
-                fill !== null && fill.a === 1 ? fill : parse(resting.borderTopColor),
-                gold,
-              ).toFixed(2),
-            ),
-            outlineWidth,
-            outlineOffset,
-            // The outer ring against the gold the 3px offset gap exposes.
-            outlineOnGold:
-              outline === null ? null : Number(ratio(outline, gold).toFixed(2)),
-            // The outer ring against the control it marks. 1.00 on the
-            // primary, which is the entire reason the inner ring exists.
-            outlineOnFill:
-              outline === null || fill === null || fill.a !== 1
-                ? null
-                : Number(ratio(outline, fill).toFixed(2)),
-            innerRingOnFill:
-              inner === null || inner.colour === null || fill === null || fill.a !== 1
-                ? null
-                : Number(ratio(inner.colour, fill).toFixed(2)),
-          };
-        });
-
-        return {
-          controls,
-          textOnGold: (() => {
-            const out = [];
-            for (const el of section.querySelectorAll('*')) {
-              if (!hasOwnText(el)) continue;
-              const bg = effectiveBackground(el);
-              if (!isGold(bg)) continue;
-              const colour = parse(getComputedStyle(el).color);
-              if (colour === null) continue;
-              out.push({
-                selector: describe(el),
-                ratio: Number(ratio(colour, bg).toFixed(2)),
-                text: (el.textContent ?? '').trim().slice(0, 40),
-              });
-            }
-            return out;
-          })(),
-          documentScrollWidth: document.documentElement.scrollWidth,
-          documentClientWidth: document.documentElement.clientWidth,
-          contentBox:
-            main.clientWidth -
-            parseFloat(mainStyle.paddingLeft) -
-            parseFloat(mainStyle.paddingRight),
-        };
-      })()`)) as {
-        controls: {
-          selector: string;
-          focused: boolean;
-          width: number;
-          height: number;
-          fillIsOpaque: boolean;
-          boundaryOnGold: number;
-          outlineWidth: number;
-          outlineOffset: number;
-          outlineOnGold: number | null;
-          outlineOnFill: number | null;
-          innerRingOnFill: number | null;
-        }[];
-        textOnGold: { selector: string; ratio: number; text: string }[];
-        documentScrollWidth: number;
-        documentClientWidth: number;
-        contentBox: number;
-      } | null;
+      const result = (await page.evaluate(
+        GOLD_ROUTE_READOUT,
+      )) as GoldRouteReadout | null;
 
       expect(
         result,
@@ -1162,89 +1330,11 @@ test.describe('the gold surface exception', () => {
       ).not.toBeNull();
       const measured = result as NonNullable<typeof result>;
 
-      expect(
-        measured.controls.length,
-        `${GOLD_ROUTE} should render ${GOLD_ROUTES[GOLD_ROUTE]} controls on gold`,
-      ).toBe(GOLD_ROUTES[GOLD_ROUTE]);
-
-      /* Reflow. The document must not scroll sideways. */
-      expect(
-        measured.contentBox,
-        `${GOLD_ROUTE} content box at ${width}px`,
-      ).toBe(contentBox);
-      expect(
-        measured.documentScrollWidth,
-        `${GOLD_ROUTE} scrolls sideways at ${width}px (SC 1.4.10)`,
-      ).toBeLessThanOrEqual(measured.documentClientWidth);
-
-      /* Every string on the gold ground, from the real markup. */
-      expect(
-        measured.textOnGold.length,
-        `nothing with text was found on the gold ground on ${GOLD_ROUTE}`,
-      ).toBeGreaterThan(0);
-      const unreadable = measured.textOnGold.filter((e) => e.ratio < AA_TEXT);
-      expect(
-        unreadable,
-        `text on #FFC000 below ${AA_TEXT}:1 in the real gold section:\n` +
-          unreadable
-            .map((e) => `  ${e.selector} at ${e.ratio}:1 — "${e.text}"`)
-            .join('\n'),
-      ).toEqual([]);
+      expectGoldRouteLayout(measured, width, contentBox);
 
       for (const control of measured.controls) {
-        expect(
-          control.focused,
-          `${control.selector} did not take focus, so its indicator was never ` +
-            `measured`,
-        ).toBe(true);
-
-        expect(
-          control.boundaryOnGold,
-          `${control.selector} against the gold ground (SC 1.4.11)`,
-        ).toBeGreaterThanOrEqual(NON_TEXT);
-
-        expect(
-          control.height,
-          `${control.selector} target height (SC 2.5.8)`,
-        ).toBeGreaterThanOrEqual(24);
-        expect(
-          control.width,
-          `${control.selector} target width (SC 2.5.8)`,
-        ).toBeGreaterThanOrEqual(24);
-
-        expect(
-          control.outlineWidth,
-          `${control.selector} has no focus ring in situ (SC 2.4.7)`,
-        ).toBeGreaterThan(0);
-        expect(
-          control.outlineOffset,
-          `${control.selector} focus ring offset`,
-        ).toBeGreaterThan(0);
-        expect(
-          control.outlineOnGold,
-          `${control.selector} focus ring against the gold the offset gap ` +
-            `exposes (SC 1.4.11)`,
-        ).toBeGreaterThanOrEqual(NON_TEXT);
-
-        /*
-         * The primary button is the one whose ring colour equals its own
-         * opaque fill. Asserted on the real control, not on the fixture: the
-         * outer ring measures 1.00 against the thing it is marking, and the
-         * inner white ring is what makes the indicator survive that.
-         */
-        if (control.fillIsOpaque) {
-          expect(
-            control.outlineOnFill,
-            `${control.selector} outer ring against its own fill. Expected ` +
-              `1.00 — the ring is gold-text and so is the fill — which is why ` +
-              `there has to be a second ring.`,
-          ).toBeCloseTo(1.0, 1);
-          expect(
-            control.innerRingOnFill,
-            `${control.selector} has no inner ring, so its entire focus ` +
-              `indicator rests on outline-offset staying non-zero`,
-          ).toBeCloseTo(18.58, 1);
-        }
+        expectControlBox(control);
+        expectControlFocusRing(control);
       }
     });
   }
@@ -1271,30 +1361,19 @@ test.describe('the gold surface exception', () => {
   }) => {
     await page.goto('/');
 
-    const found = (await page.evaluate(`(() => {
-      ${PAGE_HELPERS}
-
-      const host = document.createElement('div');
-      host.className = 'surface-gold';
-      host.innerHTML =
-        '<a data-role="primary" class="btn-gold-primary" href="/cv.pdf">Download CV</a> ' +
-        '<a data-role="secondary" class="btn-gold-secondary" href="/contact">Get in touch</a> ' +
-        '<p>Prose with <a href="/about">a link</a> in it.</p>';
-      document.querySelector('main').append(host);
-
-      const readout = {
-        groundIsGold: isGold(effectiveBackground(host)),
-        controls: host.querySelectorAll('a').length,
-        invisible: invisibleControls(host),
-      };
-
-      host.remove();
-      return readout;
-    })()`)) as {
+    const found = await mountOnGold<{
       groundIsGold: boolean;
       controls: number;
       invisible: InvisibleControl[];
-    };
+    }>(
+      page,
+      GOLD_BUTTONS + ' <p>Prose with <a href="/about">a link</a> in it.</p>',
+      `return {
+        groundIsGold: isGold(effectiveBackground(host)),
+        controls: host.querySelectorAll('a').length,
+        invisible: invisibleControls(host),
+      };`,
+    );
 
     expect(found.groundIsGold, 'the fixture is not on a gold ground').toBe(
       true,

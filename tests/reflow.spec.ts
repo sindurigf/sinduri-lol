@@ -136,55 +136,60 @@ const expectContentBox = async (
  */
 const SOFT_HYPHEN = '\u00AD';
 
+const headingWordsWiderThanTheirBox = (softHyphen: string): string[] => {
+  const probe = document.createElement('span');
+  probe.style.position = 'absolute';
+  probe.style.visibility = 'hidden';
+  probe.style.whiteSpace = 'nowrap';
+  probe.style.width = 'max-content';
+  document.body.appendChild(probe);
+
+  const out: string[] = [];
+
+  for (const heading of document.querySelectorAll('h1, h2, h3')) {
+    const style = getComputedStyle(heading);
+    const box =
+      heading.clientWidth -
+      parseFloat(style.paddingLeft) -
+      parseFloat(style.paddingRight);
+    if (box <= 0) continue;
+
+    probe.style.font = style.font;
+    probe.style.letterSpacing = style.letterSpacing;
+    probe.style.textTransform = style.textTransform;
+    probe.style.fontWeight = style.fontWeight;
+
+    for (const word of (heading.textContent ?? '').split(/\s+/)) {
+      if (!word) continue;
+      const segments = word.split(softHyphen);
+      segments.forEach((segment, i) => {
+        if (!segment) return;
+        // A break at a soft hyphen paints a hyphen on the leading segment.
+        probe.textContent = i < segments.length - 1 ? `${segment}-` : segment;
+        const width = probe.getBoundingClientRect().width;
+        if (width > box + 0.5) {
+          out.push(
+            `${heading.tagName.toLowerCase()} at ${style.fontSize}: ` +
+              `"${probe.textContent}" is ${width.toFixed(2)}px in a ` +
+              `${box.toFixed(2)}px box`,
+          );
+        }
+      });
+    }
+  }
+
+  probe.remove();
+  return out;
+};
+
 const expectHeadingWordsFit = async (
   page: Page,
   route: string,
 ): Promise<void> => {
-  const tooWide = await page.evaluate((softHyphen) => {
-    const probe = document.createElement('span');
-    probe.style.position = 'absolute';
-    probe.style.visibility = 'hidden';
-    probe.style.whiteSpace = 'nowrap';
-    probe.style.width = 'max-content';
-    document.body.appendChild(probe);
-
-    const out: string[] = [];
-
-    for (const heading of document.querySelectorAll('h1, h2, h3')) {
-      const style = getComputedStyle(heading);
-      const box =
-        heading.clientWidth -
-        parseFloat(style.paddingLeft) -
-        parseFloat(style.paddingRight);
-      if (box <= 0) continue;
-
-      probe.style.font = style.font;
-      probe.style.letterSpacing = style.letterSpacing;
-      probe.style.textTransform = style.textTransform;
-      probe.style.fontWeight = style.fontWeight;
-
-      for (const word of (heading.textContent ?? '').split(/\s+/)) {
-        if (!word) continue;
-        const segments = word.split(softHyphen);
-        segments.forEach((segment, i) => {
-          if (!segment) return;
-          // A break at a soft hyphen paints a hyphen on the leading segment.
-          probe.textContent = i < segments.length - 1 ? `${segment}-` : segment;
-          const width = probe.getBoundingClientRect().width;
-          if (width > box + 0.5) {
-            out.push(
-              `${heading.tagName.toLowerCase()} at ${style.fontSize}: ` +
-                `"${probe.textContent}" is ${width.toFixed(2)}px in a ` +
-                `${box.toFixed(2)}px box`,
-            );
-          }
-        });
-      }
-    }
-
-    probe.remove();
-    return out;
-  }, SOFT_HYPHEN);
+  const tooWide = await page.evaluate(
+    headingWordsWiderThanTheirBox,
+    SOFT_HYPHEN,
+  );
 
   expect(
     tooWide,

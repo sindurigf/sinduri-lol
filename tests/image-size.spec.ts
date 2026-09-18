@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { ROUTES } from './routes';
 import { gotoSettled } from './settle';
 
@@ -48,29 +48,61 @@ const DIMENSIONS = [
   { drawn: 'height', natural: 'naturalHeight' },
 ] as const;
 
+const measureImages = (page: Page) =>
+  page.evaluate(async () => {
+    const all = [...document.querySelectorAll('img')];
+    for (const img of all) img.loading = 'eager';
+    await Promise.all(all.map((img) => img.decode()));
+    return {
+      ratio: window.devicePixelRatio,
+      images: all
+        .filter((img) => img.offsetWidth > 0 && img.offsetHeight > 0)
+        .map((img) => ({
+          src: img.currentSrc,
+          naturalWidth: img.naturalWidth,
+          naturalHeight: img.naturalHeight,
+          width: img.offsetWidth,
+          height: img.offsetHeight,
+        })),
+    };
+  });
+
+type MeasuredImage = Awaited<
+  ReturnType<typeof measureImages>
+>['images'][number];
+
+const expectServedAtDrawnSize = (image: MeasuredImage, ratio: number): void => {
+  const where =
+    `${image.src} is drawn ${image.width}x${image.height} from a ` +
+    `${image.naturalWidth}x${image.naturalHeight} file`;
+
+  for (const { drawn, natural } of DIMENSIONS) {
+    expect
+      .soft(
+        image[natural] + ROUNDING_PX,
+        `${where}, so it is being stretched. A Tailwind size class ` +
+          'changed without the height passed to <Image> beside it.',
+      )
+      .toBeGreaterThanOrEqual(image[drawn]);
+
+    expect
+      .soft(
+        image[natural],
+        `${where} at devicePixelRatio ${ratio}, more than ` +
+          `${OVERSIZE_LIMIT}x what this screen can show. Pass the drawn ` +
+          'height and DENSITIES to <Image>.',
+      )
+      .toBeLessThanOrEqual(image[drawn] * ratio * OVERSIZE_LIMIT + ROUNDING_PX);
+  }
+};
+
 for (const route of ROUTES) {
   test(`every image on ${route} is served at the size it is drawn`, async ({
     page,
   }) => {
     await gotoSettled(page, route);
 
-    const { ratio, images } = await page.evaluate(async () => {
-      const all = [...document.querySelectorAll('img')];
-      for (const img of all) img.loading = 'eager';
-      await Promise.all(all.map((img) => img.decode()));
-      return {
-        ratio: window.devicePixelRatio,
-        images: all
-          .filter((img) => img.offsetWidth > 0 && img.offsetHeight > 0)
-          .map((img) => ({
-            src: img.currentSrc,
-            naturalWidth: img.naturalWidth,
-            naturalHeight: img.naturalHeight,
-            width: img.offsetWidth,
-            height: img.offsetHeight,
-          })),
-      };
-    });
+    const { ratio, images } = await measureImages(page);
 
     expect(
       images.length,
@@ -78,32 +110,7 @@ for (const route of ROUTES) {
         'passes against nothing. The header mark is on every route.',
     ).toBeGreaterThan(0);
 
-    for (const image of images) {
-      const where =
-        `${image.src} is drawn ${image.width}x${image.height} from a ` +
-        `${image.naturalWidth}x${image.naturalHeight} file`;
-
-      for (const { drawn, natural } of DIMENSIONS) {
-        expect
-          .soft(
-            image[natural] + ROUNDING_PX,
-            `${where}, so it is being stretched. A Tailwind size class ` +
-              'changed without the height passed to <Image> beside it.',
-          )
-          .toBeGreaterThanOrEqual(image[drawn]);
-
-        expect
-          .soft(
-            image[natural],
-            `${where} at devicePixelRatio ${ratio}, more than ` +
-              `${OVERSIZE_LIMIT}x what this screen can show. Pass the drawn ` +
-              'height and DENSITIES to <Image>.',
-          )
-          .toBeLessThanOrEqual(
-            image[drawn] * ratio * OVERSIZE_LIMIT + ROUNDING_PX,
-          );
-      }
-    }
+    for (const image of images) expectServedAtDrawnSize(image, ratio);
   });
 }
 
@@ -140,6 +147,67 @@ const SIZES_VIEWPORTS = [320, 639, 640, 767, 768, 1023, 1024, 1327, 1328, 1600];
  */
 const SIZES_LIMIT = 1.1;
 
+const measureFluidImages = (page: Page) =>
+  page.evaluate(() => {
+    const topLevel = (value: string): string[] => {
+      const parts = [''];
+      let depth = 0;
+      for (const char of value) {
+        if (char === '(') depth += 1;
+        if (char === ')') depth -= 1;
+        if (char === ',' && depth === 0) parts.push('');
+        else parts[parts.length - 1] += char;
+      }
+      return parts.map((part) => part.trim());
+    };
+
+    const resolve = (sizes: string): number => {
+      const entry = topLevel(sizes).find((candidate) => {
+        const media = candidate.match(/^(\([^()]*\))\s+/);
+        return media === null || matchMedia(media[1]).matches;
+      });
+      const probe = document.createElement('div');
+      probe.style.width = (entry ?? '100vw').replace(/^\([^()]*\)\s+/, '');
+      document.body.append(probe);
+      const slot = probe.getBoundingClientRect().width;
+      probe.remove();
+      return slot;
+    };
+
+    return [...document.querySelectorAll('img[sizes]')]
+      .filter((img) => img instanceof HTMLImageElement)
+      .filter((img) => img.offsetWidth > 0)
+      .map((img) => ({
+        src: img.getAttribute('src'),
+        sizes: img.getAttribute('sizes') ?? '',
+        drawn: img.offsetWidth,
+        slot: resolve(img.getAttribute('sizes') ?? ''),
+      }));
+  });
+
+type FluidImage = Awaited<ReturnType<typeof measureFluidImages>>[number];
+
+const expectSizesFitDrawnWidth = (image: FluidImage, width: number): void => {
+  const where =
+    `${image.src} at ${width}px is drawn ${image.drawn}px wide and its ` +
+    `sizes resolves to ${image.slot.toFixed(1)}px (${image.sizes})`;
+
+  expect
+    .soft(
+      image.slot + ROUNDING_PX,
+      `${where}, so the browser picks a file too small and stretches it.`,
+    )
+    .toBeGreaterThanOrEqual(image.drawn);
+
+  expect
+    .soft(
+      image.slot,
+      `${where}, more than ${SIZES_LIMIT}x, so every screen fetches a ` +
+        'larger file than it draws. Fit sizes to the layout again.',
+    )
+    .toBeLessThanOrEqual(image.drawn * SIZES_LIMIT + ROUNDING_PX);
+};
+
 for (const route of ROUTES) {
   test(`every fluid image on ${route} names its drawn width in sizes`, async ({
     page,
@@ -152,63 +220,8 @@ for (const route of ROUTES) {
         height: page.viewportSize()!.height,
       });
 
-      const images = await page.evaluate(() => {
-        const topLevel = (value: string): string[] => {
-          const parts = [''];
-          let depth = 0;
-          for (const char of value) {
-            if (char === '(') depth += 1;
-            if (char === ')') depth -= 1;
-            if (char === ',' && depth === 0) parts.push('');
-            else parts[parts.length - 1] += char;
-          }
-          return parts.map((part) => part.trim());
-        };
-
-        const resolve = (sizes: string): number => {
-          const entry = topLevel(sizes).find((candidate) => {
-            const media = candidate.match(/^(\([^()]*\))\s+/);
-            return media === null || matchMedia(media[1]).matches;
-          });
-          const probe = document.createElement('div');
-          probe.style.width = (entry ?? '100vw').replace(/^\([^()]*\)\s+/, '');
-          document.body.append(probe);
-          const slot = probe.getBoundingClientRect().width;
-          probe.remove();
-          return slot;
-        };
-
-        return [...document.querySelectorAll('img[sizes]')]
-          .filter((img) => img instanceof HTMLImageElement)
-          .filter((img) => img.offsetWidth > 0)
-          .map((img) => ({
-            src: img.getAttribute('src'),
-            sizes: img.getAttribute('sizes') ?? '',
-            drawn: img.offsetWidth,
-            slot: resolve(img.getAttribute('sizes') ?? ''),
-          }));
-      });
-
-      for (const image of images) {
-        const where =
-          `${image.src} at ${width}px is drawn ${image.drawn}px wide and its ` +
-          `sizes resolves to ${image.slot.toFixed(1)}px (${image.sizes})`;
-
-        expect
-          .soft(
-            image.slot + ROUNDING_PX,
-            `${where}, so the browser picks a file too small and stretches it.`,
-          )
-          .toBeGreaterThanOrEqual(image.drawn);
-
-        expect
-          .soft(
-            image.slot,
-            `${where}, more than ${SIZES_LIMIT}x, so every screen fetches a ` +
-              'larger file than it draws. Fit sizes to the layout again.',
-          )
-          .toBeLessThanOrEqual(image.drawn * SIZES_LIMIT + ROUNDING_PX);
-      }
+      const images = await measureFluidImages(page);
+      for (const image of images) expectSizesFitDrawnWidth(image, width);
     }
   });
 }
