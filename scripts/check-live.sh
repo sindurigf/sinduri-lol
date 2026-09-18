@@ -360,6 +360,21 @@ check_strings() {
   done
 }
 
+# $1 path, $2 the block's body file, $3 script or style. Reads the hash lists
+# check_elements sets.
+check_inline() {
+  hash=$(sha256 "$2")
+  if [ "$3" = script ]; then
+    allowed=$script_hashes directive=script-src
+  else
+    allowed=$style_hashes directive=style-src
+  fi
+  printf '%s\n' "$allowed" | grep -qxF -- "$hash" && return 0
+  fail "$1" "inline <$3> the build did not write: its hash is not in $directive"
+  detail "sha256-$hash"
+  detail "$(tr '\n' ' ' < "$2" | cut -c1-120)"
+}
+
 check_elements() {
   LC_ALL=C awk -v OUT="$2" -f "$TMP/elements.awk" "$2.body" > "$2.index" || true
   csp=$(awk -F "$TAB" '$1 == "content-security-policy" { print $2 }' "$TMP/expected")
@@ -393,17 +408,7 @@ check_elements() {
 
     inlines=$((inlines + 1))
     [ "$value" = application/ld+json ] && continue
-    block="$2.$tag.$key.body"
-    hash=$(sha256 "$block")
-    if [ "$tag" = script ]; then
-      allowed=$script_hashes directive=script-src
-    else
-      allowed=$style_hashes directive=style-src
-    fi
-    printf '%s\n' "$allowed" | grep -qxF -- "$hash" && continue
-    fail "$1" "inline <$tag> the build did not write: its hash is not in $directive"
-    detail "sha256-$hash"
-    detail "$(tr '\n' ' ' < "$block" | cut -c1-120)"
+    check_inline "$1" "$2.$tag.$key.body" "$tag"
   done < "$2.index"
 
   # A scan that stopped early has checked only part of the page, and must not
