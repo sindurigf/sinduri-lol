@@ -130,26 +130,91 @@ interface HeroBox {
   nameBottom: number;
 }
 
-const measureHero = (page: Page): Promise<HeroBox> =>
-  page.evaluate(() => {
-    const hero = document.querySelector('section.hero');
-    if (!hero) {
-      throw new Error(
-        'the homepage has no section.hero. If the hero stopped using the ' +
-          'class, this whole file is measuring nothing.',
-      );
-    }
+const HERO_PARTS = `
+    const heroParts = () => {
+      const hero = document.querySelector('section.hero');
+      if (!hero) {
+        throw new Error(
+          'the homepage has no section.hero. If the hero stopped using the ' +
+            'class, this whole file is measuring nothing.',
+        );
+      }
 
-    const stack = hero.querySelector('.hero-stack');
-    const plate = hero.querySelector('.hero-plate');
-    const marks = hero.querySelector('.hero-marks');
-    const header = document.querySelector('header');
-    if (!stack || !plate || !header) {
-      throw new Error(
-        'the hero is missing its row, its type block or the page header, so ' +
-          'the measurement below would be of the wrong thing.',
+      const stack = hero.querySelector('.hero-stack');
+      const plate = hero.querySelector('.hero-plate');
+      const marks = hero.querySelector('.hero-marks');
+      const header = document.querySelector('header');
+      if (!stack || !plate || !header) {
+        throw new Error(
+          'the hero is missing its row, its type block or the page header, so ' +
+            'the measurement below would be of the wrong thing.',
+        );
+      }
+      return { hero, stack, plate, marks, header };
+    };
+`;
+
+const HERO_MARKS_COLUMN = `
+    /*
+     * Layout heights, not \`getBoundingClientRect()\`. The stickers are
+     * rotated six degrees, so the client rect is the axis-aligned box
+     * around them and is taller than the space they take in the column.
+     * The column's own row gap and padding count too. The name block is
+     * the taller column at every viewport here, so this changes no result
+     * today; the sum has to be right on the day the stickers outgrow it.
+     */
+    const marksColumnHeight = (marks) => {
+      const marksStyle = getComputedStyle(marks);
+      const heights = [...marks.children].map((child) =>
+        parseFloat(getComputedStyle(child).height),
       );
-    }
+      return (
+        heights.reduce((total, height) => total + height, 0) +
+        (parseFloat(marksStyle.rowGap) || 0) *
+          Math.max(0, heights.length - 1) +
+        parseFloat(marksStyle.paddingTop) +
+        parseFloat(marksStyle.paddingBottom)
+      );
+    };
+`;
+
+const HERO_STACKED = `
+    /*
+     * Two layouts, added up differently.
+     *
+     * From \`sm\` up the stickers are a column beside the name block. That
+     * column is \`justify-between\` inside a stretched row, so its own box is
+     * the row's height and says nothing; what it needs is the sum of its
+     * children, and the section has to hold the taller of the two columns.
+     *
+     * On a phone the stickers are a row under the name block, so the two stack
+     * and the section has to hold both plus the gap. Comparing them there
+     * would understate the content by the whole height of the row.
+     */
+    const stackedHeight = (plate, marks, stackStyle) => {
+      const plateHeight = plate.getBoundingClientRect().height;
+      let stacked = plateHeight;
+      if (marks !== null && getComputedStyle(marks).display !== 'none') {
+        if (getComputedStyle(marks).flexDirection === 'column') {
+          stacked = Math.max(plateHeight, marksColumnHeight(marks));
+        } else {
+          stacked =
+            plateHeight +
+            parseFloat(stackStyle.rowGap) +
+            marks.getBoundingClientRect().height;
+        }
+      }
+      return stacked;
+    };
+`;
+
+const measureHero = (page: Page): Promise<HeroBox> =>
+  page.evaluate(`(() => {
+    ${HERO_PARTS}
+    ${HERO_MARKS_COLUMN}
+    ${HERO_STACKED}
+
+    const { hero, stack, plate, marks, header } = heroParts();
 
     const heroStyle = getComputedStyle(hero);
     const stackStyle = getComputedStyle(stack);
@@ -159,48 +224,7 @@ const measureHero = (page: Page): Promise<HeroBox> =>
       parseFloat(stackStyle.paddingTop) +
       parseFloat(stackStyle.paddingBottom);
 
-    /*
-     * Two layouts, added up differently.
-     *
-     * From `sm` up the stickers are a column beside the name block. That
-     * column is `justify-between` inside a stretched row, so its own box is
-     * the row's height and says nothing; what it needs is the sum of its
-     * children, and the section has to hold the taller of the two columns.
-     *
-     * On a phone the stickers are a row under the name block, so the two stack
-     * and the section has to hold both plus the gap. Comparing them there
-     * would understate the content by the whole height of the row.
-     */
-    const plateHeight = plate.getBoundingClientRect().height;
-    let stacked = plateHeight;
-    if (marks !== null && getComputedStyle(marks).display !== 'none') {
-      if (getComputedStyle(marks).flexDirection === 'column') {
-        /*
-         * Layout heights, not `getBoundingClientRect()`. The stickers are
-         * rotated six degrees, so the client rect is the axis-aligned box
-         * around them and is taller than the space they take in the column.
-         * The column's own row gap and padding count too. The name block is
-         * the taller column at every viewport here, so this changes no result
-         * today; the sum has to be right on the day the stickers outgrow it.
-         */
-        const marksStyle = getComputedStyle(marks);
-        const heights = [...marks.children].map((child) =>
-          parseFloat(getComputedStyle(child).height),
-        );
-        const marksContent =
-          heights.reduce((total, height) => total + height, 0) +
-          (parseFloat(marksStyle.rowGap) || 0) *
-            Math.max(0, heights.length - 1) +
-          parseFloat(marksStyle.paddingTop) +
-          parseFloat(marksStyle.paddingBottom);
-        stacked = Math.max(plateHeight, marksContent);
-      } else {
-        stacked =
-          plateHeight +
-          parseFloat(stackStyle.rowGap) +
-          marks.getBoundingClientRect().height;
-      }
-    }
+    const stacked = stackedHeight(plate, marks, stackStyle);
 
     const box = hero.getBoundingClientRect();
 
@@ -211,7 +235,7 @@ const measureHero = (page: Page): Promise<HeroBox> =>
       nameInside: plate.getBoundingClientRect().bottom <= box.bottom + 0.5,
       nameBottom: plate.getBoundingClientRect().bottom,
     };
-  });
+  })()`) as Promise<HeroBox>;
 
 test.describe('the homepage hero is sized to the viewport', () => {
   for (const [width, height] of VIEWPORTS) {
@@ -271,6 +295,15 @@ test.describe('the homepage hero is sized to the viewport', () => {
   }
 });
 
+const heroAndControl = (page: Page) =>
+  page.evaluate(() => ({
+    heroBottom: document.querySelector('section.hero')!.getBoundingClientRect()
+      .bottom,
+    control: document
+      .querySelector('.hero-motion-toggle')!
+      .getBoundingClientRect(),
+  }));
+
 /*
  * The hero fills the screen it opens on, exactly.
  *
@@ -292,14 +325,7 @@ test.describe('the hero fills the screen it opens on', () => {
       await page.goto('/');
       await heroReady(page);
 
-      const measured = await page.evaluate(() => ({
-        heroBottom: document
-          .querySelector('section.hero')!
-          .getBoundingClientRect().bottom,
-        control: document
-          .querySelector('.hero-motion-toggle')!
-          .getBoundingClientRect().bottom,
-      }));
+      const measured = await heroAndControl(page);
 
       const gap = Math.round(height - measured.heroBottom);
       expect(
@@ -310,7 +336,7 @@ test.describe('the hero fills the screen it opens on', () => {
           : `the hero runs ${-gap}px past the bottom of ${width}x${height}`,
       ).toBe(0);
       expect(
-        measured.control,
+        measured.control.bottom,
         `the pause control is below the fold at ${width}x${height}`,
       ).toBeLessThanOrEqual(height);
     });
@@ -333,14 +359,7 @@ test.describe('the hero fills the screen it opens on', () => {
     await page.goto('/');
     await heroReady(page);
 
-    const measured = await page.evaluate(() => ({
-      heroBottom: document
-        .querySelector('section.hero')!
-        .getBoundingClientRect().bottom,
-      control: document
-        .querySelector('.hero-motion-toggle')!
-        .getBoundingClientRect(),
-    }));
+    const measured = await heroAndControl(page);
 
     expect(
       measured.heroBottom,

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { gotoSettled, sweepTimeout } from './settle';
 import { readFileSync } from 'node:fs';
 import { builtPages, islandRoutesFromBuild, ROUTES } from './routes';
@@ -87,57 +87,66 @@ const animationState = (page: Page) =>
     };
   });
 
+const expectBadgeRunning = async (page: Page, route: string) => {
+  const running = await animationState(page);
+  expect(
+    running.present,
+    `${route} has no .spin-badge. The animation is applied by the island ` +
+      `on mount, so this failing means the island did not hydrate — which ` +
+      `is also why the pause control would be missing.`,
+  ).toBe(true);
+  expect(running.name, 'the badge should run the slowspin keyframes').toBe(
+    'slowspin',
+  );
+  expect(
+    running.state,
+    'the badge should be moving before anything is pressed. If it is not, ' +
+      'every assertion below is about a control that pauses nothing.',
+  ).toBe('running');
+};
+
+/*
+ * SC 2.5.8, on the control's own size rather than on the spacing
+ * exception, which nothing on this site relies on.
+ */
+const expectBadgeTargetSize = async (control: Locator) => {
+  const box = await control.boundingBox();
+  expect(box?.width, 'pause control target width').toBeGreaterThanOrEqual(
+    MIN_TARGET,
+  );
+  expect(box?.height, 'pause control target height').toBeGreaterThanOrEqual(
+    MIN_TARGET,
+  );
+};
+
+/*
+ * Operated by a real key press on a focused control, not by click().
+ * click() would pass against a div with a mouse handler on it.
+ */
+const pressBadgeControl = async (page: Page, control: Locator) => {
+  await control.focus();
+  await expect(control).toBeFocused();
+  await expect(
+    control,
+    'the control must show a focus indicator; :focus-visible is what the ' +
+      'site-wide gold ring hangs off',
+  ).toHaveCSS('outline-style', 'solid');
+
+  await page.keyboard.press('Enter');
+};
+
 for (const route of BADGE_ROUTES) {
   test.describe(`the spinning badge on ${route}`, () => {
     test('auto-starts, and a keyboard press pauses and resumes it', async ({
       page,
     }) => {
       await gotoSettled(page, route);
-
-      const running = await animationState(page);
-      expect(
-        running.present,
-        `${route} has no .spin-badge. The animation is applied by the island ` +
-          `on mount, so this failing means the island did not hydrate — which ` +
-          `is also why the pause control would be missing.`,
-      ).toBe(true);
-      expect(running.name, 'the badge should run the slowspin keyframes').toBe(
-        'slowspin',
-      );
-      expect(
-        running.state,
-        'the badge should be moving before anything is pressed. If it is not, ' +
-          'every assertion below is about a control that pauses nothing.',
-      ).toBe('running');
+      await expectBadgeRunning(page, route);
 
       const control = page.getByRole('button', { name: PAUSE_NAME });
       await expect(control).toBeVisible();
-
-      /*
-       * SC 2.5.8, on the control's own size rather than on the spacing
-       * exception, which nothing on this site relies on.
-       */
-      const box = await control.boundingBox();
-      expect(box?.width, 'pause control target width').toBeGreaterThanOrEqual(
-        MIN_TARGET,
-      );
-      expect(box?.height, 'pause control target height').toBeGreaterThanOrEqual(
-        MIN_TARGET,
-      );
-
-      /*
-       * Operated by a real key press on a focused control, not by click().
-       * click() would pass against a div with a mouse handler on it.
-       */
-      await control.focus();
-      await expect(control).toBeFocused();
-      await expect(
-        control,
-        'the control must show a focus indicator; :focus-visible is what the ' +
-          'site-wide gold ring hangs off',
-      ).toHaveCSS('outline-style', 'solid');
-
-      await page.keyboard.press('Enter');
+      await expectBadgeTargetSize(control);
+      await pressBadgeControl(page, control);
 
       const paused = await animationState(page);
       expect(
@@ -300,6 +309,111 @@ const fieldFingerprint = (page: Page) =>
     return { ink, signature };
   });
 
+const expectFieldPaintsAndRepaints = async (page: Page) => {
+  const first = await fieldFingerprint(page);
+  expect(first, 'the hero field canvases are not in the page').not.toBeNull();
+  expect(
+    first!.ink,
+    'the middle canvas is empty. Every assertion below would pass against a ' +
+      'field that never drew anything, which is the state the palette read ' +
+      'failing quietly would leave it in.',
+  ).toBeGreaterThan(0);
+
+  /*
+   * Polled, not sampled once after HERO_SAMPLE_MS. The first frame after the
+   * field starts can be late in WebKit, and a fixed wait turned that into a
+   * failure about repainting when nothing had stopped. It still has to
+   * repaint within five seconds: the wind moves every stem on every frame.
+   */
+  await expect
+    .poll(async () => (await fieldFingerprint(page))!.signature, {
+      message: 'the field is not repainting',
+      timeout: HERO_REPAINT_TIMEOUT_MS,
+    })
+    .not.toBe(first!.signature);
+};
+
+const expectHeroTargetSize = async (control: Locator) => {
+  const box = await control.boundingBox();
+  expect(
+    box?.width,
+    'hero pause control target width (SC 2.5.8)',
+  ).toBeGreaterThanOrEqual(MIN_TARGET);
+  expect(
+    box?.height,
+    'hero pause control target height (SC 2.5.8)',
+  ).toBeGreaterThanOrEqual(MIN_TARGET);
+};
+
+const expectFieldResumes = async (page: Page) => {
+  const resumed = await fieldFingerprint(page);
+  /*
+   * Polled for the reason the first repaint is: resuming goes through the
+   * same `start()`, and its first drawn frame can be late in WebKit. A fixed
+   * HERO_SAMPLE_MS sample failed here in CI, twice in a row, on a branch
+   * that did not touch the homepage (2026-09-14).
+   *
+   * Proven able to fail, 2026-09-14, chromium: with `toggle()` no longer
+   * calling `start()`, it failed "pressing play did not restart the field".
+   * Restored, chromium and firefox passed.
+   */
+  await expect
+    .poll(async () => (await fieldFingerprint(page))!.signature, {
+      message: 'pressing play did not restart the field',
+      timeout: HERO_REPAINT_TIMEOUT_MS,
+    })
+    .not.toBe(resumed!.signature);
+};
+
+const installFramePump = (page: Page) =>
+  page.addInitScript(() => {
+    const queue: FrameRequestCallback[] = [];
+    window.requestAnimationFrame = (callback: FrameRequestCallback): number =>
+      queue.push(callback);
+    window.cancelAnimationFrame = (): void => {};
+    (window as unknown as { pumpFrame: (now: number) => void }).pumpFrame = (
+      now,
+    ) => {
+      for (const callback of queue.splice(0)) callback(now);
+    };
+  });
+
+const countDrawnFrames = (page: Page) =>
+  page.evaluate(
+    ({ hz, frames }) => {
+      const pump = (window as unknown as { pumpFrame: (now: number) => void })
+        .pumpFrame;
+      const canvas =
+        document.querySelectorAll<HTMLCanvasElement>('.hero-field-layer')[1]!;
+      const ctx = canvas.getContext('2d')!;
+      const top = Math.floor(canvas.height * 0.55);
+      const rows = Math.min(48, canvas.height - top);
+      const signature = (): number => {
+        const { data } = ctx.getImageData(0, top, canvas.width, rows);
+        let sum = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          sum = (sum + data[i + 3] * ((i >> 2) % 7919)) % 2147483647;
+        }
+        return sum;
+      };
+
+      let last = signature();
+      let changes = 0;
+      let now = performance.now();
+      for (let i = 0; i < frames; i += 1) {
+        now += 1000 / hz;
+        pump(now);
+        const next = signature();
+        if (next !== last) {
+          changes += 1;
+          last = next;
+        }
+      }
+      return changes;
+    },
+    { hz: HERO_PUMP_HZ, frames: HERO_PUMP_FRAMES },
+  );
+
 test.describe('the hero field on /', () => {
   test('the server sends a still hero, not a moving one', () => {
     const home = builtPages().find((page) => page.route === HERO_ROUTE);
@@ -336,42 +450,12 @@ test.describe('the hero field on /', () => {
 
     const field = page.locator('.hero-field');
     await expect(field).toHaveAttribute('data-hero-motion', 'running');
-
-    const first = await fieldFingerprint(page);
-    expect(first, 'the hero field canvases are not in the page').not.toBeNull();
-    expect(
-      first!.ink,
-      'the middle canvas is empty. Every assertion below would pass against a ' +
-        'field that never drew anything, which is the state the palette read ' +
-        'failing quietly would leave it in.',
-    ).toBeGreaterThan(0);
-
-    /*
-     * Polled, not sampled once after HERO_SAMPLE_MS. The first frame after the
-     * field starts can be late in WebKit, and a fixed wait turned that into a
-     * failure about repainting when nothing had stopped. It still has to
-     * repaint within five seconds: the wind moves every stem on every frame.
-     */
-    await expect
-      .poll(async () => (await fieldFingerprint(page))!.signature, {
-        message: 'the field is not repainting',
-        timeout: HERO_REPAINT_TIMEOUT_MS,
-      })
-      .not.toBe(first!.signature);
+    await expectFieldPaintsAndRepaints(page);
 
     /* By keyboard, not by click(). */
     const control = page.getByRole('button', { name: HERO_PAUSE_NAME });
     await expect(control).toBeVisible();
-
-    const box = await control.boundingBox();
-    expect(
-      box?.width,
-      'hero pause control target width (SC 2.5.8)',
-    ).toBeGreaterThanOrEqual(MIN_TARGET);
-    expect(
-      box?.height,
-      'hero pause control target height (SC 2.5.8)',
-    ).toBeGreaterThanOrEqual(MIN_TARGET);
+    await expectHeroTargetSize(control);
 
     await control.focus();
     await expect(control).toBeFocused();
@@ -394,23 +478,7 @@ test.describe('the hero field on /', () => {
 
     await page.keyboard.press('Enter');
     await expect(field).toHaveAttribute('data-hero-motion', 'running');
-    const resumed = await fieldFingerprint(page);
-    /*
-     * Polled for the reason the first repaint is: resuming goes through the
-     * same `start()`, and its first drawn frame can be late in WebKit. A fixed
-     * HERO_SAMPLE_MS sample failed here in CI, twice in a row, on a branch
-     * that did not touch the homepage (2026-09-14).
-     *
-     * Proven able to fail, 2026-09-14, chromium: with `toggle()` no longer
-     * calling `start()`, it failed "pressing play did not restart the field".
-     * Restored, chromium and firefox passed.
-     */
-    await expect
-      .poll(async () => (await fieldFingerprint(page))!.signature, {
-        message: 'pressing play did not restart the field',
-        timeout: HERO_REPAINT_TIMEOUT_MS,
-      })
-      .not.toBe(resumed!.signature);
+    await expectFieldResumes(page);
   });
 
   /*
@@ -436,57 +504,14 @@ test.describe('the hero field on /', () => {
    * restored both drew exactly 30.
    */
   test('draws at most thirty frames a second', async ({ page }) => {
-    await page.addInitScript(() => {
-      const queue: FrameRequestCallback[] = [];
-      window.requestAnimationFrame = (callback: FrameRequestCallback): number =>
-        queue.push(callback);
-      window.cancelAnimationFrame = (): void => {};
-      (window as unknown as { pumpFrame: (now: number) => void }).pumpFrame = (
-        now,
-      ) => {
-        for (const callback of queue.splice(0)) callback(now);
-      };
-    });
+    await installFramePump(page);
     await page.goto(HERO_ROUTE);
     await expect(page.locator('.hero-field')).toHaveAttribute(
       'data-hero-motion',
       'running',
     );
 
-    const drawn = await page.evaluate(
-      ({ hz, frames }) => {
-        const pump = (window as unknown as { pumpFrame: (now: number) => void })
-          .pumpFrame;
-        const canvas =
-          document.querySelectorAll<HTMLCanvasElement>('.hero-field-layer')[1]!;
-        const ctx = canvas.getContext('2d')!;
-        const top = Math.floor(canvas.height * 0.55);
-        const rows = Math.min(48, canvas.height - top);
-        const signature = (): number => {
-          const { data } = ctx.getImageData(0, top, canvas.width, rows);
-          let sum = 0;
-          for (let i = 0; i < data.length; i += 4) {
-            sum = (sum + data[i + 3] * ((i >> 2) % 7919)) % 2147483647;
-          }
-          return sum;
-        };
-
-        let last = signature();
-        let changes = 0;
-        let now = performance.now();
-        for (let i = 0; i < frames; i += 1) {
-          now += 1000 / hz;
-          pump(now);
-          const next = signature();
-          if (next !== last) {
-            changes += 1;
-            last = next;
-          }
-        }
-        return changes;
-      },
-      { hz: HERO_PUMP_HZ, frames: HERO_PUMP_FRAMES },
-    );
+    const drawn = await countDrawnFrames(page);
 
     const said = `the field drew ${drawn} of ${HERO_PUMP_FRAMES} frames offered at ${HERO_PUMP_HZ}Hz`;
     expect(drawn, `${said}, so it is not animating`).toBeGreaterThanOrEqual(
@@ -655,6 +680,42 @@ test.describe('the hero field on /', () => {
   });
 });
 
+const movingElements = (page: Page) =>
+  page.evaluate(() => {
+    /* Longest duration in a comma-separated list, in milliseconds. */
+    const longest = (value: string) =>
+      Math.max(
+        0,
+        ...value.split(',').map((part) => {
+          const seconds = parseFloat(part);
+          if (Number.isNaN(seconds)) return 0;
+          return part.includes('ms') ? seconds : seconds * 1000;
+        }),
+      );
+
+    const out: string[] = [];
+    for (const element of document.querySelectorAll('*')) {
+      const style = getComputedStyle(element);
+      const animated = style.animationName !== 'none';
+      const animation = animated ? longest(style.animationDuration) : 0;
+      const transition =
+        style.transitionProperty === 'none'
+          ? 0
+          : longest(style.transitionDuration);
+      const endless = animated && style.animationIterationCount === 'infinite';
+
+      if (animation <= 1 && transition <= 1 && !endless) continue;
+      out.push(
+        `<${element.tagName.toLowerCase()} class="${String(
+          (element as HTMLElement).className,
+        ).slice(0, 48)}"> animation=${style.animationName} ` +
+          `${style.animationDuration}/${style.animationIterationCount} ` +
+          `transition=${style.transitionProperty} ${style.transitionDuration}`,
+      );
+    }
+    return out;
+  });
+
 /**
  * The same preference, swept across every route rather than the one that
  * renders a badge.
@@ -694,41 +755,7 @@ test('nothing anywhere still moves under reduced motion', async ({ page }) => {
       `the preference was not emulated on ${route}, so this proves nothing`,
     ).toBe(true);
 
-    const found = await page.evaluate(() => {
-      /* Longest duration in a comma-separated list, in milliseconds. */
-      const longest = (value: string) =>
-        Math.max(
-          0,
-          ...value.split(',').map((part) => {
-            const seconds = parseFloat(part);
-            if (Number.isNaN(seconds)) return 0;
-            return part.includes('ms') ? seconds : seconds * 1000;
-          }),
-        );
-
-      const out: string[] = [];
-      for (const element of document.querySelectorAll('*')) {
-        const style = getComputedStyle(element);
-        const animated = style.animationName !== 'none';
-        const animation = animated ? longest(style.animationDuration) : 0;
-        const transition =
-          style.transitionProperty === 'none'
-            ? 0
-            : longest(style.transitionDuration);
-        const endless =
-          animated && style.animationIterationCount === 'infinite';
-
-        if (animation <= 1 && transition <= 1 && !endless) continue;
-        out.push(
-          `<${element.tagName.toLowerCase()} class="${String(
-            (element as HTMLElement).className,
-          ).slice(0, 48)}"> animation=${style.animationName} ` +
-            `${style.animationDuration}/${style.animationIterationCount} ` +
-            `transition=${style.transitionProperty} ${style.transitionDuration}`,
-        );
-      }
-      return out;
-    });
+    const found = await movingElements(page);
 
     moving.push(...found.map((entry) => `${route}  ${entry}`));
   }

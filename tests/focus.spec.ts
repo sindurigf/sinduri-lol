@@ -115,22 +115,7 @@ interface Stop {
   behind: string | null;
 }
 
-/**
- * Read the currently focused element: whether anything is painted over it, and
- * whether it carries a focus indicator.
- *
- * Both are read while the element still has focus. `getComputedStyle` returns a
- * live declaration, so an outline read after a blur is the resting value.
- */
-const readFocused = (page: Page): Promise<Stop | null> =>
-  page.evaluate(`(() => {
-    ${PAGE_HELPERS}
-
-    const el = document.activeElement;
-    if (el === null || el === document.body || el === document.documentElement) {
-      return null;
-    }
-
+const FOCUS_VISIT = `
     /*
      * IDENTITY, NOT DESCRIPTION. This used to end the walk on a repeated
      * \`tagName.class|text\` string, and two prose links with no class and the
@@ -144,19 +129,24 @@ const readFocused = (page: Page): Promise<Stop | null> =>
      * control is described can end a walk early. It is reset per walk by
      * resetWalk, and a missing one is an error rather than a silent restart.
      */
-    const walkState = window.__focusWalk;
-    if (walkState === undefined) {
-      throw new Error(
-        'resetWalk was not called before this walk, so the identity list is ' +
-          'missing and the walk has no termination condition.',
-      );
-    }
-    const inMedia =
-      el.matches('video[controls], audio[controls]') &&
-      walkState.visited[walkState.visited.length - 1] === el;
-    const repeat = walkState.visited.includes(el);
-    if (!repeat) walkState.visited.push(el);
+    const visitFocused = (el) => {
+      const walkState = window.__focusWalk;
+      if (walkState === undefined) {
+        throw new Error(
+          'resetWalk was not called before this walk, so the identity list is ' +
+            'missing and the walk has no termination condition.',
+        );
+      }
+      const inMedia =
+        el.matches('video[controls], audio[controls]') &&
+        walkState.visited[walkState.visited.length - 1] === el;
+      const repeat = walkState.visited.includes(el);
+      if (!repeat) walkState.visited.push(el);
+      return { inMedia, repeat };
+    };
+`;
 
+const FOCUS_LABEL = `
     /*
      * Named \`label\` and not \`describe\`: PAGE_HELPERS brings a \`describe\` of
      * its own, and two consts of one name in the same scope is a SyntaxError
@@ -169,49 +159,50 @@ const readFocused = (page: Page): Promise<Stop | null> =>
           : '';
       return node.tagName.toLowerCase() + cls;
     };
+`;
 
-    const rect = el.getBoundingClientRect();
-    const style = getComputedStyle(el);
+const FOCUS_PROBE = `
+    const probeCover = (el, rect) => {
+      /*
+       * Four corners and the centre, inset by 2px so a corner probe lands on the
+       * element rather than on whatever abuts it.
+       */
+      const points = [
+        [rect.left + 2, rect.top + 2],
+        [rect.right - 2, rect.top + 2],
+        [rect.left + 2, rect.bottom - 2],
+        [rect.right - 2, rect.bottom - 2],
+        [rect.left + rect.width / 2, rect.top + rect.height / 2],
+      ];
 
-    /*
-     * Four corners and the centre, inset by 2px so a corner probe lands on the
-     * element rather than on whatever abuts it.
-     */
-    const points = [
-      [rect.left + 2, rect.top + 2],
-      [rect.right - 2, rect.top + 2],
-      [rect.left + 2, rect.bottom - 2],
-      [rect.right - 2, rect.bottom - 2],
-      [rect.left + rect.width / 2, rect.top + rect.height / 2],
-    ];
+      let covered = 0;
+      let probed = 0;
+      let by = null;
 
-    let covered = 0;
-    let probed = 0;
-    let by = null;
+      for (const [x, y] of points) {
+        // A point outside the viewport is not evidence either way.
+        if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) {
+          continue;
+        }
+        probed += 1;
 
-    for (const [x, y] of points) {
-      // A point outside the viewport is not evidence either way.
-      if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) {
-        continue;
-      }
-      probed += 1;
+        const hit = document.elementFromPoint(x, y);
+        if (hit === null) {
+          covered += 1;
+          continue;
+        }
+        // The element itself, its own descendants, or an ancestor painting
+        // behind it all count as "not obscured".
+        if (el.contains(hit) || hit.contains(el)) continue;
 
-      const hit = document.elementFromPoint(x, y);
-      if (hit === null) {
         covered += 1;
-        continue;
+        if (by === null) by = label(hit);
       }
-      // The element itself, its own descendants, or an ancestor painting
-      // behind it all count as "not obscured".
-      if (el.contains(hit) || hit.contains(el)) continue;
+      return { covered, probed, by };
+    };
+`;
 
-      covered += 1;
-      if (by === null) by = label(hit);
-    }
-
-    const hasRing =
-      style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0;
-
+const FOCUS_RING = `
     /*
      * SC 1.4.11 on the indicator itself. The ring is drawn in the offset gap,
      * which is outside the element's border box, so what it is measured
@@ -224,21 +215,57 @@ const readFocused = (page: Page): Promise<Stop | null> =>
      * wordmark, the nav links, the menu trigger — resolves to null without the
      * compositing step.
      */
-    let ratio_ = null;
-    let behind_ = null;
-    if (hasRing) {
+    const ringContrast = (el, style) => {
+      let ringRatio = null;
+      let ringBehind = null;
       const offset = parseFloat(style.outlineOffset) || 0;
       const ground = compositeBackground(
         offset > 0 ? el.parentElement || el : el,
       );
       const ring = parse(style.outlineColor);
       if (ground && ring) {
-        behind_ =
+        ringBehind =
           'rgb(' + Math.round(ground.r) + ', ' + Math.round(ground.g) +
           ', ' + Math.round(ground.b) + ')';
-        ratio_ = ratio(over(ring, ground), ground);
+        ringRatio = ratio(over(ring, ground), ground);
       }
+      return { ringRatio, ringBehind };
+    };
+`;
+
+/**
+ * Read the currently focused element: whether anything is painted over it, and
+ * whether it carries a focus indicator.
+ *
+ * Both are read while the element still has focus. `getComputedStyle` returns a
+ * live declaration, so an outline read after a blur is the resting value.
+ */
+const readFocused = (page: Page): Promise<Stop | null> =>
+  page.evaluate(`(() => {
+    ${PAGE_HELPERS}
+    ${FOCUS_VISIT}
+    ${FOCUS_LABEL}
+    ${FOCUS_PROBE}
+    ${FOCUS_RING}
+
+    const el = document.activeElement;
+    if (el === null || el === document.body || el === document.documentElement) {
+      return null;
     }
+
+    const { inMedia, repeat } = visitFocused(el);
+
+    const rect = el.getBoundingClientRect();
+    const style = getComputedStyle(el);
+
+    const { covered, probed, by } = probeCover(el, rect);
+
+    const hasRing =
+      style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0;
+
+    const { ringRatio, ringBehind } = hasRing
+      ? ringContrast(el, style)
+      : { ringRatio: null, ringBehind: null };
 
     return {
       repeat,
@@ -251,8 +278,8 @@ const readFocused = (page: Page): Promise<Stop | null> =>
       hasRing,
       outline:
         style.outlineStyle + ' ' + style.outlineWidth + ' ' + style.outlineColor,
-      ratio: ratio_,
-      behind: behind_,
+      ratio: ringRatio,
+      behind: ringBehind,
     };
   })()`) as Promise<Stop | null>;
 
@@ -385,7 +412,7 @@ const walkCoverage = (page: Page, selector: string): Promise<Coverage> =>
  *
  * Terminates when focus lands on an element this walk has already visited,
  * which is how an ordinary tab order announces that it has come round. See
- * the note in readFocused for what the previous string-keyed version did
+ * the note on FOCUS_VISIT for what the previous string-keyed version did
  * instead, and what it cost.
  */
 const walk = async (page: Page, key: 'Tab' | 'Shift+Tab'): Promise<Stop[]> => {
@@ -432,6 +459,132 @@ const report = (stops: Stop[]): string =>
     )
     .join('\n');
 
+const walkBothWays = async (page: Page) => {
+  /* Forward, from the top of the document. */
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.locator('body').press('Tab');
+  const forward = await walk(page, 'Tab');
+  const forwardCoverage = await walkCoverage(page, FOCUSABLE_SELECTOR);
+
+  /*
+   * Backward, from the last control on the page. This is the direction
+   * that fails when the scroll offset does not reach focusable elements:
+   * the browser aligns the control to the top of the viewport, under the
+   * sticky header.
+   */
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.locator('footer a').last().focus();
+  const backward = await walk(page, 'Shift+Tab');
+  const backwardCoverage = await walkCoverage(page, FOCUSABLE_SELECTOR);
+
+  return {
+    stops: [...forward, ...backward],
+    coverages: [
+      ['forward', forwardCoverage],
+      ['backward', backwardCoverage],
+    ] as const,
+  };
+};
+
+const expectFullCoverage = (
+  route: string,
+  width: number,
+  direction: string,
+  coverage: Coverage,
+): void => {
+  expect(
+    coverage.unreached,
+    `${route} at ${width}px has control(s) the ${direction} walk ` +
+      `never reached, so every assertion below is silent about them. ` +
+      `A control that matches the interactive selector and cannot be ` +
+      `reached by keyboard is SC 2.1.1, whatever else is true of it. ` +
+      `${coverage.visited} of ${coverage.focusable} visited:\n` +
+      coverage.unreached.map((entry) => `  ${entry}`).join('\n'),
+  ).toEqual([]);
+
+  expect(
+    coverage.extra,
+    `${route} at ${width}px focused control(s) that ` +
+      `FOCUSABLE_SELECTOR does not match, so the coverage floor is ` +
+      `counting a smaller set than the page really has, and ` +
+      `tests/target-size.spec.ts is measuring that same smaller set:\n` +
+      coverage.extra.map((entry) => `  ${entry}`).join('\n'),
+  ).toEqual([]);
+};
+
+/* SC 2.4.11 (Minimum): not ENTIRELY hidden. */
+const expectNoneHidden = (route: string, width: number, stops: Stop[]) => {
+  const hidden = stops.filter((s) => s.probed > 0 && s.covered === s.probed);
+  expect(
+    hidden,
+    `${route} at ${width}px has focused control(s) completely hidden ` +
+      `behind something else (SC 2.4.11 Focus Not Obscured, Minimum). ` +
+      `The usual cause is the scroll offset not reaching focusable ` +
+      `elements: scroll-padding-top on html is missing or too small, or ` +
+      `the browser ignores an element-level scroll-margin, as WebKit does ` +
+      `for text inputs. Either way it aligns them under the sticky header, ` +
+      `which only shows up walking backwards:\n${report(hidden)}`,
+  ).toEqual([]);
+};
+
+/* SC 2.4.7: every stop has an indicator. */
+const expectAllMarked = (route: string, width: number, stops: Stop[]) => {
+  const unmarked = stops.filter((s) => !s.hasRing);
+  expect(
+    unmarked,
+    `${route} at ${width}px has focused control(s) with no visible ` +
+      `focus indicator (SC 2.4.7). The site-wide ring is a 3px gold ` +
+      `outline on :focus-visible:\n${report(unmarked)}`,
+  ).toEqual([]);
+};
+
+/*
+ * SC 1.4.11: the indicator has to be perceivable, not merely present.
+ * A 3px gold ring is no use at 1.2:1 against what it is drawn on, and
+ * the assertion above would score that a pass: it asks only whether an
+ * outline exists.
+ *
+ * This came out of a trial run of the keyboard-a11y-tester project,
+ * which reported a focus indicator at 2.24:1 on this site. That number
+ * did not reproduce. Measured 2026-09-08: 1672 stops, every route at
+ * both widths in both directions, lowest 10.60:1, gold on `surface`.
+ * The run was still worth it, because the dimension it points at was
+ * genuinely untested and global.css had claimed 11.32 / 10.60 / 11.76
+ * against background / surface / deep with nothing behind the claim.
+ * The count is dated rather than maintained; the assertion is the
+ * floor.
+ *
+ * Stops with no resolvable ground are not counted: a ratio of null
+ * means a background image or gradient sits behind the control, where
+ * there is no single colour to measure and guessing is worse than
+ * declining. `hasRing` above is what stops that becoming a hole. All
+ * 1672 resolved a ground on the pages as measured, which is an
+ * observation about today's content and not a property of the site:
+ * one decorative background behind one control brings the case
+ * straight back, so the branch stays.
+ */
+const expectRingsContrast = (route: string, width: number, stops: Stop[]) => {
+  const dim = stops.filter(
+    (s) => s.hasRing && s.ratio !== null && s.ratio < NON_TEXT,
+  );
+  expect(
+    dim,
+    `${route} at ${width}px has focus indicator(s) below ${NON_TEXT}:1 ` +
+      `against the ground they are drawn on (SC 1.4.11). The ring is ` +
+      `painted in the outline-offset gap, so it is measured against ` +
+      `what is behind the control, never the control's own fill:\n` +
+      dim
+        .map(
+          (s) =>
+            `  ${s.selector} ${JSON.stringify(s.text)}\n` +
+            `    outline: ${s.outline}\n` +
+            `    behind:  ${s.behind}\n` +
+            `    ratio:   ${s.ratio?.toFixed(2)}:1`,
+        )
+        .join('\n'),
+  ).toEqual([]);
+};
+
 for (const { width, height, note } of WIDTHS) {
   test.describe(`keyboard flow at ${width}px (${note})`, () => {
     test.use({ viewport: { width, height } });
@@ -441,26 +594,7 @@ for (const { width, height, note } of WIDTHS) {
         const response = await gotoSettled(page, route);
         expect(response?.status(), `${route} should serve a 200`).toBe(200);
 
-        /* Forward, from the top of the document. */
-        await page.evaluate(() => window.scrollTo(0, 0));
-        await page.locator('body').press('Tab');
-        const forward = await walk(page, 'Tab');
-        const forwardCoverage = await walkCoverage(page, FOCUSABLE_SELECTOR);
-
-        /*
-         * Backward, from the last control on the page. This is the direction
-         * that fails when the scroll offset does not reach focusable elements:
-         * the browser aligns the control to the top of the viewport, under the
-         * sticky header.
-         */
-        await page.evaluate(() =>
-          window.scrollTo(0, document.body.scrollHeight),
-        );
-        await page.locator('footer a').last().focus();
-        const backward = await walk(page, 'Shift+Tab');
-        const backwardCoverage = await walkCoverage(page, FOCUSABLE_SELECTOR);
-
-        const stops = [...forward, ...backward];
+        const { stops, coverages } = await walkBothWays(page);
 
         /*
          * Non-vacuity, derived from the page rather than from a constant. See
@@ -468,98 +602,13 @@ for (const { width, height, note } of WIDTHS) {
          * that stopped a fifth of the way through, and that is exactly what
          * this file used to do.
          */
-        for (const [direction, coverage] of [
-          ['forward', forwardCoverage],
-          ['backward', backwardCoverage],
-        ] as const) {
-          expect(
-            coverage.unreached,
-            `${route} at ${width}px has control(s) the ${direction} walk ` +
-              `never reached, so every assertion below is silent about them. ` +
-              `A control that matches the interactive selector and cannot be ` +
-              `reached by keyboard is SC 2.1.1, whatever else is true of it. ` +
-              `${coverage.visited} of ${coverage.focusable} visited:\n` +
-              coverage.unreached.map((entry) => `  ${entry}`).join('\n'),
-          ).toEqual([]);
-
-          expect(
-            coverage.extra,
-            `${route} at ${width}px focused control(s) that ` +
-              `FOCUSABLE_SELECTOR does not match, so the coverage floor is ` +
-              `counting a smaller set than the page really has, and ` +
-              `tests/target-size.spec.ts is measuring that same smaller set:\n` +
-              coverage.extra.map((entry) => `  ${entry}`).join('\n'),
-          ).toEqual([]);
+        for (const [direction, coverage] of coverages) {
+          expectFullCoverage(route, width, direction, coverage);
         }
 
-        /* SC 2.4.11 (Minimum): not ENTIRELY hidden. */
-        const hidden = stops.filter(
-          (s) => s.probed > 0 && s.covered === s.probed,
-        );
-        expect(
-          hidden,
-          `${route} at ${width}px has focused control(s) completely hidden ` +
-            `behind something else (SC 2.4.11 Focus Not Obscured, Minimum). ` +
-            `The usual cause is the scroll offset not reaching focusable ` +
-            `elements: scroll-padding-top on html is missing or too small, or ` +
-            `the browser ignores an element-level scroll-margin, as WebKit does ` +
-            `for text inputs. Either way it aligns them under the sticky header, ` +
-            `which only shows up walking backwards:\n${report(hidden)}`,
-        ).toEqual([]);
-
-        /* SC 2.4.7: every stop has an indicator. */
-        const unmarked = stops.filter((s) => !s.hasRing);
-        expect(
-          unmarked,
-          `${route} at ${width}px has focused control(s) with no visible ` +
-            `focus indicator (SC 2.4.7). The site-wide ring is a 3px gold ` +
-            `outline on :focus-visible:\n${report(unmarked)}`,
-        ).toEqual([]);
-
-        /*
-         * SC 1.4.11: the indicator has to be perceivable, not merely present.
-         * A 3px gold ring is no use at 1.2:1 against what it is drawn on, and
-         * the assertion above would score that a pass: it asks only whether an
-         * outline exists.
-         *
-         * This came out of a trial run of the keyboard-a11y-tester project,
-         * which reported a focus indicator at 2.24:1 on this site. That number
-         * did not reproduce. Measured 2026-09-08: 1672 stops, every route at
-         * both widths in both directions, lowest 10.60:1, gold on `surface`.
-         * The run was still worth it, because the dimension it points at was
-         * genuinely untested and global.css had claimed 11.32 / 10.60 / 11.76
-         * against background / surface / deep with nothing behind the claim.
-         * The count is dated rather than maintained; the assertion is the
-         * floor.
-         *
-         * Stops with no resolvable ground are not counted: a ratio of null
-         * means a background image or gradient sits behind the control, where
-         * there is no single colour to measure and guessing is worse than
-         * declining. `hasRing` above is what stops that becoming a hole. All
-         * 1672 resolved a ground on the pages as measured, which is an
-         * observation about today's content and not a property of the site:
-         * one decorative background behind one control brings the case
-         * straight back, so the branch stays.
-         */
-        const dim = stops.filter(
-          (s) => s.hasRing && s.ratio !== null && s.ratio < NON_TEXT,
-        );
-        expect(
-          dim,
-          `${route} at ${width}px has focus indicator(s) below ${NON_TEXT}:1 ` +
-            `against the ground they are drawn on (SC 1.4.11). The ring is ` +
-            `painted in the outline-offset gap, so it is measured against ` +
-            `what is behind the control, never the control's own fill:\n` +
-            dim
-              .map(
-                (s) =>
-                  `  ${s.selector} ${JSON.stringify(s.text)}\n` +
-                  `    outline: ${s.outline}\n` +
-                  `    behind:  ${s.behind}\n` +
-                  `    ratio:   ${s.ratio?.toFixed(2)}:1`,
-              )
-              .join('\n'),
-        ).toEqual([]);
+        expectNoneHidden(route, width, stops);
+        expectAllMarked(route, width, stops);
+        expectRingsContrast(route, width, stops);
       });
     }
   });

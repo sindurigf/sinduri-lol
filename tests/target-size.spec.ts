@@ -51,43 +51,40 @@ interface UndersizedTarget {
   height: number;
 }
 
-const undersizedTargets = (page: Page): Promise<UndersizedTarget[]> =>
-  page.evaluate((min) => {
-    const describe = (el: Element): string => {
-      const id = el.id ? `#${el.id}` : '';
+const TARGET_DESCRIBE = `
+    const describe = (el) => {
+      const id = el.id ? '#' + el.id : '';
       const cls =
         typeof el.className === 'string' && el.className.trim() !== ''
-          ? `.${el.className.trim().split(/\s+/).slice(0, 3).join('.')}`
+          ? '.' + el.className.trim().split(/\\s+/).slice(0, 3).join('.')
           : '';
-      return `${el.tagName.toLowerCase()}${id}${cls}`;
+      return el.tagName.toLowerCase() + id + cls;
     };
+`;
 
+const TARGET_INLINE_IN_TEXT = `
     /*
      * The SC 2.5.8 inline exception: the element renders inline and the
      * container it sits in carries text of its own around it, which is what
      * "in a sentence or block of text" means. A link that is the only content
      * of its paragraph is not in a sentence and is not exempt.
      *
-     * The ancestor walk is load-bearing. Reading `el.parentElement` once was a
+     * The ancestor walk is load-bearing. Reading \`el.parentElement\` once was a
      * defect: Markdown wraps a bold prose link, as in
-     * `<li><strong><a>…</a></strong>, which give people…</li>`, so the
-     * sentence is a sibling of the `strong` rather than of the `a`, and the
+     * \`<li><strong><a>…</a></strong>, which give people…</li>\`, so the
+     * sentence is a sibling of the \`strong\` rather than of the \`a\`, and the
      * single-step version reported exempt links as failures.
      *
      * The walk climbs only while each ancestor is itself inline, which is the
      * run of formatting elements between the link and the line of text it sits
      * in. It stops at the first block container, so a link alone in its own
-     * `li` or `p` still finds no text around it and stays subject to the
+     * \`li\` or \`p\` still finds no text around it and stays subject to the
      * criterion.
      */
-    const isInlineInText = (el: Element): boolean => {
+    const isInlineInText = (el) => {
       if (getComputedStyle(el).display !== 'inline') return false;
 
-      for (
-        let node: Element | null = el;
-        node !== null;
-        node = node.parentElement
-      ) {
+      for (let node = el; node !== null; node = node.parentElement) {
         const parent = node.parentElement;
         if (parent === null) return false;
 
@@ -103,8 +100,15 @@ const undersizedTargets = (page: Page): Promise<UndersizedTarget[]> =>
 
       return false;
     };
+`;
 
-    const out: UndersizedTarget[] = [];
+const undersizedTargets = (page: Page): Promise<UndersizedTarget[]> =>
+  page.evaluate(`(() => {
+    ${TARGET_DESCRIBE}
+    ${TARGET_INLINE_IN_TEXT}
+
+    const min = ${MIN_TARGET};
+    const out = [];
 
     for (const el of document.querySelectorAll(
       'a[href], button, input, select, textarea, summary, video[controls], audio[controls], [role="button"], [tabindex]:not([tabindex="-1"])',
@@ -116,14 +120,14 @@ const undersizedTargets = (page: Page): Promise<UndersizedTarget[]> =>
 
       out.push({
         selector: describe(el),
-        name: (el.textContent ?? '').trim().replace(/\s+/g, ' ').slice(0, 40),
+        name: (el.textContent ?? '').trim().replace(/\\s+/g, ' ').slice(0, 40),
         width: Number(box.width.toFixed(1)),
         height: Number(box.height.toFixed(1)),
       });
     }
 
     return out;
-  }, MIN_TARGET);
+  })()`) as Promise<UndersizedTarget[]>;
 
 for (const { width, height, note } of VIEWPORTS) {
   test.describe(`SC 2.5.8 target size at ${width}px (${note})`, () => {
