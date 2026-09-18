@@ -2,7 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BlogLayout from '../../layouts/BlogLayout.astro';
-import { categoryAccent } from '../../lib/blog';
+import { categoryAccent, tagHref, tagLabel } from '../../lib/blog';
 
 interface Props {
   post: CollectionEntry<'blog'>;
@@ -85,13 +85,24 @@ const accent = categoryAccent(category);
       <div class="mt-16 border-t-8 border-border pt-10">
         <h2 class="label text-subtle">Tags</h2>
         {/*
-            Plain labels, not boxes. Tags are not links, and as bordered chips
-            they look like the category filter's links on the listing pages,
-            which invites a click that does nothing.
+            Plain links, not boxes. Bordered chips would look like the category
+            filter's options on the listing pages, which are a filter for the
+            page you are on rather than a way off it.
+
+            `py-2` and `min-w-6` take each link past the 24px of SC 2.5.8 on a
+            13px label, and a two-letter tag with it; `-my-2` pulls the layout
+            box back to what the bare label occupied.
           */}
         <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-3">
           {tags.map((tag) => (
-            <li class="label text-text">{tag}</li>
+            <li class="label">
+              <a
+                href={tagHref(tag)}
+                class="-my-2 inline-block min-w-6 py-2 text-text hover:text-cyan"
+              >
+                {tagLabel(tag)}
+              </a>
+            </li>
           ))}
         </ul>
       </div>

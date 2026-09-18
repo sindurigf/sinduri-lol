@@ -5,6 +5,7 @@ import {
   POSTS_PER_PAGE,
   POST_ROUTES,
   postCountByCategory,
+  TAG_ROUTES,
 } from './routes';
 import { MIN_TARGET } from './wcag';
 
@@ -431,4 +432,66 @@ test.describe('category colours', () => {
       );
     });
   }
+});
+
+/**
+ * Tag listings. Every tag on a post is a link to a page listing the posts that
+ * carry it, which is what makes the tags on a post worth rendering at all.
+ *
+ * Proven able to fail, 2026-09-18, chromium: with the tags rendered as plain
+ * <li> text again, "a post's tags are links to their listings" failed with 0
+ * links found.
+ */
+test.describe('tag listings', () => {
+  test('every tag route matches a tag on a post', () => {
+    expect(TAG_ROUTES.length, 'no tag routes are listed').toBeGreaterThan(0);
+  });
+
+  test("a post's tags are links to their listings", async ({ page }) => {
+    await gotoSettled(page, POST_ROUTES[0]);
+
+    const tags = page.locator('main a[href^="/blog/tag/"]');
+    const count = await tags.count();
+    expect(count, `${POST_ROUTES[0]} should render its tags as links`).toBe(4);
+
+    const href = await tags.first().getAttribute('href');
+    expect(
+      TAG_ROUTES.map((route) => `${route}/`),
+      `${href} is not a built tag route`,
+    ).toContain(href);
+
+    await tags.first().focus();
+    await expect(
+      tags.first(),
+      'every control needs a visible focus indicator (SC 2.4.7)',
+    ).toHaveCSS('outline-style', 'solid');
+
+    await page.keyboard.press('Enter');
+    await page.waitForURL(`**${href}`);
+
+    const hrefs = await cardHrefs(page);
+    expect(
+      hrefs,
+      'the tag listing should hold the post the tag was followed from',
+    ).toContain(`${POST_ROUTES[0]}/`);
+  });
+
+  test('a tag listing marks no category filter option current', async ({
+    page,
+  }) => {
+    await gotoSettled(page, TAG_ROUTES[1]);
+
+    await expect(
+      page
+        .getByRole('navigation', { name: /filter posts by category/i })
+        .locator('a[aria-current="page"]'),
+      'no filter option points at a tag listing, so none may claim to be ' +
+        'the page you are on',
+    ).toHaveCount(0);
+
+    await expect(
+      page.getByRole('navigation', { name: /filter posts by category/i }),
+      'the filter is still offered, as the way back to the categories',
+    ).toBeVisible();
+  });
 });

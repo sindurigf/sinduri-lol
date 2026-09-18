@@ -73,6 +73,28 @@ export const categoryLabel = (category: BlogCategory | string): string => {
   return words.charAt(0).toUpperCase() + words.slice(1);
 };
 
+/** Tags are kebab-case in the frontmatter and read the same way categories do. */
+export const tagLabel = (tag: string): string => categoryLabel(tag);
+
+export const tagHref = (tag: string): string => `/blog/tag/${tag}/`;
+
+/**
+ * Every tag in use, with the posts carrying it, newest first within a tag and
+ * the tags themselves alphabetical so the built routes do not reorder when a
+ * post is added.
+ */
+export const getPostsByTag = async (): Promise<Map<string, BlogPost[]>> => {
+  const byTag = new Map<string, BlogPost[]>();
+
+  for (const post of await getSortedPosts()) {
+    for (const tag of post.data.tags) {
+      byTag.set(tag, [...(byTag.get(tag) ?? []), post]);
+    }
+  }
+
+  return new Map([...byTag].sort(([a], [b]) => a.localeCompare(b)));
+};
+
 /*
  * One accent per category, used by every surface that shows a category, so a
  * category is the same colour wherever it appears. Complete class names

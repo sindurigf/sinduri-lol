@@ -35,7 +35,7 @@ const totalPages = pageCount(posts.length);
     <div class="mt-12">
       <BlogListing
         posts={postsOnPage(posts, 1)}
-        activeCategory={null}
+        filter={{ kind: 'all' }}
         currentPage={1}
         totalPages={totalPages}
         featureFirst

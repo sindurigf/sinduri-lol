@@ -63,7 +63,10 @@ const label = categoryLabel(category);
     <div class="mt-12">
       <BlogListing
         posts={posts}
-        activeCategory={category as (typeof BLOG_CATEGORIES)[number]}
+        filter={{
+          kind: 'category',
+          category: category as (typeof BLOG_CATEGORIES)[number],
+        }}
         currentPage={1}
         totalPages={1}
       />

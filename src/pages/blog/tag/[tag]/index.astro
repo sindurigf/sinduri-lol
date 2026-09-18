@@ -1,0 +1,75 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import BlogListing from '../../../../components/BlogListing.astro';
+import { getPostsByTag, tagLabel, type BlogPost } from '../../../../lib/blog';
+
+interface Props {
+  posts: BlogPost[];
+}
+
+/*
+ * A tag listing, one route per tag in use. Only tags a post carries build a
+ * page, so a tag page is never empty and a typo in frontmatter cannot produce
+ * a route nothing links to.
+ *
+ * NOINDEX, AND OUT OF THE SITEMAP. Most tags sit on a single post, so a tag
+ * page is one card pointing at the post the reader just came from: nothing a
+ * search result should offer beside the post itself. The pages exist for
+ * people already on the site, following a tag from a post they are reading.
+ * `follow` stays on, so the posts linked from here are still crawled.
+ *
+ * Not paginated, for the reason the category listings are not; see
+ * [category]/index.astro.
+ */
+export const getStaticPaths: GetStaticPaths = async () => {
+  const byTag = await getPostsByTag();
+
+  return [...byTag].map(([tag, posts]) => ({
+    params: { tag },
+    props: { posts },
+  }));
+};
+
+const { tag } = Astro.params;
+const { posts } = Astro.props as Props;
+
+// `tag` comes from getStaticPaths, so it is always a tag in use; Astro.params
+// is typed as string | undefined. Fail loudly rather than rendering a page
+// titled "undefined".
+if (!tag) {
+  throw new Error('Tag route rendered without a tag param.');
+}
+
+const label = tagLabel(tag);
+---
+
+<BaseLayout
+  title={`Posts tagged ${label} | sinduri.lol`}
+  description={`Every post on sinduri.lol tagged ${label}.`}
+  noindex
+>
+  {/* No horizontal padding here; see the note in [slug].astro. */}
+  <div class="mx-auto max-w-page py-28">
+    <p class="label text-subtle">Tag</p>
+
+    {/*
+      The h1 is sized `text-h2`. A tag is content rather than a string chosen
+      for this heading: `sustainability` is one 14-character word, which is
+      291px at `text-h1`'s 33px floor inside a 273px box, and no soft hyphen
+      can be written into data. The level is still h1. tests/reflow.spec.ts
+      walks these routes, so a longer tag fails there rather than in a
+      screenshot nobody takes.
+    */}
+    <h1 class="mt-6 text-h2 text-text">{label}</h1>
+
+    <div class="mt-12">
+      <BlogListing
+        posts={posts}
+        filter={{ kind: 'tag', tag }}
+        currentPage={1}
+        totalPages={1}
+      />
+    </div>
+  </div>
+</BaseLayout>
