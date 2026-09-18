@@ -1,16 +1,23 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import type { ArticleMeta } from '../lib/structured-data';
 
 interface Props {
   title: string;
   description: string;
   ogImage?: string;
+  article?: ArticleMeta;
 }
 
-const { title, description, ogImage } = Astro.props;
+const { title, description, ogImage, article } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description} ogImage={ogImage}>
+<BaseLayout
+  title={title}
+  description={description}
+  ogImage={ogImage}
+  article={article}
+>
   <article>
     <slot />
   </article>
