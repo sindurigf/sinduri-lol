@@ -421,25 +421,46 @@ layer, so plain `<a>` elements are already correct.
 `src/content.config.ts` defines one collection, `blog`, loaded with `glob()`
 from `src/content/blog/**/*.md`.
 
-| Field            | Type            | Required     | Default |
-| ---------------- | --------------- | ------------ | ------- |
-| `title`          | string          | yes          |         |
-| `date`           | date            | yes          |         |
-| `category`       | enum, see below | yes          |         |
-| `placeholder`    | boolean         | yes          |         |
-| `tags`           | string[]        | no           | `[]`    |
-| `teaser`         | string          | yes          |         |
-| `ogImage`        | string          | no           |         |
-| `featured`       | boolean         | no           | `false` |
-| `readingTime`    | number          | no           |         |
-| `seoTitle`       | string          | no           |         |
-| `seoDescription` | string          | no           |         |
-| `cover`          | image           | no           |         |
-| `coverAlt`       | string          | with `cover` |         |
+| Field            | Type              | Required     | Default |
+| ---------------- | ----------------- | ------------ | ------- |
+| `title`          | string            | yes          |         |
+| `date`           | date              | yes          |         |
+| `category`       | enum, see below   | yes          |         |
+| `placeholder`    | boolean           | yes          |         |
+| `tags`           | slug[], see below | no           | `[]`    |
+| `teaser`         | string            | yes          |         |
+| `ogImage`        | string            | no           |         |
+| `featured`       | boolean           | no           | `false` |
+| `readingTime`    | number            | no           |         |
+| `seoTitle`       | string            | no           |         |
+| `seoDescription` | string            | no           |         |
+| `cover`          | image             | no           |         |
+| `coverAlt`       | string            | with `cover` |         |
 
 Categories: `skincare`, `travel`, `personal-thoughts`, `professional-journey`,
 `open-source`. Exported as `BLOG_CATEGORIES`: import it rather than retyping
 the list.
+
+Each category has one accent colour, in `CATEGORY_ACCENT` in `src/lib/blog.ts`,
+and every surface that shows a category reads it from there: the homepage
+tiles, the post cards and the category link above a post title. Gold is the
+work pair, `open-source` and `professional-journey`; cyan is `skincare` and
+`travel`; pink is `personal-thoughts`. `tests/blog.spec.ts` compares the three
+surfaces, because three copies of the map is what they were before.
+
+Each tag is a URL segment on `/blog/tag/<tag>/`, so the schema holds it to
+kebab-case rather than escaping it per use. A tag reads as its slug with the
+first letter capitalised, except for the proper nouns in `TAG_LABELS`
+(`drupal`, `women-in-drupal`).
+
+Tag listings are built only for tags a post carries, so none is ever empty.
+They carry `<meta name="robots" content="noindex, follow">` and are left out of
+the sitemap by `src/lib/sitemap-filter.ts`: most tags sit on one post, so the
+page is one card pointing at a post that is indexed on its own. `follow` keeps
+the posts linked from them crawlable. `tests/sitemap.spec.ts` asserts both
+halves together. Their `<h1>` is sized `text-h2`, because a tag is data: the
+14-character `sustainability` is 291px at `text-h1`'s 33px floor in a 273px
+box, and no soft hyphen can be written into a tag.
 
 `cover` is a path relative to the post, resized by `astro:assets`, and shown
 only on a card a listing gives the wide `feature` treatment; without one that
