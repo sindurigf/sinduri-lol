@@ -576,11 +576,11 @@
   /*
    * A full-bleed band inside <main>.
    *
-   * Most sections in the comps carry their own background (`#0E0E0E`
-   * alternating with `#131313`, and `#FFC000` on Career) and run edge to
-   * edge, while their text stays in the same measure as everything else.
-   * <main> carries the one page gutter, so a band breaks out of it with
-   * negative inline margins and re-applies it inside itself.
+   * Every band sits on the page background; the site does not alternate
+   * grounds. The one band with its own ground is `.surface-gold`, which has
+   * to run edge to edge while its text stays in the same measure as
+   * everything else. <main> carries the one page gutter, so a band breaks
+   * out of it with negative inline margins and re-applies it inside itself.
    *
    * The four values are duplicated from .page-gutter and must move with both
    * of its breakpoints: a band that kept `sm:-mx-6` after the gutter moved
