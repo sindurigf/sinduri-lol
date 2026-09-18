@@ -540,6 +540,17 @@ the site feed with `rel="alternate"`, and a tag page links its own as well.
 Placeholder posts are left out of every feed. `tests/rss.spec.ts` parses each
 feed with the browser's XML parser and checks it against the Markdown.
 
+### Markdown sources and discovery
+
+Every published post is also served as Markdown at `/blog/<slug>.md`, linked
+from the post's head with `rel="alternate" type="text/markdown"`: YAML
+frontmatter, then the body the page is rendered from, with images pointed at
+built WebPs and root-relative links made absolute
+(`src/lib/markdown-source.ts`). Reading any field of an imported image there
+would ship its full-size original, which is why that module never does.
+`public/_headers` sends a `Link` header naming `/llms.txt`, the sitemap and the
+feed. `tests/agent-readiness.spec.ts` checks both.
+
 ## Conventions
 
 The commit format, the copy rules and the working process are in

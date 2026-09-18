@@ -60,6 +60,8 @@ interface Props {
   article?: ArticleMeta;
   /* The page's breadcrumb trail, emitted as a BreadcrumbList in the JSON-LD. */
   trail?: Trail;
+  /* A post's Markdown source, linked as a text/markdown alternate. */
+  markdownSource?: string;
   /* A second feed to advertise beside the site feed: a tag page's own. */
   feed?: { title: string; href: string };
 }
@@ -92,6 +94,7 @@ const {
   noindex = false,
   article,
   trail,
+  markdownSource,
   feed,
 } = Astro.props;
 
@@ -190,6 +193,9 @@ const articleData = article && {
       title={SITE_NAME}
       href={SITE_FEED_PATH}
     />
+    {markdownSource && (
+      <link rel="alternate" type="text/markdown" href={markdownSource} />
+    )}
     {feed && (
       <link
         rel="alternate"

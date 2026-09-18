@@ -122,6 +122,14 @@
 # else, and a page without the injection is worth more than its bytes.
 #
 # ---------------------------------------------------------------------------
+# `Link` names the three files an agent looks for before it reads a page:
+# llms.txt as `describedby`, the sitemap, and the feed as an `alternate`. It is
+# specification.website's "Link headers for discovery" item, and the syntax is
+# RFC 8288. `describedby` and `alternate` are registered relations; `sitemap`
+# is not, and is here because that checklist names it. Every page's <head>
+# carries the same sitemap and feed links, for readers handed HTML.
+#
+# ---------------------------------------------------------------------------
 # The site is open to search indexes since 2026-09-14. It was closed by
 # `X-Robots-Tag: noindex` here until launch. If it ever needs closing again,
 # use that header rather than `Disallow` in robots.txt: a crawler told not to
@@ -137,6 +145,7 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin
   Cache-Control: no-transform
+  Link: </llms.txt>; rel="describedby"; type="text/plain", </sitemap-index.xml>; rel="sitemap"; type="application/xml", </rss.xml>; rel="alternate"; type="application/rss+xml"
 
 # Build output, and only build output. Every filename Vite emits here carries a
 # content hash, which is what makes both of these safe. See the two notes

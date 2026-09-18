@@ -1,6 +1,7 @@
 ---
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { postTrail } from '../../lib/breadcrumbs';
+import { markdownSourcePath } from '../../lib/markdown-source';
 import type { GetStaticPaths } from 'astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BlogLayout from '../../layouts/BlogLayout.astro';
@@ -63,6 +64,7 @@ const article = placeholder
   ogImage={ogImage}
   article={article}
   trail={trail}
+  markdownSource={placeholder ? undefined : markdownSourcePath(post.id)}
 >
   <PageHero title={title} titleSize="post">
     <Breadcrumbs slot="eyebrow" crumbs={trail.crumbs} lastClass={accent.text} />

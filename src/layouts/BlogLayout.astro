@@ -9,9 +9,11 @@ interface Props {
   ogImage?: string;
   article?: ArticleMeta;
   trail?: Trail;
+  markdownSource?: string;
 }
 
-const { title, description, ogImage, article, trail } = Astro.props;
+const { title, description, ogImage, article, trail, markdownSource } =
+  Astro.props;
 ---
 
 <BaseLayout
@@ -20,6 +22,7 @@ const { title, description, ogImage, article, trail } = Astro.props;
   ogImage={ogImage}
   article={article}
   trail={trail}
+  markdownSource={markdownSource}
 >
   <article>
     <slot />

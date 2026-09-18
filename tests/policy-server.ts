@@ -178,6 +178,7 @@ export const MIME: Record<string, string> = {
   '.webmanifest': 'application/manifest+json',
   '.pdf': 'application/pdf',
   '.txt': 'text/plain; charset=utf-8',
+  '.md': 'text/markdown; charset=utf-8',
   /*
    * The sitemap and its index. No `charset`, deliberately: XML carries its own
    * encoding declaration in the prolog, and a charset parameter on the media
