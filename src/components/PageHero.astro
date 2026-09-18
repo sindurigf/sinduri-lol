@@ -1,0 +1,69 @@
+---
+import { Image } from 'astro:assets';
+import bunnyDark from '../assets/bunny-dark.png';
+
+/*
+ * The opening of a section page: Career, Credits, and Blog with every
+ * listing under it. The page's h1 and whatever the slots hold on the dark
+ * ground, closed by a thick `border` rule, with the bunny roundel from the
+ * homepage and /about breaking out over that rule into the page below. The
+ * overlap is the separation: nothing else sits between the hero and the page.
+ *
+ * The roundel hangs below the rule, so the page after the hero has to keep
+ * its content clear of it: below `lg` the spacer under the rule takes the
+ * overhang, and from `lg` the roundel sits right of the content column,
+ * where the next section's text never reaches.
+ */
+interface Props {
+  title: string;
+  /*
+   * `h2` for a title that is data rather than a chosen string: a tag is one
+   * long word no soft hyphen can be written into, and `text-h1`'s 33px floor
+   * does not fit `sustainability` in the 273px box. The level stays h1.
+   */
+  titleSize?: 'h1' | 'h2';
+}
+
+const { title, titleSize = 'h1' } = Astro.props;
+
+const TITLE_CLASS = { h1: 'text-h1', h2: 'text-h2' } as const;
+
+/*
+ * The mark is drawn `h-18` in the `size-36` roundel below `lg` and `h-28` in
+ * the `size-60` one from it, so its files are chosen by drawn width: 458x900
+ * at 72px and 112px tall is about 37px and 57px wide. tests/image-size.spec.ts
+ * fails when these drift from the classes.
+ */
+const ROUNDEL_MARK_WIDTHS = [37, 57, 74, 114];
+const ROUNDEL_MARK_SIZES = '(min-width: 64rem) 57px, 37px';
+---
+
+<section class="band relative border-b-8 border-border pb-20 pt-16 lg:pb-24">
+  {/*
+    The column keeps its own edges, which tests/alignment.spec.ts holds to
+    the header's and the footer's; the room for the roundel is padding on
+    the block inside it.
+  */}
+  <div class="mx-auto max-w-page">
+    <div class="lg:pr-80">
+      <slot name="eyebrow" />
+      <h1 class:list={[TITLE_CLASS[titleSize], 'text-gold']}>{title}</h1>
+      <slot />
+    </div>
+  </div>
+
+  {/* alt="" because the header wordmark already names the site. */}
+  <span class="absolute -bottom-20 right-4 flex size-36 items-center justify-center rounded-full border-8 border-border bg-gold shadow-hard-cyan-8 sm:right-10 lg:-bottom-32 lg:right-24 lg:size-60">
+    <Image
+      src={bunnyDark}
+      alt=""
+      widths={ROUNDEL_MARK_WIDTHS}
+      sizes={ROUNDEL_MARK_SIZES}
+      loading="eager"
+      class="h-18 w-auto lg:h-28"
+    />
+  </span>
+</section>
+
+{/* Takes the roundel's overhang below `lg`, where the next section's text is full width. */}
+<div class="h-24 lg:hidden" aria-hidden="true"></div>
