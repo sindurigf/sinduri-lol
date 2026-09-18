@@ -22,9 +22,6 @@ import type { Trail } from './breadcrumbs';
  * page reads the block. `type="speculationrules"` IS subject to script-src,
  * so speculation rules cannot be inlined beside this the same way.
  *
- * WHAT IS NOT HERE YET. No `BlogPosting` per post. Nothing blocks it: it is
- * unbuilt, not declined.
- *
  * Nothing here is newly public. The name is the homepage <h1>, and the
  * profile URLs and the address are in the footer of every page. Structured
  * data restates what the site already says in a machine-readable form.
