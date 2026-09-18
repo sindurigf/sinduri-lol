@@ -33,20 +33,51 @@ import { PERSON_NAME, SOCIAL_PROFILES } from './profiles';
 
 /** The `@id` of the Person node, so other nodes can reference it. */
 const personId = (origin: string): string => `${origin}/#person`;
+const websiteId = (origin: string): string => `${origin}/#website`;
+
+/** What a post knows about itself. `datePublished` is `YYYY-MM-DD`. */
+export interface ArticleMeta {
+  headline: string;
+  datePublished: string;
+  keywords: readonly string[];
+}
+
+/** A post's own facts plus the page facts BaseLayout already holds. */
+export interface ArticleData extends ArticleMeta {
+  description: string;
+  url: URL;
+  image: URL;
+}
+
+const blogPosting = (origin: string, article: ArticleData): object => ({
+  '@type': 'BlogPosting',
+  '@id': `${article.url.href}#post`,
+  headline: article.headline,
+  description: article.description,
+  url: article.url.href,
+  mainEntityOfPage: article.url.href,
+  image: article.image.href,
+  datePublished: article.datePublished,
+  keywords: article.keywords.join(', '),
+  inLanguage: 'en',
+  author: { '@id': personId(origin) },
+  publisher: { '@id': personId(origin) },
+  isPartOf: { '@id': websiteId(origin) },
+});
 
 /**
  * The site's JSON-LD graph, as one object.
  *
- * A `@graph` with two nodes rather than two script blocks, so the WebSite can
+ * A `@graph` rather than one script block per node, so the WebSite can
  * point at the Person by `@id` instead of repeating it, and a consumer that
  * reads one and not the other still gets a complete node.
  *
  * The same graph on every page, describing the site and its author rather
  * than the page. <link rel="canonical"> and <title> already say which page a
- * reader is on, and a third statement would be a third thing to keep in
- * agreement for no gain.
+ * reader is on. A post is the exception: it adds a BlogPosting, since its
+ * date and author are facts no other tag carries.
  */
-export const structuredData = (site: URL): object => {
+export const structuredData = (site: URL, article?: ArticleData): object => {
   const origin = site.origin;
 
   return {
@@ -68,7 +99,7 @@ export const structuredData = (site: URL): object => {
       },
       {
         '@type': 'WebSite',
-        '@id': `${origin}/#website`,
+        '@id': websiteId(origin),
         url: origin,
         name: site.host,
         /*
@@ -80,6 +111,7 @@ export const structuredData = (site: URL): object => {
         publisher: { '@id': personId(origin) },
         inLanguage: 'en',
       },
+      ...(article ? [blogPosting(origin, article)] : []),
     ],
   };
 };

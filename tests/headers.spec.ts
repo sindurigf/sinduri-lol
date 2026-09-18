@@ -262,11 +262,16 @@ test.describe('security headers', () => {
    * A stalled navigation never recovers, so most of the default 30s is spent
    * waiting on nothing; `navigationTimeout` ends it sooner. And on 2026-09-12
    * the stall hit one test twice running, which one retry could not absorb and
-   * which failed the required check, so CI retries this file twice. A real
+   * which failed the required check, so this file retries twice. A real
    * navigation to this loopback server takes well under a second.
+   *
+   * Locally too, the one exception to local runs not retrying. A full local
+   * run at the default worker count stalled here in 4 of 6 runs (2026-09-18),
+   * so without it `test:a11y` is red most of the time for a defect in the
+   * harness. A stall still shows on the flaky line.
    */
   test.use({ navigationTimeout: 15_000 });
-  test.describe.configure({ retries: process.env.CI ? 2 : 0 });
+  test.describe.configure({ retries: 2 });
 
   let server: Server;
   let origin: string;

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { builtHtml, ROUTES } from './routes';
+import { builtHtml, POST_ROUTES, ROUTES } from './routes';
 
 /**
  * The JSON-LD graph in every page's head.
@@ -180,6 +180,47 @@ test.describe('JSON-LD structured data', () => {
         `${route} has an empty sameAs, which is the field that connects this ` +
           'site to the profiles a search engine already knows about.',
       ).toBeGreaterThan(0);
+    }
+  });
+
+  /*
+   * A post adds a BlogPosting that points at the Person and the WebSite by
+   * `@id`, and dates itself with the same date the page shows. No other page
+   * carries one, since a listing marked as an article claims to be writing.
+   */
+  test('every post, and only a post, is a BlogPosting', () => {
+    const pages = builtHtml();
+
+    for (const route of ROUTES) {
+      const html = pages.get(route)!;
+      const graph = graphOf(html, route);
+      const posting = nodeOfType(graph, 'BlogPosting');
+      const isPost = (POST_ROUTES as readonly string[]).includes(route);
+
+      if (!isPost) {
+        expect
+          .soft(posting, `${route} is not a post but carries a BlogPosting`)
+          .toBeUndefined();
+        continue;
+      }
+
+      expect(posting, `${route} is a post with no BlogPosting`).toBeDefined();
+      const person = nodeOfType(graph, 'Person')!;
+      const website = nodeOfType(graph, 'WebSite')!;
+      const shownDate = /<time datetime="([^"]+)"/.exec(html)?.[1];
+
+      expect.soft(posting!.author, `${route} author`).toEqual({
+        '@id': person['@id'],
+      });
+      expect.soft(posting!.isPartOf, `${route} isPartOf`).toEqual({
+        '@id': website['@id'],
+      });
+      expect
+        .soft(posting!.datePublished, `${route} datePublished vs <time>`)
+        .toBe(shownDate);
+      expect
+        .soft(posting!.url, `${route} url vs canonical`)
+        .toBe(/rel="canonical" href="([^"]+)"/.exec(html)?.[1]);
     }
   });
 

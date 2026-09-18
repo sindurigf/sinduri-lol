@@ -462,6 +462,17 @@ halves together. Their `<h1>` is sized `text-h2`, because a tag is data: the
 14-character `sustainability` is 291px at `text-h1`'s 33px floor in a 273px
 box, and no soft hyphen can be written into a tag.
 
+A category with no posts gets the same `noindex, follow` and the same absence
+from the sitemap, both keyed to its post count, so it becomes indexable with
+its first post. `/contact/sent/` carries `noindex` too: it answers with a 200,
+and in a search result it would tell someone who sent nothing that their
+message arrived.
+
+A post, unless it is a placeholder, is marked up as an article:
+`og:type` `article`, `article:published_time`, and a `BlogPosting` node added
+to the JSON-LD graph, pointing at the Person and the WebSite by `@id`. Every
+other page is `website` with the two-node graph.
+
 `cover` is a path relative to the post, resized by `astro:assets`, and shown
 only on a card a listing gives the wide `feature` treatment; without one that
 card keeps its `PlaceholderBox`. The schema refuses a `cover` without

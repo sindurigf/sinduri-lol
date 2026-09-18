@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { POST_ROUTES, ROUTES } from './routes';
+import { sweepTimeout } from './settle';
 
 /**
  * The header, <main> and the footer put their content on the same two vertical
@@ -277,6 +278,7 @@ test.describe('the exception list matches the build', () => {
   test.use({ viewport: { width: 1440, height: VIEWPORT_HEIGHT } });
 
   test('only blog posts opt out of the page column', async ({ page }) => {
+    test.setTimeout(sweepTimeout(ROUTES.length));
     const withoutPageColumn: string[] = [];
 
     for (const route of ROUTES) {
