@@ -1193,11 +1193,6 @@
     @apply text-label font-black uppercase tracking-label-wide;
   }
 
-  /* text-pink-text, never text-pink. See the token comment in @theme. */
-  .section-number {
-    @apply text-section-number font-extrabold text-pink-text;
-  }
-
   /*
    * First focusable element on the page. Translated off-screen until focused,
    * then back into view so a sighted keyboard user can see where they landed.

@@ -105,18 +105,18 @@ There are two pink tokens and they are split by **role**, never by size.
   fills. It clears the 3:1 that SC 1.4.11 asks of non-text by a wide margin.
   **Never put `pink` on text.** Not on a heading, not on a section number, not
   on a label, not at any size.
-- **`pink-text` is for every pink glyph on the site**, including the section
-  number. It is AAA (7:1) on all three surfaces at every size and weight.
+- **`pink-text` is for every pink glyph on the site**, including category
+  labels. It is AAA (7:1) on all three surfaces at every size and weight.
   **Never use `pink-text` for a border, a shadow, or a fill.** Keeping it off
   non-text is what stops the two drifting back into one token.
 
 ```html
 <!-- Yes -->
-<span class="section-number text-pink-text">01</span>
+<span class="label text-pink-text">Personal thoughts</span>
 <div class="border-4 border-pink shadow-hard-pink-12">…</div>
 
 <!-- No -->
-<span class="text-pink">01</span>
+<span class="label text-pink">Personal thoughts</span>
 ```
 
 The old rule made pink conditional on the text being 18.66px or larger, which
@@ -452,7 +452,7 @@ use it for anything a person reads in continuous prose.
 
 ### Scale
 
-Every size is a token. Headings, body, the stickers and the section number are
+Every size is a token. Headings, body, the stickers and the glyph tile are
 fluid via `clamp()`; `text-label` (13px) and `text-copyright` (20px) are fixed.
 Do not add breakpoint steps.
 
@@ -468,7 +468,7 @@ Do not add breakpoint steps.
 | Label / tag            | `text-label`                              | 900    |
 | Copyright              | `text-copyright`                          | 900    |
 | Footer name            | `text-footer-name`                        | 900    |
-| Section number         | `text-section-number`                     | 800    |
+| Category glyph tile    | `text-section-number`                     | 800    |
 
 Headings must not skip levels. One `<h1>` per page.
 

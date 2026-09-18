@@ -385,7 +385,6 @@ Defined in `@layer components` in `src/styles/global.css`:
   `--inset-shadow-cta-current`, measured at 7.91 on the fill and 3.42 on the
   border
 - `.label` / `.label-wide`: 13px / 900 uppercase, 0.1em / 0.14em tracking
-- `.section-number`: `clamp(21px, 2.4vw, 28px)` / 800, `pinkText`
 - `.page-gutter`: the horizontal gutter (`px-4 sm:px-6`), declared once and
   applied to the header, `<main>` and the footer. **The base `px-4` is a reflow
   constraint, not a spacing preference.** The heading floors are calibrated
