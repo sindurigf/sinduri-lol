@@ -488,6 +488,12 @@ else
   fail / "the homepage references nothing under /vendor/, so the Umami tracker was not checked"
 fi
 
+# The rules file's Content-Type comes from its own rule in public/_headers,
+# which replaces the type the upload gave it. Read from wrangler's asset worker
+# and checked through it by tests/served-types.spec.ts; this is the check that
+# production does the same.
+check_response /speculationrules.json 200
+
 check_response "$UNKNOWN_PATH" 404
 
 # public/_redirects sends the conventional sitemap name to the index the
