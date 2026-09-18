@@ -1,44 +1,35 @@
 ---
-import { Image } from 'astro:assets';
-import badgeDark from '../assets/badge-dark.png';
 import { statSync } from 'node:fs';
 import { join } from 'node:path';
 
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
 
 /*
  * REAL COPY, structure per design/Career.dc.html.
  *
- * Every claim below is transcribed from the published CV and nothing here was
- * written for it. A CV is the most claim-dense thing a personal site carries,
- * and an invented job title is not a typo, it is a false statement about a
- * person. Two rules follow:
+ * Every claim below comes from one of two sources Sinduri wrote, and nothing
+ * here was written for this page: the published CV, and her own post
+ * src/content/blog/five-years-in-drupal.md. A CV is the most claim-dense
+ * thing a personal site carries, and an invented job title is not a typo, it
+ * is a false statement about a person. Three rules follow:
  *
  *   1. Change the PDF and change this page in the same commit. No test can
  *      hold the two together: tests/cv.spec.ts checks the file's metadata,
  *      not whether its sentences match these.
- *   2. Where the layout has a slot the CV has nothing for, the slot gets
- *      fewer items rather than an invented sentence. The CV lists three
- *      roles, so EXPERIENCE has three entries.
+ *   2. Where the layout has a slot neither source fills, the slot gets fewer
+ *      items rather than an invented sentence. The CV lists three roles, so
+ *      EXPERIENCE has three entries.
+ *   3. The page is more complete than the CV on purpose. What only the post
+ *      states (the summary's second sentence, the mossbo awards, the Python
+ *      course and the community roles) is marked below where it is used. The
+ *      summary's last paragraph and the open source intro are her own lines,
+ *      moved here from /about.
  *
- * The one entry not lifted verbatim is OFFON under OPEN_SOURCE, assembled
- * from two facts the CV states separately under Dynatrace. Everything else is
- * the CV's wording, with terminal full stops added and month names
- * abbreviated to match the layout.
- *
- * THE GOLD SURFACE. Everything inside the hero below is governed by
- * `.surface-gold`, and NOTHING in it may reach for a dark-surface token:
- * `text`, `muted`, `subtle`, `border`, `pink`, `pink-text` and `cyan` measure
- * 1.27, 1.03, 1.31, 2.34, 2.31, 1.48 and 1.01 against #FFC000, and an
- * explicit utility beats the class's subtree default, so the cascade cannot
- * stop it. tests/gold-surface.spec.ts measures the rendered result. Two
- * consequences are visible in the markup:
- *
- *   - The section number is NOT `.section-number`, which is `text-pink-text`
- *     at 1.48 on gold. It is `text-gold-muted`, 7.88.
- *   - The buttons are the gold pair. `.btn-primary` is `bg-gold`, a 1.00:1
- *     fill here: an invisible control whose label still passes every
- *     automated contrast rule.
+ * The CV's wording otherwise, with terminal full stops added and month names
+ * abbreviated to match the layout. The summary is in the first person, like
+ * the rest of the site, and the hero keeps the CV's three roles; the homepage
+ * heading uses the first two.
  *
  * THE CV IS PUBLISHED, and was checked for personal data first. The Canva
  * export carried the template author's name in /Author and dc:creator, the
@@ -63,6 +54,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
  * anyone who wants to read it rather than keep it.
  */
 const CV_HREF = '/sinduri-guntupalli-cv.pdf';
+const JOURNEY_POST_HREF = '/blog/five-years-in-drupal/';
 const PUBLIC_DIR = 'public';
 const BYTES_PER_KB = 1024;
 
@@ -76,7 +68,7 @@ const CV_KB = Math.round(
 
 const EXPERIENCE = [
   {
-    dates: 'Jan 2026 — Present',
+    dates: 'Jan 2026–Present',
     where: 'Dynatrace',
     title: 'Sr Developer Programs Engineer',
     frame: 'border-gold',
@@ -89,7 +81,7 @@ const EXPERIENCE = [
     ],
   },
   {
-    dates: 'Jun 2023 — Nov 2025',
+    dates: 'Jun 2023–Nov 2025',
     where: 'drunomics',
     title: 'Product Manager',
     frame: 'border-border',
@@ -101,10 +93,12 @@ const EXPERIENCE = [
       'Worked closely with clients and developers to clarify requirements, prioritise tasks, and ensure smooth project delivery.',
       'Contributed to automated testing using Playwright and frontend development with Nuxt and Tailwind to ensure consistent product quality.',
       'Managed the end-to-end launch of four projects on mossbo, overseeing requirements, timelines, and stakeholder communication, and created documentation to support each project launch.',
+      // From the journey post, not the CV.
+      'mossbo collected multiple awards in 2025.',
     ],
   },
   {
-    dates: 'Jan 2021 — May 2023',
+    dates: 'Jan 2021–May 2023',
     where: 'Jobiqo',
     title: 'Software Developer & Configuration Manager',
     frame: 'border-border',
@@ -141,9 +135,12 @@ const EDUCATION = [
   },
   {
     award: 'Full Stack Web Development',
-    detail: 'Code Factory, Austria, 2019.',
+    detail:
+      'Code Factory, Austria, 2019. HTML, CSS, JS, Bootstrap, TypeScript, Angular, PHP, Symfony, MySQL.',
     honour: 'Summa cum laude',
   },
+  // From the journey post, not the CV, which names no school for it.
+  { award: 'Python', detail: 'Short course, 2019.' },
   {
     award: 'Environmental Engineering, Master of Science',
     detail: 'University of Alabama, Tuscaloosa, USA, 2006–2009. 3.44/4.00.',
@@ -154,96 +151,64 @@ const EDUCATION = [
   },
 ] as const;
 
+const LANGUAGES = [
+  { language: 'English', level: 'Fluent' },
+  { language: 'German', level: 'A2' },
+] as const;
+
+// The award is on the CV; its event and the community roles are from the post.
 const OPEN_SOURCE = [
-  { award: 'Women in Drupal Award (Build)', detail: '2025.' },
-  { award: 'Drupal', detail: 'Active involvement in the Drupal community.' },
   {
-    award: 'OffOn',
+    award: 'Women in Drupal Award',
+    detail: 'Build category, DrupalCon Vienna, 2025.',
+  },
+  {
+    award: 'Drupal Austria',
     detail:
-      'The Open Ecosystem community, rebranded from Discourse, with offon.dev as its landing site.',
+      'Elected to the board as marketing manager. Deputy marketing manager in 2026.',
+  },
+  {
+    award: 'Drupal Switzerland',
+    detail:
+      'Active in the Swiss community, which taught me so much about events.',
+  },
+  {
+    award: 'Event organising',
+    detail:
+      'Volunteered at Drupal Dev Days Vienna in 2023, then helped organise Drupal Mountain Camp, Drupal Dev Days and DrupalCamp Berlin.',
   },
 ] as const;
 ---
 
 <BaseLayout
   title="Career | sinduri.lol"
-  description="Product and program management, web development, and community and ecosystem management, with active involvement in the Drupal community."
+  description="Sinduri Guntupalli: work history, education and skills, from Drupal development to product management and developer programs, with a CV to download."
 >
-  {/* ===================================================================
-       HERO: THE GOLD SURFACE
-       =================================================================== */}
-  <section class="surface-gold band relative overflow-hidden py-24">
+  <PageHero title="Career">
+    <h2 class="mt-8 text-h3">
+      <span class="block text-text">Open Source Enthusiast.</span>{' '}
+      <span class="block text-muted">Positivity Advocate.</span>{' '}
+      <span class="block text-muted">Continuous Learner.</span>
+    </h2>
+
     {/*
-      alt="" and decorative. At 0.09 opacity this is a texture; see
-      .career-watermark in global.css for the placement and for why the -dark
-      asset is the right one on this ground.
-
-      The width and height attributes are the intrinsic pixel size, so the
-      browser reserves the box before the image loads; the CSS width wins.
-
-      loading="eager", overriding <Image>'s lazy default: it is in the first
-      viewport on every load of this route. fetchpriority="high" because it is
-      also the route's LCP element.
+      The primary label names the format and the size, because the button
+      hands over a file rather than moving between pages and neither fact is
+      recoverable from "Download my CV" alone. Both buttons render uppercase,
+      so PDF and KB read as the acronyms they are.
     */}
-    <Image
-      class="career-watermark"
-      src={badgeDark}
-      alt=""
-      loading="eager"
-      fetchpriority="high"
-    />
-
-    <div class="relative z-10 mx-auto max-w-page">
-      <div class="flex flex-wrap items-baseline gap-x-5 gap-y-2">
-        {/*
-          Not `.section-number`: that class is text-pink-text, 1.48 against
-          this ground. gold-muted is 7.88.
-        */}
-        <span
-          class="text-section-number font-extrabold text-gold-muted"
-          aria-hidden="true"
-        >
-          03
-        </span>
-        <h1 class="text-h1">Career</h1>
-      </div>
-
-      <h2 class="mt-8 text-h3">
-        <span class="block">Open Source Enthusiast.</span>{' '}
-        <span class="block text-gold-muted">
-          Positivity Advocate. Continuous Learner.
-        </span>
-      </h2>
-
-      <p class="mt-8 max-w-2xl text-body text-gold-muted text-pretty">
-        Experienced in product and program management, web development,
-        configuration management, web analytics, SEO, and community and
-        ecosystem management.
-      </p>
-
-      {/*
-        Both buttons are the gold-surface pair, scoped to .surface-gold, so
-        either one used elsewhere renders unstyled. Neither .btn-primary nor
-        .btn-secondary may appear on this ground.
-
-        The primary label names the format and the size, because the button
-        hands over a file rather than moving between pages and neither fact is
-        recoverable from "Download my CV" alone. Both buttons render
-        uppercase, so PDF and KB read as the acronyms they are.
-      */}
-      <p class="mt-10 flex flex-wrap gap-4">
-        <a href={CV_HREF} class="btn-gold-primary">
-          Download my CV (PDF, {CV_KB} KB)
-        </a>
-        <a href="/contact/" class="btn-gold-secondary">
-          Get in touch
-        </a>
-      </p>
-    </div>
-  </section>
+    <p class="mt-10 flex flex-wrap gap-6">
+      <a href={CV_HREF} class="btn-primary">
+        Download my CV (PDF, {CV_KB} KB)
+      </a>
+      <a href="/contact/" class="btn-secondary">
+        Get in touch
+      </a>
+    </p>
+  </PageHero>
 
   {/* ===================================================================
-       SUMMARY: back to the dark token set
+       SUMMARY
        =================================================================== */}
   <section class="band py-24">
     <div class="mx-auto max-w-page">
@@ -253,10 +218,16 @@ const OPEN_SOURCE = [
     <div class="mx-auto max-w-page">
       <h2 class="text-h2 text-text">Summary</h2>
       <p class="mt-8 max-w-3xl text-body text-muted text-pretty">
-        Passionate about open source with active involvement in the Drupal
-        community. Known for strong organisational skills, clear communication,
-        and efficient delivery across full product lifecycles and
-        cross-functional teams.
+        I am passionate about open source and actively involved in the Drupal
+        community. My developer background helps me every single day: it helps
+        me create realistic timelines, improve communication between
+        stakeholders and engineering, and understand what developers actually
+        need to be successful.
+      </p>
+      <p class="mt-6 max-w-3xl text-body text-muted text-pretty">
+        I never say no to a challenge just because I do not know how to approach
+        it. I commit to figuring it out and learning whatever it takes to make
+        it work.
       </p>
     </div>
   </section>
@@ -327,7 +298,7 @@ const OPEN_SOURCE = [
           {EDUCATION.map((item) => (
             <li class="text-body text-muted text-pretty">
               <strong class="font-extrabold text-cyan">{item.award}</strong>
-              {' — '}
+              {': '}
               {item.detail}
               {'honour' in item ? (
                 <>
@@ -340,15 +311,32 @@ const OPEN_SOURCE = [
         </ul>
       </div>
 
-      <div class="card shadow-hard-gold-8">
-        <h2 class="text-h3 text-text">Skills</h2>
-        <ul class="mt-8 flex flex-wrap gap-3">
-          {SKILLS.map((skill) => (
-            <li class="label border-4 border-border px-4 py-2 text-text">
-              {skill}
-            </li>
-          ))}
-        </ul>
+      <div class="flex min-w-0 flex-col gap-10">
+        <div class="card shadow-hard-gold-8">
+          <h2 class="text-h3 text-text">Skills</h2>
+          <ul class="mt-8 flex flex-wrap gap-3">
+            {SKILLS.map((skill) => (
+              <li class="label border-4 border-border px-4 py-2 text-text">
+                {skill}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="card shadow-hard-pink-8">
+          <h2 class="text-h3 text-text">Languages</h2>
+          <ul class="mt-8 flex flex-col gap-4">
+            {LANGUAGES.map((item) => (
+              <li class="text-body text-muted">
+                <strong class="font-extrabold text-pink-text">
+                  {item.language}
+                </strong>
+                {': '}
+                {item.level}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   </section>
@@ -363,15 +351,28 @@ const OPEN_SOURCE = [
 
     <div class="mx-auto max-w-page">
       <h2 class="text-h2 text-text">Open source</h2>
+      <p class="mt-8 max-w-3xl text-body text-muted text-pretty">
+        What I love about open source is that people contribute based on passion
+        and expertise, not hierarchy. There is room for everyone.
+      </p>
       <ul class="mt-12 flex max-w-3xl flex-col gap-6">
         {OPEN_SOURCE.map((item) => (
           <li class="text-body text-muted text-pretty">
             <strong class="font-extrabold text-gold">{item.award}</strong>
-            {' — '}
+            {': '}
             {item.detail}
           </li>
         ))}
       </ul>
+
+      <div class="mt-14 flex flex-wrap items-center justify-between gap-6 border-t-4 border-border pt-8">
+        <p class="text-body text-text">
+          Continue reading: <a href={JOURNEY_POST_HREF}>Five years in Drupal</a>
+        </p>
+        <a href="/about/" class="btn-primary">
+          Learn more about me
+        </a>
+      </div>
     </div>
   </section>
 </BaseLayout>

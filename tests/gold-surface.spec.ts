@@ -33,17 +33,18 @@ import { builtPages, ROUTES } from './routes';
  *      arms.
  *   5. `.btn-gold-primary` keeps a visible focus ring whatever the offset
  *      does. Its ring colour is its own fill colour, so the ring is two rings.
- *   6. The real route. The Career hero is measured at 305px and 320px: both
- *      buttons' focus indicators in situ, their target sizes, every string on
- *      the gold ground, the content box, and whether the watermark scrolls the
- *      page.
+ *   6. The real route. The closing band on /contact is measured at 305px and
+ *      320px: its button's focus indicator in situ, its target size, every
+ *      string on the gold ground, the content box, and whether the page
+ *      scrolls sideways.
  *
  * 3, 4 and 5 stay fixtures now that 6 exists, deliberately. A fixture can be
  * broken on purpose to prove an assertion still bites without editing a
  * shipped route, and it keeps the class honest for the next page written
- * against it. Only test 6 can fail on a mistake made in career.astro: a
- * `text-muted` written inside the section, `.btn-primary` reached for out of
- * habit, the watermark taken out of its clip. Neither covers the other.
+ * against it. Only test 6 can fail on a mistake made in contact.astro: a
+ * `text-muted` written inside the section, or `.btn-primary` reached for out
+ * of habit. Neither covers the other. `.btn-gold-secondary` is on no shipped
+ * page, so only the fixtures cover it.
  *
  * Test 2 was never vacuous even before a gold section existed: `.skip-link`,
  * `.btn-primary` on /404, the header logo tile and the 404 mark tile are all
@@ -164,8 +165,6 @@ const invisibleControlMessage = (found: InvisibleControl[]) =>
  * gold section without adding it here fails rather than going unwatched.
  */
 const GOLD_ROUTES: Record<string, number> = {
-  /* The hero's two buttons. */
-  '/career': 2,
   /* Its closing band, pointing at /about. */
   '/contact': 1,
   /* The fact file box, which holds a heading and no controls. */
@@ -173,7 +172,7 @@ const GOLD_ROUTES: Record<string, number> = {
 };
 
 /** The route the reflow checks at the bottom of this file use. */
-const GOLD_ROUTE = '/career';
+const GOLD_ROUTE = '/contact';
 
 /**
  * Routes whose built HTML contains a `.surface-gold` section.
@@ -667,8 +666,8 @@ test.describe('the gold surface exception', () => {
   });
 
   /**
-   * The two buttons the comps specify for the gold hero. Mounted for the same
-   * reason as the fixture above: the Career page does not exist yet.
+   * The two buttons the comps specify for a gold section. Mounted rather than
+   * measured on a route, because no shipped page carries the secondary one.
    *
    * Each colour is measured against what it is actually adjacent to, which is
    * not the same ground for both buttons. The primary button's label sits on
@@ -1036,14 +1035,6 @@ test.describe('the gold surface exception', () => {
    * reader actually reaches, at the viewport a reader actually has, with the
    * focus indicator the browser actually paints. See the head of the file for
    * why the fixtures above are kept alongside it.
-   *
-   * The watermark is why overflow is checked here as well as in
-   * reflow.spec.ts. It is 700px wide at `right: -150px`, so the section's own
-   * scrollWidth genuinely exceeds its clientWidth by 150px at every viewport.
-   * That is the comp's design and it is contained by `overflow-hidden` on the
-   * section; the assertion is that the *document* does not scroll, and the
-   * 150px is asserted too, so removing `overflow-hidden` fails here rather
-   * than becoming someone's horizontal scrollbar.
    */
   const GOLD_ROUTE_WIDTHS = [
     { width: 305, contentBox: 273 },
@@ -1140,9 +1131,6 @@ test.describe('the gold surface exception', () => {
           })(),
           documentScrollWidth: document.documentElement.scrollWidth,
           documentClientWidth: document.documentElement.clientWidth,
-          sectionScrollWidth: section.scrollWidth,
-          sectionClientWidth: section.clientWidth,
-          sectionOverflowX: getComputedStyle(section).overflowX,
           contentBox:
             main.clientWidth -
             parseFloat(mainStyle.paddingLeft) -
@@ -1165,9 +1153,6 @@ test.describe('the gold surface exception', () => {
         textOnGold: { selector: string; ratio: number; text: string }[];
         documentScrollWidth: number;
         documentClientWidth: number;
-        sectionScrollWidth: number;
-        sectionClientWidth: number;
-        sectionOverflowX: string;
         contentBox: number;
       } | null;
 
@@ -1182,7 +1167,7 @@ test.describe('the gold surface exception', () => {
         `${GOLD_ROUTE} should render ${GOLD_ROUTES[GOLD_ROUTE]} controls on gold`,
       ).toBe(GOLD_ROUTES[GOLD_ROUTE]);
 
-      /* Reflow. The document must not scroll; the section is allowed to clip. */
+      /* Reflow. The document must not scroll sideways. */
       expect(
         measured.contentBox,
         `${GOLD_ROUTE} content box at ${width}px`,
@@ -1192,17 +1177,6 @@ test.describe('the gold surface exception', () => {
         `${GOLD_ROUTE} scrolls sideways at ${width}px (SC 1.4.10)`,
       ).toBeLessThanOrEqual(measured.documentClientWidth);
 
-      expect(
-        measured.sectionOverflowX,
-        'the gold hero must clip its own overflow. The watermark sits at ' +
-          'right: -150px by design, so without this the page scrolls sideways.',
-      ).toBe('hidden');
-      expect(
-        measured.sectionScrollWidth - measured.sectionClientWidth,
-        "the watermark's 150px overhang, asserted so that moving it is a " +
-          'deliberate edit rather than a silent one',
-      ).toBe(150);
-
       /* Every string on the gold ground, from the real markup. */
       expect(
         measured.textOnGold.length,
@@ -1211,7 +1185,7 @@ test.describe('the gold surface exception', () => {
       const unreadable = measured.textOnGold.filter((e) => e.ratio < AA_TEXT);
       expect(
         unreadable,
-        `text on #FFC000 below ${AA_TEXT}:1 in the real Career hero:\n` +
+        `text on #FFC000 below ${AA_TEXT}:1 in the real gold section:\n` +
           unreadable
             .map((e) => `  ${e.selector} at ${e.ratio}:1 — "${e.text}"`)
             .join('\n'),
@@ -1279,7 +1253,7 @@ test.describe('the gold surface exception', () => {
    * The invisible-control check, run against a fixture as well as against the
    * real route above.
    *
-   * The fixture is kept rather than deleted now that `/career` exists. It is
+   * The fixture is kept rather than deleted now that real gold sections exist. It is
    * the only place the check is exercised against a control it was written for
    * but no page uses, and it can be broken on purpose to prove the check still
    * bites without editing a shipped route.

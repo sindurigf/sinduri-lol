@@ -1283,37 +1283,6 @@
     @apply bg-gold text-background;
   }
 
-  /*
-   * The Career hero watermark, placed as design/Career.dc.html has it: 700px
-   * wide, opacity 0.09, right: -150px, top: 20px, pointer-events: none.
-   *
-   * Authored CSS rather than utilities because none of those numbers is a
-   * design value the site reuses; they are one placement of one asset, and
-   * they would be four arbitrary values in the markup, which this project
-   * does not allow. Same reason .mobile-menu-dialog keeps its sizing in the
-   * component.
-   *
-   * `badge-dark.png` is #111111 artwork, which measures 11.50 on gold and
-   * 1.02 on the page background: the gold hero is the only ground on this
-   * site a -dark asset can sit on. The suffix names the artwork colour, not
-   * the target surface. See the asset table in ARCHITECTURE.md.
-   *
-   * At 0.09 this is a texture, not an image. It takes alt="" and must never
-   * become the only carrier of anything. The section holding it is
-   * overflow-hidden, which keeps the -150px from scrolling the page sideways
-   * at 320px.
-   */
-  .career-watermark {
-    position: absolute;
-    top: 20px;
-    right: -150px;
-    width: 700px;
-    max-width: none;
-    height: auto;
-    opacity: 0.09;
-    pointer-events: none;
-  }
-
   /* ---------------------------------------------------------------------------
      THE FOOTER. Footer.astro says what is in it and why; this is how it is laid
      out. The numbers only mean anything together, which is why they are here

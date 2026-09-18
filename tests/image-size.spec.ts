@@ -36,7 +36,7 @@ import { gotoSettled } from './settle';
  * The largest natural size allowed, per dimension, as a multiple of the drawn
  * size times `devicePixelRatio`. Loose on purpose: it catches a master file
  * served to a thumbnail, a factor of ten or twenty, rather than arguing about
- * the career watermark's 760px file drawn at 700.
+ * a file a few percent larger than its box.
  */
 const OVERSIZE_LIMIT = 1.5;
 
