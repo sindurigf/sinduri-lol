@@ -26,8 +26,8 @@ import { builtPages, ROUTES } from './routes';
  *
  * Casing is deliberately not asserted. The category pages title themselves in
  * lower case, because the category segment comes through from the content as
- * authored. That inconsistency is recorded in TODO.md; normalising it is a
- * content decision, and it fails nothing in SC 2.4.2.
+ * authored. Normalising that is a content decision, and it fails nothing in
+ * SC 2.4.2.
  */
 const SITE = 'sinduri.lol';
 
