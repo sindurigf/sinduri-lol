@@ -13,12 +13,16 @@ import { CONTACT_EMAIL } from '../../lib/contact';
  * Copy is functional microcopy, so it is written rather than left as
  * PLACEHOLDER: a confirmation that says nothing leaves a reader who cannot see
  * the page change unsure whether anything happened.
+ *
+ * `noindex`, because it is served with a 200: listed in a search result, it
+ * would tell someone who sent nothing that their message arrived.
  */
 ---
 
 <BaseLayout
   title="Message sent | sinduri.lol"
   description="Your message has been received."
+  noindex
 >
   <section class="band py-24">
     <div class="mx-auto max-w-page">

@@ -71,3 +71,15 @@ export const gotoSettled = async (
   await page.evaluate(() => document.fonts.ready);
   return response;
 };
+
+/**
+ * The budget for one test that navigates through every route in turn, which
+ * the 30s default does not cover as ROUTES grows or the machine is loaded.
+ * Measured 2026-09-18, firefox, the reduced-motion sweep in
+ * tests/motion.spec.ts over 25 routes: 3.7s alone, about 22s with 16 workers
+ * running it at once, and past 30s once in a full local run.
+ */
+const SWEEP_BUDGET_PER_ROUTE_MS = 3_000;
+
+export const sweepTimeout = (routeCount: number): number =>
+  SWEEP_BUDGET_PER_ROUTE_MS * routeCount;

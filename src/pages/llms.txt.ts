@@ -51,14 +51,16 @@ const ROUTE_NOTES: { path: string; label: string; note: string }[] = [
   {
     path: '/about/',
     label: 'About',
-    note: 'Background and what she works on.',
+    note:
+      'Who she is: Vienna, cats, Lord of the Rings, and how a civil ' +
+      'engineer came to Drupal.',
   },
   {
     path: '/career/',
     label: 'Career',
     note:
-      'Roles, education and talks, transcribed from the published CV, which ' +
-      'the page links as a PDF.',
+      'Work history, education, skills and open source work, with the CV ' +
+      'linked as a PDF.',
   },
   {
     path: '/blog/',

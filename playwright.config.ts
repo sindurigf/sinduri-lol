@@ -36,6 +36,13 @@ const WEBKIT = Boolean(process.env.CI) || process.env.WEBKIT === '1';
  * rather than passed. Re-run `npx playwright install firefox` after
  * switching.
  *
+ * Measured again 2026-09-18 on 1.62.1, firefox 153.0, 16 local workers: the
+ * stall hit tests/headers.spec.ts in 4 of 6 full-suite runs, once or twice a
+ * run, and in 0 of 510 executions of that file on its own at the same worker
+ * count, so it needs the whole suite's load to appear. Setting
+ * `fission.autostart` to false changed nothing (2 of 3 runs still stalled),
+ * which rules out Firefox's cross-site process switch as the trigger.
+ *
  * Revisit when a 1.63.x or later release fixes this; the pin is a workaround
  * for an upstream defect, not a preference. The figures are dated rather than
  * maintained.
@@ -59,7 +66,8 @@ export default defineConfig({
    * It hides nothing: Playwright reports a test that failed and then passed as
    * flaky, on its own line in the summary, so a flaky count above zero is a
    * signal to come back here, and a real defect fails twice and stays red.
-   * Locally a failure should be reproduced rather than retried.
+   * Locally a failure should be reproduced rather than retried, with one
+   * exception: tests/headers.spec.ts, where the stall is, retries everywhere.
    *
    * Remove this when the upstream defect is fixed and the pin is lifted. The
    * two belong together.

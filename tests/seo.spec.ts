@@ -1,7 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { builtHtml as builtHtmlByRoute, DIST_DIR, TAG_ROUTES } from './routes';
+import {
+  builtHtml as builtHtmlByRoute,
+  DIST_DIR,
+  POST_ROUTES,
+  TAG_ROUTES,
+} from './routes';
 
 const SITE_ORIGIN = 'https://sinduri.lol';
 
@@ -174,6 +179,32 @@ const internalPageLinks = (html: string): string[] =>
     )
     .filter((href) => href.startsWith('/') && !href.startsWith('//'))
     .filter((href) => !(href.split('/').pop() ?? '').includes('.'));
+
+test.describe('article previews', () => {
+  /*
+   * A post unfurls as an article with its date; every other page as a
+   * website. The date is compared with the <time> the post shows, so the two
+   * cannot drift.
+   */
+  test('only posts say og:type article, with their published date', () => {
+    for (const { route, html } of builtHtml()) {
+      const isPost = (POST_ROUTES as readonly string[]).includes(
+        route.replace(/\/$/, ''),
+      );
+      expect
+        .soft(metaContent(html, 'og:type'), `${route} og:type`)
+        .toBe(isPost ? 'article' : 'website');
+      expect
+        .soft(
+          metaContent(html, 'article:published_time'),
+          `${route} article:published_time`,
+        )
+        .toBe(
+          isPost ? (/<time datetime="([^"]+)"/.exec(html)?.[1] ?? '') : null,
+        );
+    }
+  });
+});
 
 test.describe('internal links', () => {
   /*
