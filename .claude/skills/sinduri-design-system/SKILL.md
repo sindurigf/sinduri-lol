@@ -931,6 +931,45 @@ is still 18.58.
 
 ---
 
+## Page rules
+
+Every page is built from the same parts in the same order, so no page decides
+its own opening, heading treatment or rhythm. Agreed with Sinduri on
+2026-09-18 after a cohesion audit found five openings, six section-heading
+treatments and five section paddings. `tests/page-structure.spec.ts` checks the
+ones a machine can see.
+
+- **Opening.** Every page except Home and 404 opens with `PageHero`: the
+  tilted plate, a gold `h1`, the roundel on its bottom corner. A page with a
+  photo passes `image`, and the plate sits over the photo's left edge with the
+  roundel on the seam, rather than taking the photo inside it. A page with its
+  own round mark (Contact's badge) passes it in the `mark` slot. A post uses
+  `titleSize="post"`.
+- **Sections.** Everything after the hero is a `Section`: a band with
+  `py-section`, a white `text-h2` heading, an optional `.lead`, then the
+  content at `mt-head`. There is no rule above the heading; the heading and the
+  spacing mark the section.
+- **Colour has a job.** Gold is structure: the hero shadow, every card's
+  default shadow, card labels. Pink is emphasis, on at most one card per
+  section (the current role, the cats, the award). Cyan is the round marks: the
+  roundel and the badge. On the blog, colour means category, as before.
+- **One card.** `.card` with an 8px hard shadow, always, and `.card-title` for
+  its heading. A state such as "current" is a `.chip` with words in it, never a
+  border colour alone (SC 1.4.1).
+- **Photos** take a 4px `border` frame and no shadow or tilt; only cards stand
+  forward.
+- **Spacing** comes from `--spacing-section`, `-head`, `-grid`, `-actions` and
+  `-inline`. Each is fluid from 390px to 1200px, because the desktop values
+  left a phone with screens of empty ground between one-column sections.
+- **Links**: a link in a sentence uses the base underline; an action is
+  `.btn-primary` or `.btn-secondary`; tags, skills and jump links are `.chip`.
+- **Reading pages** (Privacy, Accessibility, posts) are a PageHero, then one
+  `.prose max-w-3xl` column at the left of the page column.
+- **One ground.** Sections do not alternate backgrounds. The gold surface is
+  the only change of ground.
+
+---
+
 ## Components
 
 **Native elements before ARIA.** Every ARIA attribute is a promise you then have
@@ -1058,16 +1097,16 @@ exactly three things:
    tile's radius the way it takes its colour, border and tilt. A tile that is
    not a copy of the logo tile does not qualify, however much it looks like one
 
-**`rounded-full` is the circle-and-pill exception.** It applies to the spinning
-badge frame (`SpinBadge.vue`), the bunny roundel in the homepage About teaser,
-on the About page and in `PageHero` (Career, Blog and its listings,
-Credits), and `.pill`.
+**`rounded-full` is the circle exception.** It applies to the spinning badge
+frame (`SpinBadge.vue`), the bunny roundel (`Roundel.astro`, on every
+PageHero and in the homepage About teaser), and the Star Trek thumbnail on
+`/about`. There is no pill: tags and labels are the square `.chip`.
 
 The two are not degrees of the same thing and the second is not a loophole in
 the first. `rounded-nav` softens a rectangle, which is the move this design
 language is built to avoid, so it is capped at the CTA and the logo tile, drawn
 in two places, and stays there.
-`rounded-full` draws a circle or a pill, which is a shape in its own right:
+`rounded-full` draws a circle, which is a shape in its own right:
 there is no rectangle underneath it to have gone soft. The comps write
 `border-radius: 9999px` on every one of these.
 
