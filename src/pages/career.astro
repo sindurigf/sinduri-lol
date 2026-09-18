@@ -74,7 +74,6 @@ const EXPERIENCE = [
     title: 'Sr Developer Programs Engineer',
     frame: 'border-gold',
     datesClass: 'text-gold',
-    background: 'bg-surface',
     points: [
       'Rebranded the Open Ecosystem Discourse community to OffOn, restructuring categories, navigation, and gamification based on community metrics analysis to drive contributor engagement.',
       'Built offon.dev, a React static site serving as the landing site for the OffOn community.',
@@ -87,7 +86,6 @@ const EXPERIENCE = [
     title: 'Product Manager',
     frame: 'border-border',
     datesClass: 'text-cyan',
-    background: 'bg-surface',
     points: [
       'Managed the development and launch of mossbo, a fully managed cloud CMS with AI-powered tools, coordinating a cross-functional team of developers, designers, and marketers.',
       'Developed and documented clear product lifecycle processes in collaboration with management.',
@@ -104,7 +102,6 @@ const EXPERIENCE = [
     title: 'Software Developer & Configuration Manager',
     frame: 'border-border',
     datesClass: 'text-pink-text',
-    background: 'bg-surface',
     points: [
       'Developed and maintained Drupal-based job board websites, handling both backend and frontend development tasks.',
       'Led the UI and frontend implementation for a client job board website relaunch on Drupal.',
@@ -248,13 +245,7 @@ const OPEN_SOURCE = [
            * under it and the points in the other three.
            */
           EXPERIENCE.map((role) => (
-            <li
-              class:list={[
-                'card grid gap-8 lg:grid-cols-4',
-                role.frame,
-                role.background,
-              ]}
-            >
+            <li class:list={['card grid gap-8 lg:grid-cols-4', role.frame]}>
               <h3 class="min-w-0 text-h3 text-text lg:col-span-4">
                 {role.title}
               </h3>
