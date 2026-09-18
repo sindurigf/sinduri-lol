@@ -48,6 +48,26 @@ const WEBKIT = Boolean(process.env.CI) || process.env.WEBKIT === '1';
  * maintained.
  */
 
+/*
+ * The cause of that stall: microsoft/playwright#42731. `public/_headers` sends
+ * `Cross-Origin-Opener-Policy: same-origin`, and only the policy server in
+ * tests/policy-server.ts serves it. Firefox answers COOP by replacing the
+ * browsing context inside the same process, which is why `fission.autostart`
+ * changed nothing. Playwright's Firefox driver then answers
+ * `navigationCommitted` from a stale response cache, so `page.goto` never
+ * resolves.
+ *
+ * Turning off Firefox's COOP handling removes the trigger. Measured
+ * 2026-09-18, full suite, alternating runs on one machine: 5 stalls across 3
+ * of 4 runs without the pref, 0 across 4 runs with it. Nothing here
+ * depends on Firefox enforcing COOP: headers.spec.ts asserts the header's
+ * value, and Chromium still enforces it. Remove this once a release carries
+ * the upstream fix.
+ */
+const FIREFOX_PREFS = {
+  'browser.tabs.remote.useCrossOriginOpenerPolicy': false,
+};
+
 const PORT = 4321;
 const BASE_URL = `http://localhost:${PORT}`;
 
@@ -165,7 +185,13 @@ export default defineConfig({
    */
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    {
+      name: 'firefox',
+      use: {
+        ...devices['Desktop Firefox'],
+        launchOptions: { firefoxUserPrefs: FIREFOX_PREFS },
+      },
+    },
     ...(WEBKIT
       ? [{ name: 'webkit', use: { ...devices['Desktop Safari'] } }]
       : []),

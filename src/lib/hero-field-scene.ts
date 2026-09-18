@@ -100,7 +100,7 @@ export const REFERENCE_WIDTH = 1440;
 export const REFERENCE_ASPECT = REFERENCE_WIDTH / REFERENCE_HEIGHT;
 
 /** Eye level at the reference box. Never drawn; see the module note. */
-export const HORIZON_RATIO = 398 / REFERENCE_HEIGHT;
+const HORIZON_RATIO = 398 / REFERENCE_HEIGHT;
 
 /** Where the nearest ground lands, comfortably below the bottom edge. */
 const GROUND_RATIO = 930 / REFERENCE_HEIGHT;
