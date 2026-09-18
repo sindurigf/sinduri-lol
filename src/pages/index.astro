@@ -1,4 +1,5 @@
 ---
+import SectionRule from '../components/SectionRule.astro';
 import { Image } from 'astro:assets';
 import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -196,9 +197,7 @@ const STATS = [
        ABOUT TEASER
        =================================================================== */}
   <section class="band py-24">
-    <div class="mx-auto max-w-page">
-      <span class="section-rule bg-gold"></span>
-    </div>
+    <SectionRule accent="gold" />
 
     <div class="mx-auto max-w-page">
       {/*
@@ -289,9 +288,7 @@ const STATS = [
        CATEGORY GRID
        =================================================================== */}
   <section class="band py-24">
-    <div class="mx-auto max-w-page">
-      <span class="section-rule bg-cyan"></span>
-    </div>
+    <SectionRule accent="cyan" />
 
     <div class="mx-auto max-w-page">
       <div class="flex flex-wrap items-end justify-between gap-8">
@@ -342,9 +339,7 @@ const STATS = [
        FEATURED POSTS
        =================================================================== */}
   <section class="band py-24">
-    <div class="mx-auto max-w-page">
-      <span class="section-rule bg-pink"></span>
-    </div>
+    <SectionRule accent="pink" />
 
     <div class="mx-auto max-w-page">
       <h2 class="text-h2 text-text">Featured posts</h2>
@@ -364,11 +359,7 @@ const STATS = [
       >
         {featured.map((post) => (
           <li class="flex min-w-0">
-            <BlogCard
-              {...cardProps(post)}
-              headingLevel={3}
-              class="w-full"
-            />
+            <BlogCard {...cardProps(post)} headingLevel={3} class="w-full" />
           </li>
         ))}
       </ul>
