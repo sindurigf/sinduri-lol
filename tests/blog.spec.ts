@@ -408,7 +408,9 @@ test.describe('category colours', () => {
     test(`${route} and its card use its category colour`, async ({ page }) => {
       await gotoSettled(page, route);
 
-      const link = page.locator('main p.label a[href^="/blog/"]').first();
+      const link = page.locator(
+        'main nav[aria-label="Breadcrumb"] li:last-child a',
+      );
       const category = categoryOf((await link.getAttribute('href')) ?? '');
       const colour = CATEGORY_COLOURS[category];
       expect(colour, `unknown category "${category}"`).toBeDefined();

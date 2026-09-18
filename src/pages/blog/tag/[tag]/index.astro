@@ -1,4 +1,6 @@
 ---
+import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
+import { blogTrail } from '../../../../lib/breadcrumbs';
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import PageHero from '../../../../components/PageHero.astro';
@@ -44,6 +46,7 @@ if (!tag) {
 }
 
 const label = tagLabel(tag);
+const trail = blogTrail(label);
 ---
 
 <BaseLayout
@@ -51,6 +54,7 @@ const label = tagLabel(tag);
   description={`Posts tagged ${label} on sinduri.lol, newest first.`}
   noindex
   feed={{ title: `sinduri.lol: ${label}`, href: tagFeedPath(tag) }}
+  trail={trail}
 >
   {/*
     The h1 is sized `text-h2`. A tag is content rather than a string chosen
@@ -61,9 +65,7 @@ const label = tagLabel(tag);
     screenshot nobody takes.
   */}
   <PageHero title={label} titleSize="h2">
-    <p slot="eyebrow" class="mb-6 label text-subtle">
-      Tag
-    </p>
+    <Breadcrumbs slot="eyebrow" crumbs={trail.crumbs} />
   </PageHero>
 
   {/* No horizontal padding here; see the note in [slug].astro. */}

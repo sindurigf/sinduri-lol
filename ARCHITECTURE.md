@@ -428,6 +428,11 @@ ones a machine can see.
   roundel on the seam, rather than taking the photo inside it. A page with its
   own round mark (Contact's badge) passes it in the `mark` slot. A post uses
   `titleSize="post"`.
+- **Breadcrumbs.** Posts, category and tag listings, and `/blog/page/<n>`
+  put `Breadcrumbs` in the `PageHero` eyebrow slot: Home / Blog, then a post's
+  category. The trail stops at the parent, because the `h1` below it is the
+  page. The JSON-LD `BreadcrumbList` adds the page itself as its last item.
+  `tests/breadcrumbs.spec.ts` holds the two to each other.
 - **Sections.** Everything after the hero is a `Section`: a band with
   `py-section`, a white `text-h2` heading, an optional `.lead`, then the
   content at `mt-head`. There is no rule above the heading; the heading and the

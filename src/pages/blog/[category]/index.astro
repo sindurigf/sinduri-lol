@@ -1,4 +1,6 @@
 ---
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import { blogTrail } from '../../../lib/breadcrumbs';
 import type { GetStaticPaths } from 'astro';
 import { BLOG_CATEGORIES, type BlogCategory } from '../../../content.config';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
@@ -37,6 +39,7 @@ if (!category) {
 }
 
 const label = categoryLabel(category);
+const trail = blogTrail(label);
 
 /*
  * An empty category is served, since the filter links to it, but asks not to
@@ -63,6 +66,7 @@ const listingSummary = isEmpty
   title={`${label} | sinduri.lol`}
   description={`${CATEGORY_TEASERS[category as BlogCategory]} ${listingSummary}`}
   noindex={isEmpty}
+  trail={trail}
 >
   {/*
     No "All posts" link above the heading. The category filter below offers
@@ -70,7 +74,9 @@ const listingSummary = isEmpty
     going to the same place under the same name. The filter's option is the
     one in context.
   */}
-  <PageHero title={label} />
+  <PageHero title={label}>
+    <Breadcrumbs slot="eyebrow" crumbs={trail.crumbs} />
+  </PageHero>
 
   {/* No horizontal padding here; see the note in [slug].astro. */}
   <div class="mx-auto max-w-page py-section">

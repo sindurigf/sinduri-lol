@@ -1,4 +1,6 @@
 ---
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import { blogTrail } from '../../../lib/breadcrumbs';
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHero from '../../../components/PageHero.astro';
@@ -58,11 +60,13 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 const { posts, page, totalPages } = Astro.props as Props;
+const trail = blogTrail(`Blog, page ${page}`);
 ---
 
 <BaseLayout
   title={`Blog, page ${page} | sinduri.lol`}
   description={`Page ${page} of my posts on open source, my professional journey, travel, skincare and personal thoughts.`}
+  trail={trail}
 >
   {/*
     `py-2` takes the label link past the 24px of SC 2.5.8; `-my-2` pulls its
@@ -74,11 +78,7 @@ const { posts, page, totalPages } = Astro.props as Props;
     bookmark has nothing else to say which slice of the archive this is.
   */}
   <PageHero title={`Blog, page ${page}`}>
-    <p slot="eyebrow" class="mb-6 label text-subtle">
-      <a href="/blog/" class="-my-2 inline-block py-2 text-gold">
-        All posts
-      </a>
-    </p>
+    <Breadcrumbs slot="eyebrow" crumbs={trail.crumbs} />
   </PageHero>
 
   <div class="mx-auto max-w-page py-section">

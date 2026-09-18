@@ -1,5 +1,6 @@
 import { CONTACT_EMAIL } from './contact';
 import { PERSON_NAME, SOCIAL_PROFILES } from './profiles';
+import type { Trail } from './breadcrumbs';
 
 /*
  * JSON-LD, which specification.website grades Recommended under both SEO and
@@ -63,6 +64,29 @@ const blogPosting = (origin: string, article: ArticleData): object => ({
   isPartOf: { '@id': websiteId(origin) },
 });
 
+/*
+ * The page's place in the site, ending with the page itself. Google takes a
+ * last item without `item` as the page the list sits on, which is why the
+ * visible trail can stop at the parent while this does not.
+ */
+const breadcrumbList = (site: URL, page: URL, trail: Trail): object => ({
+  '@type': 'BreadcrumbList',
+  '@id': `${page.href}#breadcrumb`,
+  itemListElement: [
+    ...trail.crumbs.map((crumb, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: crumb.label,
+      item: new URL(crumb.href, site).href,
+    })),
+    {
+      '@type': 'ListItem',
+      position: trail.crumbs.length + 1,
+      name: trail.current,
+    },
+  ],
+});
+
 /**
  * The site's JSON-LD graph, as one object.
  *
@@ -72,10 +96,15 @@ const blogPosting = (origin: string, article: ArticleData): object => ({
  *
  * The same graph on every page, describing the site and its author rather
  * than the page. <link rel="canonical"> and <title> already say which page a
- * reader is on. A post is the exception: it adds a BlogPosting, since its
- * date and author are facts no other tag carries.
+ * reader is on. Two additions are per page: a post adds a BlogPosting, since
+ * its date and author are facts no other tag carries, and a page with a
+ * breadcrumb trail adds the BreadcrumbList for it.
  */
-export const structuredData = (site: URL, article?: ArticleData): object => {
+export const structuredData = (
+  site: URL,
+  article?: ArticleData,
+  breadcrumbs?: { page: URL; trail: Trail },
+): object => {
   const origin = site.origin;
 
   return {
@@ -110,6 +139,9 @@ export const structuredData = (site: URL, article?: ArticleData): object => {
         inLanguage: 'en',
       },
       ...(article ? [blogPosting(origin, article)] : []),
+      ...(breadcrumbs
+        ? [breadcrumbList(site, breadcrumbs.page, breadcrumbs.trail)]
+        : []),
     ],
   };
 };
