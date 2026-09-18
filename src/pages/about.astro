@@ -1,8 +1,9 @@
 ---
-import SectionRule from '../components/SectionRule.astro';
 import { Image } from 'astro:assets';
-import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import CloseRow from '../components/CloseRow.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
 import rainbowPortrait from '../assets/photos/sinduri-pride.jpg';
 import lake from '../assets/photos/sinduri-lake.jpg';
 import bicycle from '../assets/photos/sinduri-bicycle.jpg';
@@ -26,7 +27,7 @@ import { DENSITIES, WIDTHS } from '../lib/image-densities';
 /*
  * Sinduri's own copy, told in order: who she is, what she believes, her
  * people and places, the important things, and her path into Drupal last.
- * Sections use the site's own vocabulary (section rule, h2, card, hard
+ * Sections use the site's own vocabulary (PageHero, Section, card, hard
  * shadow) so the page reads as part of the same site as the homepage. The
  * jump links repeat the section headings word for word, so each one names
  * where it lands.
@@ -41,9 +42,6 @@ const JOURNEY_POST_HREF = '/blog/five-years-in-drupal/';
 /** The Fandoms thumbnail, drawn `size-14`. */
 const THUMB_SIZE = 56;
 
-/** The bunny roundel's mark, drawn `h-14`, as on the homepage. */
-const ROUNDEL_MARK_HEIGHT = 56;
-
 /** The Johann photo, drawn `w-64`; its master is only 278px wide. */
 const JOHANN_WIDTH = 256;
 
@@ -56,20 +54,21 @@ const JOHANN_DENSITIES = [1];
 
 /*
  * Only used to pick a file from WIDTHS. Each is the width the photo is drawn
- * at from `lg`, `sm` and below, net of the page gutter, card padding and
- * column gaps, and capped where `max-w-page` stops growing.
+ * at from `lg`, `sm` and below, net of the page gutter and card padding, and
+ * capped where `max-w-page` stops growing. The `lg` terms leave out the
+ * column gap, which is fluid (`--spacing-grid`), so they overstate the drawn
+ * width by at most half a gap rather than ever falling short of it.
  * tests/image-size.spec.ts fails when one drifts from the layout.
  */
 const SIZES = {
-  hero: '(min-width: 64rem) min(calc(50vw - 3.25rem), 38.25rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)',
   quote:
-    '(min-width: 64rem) min(calc(50vw - 2.75rem), 38.75rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)',
-  pair: '(min-width: 64rem) min(calc(25vw - 4.75rem), 16rem), (min-width: 40rem) calc(50vw - 4.875rem), calc(50vw - 3.375rem)',
+    '(min-width: 64rem) min(calc(50vw - 1.5rem), 38.75rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)',
+  pair: '(min-width: 64rem) min(calc(25vw - 4.125rem), 16rem), (min-width: 40rem) calc(50vw - 4.875rem), calc(50vw - 3.375rem)',
   masonry:
     '(min-width: 64rem) min(calc(33.45vw - 2rem), 25.75rem), (min-width: 40rem) calc(50vw - 2.25rem), calc(100vw - 2rem)',
-  food: 'min(calc(100vw - 6rem), 24rem)',
+  food: '(min-width: 64rem) min(calc(50vw - 7.5rem), 32.75rem), (min-width: 40rem) calc(100vw - 9rem), calc(100vw - 6rem)',
   cat: '(min-width: 40rem) min(calc(33.45vw - 4rem), 23.75rem), calc(100vw - 6rem)',
-  side: '(min-width: 64rem) min(calc(42vw - 2.875rem), 31.875rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)',
+  side: '(min-width: 64rem) min(calc(41.67vw - 1.25rem), 31.875rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)',
 } as const;
 
 const COVER_PHOTOGRAPHER = 'Tdm Dilip';
@@ -144,407 +143,305 @@ const CATS = [
     alt: 'Rudra, a black cat, having his head stroked.',
   },
 ] as const;
-
-/** A link in the "On this page" row: its own 24px target, like the nav. */
-const JUMP_LINK =
-  'label inline-flex min-h-target items-center border-4 border-border bg-surface px-4 py-2 text-text hover:text-cyan';
 ---
 
 <BaseLayout
   title="About | sinduri.lol"
   description="Sinduri in Vienna: cats, Lord of the Rings, positivity, and how a civil engineer found her way into the Drupal community."
 >
-  {/* ===================================================================
-       WHO I AM
-       =================================================================== */}
-  <section class="band py-16">
-    <div class="mx-auto grid max-w-page gap-14 lg:grid-cols-2 lg:items-center">
-      <div class="flex min-w-0 flex-col gap-8">
-        <div class="flex flex-col gap-6">
-          <h1 class="text-h1 text-text">About me</h1>
-          <p class="text-h3 font-black text-gold text-pretty">
-            Open source enthusiast in Vienna, cat lover, and a very serious Lord
-            of the Rings fan.
-          </p>
-        </div>
+  <PageHero
+    title="About me"
+    image={bicycle}
+    imageAlt="Sinduri laughing as she rides a bicycle with a basket down a tree-lined path."
+  >
+    <p class="standfirst">
+      Open source enthusiast in Vienna, cat lover, and a very serious Lord of
+      the Rings fan.
+    </p>
 
-        <div id="lepus-ridet" class="card shadow-hard-pink-8">
-          <p class="label-wide text-pink-text">
-            Why <span lang="la">Lepus Ridet</span>
-          </p>
-          <p class="mt-4 text-h3 font-bold text-text text-pretty">
-            My pet name is Bunny. That is what my family and close friends call
-            me.
-          </p>
-          <p class="mt-4 max-w-prose text-body text-muted text-pretty">
-            I try to always laugh and find fun in everything I do, and that is
-            where <span lang="la">Lepus Ridet</span> comes from: it is Latin for
-            &ldquo;the hare laughs&rdquo;.
-          </p>
-          <p class="mt-4 text-body">
-            <a
-              href="/credits/#name"
-              class="inline-flex min-h-target items-center"
-            >
-              Where the name sinduri.lol comes from
+    <nav aria-label="On this page" class="mt-8">
+      <ul class="flex flex-wrap gap-3">
+        {SECTIONS.map((section) => (
+          <li>
+            <a href={`#${section.id}`} class="chip">
+              {section.title}
             </a>
-          </p>
-        </div>
-
-        <nav aria-label="On this page">
-          <ul class="flex flex-wrap gap-3">
-            {SECTIONS.map((section) => (
-              <li>
-                <a href={`#${section.id}`} class={JUMP_LINK}>
-                  {section.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-
-      <figure class="min-w-0">
-        {/*
-          The roundel sits on the photo's top-left corner, where the column
-          edge is inside the page at every width; `sm:-left-6` is the `sm`
-          gutter, as on the homepage, so it never scrolls the page sideways.
-          alt="" because the Lepus Ridet card beside it names the mark.
-          fetchpriority="high" because from `lg` the photo is the page's LCP
-          element. Below `lg` the intro paragraph is, and the eager photo
-          downloads either way.
-        */}
-        <div class="relative">
-          <Image
-            src={bicycle}
-            alt="Sinduri laughing as she rides a bicycle with a basket down a tree-lined path."
-            widths={WIDTHS}
-            sizes={SIZES.hero}
-            loading="eager"
-            fetchpriority="high"
-            class="block aspect-portrait h-auto w-full border-8 border-border object-cover"
-          />
-          <span class="absolute -left-2 -top-8 flex size-28 items-center justify-center rounded-full border-8 border-border bg-gold shadow-hard-cyan-8 sm:-left-6">
-            <Image
-              src={bunnyDark}
-              alt=""
-              height={ROUNDEL_MARK_HEIGHT}
-              densities={DENSITIES}
-              class="h-14 w-auto"
-            />
-          </span>
-        </div>
-        <figcaption class:list={[CAPTION, 'mt-5']}>
-          Photo:{' '}
-          <a href={PHOTOGRAPHERS[COVER_PHOTOGRAPHER]}>{COVER_PHOTOGRAPHER}</a>
-        </figcaption>
-      </figure>
-    </div>
-  </section>
-
-  {/* ===================================================================
-       WHAT I BELIEVE
-       =================================================================== */}
-  <section
-    class="band py-20"
-    id={SECTIONS[0].id}
-    aria-labelledby="believe-heading"
-  >
-    <SectionRule accent="pink" />
-
-    <div class="mx-auto max-w-page">
-      <h2 id="believe-heading" class="text-h2 text-text">
-        Positivity advocate
-      </h2>
-
-      {/*
-        THE GOLD STATEMENT. `.surface-gold` supplies the foreground and the
-        border colour for the subtree; nothing inside names a dark-set token.
-        It holds no control, which is why tests/gold-surface.spec.ts counts
-        zero on this route.
-      */}
-      <div class="mt-12 grid gap-10 lg:grid-cols-2 lg:items-center">
-        <blockquote class="surface-gold min-w-0 border-8 p-card-tight shadow-hard-pink-8 sm:p-card">
-          <p class="text-h2 font-black text-pretty">
-            We should all be a bit kinder and more empathetic.
-          </p>
-        </blockquote>
-
-        <Image
-          src={friendsMossWallPortrait}
-          alt="Sinduri between two friends in front of a moss wall, all three smiling."
-          widths={WIDTHS}
-          sizes={SIZES.quote}
-          class:list={[PHOTO, 'aspect-square min-w-0']}
-        />
-      </div>
-    </div>
-  </section>
-
-  {/* ===================================================================
-       PEOPLE AND PLACES
-       =================================================================== */}
-  <section
-    class="band py-20"
-    id={SECTIONS[1].id}
-    aria-labelledby="people-heading"
-  >
-    <SectionRule accent="cyan" />
-
-    <div class="mx-auto max-w-page">
-      <h2 id="people-heading" class="text-h2 text-text">
-        People and places
-      </h2>
-      <p class="mt-6 max-w-2xl text-h3 font-normal text-muted text-pretty">
-        I moved to Vienna in 2017. I love cats, travelling, and long evenings
-        with my friends talking about nothing and anything.
-      </p>
-
-      <div class="mt-12 grid gap-10 lg:grid-cols-2">
-        <figure class="card flex flex-col gap-6 shadow-hard-gold-8 sm:flex-row sm:items-end">
-          <Image
-            src={withJohann}
-            alt="Sinduri smiling with Johann, his arms wrapped around her."
-            width={JOHANN_WIDTH}
-            densities={JOHANN_DENSITIES}
-            class="block aspect-portrait h-auto w-64 max-w-full shrink-0 border-4 border-border object-cover"
-          />
-          <figcaption class="text-body text-muted text-pretty">
-            <strong class="block text-h3 font-bold text-text">Johann</strong> My
-            husband and the non-Drupaler who always has my back.
-          </figcaption>
-        </figure>
-
-        <figure class="card flex flex-col gap-6 shadow-hard-pink-8">
-          <div class="grid grid-cols-2 gap-3">
-            <Image
-              src={bestFriendSelfie}
-              alt="Sinduri taking a selfie with her best friend, Hemu."
-              widths={WIDTHS}
-              sizes={SIZES.pair}
-              class:list={[PHOTO, 'aspect-square']}
-            />
-            <Image
-              src={bestFriendBeach}
-              alt="Sinduri and her best friend Hemu walking on a beach."
-              widths={WIDTHS}
-              sizes={SIZES.pair}
-              class:list={[PHOTO, 'aspect-square']}
-            />
-          </div>
-          <figcaption class="text-body text-muted text-pretty">
-            <strong class="block text-h3 font-bold text-text">Hemu</strong> My
-            best friend.
-          </figcaption>
-        </figure>
-      </div>
-
-      <ul class="mt-10 gap-6 sm:columns-2 lg:columns-3">
-        {PLACES.map((place) => (
-          <li class="mb-6 break-inside-avoid">
-            <Image
-              src={place.src}
-              alt={place.alt}
-              widths={WIDTHS}
-              sizes={SIZES.masonry}
-              class:list={[PHOTO, place.aspect]}
-            />
           </li>
         ))}
       </ul>
+    </nav>
+
+    <Fragment slot="credit">
+      Photo:{' '}
+      <a href={PHOTOGRAPHERS[COVER_PHOTOGRAPHER]}>{COVER_PHOTOGRAPHER}</a>
+    </Fragment>
+  </PageHero>
+
+  <Section id="lepus-ridet">
+    <Fragment slot="title">
+      Why <span lang="la">Lepus Ridet</span>
+    </Fragment>
+    <p slot="lead" class="lead text-text">
+      My pet name is Bunny. That is what my family and close friends call me.
+    </p>
+    <p class="max-w-prose text-body text-muted text-pretty">
+      I try to always laugh and find fun in everything I do, and that is where{' '}
+      <span lang="la">Lepus Ridet</span> comes from: it is Latin for &ldquo;the
+      hare laughs&rdquo;.
+    </p>
+    <p class="mt-4 text-body">
+      <a href="/credits/#name" class="inline-flex min-h-target items-center">
+        Where the name sinduri.lol comes from
+      </a>
+    </p>
+  </Section>
+
+  <Section id={SECTIONS[0].id} title={SECTIONS[0].title}>
+    {/*
+      THE GOLD STATEMENT. `.surface-gold` supplies the foreground and the
+      border colour for the subtree; nothing inside names a dark-set token.
+      It holds no control, which is why tests/gold-surface.spec.ts counts
+      zero on this route. It is this section's one pink shadow.
+    */}
+    <div class="grid gap-grid lg:grid-cols-2 lg:items-center">
+      <blockquote class="surface-gold min-w-0 border-8 p-card-tight shadow-hard-pink-8 sm:p-card">
+        <p class="text-h2 font-black text-pretty">
+          We should all be a bit kinder and more empathetic.
+        </p>
+      </blockquote>
+
+      <Image
+        src={friendsMossWallPortrait}
+        alt="Sinduri between two friends in front of a moss wall, all three smiling."
+        widths={WIDTHS}
+        sizes={SIZES.quote}
+        class:list={[PHOTO, 'aspect-square min-w-0']}
+      />
     </div>
-  </section>
+  </Section>
 
-  {/* ===================================================================
-       THE IMPORTANT THINGS
-       =================================================================== */}
-  <section
-    class="band py-20"
-    id={SECTIONS[2].id}
-    aria-labelledby="important-heading"
+  <Section
+    id={SECTIONS[1].id}
+    title={SECTIONS[1].title}
+    lead="I moved to Vienna in 2017. I love cats, travelling, and long evenings with my friends talking about nothing and anything."
   >
-    <SectionRule accent="gold" />
+    <div class="grid gap-grid lg:grid-cols-2">
+      {/*
+        The photo keeps its drawn `w-64`: its master is 278px wide, so a
+        full-width photo here would be an upscale. The caption is centred
+        against it rather than parked at its foot, so the card's empty
+        corner is not the first thing you see.
+      */}
+      <figure class="card flex flex-col gap-6 shadow-hard-gold-8 sm:flex-row sm:items-center">
+        <Image
+          src={withJohann}
+          alt="Sinduri smiling with Johann, his arms wrapped around her."
+          width={JOHANN_WIDTH}
+          densities={JOHANN_DENSITIES}
+          class="block aspect-portrait h-auto w-64 max-w-full shrink-0 border-4 border-border object-cover"
+        />
+        <figcaption class="text-body text-muted text-pretty">
+          <strong class="card-title block">Johann</strong> My husband and the
+          non-Drupaler who always has my back.
+        </figcaption>
+      </figure>
 
-    <div class="mx-auto max-w-page">
-      <h2 id="important-heading" class="text-h2 text-text">
-        The important things
-      </h2>
+      <figure class="card flex flex-col gap-6 shadow-hard-gold-8">
+        <div class="grid grid-cols-2 gap-3">
+          <Image
+            src={bestFriendSelfie}
+            alt="Sinduri taking a selfie with her best friend, Hemu."
+            widths={WIDTHS}
+            sizes={SIZES.pair}
+            class:list={[PHOTO, 'aspect-square']}
+          />
+          <Image
+            src={bestFriendBeach}
+            alt="Sinduri and her best friend Hemu walking on a beach."
+            widths={WIDTHS}
+            sizes={SIZES.pair}
+            class:list={[PHOTO, 'aspect-square']}
+          />
+        </div>
+        <figcaption class="text-body text-muted text-pretty">
+          <strong class="card-title block">Hemu</strong> My best friend.
+        </figcaption>
+      </figure>
+    </div>
+
+    <ul class="mt-grid gap-6 sm:columns-2 lg:columns-3">
+      {PLACES.map((place) => (
+        <li class="mb-6 break-inside-avoid">
+          <Image
+            src={place.src}
+            alt={place.alt}
+            widths={WIDTHS}
+            sizes={SIZES.masonry}
+            class:list={[PHOTO, place.aspect]}
+          />
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section id={SECTIONS[2].id} title={SECTIONS[2].title}>
+    {/*
+      One description list laid out as tiles. Each fact is a `dt` and `dd`,
+      so a short bold value is never a paragraph that reads as a heading. The
+      cats are this section's one pink card.
+    */}
+    <dl class="grid gap-grid sm:grid-cols-2 lg:grid-cols-4">
+      <div class="card shadow-hard-gold-8 sm:col-span-2">
+        <dt class="label-wide text-gold">Sacred tradition</dt>
+        <dd class="mt-4">
+          <span class="card-title block">Lord of the Rings</span>
+          <span class="mt-2 block text-body text-muted">
+            The extended versions, every year
+          </span>
+        </dd>
+      </div>
+
+      <div class="card shadow-hard-gold-8 sm:col-span-2">
+        <dt class="label-wide text-gold">Fandoms</dt>
+        <dd class="mt-4 flex items-start justify-between gap-4">
+          <span class="card-title block text-pretty">
+            Star Trek, One Piece, Star Wars
+          </span>
+          <Image
+            src={starTrek}
+            alt="Sinduri in a Star Trek uniform."
+            width={THUMB_SIZE}
+            height={THUMB_SIZE}
+            densities={DENSITIES}
+            class="size-14 shrink-0 rounded-full border-4 border-border object-cover"
+          />
+        </dd>
+      </div>
+
+      <div class="card shadow-hard-gold-8 sm:col-span-2">
+        <dt class="label-wide text-gold">Music</dt>
+        <dd class="card-title mt-4">All over the place</dd>
+      </div>
 
       {/*
-        One description list laid out as tiles. Each fact is a `dt` and `dd`,
-        so a short bold value is never a paragraph that reads as a heading.
+        Food is placed in the right-hand column across the three rows the
+        other facts take on the left; it comes after them in the source, so
+        reading order runs down the left and then the right.
       */}
-      <dl class="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="card shadow-hard-gold-8 sm:col-span-2">
-          <dt class="label-wide text-gold">Sacred tradition</dt>
-          <dd class="mt-4">
-            <span class="block text-h3 font-bold text-text">
-              Lord of the Rings
-            </span>
+      <div class="card shadow-hard-gold-8 sm:col-span-2 lg:col-start-3 lg:row-span-3 lg:row-start-1">
+        <dt class="label-wide text-gold">Food</dt>
+        <dd class="mt-4 flex flex-col gap-6">
+          <span class="block">
+            <span class="card-title block">Love it</span>
             <span class="mt-2 block text-body text-muted">
-              The extended versions, every year
+              But I am a picky eater
             </span>
-          </dd>
+          </span>
+          <Image
+            src={dosa}
+            alt="Sinduri, eyes closed, about to take a bite of dosa with her hand."
+            widths={WIDTHS}
+            sizes={SIZES.food}
+            class:list={[PHOTO, 'aspect-square']}
+          />
+        </dd>
+      </div>
+
+      <div class="card shadow-hard-pink-8 sm:col-span-2 lg:col-span-4">
+        <dt class="label-wide text-gold">Three cats</dt>
+        <dd class="mt-6">
+          <ul class="grid gap-6 sm:grid-cols-3">
+            {CATS.map((cat) => (
+              <li>
+                <figure>
+                  <Image
+                    src={cat.src}
+                    alt={cat.alt}
+                    widths={WIDTHS}
+                    sizes={SIZES.cat}
+                    class:list={[PHOTO, 'aspect-square']}
+                  />
+                  <figcaption class={CAPTION}>
+                    <strong class="text-text">{cat.name},</strong> {cat.role}
+                  </figcaption>
+                </figure>
+              </li>
+            ))}
+          </ul>
+        </dd>
+      </div>
+    </dl>
+  </Section>
+
+  <Section id={SECTIONS[3].id} title={SECTIONS[3].title}>
+    <p slot="lead" class="lead">
+      There is a Sinduri before <a href={PHOTOGRAPHERS[MENTOR]}>{MENTOR}</a> and
+      Drupal, and a Sinduri after.
+    </p>
+
+    <div class="grid gap-grid lg:grid-cols-12 lg:items-start">
+      <div class="flex min-w-0 flex-col gap-grid lg:col-span-7">
+        <div class="card shadow-hard-gold-8">
+          <p class="label-wide text-gold">Before</p>
+          <p class="mt-4 text-body text-muted text-pretty">
+            I studied civil engineering in India and environmental engineering
+            in the US. I always wanted to become a developer, but I never felt
+            ready until I moved to Vienna. Honestly, after a few German courses,
+            learning to code seemed much easier! A short Python course in 2019
+            showed me I loved programming, and a full-stack web development
+            course gave me the confidence to make the switch.
+          </p>
         </div>
 
-        <div class="card shadow-hard-cyan-8 sm:col-span-2">
-          <dt class="label-wide text-cyan">Fandoms</dt>
-          <dd class="mt-4 flex items-start justify-between gap-4">
-            <span class="block text-h3 font-bold text-text text-pretty">
-              Star Trek, One Piece, Star Wars
-            </span>
-            <Image
-              src={starTrek}
-              alt="Sinduri in a Star Trek uniform."
-              width={THUMB_SIZE}
-              height={THUMB_SIZE}
-              densities={DENSITIES}
-              class="size-14 shrink-0 rounded-full object-cover"
-            />
-          </dd>
-        </div>
-
-        <div class="card shadow-hard-gold-8 sm:col-span-2">
-          <dt class="label-wide text-gold">Music</dt>
-          <dd class="mt-4 text-h3 font-bold text-text">All over the place</dd>
-        </div>
-
-        {/*
-          Food is placed in the right-hand column across the three rows the
-          other facts take on the left; it comes after them in the source, so
-          reading order runs down the left and then the right.
-        */}
-        <div class="card shadow-hard-pink-8 sm:col-span-2 lg:col-start-3 lg:row-span-3 lg:row-start-1">
-          <dt class="label-wide text-pink-text">Food</dt>
-          <dd class="mt-4 flex flex-col gap-6">
-            <span class="block">
-              <span class="block text-h3 font-bold text-text">Love it</span>
-              <span class="mt-2 block text-body text-muted">
-                But I am a picky eater
-              </span>
-            </span>
-            <Image
-              src={dosa}
-              alt="Sinduri, eyes closed, about to take a bite of dosa with her hand."
-              widths={WIDTHS}
-              sizes={SIZES.food}
-              class:list={[PHOTO, 'aspect-square max-w-sm']}
-            />
-          </dd>
-        </div>
-
-        <div class="card shadow-hard-cyan-8 sm:col-span-2 lg:col-span-4">
-          <dt class="label-wide text-cyan">Three cats</dt>
-          <dd class="mt-6">
-            <ul class="grid gap-6 sm:grid-cols-3">
-              {CATS.map((cat) => (
-                <li>
-                  <figure>
-                    <Image
-                      src={cat.src}
-                      alt={cat.alt}
-                      widths={WIDTHS}
-                      sizes={SIZES.cat}
-                      class:list={[PHOTO, 'aspect-square']}
-                    />
-                    <figcaption class={CAPTION}>
-                      <strong class="text-text">{cat.name},</strong> {cat.role}
-                    </figcaption>
-                  </figure>
-                </li>
-              ))}
-            </ul>
-          </dd>
-        </div>
-      </dl>
-    </div>
-  </section>
-
-  {/* ===================================================================
-       ENGINEER TO DRUPAL
-       =================================================================== */}
-  <section
-    class="band pb-24 pt-20"
-    id={SECTIONS[3].id}
-    aria-labelledby="drupal-heading"
-  >
-    <SectionRule accent="pink" />
-
-    <div class="mx-auto max-w-page">
-      <h2 id="drupal-heading" class="text-h2 text-text">
-        Engineer to Drupal
-      </h2>
-      <p class="mt-6 max-w-2xl text-h3 font-normal text-muted text-pretty">
-        There is a Sinduri before <a href={PHOTOGRAPHERS[MENTOR]}>{MENTOR}</a>{' '}
-        and Drupal, and a Sinduri after.
-      </p>
-
-      <div class="mt-12 grid gap-10 lg:grid-cols-12 lg:items-start">
-        <div class="flex min-w-0 flex-col gap-10 lg:col-span-7">
-          <div class="card shadow-hard-gold-8">
-            <p class="label-wide text-gold">Before</p>
-            <p class="mt-4 text-body text-muted text-pretty">
-              I studied civil engineering in India and environmental engineering
-              in the US. I always wanted to become a developer, but I never felt
-              ready until I moved to Vienna. Honestly, after a few German
-              courses, learning to code seemed much easier! A short Python
-              course in 2019 showed me I loved programming, and a full-stack web
-              development course gave me the confidence to make the switch.
-            </p>
-          </div>
-
-          <div class="card shadow-hard-cyan-8">
-            <p class="label-wide text-cyan">After</p>
-            <p class="mt-4 text-body text-muted text-pretty">
-              In January 2021, Klaus Purer gave me a Drupal test. I had
-              absolutely no idea what Drupal was, but I did well enough to get
-              the job. Since then I have organised Drupal events with the Swiss
-              and Austrian communities, joined the Drupal Austria board, where I
-              am deputy marketing manager in 2026, and won the Women in Drupal
-              Award in 2025.
-            </p>
-          </div>
-        </div>
-
-        <div class="flex min-w-0 flex-col gap-8 lg:col-span-5">
-          <figure>
-            <Image
-              src={lectureHall}
-              alt="Sinduri standing and clapping in a lecture hall full of Drupal event attendees."
-              widths={WIDTHS}
-              sizes={SIZES.side}
-              class:list={[PHOTO, 'aspect-photo']}
-            />
-            <figcaption class={CAPTION}>
-              <strong class="text-text">The Drupal community.</strong> Photo:{' '}
-              <a href={PHOTOGRAPHERS[LECTURE_HALL_PHOTOGRAPHER]}>
-                {LECTURE_HALL_PHOTOGRAPHER}
-              </a>
-            </figcaption>
-          </figure>
-          <figure>
-            <Image
-              src={mountainCamp}
-              alt="The Drupal Mountain Camp group photo: a crowd of attendees standing in the snow."
-              widths={WIDTHS}
-              sizes={SIZES.side}
-              class:list={[PHOTO, 'aspect-video']}
-            />
-            <figcaption class={CAPTION}>
-              <strong class="text-text">Drupal Mountain Camp.</strong>
-            </figcaption>
-          </figure>
+        <div class="card shadow-hard-gold-8">
+          <p class="label-wide text-gold">After</p>
+          <p class="mt-4 text-body text-muted text-pretty">
+            In January 2021, Klaus Purer gave me a Drupal test. I had absolutely
+            no idea what Drupal was, but I did well enough to get the job. Since
+            then I have organised Drupal events with the Swiss and Austrian
+            communities, joined the Drupal Austria board, where I am deputy
+            marketing manager in 2026, and won the Women in Drupal Award in
+            2025.
+          </p>
         </div>
       </div>
 
-      <div class="mt-14 flex flex-wrap items-center justify-between gap-6 border-t-4 border-border pt-8">
-        <p class="text-body text-text">
-          Continue reading: <a href={JOURNEY_POST_HREF}>Five years in Drupal</a>
-        </p>
-        <a href="/career/" class="btn-primary">
-          See my career
-        </a>
+      <div class="flex min-w-0 flex-col gap-8 lg:col-span-5">
+        <figure>
+          <Image
+            src={lectureHall}
+            alt="Sinduri standing and clapping in a lecture hall full of Drupal event attendees."
+            widths={WIDTHS}
+            sizes={SIZES.side}
+            class:list={[PHOTO, 'aspect-photo']}
+          />
+          <figcaption class={CAPTION}>
+            <strong class="text-text">The Drupal community.</strong> Photo:{' '}
+            <a href={PHOTOGRAPHERS[LECTURE_HALL_PHOTOGRAPHER]}>
+              {LECTURE_HALL_PHOTOGRAPHER}
+            </a>
+          </figcaption>
+        </figure>
+        <figure>
+          <Image
+            src={mountainCamp}
+            alt="The Drupal Mountain Camp group photo: a crowd of attendees standing in the snow."
+            widths={WIDTHS}
+            sizes={SIZES.side}
+            class:list={[PHOTO, 'aspect-video']}
+          />
+          <figcaption class={CAPTION}>
+            <strong class="text-text">Drupal Mountain Camp.</strong>
+          </figcaption>
+        </figure>
       </div>
     </div>
-  </section>
+
+    <CloseRow
+      readHref={JOURNEY_POST_HREF}
+      readLabel="Five years in Drupal"
+      actionHref="/career/"
+      actionLabel="See my career"
+    />
+  </Section>
 </BaseLayout>
