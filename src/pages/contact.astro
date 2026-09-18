@@ -74,15 +74,13 @@ const REASONS = [
 
       <div class="flex min-w-0 justify-center lg:col-span-4 lg:justify-end">
         {/*
-          The 28s pace, `.spin-pace-contact` in global.css. client:load
-          because the animation is applied by the island on mount, so the
-          pause control SC 2.2.2 asks for and the motion it pauses arrive
-          together or not at all.
+          client:load because the animation is applied by the island on
+          mount, so the pause control SC 2.2.2 asks for and the motion it
+          pauses arrive together or not at all.
         */}
         <SpinBadge
           client:load
           badge={badgeImage}
-          pace="contact"
           frameClass="h-56 w-56"
           markClass="w-40"
           borderClass="border-8"

@@ -409,7 +409,7 @@ Defined in `@layer components` in `src/styles/global.css`:
   position comes from a second class
 - `.prose`: the rendered-Markdown rules, since there is no typography plugin
 - Page-specific sets, documented in place in `global.css`: `.hero*`,
-  `.spin-badge` / `.spin-pace-*`, `.page-hero-*`, and `.footer-*`
+  `.spin-badge`, `.page-hero-*`, and `.footer-*`
 - `.surface-gold`, `.btn-gold-primary`, `.btn-gold-secondary`: the gold-ground
   set
 

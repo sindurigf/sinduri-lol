@@ -31,8 +31,6 @@ import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = withDefaults(
   defineProps<{
-    /** Which of the two durations in global.css to run at. */
-    pace?: 'hero' | 'contact';
     /** Rendered size of the badge frame, in Tailwind size utilities. */
     frameClass?: string;
     /** Rendered size of the badge artwork, in Tailwind size utilities. */
@@ -68,7 +66,6 @@ const props = withDefaults(
     badge: { src: string; srcset: string; width: number; height: number };
   }>(),
   {
-    pace: 'hero',
     frameClass: 'h-32 w-32',
     markClass: 'w-24',
     borderClass: 'border-4',
@@ -112,7 +109,7 @@ const toggle = (): void => {
         frameClass,
         borderClass,
         shadowClass,
-        mounted && !reducedMotion ? ['spin-badge', `spin-pace-${pace}`] : [],
+        mounted && !reducedMotion ? 'spin-badge' : '',
       ]"
       :data-paused="paused ? 'true' : 'false'"
     >

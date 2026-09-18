@@ -1211,10 +1211,8 @@
   }
 
   /*
-   * The spinning badge. One instance today, the Contact page at 28s from the
-   * comps, linear and infinite. `.spin-pace-hero` stays because 'hero' is
-   * still `SpinBadge`'s default `pace`, and a default pointing at a deleted
-   * class would fall back silently rather than loudly.
+   * The spinning badge. One instance, on Contact, at the comps' 28s, linear
+   * and infinite.
    *
    * The animation is applied by src/components/ui/SpinBadge.vue AFTER the
    * island mounts, never by the server-rendered HTML. That is what makes the
@@ -1227,24 +1225,16 @@
    * into a page with nothing moving on it. A hidden-but-focusable control
    * would be worse than no control.
    *
-   * The durations live here rather than in @theme because they are two
-   * instances of one effect, not a value the design reuses, the same reason
+   * The duration lives here rather than in @theme because it belongs to one
+   * effect, not a value the design reuses, the same reason
    * .mobile-menu-dialog keeps its sizing in the component.
    */
   .spin-badge {
-    animation: slowspin var(--spin-duration, 24s) linear infinite;
+    animation: slowspin 28s linear infinite;
   }
 
   .spin-badge[data-paused='true'] {
     animation-play-state: paused;
-  }
-
-  .spin-pace-hero {
-    --spin-duration: 24s;
-  }
-
-  .spin-pace-contact {
-    --spin-duration: 28s;
   }
 
   /*
