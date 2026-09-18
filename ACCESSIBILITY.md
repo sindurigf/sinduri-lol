@@ -165,8 +165,8 @@ sides of the ring, which is what SC 1.4.11 measures.
 
 ### The gold surface is an exception, and every dark token fails on it
 
-The Career hero is `background: #FFC000`, a light ground inside a dark-only
-palette. Measured against `#FFC000`, not one foreground token above passes:
+The closing band on `/contact` and the kindness quote on `/about` are
+`background: #FFC000`, a light ground inside a dark-only palette. Measured against `#FFC000`, not one foreground token above passes:
 
 | Token      | Value     | on `#FFC000` | Needs | Result |
 | ---------- | --------- | ------------ | ----- | ------ |
@@ -441,27 +441,27 @@ Stated honestly. This list is not filtered for how it looks.
    unsatisfied and the plain-language bullet in section 6 unassessable. Both
    now apply to real English, which nobody has yet assessed by hand.
 
-4. **The gold surface has never been looked at by a person.** `/career` renders
-   the hero as `.surface-gold` and `/contact` closes with a `.surface-gold`
-   band. `tests/gold-surface.spec.ts` measures the Career hero in situ at 305px
+4. **The gold surface has never been looked at by a person.** `/contact`
+   closes with a `.surface-gold` band and `/about` sets its kindness quote on
+   one. `tests/gold-surface.spec.ts` measures the Contact band in situ at 305px
    and 320px on the shipped markup:
 
-   | Measured on `/career`           | Result                                                                                           |
+   | Measured on `/contact`          | Result                                                                                           |
    | ------------------------------- | ------------------------------------------------------------------------------------------------ |
-   | `.btn-gold-primary`             | 226.2x59.6; label 18.58 on its own `#131313` fill; fill 11.32 on gold                            |
+   | `.btn-gold-primary`             | at least 24px both ways; label 18.58 on its own `#131313` fill; fill 11.32 on gold               |
    | its focus ring                  | outer 11.32 on gold, 1.00 against its own fill; inner `#FFFFFF` 18.58; 3px solid at a 3px offset |
-   | `.btn-gold-secondary`           | 197.6x59.6; label and border both 11.32 on gold; ring 11.32                                      |
    | every string on the gold ground | nothing below 4.5:1                                                                              |
    | content box                     | 273px at 305px, 288px at 320px, unchanged by the full-bleed band                                 |
    | document                        | does not scroll sideways at either width                                                         |
 
-   Every number came from headless Chromium. No person has looked at the gold
-   hero, tabbed it on a real screen or zoomed it, and no screen reader has been
-   near it. [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §5 closes this.
+   `.btn-gold-secondary` is on no shipped page, so only the mounted fixtures
+   measure it. Every number came from headless Chromium. No person has looked
+   at the gold band, tabbed it on a real screen or zoomed it, and no screen
+   reader has been near it. [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §5 closes this.
 
 5. **The mounted fixtures are kept, not deleted.** A fixture can be broken on
    purpose to prove an assertion still bites without editing a shipped route.
-   Only the in-situ test can fail on a mistake made in `career.astro`, such as
+   Only the in-situ test can fail on a mistake made in `contact.astro`, such as
    a `text-muted` written inside the section or `.btn-primary` reached for out
    of habit. Neither covers the other. The route-level walk short-circuits when
    a page has no gold section, so a non-vacuity guard sits beside it.

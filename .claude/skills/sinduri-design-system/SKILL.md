@@ -135,9 +135,9 @@ Prefer them for anything readable that is not deliberately pink.
 
 This site is dark-mode only and every foreground token was picked against
 `#131313`, `#1A1A1A` and `#0E0E0E`. **There is one exception, and it is a real
-section of the design, not a hypothetical.** The Career hero is
-`background: #FFC000` with `color: #131313`: a light ground inside a dark-only
-palette.
+section of the design, not a hypothetical.** The closing band on `/contact`
+and the kindness quote on `/about` are `background: #FFC000` with
+`color: #131313`: a light ground inside a dark-only palette.
 
 **Measured against `#FFC000`, every dark-surface foreground token fails.**
 
@@ -304,8 +304,8 @@ Four things about these that are easy to get wrong:
   label at line-height 1.2 is a 15.6px line box; `18px` top and bottom takes
   the padding box to 51.6px, and the 4px border takes the rendered control to
   **59.6px**, well past the 24px SC 2.5.8 asks of a target on its own size.
-  Measured on the real Career hero at 305px, 320px and 1280px: 59.6px tall at
-  all three, 226.2px and 197.6px wide. An earlier version of this note quoted
+  Measured on the Career hero while it was gold, at 305px, 320px and 1280px:
+  59.6px tall at all three, 226.2px and 197.6px wide. An earlier version of this note quoted
   51.6px as the rendered height, which is the padding box with the border left
   out; SC 2.5.8 measures the target, and the border is part of it.
   `--spacing-btn-gold-y` and `--spacing-btn-gold-x` exist as tokens because 18
@@ -1064,8 +1064,9 @@ exactly three things:
    not a copy of the logo tile does not qualify, however much it looks like one
 
 **`rounded-full` is the circle-and-pill exception.** It applies to the spinning
-badge frame (`SpinBadge.vue`), the bunny roundel in the homepage About teaser
-and on the About page, and `.pill`.
+badge frame (`SpinBadge.vue`), the bunny roundel in the homepage About teaser,
+on the About page and in `PageHero` (Career, Blog and its listings,
+Credits), and `.pill`.
 
 The two are not degrees of the same thing and the second is not a loophole in
 the first. `rounded-nav` softens a rectangle, which is the move this design
