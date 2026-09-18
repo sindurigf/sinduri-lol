@@ -168,32 +168,34 @@ const values = result && !result.ok ? result.submitted : {};
   <section class="band py-24">
     <SectionRule accent="pink" />
 
-    <div class="mx-auto max-w-3xl">
-      <h1 class="text-h1 text-text">Check your message</h1>
+    <div class="mx-auto max-w-page">
+      <div class="max-w-3xl">
+        <h1 class="text-h1 text-text">Check your message</h1>
 
-      {tooMany && (
-        <p class="mt-8 text-body text-muted text-pretty">
-          That is a lot of messages in a short time. Wait a few minutes and try
-          again, or email{' '}
-          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> instead.
-        </p>
-      )}
+        {tooMany && (
+          <p class="mt-8 text-body text-muted text-pretty">
+            That is a lot of messages in a short time. Wait a few minutes and
+            try again, or email{' '}
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> instead.
+          </p>
+        )}
 
-      {storageFailed && (
-        <p class="mt-8 text-body text-muted text-pretty">
-          Your message could not be saved, so it has not been received. Please
-          email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> instead.
-          Your text is still in the form below, so you can copy it.
-        </p>
-      )}
+        {storageFailed && (
+          <p class="mt-8 text-body text-muted text-pretty">
+            Your message could not be saved, so it has not been received. Please
+            email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>{' '}
+            instead. Your text is still in the form below, so you can copy it.
+          </p>
+        )}
 
-      {!tooMany && !storageFailed && (
-        <p class="mt-8 text-body text-muted text-pretty">
-          Nothing has been sent yet. What you wrote is still here.
-        </p>
-      )}
+        {!tooMany && !storageFailed && (
+          <p class="mt-8 text-body text-muted text-pretty">
+            Nothing has been sent yet. What you wrote is still here.
+          </p>
+        )}
 
-      <ContactForm errors={errors} values={values} summaryHeading="h2" />
+        <ContactForm errors={errors} values={values} summaryHeading="h2" />
+      </div>
     </div>
   </section>
 </BaseLayout>

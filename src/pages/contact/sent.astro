@@ -28,25 +28,27 @@ import { CONTACT_EMAIL } from '../../lib/contact';
   <section class="band py-24">
     <SectionRule accent="gold" />
 
-    <div class="mx-auto max-w-3xl">
-      <h1 class="text-h1 text-text">Message sent</h1>
+    <div class="mx-auto max-w-page">
+      <div class="max-w-3xl">
+        <h1 class="text-h1 text-text">Message sent</h1>
 
-      <p class="mt-8 text-body text-muted text-pretty">
-        Your message has been received. A reply will come to the email address
-        you gave, usually within a few days.
-      </p>
+        <p class="mt-8 text-body text-muted text-pretty">
+          Your message has been received. A reply will come to the email address
+          you gave, usually within a few days.
+        </p>
 
-      <p class="mt-6 text-body text-muted text-pretty">
-        Nothing else was stored, and you were not added to any list. If you need
-        to add something, write to{' '}
-        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
-      </p>
+        <p class="mt-6 text-body text-muted text-pretty">
+          Nothing else was stored, and you were not added to any list. If you
+          need to add something, write to{' '}
+          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+        </p>
 
-      <p class="mt-10">
-        <a class="btn-secondary" href="/contact/">
-          Back to contact
-        </a>
-      </p>
+        <p class="mt-10">
+          <a class="btn-secondary" href="/contact/">
+            Back to contact
+          </a>
+        </p>
+      </div>
     </div>
   </section>
 </BaseLayout>
