@@ -6,7 +6,12 @@ import BlogCard from '../components/BlogCard.astro';
 import HeroField from '../components/ui/HeroField.vue';
 import portrait from '../assets/photos/sinduri-studio.jpg';
 import { BLOG_CATEGORIES } from '../content.config';
-import { categoryAccent, categoryLabel, getFeaturedPosts } from '../lib/blog';
+import {
+  categoryAccent,
+  categoryLabel,
+  CATEGORY_TEASERS,
+  getFeaturedPosts,
+} from '../lib/blog';
 import { DENSITIES, WIDTHS } from '../lib/image-densities';
 
 /*
@@ -30,31 +35,22 @@ const ROUNDEL_MARK_HEIGHT = 56;
  * its category everywhere else on the site.
  */
 const CATEGORY_CARDS = [
-  {
-    category: BLOG_CATEGORIES[0],
-    glyph: '✦',
-    teaser: 'Skincare routines, products and what works for me.',
-  },
+  { category: BLOG_CATEGORIES[0], glyph: '✦' },
   {
     category: BLOG_CATEGORIES[1],
     glyph: '✈',
-    teaser: 'Places I have travelled to, from Kerala to Vienna and beyond.',
   },
   {
     category: BLOG_CATEGORIES[2],
     glyph: '❋',
-    teaser: 'Kindness, empathy and whatever else is on my mind.',
   },
   {
     category: BLOG_CATEGORIES[3],
     glyph: '◆',
-    teaser:
-      'From civil engineering to Drupal, and what I keep learning on the way.',
   },
   {
     category: BLOG_CATEGORIES[4],
     glyph: '</>',
-    teaser: 'Drupal, community events and why there is room for everyone.',
   },
 ] as const;
 
@@ -349,7 +345,9 @@ const STATS = [
               </a>
             </h3>
 
-            <p class="mt-5 text-body text-muted text-pretty">{card.teaser}</p>
+            <p class="mt-5 text-body text-muted text-pretty">
+              {CATEGORY_TEASERS[card.category]}
+            </p>
           </li>
         ))}
       </ul>

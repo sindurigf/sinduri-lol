@@ -73,10 +73,36 @@ export const categoryLabel = (category: BlogCategory | string): string => {
   return words.charAt(0).toUpperCase() + words.slice(1);
 };
 
+/*
+ * Tags whose label is not the slug with its first letter capitalised, because
+ * a proper noun keeps its own capitals wherever it sits in the string.
+ * Anything not named here reads as `categoryLabel` renders it.
+ */
+const TAG_LABELS: Record<string, string> = {
+  drupal: 'Drupal',
+  'women-in-drupal': 'Women in Drupal',
+};
+
 /** Tags are kebab-case in the frontmatter and read the same way categories do. */
-export const tagLabel = (tag: string): string => categoryLabel(tag);
+export const tagLabel = (tag: string): string =>
+  TAG_LABELS[tag] ?? categoryLabel(tag);
 
 export const tagHref = (tag: string): string => `/blog/tag/${tag}/`;
+
+/**
+ * What each category holds, in Sinduri's words, drawn from her copy on
+ * /about. The homepage cards and the category listing's meta description read
+ * the same string, so the description a search result shows is the one a
+ * reader saw on the way in.
+ */
+export const CATEGORY_TEASERS: Record<BlogCategory, string> = {
+  skincare: 'Skincare routines, products and what works for me.',
+  travel: 'Places I have travelled to, from Kerala to Vienna and beyond.',
+  'personal-thoughts': 'Kindness, empathy and whatever else is on my mind.',
+  'professional-journey':
+    'From civil engineering to Drupal, and what I keep learning on the way.',
+  'open-source': 'Drupal, community events and why there is room for everyone.',
+};
 
 /**
  * Every tag in use, with the posts carrying it, newest first within a tag and
