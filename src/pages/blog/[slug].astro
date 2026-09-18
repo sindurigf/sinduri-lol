@@ -66,7 +66,7 @@ const article = placeholder
   trail={trail}
   markdownSource={placeholder ? undefined : markdownSourcePath(post.id)}
 >
-  <PageHero title={title} titleSize="post">
+  <PageHero title={title} titleSize="post" measure="reading">
     <Breadcrumbs slot="eyebrow" crumbs={trail.crumbs} lastClass={accent.text} />
 
     <p class="mt-8 max-w-2xl text-body text-muted text-pretty">{teaser}</p>
@@ -78,18 +78,17 @@ const article = placeholder
   </PageHero>
 
   {/*
-    The reading column sits at the left of the page column, under the plate's
-    own text, rather than centred in it: centred, it started a different
-    distance from the edge than the title above it.
+    One centred reading column, the width of the plate above it, so the title
+    and the text start on the same edge.
   */}
   <section class="band py-section">
     <div class="mx-auto max-w-page">
-      <div class="prose max-w-3xl">
+      <div class="prose mx-auto max-w-3xl">
         <Content />
       </div>
 
       {tags.length > 0 ? (
-        <div class="mt-section max-w-3xl border-t-4 border-border pt-10">
+        <div class="mx-auto mt-section max-w-3xl border-t-4 border-border pt-10">
           <h2 class="label text-subtle">Tags</h2>
           <ul class="mt-6 flex flex-wrap gap-3">
             {tags.map((tag) => (
