@@ -49,7 +49,7 @@ const AUTOMATED = [
   'axe on every route, for WCAG 2.2 A and AA and for best practice',
   'colour contrast measured against the composited background, including every result axe leaves undecided',
   'the keyboard tab order walked in both directions on every route, at 305px and 1280px, with every focus ring measured where it lands',
-  'target sizes, reflow at 320px, Windows High Contrast Mode, and reduced motion',
+  'target sizes, reflow at 320px and 305px including with increased text spacing, Windows High Contrast Mode, and reduced motion',
   'navigation with JavaScript switched off',
 ];
 ---
@@ -118,17 +118,21 @@ const AUTOMATED = [
           Automated checks find a minority of accessibility problems. They
           cannot say whether a focus ring reads as a focus ring, whether a page
           still makes sense with motion removed, or whether a screen reader
-          announces something in a useful order. Those need a person, and on
-          this site they are partly done: a screen reader pass and several
-          manual zoom and reflow checks are still outstanding. The full record
-          names each one rather than implying coverage.
+          announces something in a useful order. Those need a person, and none
+          of them has been done yet. The full record names each check rather
+          than implying coverage.
         </p>
 
         <h2>Known gaps</h2>
 
         <p>
-          The known gaps, and the reasoning behind each, are listed in full in
-          the record below.
+          No screen reader has been used on this site yet, so how it sounds is
+          unknown, including how the uppercase headings and labels are read.
+          Nobody has tested the contact form's error messages by hand, and the
+          error state is not covered by the automated page checks. The writing
+          has not been checked for plain language, and the gold sections have
+          only been measured by machine. Each gap, and the reasoning behind it,
+          is listed in full in the record below.
         </p>
 
         <h2>Report a barrier</h2>
