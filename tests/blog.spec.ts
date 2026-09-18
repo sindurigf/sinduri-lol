@@ -5,6 +5,7 @@ import {
   POSTS_PER_PAGE,
   POST_ROUTES,
   postCountByCategory,
+  TAG_ROUTES,
 } from './routes';
 import { MIN_TARGET } from './wcag';
 
@@ -341,5 +342,156 @@ test.describe('the category filter', () => {
         `filter "${name?.trim()}" height`,
       ).toBeGreaterThanOrEqual(MIN_TARGET);
     }
+  });
+});
+
+/**
+ * A category is one colour everywhere it appears: its homepage tile, every
+ * post card, and the category link above a post title. Three surfaces used to
+ * keep three maps, and four of the five categories disagreed between them.
+ *
+ * The expected colours are copied here because src/lib/blog.ts reaches
+ * `astro:content`, which Playwright cannot import.
+ *
+ * Proven able to fail, 2026-09-16, chromium: with personal-thoughts mapped to
+ * gold in src/lib/blog.ts, "each homepage tile uses its category colour"
+ * failed expecting rgb(255, 0, 122) and receiving rgb(255, 192, 0).
+ */
+const GOLD = { text: 'rgb(255, 192, 0)', fill: 'rgb(255, 192, 0)' };
+const CYAN = { text: 'rgb(0, 220, 253)', fill: 'rgb(0, 220, 253)' };
+const PINK = { text: 'rgb(255, 121, 182)', fill: 'rgb(255, 0, 122)' };
+
+const CATEGORY_COLOURS: Record<string, typeof GOLD> = {
+  'open-source': GOLD,
+  'professional-journey': GOLD,
+  skincare: CYAN,
+  travel: CYAN,
+  'personal-thoughts': PINK,
+};
+
+const shadowColour = (boxShadow: string): string =>
+  boxShadow.match(/rgb\([^)]*\)/)?.[0] ?? boxShadow;
+
+const categoryOf = (href: string): string =>
+  href.replace(/^\/blog\//, '').replace(/\/$/, '');
+
+test.describe('category colours', () => {
+  test('every category has an expected colour', () => {
+    expect(Object.keys(CATEGORY_COLOURS).sort()).toEqual(
+      CATEGORY_ROUTES.map(categoryOf).sort(),
+    );
+  });
+
+  test('each homepage tile uses its category colour', async ({ page }) => {
+    await gotoSettled(page, '/');
+
+    for (const [category, colour] of Object.entries(CATEGORY_COLOURS)) {
+      const tile = page.locator('li.card', {
+        has: page.locator(`h3 a[href="/blog/${category}/"]`),
+      });
+      await expect(tile, `${category} tile`).toHaveCount(1);
+
+      const shadow = await tile.evaluate(
+        (el) => getComputedStyle(el).boxShadow,
+      );
+      expect(shadowColour(shadow), `${category} tile shadow`).toBe(colour.fill);
+
+      await expect(
+        tile.locator('span[aria-hidden="true"]').first(),
+        `${category} glyph tile`,
+      ).toHaveCSS('background-color', colour.fill);
+    }
+  });
+
+  for (const route of POST_ROUTES) {
+    test(`${route} and its card use its category colour`, async ({ page }) => {
+      await gotoSettled(page, route);
+
+      const link = page.locator('main p.label a[href^="/blog/"]').first();
+      const category = categoryOf((await link.getAttribute('href')) ?? '');
+      const colour = CATEGORY_COLOURS[category];
+      expect(colour, `unknown category "${category}"`).toBeDefined();
+      await expect(link, 'category link above the title').toHaveCSS(
+        'color',
+        colour!.text,
+      );
+
+      await gotoSettled(page, `/blog/${category}`);
+      const card = page.locator('article.card', {
+        has: page.locator(`h2 a[href^="${route}"]`),
+      });
+      await expect(card, `card for ${route}`).toHaveCount(1);
+
+      const shadow = await card.evaluate(
+        (el) => getComputedStyle(el).boxShadow,
+      );
+      expect(shadowColour(shadow), 'card shadow').toBe(colour!.fill);
+      await expect(card.locator('p.label').first(), 'card label').toHaveCSS(
+        'color',
+        colour!.text,
+      );
+    });
+  }
+});
+
+/**
+ * Tag listings. Every tag on a post is a link to a page listing the posts that
+ * carry it, which is what makes the tags on a post worth rendering at all.
+ *
+ * Proven able to fail, 2026-09-18, chromium: with the tags rendered as plain
+ * <li> text again, "a post's tags are links to their listings" failed with 0
+ * links found.
+ */
+test.describe('tag listings', () => {
+  test('every tag route matches a tag on a post', () => {
+    expect(TAG_ROUTES.length, 'no tag routes are listed').toBeGreaterThan(0);
+  });
+
+  test("a post's tags are links to their listings", async ({ page }) => {
+    await gotoSettled(page, POST_ROUTES[0]);
+
+    const tags = page.locator('main a[href^="/blog/tag/"]');
+    const count = await tags.count();
+    expect(count, `${POST_ROUTES[0]} should render its tags as links`).toBe(4);
+
+    const href = await tags.first().getAttribute('href');
+    expect(
+      TAG_ROUTES.map((route) => `${route}/`),
+      `${href} is not a built tag route`,
+    ).toContain(href);
+
+    await tags.first().focus();
+    await expect(
+      tags.first(),
+      'every control needs a visible focus indicator (SC 2.4.7)',
+    ).toHaveCSS('outline-style', 'solid');
+
+    await page.keyboard.press('Enter');
+    await page.waitForURL(`**${href}`);
+
+    const hrefs = await cardHrefs(page);
+    expect(
+      hrefs,
+      'the tag listing should hold the post the tag was followed from',
+    ).toContain(`${POST_ROUTES[0]}/`);
+  });
+
+  test('a tag listing marks no category filter option current', async ({
+    page,
+  }) => {
+    await gotoSettled(page, TAG_ROUTES[1]);
+
+    await expect(
+      page
+        .getByRole('navigation', { name: /filter posts by category/i })
+        .locator('a[aria-current="page"]'),
+      'no filter option points at a tag listing, so none may claim to be ' +
+        'the page you are on',
+    ).toHaveCount(0);
+
+    await expect(
+      page.getByRole('navigation', { name: /filter posts by category/i }),
+      'the filter is still offered, as the way back to the categories',
+    ).toBeVisible();
   });
 });

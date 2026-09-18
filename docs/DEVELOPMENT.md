@@ -40,9 +40,17 @@ hand at least monthly; [DEPLOYMENT.md](DEPLOYMENT.md#umami) says what to do when
 it fails. [AGENTS.md](../AGENTS.md) lists what has to
 pass before a change is done.
 
+`dev` and `build` pass `--force`, which clears Astro's content cache. Astro
+invalidates that cache when the Astro config, the content config or its own
+version changes, but not when a Markdown plugin in `src/plugins/` does, so
+without the flag a local build keeps serving posts rendered by the old plugin.
+CI builds from a clean checkout and never sees it. Measured 2026-09-16: after
+the `sizes` fit in `post-figure.mjs`, local builds still emitted
+`(min-width: 48rem) 48rem, 100vw` and `tests/image-size.spec.ts` failed.
+
 ## Project layout
 
-```
+```text
 src/
   assets/           Images, processed by the build
   components/       Astro components; ui/ holds the Vue islands

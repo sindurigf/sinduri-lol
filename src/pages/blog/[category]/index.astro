@@ -1,10 +1,11 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { BLOG_CATEGORIES } from '../../../content.config';
+import { BLOG_CATEGORIES, type BlogCategory } from '../../../content.config';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import BlogListing from '../../../components/BlogListing.astro';
 import {
   categoryLabel,
+  CATEGORY_TEASERS,
   getSortedPosts,
   type BlogPost,
 } from '../../../lib/blog';
@@ -48,7 +49,7 @@ const label = categoryLabel(category);
 
 <BaseLayout
   title={`${label} | sinduri.lol`}
-  description={`Posts filed under ${label}.`}
+  description={`${CATEGORY_TEASERS[category as BlogCategory]} Posts filed under ${label}, newest first.`}
 >
   {/* No horizontal padding here; see the note in [slug].astro. */}
   <div class="mx-auto max-w-page py-28">
@@ -63,7 +64,10 @@ const label = categoryLabel(category);
     <div class="mt-12">
       <BlogListing
         posts={posts}
-        activeCategory={category as (typeof BLOG_CATEGORIES)[number]}
+        filter={{
+          kind: 'category',
+          category: category as (typeof BLOG_CATEGORIES)[number],
+        }}
         currentPage={1}
         totalPages={1}
       />

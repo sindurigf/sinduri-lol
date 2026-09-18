@@ -28,6 +28,14 @@ measured otherwise. Look for a backgrounded Astro daemon, another session
 writing to this tree, memory pressure or lockfile resolution before reading the
 diff.
 
+Every warning, hint, error, flaky test or failing test is reported and fixed,
+whether or not the change at hand caused it. That covers build output,
+`astro check` hints, lint and editor diagnostics, and a test that fails once
+in twenty. "It fails on `main` too" is a finding to report, not a reason to
+move on. Find the cause, fix it in its own commit, and prove the fix by
+measuring before and after. A false positive is still named, with the reason
+it is one.
+
 ## Git and pull requests
 
 - `main` is protected by a branch ruleset. Direct pushes are rejected. Always

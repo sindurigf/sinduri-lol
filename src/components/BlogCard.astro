@@ -1,6 +1,6 @@
 ---
 import type { BlogCategory } from '../content.config';
-import { categoryLabel } from '../lib/blog';
+import { categoryAccent, categoryLabel } from '../lib/blog';
 import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 import PlaceholderBox from './PlaceholderBox.astro';
@@ -22,29 +22,6 @@ import { WIDTHS } from '../lib/image-densities';
  * card is a redundant tab stop and a second entry in every links list, and
  * the title already says where it goes.
  */
-
-/*
- * Accent per category, so a card's colour means something rather than cycling
- * with position. Both halves are complete class names because Tailwind scans
- * source text: a composed `text-${accent}` is invisible to it.
- *
- * All three clear AAA on `surface` #1A1A1A: gold 10.60, cyan 10.49, pink-text
- * 7.18. `pink-text` and never `pink` for a glyph, and `pink` and never
- * `pink-text` for the shadow; see the two-pinks rule in the design system.
- */
-const ACCENTS = {
-  gold: { text: 'text-gold', shadow: 'shadow-hard-gold-8' },
-  cyan: { text: 'text-cyan', shadow: 'shadow-hard-cyan-8' },
-  pink: { text: 'text-pink-text', shadow: 'shadow-hard-pink-8' },
-} as const;
-
-const CATEGORY_ACCENT: Record<BlogCategory, keyof typeof ACCENTS> = {
-  skincare: 'pink',
-  travel: 'cyan',
-  'personal-thoughts': 'gold',
-  'professional-journey': 'cyan',
-  'open-source': 'gold',
-};
 
 interface Props {
   href: string;
@@ -88,7 +65,7 @@ const Heading = `h${headingLevel}` as 'h2' | 'h3';
 const COVER_SIZES =
   '(min-width: 48rem) min(calc(50vw - 5.75rem), 35.75rem), (min-width: 40rem) calc(100vw - 9rem), calc(100vw - 6rem)';
 
-const accent = ACCENTS[CATEGORY_ACCENT[category]];
+const accent = categoryAccent(category);
 
 const DATE_LOCALE = 'en-GB';
 const DATE_FORMAT: Intl.DateTimeFormatOptions = {

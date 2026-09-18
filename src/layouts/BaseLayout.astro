@@ -36,11 +36,21 @@ interface Props {
    * the preferred address for this content, and a 404 is served from every
    * wrong address there is, so one there points every dead URL at itself.
    *
-   * Deliberately no `noindex` prop beside it: the 404 status already tells a
+   * 404.astro does not pair it with `noindex`: the 404 status already tells a
    * crawler not to index the response, and a meta robots tag would be a
    * weaker second statement. tests/not-found.spec.ts asserts the status.
    */
   noCanonical?: boolean;
+  /*
+   * Emits `<meta name="robots" content="noindex, follow">`. For a page that
+   * is served with a 200 and should still not be listed: the tag listings,
+   * which are a second ordering of posts that are indexed on their own.
+   * `follow` is deliberate, so the posts linked from such a page are still
+   * reached. A page carrying this is also kept out of the sitemap, in
+   * src/lib/sitemap-filter.ts, because advertising a URL while asking for it
+   * not to be listed is two instructions that disagree.
+   */
+  noindex?: boolean;
 }
 
 const SITE_NAME = 'sinduri.lol';
@@ -68,6 +78,7 @@ const {
   description,
   ogImage = DEFAULT_OG_IMAGE,
   noCanonical = false,
+  noindex = false,
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -125,6 +136,7 @@ const ogImageUrl = new URL(ogImage, Astro.site);
     <title>{title}</title>
     <meta name="description" content={description} />
     {!noCanonical && <link rel="canonical" href={canonical} />}
+    {noindex && <meta name="robots" content="noindex, follow" />}
 
     {/*
       The icon set. Order is not preference: a browser picks by `sizes` and

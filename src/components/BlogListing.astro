@@ -4,6 +4,7 @@ import {
   CATEGORY_FILTERS,
   categoryLabel,
   indexPageHref,
+  tagLabel,
   type BlogPost,
 } from '../lib/blog';
 import BlogCard from './BlogCard.astro';
@@ -34,10 +35,19 @@ import BlogCard from './BlogCard.astro';
  *   - the inverted gold fill, which on its own is insufficient.
  */
 
+/**
+ * Which view of the posts this is. A tag listing marks no filter option
+ * current, because none of them points at it: the filter is still offered, so
+ * a reader who followed a tag can get back to a category or to every post.
+ */
+export type ListingFilter =
+  | { kind: 'all' }
+  | { kind: 'category'; category: BlogCategory }
+  | { kind: 'tag'; tag: string };
+
 interface Props {
   posts: BlogPost[];
-  /** null on the unfiltered index. */
-  activeCategory: BlogCategory | null;
+  filter: ListingFilter;
   currentPage: number;
   totalPages: number;
   /**
@@ -50,13 +60,28 @@ interface Props {
 
 const {
   posts,
-  activeCategory,
+  filter,
   currentPage,
   totalPages,
   featureFirst = false,
 } = Astro.props;
 
 const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+const activeHref =
+  filter.kind === 'all'
+    ? '/blog/'
+    : filter.kind === 'category'
+      ? `/blog/${filter.category}/`
+      : null;
+
+const emptyState =
+  filter.kind === 'tag'
+    ? { holds: `tagged ${tagLabel(filter.tag)}`, other: 'Try a category' }
+    : {
+        holds: `filed under ${filter.kind === 'category' ? categoryLabel(filter.category) : 'the blog'}`,
+        other: 'Try another category',
+      };
 ---
 
 {/*
@@ -66,7 +91,7 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 <nav aria-label="Filter posts by category">
   <ul class="flex flex-wrap gap-4">
     {CATEGORY_FILTERS.map((option) => {
-      const isActive = option.category === activeCategory;
+      const isActive = option.href === activeHref;
       return (
         <li>
           <a
@@ -103,9 +128,8 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
   <div class="card mt-16 shadow-hard-cyan-8" data-empty-listing>
     <p class="label-wide text-cyan">No posts yet</p>
     <p class="mt-4 max-w-prose text-body text-muted text-pretty">
-      Nothing is filed under{' '}
-      {activeCategory === null ? 'the blog' : categoryLabel(activeCategory)} so
-      far. Try another category, or read <a href="/blog/">every post</a>.
+      Nothing is {emptyState.holds} so far. {emptyState.other}, or read{' '}
+      <a href="/blog/">every post</a>.
     </p>
   </div>
 ) : (

@@ -85,7 +85,7 @@ const { posts, page, totalPages } = Astro.props as Props;
     <div class="mt-12">
       <BlogListing
         posts={posts}
-        activeCategory={null}
+        filter={{ kind: 'all' }}
         currentPage={page}
         totalPages={totalPages}
       />

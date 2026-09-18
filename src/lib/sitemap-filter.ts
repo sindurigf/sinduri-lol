@@ -24,6 +24,13 @@ const BLOG_CHILD = /^\/blog\/([^/]+)\/$/;
 /** The segment the paged index lives under, `/blog/page/<n>/`. */
 const PAGED_SEGMENT = 'page';
 
+/*
+ * `/blog/tag/<tag>/`. Those pages carry `noindex`, so advertising them here
+ * would ask a crawler to list a URL the page itself asks it not to. The posts
+ * they hold are advertised on their own routes.
+ */
+const TAG_PREFIX = '/blog/tag/';
+
 export interface PostSummary {
   slug: string;
   category: string;
@@ -53,6 +60,7 @@ export const isAdvertised = (page: string, posts: PostSummary[]): boolean => {
   const { pathname } = new URL(page);
 
   if (UNADVERTISED_PATHS.some((path) => pathname.endsWith(path))) return false;
+  if (pathname.includes(TAG_PREFIX)) return false;
 
   const segment = BLOG_CHILD.exec(pathname)?.[1];
   if (segment === undefined || segment === PAGED_SEGMENT) return true;

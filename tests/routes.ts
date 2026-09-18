@@ -52,6 +52,26 @@ export const CATEGORY_ROUTES = [
   '/blog/open-source',
 ] as const;
 
+/**
+ * Tag listings, from `src/pages/blog/tag/[tag]/index.astro`. One per tag any
+ * post carries, alphabetical, so this list changes when a post's `tags` do and
+ * the route coverage test in a11y.spec.ts says which way.
+ *
+ * They are walked like every other route, and two suites read them as a group:
+ * tests/seo.spec.ts for the `noindex` they all carry, and tests/sitemap.spec.ts
+ * for their absence from the sitemap.
+ */
+export const TAG_ROUTES = [
+  '/blog/tag/career',
+  '/blog/tag/community',
+  '/blog/tag/drupal',
+  '/blog/tag/governance',
+  '/blog/tag/maintainers',
+  '/blog/tag/sustainability',
+  '/blog/tag/talks',
+  '/blog/tag/women-in-drupal',
+] as const;
+
 /** Posts, from `src/pages/blog/[slug].astro`. Newest first. */
 export const POST_ROUTES = [
   '/blog/five-years-in-drupal',
@@ -74,6 +94,7 @@ export const ROUTES = [
   ...PAGE_ROUTES,
   ...INDEX_ROUTES,
   ...CATEGORY_ROUTES,
+  ...TAG_ROUTES,
   ...POST_ROUTES,
 ] as const;
 

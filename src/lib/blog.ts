@@ -73,6 +73,95 @@ export const categoryLabel = (category: BlogCategory | string): string => {
   return words.charAt(0).toUpperCase() + words.slice(1);
 };
 
+/*
+ * Tags whose label is not the slug with its first letter capitalised, because
+ * a proper noun keeps its own capitals wherever it sits in the string.
+ * Anything not named here reads as `categoryLabel` renders it.
+ */
+const TAG_LABELS: Record<string, string> = {
+  drupal: 'Drupal',
+  'women-in-drupal': 'Women in Drupal',
+};
+
+/** Tags are kebab-case in the frontmatter and read the same way categories do. */
+export const tagLabel = (tag: string): string =>
+  TAG_LABELS[tag] ?? categoryLabel(tag);
+
+export const tagHref = (tag: string): string => `/blog/tag/${tag}/`;
+
+/**
+ * What each category holds, in Sinduri's words, drawn from her copy on
+ * /about. The homepage cards and the category listing's meta description read
+ * the same string, so the description a search result shows is the one a
+ * reader saw on the way in.
+ */
+export const CATEGORY_TEASERS: Record<BlogCategory, string> = {
+  skincare: 'Skincare routines, products and what works for me.',
+  travel: 'Places I have travelled to, from Kerala to Vienna and beyond.',
+  'personal-thoughts': 'Kindness, empathy and whatever else is on my mind.',
+  'professional-journey':
+    'From civil engineering to Drupal, and what I keep learning on the way.',
+  'open-source': 'Drupal, community events and why there is room for everyone.',
+};
+
+/**
+ * Every tag in use, with the posts carrying it, newest first within a tag and
+ * the tags themselves alphabetical so the built routes do not reorder when a
+ * post is added.
+ */
+export const getPostsByTag = async (): Promise<Map<string, BlogPost[]>> => {
+  const byTag = new Map<string, BlogPost[]>();
+
+  for (const post of await getSortedPosts()) {
+    for (const tag of post.data.tags) {
+      byTag.set(tag, [...(byTag.get(tag) ?? []), post]);
+    }
+  }
+
+  return new Map([...byTag].sort(([a], [b]) => a.localeCompare(b)));
+};
+
+/*
+ * One accent per category, used by every surface that shows a category, so a
+ * category is the same colour wherever it appears. Complete class names
+ * because Tailwind scans source text: a composed `text-${accent}` is
+ * invisible to it.
+ *
+ * On `surface` #1A1A1A: gold 10.60, cyan 10.49, pink-text 7.18. `pink-text`
+ * and never `pink` for a glyph, `pink` and never `pink-text` for a fill or a
+ * shadow; see the two-pinks rule in the design system.
+ */
+const ACCENTS = {
+  gold: {
+    text: 'text-gold',
+    shadow: 'shadow-hard-gold-8',
+    tile: 'bg-gold text-background',
+  },
+  cyan: {
+    text: 'text-cyan',
+    shadow: 'shadow-hard-cyan-8',
+    tile: 'bg-cyan text-darkcyan',
+  },
+  pink: {
+    text: 'text-pink-text',
+    shadow: 'shadow-hard-pink-8',
+    tile: 'bg-pink text-background',
+  },
+} as const;
+
+export type CategoryAccent = (typeof ACCENTS)[keyof typeof ACCENTS];
+
+const CATEGORY_ACCENT: Record<BlogCategory, keyof typeof ACCENTS> = {
+  'open-source': 'gold',
+  'professional-journey': 'gold',
+  skincare: 'cyan',
+  travel: 'cyan',
+  'personal-thoughts': 'pink',
+};
+
+export const categoryAccent = (category: BlogCategory): CategoryAccent =>
+  ACCENTS[CATEGORY_ACCENT[category]];
+
 export const CATEGORY_FILTERS: readonly CategoryFilterOption[] = [
   { label: 'All posts', href: '/blog/', category: null },
   ...BLOG_CATEGORIES.map((category) => ({

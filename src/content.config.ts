@@ -31,7 +31,14 @@ const blog = defineCollection({
          * tests/llms-txt.spec.ts holds it to the text.
          */
         placeholder: z.boolean(),
-        tags: z.array(z.string()).default([]),
+        /*
+         * Each tag is a URL segment on /blog/tag/<tag>/, so the shape is
+         * enforced here rather than escaped at every use: kebab-case, no
+         * leading, trailing or doubled hyphen.
+         */
+        tags: z
+          .array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/))
+          .default([]),
         teaser: z.string(),
         ogImage: z.string().optional(),
         featured: z.boolean().default(false),

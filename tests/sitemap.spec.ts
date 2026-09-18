@@ -2,11 +2,13 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import {
+  builtHtml,
   builtPages,
   CATEGORY_ROUTES,
   DIST_DIR,
   postCountByCategory,
   routesFromBuild,
+  TAG_ROUTES,
 } from './routes';
 import { configuredSite } from './source';
 
@@ -75,6 +77,10 @@ const SITEMAP_PATH = '/sitemap-index.xml';
  * by src/lib/sitemap-filter.ts. The empty categories are worked out here from
  * the Markdown, independently of that file, so the two cannot agree by sharing
  * a bug.
+ *
+ * The tag listings are dropped by that file too. They carry `noindex`, so
+ * listing them would ask a crawler to index a URL the page tells it not to;
+ * `the tag listings are not advertised` below asserts both halves together.
  */
 const EMPTY_CATEGORY_ROUTES = CATEGORY_ROUTES.filter(
   (route) =>
@@ -84,6 +90,7 @@ const EXCLUDED_ROUTES: string[] = [
   '/404',
   '/contact/sent',
   ...EMPTY_CATEGORY_ROUTES,
+  ...TAG_ROUTES,
 ];
 const EXCLUDED_ROUTE = EXCLUDED_ROUTES[0]!;
 
@@ -249,6 +256,36 @@ test.describe('robots.txt and the sitemap', () => {
               'says "No posts yet"'
           : `the sitemap leaves out ${route}, which has posts to find`,
       ).toBe(!empty);
+    }
+  });
+
+  /*
+   * Both halves in one test: out of the sitemap, and saying `noindex` itself.
+   * Split across two suites, a change that dropped the meta tag would leave a
+   * green sitemap test asserting the page is hidden, while the page asks to be
+   * listed everywhere a crawler finds a link to it.
+   *
+   * Proven able to fail, 2026-09-18, chromium: with the `noindex` prop removed
+   * from the tag route this failed on /blog/tag/career missing the meta tag;
+   * with the TAG_PREFIX check removed from src/lib/sitemap-filter.ts it failed
+   * on /blog/tag/career being advertised. It stops at the first tag either
+   * way, so the message names one route and the cause is in every one.
+   */
+  test('the tag listings are not advertised', () => {
+    const listed = sitemapPaths(configuredSite());
+    const pages = builtHtml();
+
+    for (const route of TAG_ROUTES) {
+      expect(
+        listed.includes(asSitemapPath(route)),
+        `the sitemap advertises ${route}, which asks not to be indexed`,
+      ).toBe(false);
+
+      expect(
+        pages.get(route) ?? '',
+        `${route} is kept out of the sitemap, so it has to say noindex ` +
+          'itself: a crawler reaching it from a post would otherwise list it.',
+      ).toContain('<meta name="robots" content="noindex, follow">');
     }
   });
 

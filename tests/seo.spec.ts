@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { builtHtml as builtHtmlByRoute, DIST_DIR } from './routes';
+import { builtHtml as builtHtmlByRoute, DIST_DIR, TAG_ROUTES } from './routes';
 
 const SITE_ORIGIN = 'https://sinduri.lol';
 
@@ -198,5 +198,99 @@ test.describe('internal links', () => {
       [...unslashed].map(([href, count]) => `${href} (${count} links)`),
       'internal link(s) without a trailing slash, each a 308 in production',
     ).toEqual([]);
+  });
+});
+
+/**
+ * What a search result shows: the title and the description, per route.
+ *
+ * Length is asserted only where it changes what a reader sees. A description
+ * past 160 characters is cut mid-sentence in a result; one under 50 is usually
+ * replaced by text the engine picks out of the page, so the page stops
+ * describing itself. Titles past 70 are cut the same way.
+ *
+ * Two kinds of page are exempt from the floor, and both are pages no search
+ * result shows: the tag listings carry `noindex`, and the two contact routes
+ * are kept out of the sitemap. Their descriptions are short because there is
+ * nothing more to say, not because they are unfinished.
+ *
+ * Proven able to fail, 2026-09-18: with the category descriptions back at
+ * `Posts filed under ${label}.` all five failed the 50-character floor, and
+ * the uniqueness check is what "Posts filed under Travel." would not trip on
+ * its own.
+ */
+test.describe('search results', () => {
+  const MIN_DESCRIPTION = 50;
+  const MAX_DESCRIPTION = 160;
+  const MAX_TITLE = 70;
+
+  const UNLISTED = [
+    '/404',
+    '/contact/sent',
+    ...TAG_ROUTES.map((route) => route),
+  ];
+
+  test('every route describes itself in its own words', () => {
+    const short: string[] = [];
+    const long: string[] = [];
+    const missing: string[] = [];
+    const byDescription = new Map<string, string[]>();
+
+    for (const { route, html } of builtHtml()) {
+      const description = metaContent(html, 'description');
+
+      if (description === null || description === '') {
+        missing.push(route);
+        continue;
+      }
+
+      byDescription.set(description, [
+        ...(byDescription.get(description) ?? []),
+        route,
+      ]);
+
+      if (description.length > MAX_DESCRIPTION) {
+        long.push(`${route} (${description.length})`);
+      }
+      if (
+        description.length < MIN_DESCRIPTION &&
+        !UNLISTED.includes(route.replace(/\/$/, ''))
+      ) {
+        short.push(`${route} (${description.length})`);
+      }
+    }
+
+    expect(missing, 'route(s) with no description').toEqual([]);
+    expect(
+      long,
+      `description(s) over ${MAX_DESCRIPTION} characters, cut mid-sentence ` +
+        'in a search result',
+    ).toEqual([]);
+    expect(
+      short,
+      `description(s) under ${MIN_DESCRIPTION} characters, which a search ` +
+        'engine tends to replace with text of its own choosing',
+    ).toEqual([]);
+
+    const shared = [...byDescription].filter(([, routes]) => routes.length > 1);
+    expect(
+      shared.map(
+        ([description, routes]) => `${routes.join(', ')}: ${description}`,
+      ),
+      'route(s) sharing a description, which makes two results look like the ' +
+        'same page',
+    ).toEqual([]);
+  });
+
+  test('no title is long enough to be cut in a result', () => {
+    const long = builtHtml()
+      .map(({ route, html }) => ({
+        route,
+        title: /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1] ?? '',
+      }))
+      .filter(({ title }) => title.length > MAX_TITLE)
+      .map(({ route, title }) => `${route} (${title.length})`);
+
+    expect(long, `title(s) over ${MAX_TITLE} characters`).toEqual([]);
   });
 });
