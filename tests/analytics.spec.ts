@@ -78,6 +78,26 @@ test.beforeAll(async () => {
   localOrigin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 });
 
+/*
+ * A test ends once its assertion holds, while the page it opened is still
+ * loading lazy images and video through the production route. Closing the
+ * context then discards the response a handler is between route.fetch() and
+ * route.fulfill() on, and the test fails with "Fetch response has been
+ * disposed" after every assertion in it has passed.
+ *
+ * `ignoreErrors` only covers handlers still running after the test body has
+ * returned, so it cannot hide a failure the test asserts on. `wait` is not an
+ * alternative: a request arriving while the routes are removed is continued by
+ * Playwright and its handler then fails with "Route is already handled!",
+ * measured at 7 of 240 runs.
+ *
+ * Reproduced 2026-09-16, chromium: "a followed internal link is counted and
+ * still navigates" failed 4 of 20 runs with --repeat-each=10 before this hook.
+ */
+test.afterEach(async ({ context }) => {
+  await context.unrouteAll({ behavior: 'ignoreErrors' });
+});
+
 test.afterAll(async () => {
   await new Promise<void>((done) => server.close(() => done()));
 });
