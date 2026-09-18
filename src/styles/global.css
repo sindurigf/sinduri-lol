@@ -165,15 +165,6 @@
   --text-h3: clamp(20px, 2.6vw, 32px);
   --text-h3--line-height: 1.15;
   /*
-   * The sticker size. Not text-h3, which is a prose size; a sticker is one
-   * decorative word in a box and works by being large.
-   *
-   * Nothing uses this token directly today: the hero stickers take
-   * --text-hero-sticker. Kept because a declared token is a contract.
-   */
-  --text-sticker: clamp(24px, 2.1vw, 30px);
-  --text-sticker--line-height: 1.02;
-  /*
    * The hero's stickers, height-aware like --text-hero-h1: at a flat 30px they
    * keep their 1080p size while the name beside them shrinks, and a decoration
    * that outgrows its heading reads as a mistake.

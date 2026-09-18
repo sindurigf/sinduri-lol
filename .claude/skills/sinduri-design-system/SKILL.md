@@ -463,7 +463,6 @@ Do not add breakpoint steps.
 | H1, post title         | `text-post-h1`                            | 900    |
 | H2                     | `text-h2`                                 | 900    |
 | H3                     | `text-h3`                                 | 800    |
-| Sticker                | `text-sticker`                            | 800    |
 | Sticker, homepage hero | `--text-hero-sticker` via `.hero-sticker` | 800    |
 | Body                   | `text-body`                               | 400    |
 | Label / tag            | `text-label`                              | 900    |
@@ -483,10 +482,6 @@ and middle term are `text-h1`'s own, so it changes nothing at 305px or at 400%
 zoom, where the floor is what bites. Do not use it for a page title, and do not
 lower it to 64px, which is `text-h2`'s ceiling.
 
-`text-sticker` is not a heading size and must not be used as one. It was made
-for the homepage hero's two rotated brand words, at the comp's 30px; those now
-size from `--text-hero-sticker` through `.hero-sticker`, and nothing in `src/`
-uses `text-sticker` today.
 H3 came down from a 48px ceiling to 32px because it also sizes lead
 paragraphs and card titles, which were reading as headings; the stickers are
 decoration, so they were split off rather than dragged down — and then set to
@@ -504,7 +499,7 @@ unrelated labels rather than one mark.
 
 **And it does not get to push that thing off the screen.** The homepage hero is
 sized to fit the viewport, and the stickers size from `--text-hero-sticker`,
-`clamp(18px, min(2.1vw, 3.4svh), 30px)`, which keeps `--text-sticker`'s 2.1vw
+`clamp(18px, min(2.1vw, 3.4svh), 30px)`, which keeps the comp's 2.1vw sticker
 term and 30px ceiling, adds a viewport-height cap and lowers the floor to 18px,
 so they give space back on a short screen instead of crowding the name. From
 `sm` up, 640px wide, they are the column; on a phone held upright they
