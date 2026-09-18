@@ -4,6 +4,7 @@ import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import PageHero from '../../../../components/PageHero.astro';
 import BlogListing from '../../../../components/BlogListing.astro';
 import { getPostsByTag, tagLabel, type BlogPost } from '../../../../lib/blog';
+import { tagFeedPath } from '../../../../lib/feed';
 
 interface Props {
   posts: BlogPost[];
@@ -49,6 +50,7 @@ const label = tagLabel(tag);
   title={`Posts tagged ${label} | sinduri.lol`}
   description={`Posts tagged ${label} on sinduri.lol, newest first.`}
   noindex
+  feed={{ title: `sinduri.lol: ${label}`, href: tagFeedPath(tag) }}
 >
   {/*
     The h1 is sized `text-h2`. A tag is content rather than a string chosen

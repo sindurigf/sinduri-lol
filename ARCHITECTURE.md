@@ -524,6 +524,17 @@ category listing against the post count in the Markdown.
 The `placeholder` field stays in the schema. `/llms.txt` marks any post that
 sets it, and `tests/llms-txt.spec.ts` holds the field to each post's text.
 
+### Feeds
+
+`/rss.xml` carries every published post, and each tag listing has its own feed
+beside it at `/blog/tag/<tag>/rss.xml`. Both are RSS 2.0, written by
+`src/lib/feed.ts` rather than `@astrojs/rss`, with an `atom:link rel="self"`
+and RFC 822 dates. The Drupal tag feed is the one to give Drupal Planet, which
+wants a Drupal-only feed that passes the W3C validator. Every page's head links
+the site feed with `rel="alternate"`, and a tag page links its own as well.
+Placeholder posts are left out of every feed. `tests/rss.spec.ts` parses each
+feed with the browser's XML parser and checks it against the Markdown.
+
 ## Conventions
 
 The commit format, the copy rules and the working process are in

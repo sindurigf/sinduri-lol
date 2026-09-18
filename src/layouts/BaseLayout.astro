@@ -23,6 +23,7 @@ import {
 } from '../lib/analytics';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { SITE_FEED_PATH } from '../lib/feed';
 
 interface Props {
   title: string;
@@ -56,6 +57,8 @@ interface Props {
    * BlogPosting to the JSON-LD.
    */
   article?: ArticleMeta;
+  /* A second feed to advertise beside the site feed: a tag page's own. */
+  feed?: { title: string; href: string };
 }
 
 const SITE_NAME = 'sinduri.lol';
@@ -85,6 +88,7 @@ const {
   noCanonical = false,
   noindex = false,
   article,
+  feed,
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -176,6 +180,20 @@ const articleData = article && {
       all three to the same name.
     */}
     <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={SITE_NAME}
+      href={SITE_FEED_PATH}
+    />
+    {feed && (
+      <link
+        rel="alternate"
+        type="application/rss+xml"
+        title={feed.title}
+        href={feed.href}
+      />
+    )}
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link
