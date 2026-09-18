@@ -672,7 +672,7 @@ code is asserted by `tests/not-found.spec.ts`, not by this section.
       tile on this page is `alt=""`; hearing anything for it means the empty
       alt has been broken.
       Heard: `___________________________________________` → SC 1.1.1
-- [ ] The "404" above the heading is a `<div class="section-number">`, not a
+- [ ] The "Episode 404" label above the heading is a `<p>`, not a
       heading, and should read as ordinary text. Record whether it comes out
       as "four hundred and four", "four zero four", or "404". None of those is
       a fail; the answer is the point.

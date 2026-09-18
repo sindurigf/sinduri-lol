@@ -75,7 +75,7 @@ const photographers = Object.entries(PHOTOGRAPHERS).map(([name, href]) => ({
 }));
 
 const LINK_ITEM = 'inline-flex min-h-target items-center';
-const CARD_HEADING = 'text-h3 text-text';
+const CARD_HEADING = 'card-title';
 
 /*
  * A name with a line saying what it did is a `dl` entry under a rule; a list
@@ -92,13 +92,13 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
   description="Where the name sinduri.lol comes from, who helped, who took the photos, and what the site was designed, built and tested with."
 >
   <PageHero title="Credits">
-    <p class="mt-8 max-w-2xl text-h3 font-bold text-text text-pretty">
+    <p class="standfirst">
       A big thank you to everyone who helped me build this site, and to the
       tools that made it possible.
     </p>
   </PageHero>
 
-  <section class="band py-16">
+  <section class="band py-section">
     <div class="mx-auto max-w-page">
       <div id="name" class="card shadow-hard-pink-8">
         <h2 class={CARD_HEADING}>Where the name comes from</h2>
@@ -123,7 +123,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
         </p>
       </div>
 
-      <div class="card mt-12 shadow-hard-cyan-8">
+      <div class="card mt-grid shadow-hard-gold-8">
         <h2 class={CARD_HEADING}>Thank you</h2>
         <dl class:list={[RULED_LIST, 'md:grid-cols-2 md:gap-x-12']}>
           {THANKS.map((person) => (
@@ -141,14 +141,14 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
         </dl>
       </div>
 
-      <div class="card mt-12 shadow-hard-gold-8">
+      <div class="card mt-grid shadow-hard-gold-8">
         <h2 class={CARD_HEADING}>Photos</h2>
 
         <p class="mt-6 text-body text-muted text-pretty">
           Photos on this site and in its posts are by:
         </p>
 
-        <ul class="mt-4 list-disc gap-x-12 pl-6 text-muted marker:text-gold sm:columns-2">
+        <ul class="bullet-list mt-4 gap-x-12 sm:columns-2">
           {photographers.map((photographer) => (
             <li class="break-inside-avoid">
               <a href={photographer.href} class={LINK_ITEM}>
@@ -163,9 +163,9 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
     </div>
   </section>
 
-  <section class="band pb-24">
-    <div class="mx-auto grid max-w-page gap-12 lg:grid-cols-2">
-      <div class="card shadow-hard-pink-8">
+  <section class="band pb-section">
+    <div class="mx-auto grid max-w-page gap-grid lg:grid-cols-2">
+      <div class="card shadow-hard-gold-8">
         <h2 class={CARD_HEADING}>Design tools</h2>
 
         <dl class={RULED_LIST}>
@@ -190,7 +190,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
         </dl>
       </div>
 
-      <div class="card shadow-hard-cyan-8">
+      <div class="card shadow-hard-gold-8">
         <h2 class={CARD_HEADING}>Guides</h2>
 
         <dl class={RULED_LIST}>
@@ -213,7 +213,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
       <div class="card shadow-hard-gold-8 lg:col-span-2">
         <h2 class={CARD_HEADING}>Built and tested with</h2>
 
-        <ul class="mt-6 list-disc gap-x-12 pl-6 text-muted marker:text-gold sm:columns-2 lg:columns-3">
+        <ul class="bullet-list mt-6 gap-x-12 sm:columns-2 lg:columns-3">
           {BUILT_WITH.map((tool) => (
             <li class="break-inside-avoid">
               <a href={tool.href} class={LINK_ITEM}>

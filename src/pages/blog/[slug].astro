@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BlogLayout from '../../layouts/BlogLayout.astro';
+import PageHero from '../../components/PageHero.astro';
 import { categoryAccent, tagHref, tagLabel } from '../../lib/blog';
 
 interface Props {
@@ -60,20 +61,13 @@ const article = placeholder
   ogImage={ogImage}
   article={article}
 >
-  {/*
-    No horizontal padding here. <main> carries the one page gutter for the
-    whole site, so this container only sets the measure. Padding here would
-    narrow this route's box below the one the heading floors are calibrated
-    against, and a long heading word then overflows. See the .page-gutter
-    comment in global.css.
-  */}
-  <div class="mx-auto max-w-3xl py-28">
+  <PageHero title={title} titleSize="post">
     {/*
       `py-2` takes this label link past the 24px of SC 2.5.8; `-my-2` pulls
       its layout box back to what the bare label occupied, so the heading
       below does not move.
     */}
-    <p class="label text-subtle">
+    <p slot="eyebrow" class="label mb-6 text-subtle">
       <a
         href={`/blog/${category}/`}
         class:list={['-my-2 inline-block py-2', accent.text]}
@@ -82,50 +76,39 @@ const article = placeholder
       </a>
     </p>
 
-    {/*
-      `text-post-h1`, not the base `h1` size. This heading sits in the
-      `max-w-3xl` measure above rather than the full page column, and
-      `text-h1`'s 104px ceiling overflows that box on any 12-character title
-      word. See the token in global.css.
-    */}
-    <h1 class="mt-6 text-post-h1">{title}</h1>
-
-    <p class="mt-8 text-muted">{teaser}</p>
+    <p class="mt-8 max-w-2xl text-body text-muted text-pretty">{teaser}</p>
 
     <p class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-label text-subtle">
       <time datetime={machineDate}>{formattedDate}</time>
       {readingTime ? <span>{readingTime} min read</span> : null}
     </p>
+  </PageHero>
 
-    <div class="prose mt-16">
-      <Content />
-    </div>
-
-    {tags.length > 0 ? (
-      <div class="mt-16 border-t-8 border-border pt-10">
-        <h2 class="label text-subtle">Tags</h2>
-        {/*
-            Plain links, not boxes. Bordered chips would look like the category
-            filter's options on the listing pages, which are a filter for the
-            page you are on rather than a way off it.
-
-            `py-2` and `min-w-6` take each link past the 24px of SC 2.5.8 on a
-            13px label, and a two-letter tag with it; `-my-2` pulls the layout
-            box back to what the bare label occupied.
-          */}
-        <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-3">
-          {tags.map((tag) => (
-            <li class="label">
-              <a
-                href={tagHref(tag)}
-                class="-my-2 inline-block min-w-6 py-2 text-text hover:text-cyan"
-              >
-                {tagLabel(tag)}
-              </a>
-            </li>
-          ))}
-        </ul>
+  {/*
+    The reading column sits at the left of the page column, under the plate's
+    own text, rather than centred in it: centred, it started a different
+    distance from the edge than the title above it.
+  */}
+  <section class="band py-section">
+    <div class="mx-auto max-w-page">
+      <div class="prose max-w-3xl">
+        <Content />
       </div>
-    ) : null}
-  </div>
+
+      {tags.length > 0 ? (
+        <div class="mt-section max-w-3xl border-t-4 border-border pt-10">
+          <h2 class="label text-subtle">Tags</h2>
+          <ul class="mt-6 flex flex-wrap gap-3">
+            {tags.map((tag) => (
+              <li>
+                <a href={tagHref(tag)} class="chip">
+                  {tagLabel(tag)}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  </section>
 </BlogLayout>

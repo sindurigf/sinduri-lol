@@ -90,7 +90,7 @@ const emptyState =
   landmarks list of unlabelled "navigation" entries is a list of nothing.
 */}
 <nav aria-label="Filter posts by category">
-  <ul class="flex flex-wrap gap-4">
+  <ul class="flex flex-wrap gap-3">
     {CATEGORY_FILTERS.map((option) => {
       const isActive = option.href === activeHref;
       return (
@@ -98,18 +98,10 @@ const emptyState =
           <a
             href={option.href}
             aria-current={isActive ? 'page' : undefined}
-            class:list={[
-              'label flex items-center border-4 border-border px-5 py-3',
-              isActive
-                ? 'bg-gold text-background shadow-hard-pink-8'
-                : 'bg-surface text-text hover:bg-gold hover:text-background',
-            ]}
+            class="chip"
           >
             {isActive ? (
-              <span
-                aria-hidden="true"
-                class="mr-3 block size-2 bg-background"
-              />
+              <span aria-hidden="true" class="block size-2 bg-background" />
             ) : null}
             {option.label}
           </a>
@@ -126,15 +118,15 @@ const emptyState =
   WAVE would guess at.
 */}
 {posts.length === 0 ? (
-  <div class="card mt-16 shadow-hard-cyan-8" data-empty-listing>
-    <p class="label-wide text-cyan">No posts yet</p>
+  <div class="card mt-head shadow-hard-gold-8" data-empty-listing>
+    <p class="label-wide text-gold">No posts yet</p>
     <p class="mt-4 max-w-prose text-body text-muted text-pretty">
       Nothing is {emptyState.holds} so far. {emptyState.other}, or read{' '}
       <a href="/blog/">every post</a>.
     </p>
   </div>
 ) : (
-  <ul class="mt-16 grid gap-10 lg:grid-cols-2">
+  <ul class="mt-head grid gap-grid lg:grid-cols-2">
     {posts.map((post, index) => {
       const feature = featureFirst && index === 0;
       return (
@@ -154,14 +146,14 @@ const emptyState =
 )}
 
 {totalPages > 1 ? (
-  <nav aria-label="Pagination" class="mt-20">
+  <nav aria-label="Pagination" class="mt-actions">
     {/*
         Page numbers only. A "Previous page" or "Next page" link sits beside a
         number going to the same place, which is two adjacent links to one URL:
         two tab stops for one destination, and WAVE's "Redundant link" alert.
         See tests/wave-alerts.spec.ts.
       */}
-    <ul class="flex flex-wrap items-center gap-4">
+    <ul class="flex flex-wrap items-center gap-3">
       {pageNumbers.map((page) => {
         const isCurrent = page === currentPage;
         return (
@@ -178,18 +170,10 @@ const emptyState =
             <a
               href={indexPageHref(page)}
               aria-current={isCurrent ? 'page' : undefined}
-              class:list={[
-                'label flex items-center border-4 border-border px-5 py-3',
-                isCurrent
-                  ? 'bg-gold text-background shadow-hard-pink-8'
-                  : 'bg-surface text-text hover:bg-gold hover:text-background',
-              ]}
+              class="chip"
             >
               {isCurrent ? (
-                <span
-                  aria-hidden="true"
-                  class="mr-3 block size-2 bg-background"
-                />
+                <span aria-hidden="true" class="block size-2 bg-background" />
               ) : null}
               <span class="sr-only">Page&nbsp;</span>
               {page}

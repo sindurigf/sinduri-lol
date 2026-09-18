@@ -146,7 +146,7 @@ blue that carries every boundary elsewhere, and `#131313` is already
 body copy.
 
 `gold-border` does not govern every border on this surface. It governs
-structural ones: section rules, dividers, card edges. **Button borders use
+structural ones: rules, dividers, card edges. **Button borders use
 `gold-text`**, matching their own fill, because a navy outline around a solid
 dark block would read as an outline this design does not have.
 
@@ -340,8 +340,8 @@ varies by reader as well as by browser, and has not been tested here.
   wherever it is drawn; a tile that is not a copy of it does not qualify,
   however much it looks like one.
 
-  `rounded-full` is the **circle and pill** exception: the spinning badge
-  frame, the bunny roundels, and `.pill`. A
+  `rounded-full` is the **circle** exception: the spinning badge frame, the
+  bunny roundel (`Roundel.astro`) and the Star Trek thumbnail on `/about`. A
   circle is a shape the comps draw, not a box with its corners taken off.
 
 Hard offset shadow utilities, all zero blur and zero spread:
@@ -369,13 +369,13 @@ Defined in `@layer components` in `src/styles/global.css`:
   from `sm` up. The split is a measure decision: at 40px a side the content box
   is 177px at a 305px viewport, where a real post title runs to six lines;
   24px leaves 209px
-- `.section-rule`: a 96px x 8px bar at the head of a section, rotating through
-  gold, cyan and pink. It must sit inside a column-width box, because a band is
-  full-bleed and a rule placed directly in one aligns to the viewport instead.
-  `SectionRule.astro` renders it inside that box; use it rather than the class.
-  It replaced a full-bleed line between sections, which framed the page rather
-  than punctuating it and was doing all the separating on its own (the grounds
-  either side measured 1.039:1)
+- `.card-title`: every card's heading, at `text-h3`, whatever its level
+- `.lead` / `.standfirst`: the paragraph under a section heading (muted) and
+  the line on a PageHero plate under the page title (text colour)
+- `.bullet-list`: a bulleted list with gold markers
+- `.chip`: tags, skills, jump links, filters and the pager. Square, `border-4`,
+  label type, a 24px target of its own as a link. The current filter or page
+  adds `aria-current`, the gold fill and an `aria-hidden` square marker
 - `.nav-cta`: the navigation's call to action, in both the header row and the
   mobile dialog. It carries the identity and leaves the box to each call site.
   Its hover and current-page rules live in `@layer components` with it rather
@@ -385,7 +385,6 @@ Defined in `@layer components` in `src/styles/global.css`:
   `--inset-shadow-cta-current`, measured at 7.91 on the fill and 3.42 on the
   border
 - `.label` / `.label-wide`: 13px / 900 uppercase, 0.1em / 0.14em tracking
-- `.section-number`: `clamp(21px, 2.4vw, 28px)` / 800, `pinkText`
 - `.page-gutter`: the horizontal gutter (`px-4 sm:px-6`), declared once and
   applied to the header, `<main>` and the footer. **The base `px-4` is a reflow
   constraint, not a spacing preference.** The heading floors are calibrated
@@ -396,26 +395,61 @@ Defined in `@layer components` in `src/styles/global.css`:
   outer element and this on the column inside. **That shared structure is the
   point**, not the width: applying the gutter inside one column and outside
   another reads identically below the column width and diverges by exactly one
-  gutter above it, measured at 24px on `/about` at 1440px. Blog posts opt out
-  with a narrower prose measure, and that exception list is derived from the
-  build
+  gutter above it, measured at 24px on `/about` at 1440px. Every route has
+  one; a reading column is a narrower `max-w-3xl` inside it, left-aligned under
+  the PageHero plate's text
 - `.page-column` is not a thing. Do not add one; the column is the utility above
 - `.skip-link`: the skip-to-content link, visible on focus
 - `.band`: a full-bleed band inside `<main>`, breaking out of the gutter with
   negative margins and re-applying it. The four values duplicate `.page-gutter`
   and must move with it
-- `.pill`: `rounded-full`, `border-4`, surface fill. A label in a frame, not
-  interactive
 - `.motion-toggle`: the 40px square SC 2.2.2 pause control. Appearance only;
   position comes from a second class
 - `.prose`: the rendered-Markdown rules, since there is no typography plugin
 - Page-specific sets, documented in place in `global.css`: `.hero*`,
-  `.spin-badge` / `.spin-pace-*`, `.page-hero-*`, and `.footer-*`
+  `.spin-badge`, `.page-hero-*`, and `.footer-*`
 - `.surface-gold`, `.btn-gold-primary`, `.btn-gold-secondary`: the gold-ground
   set
 
 Links are gold with no underline, and turn cyan on hover, set in the base
 layer, so plain `<a>` elements are already correct.
+
+### Page rules
+
+Every page is built from the same parts in the same order, so no page decides
+its own opening, heading treatment or rhythm. Agreed with Sinduri on
+2026-09-18 after a cohesion audit found five openings, six section-heading
+treatments and five section paddings. `tests/page-structure.spec.ts` checks the
+ones a machine can see.
+
+- **Opening.** Every page except Home and 404 opens with `PageHero`: the
+  tilted plate, a gold `h1`, the roundel on its bottom corner. A page with a
+  photo passes `image`, and the plate sits over the photo's left edge with the
+  roundel on the seam, rather than taking the photo inside it. A page with its
+  own round mark (Contact's badge) passes it in the `mark` slot. A post uses
+  `titleSize="post"`.
+- **Sections.** Everything after the hero is a `Section`: a band with
+  `py-section`, a white `text-h2` heading, an optional `.lead`, then the
+  content at `mt-head`. There is no rule above the heading; the heading and the
+  spacing mark the section.
+- **Colour has a job.** Gold is structure: the hero shadow, every card's
+  default shadow, card labels. Pink is emphasis, on at most one card per
+  section (the current role, the cats, the award). Cyan is the round marks: the
+  roundel and the badge. On the blog, colour means category, as before.
+- **One card.** `.card` with an 8px hard shadow, always, and `.card-title` for
+  its heading. A state such as "current" is a `.chip` with words in it, never a
+  border colour alone (SC 1.4.1).
+- **Photos** take a 4px `border` frame and no shadow or tilt; only cards stand
+  forward.
+- **Spacing** comes from `--spacing-section`, `-head`, `-grid`, `-actions` and
+  `-inline`. Each is fluid from 390px to 1200px, because the desktop values
+  left a phone with screens of empty ground between one-column sections.
+- **Links**: a link in a sentence uses the base underline; an action is
+  `.btn-primary` or `.btn-secondary`; tags, skills and jump links are `.chip`.
+- **Reading pages** (Privacy, Accessibility, posts) are a PageHero, then one
+  `.prose max-w-3xl` column at the left of the page column.
+- **One ground.** Sections do not alternate backgrounds. The gold surface is
+  the only change of ground.
 
 ## Content collection
 
@@ -602,7 +636,7 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   `100vw`; the same spec fails when it runs more than 1.1x over.
 - **`/about` tells Sinduri's story in order**: who she is, what she
   believes, people and places, the important things, and her path into Drupal
-  last. It uses the site's own vocabulary, the section rule, pill, card and
+  last. It uses the site's own vocabulary, PageHero, Section, chip, card and
   hard shadow, rather than a page-specific one. Nothing is set over a
   photograph, because text on an image lands in axe's contrast "incomplete"
   bucket. Photos take a border and no shadow, so the cards stay the objects

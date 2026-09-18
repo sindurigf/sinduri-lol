@@ -1,7 +1,7 @@
 ---
-import SectionRule from '../../components/SectionRule.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ContactForm from '../../components/ContactForm.astro';
+import PageHero from '../../components/PageHero.astro';
 import { CONTACT_EMAIL } from '../../lib/contact';
 import { looksAutomated, validateSubmission } from '../../lib/contact-form';
 import { env } from 'cloudflare:workers';
@@ -165,35 +165,35 @@ const values = result && !result.ok ? result.submitted : {};
   description="Something went wrong sending your message."
   noCanonical
 >
-  <section class="band py-24">
-    <SectionRule accent="pink" />
+  <PageHero title="Check your message">
+    {tooMany && (
+      <p class="standfirst">
+        That is a lot of messages in a short time. Wait a few minutes and try
+        again, or email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>{' '}
+        instead.
+      </p>
+    )}
 
-    <div class="mx-auto max-w-3xl">
-      <h1 class="text-h1 text-text">Check your message</h1>
+    {storageFailed && (
+      <p class="standfirst">
+        Your message could not be saved, so it has not been received. Please
+        email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> instead.
+        Your text is still in the form below, so you can copy it.
+      </p>
+    )}
 
-      {tooMany && (
-        <p class="mt-8 text-body text-muted text-pretty">
-          That is a lot of messages in a short time. Wait a few minutes and try
-          again, or email{' '}
-          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> instead.
-        </p>
-      )}
+    {!tooMany && !storageFailed && (
+      <p class="standfirst">
+        Nothing has been sent yet. What you wrote is still here.
+      </p>
+    )}
+  </PageHero>
 
-      {storageFailed && (
-        <p class="mt-8 text-body text-muted text-pretty">
-          Your message could not be saved, so it has not been received. Please
-          email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> instead.
-          Your text is still in the form below, so you can copy it.
-        </p>
-      )}
-
-      {!tooMany && !storageFailed && (
-        <p class="mt-8 text-body text-muted text-pretty">
-          Nothing has been sent yet. What you wrote is still here.
-        </p>
-      )}
-
-      <ContactForm errors={errors} values={values} />
+  <section class="band py-section">
+    <div class="mx-auto max-w-page">
+      <div class="card max-w-3xl shadow-hard-gold-8">
+        <ContactForm errors={errors} values={values} summaryHeading="h2" />
+      </div>
     </div>
   </section>
 </BaseLayout>

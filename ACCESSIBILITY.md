@@ -210,7 +210,7 @@ on gold: it is the label on `.btn-gold-primary`'s `#131313` fill, where it
 measures 18.58.
 
 **Two border tokens apply on this surface**, split by what the border encloses.
-`gold-border` carries structural boundaries: section rules, dividers, card
+`gold-border` carries structural boundaries: rules, dividers, card
 edges. Button borders use `gold-text`, matching their own fill, so the control
 reads as one solid block rather than a dark block inside a navy outline. Both
 clear SC 1.4.11 on gold several times over, so that split is a design decision

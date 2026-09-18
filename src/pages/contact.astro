@@ -3,6 +3,8 @@ import { badgeImage } from '../lib/badge-image';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SpinBadge from '../components/ui/SpinBadge.vue';
 import ContactForm from '../components/ContactForm.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
 import { CONTACT_EMAIL } from '../lib/contact';
 
 /*
@@ -25,22 +27,16 @@ const CONTACT_METHODS = [
     label: 'Email',
     value: EMAIL,
     href: `mailto:${EMAIL}`,
-    accent: 'text-gold',
-    shadow: 'shadow-hard-gold-8',
   },
   {
     label: 'LinkedIn',
     value: 'in/sinduri-guntupalli',
     href: 'https://at.linkedin.com/in/sinduri-guntupalli-307542131',
-    accent: 'text-cyan',
-    shadow: 'shadow-hard-cyan-8',
   },
   {
     label: 'GitHub',
     value: '@sindurigf',
     href: 'https://github.com/sindurigf',
-    accent: 'text-pink-text',
-    shadow: 'shadow-hard-pink-8',
   },
 ] as const;
 
@@ -57,70 +53,54 @@ const REASONS = [
   title="Contact | sinduri.lol"
   description="Write to Sinduri in Vienna by email, on LinkedIn or GitHub, or with the contact form."
 >
-  {/* ===================================================================
-       INTRO
-       =================================================================== */}
-  <section class="band py-16">
-    <div class="mx-auto grid max-w-page items-center gap-12 lg:grid-cols-12">
-      <div class="min-w-0 lg:col-span-8">
-        <h1 class="text-h1 text-gold">Get in touch.</h1>
+  <PageHero title="Get in touch">
+    <p class="standfirst">
+      Open source enthusiast in Vienna, cat lover, and a very serious Lord of
+      the Rings fan. I love talking about nothing and anything, so write to me!
+    </p>
 
-        <p class="mt-8 max-w-xl text-body text-muted text-pretty">
-          Open source enthusiast in Vienna, cat lover, and a very serious Lord
-          of the Rings fan. I love talking about nothing and anything, so write
-          to me!
-        </p>
-      </div>
+    {/*
+      The badge takes the roundel's corner: both are the site's round mark,
+      and one corner mark per plate keeps this hero the same as every other.
+      client:load because the animation is applied by the island on mount,
+      so the pause control SC 2.2.2 asks for and the motion it pauses arrive
+      together or not at all.
+    */}
+    <SpinBadge
+      slot="mark"
+      client:load
+      badge={badgeImage}
+      frameClass="h-40 w-40 lg:h-48 lg:w-48"
+      markClass="w-28 lg:w-32"
+      borderClass="border-8"
+      shadowClass="shadow-hard-cyan-8"
+    />
+  </PageHero>
 
-      <div class="flex min-w-0 justify-center lg:col-span-4 lg:justify-end">
-        {/*
-          The 28s pace, `.spin-pace-contact` in global.css. client:load
-          because the animation is applied by the island on mount, so the
-          pause control SC 2.2.2 asks for and the motion it pauses arrive
-          together or not at all.
-        */}
-        <SpinBadge
-          client:load
-          badge={badgeImage}
-          pace="contact"
-          frameClass="h-56 w-56"
-          markClass="w-40"
-          borderClass="border-8"
-          shadowClass="shadow-hard-cyan-8"
-        />
-      </div>
-    </div>
-  </section>
-
-  {/* ===================================================================
-       FORM AND DIRECT ROUTES
-       =================================================================== */}
   {/*
     The form comes first in source order as well as on the left, so the
     reading order at one column matches the two-column reading order.
   */}
-  <section class="band pb-24">
-    <div class="mx-auto grid max-w-page gap-16 lg:grid-cols-12 lg:items-start">
+  <Section title="Write to me">
+    {/*
+      Functional microcopy. Says what happens to the message and names the
+      way round the form, because a form is not everyone's way in.
+    */}
+    <p slot="lead" class="lead">
+      This goes to the same inbox as the email address on this page. If
+      something on this site blocks you, that is worth sending even if you
+      cannot say which part is wrong, and you do not need to explain why you are
+      writing.
+    </p>
+
+    <div class="grid gap-grid lg:grid-cols-12 lg:items-start">
       <div class="card min-w-0 shadow-hard-gold-8 lg:col-span-7">
-        <h2 class="text-h2 text-text">Write to me</h2>
-
-        {/*
-          Functional microcopy. Says what happens to the message and names the
-          way round the form, because a form is not everyone's way in.
-        */}
-        <p class="mt-6 text-body text-muted text-pretty">
-          This goes to the same inbox as the email address on this page. If
-          something on this site blocks you, that is worth sending even if you
-          cannot say which part is wrong, and you do not need to explain why you
-          are writing.
-        </p>
-
         <ContactForm />
       </div>
 
-      <div class="flex min-w-0 flex-col gap-12 lg:col-span-5">
+      <div class="flex min-w-0 flex-col gap-grid lg:col-span-5">
         <div>
-          <h2 class="label-wide text-gold">Or find me here</h2>
+          <h3 class="card-title">Or find me here</h3>
 
           {/*
             The whole card is the link here, unlike the blog cards, because of
@@ -134,22 +114,15 @@ const REASONS = [
               <li class="flex min-w-0">
                 <a
                   href={method.href}
-                  class:list={[
-                    'flex w-full min-w-0 items-center justify-between gap-6 border-8 border-border bg-surface p-card-tight text-text',
-                    method.shadow,
-                  ]}
+                  class="flex w-full min-w-0 items-center justify-between gap-6 border-8 border-border bg-surface p-card-tight text-text shadow-hard-gold-8 hover:text-cyan"
                 >
                   <span class="flex min-w-0 flex-col gap-2">
-                    <span class:list={['label-wide', method.accent]}>
-                      {method.label}
-                    </span>
-                    <span class="text-h3 font-extrabold text-text">
-                      {method.value}
-                    </span>
+                    <span class="label-wide text-gold">{method.label}</span>
+                    <span class="text-h3 font-extrabold">{method.value}</span>
                   </span>
                   <span
                     aria-hidden="true"
-                    class:list={['text-h3 leading-none', method.accent]}
+                    class="text-h3 leading-none text-gold"
                   >
                     &rarr;
                   </span>
@@ -159,9 +132,9 @@ const REASONS = [
           </ul>
         </div>
 
-        <div class="card">
-          <h2 class="label-wide text-gold">Write to me about</h2>
-          <ul class="mt-6 list-disc pl-6 text-muted marker:text-gold">
+        <div class="card shadow-hard-gold-8">
+          <h3 class="card-title">Write to me about</h3>
+          <ul class="bullet-list mt-6">
             {REASONS.map((reason) => (
               <li class="mt-3 text-body text-pretty">{reason}</li>
             ))}
@@ -169,7 +142,7 @@ const REASONS = [
         </div>
       </div>
     </div>
-  </section>
+  </Section>
 
   {/* ===================================================================
        CLOSING
@@ -185,8 +158,8 @@ const REASONS = [
     `.btn-primary` is unreadable here and is not permitted.
     tests/gold-surface.spec.ts walks this section and fails on either mistake.
   */}
-  <section class="surface-gold band py-24">
-    <div class="mx-auto flex max-w-page flex-wrap items-center justify-between gap-10">
+  <section class="surface-gold band py-section">
+    <div class="mx-auto flex max-w-page flex-wrap items-center justify-between gap-grid">
       <p class="max-w-2xl text-h3 font-bold text-pretty">
         We should all be a bit kinder and more empathetic.
       </p>

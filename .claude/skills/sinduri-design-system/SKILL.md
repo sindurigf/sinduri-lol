@@ -105,18 +105,18 @@ There are two pink tokens and they are split by **role**, never by size.
   fills. It clears the 3:1 that SC 1.4.11 asks of non-text by a wide margin.
   **Never put `pink` on text.** Not on a heading, not on a section number, not
   on a label, not at any size.
-- **`pink-text` is for every pink glyph on the site**, including the section
-  number. It is AAA (7:1) on all three surfaces at every size and weight.
+- **`pink-text` is for every pink glyph on the site**, including category
+  labels. It is AAA (7:1) on all three surfaces at every size and weight.
   **Never use `pink-text` for a border, a shadow, or a fill.** Keeping it off
   non-text is what stops the two drifting back into one token.
 
 ```html
 <!-- Yes -->
-<span class="section-number text-pink-text">01</span>
+<span class="label text-pink-text">Personal thoughts</span>
 <div class="border-4 border-pink shadow-hard-pink-12">…</div>
 
 <!-- No -->
-<span class="text-pink">01</span>
+<span class="label text-pink">Personal thoughts</span>
 ```
 
 The old rule made pink conditional on the text being 18.66px or larger, which
@@ -452,7 +452,7 @@ use it for anything a person reads in continuous prose.
 
 ### Scale
 
-Every size is a token. Headings, body, the stickers and the section number are
+Every size is a token. Headings, body, the stickers and the glyph tile are
 fluid via `clamp()`; `text-label` (13px) and `text-copyright` (20px) are fixed.
 Do not add breakpoint steps.
 
@@ -463,13 +463,12 @@ Do not add breakpoint steps.
 | H1, post title         | `text-post-h1`                            | 900    |
 | H2                     | `text-h2`                                 | 900    |
 | H3                     | `text-h3`                                 | 800    |
-| Sticker                | `text-sticker`                            | 800    |
 | Sticker, homepage hero | `--text-hero-sticker` via `.hero-sticker` | 800    |
 | Body                   | `text-body`                               | 400    |
 | Label / tag            | `text-label`                              | 900    |
 | Copyright              | `text-copyright`                          | 900    |
 | Footer name            | `text-footer-name`                        | 900    |
-| Section number         | `text-section-number`                     | 800    |
+| Category glyph tile    | `text-section-number`                     | 800    |
 
 Headings must not skip levels. One `<h1>` per page.
 
@@ -483,10 +482,6 @@ and middle term are `text-h1`'s own, so it changes nothing at 305px or at 400%
 zoom, where the floor is what bites. Do not use it for a page title, and do not
 lower it to 64px, which is `text-h2`'s ceiling.
 
-`text-sticker` is not a heading size and must not be used as one. It was made
-for the homepage hero's two rotated brand words, at the comp's 30px; those now
-size from `--text-hero-sticker` through `.hero-sticker`, and nothing in `src/`
-uses `text-sticker` today.
 H3 came down from a 48px ceiling to 32px because it also sizes lead
 paragraphs and card titles, which were reading as headings; the stickers are
 decoration, so they were split off rather than dragged down — and then set to
@@ -504,7 +499,7 @@ unrelated labels rather than one mark.
 
 **And it does not get to push that thing off the screen.** The homepage hero is
 sized to fit the viewport, and the stickers size from `--text-hero-sticker`,
-`clamp(18px, min(2.1vw, 3.4svh), 30px)`, which keeps `--text-sticker`'s 2.1vw
+`clamp(18px, min(2.1vw, 3.4svh), 30px)`, which keeps the comp's 2.1vw sticker
 term and 30px ceiling, adds a viewport-height cap and lowers the floor to 18px,
 so they give space back on a short screen instead of crowding the name. From
 `sm` up, 640px wide, they are the column; on a phone held upright they
@@ -936,6 +931,45 @@ is still 18.58.
 
 ---
 
+## Page rules
+
+Every page is built from the same parts in the same order, so no page decides
+its own opening, heading treatment or rhythm. Agreed with Sinduri on
+2026-09-18 after a cohesion audit found five openings, six section-heading
+treatments and five section paddings. `tests/page-structure.spec.ts` checks the
+ones a machine can see.
+
+- **Opening.** Every page except Home and 404 opens with `PageHero`: the
+  tilted plate, a gold `h1`, the roundel on its bottom corner. A page with a
+  photo passes `image`, and the plate sits over the photo's left edge with the
+  roundel on the seam, rather than taking the photo inside it. A page with its
+  own round mark (Contact's badge) passes it in the `mark` slot. A post uses
+  `titleSize="post"`.
+- **Sections.** Everything after the hero is a `Section`: a band with
+  `py-section`, a white `text-h2` heading, an optional `.lead`, then the
+  content at `mt-head`. There is no rule above the heading; the heading and the
+  spacing mark the section.
+- **Colour has a job.** Gold is structure: the hero shadow, every card's
+  default shadow, card labels. Pink is emphasis, on at most one card per
+  section (the current role, the cats, the award). Cyan is the round marks: the
+  roundel and the badge. On the blog, colour means category, as before.
+- **One card.** `.card` with an 8px hard shadow, always, and `.card-title` for
+  its heading. A state such as "current" is a `.chip` with words in it, never a
+  border colour alone (SC 1.4.1).
+- **Photos** take a 4px `border` frame and no shadow or tilt; only cards stand
+  forward.
+- **Spacing** comes from `--spacing-section`, `-head`, `-grid`, `-actions` and
+  `-inline`. Each is fluid from 390px to 1200px, because the desktop values
+  left a phone with screens of empty ground between one-column sections.
+- **Links**: a link in a sentence uses the base underline; an action is
+  `.btn-primary` or `.btn-secondary`; tags, skills and jump links are `.chip`.
+- **Reading pages** (Privacy, Accessibility, posts) are a PageHero, then one
+  `.prose max-w-3xl` column at the left of the page column.
+- **One ground.** Sections do not alternate backgrounds. The gold surface is
+  the only change of ground.
+
+---
+
 ## Components
 
 **Native elements before ARIA.** Every ARIA attribute is a promise you then have
@@ -1063,16 +1097,16 @@ exactly three things:
    tile's radius the way it takes its colour, border and tilt. A tile that is
    not a copy of the logo tile does not qualify, however much it looks like one
 
-**`rounded-full` is the circle-and-pill exception.** It applies to the spinning
-badge frame (`SpinBadge.vue`), the bunny roundel in the homepage About teaser,
-on the About page and in `PageHero` (Career, Blog and its listings,
-Credits), and `.pill`.
+**`rounded-full` is the circle exception.** It applies to the spinning badge
+frame (`SpinBadge.vue`), the bunny roundel (`Roundel.astro`, on every
+PageHero and in the homepage About teaser), and the Star Trek thumbnail on
+`/about`. There is no pill: tags and labels are the square `.chip`.
 
 The two are not degrees of the same thing and the second is not a loophole in
 the first. `rounded-nav` softens a rectangle, which is the move this design
 language is built to avoid, so it is capped at the CTA and the logo tile, drawn
 in two places, and stays there.
-`rounded-full` draws a circle or a pill, which is a shape in its own right:
+`rounded-full` draws a circle, which is a shape in its own right:
 there is no rectangle underneath it to have gone soft. The comps write
 `border-radius: 9999px` on every one of these.
 

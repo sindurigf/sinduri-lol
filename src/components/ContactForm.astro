@@ -16,9 +16,12 @@ import {
 interface Props {
   errors?: FieldError[];
   values?: Partial<ContactSubmission>;
+  /** One level below the heading the form sits under, so the outline never skips. */
+  summaryHeading?: 'h2' | 'h3';
 }
 
-const { errors = [], values = {} } = Astro.props;
+const { errors = [], values = {}, summaryHeading = 'h3' } = Astro.props;
+const SummaryHeading = summaryHeading;
 
 const errorFor = (field: FieldError['field']): string | undefined =>
   errors.find((error) => error.field === field)?.message;
@@ -37,11 +40,11 @@ const ACTION = '/contact/send/';
    * useful rather than decorative.
    */
   <div class="error-summary" role="alert" tabindex="-1" autofocus>
-    <h3 class="text-h3 text-text">
+    <SummaryHeading class="text-h3 text-text">
       {errors.length === 1
         ? 'There is one problem with this form'
         : `There are ${errors.length} problems with this form`}
-    </h3>
+    </SummaryHeading>
     <ul class="mt-4 list-disc pl-6">
       {errors.map((error) => (
         <li class="mt-2 text-body">
@@ -52,7 +55,7 @@ const ACTION = '/contact/send/';
   </div>
 )}
 
-<form method="post" action={ACTION} class="mt-10">
+<form method="post" action={ACTION} class:list={[errors.length > 0 && 'mt-10']}>
   <div class="field">
     <label class="field-label" for="contact-name">
       Name

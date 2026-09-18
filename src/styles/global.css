@@ -165,15 +165,6 @@
   --text-h3: clamp(20px, 2.6vw, 32px);
   --text-h3--line-height: 1.15;
   /*
-   * The sticker size. Not text-h3, which is a prose size; a sticker is one
-   * decorative word in a box and works by being large.
-   *
-   * Nothing uses this token directly today: the hero stickers take
-   * --text-hero-sticker. Kept because a declared token is a contract.
-   */
-  --text-sticker: clamp(24px, 2.1vw, 30px);
-  --text-sticker--line-height: 1.02;
-  /*
    * The hero's stickers, height-aware like --text-hero-h1: at a flat 30px they
    * keep their 1080p size while the name beside them shrinks, and a decoration
    * that outgrows its heading reads as a mistake.
@@ -287,6 +278,22 @@
    */
   --spacing-card-tight: 24px;
   --spacing-card: 40px;
+  /*
+   * Vertical rhythm, one token per job so no page picks its own. Fluid
+   * between a phone and 1200px, where each reaches the value most pages
+   * already used: a 96px section band was generous on a desktop and read as
+   * empty screens on a phone, where the same content is one column and five
+   * times as tall.
+   *
+   * `grid` never drops below 28px because every card casts an 8px hard shadow
+   * into the gap after it, and less than three shadows' width between two
+   * cards reads as them touching.
+   */
+  --spacing-section: clamp(56px, 8vw, 96px);
+  --spacing-head: clamp(32px, 4vw, 48px);
+  --spacing-grid: clamp(28px, 3.4vw, 40px);
+  --spacing-actions: clamp(32px, 4vw, 48px);
+  --spacing-inline: clamp(16px, 2vw, 24px);
   /*
    * Gold-surface button padding, from the comps. The vertical number is also a
    * conformance floor: a 13px label at 1.2 is a 15.6px line box, so the control
@@ -576,11 +583,11 @@
   /*
    * A full-bleed band inside <main>.
    *
-   * Most sections in the comps carry their own background (`#0E0E0E`
-   * alternating with `#131313`, and `#FFC000` on Career) and run edge to
-   * edge, while their text stays in the same measure as everything else.
-   * <main> carries the one page gutter, so a band breaks out of it with
-   * negative inline margins and re-applies it inside itself.
+   * Every band sits on the page background; the site does not alternate
+   * grounds. The one band with its own ground is `.surface-gold`, which has
+   * to run edge to edge while its text stays in the same measure as
+   * everything else. <main> carries the one page gutter, so a band breaks
+   * out of it with negative inline margins and re-applies it inside itself.
    *
    * The four values are duplicated from .page-gutter and must move with both
    * of its breakpoints: a band that kept `sm:-mx-6` after the gutter moved
@@ -860,41 +867,49 @@
   }
 
   /*
-   * The section rule. A short bar at the head of a section, replacing the
-   * full-bleed 8px line that used to run between every one. That line ran the
-   * full width of the viewport while everything it separated sat in a capped,
-   * centred column, so it framed the page rather than punctuating it, and it
-   * was doing all the separating: the two grounds either side measure
-   * 1.039:1, which is no step at all.
-   *
-   * Deliberately not a divider. It sits at the top of a section rather than
-   * between two, it is 96px rather than the full width, and it rotates
-   * through gold, cyan and pink so it reads as a chapter mark. `pink`
-   * #FF007A is the right pink and `pink-text` is not: this is a non-text
-   * element, which is the split those two tokens exist for.
-   *
-   * It must sit inside a column-width box to line up with the text below it.
-   * A band is full-bleed, so a rule placed directly in one aligns to the
-   * viewport instead. Every use is wrapped for that reason, including in the
-   * sections whose column is a grid or a flex row, where a bare first child
-   * would become a track or an item instead of a rule.
+   * A card's heading, whatever its level. One size for every card title on
+   * the site, so a card never announces itself louder than the section it
+   * sits in.
    */
-  .section-rule {
-    @apply mb-12 block h-2 w-24;
+  .card-title {
+    @apply text-h3 font-extrabold text-text;
   }
 
   /*
-   * A pill. `rounded-full` is the second of the two radius exceptions on this
-   * site, beside `rounded-nav`; see the radius rule in the design system
-   * skill. It is permitted because a pill and a circle are shapes in their
-   * own right rather than a softened box, which is what the zero-radius rule
-   * exists to prevent.
-   *
-   * Not interactive, so SC 2.5.8 does not apply. It is a label in a frame.
+   * The paragraph under a section heading, and the line on a PageHero plate
+   * under the page title. `.lead` is a reading size and stays muted; a
+   * standfirst is the page's own line and sits in the text colour.
    */
-  .pill {
-    @apply inline-flex items-center rounded-full border-4 border-border
-      bg-surface px-5 py-1.5;
+  .lead {
+    @apply mt-6 max-w-2xl text-h3 font-normal text-muted text-pretty;
+  }
+
+  .standfirst {
+    @apply mt-8 max-w-2xl text-h3 font-bold text-text text-pretty;
+  }
+
+  .bullet-list {
+    @apply list-disc pl-6 text-muted marker:text-gold;
+  }
+
+  /*
+   * A chip: a tag, a skill, a jump link or a filter. Square like every other
+   * box here. As a link it carries its own 24px target (SC 2.5.8) from its
+   * padding and border. The current filter carries `aria-current` and a
+   * square marker span as well as the fill; see BlogListing.astro.
+   */
+  .chip {
+    @apply inline-flex min-h-target items-center gap-2 border-4 border-border
+      bg-surface px-4 py-2 text-label font-black uppercase tracking-label
+      text-text;
+  }
+
+  a.chip:hover {
+    @apply text-cyan;
+  }
+
+  a.chip[aria-current] {
+    @apply bg-gold text-background shadow-hard-pink-8;
   }
 
   /*
@@ -1028,11 +1043,12 @@
 
   /*
    * A ring rather than a border: a border is inside the box
-   * tests/image-size.spec.ts measures, and 16px of it on a 501px photo reads
-   * as the file being stretched. `mt-5` on the caption clears the ring.
+   * tests/image-size.spec.ts measures, and 8px of it on a 501px photo reads
+   * as the file being stretched. 4px, the same frame every photo on the site
+   * has. `mt-5` on the caption clears the ring.
    */
   .prose figure :is(img, video) {
-    @apply block h-auto w-full ring-8 ring-border;
+    @apply block h-auto w-full ring-4 ring-border;
   }
 
   .prose figcaption {
@@ -1202,11 +1218,6 @@
     @apply text-label font-black uppercase tracking-label-wide;
   }
 
-  /* text-pink-text, never text-pink. See the token comment in @theme. */
-  .section-number {
-    @apply text-section-number font-extrabold text-pink-text;
-  }
-
   /*
    * First focusable element on the page. Translated off-screen until focused,
    * then back into view so a sighted keyboard user can see where they landed.
@@ -1225,10 +1236,8 @@
   }
 
   /*
-   * The spinning badge. One instance today, the Contact page at 28s from the
-   * comps, linear and infinite. `.spin-pace-hero` stays because 'hero' is
-   * still `SpinBadge`'s default `pace`, and a default pointing at a deleted
-   * class would fall back silently rather than loudly.
+   * The spinning badge. One instance, on Contact, at the comps' 28s, linear
+   * and infinite.
    *
    * The animation is applied by src/components/ui/SpinBadge.vue AFTER the
    * island mounts, never by the server-rendered HTML. That is what makes the
@@ -1241,24 +1250,16 @@
    * into a page with nothing moving on it. A hidden-but-focusable control
    * would be worse than no control.
    *
-   * The durations live here rather than in @theme because they are two
-   * instances of one effect, not a value the design reuses, the same reason
+   * The duration lives here rather than in @theme because it belongs to one
+   * effect, not a value the design reuses, the same reason
    * .mobile-menu-dialog keeps its sizing in the component.
    */
   .spin-badge {
-    animation: slowspin var(--spin-duration, 24s) linear infinite;
+    animation: slowspin 28s linear infinite;
   }
 
   .spin-badge[data-paused='true'] {
     animation-play-state: paused;
-  }
-
-  .spin-pace-hero {
-    --spin-duration: 24s;
-  }
-
-  .spin-pace-contact {
-    --spin-duration: 28s;
   }
 
   /*

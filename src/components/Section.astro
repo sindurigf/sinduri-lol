@@ -1,0 +1,42 @@
+---
+/*
+ * A page section: a full-bleed band with the section heading and an optional
+ * lead, then the content. Every section on the site after the PageHero is
+ * one of these, so every section opens the same way and sits the same
+ * distance from the next.
+ *
+ * No rule above the heading. The heading is display-sized and uppercase and
+ * marks the section on its own; the spacing tokens separate one from the
+ * next.
+ *
+ * `title` is a prop for the common case. A heading that needs markup, such as
+ * the homepage's two roles on two lines, goes in the `title` slot instead.
+ */
+interface Props {
+  title?: string;
+  /** Also the heading's id prefix and the jump-link target. */
+  id?: string;
+  lead?: string;
+  class?: string;
+}
+
+const { title, id, lead, class: className = '' } = Astro.props;
+const headingId = id ? `${id}-heading` : undefined;
+---
+
+<section
+  id={id}
+  aria-labelledby={headingId}
+  class:list={['band py-section', className]}
+>
+  <div class="mx-auto max-w-page">
+    <h2 id={headingId} class="text-h2 text-text">
+      <slot name="title">{title}</slot>
+    </h2>
+    {lead && <p class="lead">{lead}</p>}
+    <slot name="lead" />
+    <div class="mt-head">
+      <slot />
+    </div>
+  </div>
+</section>

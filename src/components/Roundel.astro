@@ -1,0 +1,46 @@
+---
+import { Image } from 'astro:assets';
+import bunnyDark from '../assets/bunny-dark.png';
+
+/*
+ * The bunny mark on its gold disc: the site's one corner mark. It sits on the
+ * corner of whatever it decorates, so the caller positions it with `class`
+ * and this component owns everything else: size, tilt, border, shadow.
+ *
+ * `bunny-dark` is #111111 artwork, 11.50 on gold and 1.02 on the page
+ * background, so the disc is what makes it visible. alt="" because the
+ * header wordmark already names the site.
+ */
+interface Props {
+  class?: string;
+  /** Only for a roundel that is in view on arrival, such as on a PageHero. */
+  eager?: boolean;
+}
+
+const { class: className = '', eager = false } = Astro.props;
+
+/*
+ * The mark is drawn `h-12` in the `size-24` disc below `lg` and `h-16` in the
+ * `size-32` one from it, so its files are chosen by drawn width: 458x900 at
+ * 48px and 64px tall is about 25px and 33px wide. tests/image-size.spec.ts
+ * fails when these drift from the classes.
+ */
+const MARK_WIDTHS = [25, 33, 50, 66];
+const MARK_SIZES = '(min-width: 64rem) 33px, 25px';
+---
+
+<span
+  class:list={[
+    'flex size-24 rotate-12 items-center justify-center rounded-full border-8 border-border bg-gold shadow-hard-cyan-8 lg:size-32',
+    className,
+  ]}
+>
+  <Image
+    src={bunnyDark}
+    alt=""
+    widths={MARK_WIDTHS}
+    sizes={MARK_SIZES}
+    loading={eager ? 'eager' : 'lazy'}
+    class="h-12 w-auto lg:h-16"
+  />
+</span>
