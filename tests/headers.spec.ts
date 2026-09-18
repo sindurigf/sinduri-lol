@@ -3,7 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { extname, join } from 'node:path';
-import { expect, test, type Response } from '@playwright/test';
+import { expect, test, type Page, type Response } from '@playwright/test';
 import { DIST_DIR } from './routes';
 import { waitForHydration } from './settle';
 import { UMAMI_HOST_URL, UMAMI_SCRIPT_PATH } from '../src/lib/analytics';
@@ -192,6 +192,50 @@ const directive = (csp: string, name: string): string => {
   return found as string;
 };
 
+const expectOutboundDirectives = (csp: string): void => {
+  /*
+   * `'self'` since the contact form landed, and no wider. It has to name the
+   * exact origin the form posts to: at `'none'` the browser blocks the
+   * submission with nothing on the page to say so, and at `*` the directive
+   * stops being a control at all.
+   *
+   * Verified not to be vacuous: set back to `'none'` this fails, and the
+   * form submission fails silently in a real browser with only a console
+   * message.
+   */
+  expect(
+    directive(csp, 'form-action'),
+    "form-action must be 'self'. The contact form at /contact/ posts to " +
+      '/contact/send/ on this origin; anything narrower blocks it silently.',
+  ).toBe("form-action 'self'");
+
+  /*
+   * Exactly this origin and Umami's collector. A value that drifts from
+   * UMAMI_HOST_URL refuses every analytics event silently, and a wider one
+   * lets the page send data somewhere /privacy does not name.
+   */
+  expect(
+    directive(csp, 'connect-src'),
+    `connect-src must be 'self' plus UMAMI_HOST_URL (${UMAMI_HOST_URL}) ` +
+      'from src/lib/analytics.ts. /privacy names Umami as the only other ' +
+      'place a page sends anything, so a new origin needs that page edited ' +
+      'in the same commit.',
+  ).toBe(`connect-src 'self' ${UMAMI_HOST_URL}`);
+
+  /*
+   * No http:// URL exists in the build to upgrade today, every reference
+   * being same-origin and relative, so this is for the one pasted in later.
+   * It rewrites such a URL to https before the request leaves, which beats
+   * default-src blocking it after the fact: blocked is a broken image
+   * somebody has to notice, upgraded is a working one.
+   */
+  expect(
+    directive(csp, 'upgrade-insecure-requests'),
+    'upgrade-insecure-requests rewrites an http:// subresource to https ' +
+      'instead of leaving it to be blocked as mixed content.',
+  ).toBe('upgrade-insecure-requests');
+};
+
 /**
  * How long a declared asset has to arrive. Well under the 30s test budget, so
  * the assertion naming the missing asset runs instead of the bare timeout that
@@ -243,6 +287,102 @@ const declaredAssets = (): string[][] => {
   ).toBeGreaterThan(0);
 
   return [...new Map(groups.map((group) => [group.join(' '), group])).values()];
+};
+
+const collectAssetResponses = (page: Page): Response[] => {
+  const assetResponses: Response[] = [];
+  page.on('response', (response) => {
+    if (new URL(response.url()).pathname.startsWith('/_astro/')) {
+      assetResponses.push(response);
+    }
+  });
+  return assetResponses;
+};
+
+const armArrivals = (
+  page: Page,
+  origin: string,
+  declared: string[][],
+): Promise<string[] | null>[] =>
+  declared.map((group) =>
+    page
+      .waitForResponse(
+        (response) => {
+          const url = new URL(response.url());
+          return url.origin === origin && group.includes(url.pathname);
+        },
+        { timeout: ASSET_TIMEOUT_MS },
+      )
+      .then(() => group)
+      .catch(() => null),
+  );
+
+/*
+ * Every image brought into view in turn, because some declared assets are
+ * lazy and are requested only as they near the viewport. Jumping straight
+ * to the bottom is not enough: it passes over the middle of the page, and
+ * on 2026-09-11 firefox did not request the About-teaser roundel that way
+ * while chromium did.
+ *
+ * Scrolling rather than excluding them keeps this the one test that would
+ * catch a CSP blocking an image. Two animation frames per stop give the
+ * browser a rendering update in which to notice each image;
+ * `waitForResponse` is already armed by then.
+ */
+const scrollEveryImageIntoView = (page: Page): Promise<void> =>
+  page.evaluate(async () => {
+    for (const image of Array.from(document.images)) {
+      image.scrollIntoView({ block: 'center' });
+      await new Promise<void>((settled) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => settled())),
+      );
+    }
+  });
+
+/*
+ * A subset check, not an equality one. The browser also fetches what the
+ * declared modules import, and that discovered set is the browser's
+ * business, not this file's. What has to hold is that nothing the HTML
+ * named went missing: one file from every group.
+ */
+const expectEveryGroupServed = (
+  declared: string[][],
+  assetResponses: Response[],
+): void => {
+  const served = new Set(
+    assetResponses.map((response) => new URL(response.url()).pathname),
+  );
+  expect(
+    declared.filter((group) => !group.some((path) => served.has(path))),
+    'the homepage did not pull in everything dist/index.html declares ' +
+      'under /_astro/, so this test measured less than it claims to.',
+  ).toEqual([]);
+};
+
+const expectAssetHeaders = async (
+  assetResponses: Response[],
+): Promise<void> => {
+  for (const response of assetResponses) {
+    const received = await response.allHeaders();
+    const path = new URL(response.url()).pathname;
+
+    expect(received['cache-control'], `${path} is not cached`).toBe(
+      ASSET_CACHE_CONTROL,
+    );
+    expect(
+      received['cross-origin-resource-policy'],
+      `${path} is embeddable off-origin`,
+    ).toBe('same-origin');
+
+    /*
+     * The asset has to keep the site-wide policy as well. Cloudflare merges the
+     * rules rather than replacing one with the other, and a doubled header,
+     * `nosniff, nosniff`, is the shape the merge failure takes.
+     */
+    expect(received['x-content-type-options'], `${path} lost nosniff`).toBe(
+      'nosniff',
+    );
+  }
 };
 
 test.describe('security headers', () => {
@@ -554,47 +694,7 @@ test.describe('security headers', () => {
     expect(directive(csp, 'base-uri')).toBe("base-uri 'none'");
     expect(directive(csp, 'object-src')).toBe("object-src 'none'");
 
-    /*
-     * `'self'` since the contact form landed, and no wider. It has to name the
-     * exact origin the form posts to: at `'none'` the browser blocks the
-     * submission with nothing on the page to say so, and at `*` the directive
-     * stops being a control at all.
-     *
-     * Verified not to be vacuous: set back to `'none'` this fails, and the
-     * form submission fails silently in a real browser with only a console
-     * message.
-     */
-    expect(
-      directive(csp, 'form-action'),
-      "form-action must be 'self'. The contact form at /contact/ posts to " +
-        '/contact/send/ on this origin; anything narrower blocks it silently.',
-    ).toBe("form-action 'self'");
-
-    /*
-     * Exactly this origin and Umami's collector. A value that drifts from
-     * UMAMI_HOST_URL refuses every analytics event silently, and a wider one
-     * lets the page send data somewhere /privacy does not name.
-     */
-    expect(
-      directive(csp, 'connect-src'),
-      `connect-src must be 'self' plus UMAMI_HOST_URL (${UMAMI_HOST_URL}) ` +
-        'from src/lib/analytics.ts. /privacy names Umami as the only other ' +
-        'place a page sends anything, so a new origin needs that page edited ' +
-        'in the same commit.',
-    ).toBe(`connect-src 'self' ${UMAMI_HOST_URL}`);
-
-    /*
-     * No http:// URL exists in the build to upgrade today, every reference
-     * being same-origin and relative, so this is for the one pasted in later.
-     * It rewrites such a URL to https before the request leaves, which beats
-     * default-src blocking it after the fact: blocked is a broken image
-     * somebody has to notice, upgraded is a working one.
-     */
-    expect(
-      directive(csp, 'upgrade-insecure-requests'),
-      'upgrade-insecure-requests rewrites an http:// subresource to https ' +
-        'instead of leaving it to be blocked as mixed content.',
-    ).toBe('upgrade-insecure-requests');
+    expectOutboundDirectives(csp);
   });
 
   /**
@@ -646,12 +746,7 @@ test.describe('security headers', () => {
   test('a hashed asset is served cacheable and not embeddable', async ({
     page,
   }) => {
-    const assetResponses: Response[] = [];
-    page.on('response', (response) => {
-      if (new URL(response.url()).pathname.startsWith('/_astro/')) {
-        assetResponses.push(response);
-      }
-    });
+    const assetResponses = collectAssetResponses(page);
 
     /*
      * Armed before the navigation, so a response arriving while the page is
@@ -661,41 +756,11 @@ test.describe('security headers', () => {
      * it lets the assertion below say which assets did not arrive.
      */
     const declared = declaredAssets();
-    const arrivals = declared.map((group) =>
-      page
-        .waitForResponse(
-          (response) => {
-            const url = new URL(response.url());
-            return url.origin === origin && group.includes(url.pathname);
-          },
-          { timeout: ASSET_TIMEOUT_MS },
-        )
-        .then(() => group)
-        .catch(() => null),
-    );
+    const arrivals = armArrivals(page, origin, declared);
 
     await page.goto(`${origin}/`, { waitUntil: 'domcontentloaded' });
 
-    /*
-     * Every image brought into view in turn, because some declared assets are
-     * lazy and are requested only as they near the viewport. Jumping straight
-     * to the bottom is not enough: it passes over the middle of the page, and
-     * on 2026-09-11 firefox did not request the About-teaser roundel that way
-     * while chromium did.
-     *
-     * Scrolling rather than excluding them keeps this the one test that would
-     * catch a CSP blocking an image. Two animation frames per stop give the
-     * browser a rendering update in which to notice each image;
-     * `waitForResponse` is already armed above.
-     */
-    await page.evaluate(async () => {
-      for (const image of Array.from(document.images)) {
-        image.scrollIntoView({ block: 'center' });
-        await new Promise<void>((settled) =>
-          requestAnimationFrame(() => requestAnimationFrame(() => settled())),
-        );
-      }
-    });
+    await scrollEveryImageIntoView(page);
 
     const arrived = await Promise.all(arrivals);
     expect(
@@ -710,42 +775,8 @@ test.describe('security headers', () => {
 
     await waitForHydration(page);
 
-    /*
-     * A subset check, not an equality one. The browser also fetches what the
-     * declared modules import, and that discovered set is the browser's
-     * business, not this file's. What has to hold is that nothing the HTML
-     * named went missing: one file from every group.
-     */
-    const served = new Set(
-      assetResponses.map((response) => new URL(response.url()).pathname),
-    );
-    expect(
-      declared.filter((group) => !group.some((path) => served.has(path))),
-      'the homepage did not pull in everything dist/index.html declares ' +
-        'under /_astro/, so this test measured less than it claims to.',
-    ).toEqual([]);
-
-    for (const response of assetResponses) {
-      const received = await response.allHeaders();
-      const path = new URL(response.url()).pathname;
-
-      expect(received['cache-control'], `${path} is not cached`).toBe(
-        ASSET_CACHE_CONTROL,
-      );
-      expect(
-        received['cross-origin-resource-policy'],
-        `${path} is embeddable off-origin`,
-      ).toBe('same-origin');
-
-      /*
-       * The asset has to keep the site-wide policy as well. Cloudflare merges the
-       * rules rather than replacing one with the other, and a doubled header,
-       * `nosniff, nosniff`, is the shape the merge failure takes.
-       */
-      expect(received['x-content-type-options'], `${path} lost nosniff`).toBe(
-        'nosniff',
-      );
-    }
+    expectEveryGroupServed(declared, assetResponses);
+    await expectAssetHeaders(assetResponses);
   });
 
   test('the HTML is not cached immutably', async ({ page }) => {

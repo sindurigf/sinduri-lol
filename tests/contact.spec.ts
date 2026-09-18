@@ -121,6 +121,30 @@ const validFields = (): Record<string, string> => ({
   message: 'x'.repeat(LIMITS.bodyMin + 20),
 });
 
+const expectTypedValuesKept = (
+  html: string,
+  typed: Record<'name' | 'email' | 'message', string>,
+): void => {
+  /*
+   * The reason this route renders at all. Losing a typed message on a
+   * validation error is the failure the whole on-demand page exists to
+   * prevent.
+   */
+  expect(
+    html,
+    'the rejected submission lost the name that was typed.',
+  ).toContain(`value="${typed.name}"`);
+  expect(
+    html,
+    'the rejected submission lost the email address that was typed.',
+  ).toContain(`value="${typed.email}"`);
+  expect(
+    html,
+    'the rejected submission lost the message body that was typed, which ' +
+      'is the longest thing on the form and the worst to retype.',
+  ).toContain(typed.message);
+};
+
 /*
  * The headers a browser sends when it submits this form, so every request here
  * takes the route a real submission takes. `request.post` sends none of them
@@ -220,24 +244,7 @@ test.describe('the contact endpoint', () => {
         'reader is returned to a form with no statement of what went wrong.',
     ).toContain('problems with this form');
 
-    /*
-     * The reason this route renders at all. Losing a typed message on a
-     * validation error is the failure the whole on-demand page exists to
-     * prevent.
-     */
-    expect(
-      html,
-      'the rejected submission lost the name that was typed.',
-    ).toContain(`value="${typed.name}"`);
-    expect(
-      html,
-      'the rejected submission lost the email address that was typed.',
-    ).toContain(`value="${typed.email}"`);
-    expect(
-      html,
-      'the rejected submission lost the message body that was typed, which ' +
-        'is the longest thing on the form and the worst to retype.',
-    ).toContain(typed.message);
+    expectTypedValuesKept(html, typed);
 
     expect(
       html,
