@@ -2,7 +2,7 @@ import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './test';
 import { DIST_DIR, ROUTES } from './routes';
 import { waitForHydration } from './settle';
 import {

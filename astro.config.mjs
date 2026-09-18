@@ -162,6 +162,12 @@ export default defineConfig({
        * a data: URI the CSP refuses, so this closes that too.
        */
       assetsInlineLimit: 0,
+      /*
+       * Source maps for the coverage build only, so its report names files in
+       * src/ rather than bundled chunks. Never in a deployed build: a map
+       * publishes the source it was made from. See playwright.coverage.config.ts.
+       */
+      sourcemap: process.env.COVERAGE === '1',
     },
   },
 });

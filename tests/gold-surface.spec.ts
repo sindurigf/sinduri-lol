@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { AAA_TEXT, AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { builtPages, ROUTES } from './routes';

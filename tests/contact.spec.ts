@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './test';
 import ts from 'typescript';
 import { LIMITS, RETENTION_DAYS } from '../src/lib/contact-form';
 import {

@@ -1,6 +1,9 @@
 # build output
 dist/
 
+# coverage report, from npm run test:coverage
+coverage/
+
 # generated types
 .astro/
 

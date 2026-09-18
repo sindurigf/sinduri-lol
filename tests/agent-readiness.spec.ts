@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './test';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { headersFor, parseHeadersFile } from './policy-server';

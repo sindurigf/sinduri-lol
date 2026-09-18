@@ -3,7 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { extname, join } from 'node:path';
-import { expect, test, type Page, type Response } from '@playwright/test';
+import { expect, test, type Page, type Response } from './test';
 import { DIST_DIR } from './routes';
 import { waitForHydration } from './settle';
 import { UMAMI_HOST_URL, UMAMI_SCRIPT_PATH } from '../src/lib/analytics';

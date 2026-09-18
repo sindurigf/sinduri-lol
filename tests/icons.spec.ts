@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './test';
 import { builtPages, DIST_DIR, ROUTES } from './routes';
 import { GLOBAL_CSS, cssColorToken } from './source';
 

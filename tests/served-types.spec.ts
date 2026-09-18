@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './test';
 
 /*
  * What the asset worker actually sends for the files whose type matters, run

@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './test';
 import { builtPages, DIST_DIR } from './routes';
 import { configuredSite } from './source';
 import { RETENTION_DAYS } from '../src/lib/contact-form';

@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './test';
 
 /*
  * The homepage hero fits the screen, and still grows rather than clipping.

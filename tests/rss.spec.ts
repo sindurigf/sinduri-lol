@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './test';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { BLOG_CONTENT_DIR, DIST_DIR, TAG_ROUTES, builtHtml } from './routes';

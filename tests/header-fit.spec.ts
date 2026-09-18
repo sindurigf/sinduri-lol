@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { CTA } from '../src/lib/nav';
 import { gotoSettled } from './settle';
 
