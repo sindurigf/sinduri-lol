@@ -38,6 +38,17 @@ if (!category) {
 const label = categoryLabel(category);
 
 /*
+ * An empty category is served, since the filter links to it, but asks not to
+ * be indexed: a result leading to "No posts yet" is a dead end. It indexes
+ * itself again with its first post. src/lib/sitemap-filter.ts keeps the same
+ * pages out of the sitemap.
+ */
+const isEmpty = posts.length === 0;
+const listingSummary = isEmpty
+  ? 'Nothing is filed here yet.'
+  : `Posts filed under ${label}, newest first.`;
+
+/*
  * A CATEGORY LISTING IS NOT PAGINATED, which is a decision rather than an
  * omission. The index paginates because it holds every post; a category holds
  * a slice, the largest three posts on 2026-09-12. Paginating would add a
@@ -49,7 +60,8 @@ const label = categoryLabel(category);
 
 <BaseLayout
   title={`${label} | sinduri.lol`}
-  description={`${CATEGORY_TEASERS[category as BlogCategory]} Posts filed under ${label}, newest first.`}
+  description={`${CATEGORY_TEASERS[category as BlogCategory]} ${listingSummary}`}
+  noindex={isEmpty}
 >
   {/* No horizontal padding here; see the note in [slug].astro. */}
   <div class="mx-auto max-w-page py-28">
