@@ -44,6 +44,8 @@ export default defineConfig({
           },
           reports: ['console-summary', 'v8', 'lcovonly'],
           outputDir: './coverage',
+          // Beside the report, not in a stray assets/ at the repository root.
+          assetsPath: './assets',
         },
       },
     ],
