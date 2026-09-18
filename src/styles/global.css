@@ -279,6 +279,22 @@
   --spacing-card-tight: 24px;
   --spacing-card: 40px;
   /*
+   * Vertical rhythm, one token per job so no page picks its own. Fluid
+   * between a phone and 1200px, where each reaches the value most pages
+   * already used: a 96px section band was generous on a desktop and read as
+   * empty screens on a phone, where the same content is one column and five
+   * times as tall.
+   *
+   * `grid` never drops below 28px because every card casts an 8px hard shadow
+   * into the gap after it, and less than three shadows' width between two
+   * cards reads as them touching.
+   */
+  --spacing-section: clamp(56px, 8vw, 96px);
+  --spacing-head: clamp(32px, 4vw, 48px);
+  --spacing-grid: clamp(28px, 3.4vw, 40px);
+  --spacing-actions: clamp(32px, 4vw, 48px);
+  --spacing-inline: clamp(16px, 2vw, 24px);
+  /*
    * Gold-surface button padding, from the comps. The vertical number is also a
    * conformance floor: a 13px label at 1.2 is a 15.6px line box, so the control
    * renders 59.6px tall including its borders against the 24px SC 2.5.8 asks.
@@ -851,41 +867,49 @@
   }
 
   /*
-   * The section rule. A short bar at the head of a section, replacing the
-   * full-bleed 8px line that used to run between every one. That line ran the
-   * full width of the viewport while everything it separated sat in a capped,
-   * centred column, so it framed the page rather than punctuating it, and it
-   * was doing all the separating: the two grounds either side measure
-   * 1.039:1, which is no step at all.
-   *
-   * Deliberately not a divider. It sits at the top of a section rather than
-   * between two, it is 96px rather than the full width, and it rotates
-   * through gold, cyan and pink so it reads as a chapter mark. `pink`
-   * #FF007A is the right pink and `pink-text` is not: this is a non-text
-   * element, which is the split those two tokens exist for.
-   *
-   * It must sit inside a column-width box to line up with the text below it.
-   * A band is full-bleed, so a rule placed directly in one aligns to the
-   * viewport instead. Every use is wrapped for that reason, including in the
-   * sections whose column is a grid or a flex row, where a bare first child
-   * would become a track or an item instead of a rule.
+   * A card's heading, whatever its level. One size for every card title on
+   * the site, so a card never announces itself louder than the section it
+   * sits in.
    */
-  .section-rule {
-    @apply mb-12 block h-2 w-24;
+  .card-title {
+    @apply text-h3 font-extrabold text-text;
   }
 
   /*
-   * A pill. `rounded-full` is the second of the two radius exceptions on this
-   * site, beside `rounded-nav`; see the radius rule in the design system
-   * skill. It is permitted because a pill and a circle are shapes in their
-   * own right rather than a softened box, which is what the zero-radius rule
-   * exists to prevent.
-   *
-   * Not interactive, so SC 2.5.8 does not apply. It is a label in a frame.
+   * The paragraph under a section heading, and the line on a PageHero plate
+   * under the page title. `.lead` is a reading size and stays muted; a
+   * standfirst is the page's own line and sits in the text colour.
    */
-  .pill {
-    @apply inline-flex items-center rounded-full border-4 border-border
-      bg-surface px-5 py-1.5;
+  .lead {
+    @apply mt-6 max-w-2xl text-h3 font-normal text-muted text-pretty;
+  }
+
+  .standfirst {
+    @apply mt-8 max-w-2xl text-h3 font-bold text-text text-pretty;
+  }
+
+  .bullet-list {
+    @apply list-disc pl-6 text-muted marker:text-gold;
+  }
+
+  /*
+   * A chip: a tag, a skill, a jump link or a filter. Square like every other
+   * box here. As a link it carries its own 24px target (SC 2.5.8) from its
+   * padding and border. The current filter carries `aria-current` and a
+   * square marker span as well as the fill; see BlogListing.astro.
+   */
+  .chip {
+    @apply inline-flex min-h-target items-center gap-2 border-4 border-border
+      bg-surface px-4 py-2 text-label font-black uppercase tracking-label
+      text-text;
+  }
+
+  a.chip:hover {
+    @apply text-cyan;
+  }
+
+  a.chip[aria-current] {
+    @apply bg-gold text-background shadow-hard-pink-8;
   }
 
   /*
@@ -1019,11 +1043,12 @@
 
   /*
    * A ring rather than a border: a border is inside the box
-   * tests/image-size.spec.ts measures, and 16px of it on a 501px photo reads
-   * as the file being stretched. `mt-5` on the caption clears the ring.
+   * tests/image-size.spec.ts measures, and 8px of it on a 501px photo reads
+   * as the file being stretched. 4px, the same frame every photo on the site
+   * has. `mt-5` on the caption clears the ring.
    */
   .prose figure :is(img, video) {
-    @apply block h-auto w-full ring-8 ring-border;
+    @apply block h-auto w-full ring-4 ring-border;
   }
 
   .prose figcaption {
