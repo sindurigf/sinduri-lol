@@ -1,6 +1,6 @@
 ---
-import SectionRule from '../../components/SectionRule.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
 import { CONTACT_EMAIL } from '../../lib/contact';
 
 /*
@@ -25,30 +25,26 @@ import { CONTACT_EMAIL } from '../../lib/contact';
   description="Your message has been received."
   noindex
 >
-  <section class="band py-24">
-    <SectionRule accent="gold" />
+  <PageHero title="Message sent">
+    <p class="standfirst">
+      Your message has been received. A reply will come to the email address you
+      gave, usually within a few days.
+    </p>
+  </PageHero>
 
+  <section class="band py-section">
     <div class="mx-auto max-w-page">
-      <div class="max-w-3xl">
-        <h1 class="text-h1 text-text">Message sent</h1>
+      <p class="max-w-3xl text-body text-muted text-pretty">
+        Nothing else was stored, and you were not added to any list. If you need
+        to add something, write to{' '}
+        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+      </p>
 
-        <p class="mt-8 text-body text-muted text-pretty">
-          Your message has been received. A reply will come to the email address
-          you gave, usually within a few days.
-        </p>
-
-        <p class="mt-6 text-body text-muted text-pretty">
-          Nothing else was stored, and you were not added to any list. If you
-          need to add something, write to{' '}
-          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
-        </p>
-
-        <p class="mt-10">
-          <a class="btn-secondary" href="/contact/">
-            Back to contact
-          </a>
-        </p>
-      </div>
+      <p class="mt-actions">
+        <a class="btn-secondary" href="/contact/">
+          Back to contact
+        </a>
+      </p>
     </div>
   </section>
 </BaseLayout>
