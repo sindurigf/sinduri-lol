@@ -788,13 +788,15 @@ ignores. See Photos and video.
 
 ### The CSP
 
-    default-src 'self';
-    script-src 'self' <2 sha256 hashes>;
-    style-src  'self' <1 sha256 hash>;
-    connect-src 'self' https://gateway.umami.is;
-    object-src 'none'; base-uri 'none';
-    form-action 'self'; frame-ancestors 'none';
-    upgrade-insecure-requests
+```text
+default-src 'self';
+script-src 'self' <2 sha256 hashes>;
+style-src  'self' <1 sha256 hash>;
+connect-src 'self' https://gateway.umami.is;
+object-src 'none'; base-uri 'none';
+form-action 'self'; frame-ancestors 'none';
+upgrade-insecure-requests
+```
 
 No `'unsafe-inline'` and no `'unsafe-eval'`, and the site needs neither.
 Everything it loads is same-origin: the fonts are bundled by Fontsource and
