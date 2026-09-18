@@ -1,0 +1,24 @@
+---
+/*
+ * The end of a long page: a pointer to the post that tells the story at
+ * length, and the one action that leads on from here. Closes /about and
+ * /career.
+ */
+interface Props {
+  readHref: string;
+  readLabel: string;
+  actionHref: string;
+  actionLabel: string;
+}
+
+const { readHref, readLabel, actionHref, actionLabel } = Astro.props;
+---
+
+<div class="mt-actions flex flex-wrap items-center justify-between gap-inline border-t-4 border-border pt-8">
+  <p class="text-body text-text">
+    Continue reading: <a href={readHref}>{readLabel}</a>
+  </p>
+  <a href={actionHref} class="btn-primary">
+    {actionLabel}
+  </a>
+</div>
