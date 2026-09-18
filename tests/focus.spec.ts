@@ -72,10 +72,9 @@ const WIDTHS = [
  *
  * 300 against a largest walk of 67 stops, which is
  * /blog/open-source-is-not-just-code at 1280px, measured 2026-09-08. The
- * margin is deliberate rather than lazy. Ten of the eleven posts are still
- * lorem ipsum at ten stops each and replacing them with real prose is an open
- * TODO item, so the number this cap sits above is the one that grows, and a
- * cap that started failing first would be the wrong thing to fail.
+ * margin is deliberate rather than lazy. Every new or longer post adds stops,
+ * so the number this cap sits above is the one that grows, and a cap that
+ * started failing first would be the wrong thing to fail.
  */
 const MAX_STOPS = 300;
 
