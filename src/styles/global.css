@@ -601,6 +601,21 @@
   }
 
   /*
+   * PageHero's plate leans half a degree, the quietest tilt that still reads
+   * as a tilt at 1280px; the homepage stickers lean six. Authored rather than
+   * a utility because Tailwind's rotate scale has no half step and this
+   * project allows no arbitrary values. `.page-hero-level` turns the content
+   * back so the text and the buttons stay level.
+   */
+  .page-hero-plate {
+    rotate: -0.5deg;
+  }
+
+  .page-hero-level {
+    rotate: 0.5deg;
+  }
+
+  /*
    * The homepage hero, the one section asked to fit the viewport.
    *
    * `min-height`, never `height`, and nothing is clipped: it has to grow past
@@ -1281,37 +1296,6 @@
 
   .motion-toggle:hover {
     @apply bg-gold text-background;
-  }
-
-  /*
-   * The Career hero watermark, placed as design/Career.dc.html has it: 700px
-   * wide, opacity 0.09, right: -150px, top: 20px, pointer-events: none.
-   *
-   * Authored CSS rather than utilities because none of those numbers is a
-   * design value the site reuses; they are one placement of one asset, and
-   * they would be four arbitrary values in the markup, which this project
-   * does not allow. Same reason .mobile-menu-dialog keeps its sizing in the
-   * component.
-   *
-   * `badge-dark.png` is #111111 artwork, which measures 11.50 on gold and
-   * 1.02 on the page background: the gold hero is the only ground on this
-   * site a -dark asset can sit on. The suffix names the artwork colour, not
-   * the target surface. See the asset table in ARCHITECTURE.md.
-   *
-   * At 0.09 this is a texture, not an image. It takes alt="" and must never
-   * become the only carrier of anything. The section holding it is
-   * overflow-hidden, which keeps the -150px from scrolling the page sideways
-   * at 320px.
-   */
-  .career-watermark {
-    position: absolute;
-    top: 20px;
-    right: -150px;
-    width: 700px;
-    max-width: none;
-    height: auto;
-    opacity: 0.09;
-    pointer-events: none;
   }
 
   /* ---------------------------------------------------------------------------

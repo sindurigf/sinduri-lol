@@ -45,12 +45,12 @@ export const THANKS = [
     name: 'Alexandru Teodor Ieremia',
     href: 'https://www.linkedin.com/in/alexandru-teodor-ieremia-8581231b4/',
     reason:
-      'Taught me frontend and accessibility, and I tried to use what I learned while building this site.',
+      'Thank you for teaching me frontend and accessibility. I tried to use what I learned while building this site.',
   },
   {
     name: 'Petra Morawa-Zechner',
     href: 'https://diegestaltung.at/',
     reason:
-      'Taught me good design principles and how to think about sustainability in design.',
+      'Thank you for teaching me good design principles and how to think about sustainability in design.',
   },
 ] as const;

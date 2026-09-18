@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
 import { CONTACT_EMAIL } from '../lib/contact';
 import { NAME_INSPIRATION, PHOTOGRAPHERS, THANKS } from '../lib/credits';
 
@@ -8,6 +9,9 @@ import { NAME_INSPIRATION, PHOTOGRAPHERS, THANKS } from '../lib/credits';
  * leads the page, because she wanted it somewhere visible; everything below
  * it is factual attribution read from src/lib/credits.ts, the same list the
  * photo captions in posts link from.
+ *
+ * People come first (the name, the thank-yous, the photographers), then the
+ * tools. A card's title is an h2 at h3 size, as the cards on /career are.
  *
  * A list item that is nothing but a link gets `min-h-target`: the SC 2.5.8
  * inline exception does not reach a link with no sentence around it.
@@ -71,6 +75,7 @@ const photographers = Object.entries(PHOTOGRAPHERS).map(([name, href]) => ({
 }));
 
 const LINK_ITEM = 'inline-flex min-h-target items-center';
+const CARD_HEADING = 'text-h3 text-text';
 
 /*
  * A name with a line saying what it did is a `dl` entry under a rule; a list
@@ -86,12 +91,17 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
   title="Credits | sinduri.lol"
   description="Where the name sinduri.lol comes from, who helped, who took the photos, and what the site was designed, built and tested with."
 >
+  <PageHero title="Credits">
+    <p class="mt-8 max-w-2xl text-h3 font-bold text-text text-pretty">
+      A big thank you to everyone who helped me build this site, and to the
+      tools that made it possible.
+    </p>
+  </PageHero>
+
   <section class="band py-16">
     <div class="mx-auto max-w-page">
-      <h1 class="text-h1 text-gold">Credits</h1>
-
-      <div class="card mt-12 shadow-hard-pink-8">
-        <h2 class="label-wide text-pink-text">Where the name comes from</h2>
+      <div id="name" class="card shadow-hard-pink-8">
+        <h2 class={CARD_HEADING}>Where the name comes from</h2>
         <p class="mt-6 max-w-4xl text-h3 font-bold text-text text-pretty">
           The inspiration for the name came from{' '}
           <a href={NAME_INSPIRATION.href}>{NAME_INSPIRATION.site}</a>, the
@@ -103,40 +113,44 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. Thank you,
           Norman!
         </p>
+        <p class="mt-6 text-body">
+          <a href="/about/#lepus-ridet" class={LINK_ITEM}>
+            {/* One child, so the flex container keeps the space. */}
+            <span>
+              Why <span lang="la">Lepus Ridet</span>
+            </span>
+          </a>
+        </p>
       </div>
 
       <div class="card mt-12 shadow-hard-cyan-8">
-        <h2 class="label-wide text-cyan">Thank you</h2>
+        <h2 class={CARD_HEADING}>Thank you</h2>
         <dl class:list={[RULED_LIST, 'md:grid-cols-2 md:gap-x-12']}>
           {THANKS.map((person) => (
             <div class={RULED_ENTRY}>
-              <dt class="text-h3 font-bold">
+              <dt class="text-body font-bold">
                 <a href={person.href} class={LINK_ITEM}>
                   {person.name}
                 </a>
               </dt>
-              <dd class="mt-2 max-w-prose text-body text-muted text-pretty">
+              <dd class="mt-1 max-w-prose text-body text-muted text-pretty">
                 {person.reason}
               </dd>
             </div>
           ))}
         </dl>
       </div>
-    </div>
-  </section>
 
-  <section class="band pb-24">
-    <div class="mx-auto grid max-w-page gap-12 lg:grid-cols-2">
-      <div class="card shadow-hard-gold-8">
-        <h2 class="label-wide text-gold">Photos</h2>
+      <div class="card mt-12 shadow-hard-gold-8">
+        <h2 class={CARD_HEADING}>Photos</h2>
 
         <p class="mt-6 text-body text-muted text-pretty">
           Photos on this site and in its posts are by:
         </p>
 
-        <ul class="mt-4 list-disc pl-6 text-muted marker:text-gold">
+        <ul class="mt-4 list-disc gap-x-12 pl-6 text-muted marker:text-gold sm:columns-2">
           {photographers.map((photographer) => (
-            <li>
+            <li class="break-inside-avoid">
               <a href={photographer.href} class={LINK_ITEM}>
                 {photographer.name}
               </a>
@@ -146,9 +160,13 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
 
         <p class="mt-4 text-body text-muted text-pretty">And more.</p>
       </div>
+    </div>
+  </section>
 
+  <section class="band pb-24">
+    <div class="mx-auto grid max-w-page gap-12 lg:grid-cols-2">
       <div class="card shadow-hard-pink-8">
-        <h2 class="label-wide text-pink-text">Design tools</h2>
+        <h2 class={CARD_HEADING}>Design tools</h2>
 
         <dl class={RULED_LIST}>
           {DESIGNED_WITH.map((tool) => (
@@ -173,7 +191,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
       </div>
 
       <div class="card shadow-hard-cyan-8">
-        <h2 class="label-wide text-cyan">Guides</h2>
+        <h2 class={CARD_HEADING}>Guides</h2>
 
         <dl class={RULED_LIST}>
           {GUIDES.map((guide) => (
@@ -192,10 +210,10 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
         </dl>
       </div>
 
-      <div class="card shadow-hard-gold-8">
-        <h2 class="label-wide text-gold">Built and tested with</h2>
+      <div class="card shadow-hard-gold-8 lg:col-span-2">
+        <h2 class={CARD_HEADING}>Built and tested with</h2>
 
-        <ul class="mt-6 list-disc gap-x-12 pl-6 text-muted marker:text-gold sm:columns-2">
+        <ul class="mt-6 list-disc gap-x-12 pl-6 text-muted marker:text-gold sm:columns-2 lg:columns-3">
           {BUILT_WITH.map((tool) => (
             <li class="break-inside-avoid">
               <a href={tool.href} class={LINK_ITEM}>

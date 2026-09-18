@@ -13,7 +13,7 @@ import minerva from '../assets/photos/minerva.jpg';
 import hela from '../assets/photos/hela.jpg';
 import rudra from '../assets/photos/rudra.jpg';
 import mountainCamp from '../assets/photos/drupal-mountain-camp.jpg';
-import friendsMossWall from '../assets/photos/friends-moss-wall.jpg';
+import friendsMossWallPortrait from '../assets/photos/friends-moss-wall-portrait.jpg';
 import escapeRoom from '../assets/photos/escape-room.jpg';
 import kannurSea from '../assets/photos/kannur-sea.jpg';
 import withFriend from '../assets/photos/pride-with-friend.jpg';
@@ -25,8 +25,10 @@ import { DENSITIES, WIDTHS } from '../lib/image-densities';
 /*
  * Sinduri's own copy, told in order: who she is, what she believes, her
  * people and places, the important things, and her path into Drupal last.
- * Sections use the site's own vocabulary (section rule, pill, card, hard
- * shadow) so the page reads as part of the same site as the homepage.
+ * Sections use the site's own vocabulary (section rule, h2, card, hard
+ * shadow) so the page reads as part of the same site as the homepage. The
+ * jump links repeat the section headings word for word, so each one names
+ * where it lands.
  *
  * Her voice uses few apostrophes: "I am", "it is". Keep that when editing,
  * and add no line she has not said or approved. Nothing here is framed as
@@ -59,6 +61,8 @@ const JOHANN_DENSITIES = [1];
  */
 const SIZES = {
   hero: '(min-width: 64rem) min(calc(50vw - 3.25rem), 38.25rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)',
+  quote:
+    '(min-width: 64rem) min(calc(50vw - 2.75rem), 38.75rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)',
   pair: '(min-width: 64rem) min(calc(25vw - 4.75rem), 16rem), (min-width: 40rem) calc(50vw - 4.875rem), calc(50vw - 3.375rem)',
   masonry:
     '(min-width: 64rem) min(calc(33.45vw - 2rem), 25.75rem), (min-width: 40rem) calc(50vw - 2.25rem), calc(100vw - 2rem)',
@@ -69,9 +73,10 @@ const SIZES = {
 
 const COVER_PHOTOGRAPHER = 'Tdm Dilip';
 const LECTURE_HALL_PHOTOGRAPHER = 'Andrey Pshenichny';
+const MENTOR = 'Klaus Purer';
 
 const SECTIONS = [
-  { id: 'believe', title: 'What I believe' },
+  { id: 'believe', title: 'Positivity advocate' },
   { id: 'people', title: 'People and places' },
   { id: 'important-things', title: 'The important things' },
   { id: 'drupal', title: 'Engineer to Drupal' },
@@ -87,50 +92,34 @@ const PHOTO = 'block h-auto w-full border-4 border-border object-cover';
 
 /*
  * Photos from her life outside work, in a masonry of CSS columns so each keeps
- * its own shape. The two rainbow photos have no caption, as she asked.
+ * its own shape. None is captioned, as she asked: a caption on some and not
+ * others singles out the ones without.
  */
 const PLACES = [
   {
     src: lake,
     alt: 'Sinduri in a pink dress on a balcony, with trees and a lake behind her.',
     aspect: 'aspect-portrait',
-    lead: 'Travelling.',
-    rest: '',
-  },
-  {
-    src: friendsMossWall,
-    alt: 'Sinduri between two friends in front of a moss wall, all three looking up and laughing.',
-    aspect: 'aspect-photo',
-    lead: 'With friends.',
-    rest: '',
   },
   {
     src: rainbowPortrait,
     alt: 'Sinduri smiling, with a rainbow painted on her cheek and rainbow wings behind her.',
     aspect: 'aspect-portrait',
-    lead: '',
-    rest: '',
   },
   {
     src: kannurSea,
-    alt: 'Sinduri standing at the edge of the sea with her arms spread wide, a wave breaking behind her.',
+    alt: 'Sinduri standing at the edge of the sea in Kannur, Kerala, with her arms spread wide, a wave breaking behind her.',
     aspect: 'aspect-square',
-    lead: 'Kannur,',
-    rest: 'Kerala.',
   },
   {
     src: escapeRoom,
     alt: 'Sinduri with a group after an escape room, two of them holding Mission Complete signs.',
     aspect: 'aspect-photo',
-    lead: 'Mission complete.',
-    rest: '',
   },
   {
     src: withFriend,
     alt: 'Sinduri leaning on a friend’s shoulder, both smiling into the camera.',
     aspect: 'aspect-portrait',
-    lead: '',
-    rest: '',
   },
 ] as const;
 
@@ -170,10 +159,6 @@ const JUMP_LINK =
   <section class="band py-16">
     <div class="mx-auto grid max-w-page gap-14 lg:grid-cols-2 lg:items-center">
       <div class="flex min-w-0 flex-col gap-8">
-        <p class="pill self-start">
-          <span class="label-wide text-gold">Vienna since 2017</span>
-        </p>
-
         <div class="flex flex-col gap-6">
           <h1 class="text-h1 text-text">About me</h1>
           <p class="text-h3 font-black text-gold text-pretty">
@@ -182,16 +167,26 @@ const JUMP_LINK =
           </p>
         </div>
 
-        <div class="card shadow-hard-pink-8">
-          <p class="label-wide text-pink-text">Why Lepus Ridet</p>
+        <div id="lepus-ridet" class="card shadow-hard-pink-8">
+          <p class="label-wide text-pink-text">
+            Why <span lang="la">Lepus Ridet</span>
+          </p>
           <p class="mt-4 text-h3 font-bold text-text text-pretty">
             My pet name is Bunny. That is what my family and close friends call
             me.
           </p>
           <p class="mt-4 max-w-prose text-body text-muted text-pretty">
             I try to always laugh and find fun in everything I do, and that is
-            where Lepus Ridet comes from: it is Latin for &ldquo;the hare
-            laughs&rdquo;.
+            where <span lang="la">Lepus Ridet</span> comes from: it is Latin for
+            &ldquo;the hare laughs&rdquo;.
+          </p>
+          <p class="mt-4 text-body">
+            <a
+              href="/credits/#name"
+              class="inline-flex min-h-target items-center"
+            >
+              Where the name sinduri.lol comes from
+            </a>
           </p>
         </div>
 
@@ -259,48 +254,30 @@ const JUMP_LINK =
     </div>
 
     <div class="mx-auto max-w-page">
-      <p class="pill">
-        <span class="label-wide text-gold">What I believe</span>
-      </p>
-      <h2 id="believe-heading" class="mt-6 text-h2 text-text">
+      <h2 id="believe-heading" class="text-h2 text-text">
         Positivity advocate
       </h2>
 
-      <div class="mt-12 grid gap-10 lg:grid-cols-2">
-        {/*
-          THE GOLD STATEMENT. `.surface-gold` supplies the foreground and the
-          border colour for the subtree; nothing inside names a dark-set token.
-          It holds no control, which is why tests/gold-surface.spec.ts counts
-          zero on this route.
-        */}
-        <blockquote class="surface-gold flex min-w-0 flex-col justify-center border-8 p-card-tight shadow-hard-pink-8 sm:p-card">
+      {/*
+        THE GOLD STATEMENT. `.surface-gold` supplies the foreground and the
+        border colour for the subtree; nothing inside names a dark-set token.
+        It holds no control, which is why tests/gold-surface.spec.ts counts
+        zero on this route.
+      */}
+      <div class="mt-12 grid gap-10 lg:grid-cols-2 lg:items-center">
+        <blockquote class="surface-gold min-w-0 border-8 p-card-tight shadow-hard-pink-8 sm:p-card">
           <p class="text-h2 font-black text-pretty">
             We should all be a bit kinder and more empathetic.
           </p>
         </blockquote>
 
-        <div class="flex min-w-0 flex-col gap-10">
-          <div class="card shadow-hard-cyan-8">
-            <p class="label-wide text-cyan">Room for everyone</p>
-            <p class="mt-4 max-w-prose text-body text-muted text-pretty">
-              That is also what I love about open source: people contribute
-              based on passion and expertise, not hierarchy, and there is room
-              for everyone.
-            </p>
-          </div>
-
-          <div class="card shadow-hard-gold-8">
-            <p class="label-wide text-gold">One thing I never do</p>
-            <p class="mt-4 text-h3 font-bold text-text text-pretty">
-              Say no to a challenge just because I do not know how to approach
-              it.
-            </p>
-            <p class="mt-4 max-w-prose text-body text-muted text-pretty">
-              I commit to figuring it out and learning whatever it takes to make
-              it work.
-            </p>
-          </div>
-        </div>
+        <Image
+          src={friendsMossWallPortrait}
+          alt="Sinduri between two friends in front of a moss wall, all three smiling."
+          widths={WIDTHS}
+          sizes={SIZES.quote}
+          class:list={[PHOTO, 'aspect-square min-w-0']}
+        />
       </div>
     </div>
   </section>
@@ -318,10 +295,7 @@ const JUMP_LINK =
     </div>
 
     <div class="mx-auto max-w-page">
-      <p class="pill">
-        <span class="label-wide text-gold">Home</span>
-      </p>
-      <h2 id="people-heading" class="mt-6 text-h2 text-text">
+      <h2 id="people-heading" class="text-h2 text-text">
         People and places
       </h2>
       <p class="mt-6 max-w-2xl text-h3 font-normal text-muted text-pretty">
@@ -371,21 +345,13 @@ const JUMP_LINK =
       <ul class="mt-10 gap-6 sm:columns-2 lg:columns-3">
         {PLACES.map((place) => (
           <li class="mb-6 break-inside-avoid">
-            <figure>
-              <Image
-                src={place.src}
-                alt={place.alt}
-                widths={WIDTHS}
-                sizes={SIZES.masonry}
-                class:list={[PHOTO, place.aspect]}
-              />
-              {place.lead && (
-                <figcaption class={CAPTION}>
-                  <strong class="text-text">{place.lead}</strong>
-                  {place.rest && ` ${place.rest}`}
-                </figcaption>
-              )}
-            </figure>
+            <Image
+              src={place.src}
+              alt={place.alt}
+              widths={WIDTHS}
+              sizes={SIZES.masonry}
+              class:list={[PHOTO, place.aspect]}
+            />
           </li>
         ))}
       </ul>
@@ -405,10 +371,7 @@ const JUMP_LINK =
     </div>
 
     <div class="mx-auto max-w-page">
-      <p class="pill">
-        <span class="label-wide text-gold">Fact file</span>
-      </p>
-      <h2 id="important-heading" class="mt-6 text-h2 text-text">
+      <h2 id="important-heading" class="text-h2 text-text">
         The important things
       </h2>
 
@@ -515,14 +478,12 @@ const JUMP_LINK =
     </div>
 
     <div class="mx-auto max-w-page">
-      <p class="pill">
-        <span class="label-wide text-gold">Open source enthusiast</span>
-      </p>
-      <h2 id="drupal-heading" class="mt-6 text-h2 text-text">
+      <h2 id="drupal-heading" class="text-h2 text-text">
         Engineer to Drupal
       </h2>
       <p class="mt-6 max-w-2xl text-h3 font-normal text-muted text-pretty">
-        There is a Sinduri before Klausi and Drupal, and a Sinduri after.
+        There is a Sinduri before <a href={PHOTOGRAPHERS[MENTOR]}>{MENTOR}</a>
+        and Drupal, and a Sinduri after.
       </p>
 
       <div class="mt-12 grid gap-10 lg:grid-cols-12 lg:items-start">
@@ -544,9 +505,10 @@ const JUMP_LINK =
             <p class="mt-4 text-body text-muted text-pretty">
               In January 2021, Klaus Purer gave me a Drupal test. I had
               absolutely no idea what Drupal was, but I did well enough to get
-              the job. Since then I have organised Drupal events, joined the
-              Drupal Austria board, where I am deputy marketing manager in 2026,
-              and won the Women in Drupal Award in 2025.
+              the job. Since then I have organised Drupal events with the Swiss
+              and Austrian communities, joined the Drupal Austria board, where I
+              am deputy marketing manager in 2026, and won the Women in Drupal
+              Award in 2025.
             </p>
           </div>
         </div>

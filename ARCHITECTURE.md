@@ -103,7 +103,7 @@ changes. Do not merge the two tokens.
 
 #### The gold surface
 
-The Career hero and the closing band on `/contact` are `background: #FFC000`
+The closing band on `/contact` and the kindness quote on `/about` are `background: #FFC000`
 with `color: #131313`. Gold is a light ground inside a dark-only palette and no
 dark-surface token works on it. Measured against `#FFC000`:
 
@@ -409,7 +409,7 @@ Defined in `@layer components` in `src/styles/global.css`:
   position comes from a second class
 - `.prose`: the rendered-Markdown rules, since there is no typography plugin
 - Page-specific sets, documented in place in `global.css`: `.hero*`,
-  `.spin-badge` / `.spin-pace-*`, `.career-watermark`, and `.footer-*`
+  `.spin-badge` / `.spin-pace-*`, `.page-hero-*`, and `.footer-*`
 - `.surface-gold`, `.btn-gold-primary`, `.btn-gold-secondary`: the gold-ground
   set
 
@@ -580,8 +580,8 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
 
 | Path                           | Artwork                 | Goes on              | Used by                                                                            |
 | ------------------------------ | ----------------------- | -------------------- | ---------------------------------------------------------------------------------- |
-| `src/assets/bunny-dark.png`    | Dark, RGB(17,17,17)     | Gold, light surfaces | `Header.astro` logo tile, `404.astro`, homepage, About                             |
-| `src/assets/badge-dark.png`    | Dark, RGB(17,17,17)     | Gold, light surfaces | Career hero watermark                                                              |
+| `src/assets/bunny-dark.png`    | Dark, RGB(17,17,17)     | Gold, light surfaces | `Header.astro` logo tile, `404.astro`, homepage, About, `PageHero.astro`           |
+| `src/assets/badge-dark.png`    | Dark, RGB(17,17,17)     | Gold, light surfaces | Reserved. Not emitted                                                              |
 | `src/assets/bunny-white.png`   | White, RGB(255,255,255) | Dark surfaces        | Reserved. Not emitted                                                              |
 | `src/assets/badge-white.png`   | White, RGB(255,255,255) | Dark surfaces        | `Footer.astro`, `SpinBadge.vue`, and the source the OG images were composited from |
 | `public/images/og-default.png` | Composite               | n/a                  | `BaseLayout.astro`, every page                                                     |
@@ -659,9 +659,8 @@ measurement before shipping it.
 Tailwind class in pixels, together with `DENSITIES` from
 `src/lib/image-densities.ts`, and the build emits a 1x and a 2x file for it.
 `tests/image-size.spec.ts` fails when a file is stretched past its box or is
-more than 1.5x what the screen can show. The career watermark is the one
-placement left at the master's size, because it is drawn at 700px from a 760px
-file.
+more than 1.5x what the screen can show. The `PageHero` roundel changes size at
+`lg`, so it passes `widths` and `sizes` instead of a height and `DENSITIES`.
 
 **`SpinBadge.vue` is the one exception to `<Image>`**, and not by preference.
 `astro:assets` is a build-time Astro API that a `.vue` single file component
@@ -676,10 +675,9 @@ prop.
 Each is recorded so a future cleanup pass reads an intent rather than a missing
 reference.
 
-- `badge-dark.png` is the **Career hero watermark**: 700px wide, `opacity`
-  0.09, `pointer-events: none`. It sits on the gold hero, which is what makes
-  the dark variant the right one. Decorative, so `alt=""`. At that opacity it
-  is a texture, and it must never become the only carrier of anything.
+- `badge-dark.png` is the **gold-surface variant of the badge**. Nothing
+  imports it since the Career hero became `PageHero` with the bunny roundel, so
+  the build emits no copy. Kept for the next badge placed on gold.
 - `bunny-white.png` is the **dark-surface variant of the mark**. Nothing
   imports it yet, so the build emits no copy. Keep it in `src/assets/`: in
   `public/` it shipped 67,458 bytes to every visitor that no page could
@@ -855,16 +853,17 @@ from `_headers` because of the file's parsing or a dashboard setting. That is
 ## Not built yet
 
 Every route is built, and no page carries lorem ipsum since 2026-09-14. The
-homepage section headings, featured intro and category descriptions, and the
+homepage section headings and category descriptions, and the
 `/blog` heading and standfirst, are drawn from Sinduri's copy on `/about` and
 are the lines most worth her rewriting in her own words.
 
 Sinduri's own words:
 
 - The **tagline**, now the heading of the homepage About teaser.
-- **`/career` entirely**, transcribed from the published CV. The page and the
-  PDF have to be edited in the same commit: no test compares the sentences on
-  the page against the sentences in the file.
+- **`/career` entirely**, from the published CV and from
+  `five-years-in-drupal.md`; `career.astro` marks which lines are the post's.
+  The page and the PDF have to be edited in the same commit: no test compares
+  the sentences on the page against the sentences in the file.
 
 Also real:
 

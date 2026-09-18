@@ -1,0 +1,74 @@
+---
+import { Image } from 'astro:assets';
+import bunnyDark from '../assets/bunny-dark.png';
+
+/*
+ * The opening of a section page: Career, Credits, and Blog with every
+ * listing under it. A dark plate tilted half a degree, like the stickers on
+ * the homepage, with a thin `border` edge and a hard gold shadow, and the
+ * bunny roundel from the homepage and /about on its bottom corner. The
+ * plate's own edge and shadow end the hero; nothing else separates it from
+ * the page. The tilt lives in `.page-hero-plate` in global.css.
+ *
+ * Below `sm` the plate runs to the screen edges with a 16px inset, so its
+ * content box is the page's own: the heading floors are fitted to that box,
+ * and `PROFESSIONAL` or a tag like `sustainability` would not fit a padded
+ * card inside it. The section is a full-bleed `.band`, so its
+ * `overflow-x-clip` cuts at the screen edge and takes only the corners the
+ * tilt pushes past it; the page never scrolls sideways.
+ *
+ * The roundel hangs half below the plate, so the plate reserves room for it:
+ * below `lg` its content runs the full width, so the bottom padding clears
+ * the roundel; from `lg` the content keeps clear of the right edge instead.
+ */
+interface Props {
+  title: string;
+  /*
+   * `h2` for a title that is data rather than a chosen string: a tag is one
+   * long word no soft hyphen can be written into, and `text-h1`'s 33px floor
+   * does not fit `sustainability` in the 273px box. The level stays h1.
+   */
+  titleSize?: 'h1' | 'h2';
+}
+
+const { title, titleSize = 'h1' } = Astro.props;
+
+const TITLE_CLASS = { h1: 'text-h1', h2: 'text-h2' } as const;
+
+/*
+ * The mark is drawn `h-12` in the `size-24` roundel below `lg` and `h-16` in
+ * the `size-32` one from it, so its files are chosen by drawn width: 458x900
+ * at 48px and 64px tall is about 25px and 33px wide. tests/image-size.spec.ts
+ * fails when these drift from the classes.
+ */
+const ROUNDEL_MARK_WIDTHS = [25, 33, 50, 66];
+const ROUNDEL_MARK_SIZES = '(min-width: 64rem) 33px, 25px';
+---
+
+{/*
+  `pb-16` and `lg:pb-20` are the roundel's overhang below the plate, half of
+  its 96px and 128px plus its 8px shadow, so the next section starts clear.
+*/}
+<section class="band overflow-x-clip pb-16 pt-16 lg:pb-20 lg:pt-20">
+  <div class="mx-auto max-w-page">
+    <div class="page-hero-plate relative -mx-4 border-4 border-border bg-surface px-4 pb-20 pt-10 shadow-hard-gold-8 sm:mx-0 sm:p-card sm:pb-24 lg:pb-card lg:pr-48">
+      <div class="page-hero-level">
+        <slot name="eyebrow" />
+        <h1 class:list={[TITLE_CLASS[titleSize], 'text-gold']}>{title}</h1>
+        <slot />
+      </div>
+
+      {/* alt="" because the header wordmark already names the site. */}
+      <span class="absolute bottom-0 right-4 flex size-24 translate-y-1/2 rotate-12 items-center justify-center rounded-full border-8 border-border bg-gold shadow-hard-cyan-8 sm:right-10 lg:size-32">
+        <Image
+          src={bunnyDark}
+          alt=""
+          widths={ROUNDEL_MARK_WIDTHS}
+          sizes={ROUNDEL_MARK_SIZES}
+          loading="eager"
+          class="h-12 w-auto lg:h-16"
+        />
+      </span>
+    </div>
+  </div>
+</section>

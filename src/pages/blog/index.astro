@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BlogListing from '../../components/BlogListing.astro';
+import PageHero from '../../components/PageHero.astro';
 import { getSortedPosts, pageCount, postsOnPage } from '../../lib/blog';
 
 /*
@@ -20,26 +21,20 @@ const totalPages = pageCount(posts.length);
   title="Blog | sinduri.lol"
   description="I write about open source, my professional journey, travel, skincare and personal thoughts. Every post, newest first."
 >
-  <div class="mx-auto max-w-page py-28">
-    <p class="pill">
-      <span class="label-wide text-gold">Writing</span>
-    </p>
-
-    <h1 class="mt-8 text-h1 text-text">Blog</h1>
-
+  <PageHero title="Blog">
     <p class="mt-8 max-w-2xl text-body text-muted text-pretty">
       Posts about open source, my professional journey, travel, skincare and
       personal thoughts. Pick a category below, or read everything.
     </p>
+  </PageHero>
 
-    <div class="mt-12">
-      <BlogListing
-        posts={postsOnPage(posts, 1)}
-        filter={{ kind: 'all' }}
-        currentPage={1}
-        totalPages={totalPages}
-        featureFirst
-      />
-    </div>
+  <div class="mx-auto max-w-page pb-28 pt-16">
+    <BlogListing
+      posts={postsOnPage(posts, 1)}
+      filter={{ kind: 'all' }}
+      currentPage={1}
+      totalPages={totalPages}
+      featureFirst
+    />
   </div>
 </BaseLayout>
