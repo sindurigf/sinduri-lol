@@ -601,6 +601,21 @@
   }
 
   /*
+   * PageHero's plate leans half a degree, the quietest tilt that still reads
+   * as a tilt at 1280px; the homepage stickers lean six. Authored rather than
+   * a utility because Tailwind's rotate scale has no half step and this
+   * project allows no arbitrary values. `.page-hero-level` turns the content
+   * back so the text and the buttons stay level.
+   */
+  .page-hero-plate {
+    rotate: -0.5deg;
+  }
+
+  .page-hero-level {
+    rotate: 0.5deg;
+  }
+
+  /*
    * The homepage hero, the one section asked to fit the viewport.
    *
    * `min-height`, never `height`, and nothing is clipped: it has to grow past

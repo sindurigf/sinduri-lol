@@ -4,15 +4,22 @@ import bunnyDark from '../assets/bunny-dark.png';
 
 /*
  * The opening of a section page: Career, Credits, and Blog with every
- * listing under it. The page's h1 and whatever the slots hold on the dark
- * ground, closed by a thick `border` rule, with the bunny roundel from the
- * homepage and /about breaking out over that rule into the page below. The
- * overlap is the separation: nothing else sits between the hero and the page.
+ * listing under it. A dark plate tilted half a degree, like the stickers on
+ * the homepage, with a thin `border` edge and a hard gold shadow, and the
+ * bunny roundel from the homepage and /about on its bottom corner. The
+ * plate's own edge and shadow end the hero; nothing else separates it from
+ * the page. The tilt lives in `.page-hero-plate` in global.css.
  *
- * The roundel hangs below the rule, so the page after the hero has to keep
- * its content clear of it: below `lg` the spacer under the rule takes the
- * overhang, and from `lg` the roundel sits right of the content column,
- * where the next section's text never reaches.
+ * Below `sm` the plate runs to the screen edges with a 16px inset, so its
+ * content box is the page's own: the heading floors are fitted to that box,
+ * and `PROFESSIONAL` or a tag like `sustainability` would not fit a padded
+ * card inside it. The section is a full-bleed `.band`, so its
+ * `overflow-x-clip` cuts at the screen edge and takes only the corners the
+ * tilt pushes past it; the page never scrolls sideways.
+ *
+ * The roundel hangs half below the plate, so the plate reserves room for it:
+ * below `lg` its content runs the full width, so the bottom padding clears
+ * the roundel; from `lg` the content keeps clear of the right edge instead.
  */
 interface Props {
   title: string;
@@ -29,41 +36,39 @@ const { title, titleSize = 'h1' } = Astro.props;
 const TITLE_CLASS = { h1: 'text-h1', h2: 'text-h2' } as const;
 
 /*
- * The mark is drawn `h-18` in the `size-36` roundel below `lg` and `h-28` in
- * the `size-60` one from it, so its files are chosen by drawn width: 458x900
- * at 72px and 112px tall is about 37px and 57px wide. tests/image-size.spec.ts
+ * The mark is drawn `h-12` in the `size-24` roundel below `lg` and `h-16` in
+ * the `size-32` one from it, so its files are chosen by drawn width: 458x900
+ * at 48px and 64px tall is about 25px and 33px wide. tests/image-size.spec.ts
  * fails when these drift from the classes.
  */
-const ROUNDEL_MARK_WIDTHS = [37, 57, 74, 114];
-const ROUNDEL_MARK_SIZES = '(min-width: 64rem) 57px, 37px';
+const ROUNDEL_MARK_WIDTHS = [25, 33, 50, 66];
+const ROUNDEL_MARK_SIZES = '(min-width: 64rem) 33px, 25px';
 ---
 
-<section class="band relative border-b-8 border-border pb-20 pt-16 lg:pb-24">
-  {/*
-    The column keeps its own edges, which tests/alignment.spec.ts holds to
-    the header's and the footer's; the room for the roundel is padding on
-    the block inside it.
-  */}
+{/*
+  `pb-16` and `lg:pb-20` are the roundel's overhang below the plate, half of
+  its 96px and 128px plus its 8px shadow, so the next section starts clear.
+*/}
+<section class="band overflow-x-clip pb-16 pt-16 lg:pb-20 lg:pt-20">
   <div class="mx-auto max-w-page">
-    <div class="lg:pr-80">
-      <slot name="eyebrow" />
-      <h1 class:list={[TITLE_CLASS[titleSize], 'text-gold']}>{title}</h1>
-      <slot />
+    <div class="page-hero-plate relative -mx-4 border-4 border-border bg-surface px-4 pb-20 pt-10 shadow-hard-gold-8 sm:mx-0 sm:p-card sm:pb-24 lg:pb-card lg:pr-48">
+      <div class="page-hero-level">
+        <slot name="eyebrow" />
+        <h1 class:list={[TITLE_CLASS[titleSize], 'text-gold']}>{title}</h1>
+        <slot />
+      </div>
+
+      {/* alt="" because the header wordmark already names the site. */}
+      <span class="absolute bottom-0 right-4 flex size-24 translate-y-1/2 rotate-12 items-center justify-center rounded-full border-8 border-border bg-gold shadow-hard-cyan-8 sm:right-10 lg:size-32">
+        <Image
+          src={bunnyDark}
+          alt=""
+          widths={ROUNDEL_MARK_WIDTHS}
+          sizes={ROUNDEL_MARK_SIZES}
+          loading="eager"
+          class="h-12 w-auto lg:h-16"
+        />
+      </span>
     </div>
   </div>
-
-  {/* alt="" because the header wordmark already names the site. */}
-  <span class="absolute -bottom-20 right-4 flex size-36 items-center justify-center rounded-full border-8 border-border bg-gold shadow-hard-cyan-8 sm:right-10 lg:-bottom-32 lg:right-24 lg:size-60">
-    <Image
-      src={bunnyDark}
-      alt=""
-      widths={ROUNDEL_MARK_WIDTHS}
-      sizes={ROUNDEL_MARK_SIZES}
-      loading="eager"
-      class="h-18 w-auto lg:h-28"
-    />
-  </span>
 </section>
-
-{/* Takes the roundel's overhang below `lg`, where the next section's text is full width. */}
-<div class="h-24 lg:hidden" aria-hidden="true"></div>
