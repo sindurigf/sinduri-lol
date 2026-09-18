@@ -1,6 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import PageHero from '../../../../components/PageHero.astro';
 import BlogListing from '../../../../components/BlogListing.astro';
 import { getPostsByTag, tagLabel, type BlogPost } from '../../../../lib/blog';
 
@@ -49,27 +50,27 @@ const label = tagLabel(tag);
   description={`Posts tagged ${label} on sinduri.lol, newest first.`}
   noindex
 >
+  {/*
+    The h1 is sized `text-h2`. A tag is content rather than a string chosen
+    for this heading: `sustainability` is one 14-character word, which is
+    291px at `text-h1`'s 33px floor inside a 273px box, and no soft hyphen
+    can be written into data. The level is still h1. tests/reflow.spec.ts
+    walks these routes, so a longer tag fails there rather than in a
+    screenshot nobody takes.
+  */}
+  <PageHero title={label} titleSize="h2">
+    <p slot="eyebrow" class="mb-6 label text-subtle">
+      Tag
+    </p>
+  </PageHero>
+
   {/* No horizontal padding here; see the note in [slug].astro. */}
-  <div class="mx-auto max-w-page py-28">
-    <p class="label text-subtle">Tag</p>
-
-    {/*
-      The h1 is sized `text-h2`. A tag is content rather than a string chosen
-      for this heading: `sustainability` is one 14-character word, which is
-      291px at `text-h1`'s 33px floor inside a 273px box, and no soft hyphen
-      can be written into data. The level is still h1. tests/reflow.spec.ts
-      walks these routes, so a longer tag fails there rather than in a
-      screenshot nobody takes.
-    */}
-    <h1 class="mt-6 text-h2 text-text">{label}</h1>
-
-    <div class="mt-12">
-      <BlogListing
-        posts={posts}
-        filter={{ kind: 'tag', tag }}
-        currentPage={1}
-        totalPages={1}
-      />
-    </div>
+  <div class="mx-auto max-w-page pb-28 pt-16 lg:pt-40">
+    <BlogListing
+      posts={posts}
+      filter={{ kind: 'tag', tag }}
+      currentPage={1}
+      totalPages={1}
+    />
   </div>
 </BaseLayout>

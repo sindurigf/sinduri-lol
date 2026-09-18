@@ -1,6 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHero from '../../../components/PageHero.astro';
 import BlogListing from '../../../components/BlogListing.astro';
 import {
   getSortedPosts,
@@ -63,32 +64,29 @@ const { posts, page, totalPages } = Astro.props as Props;
   title={`Blog, page ${page} | sinduri.lol`}
   description={`Page ${page} of posts by Sinduri Guntupalli on open source, her professional journey, travel, skincare and personal thoughts.`}
 >
-  <div class="mx-auto max-w-page py-28">
-    {/*
-      `py-2` takes this label link past the 24px of SC 2.5.8; `-my-2` pulls
-      its layout box back to what the bare label occupied, so the hit area
-      grows about the same centre line and the <h1> below does not move.
-    */}
-    <p class="label text-subtle">
+  {/*
+    `py-2` takes the label link past the 24px of SC 2.5.8; `-my-2` pulls its
+    layout box back to what the bare label occupied, so the hit area grows
+    about the same centre line and the <h1> below does not move.
+
+    The page number belongs in the <h1>: it is the one thing distinguishing
+    this page from /blog, and a reader arriving from a search result or a
+    bookmark has nothing else to say which slice of the archive this is.
+  */}
+  <PageHero title={`Blog, page ${page}`}>
+    <p slot="eyebrow" class="mb-6 label text-subtle">
       <a href="/blog/" class="-my-2 inline-block py-2 text-gold">
         All posts
       </a>
     </p>
+  </PageHero>
 
-    {/*
-      The page number belongs in the <h1>: it is the one thing distinguishing
-      this page from /blog, and a reader arriving from a search result or a
-      bookmark has nothing else to say which slice of the archive this is.
-    */}
-    <h1 class="mt-6 text-h1 text-text">Blog, page {page}</h1>
-
-    <div class="mt-12">
-      <BlogListing
-        posts={posts}
-        filter={{ kind: 'all' }}
-        currentPage={page}
-        totalPages={totalPages}
-      />
-    </div>
+  <div class="mx-auto max-w-page pb-28 pt-16 lg:pt-40">
+    <BlogListing
+      posts={posts}
+      filter={{ kind: 'all' }}
+      currentPage={page}
+      totalPages={totalPages}
+    />
   </div>
 </BaseLayout>

@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from 'astro';
 import { BLOG_CATEGORIES, type BlogCategory } from '../../../content.config';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHero from '../../../components/PageHero.astro';
 import BlogListing from '../../../components/BlogListing.astro';
 import {
   categoryLabel,
@@ -51,26 +52,24 @@ const label = categoryLabel(category);
   title={`${label} | sinduri.lol`}
   description={`${CATEGORY_TEASERS[category as BlogCategory]} Posts filed under ${label}, newest first.`}
 >
-  {/* No horizontal padding here; see the note in [slug].astro. */}
-  <div class="mx-auto max-w-page py-28">
-    {/*
-      No "All posts" link above the heading. The category filter below offers
-      "All posts" as its first option, so one here would be two stops in a row
-      going to the same place under the same name. The filter's option is the
-      one in context.
-    */}
-    <h1 class="text-h1 text-text">{label}</h1>
+  {/*
+    No "All posts" link above the heading. The category filter below offers
+    "All posts" as its first option, so one here would be two stops in a row
+    going to the same place under the same name. The filter's option is the
+    one in context.
+  */}
+  <PageHero title={label} />
 
-    <div class="mt-12">
-      <BlogListing
-        posts={posts}
-        filter={{
-          kind: 'category',
-          category: category as (typeof BLOG_CATEGORIES)[number],
-        }}
-        currentPage={1}
-        totalPages={1}
-      />
-    </div>
+  {/* No horizontal padding here; see the note in [slug].astro. */}
+  <div class="mx-auto max-w-page pb-28 pt-16 lg:pt-40">
+    <BlogListing
+      posts={posts}
+      filter={{
+        kind: 'category',
+        category: category as (typeof BLOG_CATEGORIES)[number],
+      }}
+      currentPage={1}
+      totalPages={1}
+    />
   </div>
 </BaseLayout>
