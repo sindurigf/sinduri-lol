@@ -341,8 +341,9 @@ below without triggering it.
 layout it is the numeric keypad's `Enter`.
 
 The single-letter keys are structural navigation, and they only work while you
-are reading a document rather than typing into a field. This site has no form
-fields yet, so they work everywhere on it.
+are reading a document rather than typing into a field. The one form, on
+`/contact/`, is the only place they type instead: switch to browse mode to
+leave a field.
 
 ### 6.3 How to fill this in
 
@@ -925,8 +926,8 @@ and `duplicate-id-active` are deprecated in axe 4.13 and do not run at all.
 there is no `target=` attribute anywhere; captions, transcripts and audio
 description, since no video is published (the byte-range serving for one
 stays built); dragging movements, accessible
-authentication, redundant entry and consistent help, since there is no form, no
-login and no multi-step flow. Revisit each when the contact form lands. Data
+authentication, redundant entry and consistent help, since nothing drags,
+there is no login, and the contact form is a single step. Data
 tables are no longer on this list: `/blog/open-source-is-not-just-code` has one.
 
 **Already satisfied by construction:** the `inert` behaviour behind an open
@@ -945,12 +946,9 @@ practice; it is not adopted either.
 
 Not gaps in the testing, gaps in the site.
 
-- The **contact form** does not exist, and this is the one entry that is still
-  true. SC 1.3.5, 3.3.1, 3.3.2, 3.3.3, 3.3.7, 3.3.8 and 4.1.3 are untestable
-  until it does. TODO.md records a recommendation not to build one, put and
-  declined on 2026-09-09: the form is deferred, not dropped, so these criteria
-  stay outstanding. The case for and against is in TODO.md and is not
-  repeated here.
+- The **contact form** is built, and its form criteria (SC 1.3.5, 3.3.1,
+  3.3.2, 3.3.3 and 4.1.3) have not been checked by a person; that is
+  ACCESSIBILITY.md §7 gap 1. What is automated is in `tests/contact.spec.ts`.
 - **Language, not structure.** Reading order, in-page heading structure and
   link text in prose are all testable now, on lorem as well as on English, and
   §6 tests them. What is not testable is whether the prose reads plainly, and

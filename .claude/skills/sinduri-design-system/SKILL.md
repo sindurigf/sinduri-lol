@@ -1119,29 +1119,28 @@ rather than a heading or a paragraph, and the hare in its tuft is an `aria-hidde
 Some changes here are only correct when a second, non-obvious edit lands in the
 **same** commit. Each of these has already failed once, or would fail silently.
 
-### A contact form needs the CSP widened in the same change
+### A form that posts anywhere new needs the CSP widened in the same change
 
-`public/_headers` sets `form-action 'none'`. That is a claim about today: there
-are no forms on this site, so the safest possible value is free.
+`public/_headers` sets `form-action 'self'`, because the one form on the site,
+the contact form, posts same-origin to `/contact/send/`. It was `'none'` until
+that form landed, and `tests/headers.spec.ts` now asserts `'self'`.
 
-**The moment a `<form>` with a real submission target is added — the Contact
-page is the one that will want it — that directive has to be widened in the
-same commit.** Otherwise the browser blocks the submission outright. The
+**If a form ever posts to another origin, that directive has to be widened in
+the same commit.** Otherwise the browser blocks the submission outright. The
 failure is bad in a specific way:
 
 - **It is silent.** Nothing appears on the page. The form looks like it
   submitted, or looks like it did nothing. Only the console carries the
   refusal, and only if someone has it open.
-- **It survives the tests.** `tests/headers.spec.ts` asserts there is no
-  `'unsafe-inline'` and no hash drift; it does not know what `form-action`
-  should permit, because that depends on where the form posts.
+- **It survives the tests.** `tests/headers.spec.ts` asserts `'self'`; it
+  cannot know about an origin nobody has told it a form posts to.
 - **It is worst for the people the form exists for.** `ACCESSIBILITY.md`
-  section 8 asks people to report barriers, today by GitHub issue or by email.
-  A contact form would become a third route, and a submission that fails
-  without saying so turns the barrier-reporting path into a barrier.
+  section 8 asks people to report barriers, and the contact form is one of
+  the routes; a submission that fails without saying so turns the
+  barrier-reporting path into a barrier.
 
-Widen it to the exact origin the form posts to, never to `*`. If the form posts
-same-origin, `form-action 'self'` is the value. Add an assertion to
+Widen it to the exact origin the form posts to, never to `*`. Update the
+assertion in
 `tests/headers.spec.ts` for whatever it becomes, and update the CSP section in
 `ARCHITECTURE.md` and its header table in the same commit.
 
