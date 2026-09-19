@@ -991,7 +991,8 @@
 
   /*
    * A blog post: one reading column in the middle of the page, and the post's
-   * contents list at the top of the track to its right from `xl`. Not sticky:
+   * contents list in the track to its right from `xl`, starting level with the
+   * text rather than the title, so the opening reads first. Not sticky:
    * a post with twelve sections gives a list taller than a short window, and
    * a sticky list that tall hides its last links, while giving it a scrollbar
    * of its own makes Firefox add it to the tab order as a stop that is not a
@@ -1022,7 +1023,7 @@
 
       & > .post-contents {
         grid-column: 3;
-        grid-row: 1 / span 3;
+        grid-row: 2 / span 2;
       }
     }
   }

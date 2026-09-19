@@ -453,8 +453,8 @@ machine can see.
 - **Posts.** A post is an article: the breadcrumb, the title in the case it is
   written in and in the text colour, the teaser and the date, then the text,
   all in one centred `max-w-3xl` column (`.post-layout`). The post's section
-  headings are listed in a contents box at the top of the track beside the
-  column from `xl`, and between the opening and the text below `xl`. It is not
+  headings are listed in a contents box in the track beside the column from
+  `xl`, level with the start of the text, and between the opening and the text below `xl`. It is not
   sticky and has no scrollbar of its own; see `.post-layout` in `global.css`.
 - **Breadcrumbs.** Category and tag listings and `/blog/page/<n>` put
   `Breadcrumbs` in the `PageHero` eyebrow slot, and a post opens with them:
