@@ -284,7 +284,7 @@ wrong rather than quietly wrong.
 | `secondary` | transparent | `gold-text`      | 4px `gold-text` | none                 |
 
 Both are `text-button` (14px on a desktop, up to 16px on a phone) / weight 900
-/ 0.1em / uppercase with 18px 34px of padding, from the comps. Measured, each colour against what it is actually adjacent to:
+/ 0.1em / uppercase with 16px 32px of padding, the same as every other button. Measured, each colour against what it is actually adjacent to:
 
 | Measurement                             | Ratio     | Needs |
 | --------------------------------------- | --------- | ----- |
@@ -305,16 +305,15 @@ Four things about these that are easy to get wrong:
   goes, the shadow does not inherit the job.
 - **The padding is a conformance floor, not a spacing preference.** The label
   is `text-button`, 14px on a desktop and up to 16px on a phone; at
-  line-height 1.2 that is a 16.8px to 19.2px line box. `18px` top and bottom
-  and the 4px border take the rendered control to **60.8px to 63.2px**, well
+  line-height 1.2 that is a 16.8px to 19.2px line box. `16px` top and bottom
+  and the 4px border take the rendered control to **56.8px to 59.2px**, well
   past the 24px SC 2.5.8 asks of a target on its own size. Measured on the
   Career hero while it was gold, at 305px, 320px and 1280px, with the 13px
   label it had then: 59.6px tall at all three, 226.2px and 197.6px wide. An earlier version of this note quoted
   51.6px as the rendered height, which is the padding box with the border left
   out; SC 2.5.8 measures the target, and the border is part of it.
-  `--spacing-btn-gold-y` and `--spacing-btn-gold-x` exist as tokens because 18
-  and 34 are not multiples of the 4px Tailwind step and this project does not
-  allow arbitrary values.
+  The comps' 18px and 34px were folded into the shared 16px and 32px, a 2px
+  difference that needed two tokens of its own.
 - **`.btn-gold-primary`'s focus ring is two rings, and it is the only one.**
   Its ring colour is its own fill colour, so a single ring depends entirely on
   the offset gap. See
