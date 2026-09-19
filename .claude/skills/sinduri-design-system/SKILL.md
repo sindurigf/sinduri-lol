@@ -60,10 +60,15 @@ accent. Not one foreground token in the table above passes on it except
 See [The gold surface](#the-gold-surface-the-dark-tokens-are-not-universal)
 before building anything on `#FFC000`.
 
-**Each colour has one job.** Pink is depth: every hard shadow on the site is
-pink. Gold is the page title, the primary action, the current state and card
-labels. Cyan is focus and hover and nothing else, so a cyan label, fill or
-shadow at rest reads as a control under the pointer. Links are `text`,
+**Each colour has one job, read from the shadow a thing casts.** Gold is
+things that stand on the page: cards, panels, a hero photo (`shadow-hard-gold-8`),
+plus the page title, card labels and the primary fill. Pink is things you
+press: buttons, link chips, the call to action (`shadow-hard-pink-4`), and the
+bunny marks, which keep the locked logo tile's pink. Cyan is where you are:
+focus, hover, and `shadow-hard-cyan-4` on the current nav item, chip and call
+to action, under their unchanged blue border. A cyan label, fill or shadow at
+rest would read as the current page or a control under the pointer. State is
+never the shadow colour alone: pink against cyan is 2.29. Links are `text`,
 underlined in running text.
 
 ### Contrast-critical tokens
@@ -745,7 +750,7 @@ Nothing may flash more than three times per second (SC 2.3.1).
 - The active item uses **`aria-current="page"`**. That is the machine-readable
   indicator and it is not optional.
 - The active item's **box** is visual reinforcement only: `border-4
-border-border` with `shadow-hard-pink-4`, and `lift-control` so its focus ring
+border-border` with `shadow-hard-cyan-4`, and `lift-control` so its focus ring
   clears the shadow. It must never be the sole signal of
   the active page. It carries no meaning to assistive tech and needs no ARIA of
   its own, because it is drawn with border and shadow rather than an element.
@@ -763,10 +768,11 @@ border-border` with `shadow-hard-pink-4`, and `lift-control` so its focus ring
   which is `NAV_LINKS` without Home: the logo link directly before it already
   goes to `/`, and a Home item beside it was two adjacent links to one URL. On
   `/` the logo link carries `aria-current="page"` instead. The call to action sits outside the
-  Primary `<nav>` and marks the current page with its own indicator: it drops
-  its pink shadow, as if pressed in, and draws an inset 4px ring in the
-  background colour (`--inset-shadow-cta-current`), 11.32 on its gold fill,
-  because its border and shadow are already spent on its resting state.
+  Primary `<nav>` and marks the current page with its own indicator: its pink
+  shadow turns cyan, and it draws an inset 4px ring in the background colour
+  (`--inset-shadow-cta-current`), 11.32 on its gold fill. The ring is the
+  shape half: its border and shadow are already spent on its resting state,
+  and a shadow colour change alone would fail SC 1.4.1.
 - The call to action, `.nav-cta`, is a square gold primary action: `bg-gold`,
   a background-coloured label, `border-4` and `shadow-hard-pink-4`, with no
   radius. It shares the buttons' hover (cyan fill) and pressed (4px into its
@@ -891,7 +897,7 @@ neither `:focus-visible` nor, in one engine, `:focus`. `global.css` rings
 A cyan ring crossing the pink shadow measures **2.29**, under the 3:1 of SC
 1.4.11. So **anything focusable that casts a hard shadow also sets the lift
 for that shadow**: `lift-control` beside `shadow-hard-pink-4`, `lift-object`
-beside `shadow-hard-pink-8`. Each sets `--lift`, which the offset adds to the
+beside an 8px shadow, gold or pink. Each sets `--lift`, which the offset adds to the
 4px gap, so the ring lands on the ground past the shadow rather than across
 it. `.btn-primary`, `.btn-secondary`, `.btn-gold-primary`, `.nav-cta` and the
 current chip carry it in their class; the current nav item, the logo link, the
@@ -999,7 +1005,7 @@ machine can see.
   colour between them. The wall is what ends the hero. **Never add a line,
   fill, card or separator strip between the hero and the first section**;
   each was tried and rejected, a blue rule last. A photo passes `image` and
-  stands on the wall with its border and 8px pink shadow; Contact passes
+  stands on the wall with its border and 8px gold shadow; Contact passes
   `roundel`, which sits on a joint crossing from `lg`. Career uses PageHero
   until its own recruiter-facing opening is chosen.
 - **Sections.** Everything after the hero is a `Section`: a band with
@@ -1014,12 +1020,15 @@ machine can see.
   id `<id>-heading`.
 - **A long page ends** on `CloseRow`: a card with the post to continue with and
   the one action that leads on.
-- **Colour has a job.** Pink is depth: every hard shadow. Gold is the page
-  title, the primary action, the current state and card labels. Cyan is focus
-  and hover and nothing else. On the blog, colour means category, as before,
-  on the label and the glyph tile, in gold, pink-text or text; never cyan, and
-  never on the card's shadow.
-- **One card.** `.card`, which carries its 8px pink shadow itself, and
+- **Colour has a job.** Gold is things that stand on the page: every card,
+  panel and hero photo casts an 8px gold shadow, and gold is also the page
+  title, card labels and the primary fill. Pink is things you press: buttons,
+  tags and the call to action cast a 4px pink shadow; the bunny marks (the
+  logo tile, its copies, the roundel) keep the tile's pink too. Cyan is where
+  you are: focus, hover, and a 4px cyan shadow under the unchanged blue border
+  of the current nav item, tag and call to action. On the blog, colour means
+  category on the label and the glyph tile only.
+- **One card.** `.card`, which carries its 8px gold shadow itself, and
   `.card-title` for its heading. Section has no `shadow` prop and no card
   picks a shadow colour. A state such as "current" is a `.badge` with words in
   it, never a border or shadow colour alone (SC 1.4.1).
@@ -1031,7 +1040,7 @@ machine can see.
   tiles, the roundel, the logo tile and its copies, the footer stickers. Text
   is never rotated.
 - **Photos** take a 4px `border` frame and no shadow or tilt; only cards stand
-  forward. A PageHero photo is the exception: it casts the 8px pink shadow,
+  forward. A PageHero photo is the exception: it casts the 8px gold shadow,
   because it stands on the wall rather than on the page.
   Inside a panel they take no frame of their own: `PhotoTile` sets
   each on a quiet `bg-background` tile, links it to its full-size file, and

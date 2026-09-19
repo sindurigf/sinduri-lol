@@ -352,13 +352,20 @@ varies by reader as well as by browser, and has not been tested here.
   thumbnail on `/about`. A circle is a shape the comps draw, not a box with its
   corners taken off.
 
-Hard offset shadow utilities, all pink, zero blur and zero spread:
+Hard offset shadow utilities, zero blur and zero spread. The colour is the
+thing's job:
 
-| Utility               | Value              | Casts it                                                                                       |
-| --------------------- | ------------------ | ---------------------------------------------------------------------------------------------- |
-| `shadow-hard-pink-4`  | `4px 4px 0` pink   | Controls: buttons, the current nav item and chip, footer stickers, `.nav-cta`                  |
-| `shadow-hard-pink-8`  | `8px 8px 0` pink   | Objects: every `.card`, a PageHero photo, the roundel, post contents, contact cards, logo tile |
-| `shadow-hard-pink-12` | `12px 12px 0` pink | The logo tile's larger copies on 404 and About only                                            |
+| Utility               | Value              | Casts it                                                                             |
+| --------------------- | ------------------ | ------------------------------------------------------------------------------------ |
+| `shadow-hard-gold-8`  | `8px 8px 0` gold   | Things: every `.card`, post contents, contact cards, a PageHero photo, the 404 panel |
+| `shadow-hard-pink-4`  | `4px 4px 0` pink   | Actions: buttons, link chips, footer stickers, `.nav-cta`                            |
+| `shadow-hard-pink-8`  | `8px 8px 0` pink   | The bunny marks: the logo tile, the roundel, the homepage stickers                   |
+| `shadow-hard-pink-12` | `12px 12px 0` pink | The logo tile's larger copies on 404 and About only                                  |
+| `shadow-hard-cyan-4`  | `4px 4px 0` cyan   | Where you are: the current nav item, chip and `.nav-cta`                             |
+
+State is never the shadow colour alone, since pink against cyan is 2.29: the
+current nav item gains a border box, the current chip a marker, and the
+current `.nav-cta` an inset ring.
 
 Anything focusable that casts one also sets `lift-control` (4px) or
 `lift-object` (8px), which adds the shadow's offset to the focus ring's, so the
@@ -380,7 +387,7 @@ Defined in `@layer components` in `src/styles/global.css`:
   `subtle` label (8.62) and no shadow
 - `.actions`: a row of buttons. Its 32px vertical gap clears the 4px shadow
   and the focus ring beyond it when the row wraps
-- `.card`: surface background, `border-8`, the 8px pink shadow built in, 24px
+- `.card`: surface background, `border-8`, the 8px gold shadow built in, 24px
   padding below `sm` and 40px from `sm` up. The split is a measure decision: at
   40px a side the content box is 177px at a 305px viewport, where a real post
   title runs to six lines; 24px leaves 209px
@@ -390,8 +397,8 @@ Defined in `@layer components` in `src/styles/global.css`:
 - `.bullet-list`: a bulleted list with gold markers
 - `.chip`: tags, jump links, filters and the pager, always a link. Square,
   `border-4`, label type, a 24px target of its own. The current filter or page
-  adds `aria-current`, the gold fill, the 4px pink shadow and an
-  `aria-hidden` square marker
+  adds `aria-current`, the 4px cyan shadow in place of the pink one and an
+  `aria-hidden` square marker in the text colour
 - `.badge`: a fact that is not a link, such as the current role, a skill or
   "Episode 404" on the 404 page. Flat `bg-text` with a background-coloured
   label (14.42), label type, no border and no shadow, so it does not read as
@@ -402,9 +409,9 @@ Defined in `@layer components` in `src/styles/global.css`:
   the box to each call site. Its current-page rule lives in
   `@layer components` with it rather than as utilities in the markup, because
   `box-shadow` is one property and the same layer lets source order settle it.
-  `[aria-current='page']` drops the shadow and draws
+  `[aria-current='page']` swaps the pink shadow for cyan and draws
   `--inset-shadow-cta-current`, an inset 4px ring in the background colour,
-  11.32 on the fill
+  11.32 on the fill, as the shape half of the state
 - `.label`: 14px / 900 uppercase, 0.1em tracking
 - `.link`: the running-text underline for a standalone link that carries a
   class for layout and is not a box
@@ -457,7 +464,7 @@ machine can see.
   a phone and six from `sm`. The wall is what ends the hero: the blocks stop,
   and no line, fill or card separates the hero from the first section. A page
   with a photo passes `image`, and the photo sits on the wall beside the text
-  with its border and 8px pink shadow. Contact passes `roundel`, which puts the
+  with its border and 8px gold shadow. Contact passes `roundel`, which puts the
   roundel on a joint crossing from `lg`. Career uses the same hero for now; a
   recruiter-facing opening of its own is still to be chosen.
 - **Posts.** A post is an article: the breadcrumb, the title in the case it is
@@ -483,18 +490,22 @@ machine can see.
   id `<id>-heading`.
 - **A long page ends** on `CloseRow`: a card with the post to continue with and
   the one action that leads on.
-- **Colour has a job.** Pink is depth: every hard shadow. Gold is the page
-  title, the primary action, the current state and card labels. Cyan is focus
-  and hover and nothing else. On the blog, colour means category, as before,
-  on the label and the glyph tile rather than the card's shadow.
-- **One card.** `.card`, which carries its 8px pink shadow itself, and
+- **Colour has a job.** Gold is things that stand on the page: every card,
+  panel and hero photo casts an 8px gold shadow, and gold is also the page
+  title, card labels and the primary fill. Pink is things you press: buttons,
+  tags and the call to action cast a 4px pink shadow; the bunny marks (the
+  logo tile, its copies, the roundel) keep the tile's pink too. Cyan is where
+  you are: focus, hover, and a 4px cyan shadow under the unchanged blue border
+  of the current nav item, tag and call to action. On the blog, colour means
+  category on the label and the glyph tile only.
+- **One card.** `.card`, which carries its 8px gold shadow itself, and
   `.card-title` for its heading. A state such as "current" is a `.badge` with
   words in it, never a border or shadow colour alone (SC 1.4.1).
 - **Tilt.** Every tilted mark is at 3deg: the homepage stickers, the glyph
   tiles, the roundel, the logo tile and its copies, the footer stickers. Text
   is never rotated.
 - **Photos** take a 4px `border` frame and no shadow or tilt; only cards stand
-  forward. The one exception is a PageHero photo, which casts the 8px pink
+  forward. The one exception is a PageHero photo, which casts the 8px gold
   shadow because it stands on the wall rather than on the page.
   Inside a panel they take no frame of their own: `PhotoTile` sets
   each on a quiet `bg-background` tile, links it to its full-size file, and
@@ -551,7 +562,7 @@ tiles, the post cards and the category link above a post title. Gold is the
 work pair, `open-source` and `professional-journey`; the text colour is
 `skincare` and `travel`; pink is `personal-thoughts`. Cyan is not a category
 colour, because a cyan label reads as a hovered link. The accent colours the
-label and the glyph tile; every card casts the same pink shadow whatever its
+label and the glyph tile; every card casts the same gold shadow whatever its
 category. `tests/blog.spec.ts` compares the three surfaces, because three
 copies of the map is what they were before.
 

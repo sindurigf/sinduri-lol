@@ -15,8 +15,13 @@ Implemented, one commit each:
   no `role="alert"`, an 8px-looking invalid edge and a decorative cross.
 - Focus: 4px cyan ring, offset past the element's shadow through `--lift`
   (`lift-control`, `lift-object`).
-- Shadows: pink only, 4px for controls and 8px for objects; `.card` carries
-  its shadow itself.
+- Shadows: one colour per job, revised after review the same day. Gold 8px
+  for things that stand on the page (every card, panels, a hero photo), pink
+  4px for things you press (buttons, link chips, the call to action) and pink
+  for the bunny marks (logo tile, its copies, roundel), cyan 4px for where you
+  are (current nav item, chip and call to action, under the unchanged blue
+  border). The first cut, pink on everything, read as monotonous. `.card`
+  carries its shadow itself.
 - Colour roles: body copy in `text`, links in `text` with an underline, an
   opaque header, cyan kept for focus and hover, hard-edged 404 stars.
 - Buttons: cyan hover, 4px press, dashed `aria-disabled`; the header call to

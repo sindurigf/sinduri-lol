@@ -206,9 +206,11 @@ must return `true`.
 
 The indicator is a **4px cyan `#00DCFD` outline at a 4px offset**, plus the
 element's own shadow where it casts one (`lift-control` 4px, `lift-object`
-8px). Measured against the two surfaces and a cast-block joint: 11.20 / 10.49
+8px). Shadows are gold on things, pink on actions and cyan on the current
+page. Measured against the two surfaces and a cast-block joint: 11.20 / 10.49
 / 8.21, all far above the 3:1 of SC 1.4.11. The lift exists because cyan
-against the pink shadow is 2.29. What the numbers cannot tell you is whether
+against the pink shadow is 2.29, and it must never merge with the cyan shadow
+of a current item. What the numbers cannot tell you is whether
 you can _see_ it.
 
 Look, do not measure:
@@ -217,8 +219,8 @@ Look, do not measure:
       footer. → SC 1.4.11, 2.4.7
 - [ ] On `#1A1A1A` (surface): a link inside a card. → SC 1.4.11, 2.4.7
 - [ ] **On the current nav item and the footer profile tiles.** Each casts a
-      4px pink shadow, and the ring must sit on the page background past it,
-      never across the pink. The tiles are tilted; the ring follows the tilt.
+      4px shadow, cyan on the current item and pink on the tiles, and the ring
+      must sit on the page background past it, never across it. The tiles are tilted; the ring follows the tilt.
       → SC 1.4.11, 2.4.7
 - [ ] **On the logo and the contact cards.** They cast the 8px shadow, so
       the ring sits 12px out. Confirm it still reads as belonging to the
