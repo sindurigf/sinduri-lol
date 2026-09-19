@@ -102,7 +102,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
     <div class="mx-auto max-w-page">
       <div id="name" class="card">
         <h2 class={CARD_HEADING}>Where the name comes from</h2>
-        <p class="mt-6 max-w-4xl text-h3 font-bold text-text text-pretty">
+        <p class="mt-6 max-w-4xl text-h3 font-normal text-text text-pretty">
           The inspiration for the name came from{' '}
           <a href={NAME_INSPIRATION.href}>{NAME_INSPIRATION.site}</a>, the
           website of my fellow Drupalist and friend {NAME_INSPIRATION.name}.
@@ -128,7 +128,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
         <dl class:list={[RULED_LIST, 'md:grid-cols-2 md:gap-x-12']}>
           {THANKS.map((person) => (
             <div class={RULED_ENTRY}>
-              <dt class="text-body font-bold">
+              <dt class="text-body font-black">
                 <a href={person.href} class={LINK_ITEM}>
                   {person.name}
                 </a>
@@ -171,7 +171,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
         <dl class={RULED_LIST}>
           {DESIGNED_WITH.map((tool) => (
             <div class={RULED_ENTRY}>
-              <dt class="text-body font-bold">
+              <dt class="text-body font-black">
                 <a href={tool.href} class={LINK_ITEM}>
                   {tool.name}
                 </a>
@@ -180,7 +180,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
             </div>
           ))}
           <div class={RULED_ENTRY}>
-            <dt class="text-body font-bold text-text">
+            <dt class="text-body font-black text-text">
               Multiple artists on Fiverr and Upwork
             </dt>
             <dd class="mt-1 text-body text-text">
@@ -196,7 +196,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
         <dl class={RULED_LIST}>
           {GUIDES.map((guide) => (
             <div class={RULED_ENTRY}>
-              <dt class="text-body font-bold">
+              <dt class="text-body font-black">
                 <a href={guide.href} class={LINK_ITEM}>
                   {guide.name}
                 </a>

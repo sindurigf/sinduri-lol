@@ -159,7 +159,7 @@ onBeforeUnmount(() => {
               <a
                 :href="link.href"
                 :aria-current="isActive(link.href) ? 'page' : undefined"
-                class="block border-4 px-4 py-2 font-black uppercase tracking-heading-tight"
+                class="block border-4 px-4 py-2 font-black uppercase tracking-title"
                 :class="
                   isActive(link.href)
                     ? 'lift-control border-border text-text shadow-hard-pink-4'

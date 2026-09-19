@@ -25,7 +25,7 @@ const RATIOS = {
 
 interface Props {
   ratio: keyof typeof RATIOS;
-  /** What belongs in this slot, in sentence case. Uppercased by `.label-wide`. */
+  /** What belongs in this slot, in sentence case. Uppercased by `.label`. */
   label: string;
   class?: string;
 }
@@ -40,7 +40,7 @@ const { ratio, label, class: className = '' } = Astro.props;
     className,
   ]}
 >
-  <p class="label-wide max-w-full px-6 text-center text-subtle">
+  <p class="label max-w-full px-6 text-center text-subtle">
     Placeholder: {label}
   </p>
 </div>

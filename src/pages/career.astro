@@ -261,7 +261,7 @@ const OPEN_SOURCE = [
         <ul class="mt-8 flex flex-col gap-4">
           {EDUCATION.map((item) => (
             <li class="text-body text-text text-pretty">
-              <strong class="font-extrabold text-text">{item.award}</strong>
+              <strong class="font-black text-text">{item.award}</strong>
               {': '}
               {item.detail}
               {'honour' in item ? (
@@ -290,9 +290,7 @@ const OPEN_SOURCE = [
           <ul class="mt-8 flex flex-col gap-4">
             {LANGUAGES.map((item) => (
               <li class="text-body text-text">
-                <strong class="font-extrabold text-text">
-                  {item.language}
-                </strong>
+                <strong class="font-black text-text">{item.language}</strong>
                 {': '}
                 {item.level}
               </li>
@@ -317,7 +315,7 @@ const OPEN_SOURCE = [
       <dl class="grid gap-grid sm:grid-cols-2 lg:col-span-7">
         {OPEN_SOURCE.map((item) => (
           <div class="card">
-            <dt class="label-wide text-gold">{item.award}</dt>
+            <dt class="label text-gold">{item.award}</dt>
             <dd class="mt-4 text-body text-text text-pretty">{item.detail}</dd>
           </div>
         ))}

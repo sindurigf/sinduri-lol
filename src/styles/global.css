@@ -192,7 +192,7 @@
   --text-h2: clamp(26px, 5.6vw, 64px);
   --text-h2--line-height: 0.96;
   --text-h3: clamp(20px, 2.6vw, 32px);
-  --text-h3--line-height: 1.15;
+  --text-h3--line-height: 1.1;
   /*
    * The hero's stickers, height-aware like --text-hero-h1: at a flat 30px they
    * keep their 1080p size while the name beside them shrinks, and a decoration
@@ -202,18 +202,18 @@
   --text-hero-sticker--line-height: 1.02;
   --text-body: clamp(17px, 1.2vw, 19px);
   --text-body--line-height: 1.62;
-  --text-label: 13px;
+  --text-label: 14px;
   --text-label--line-height: 1.2;
   /*
-   * Button labels. A step above the 13px label, which read as too small on
-   * a control, and larger again on a phone: 16px up to about 400px wide,
+   * Button labels. At least the 14px label, which read as too small on a
+   * control at 13px, and larger again on a phone: 16px up to about 400px wide,
    * easing to 14px by 1200px. Fluid rather than a breakpoint step, like every
    * other size here.
    */
   --text-button: clamp(14px, calc(17px - 0.25vw), 16px);
   --text-button--line-height: 1.2;
   /*
-   * The footer's copyright line. At the 13px of `text-label` it disappeared
+   * The footer's copyright line. At the size of `text-label` it disappeared
    * beside the 56px profile tiles; at 20px it holds its own, just under the
    * 22px of the icons inside them. One line, so the line-height is a label's.
    */
@@ -240,11 +240,9 @@
   --aspect-photo: 4 / 3;
 
   --tracking-heading: -0.05em;
-  --tracking-heading-tight: -0.04em;
   /* A heading in its own case: -0.05em suits capitals and crowds lowercase. */
   --tracking-title: -0.02em;
   --tracking-label: 0.1em;
-  --tracking-label-wide: 0.14em;
 
   /* Radius. Zero everywhere except the nav CTA and the logo tile. */
   --radius-nav: 14px;
@@ -292,7 +290,7 @@
    */
   --container-page: 80rem;
   /*
-   * The sticky header's height: clears the nav's 39.6px current-page box plus
+   * The sticky header's height: clears the nav's 40.8px current-page box plus
    * its 4px shadow, with air either side. Fixed pixels out of every viewport
    * including a 720px one at 400% zoom, which is the reason not to grow it.
    * scroll-padding-top on html is calc()'d from this, so SC 2.4.11 follows it.
@@ -474,9 +472,8 @@
 
   h3 {
     font-size: var(--text-h3);
-    line-height: 1.02;
-    font-weight: 800;
-    letter-spacing: var(--tracking-heading-tight);
+    line-height: var(--text-h3--line-height);
+    letter-spacing: var(--tracking-title);
   }
 
   /*
@@ -978,7 +975,7 @@
     font-size: var(--text-hero-sticker);
     line-height: var(--text-hero-sticker--line-height);
 
-    @apply border-4 px-4 py-2 font-extrabold uppercase;
+    @apply border-4 px-4 py-2 font-black uppercase;
   }
 
   @media (width >= 40rem) {
@@ -1045,7 +1042,7 @@
    * sits in.
    */
   .card-title {
-    @apply text-h3 font-extrabold text-text;
+    @apply text-h3 font-black text-text;
   }
 
   /*
@@ -1135,15 +1132,16 @@
 
   /*
    * The paragraph under a section heading, and the line on a PageHero plate
-   * under the page title. `.lead` is a reading size at weight 400; a
-   * standfirst is the page's own line and is heavier.
+   * under the page title. Both are a reading size at weight 400, since type
+   * here is 400 or 900 and nothing between; the standfirst sits further from
+   * the title it follows.
    */
   .lead {
     @apply mt-6 max-w-2xl text-h3 font-normal text-text text-pretty;
   }
 
   .standfirst {
-    @apply mt-8 max-w-2xl text-h3 font-bold text-text text-pretty;
+    @apply mt-8 max-w-2xl text-h3 font-normal text-text text-pretty;
   }
 
   /*
@@ -1558,10 +1556,6 @@
     @apply text-label font-black uppercase tracking-label;
   }
 
-  .label-wide {
-    @apply text-label font-black uppercase tracking-label-wide;
-  }
-
   /*
    * First focusable element on the page. Translated off-screen until focused,
    * then back into view so a sighted keyboard user can see where they landed.
@@ -1637,15 +1631,15 @@
   .footer-name {
     font-size: var(--text-footer-name);
     line-height: var(--text-footer-name--line-height);
-    letter-spacing: var(--tracking-heading-tight);
+    letter-spacing: var(--tracking-title);
     text-align: center;
 
     @apply font-black uppercase text-text;
   }
 
   /*
-   * One link per row on a phone, each a full-width target 41.6px tall: the
-   * 15.6px line box of a 13px label and 13px above and below it. There is no
+   * One link per row on a phone, each a full-width target 42.8px tall: the
+   * 16.8px line box of a 14px label and 13px above and below it. There is no
    * gap between the two lists, so nothing but colour marks where the pages end
    * and the policies begin.
    */
@@ -1869,7 +1863,7 @@
       grid-column: 3;
     }
 
-    /* 29.6px targets: the 15.6px line box and 7px above and below. */
+    /* 29.6px targets: the 16.8px line box and 7px above and below. */
     .footer-pages a,
     .footer-policies a {
       padding-block: 7px;
