@@ -634,6 +634,23 @@
   }
 
   /*
+   * Sending is working, not unavailable, so it is not drawn dashed: the
+   * button holds its pressed position, gold with its label (11.32), until the
+   * response replaces the page. No spinner; under reduced motion it stays in
+   * place and only loses its shadow.
+   */
+  form[aria-busy='true'] .btn-primary[aria-disabled='true'] {
+    @apply cursor-progress translate-x-1 translate-y-1 border-solid bg-gold
+      text-background;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    form[aria-busy='true'] .btn-primary[aria-disabled='true'] {
+      @apply translate-x-0 translate-y-0;
+    }
+  }
+
+  /*
    * A row of buttons. When the row wraps, the vertical gap keeps the next
    * button well clear of the 4px hard shadow and the focus ring beyond it;
    * the horizontal one is the ordinary inline gap.
