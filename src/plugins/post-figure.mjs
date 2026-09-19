@@ -39,8 +39,6 @@ const SIZES =
  */
 const LAYOUT = 'full-width';
 
-const FIGURE_CLASS = 'post-figure';
-
 const isElement = (node, tagName) =>
   node?.type === 'element' && node.tagName === tagName;
 
@@ -96,7 +94,7 @@ export const postFigure = {
       ctx.replaceNode(parent, {
         type: 'element',
         tagName: 'figure',
-        properties: { className: [FIGURE_CLASS] },
+        properties: {},
         children: [
           image,
           {
