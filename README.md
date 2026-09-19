@@ -13,7 +13,7 @@ management, with active involvement in the Drupal community. More on
 
 - [Astro](https://astro.build) 7, static output: every page is prerendered
 - [Vue](https://vuejs.org) 3 islands for the stateful components (mobile menu,
-  canvas hero, badge); plain modules for small scripts
+  canvas hero); plain modules for small scripts
 - [Tailwind CSS](https://tailwindcss.com) 4 through its Vite plugin, with design
   tokens in `src/styles/global.css`
 - TypeScript 6, strict, checked with `astro check`

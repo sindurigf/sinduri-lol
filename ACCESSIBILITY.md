@@ -293,7 +293,7 @@ it, and a violation fails the build.
 | Heading word fit     | Playwright at 320px and 305px       | No heading word wider than its own box              |
 | Reflow navigation    | Playwright at 320px                 | Menu opens, takes focus, closes on Escape           |
 | Route drift          | Playwright                          | Test list matches real build output                 |
-| Badge route coverage | Playwright over the built `dist/`   | Every route rendering a badge is tested for 2.2.2   |
+| Page hero wall       | Playwright at 1280px and 390px      | Ends on a whole row; roundel on a joint crossing    |
 | Hero field motion    | Playwright, canvas pixels           | It repaints, a key press stops it, still when asked |
 | Unknown path         | Playwright                          | A path with no page returns 404, not 200            |
 | Response headers     | Playwright over the built `dist/`   | The CSP does not break fonts or the menu            |

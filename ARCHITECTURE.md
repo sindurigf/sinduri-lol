@@ -69,7 +69,14 @@ anywhere in `src/` outside `global.css`.
 | pinkText   | `#FF79B6` | All pink text, any size    |
 | darkcyan   | `#00363F` | Text on cyan backgrounds   |
 
-Plus `header-bg` (`rgba(10, 10, 10, 0.94)`), used only by the sticky header.
+Plus `header-bg` (`rgba(10, 10, 10, 0.94)`), used only by the sticky header,
+and `joint` (`#262F36`) and `bolt` (`#2A3640`), used only by PageHero's cast
+blocks. Those two are decoration, 1.36 and 1.50 on the background, and what
+was measured is the text that crosses them, on the joint / the bolt: gold
+8.29 / 7.52, text 10.57 / 9.59, muted 8.02 / 7.28, subtle 6.31 / 5.73,
+pink-text 5.62 / 5.10, and border 3.54 / 3.21 for chip edges. `subtle` and
+`pink-text` fall from AAA to AA where they cross a joint; nothing falls below
+AA.
 
 Those are the dark-surface tokens. There is a fourth surface, `gold` used as a
 ground, and none of them work on it. See [The gold surface](#the-gold-surface).
@@ -203,7 +210,7 @@ The scale is fluid via `clamp()` rather than breakpoint steps.
 The scale is deliberately top-heavy: H1 is the display size, H2 and H3 are the
 reading sizes.
 
-**`H1, hero` and `H1, post title` are narrower versions of H1, not separate
+**`H1, hero` and `H1, reading page` are narrower versions of H1, not separate
 scales**, and each must move with it. Both keep H1's 33px floor and `9vw`
 middle term, so all three are identical wherever the floor bites, 305px and
 400% zoom included.
@@ -211,13 +218,19 @@ middle term, so all three are identical wherever the floor bites, 305px and
 - `--text-hero-h1` is the homepage hero's heading and nothing else. It is also
   capped against viewport height, because that hero is the one section asked to
   fit inside the viewport.
-- `--text-post-h1` is the blog post heading and nothing else. Only its ceiling
-  differs: a post title sits in that route's `max-w-3xl` measure, which stops
-  growing at 768px while `9vw` keeps going, so at 104px a 12-character word
-  overflows the column and `overflow-wrap: break-word` fires with no hyphen
-  drawn. The first real post rendered "COMMUNITIE / S" at 1280px. 80px also
-  puts the top of the scale on the ratio the bottom already uses, 80:64 = 1.25
-  against 33:26 = 1.269.
+- `--text-reading-h1` is the title of Privacy and Accessibility, whose PageHero
+  text sits in the `max-w-3xl` reading column. Only its ceiling differs: that
+  column stops growing at 768px while `9vw` keeps going, so at 104px a long
+  word overflows it and `overflow-wrap: break-word` fires with no hyphen drawn.
+  80px also puts the top of the scale on the ratio the bottom already uses,
+  80:64 = 1.25 against 33:26 = 1.269.
+
+**A blog post is set on its own, smaller scale**, because it reads as an
+article rather than a page: `--text-post-title`, up to 60px in the case the
+title is written in, and `--text-post-h2`, up to 36px, for its section
+headings, a step under the title so the two cannot read as one size. At the
+page scale a post opened with a 104px title and 64px headings and read as a
+poster. `--text-contents` sets the contents list beside it.
 
 `Sticker` is not a heading. It is the size of the two rotated brand words in
 the homepage hero, and it is its own token so H3 could come down for lead
@@ -340,9 +353,10 @@ varies by reader as well as by browser, and has not been tested here.
   wherever it is drawn; a tile that is not a copy of it does not qualify,
   however much it looks like one.
 
-  `rounded-full` is the **circle** exception: the spinning badge frame, the
-  bunny roundel (`Roundel.astro`) and the Star Trek thumbnail on `/about`. A
-  circle is a shape the comps draw, not a box with its corners taken off.
+  `rounded-full` is the **circle** exception: the bunny roundel
+  (`Roundel.astro`), the bolts in PageHero's cast blocks and the Star Trek
+  thumbnail on `/about`. A circle is a shape the comps draw, not a box with its
+  corners taken off.
 
 Hard offset shadow utilities, all zero blur and zero spread:
 
@@ -374,7 +388,7 @@ Defined in `@layer components` in `src/styles/global.css`:
   24px leaves 209px
 - `.card-title`: every card's heading, at `text-h3`, whatever its level
 - `.lead` / `.standfirst`: the paragraph under a section heading (muted) and
-  the line on a PageHero plate under the page title (text colour)
+  the line under PageHero's page title (text colour)
 - `.bullet-list`: a bulleted list with gold markers
 - `.chip`: tags, skills, jump links, filters and the pager. Square, `border-4`,
   label type, a 24px target of its own as a link. The current filter or page
@@ -399,8 +413,8 @@ Defined in `@layer components` in `src/styles/global.css`:
   point**, not the width: applying the gutter inside one column and outside
   another reads identically below the column width and diverges by exactly one
   gutter above it, measured at 24px on `/about` at 1440px. Every route has
-  one; a reading column is a narrower `max-w-3xl` centred inside it, with the
-  PageHero plate narrowed to match
+  one; a reading column is a narrower `max-w-3xl` centred inside it, with
+  PageHero's text narrowed to match
 - `.page-column` is not a thing. Do not add one; the column is the utility above
 - `.skip-link`: the skip-to-content link, visible on focus
 - `.band`: a full-bleed band inside `<main>`, breaking out of the gutter with
@@ -410,7 +424,7 @@ Defined in `@layer components` in `src/styles/global.css`:
   position comes from a second class
 - `.prose`: the rendered-Markdown rules, since there is no typography plugin
 - Page-specific sets, documented in place in `global.css`: `.hero*`,
-  `.spin-badge`, `.page-hero-*`, and `.footer-*`
+  `.cast-blocks*`, `.post-layout` and `.post-contents`, and `.footer-*`
 - `.surface-gold`, `.btn-gold-primary`, `.btn-gold-secondary`: the gold-ground
   set
 
@@ -422,44 +436,56 @@ layer, so plain `<a>` elements are already correct.
 Every page is built from the same parts in the same order, so no page decides
 its own opening, heading treatment or rhythm. Agreed with Sinduri on
 2026-09-18 after a cohesion audit found five openings, six section-heading
-treatments and five section paddings. `tests/page-structure.spec.ts` checks the
-ones a machine can see.
+treatments and five section paddings, and the openings revised on 2026-09-19.
+`tests/page-structure.spec.ts` and `tests/page-hero.spec.ts` check the ones a
+machine can see.
 
-- **Opening.** Every page except Home and 404 opens with `PageHero`: the
-  tilted plate, a gold `h1`, the roundel on its bottom corner. A page with a
-  photo passes `image`, and the plate sits over the photo's left edge with the
-  roundel on the seam, rather than taking the photo inside it. A page with its
-  own round mark (Contact's badge) passes it in the `mark` slot. A post uses
-  `titleSize="post"`.
-- **Breadcrumbs.** Posts, category and tag listings, and `/blog/page/<n>`
-  put `Breadcrumbs` in the `PageHero` eyebrow slot: Home / Blog, then a post's
-  category. The trail stops at the parent, because the `h1` below it is the
+- **Opening.** There are three. Home has its canvas hero, used nowhere else.
+  A blog post opens as an article (below). Every other page opens with
+  `PageHero`: a full-bleed wall of cast blocks behind a gold `h1`, the page's
+  joints showing between page-ground blocks, three rows deep, three columns on
+  a phone and six from `sm`. The wall is what ends the hero: the blocks stop,
+  and no line, fill or card separates the hero from the first section. A page
+  with a photo passes `image`, and the photo sits on the wall beside the text
+  with its border and gold shadow. Contact passes `roundel`, which puts the
+  roundel on a joint crossing from `lg`. Career uses the same hero for now; a
+  recruiter-facing opening of its own is still to be chosen.
+- **Posts.** A post is an article: the breadcrumb, the title in the case it is
+  written in and in the text colour, the teaser and the date, then the text,
+  all in one centred `max-w-3xl` column (`.post-layout`). The post's section
+  headings are listed in a contents box beside the column from `xl`, sticky
+  under the header, and between the opening and the text below `xl`.
+- **Breadcrumbs.** Category and tag listings and `/blog/page/<n>` put
+  `Breadcrumbs` in the `PageHero` eyebrow slot, and a post opens with them:
+  Home / Blog, then a post's category. The trail stops at the parent, because the `h1` below it is the
   page. The JSON-LD `BreadcrumbList` adds the page itself as its last item.
   `tests/breadcrumbs.spec.ts` holds the two to each other.
 - **Sections.** Everything after the hero is a `Section`: a band with
   `py-section`, a white `text-h2` heading, an optional `.lead`, then the
   content at `mt-head`. There is no rule above the heading; the heading and the
   spacing mark the section.
-- **Colour has a job.** Gold is structure: the hero shadow, every card's
+- **Colour has a job.** Gold is structure: the page title, every card's
   default shadow, card labels. Pink is emphasis, on at most one card per
-  section (the current role, the cats, the award). Cyan is the round marks: the
-  roundel and the badge. On the blog, colour means category, as before.
+  section (the current role, the cats, the award). Cyan is the round mark's
+  shadow. On the blog, colour means category, as before.
 - **One card.** `.card` with an 8px hard shadow, always, and `.card-title` for
   its heading. A state such as "current" is a `.chip` with words in it, never a
   border colour alone (SC 1.4.1).
 - **Photos** take a 4px `border` frame and no shadow or tilt; only cards stand
-  forward.
+  forward. The one exception is a PageHero photo, which casts the gold shadow
+  because it stands on the wall rather than on the page.
 - **Spacing** comes from `--spacing-section`, `-head`, `-grid`, `-actions` and
   `-inline`. Each is fluid from 390px to 1200px, because the desktop values
   left a phone with screens of empty ground between one-column sections.
 - **Links**: a link in a sentence uses the base underline; an action is
   `.btn-primary` or `.btn-secondary`; tags, skills and jump links are `.chip`.
-- **Reading pages** (Privacy, Accessibility, posts) are a PageHero with
-  `measure="reading"`, then one `.prose` column, both `max-w-3xl` and centred
-  in the page column, so the title and the text start on the same edge.
-- **Case.** Headings are uppercase, except a post's title, on its plate and
-  on its cards, which keeps the case it is written in (`.post-title`, with
-  `--text-post-title` and `--text-post-card`). Uppercase suits a page name
+- **Reading pages** (Privacy, Accessibility) are a PageHero with
+  `measure="reading"`, whose text sits in a centred `max-w-3xl` while the wall
+  stays full width, then one `.prose` column of the same width, so the title
+  and the text start on the same edge.
+- **Case.** Headings are uppercase, except a post's title, at the top of the
+  post and on its cards, which keeps the case it is written in (`.post-title`,
+  with `--text-post-title` and `--text-post-card`). Uppercase suits a page name
   and makes a sentence long and loud: at 390px the first post's title ran to
   five lines at 35px, and reads in three at 28px in its own case.
 - **One ground.** Sections do not alternate backgrounds. The gold surface is
@@ -595,9 +621,10 @@ when the literal has fallen behind.
   invisible-control walk short-circuits on a page with no `.surface-gold`
   section, so every route returned `[]` and passed for the whole time no page
   used the class.
-- `BADGE_ROUTES` in `tests/motion.spec.ts` is the case that shipped: the list
-  said `['/']`, Contact grew a second `SpinBadge`, and its pause control had no
-  SC 2.2.2 coverage while the suite reported green.
+- `BADGE_ROUTES` in `tests/motion.spec.ts` was the case that shipped: the
+  list said `['/']`, Contact grew a second spinning badge, and its pause
+  control had no SC 2.2.2 coverage while the suite reported green. The badge
+  and the list went on 2026-09-19.
 
 A guard that can itself match nothing needs a floor, because comparing two
 empty lists passes.
@@ -649,13 +676,13 @@ content-hashed into `/_astro/` and cached immutably by `public/_headers`.
 the Open Graph images, which scrapers fetch, so they stay PNG at a stable
 address. A file in `src/assets/` that nothing imports is not emitted at all.
 
-| Path                           | Artwork                 | Goes on              | Used by                                                                            |
-| ------------------------------ | ----------------------- | -------------------- | ---------------------------------------------------------------------------------- |
-| `src/assets/bunny-dark.png`    | Dark, RGB(17,17,17)     | Gold, light surfaces | `Header.astro` logo tile, `404.astro`, homepage, About, `PageHero.astro`           |
-| `src/assets/badge-dark.png`    | Dark, RGB(17,17,17)     | Gold, light surfaces | Reserved. Not emitted                                                              |
-| `src/assets/bunny-white.png`   | White, RGB(255,255,255) | Dark surfaces        | Reserved. Not emitted                                                              |
-| `src/assets/badge-white.png`   | White, RGB(255,255,255) | Dark surfaces        | `Footer.astro`, `SpinBadge.vue`, and the source the OG images were composited from |
-| `public/images/og-default.png` | Composite               | n/a                  | `BaseLayout.astro`, every page                                                     |
+| Path                           | Artwork                 | Goes on              | Used by                                                                  |
+| ------------------------------ | ----------------------- | -------------------- | ------------------------------------------------------------------------ |
+| `src/assets/bunny-dark.png`    | Dark, RGB(17,17,17)     | Gold, light surfaces | `Header.astro` logo tile, `404.astro`, homepage, About, `PageHero.astro` |
+| `src/assets/badge-dark.png`    | Dark, RGB(17,17,17)     | Gold, light surfaces | Reserved. Not emitted                                                    |
+| `src/assets/bunny-white.png`   | White, RGB(255,255,255) | Dark surfaces        | Reserved. Not emitted                                                    |
+| `src/assets/badge-white.png`   | White, RGB(255,255,255) | Dark surfaces        | Not emitted. The source the OG images were composited from               |
+| `public/images/og-default.png` | Composite               | n/a                  | `BaseLayout.astro`, every page                                           |
 
 ### Photos and video
 
@@ -730,16 +757,14 @@ measurement before shipping it.
 Tailwind class in pixels, together with `DENSITIES` from
 `src/lib/image-densities.ts`, and the build emits a 1x and a 2x file for it.
 `tests/image-size.spec.ts` fails when a file is stretched past its box or is
-more than 1.5x what the screen can show. The `PageHero` roundel changes size at
-`lg`, so it passes `widths` and `sizes` instead of a height and `DENSITIES`.
+more than 1.5x what the screen can show. The roundel changes size at `lg`, so
+it passes `widths` and `sizes` instead of a height and `DENSITIES`.
 
-**`SpinBadge.vue` is the one exception to `<Image>`**, and not by preference.
-`astro:assets` is a build-time Astro API that a `.vue` single file component
-cannot reach, and a plain Vite import there would content-hash the original PNG
-without converting it, leaving the largest image on the site as the only
-unoptimised one. `src/lib/badge-image.ts` calls `getImage()` once, at the 160px
-the badge is drawn on Contact, and `contact.astro` passes the result in as a
-prop.
+Every placement renders through `<Image>`. The one that could not, the
+spinning badge inside a Vue island, went with the badge on 2026-09-19. A
+`.vue` component cannot reach `astro:assets`, so an image inside a future
+island needs `getImage()` in an Astro module and the result passed in as a
+prop, or it ships the unconverted master.
 
 ### Placements, and why nothing here is unused
 
@@ -753,9 +778,9 @@ reference.
   imports it yet, so the build emits no copy. Keep it in `src/assets/`: in
   `public/` it shipped 67,458 bytes to every visitor that no page could
   reference.
-- `badge-white.png` is the artwork inside the **spinning badge** on Contact.
-  That badge auto-starts and runs past five seconds, so it carries the
-  keyboard-operable pause control SC 2.2.2 asks for.
+- `badge-white.png` is the **dark-surface variant of the badge** and the
+  source `og-default.png` was composited from. Nothing imports it since
+  Contact's spinning badge became the roundel, so the build emits no copy.
 
 `og-default.png` is 1200x630, built by compositing `badge-white.png` onto
 `#131313` inside an 8px gold frame, and every page uses it. It stays in
