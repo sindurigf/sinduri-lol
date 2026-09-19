@@ -105,6 +105,19 @@
    */
   --color-gold-btn-label: #ffffff;
 
+  /*
+   * PageHero's cast blocks: the joints between the blocks and the bolt in each
+   * block's corner. Decoration, so SC 1.4.11 does not apply to them; they are
+   * 1.36 and 1.50 on the background, which is all they are for. What matters
+   * is the text that crosses them. Measured 2026-09-19, every foreground on
+   * the joint / the bolt: gold 8.29 / 7.52, text 10.57 / 9.59, muted
+   * 8.02 / 7.28, subtle 6.31 / 5.73, pink-text 5.62 / 5.10, and border
+   * 3.54 / 3.21 for chip edges. `subtle` and `pink-text` drop from AAA to AA
+   * where they cross a joint; nothing drops below AA.
+   */
+  --color-joint: #262f36;
+  --color-bolt: #2a3640;
+
   /* Header chrome. Translucent, so it stays a raw rgba rather than a hex. */
   --color-header-bg: rgba(10, 10, 10, 0.94);
 
@@ -150,27 +163,29 @@
   --text-hero-h1: clamp(33px, min(9vw, 13svh), 104px);
   --text-hero-h1--line-height: 0.94;
   /*
-   * The blog post title. Only the ceiling differs from text-h1: a post sits in
-   * a max-w-3xl measure that stops growing at 768px while 9vw keeps going, so
-   * at 104px a 12-character word overflows and break-word fires with no hyphen
-   * drawn. The first real post read "COMMUNITIE / S THAT" at 1280px.
-   *
-   * Do not lower this to 64px: it would read as one size with the .prose h2
-   * headings inside its own body.
+   * The title of a reading page, Privacy and Accessibility, whose PageHero
+   * text sits in the `max-w-3xl` column the page's prose does. Only the
+   * ceiling differs from text-h1: that column stops growing at 768px while
+   * 9vw keeps going, and at 104px ACCESSIBILITY broke mid-word at 1440px.
    */
-  --text-post-h1: clamp(33px, 9vw, 80px);
-  --text-post-h1--line-height: 0.94;
+  --text-reading-h1: clamp(33px, 9vw, 80px);
+  --text-reading-h1--line-height: 0.94;
   /*
-   * A post's own title, on its plate and on its cards. Post titles are
-   * sentences, not one-word page names, so they keep the case they are
-   * written in (`.post-title`) and come down to 28px and 18px on a phone,
-   * where a 35px uppercase title ran to five lines before the text began.
-   * The ceilings are the old ones, so a desktop is unchanged. The floors can
-   * sit below the heading floors because those are fitted to the longest
-   * uppercase word, and a title in its own case is narrower.
+   * A blog post, set as an article rather than a page. The title keeps the
+   * case it is written in (`.post-title`) and its section headings stay
+   * uppercase, and both come down from the page scale, where a 104px title
+   * and 64px headings made a post read as a poster: the title to 60px, the
+   * headings to 36px, a step under it so they cannot read as one size.
+   * The floors are the old post title's, which a phone was already set in.
+   * Privacy and Accessibility keep `text-h2` for theirs.
    */
-  --text-post-title: clamp(28px, 7.2vw, 80px);
-  --text-post-title--line-height: 1.02;
+  --text-post-title: clamp(28px, 4.8vw, 60px);
+  --text-post-title--line-height: 1.06;
+  --text-post-h2: clamp(22px, 3vw, 36px);
+  --text-post-h2--line-height: 1.02;
+  /* The contents list beside a post, a step under body text. */
+  --text-contents: clamp(15px, 1vw, 16px);
+  --text-contents--line-height: 1.35;
   --text-post-card: clamp(18px, 2.6vw, 32px);
   --text-post-card--line-height: 1.15;
   --text-post-card-feature: clamp(18px, calc(5.6vw - 4px), 64px);
@@ -328,6 +343,15 @@
    */
   --spacing-btn-gold-y: 18px;
   --spacing-btn-gold-x: 34px;
+
+  /*
+   * PageHero's cast blocks, fluid between a phone and 1200px like the rhythm
+   * above: a 6px joint and a 10px bolt read as a wall on a desktop and as a
+   * grid of lines on a 390px phone, where 4px and 7px keep the blocks heavy.
+   */
+  --spacing-joint: clamp(4px, 0.5vw, 6px);
+  --spacing-bolt: clamp(7px, 0.84vw, 10px);
+  --spacing-bolt-inset: clamp(8px, 1vw, 12px);
 
   /*
    * The SC 2.5.8 floor. Everything clears it by construction except
@@ -644,18 +668,64 @@
   }
 
   /*
-   * PageHero's plate leans half a degree, the quietest tilt that still reads
-   * as a tilt at 1280px; the homepage stickers lean six. Authored rather than
-   * a utility because Tailwind's rotate scale has no half step and this
-   * project allows no arbitrary values. `.page-hero-level` turns the content
-   * back so the text and the buttons stay level.
+   * PageHero's wall of cast blocks: page-ground blocks with the joint colour
+   * showing through the gaps between them, and a bolt in each block's corner.
+   * The wall is what ends the hero: the blocks stop and the page carries on
+   * without them, so no line or fill separates the hero from the next section.
+   *
+   * The rows are `1fr`, so the wall stretches to whatever height the text
+   * needs, at 200% text zoom and under the text-spacing override included, and
+   * always ends on a whole row rather than cutting a block in half. Always
+   * three rows, and three columns on a phone where six from `sm` would be
+   * slivers: PageHero renders eighteen blocks and a phone shows the first nine.
+   * Six rows on a phone were tried and read as stripes under a one-word title,
+   * about 28px each on /blog.
+   *
+   * A layer of elements rather than a background gradient: text over a
+   * background image is text tests/contrast-incomplete.spec.ts cannot measure,
+   * and it fails, rightly. Behind the text in its own stacking layer, the
+   * blocks leave every heading measurable against the page ground; the ratios
+   * against the joints themselves are measured beside `--color-joint`.
    */
-  .page-hero-plate {
-    rotate: -0.5deg;
+  .cast-blocks {
+    @apply pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3 gap-joint bg-joint sm:grid-cols-6;
   }
 
-  .page-hero-level {
-    rotate: 0.5deg;
+  .cast-blocks > span {
+    @apply relative bg-background;
+  }
+
+  .cast-blocks > span:nth-child(n + 10) {
+    @apply hidden sm:block;
+  }
+
+  .cast-blocks > span::after {
+    @apply absolute right-bolt-inset bottom-bolt-inset size-bolt rounded-full bg-bolt;
+
+    content: '';
+  }
+
+  /*
+   * Contact's roundel sits where two joints cross: from `lg`, the joint
+   * between the fifth and sixth columns and the one under the first row. Five
+   * sixths across keeps it clear of the standfirst's `max-w-2xl` at 1024px,
+   * where four sixths would sit on its last words. A column is
+   * (100% + joint) / 6 wide including one joint, so the crossing is that many
+   * columns in, back by half a joint. Below `lg` the columns are too narrow
+   * for a 96px disc to clear the text, so it stays in the flow.
+   */
+  .cast-blocks-crossing {
+    /* Positioned in the flow too, or the wall, which is, paints over it. */
+    position: relative;
+
+    @media (width >= 64rem) {
+      position: absolute;
+      left: calc(
+        (100% + var(--spacing-joint)) * 5 / 6 - var(--spacing-joint) / 2
+      );
+      top: calc((100% + var(--spacing-joint)) / 3 - var(--spacing-joint) / 2);
+      translate: -50% -50%;
+    }
   }
 
   /*
