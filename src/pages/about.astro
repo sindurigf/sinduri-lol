@@ -18,7 +18,7 @@ import minerva from '../assets/photos/minerva.jpg';
 import hela from '../assets/photos/hela.jpg';
 import rudra from '../assets/photos/rudra.jpg';
 import mountainCamp from '../assets/photos/drupal-mountain-camp.jpg';
-import friendsMossWallPortrait from '../assets/photos/friends-moss-wall-portrait.jpg';
+import friendsMossWall from '../assets/photos/friends-moss-wall.jpg';
 import escapeRoom from '../assets/photos/escape-room.jpg';
 import kannurSea from '../assets/photos/kannur-sea.jpg';
 import withFriend from '../assets/photos/pride-with-friend.jpg';
@@ -54,8 +54,8 @@ const THUMB_SIZE = 56;
  * tests/image-size.spec.ts fails when one drifts from the layout.
  */
 const SIZES = {
-  quote:
-    '(min-width: 64rem) min(calc(50vw - 1.5rem), 38.75rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)',
+  panorama:
+    '(min-width: 40rem) min(calc(100vw - 9rem), 74rem), calc(100vw - 6rem)',
   food: '(min-width: 64rem) min(calc(50vw - 7.5rem), 32.75rem), (min-width: 40rem) calc(100vw - 9rem), calc(100vw - 6rem)',
   cat: '(min-width: 40rem) min(calc(33.34vw - 4.8rem), 22.85rem), calc(100vw - 7.25rem)',
   drupal:
@@ -217,27 +217,34 @@ const CATS = [
     </div>
   </Section>
 
-  <Section id={SECTIONS[0].id} title={SECTIONS[0].title}>
+  <Section id={SECTIONS[0].id} headless>
     {/*
-      THE GOLD STATEMENT. `.surface-gold` supplies the foreground and the
-      border colour for the subtree; nothing inside names a dark-set token.
-      It holds no control, which is why tests/gold-surface.spec.ts counts
-      zero on this route. It is this section's one pink shadow.
+      One panel: the photo across the top, the gold statement and the heading
+      side by side under it. The heading comes first in the source and on a
+      phone. `.surface-gold` supplies the foreground and border colours for
+      its subtree and holds no control, which is why tests/gold-surface.spec.ts
+      counts zero on this route.
     */}
-    <div class="grid gap-grid lg:grid-cols-2 lg:items-center">
-      <blockquote class="surface-gold min-w-0 border-8 p-card-tight shadow-hard-pink-8 sm:p-card">
+    <div class="card grid shadow-hard-gold-8 lg:grid-cols-2">
+      <h2
+        id={`${SECTIONS[0].id}-heading`}
+        class="pb-6 text-h2 text-text lg:col-start-2 lg:row-start-2 lg:self-end lg:pb-0 lg:pl-card"
+      >
+        {SECTIONS[0].title}
+      </h2>
+      {/* A 16:9 file; the 2:1 box from `lg` trims a band above the hair and below the chins. */}
+      <Image
+        src={friendsMossWall}
+        alt="Sinduri between two friends in front of a moss wall, all three smiling."
+        widths={WIDTHS}
+        sizes={SIZES.panorama}
+        class="block aspect-video h-auto w-full object-cover lg:col-span-2 lg:row-start-1 lg:aspect-2/1"
+      />
+      <blockquote class="surface-gold min-w-0 p-card-tight sm:p-card lg:col-start-1 lg:row-start-2">
         <p class="text-h2 font-black text-pretty">
           We should all be a bit kinder and more empathetic.
         </p>
       </blockquote>
-
-      <Image
-        src={friendsMossWallPortrait}
-        alt="Sinduri between two friends in front of a moss wall, all three smiling."
-        widths={WIDTHS}
-        sizes={SIZES.quote}
-        class:list={[PHOTO, 'aspect-square min-w-0']}
-      />
     </div>
   </Section>
 
