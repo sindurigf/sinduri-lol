@@ -802,6 +802,37 @@ test.describe('security headers', () => {
     ).not.toMatch(/\bimmutable\b/);
   });
 
+  /*
+   * The speculation rules reach the browser through the Speculation-Rules
+   * header and the file's own Content-Type rule. Chromium reports the rule set
+   * over DevTools, with an error type when it rejects one, and loads none at
+   * all when the file arrives as application/json.
+   *
+   * Verified not to be vacuous, 2026-09-19: with the /speculationrules.json
+   * rule removed from public/_headers, no rule set is loaded and this fails.
+   */
+  test('Chromium accepts the speculation rules', async ({
+    page,
+    browserName,
+  }) => {
+    test.skip(
+      browserName !== 'chromium',
+      'speculation rules are Chromium only',
+    );
+    const cdp = await page.context().newCDPSession(page);
+    const ruleSets: { errorType?: string }[] = [];
+    cdp.on('Preload.ruleSetUpdated', (event) => ruleSets.push(event.ruleSet));
+    await cdp.send('Preload.enable');
+    await page.goto(`${origin}/`);
+    await expect
+      .poll(() => ruleSets.length, { message: 'no rule set was loaded' })
+      .toBeGreaterThan(0);
+    expect(
+      ruleSets.map((set) => set.errorType ?? 'ok'),
+      'Chromium rejected the speculation rules',
+    ).toEqual(['ok']);
+  });
+
   test('the site runs clean under the policy: no violations, fonts load', async ({
     page,
   }) => {

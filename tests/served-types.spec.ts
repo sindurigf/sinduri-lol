@@ -6,10 +6,13 @@ import { test, expect } from './test';
  * the Worker and applies public/_headers. The static server test:a11y uses
  * applies neither, so these can only be checked here.
  *
+ * HTTP only, like the rest of this suite, which CI runs without a browser.
+ * Whether Chromium accepts the rules is checked in tests/headers.spec.ts,
+ * which runs in every browser project.
+ *
  * Verified not to be vacuous, 2026-09-18: with the /speculationrules.json rule
  * removed from public/_headers the file arrives with the wrong type, which
- * fails the first test, and Chromium loads no rule set at all, which fails the
- * last. Restored, all four pass.
+ * fails the first test. Restored, all three pass.
  */
 
 const RULES = '/speculationrules.json';
@@ -49,27 +52,5 @@ test.describe('served types', () => {
         type,
       );
     }
-  });
-
-  test('Chromium reads the rule set without an error', async ({
-    page,
-    browserName,
-  }) => {
-    test.skip(
-      browserName !== 'chromium',
-      'speculation rules are Chromium only',
-    );
-    const cdp = await page.context().newCDPSession(page);
-    const ruleSets: { errorType?: string; sourceText?: string }[] = [];
-    cdp.on('Preload.ruleSetUpdated', (event) => ruleSets.push(event.ruleSet));
-    await cdp.send('Preload.enable');
-    await page.goto('/');
-    await expect
-      .poll(() => ruleSets.length, { message: 'no rule set was loaded' })
-      .toBeGreaterThan(0);
-    expect(
-      ruleSets.map((set) => set.errorType ?? 'ok'),
-      'Chromium rejected the speculation rules',
-    ).toEqual(['ok']);
   });
 });

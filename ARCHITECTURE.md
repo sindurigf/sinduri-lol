@@ -857,8 +857,9 @@ stale on every edit. They prefetch and never prerender: a prerendered page runs
 the Umami tracker, which would count a visit nobody made. They leave out
 `/contact/send/`, `/videos/`, PDFs and download links. The file's own rule in
 `_headers` sets `application/speculationrules+json`, without which Chromium
-loads no rule set at all; `tests/served-types.spec.ts` checks both through the
-Worker.
+loads no rule set at all. `tests/served-types.spec.ts` checks the type through
+the Worker, over HTTP, and `tests/headers.spec.ts` checks that Chromium accepts
+the rules.
 
 ### The CSP
 
