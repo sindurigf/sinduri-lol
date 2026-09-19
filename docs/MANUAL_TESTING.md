@@ -206,11 +206,12 @@ must return `true`.
 
 The indicator is a **4px cyan `#00DCFD` outline at a 4px offset**, plus the
 element's own shadow where it casts one (`lift-control` 4px, `lift-object`
-8px). Shadows are gold on things, pink on actions and cyan on the current
-page. Measured against the two surfaces and a cast-block joint: 11.20 / 10.49
-/ 8.21, all far above the 3:1 of SC 1.4.11. The lift exists because cyan
-against the pink shadow is 2.29, and it must never merge with the cyan shadow
-of a current item. What the numbers cannot tell you is whether
+8px). Shadows are gold on things and pink on actions; a hovered linked card's
+turns cyan, and a current item casts none. Measured against the two surfaces
+and a cast-block joint: 11.20 / 10.49 / 8.21, all far above the 3:1 of
+SC 1.4.11. The lift exists because cyan against the pink shadow is 2.29, and
+chip lists are spaced 24px apart so a ring never reaches the next chip. What
+the numbers cannot tell you is whether
 you can _see_ it.
 
 Look, do not measure:
@@ -218,10 +219,14 @@ Look, do not measure:
 - [ ] On `#131313` (page background): header nav links, and anything in the
       footer. → SC 1.4.11, 2.4.7
 - [ ] On `#1A1A1A` (surface): a link inside a card. → SC 1.4.11, 2.4.7
-- [ ] **On the current nav item and the footer profile tiles.** Each casts a
-      4px shadow, cyan on the current item and pink on the tiles, and the ring
-      must sit on the page background past it, never across it. The tiles are tilted; the ring follows the tilt.
-      → SC 1.4.11, 2.4.7
+- [ ] **On a chip and the footer profile tiles.** Each casts a 4px pink
+      shadow, and the ring must sit on the page background past it, never
+      across it, and never on the next chip. The tiles are tilted; the ring
+      follows the tilt. → SC 1.4.11, 2.4.7
+- [ ] **On the current nav item and the current chip.** Each is a flat
+      text-colour block with no shadow, so the ring sits 4px out on the page
+      background. Confirm it reads as separate from the block. → SC 1.4.11,
+      2.4.7
 - [ ] **On the logo and the contact cards.** They cast the 8px shadow, so
       the ring sits 12px out. Confirm it still reads as belonging to the
       control. → SC 1.4.11, 2.4.7
@@ -536,7 +541,7 @@ design and this section is not the place to check that.
       Heard: `___________________________________________` → SC 1.4.1, 4.1.2
 - [ ] The active-page **box** is not announced. Nothing about a border, a
       frame, or a stray blank in that same announcement. It is drawn with
-      `border` and `box-shadow` on the link itself, so unlike the gold dot it
+      `border` and `background-color` on the link itself, so unlike the gold dot it
       replaced there is no element here to leak into the accessible name; this
       check is now confirming the absence of a defect rather than watching a
       known risk.
@@ -618,15 +623,17 @@ What the templates produce, in source order:
 | ---------- | ----------------------- | -------------------------------- |
 | `h1`       | the post title          | `[slug].astro`, post frontmatter |
 | `h2`, `h3` | the post's own headings | the Markdown body                |
-| `h2`       | Tags                    | `[slug].astro`                   |
 
-`/blog/open-source-is-not-just-code` has 26 headings in its `<main>`: 1 `h1`,
-13 `h2` and 12 `h3`, measured against the build on 2026-09-11, after its six
-source-list labels became headings. That includes two groups of six `h3`, each
-nested under its own `h2`.
+"In this post" and "Tags" are not headings: each is a label paragraph that
+names its navigation landmark.
+
+`/blog/open-source-is-not-just-code` has 25 headings in its `<main>`: 1 `h1`,
+12 `h2` and 12 `h3`, measured against the build on 2026-09-19, after "Tags"
+stopped being a heading. That includes two groups of six `h3`, each nested
+under its own `h2`.
 
 - [ ] `Alt+Shift+H` lists the `h1` first, then the body's own headings in
-      source order, then "Tags". **An `h3` is only a
+      source order, and nothing after them. **An `h3` is only a
       finding if it has no `h2` above it** - nesting is correct, skipping a
       level is not. The count depends on the post; the order and the nesting
       do not.
@@ -634,12 +641,14 @@ nested under its own `h2`.
 - [ ] One `h1`, announced first. Levels run 1, 2 and 3, and every `h3` has an
       `h2` above it.
       Heard: `___________________________________________` → SC 1.3.1, 2.4.6
-- [ ] `H` from `Ctrl+Home` walks the same 26 in the same order, and each
+- [ ] `H` from `Ctrl+Home` walks the same 25 in the same order, and each
       announcement carries its level.
       Heard, first two: `________________________________` → SC 1.3.1
 - [ ] `Alt+Shift+M` lists the landmarks `/about` has in 6.6, less its
-      navigation "In this issue": seven. The
-      `<article>` in `BlogLayout` is not a landmark and must not appear.
+      navigation "In this issue" and plus the post's own three: navigation
+      "Breadcrumb", navigation "In this post" and navigation "Tags", ten in
+      all. The `<article>` in `BlogLayout` is not a landmark and must not
+      appear.
       Listed: `__________________________________________` → SC 1.3.1
 - [ ] `M` to `main`, then `Down` repeatedly. Reading order matches visual
       order: category link, `h1`, teaser, date, then the body.
@@ -651,9 +660,8 @@ nested under its own `h2`.
 - [ ] The `<time>` element reads the formatted date, "10 July 2026", and not
       the ISO string in its `datetime` attribute.
       Heard: `___________________________________________` → SC 1.3.1
-- [ ] The Tags block is announced as a list of five items, each tag once. The
-      tags are plain `<li>` text, not links, so nothing should be announced as
-      clickable.
+- [ ] The Tags navigation is announced by its name, then a list of five
+      items, each tag once and each a link to that tag's listing.
       Heard: `___________________________________________` → SC 1.3.1
 
 ### 6.9 The 404 page
@@ -968,7 +976,7 @@ Not gaps in the testing, gaps in the site.
   is left here is the human half in §4: whether the field's still frame reads
   as a picture rather than as something that failed to load.
 - ~~**SC 2.4.11 is only partly testable.** No page is long enough.~~ **Pages
-  are long enough now.** `/blog/open-source-is-not-just-code` runs to 26
+  are long enough now.** `/blog/open-source-is-not-just-code` runs to 25
   headings and roughly 14 minutes of reading, which is more than enough
   scrolling for the sticky header to obscure a focused control. §1 and §5 cover
   it, and `tests/focus.spec.ts` hit-tests every stop against the header on

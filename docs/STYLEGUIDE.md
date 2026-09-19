@@ -21,7 +21,8 @@ Implemented, one commit each:
   for the bunny marks (logo tile, its copies, roundel), cyan 4px for where you
   are (current nav item, chip and call to action, under the unchanged blue
   border). The first cut, pink on everything, read as monotonous. `.card`
-  carries its shadow itself.
+  carries its shadow itself. The follow-up pass below took cyan off the
+  current page.
 - Colour roles: body copy in `text`, links in `text` with an underline, an
   opaque header, cyan kept for focus and hover, hard-edged 404 stars.
 - Buttons: cyan hover, 4px press, dashed `aria-disabled`; the header call to
@@ -50,27 +51,65 @@ Differences from the proposal below:
 - **`.label-wide` was not dead code.** The inventory in 1.2 said so; it was
   used 17 times. It was merged into `.label` instead.
 - **Emphasis cards were not built.** Part 3 proposes a gold card for the one
-  emphasised card per section. Every card now has the same pink shadow, and
+  emphasised card per section. Every card now has the same gold shadow, and
   the current role says so with a `.badge`.
 
 Not done, and why:
 
-- **Heading visual levels (A9).** The 404 and tag-page h1 sizes have
-  documented reasons; "In this post" and "Tags" stay at label size. Open.
+- **Heading visual levels (A9).** Partly done in the follow-up pass: "In this
+  post" and "Tags" are labels, not headings. The panel headings and the hero
+  h1 sizes, the 404 and tag-page h1 among them, are deferred to Parts 2 and 3
+  of the sections-and-hero pass.
 - **Tile alt text (1.1, flag 2).** Done: the mark has empty alt text and the
   home link is named "sinduri.lol" by its wordmark.
 - **The whole-card focus ring on linked cards.** `tests/focus.spec.ts`
   expects the ring on the focused element itself, so the ring stays on the
   title link.
-- **The submit button's pending state.** It needs a script and a bfcache
-  reset for a double-submit case the server already rate-limits.
-- **Banned spacing steps and raw px.** The about page's `gap-3.5` and
-  `p-2.5` feed the image `sizes` arithmetic, which `tests/image-size.spec.ts`
-  measures; changing them means re-deriving every `sizes` string. The footer
-  and mobile menu raw px, and extending `scripts/check-tokens.mjs` to catch
-  them, are also still open.
+- ~~**The submit button's pending state.**~~ Done in the follow-up pass.
+- ~~**Banned spacing steps and raw px.**~~ Done in the follow-up pass, with
+  every `sizes` string re-derived, except the two hero paddings the token
+  check lists as pending.
 - **Fluid card padding.** `--spacing-card` and `--spacing-card-tight` stay
   two numbers, for the same `sizes` reason.
+
+### Follow-up pass, 2026-09-19
+
+Done on `feat/sections-and-hero`:
+
+- **Cyan has one job: what you are touching.** The focus ring, hover, and a
+  hovered linked card's shadow (`shadow-hard-cyan-8`). `--shadow-hard-cyan-4`
+  is gone.
+- **Where you are is a flat `text`-colour block with no shadow**, like a
+  badge (`background` on `text`, 14.42): the current desktop nav item, mobile
+  menu item and chip, and the no-JavaScript nav's current item, which had no
+  visual state before. The current chip's marker is `background`. The current
+  `.nav-cta` drops its shadow and keeps its inset ring, so it reads as pressed
+  in.
+- **Linked cards.** `.card-link` is inline-block with a 24px minimum height,
+  so a wrapped title gets one focus rectangle. Hover turns the title and the
+  gold shadow cyan, with no underline: it crossed the next line at 320px. The
+  contact cards on `/contact` do the same.
+- **Chip lists and the no-JavaScript nav use `gap-6`**, so a focused ring
+  never touches a neighbour's border or shadow. `tests/states.spec.ts`
+  measures it.
+- **Headings follow levels.** "In this post" and "Tags" are `<p class="label">`
+  elements naming their `<nav>` through `aria-labelledby`; the Career tagline
+  is a `<p class="standfirst">`; a post's h3 takes `--text-post-h3`,
+  clamp(19px, 2vw, 24px). `tests/headings.spec.ts` checks one h1, no skipped
+  level, no heading under 19px and a size step between levels in a post.
+- **Contact form sending state.** `src/scripts/contact-sending.ts` sets
+  `aria-busy` on the form and `aria-disabled` on the button, relabels it
+  "Sending", writes "Sending your message." into a `role="status"` paragraph
+  present from load, blocks a second submit and resets on `pageshow`. The
+  button holds its pressed position, gold with a solid border, and does not
+  move under reduced motion. `tests/contact-sending.spec.ts` covers it.
+- **Token enforcement.** `scripts/check-tokens.mjs` also fails on `rgb()` and
+  `hsl()` outside `@theme`, px, rem and em in a CSS declaration outside
+  `@theme`, spacing utilities off the 0, 1, 2, 3, 4, 6, 8, 12, 16, 24 scale,
+  and inline `style` attributes. Its `PENDING` list (PageHero `lg:py-20`, 404
+  `py-28`) fails when an entry stops matching. The half steps, the footer's
+  raw px and the mobile menu's raw px are on tokens; footer links are 40.8px
+  tall on a phone and 32.8px from 768px.
 
 Scope, as agreed before writing:
 
@@ -539,52 +578,69 @@ Names are the Tailwind `@theme` names they would become. For example,
 
 #### 3.1.1 Colour
 
-| Token            | Hex       | Role                                             | Replaces                                       |
-| ---------------- | --------- | ------------------------------------------------ | ---------------------------------------------- |
-| `ground`         | `#131313` | page, header, footer, dialogs, backdrops         | `background`, `deep`, `header-bg`, `gold-text` |
-| `plate`          | `#1A1A1A` | fill of cards, inputs, chips, secondary buttons  | `surface`                                      |
-| `line`           | `#5A87A8` | every boundary                                   | `border`                                       |
-| `joint`          | `#262F36` | cast-block joints and bolts only                 | `joint`, `bolt`                                |
-| `ink`            | `#E5E2E1` | all reading text, h2–h6                          | `text`, `muted`                                |
-| `ink-quiet`      | `#9BB4C6` | captions, meta, helper text, footer policy links | `subtle`                                       |
-| `gold`           | `#FFC000` | h1, primary fill, current-state fill, the tile   | `gold`                                         |
-| `pink`           | `#FF007A` | every hard shadow, error edge, destructive edge  | `pink`                                         |
-| `pink-text`      | `#FF79B6` | error text, destructive label, pink glyphs       | `pink-text`                                    |
-| `cyan`           | `#00DCFD` | focus ring, hover                                | `cyan`                                         |
-| `on-accent`      | `#131313` | text and glyphs on gold or cyan fills            | `background` used as text                      |
-| `gold-muted`     | `#3A3020` | secondary text on the gold surface               | kept                                           |
-| `gold-line`      | `#22394D` | borders on the gold surface                      | `gold-border`                                  |
-| `darkcyan`       | `#00363F` | links on the gold surface                        | kept; no longer text on cyan                   |
-| `gold-btn-label` | `#FFFFFF` | label on the dark button on gold only            | kept                                           |
+The tokens kept their live names (`background`, `surface`, `border`, `text`,
+`subtle`); the names this section first proposed (ground, plate, line, ink,
+ink-quiet) were never adopted. Each colour has one job:
 
-**Approved foregrounds on each ground.** Text needs 4.5, and large text and
-non-text need 3.0. Ratios below the threshold for a role are banned for that
-role.
+- `gold`: things that stand on the page (their 8px shadow), the page title,
+  card labels and the primary fill.
+- `pink`: things you press (their 4px shadow), the bunny marks, error edges.
+  Its text form is `pink-text`.
+- `cyan`: what you are touching: the focus ring, hover, and a hovered linked
+  card's shadow.
+- Where you are is not a colour: a flat `text`-colour block with a
+  `background` label, like a badge.
 
-| Foreground                           | on `ground` | on `plate` | on `joint` | on `gold`            | on `cyan`   |
-| ------------------------------------ | ----------- | ---------- | ---------- | -------------------- | ----------- |
-| `ink`                                | **14.42**   | **13.51**  | **10.57**  | 1.27 banned          | 1.29 banned |
-| `ink-quiet`                          | **8.62**    | **8.07**   | **6.31**   | 1.31 banned          | 1.30 banned |
-| `line` (non-text)                    | **4.84**    | **4.53**   | **3.54**   | 2.34 banned          | 2.32 banned |
-| `gold`                               | **11.32**   | **10.60**  | **8.29**   | n/a                  | 1.01 banned |
-| `cyan` (ring, hover text)            | **11.20**   | **10.49**  | **8.21**   | 1.01 banned          | n/a         |
-| `pink` (non-text only)               | **4.90**    | **4.59**   | **3.59**   | 2.31 decoration only | 2.29 banned |
-| `pink-text`                          | **7.66**    | **7.18**   | **5.62**   | 1.48 banned          | 1.46 banned |
-| `on-accent`                          | n/a         | n/a        | n/a        | **11.32**            | **11.20**   |
-| `gold-muted`                         | n/a         | n/a        | n/a        | **7.88**             | n/a         |
-| `gold-line` (non-text)               | n/a         | n/a        | n/a        | **7.27**             | n/a         |
-| `darkcyan`                           | n/a         | n/a        | n/a        | **8.00**             | n/a         |
-| `ground` on `ink` (badge)            | **14.42**   |            |            |                      |             |
-| `gold-btn-label` on `on-accent` fill | **18.58**   |            |            |                      |             |
+Every approved pairing, measured from the live tokens. Text needs 4.5
+(SC 1.4.3); large text and non-text need 3.0 (SC 1.4.11). "Kept apart" rows
+are colours that must never touch, and why.
 
-Pairs that matter because they touch, and are not text:
+<!-- contrast-table:start -->
 
-- `cyan` ring against a `pink` shadow: **2.29**. This is why the ring is
-  offset past every shadow (3.1.5).
-- `pink` against `line`: **1.01**. This is why error is a shape change, not a
-  colour change.
-- `ink` against `ink-quiet`: **1.67**. This is why the two text colours cannot
-  carry a state difference by themselves.
+<!-- Generated by scripts/contrast-table.mjs --write from src/styles/global.css. tests/contrast-table.spec.ts fails if it drifts. -->
+
+| Foreground               | Background           | Job        | Used for                                   | Needs | Ratio | Result     |
+| ------------------------ | -------------------- | ---------- | ------------------------------------------ | ----- | ----- | ---------- |
+| `text` #E5E2E1           | `background` #131313 | text       | Reading text, headings                     | 4.5   | 14.42 | pass       |
+| `text` #E5E2E1           | `surface` #1A1A1A    | text       | Text inside cards and inputs               | 4.5   | 13.51 | pass       |
+| `text` #E5E2E1           | `joint` #262F36      | text       | Hero text crossing a cast-block joint      | 4.5   | 10.57 | pass       |
+| `subtle` #9BB4C6         | `background` #131313 | text       | Captions, meta, helper text                | 4.5   | 8.62  | pass       |
+| `subtle` #9BB4C6         | `surface` #1A1A1A    | text       | Helper and required text in cards          | 4.5   | 8.07  | pass       |
+| `subtle` #9BB4C6         | `joint` #262F36      | text       | Meta crossing a joint                      | 4.5   | 6.31  | pass       |
+| `gold` #FFC000           | `background` #131313 | text       | Page title, card labels                    | 4.5   | 11.32 | pass       |
+| `gold` #FFC000           | `surface` #1A1A1A    | text       | Card labels                                | 4.5   | 10.60 | pass       |
+| `gold` #FFC000           | `joint` #262F36      | text       | Page title crossing a joint                | 4.5   | 8.29  | pass       |
+| `pink-text` #FF79B6      | `background` #131313 | text       | Error text, pink glyphs                    | 4.5   | 7.66  | pass       |
+| `pink-text` #FF79B6      | `surface` #1A1A1A    | text       | Error text in the form card                | 4.5   | 7.18  | pass       |
+| `pink-text` #FF79B6      | `joint` #262F36      | text       | Pink glyphs crossing a joint               | 4.5   | 5.62  | pass       |
+| `cyan` #00DCFD           | `background` #131313 | text       | Hover text; the focus ring (needs 3)       | 4.5   | 11.20 | pass       |
+| `cyan` #00DCFD           | `surface` #1A1A1A    | text       | Hover text and focus ring in cards         | 4.5   | 10.49 | pass       |
+| `cyan` #00DCFD           | `joint` #262F36      | text       | Focus ring crossing a joint                | 4.5   | 8.21  | pass       |
+| `border` #5A87A8         | `background` #131313 | non-text   | Every boundary                             | 3.0   | 4.84  | pass       |
+| `border` #5A87A8         | `surface` #1A1A1A    | non-text   | Input and chip edges on a card             | 3.0   | 4.53  | pass       |
+| `border` #5A87A8         | `joint` #262F36      | non-text   | Chip edges crossing a joint                | 3.0   | 3.54  | pass       |
+| `pink` #FF007A           | `background` #131313 | non-text   | Error edge; action shadow                  | 3.0   | 4.90  | pass       |
+| `pink` #FF007A           | `surface` #1A1A1A    | non-text   | Error edge on the form card                | 3.0   | 4.59  | pass       |
+| `background` #131313     | `gold` #FFC000       | text       | Label on a gold fill                       | 4.5   | 11.32 | pass       |
+| `background` #131313     | `cyan` #00DCFD       | text       | Label on a hovered button                  | 4.5   | 11.20 | pass       |
+| `background` #131313     | `text` #E5E2E1       | text       | Badge; the current page block              | 4.5   | 14.42 | pass       |
+| `background` #131313     | `pink` #FF007A       | text       | Glyph on the pink category tile            | 4.5   | 4.90  | pass       |
+| `gold-text` #131313      | `gold` #FFC000       | text       | Text on the gold surface                   | 4.5   | 11.32 | pass       |
+| `gold-muted` #3A3020     | `gold` #FFC000       | text       | Secondary text on gold                     | 4.5   | 7.88  | pass       |
+| `darkcyan` #00363F       | `gold` #FFC000       | text       | Links on gold                              | 4.5   | 8.00  | pass       |
+| `gold-border` #22394D    | `gold` #FFC000       | non-text   | Boundaries on gold                         | 3.0   | 7.27  | pass       |
+| `gold-btn-label` #FFFFFF | `gold-text` #131313  | text       | Label on the dark button on gold           | 4.5   | 18.58 | pass       |
+| `gold` #FFC000           | `background` #131313 | decoration | Object shadow                              | n/a   | 11.32 | decoration |
+| `cyan` #00DCFD           | `background` #131313 | decoration | Hovered card shadow                        | n/a   | 11.20 | decoration |
+| `joint` #262F36          | `background` #131313 | decoration | Cast-block joints and bolts                | n/a   | 1.36  | decoration |
+| `pink` #FF007A           | `gold` #FFC000       | decoration | Button shadow on the gold surface          | n/a   | 2.31  | decoration |
+| `cyan` #00DCFD           | `pink` #FF007A       | apart      | A ring never touches a pink shadow         | n/a   | 2.29  | kept apart |
+| `cyan` #00DCFD           | `gold` #FFC000       | apart      | A ring never touches a gold shadow or fill | n/a   | 1.01  | kept apart |
+| `cyan` #00DCFD           | `border` #5A87A8     | apart      | A ring never touches a neighbour edge      | n/a   | 2.32  | kept apart |
+| `pink` #FF007A           | `border` #5A87A8     | apart      | An error is a shape change, not a recolour | n/a   | 1.01  | kept apart |
+| `text` #E5E2E1           | `subtle` #9BB4C6     | apart      | The two text colours never carry a state   | n/a   | 1.67  | kept apart |
+
+<!-- contrast-table:end -->
 
 **Blog categories.** This reverses the approved per-category colour. Today a
 category is gold, cyan or pink (`lib/blog.ts:152–166`). Cyan text would now
@@ -640,7 +696,8 @@ the design-system skill derives them. Two changes widen glyphs, so both need
 #### 3.1.3 Spacing
 
 Base unit 4px. Allowed Tailwind steps: **1, 2, 3, 4, 6, 8, 12, 16, 24** (4,
-8, 12, 16, 24, 32, 48, 64, 96px). Banned:
+8, 12, 16, 24, 32, 48, 64, 96px), and 0. `scripts/check-tokens.mjs` fails on
+any other step in a margin, padding, gap or inset utility. Banned:
 
 - half steps (0.5, 2.5, 3.5)
 - odd steps (5, 7)
@@ -658,9 +715,10 @@ Layout tokens, fluid between 390px and 1200px:
 | `--spacing-target`  | 24px                     | minimum target                         | kept                             |
 | `--spacing-header`  | 96px                     | header height                          | kept                             |
 
-Sizes, not spacing: `--size-control` 48px (icon buttons, menu trigger,
-stickers), `--size-tuft` 220px or 266px (footer illustration). These replace
-the raw px in global.css:1621–1841.
+Sizes, not spacing, shipped as: `--size-sticker` 48px and `--size-sticker-lg`
+56px from `lg` (footer profile tiles), `--size-sticker-icon` 22px,
+`--border-width-sticker` 4px, and `--size-tuft` 220px or `--size-tuft-md`
+266px from `md` (footer illustration). They replace the footer's raw px.
 
 #### 3.1.4 Borders, radius, shadow
 
@@ -670,10 +728,14 @@ the raw px in global.css:1621–1841.
 | `--border-thick` | 8px                           | cards, dialogs, alerts, the header's bottom edge, `hr`, blockquote rule, error summary |
 | `--radius-tile`  | 14px                          | the logo tile and its two copies (404, about); nothing else                            |
 | `--radius-round` | 9999px                        | roundel, bolts, radio buttons                                                          |
-| `--shadow-sm`    | `4px 4px 0 var(--color-pink)` | buttons, current nav item, current tag                                                 |
+| `--shadow-sm`    | `4px 4px 0 var(--color-pink)` | buttons, link chips, the call to action                                                |
 | `--shadow-lg`    | `8px 8px 0 var(--color-pink)` | cards, dialogs, a photo on the hero wall, the roundel, the tile                        |
 | `--shadow-none`  | `none`                        | pressed and disabled controls                                                          |
 | `--tilt`         | 3deg                          | marks only: tile, roundel, stickers (± by position)                                    |
+
+Shipped as `shadow-hard-*` utilities named for their colour, with gold on
+things and `shadow-hard-cyan-8` on a hovered linked card; ARCHITECTURE.md has
+the table. A current item casts no shadow.
 
 #### 3.1.5 Focus
 
@@ -695,6 +757,11 @@ Defined once, in the base layer, and reused everywhere:
 - `--lift` is set wherever a hard shadow is set: 4px beside `shadow-sm` and
   8px beside `shadow-lg`, and 8px on the home link for the tile. The ring then
   always lands on ground, past the shadow's reach, and never touches pink.
+- A current item casts no shadow, so its `--lift` is 0 and its ring sits at
+  the 4px gap.
+- The ring never touches a neighbour either. Chip lists and the no-JavaScript
+  nav use `gap-6` (24px), past a chip's 12px ring reach plus its neighbour's
+  4px shadow; `tests/states.spec.ts` measures it.
 - Ratios: cyan against `ground` **11.20**, against `plate` **10.49**, against
   `joint` **8.21**.
 - The ring change against the unfocused state (SC 2.4.13, AAA, met anyway):
@@ -734,7 +801,8 @@ Markup, unchanged:
 - `<header>` containing the home link, then `<nav aria-label="Primary"><ul>`,
   then the CTA outside the list.
 - The current item carries `aria-current="page"`.
-- The noscript `<nav>` stays as it is.
+- The noscript `<nav>` keeps its layout, with `gap-6` between links. Its
+  current item takes the same flat block as the header's.
 
 Header: `ground` fill, opaque, `--border-thick` bottom edge in `line` (4.84),
 96px tall, sticky. `html { scroll-padding-top: calc(96px + 1rem) }` stays.
@@ -743,13 +811,14 @@ Header: `ground` fill, opaque, `--border-thick` bottom edge in `line` (4.84),
 | ------------- | -------------------------------------------------------------------- |
 | default       | `ink` text (14.42), transparent border                               |
 | hover         | `cyan` text (11.20); geometry unchanged                              |
-| focus-visible | ring; offset 4px, or 8px when current                                |
+| focus-visible | ring; offset 4px                                                     |
 | active        | as hover                                                             |
-| current       | `line` border (4.84), `shadow-sm`, `--lift: 4px`, `ink` text         |
+| current       | `line` border (4.84), `ink` fill, `ground` text (14.42), no shadow   |
 
 CTA ("Get in touch"): `.btn-primary` at the small size, 12/16px padding, about
-49px tall. **No radius.** Current page: `inset 0 0 0 4px var(--color-on-accent)`
-on the gold fill (11.32), plus `aria-current="page"`.
+49px tall. **No radius.** Current page: no shadow and
+`inset 0 0 0 4px var(--color-on-accent)` on the gold fill (11.32), so it reads
+as pressed in, plus `aria-current="page"`.
 
 Mobile menu: the trigger and dialog as today (`MobileMenu.vue`).
 
@@ -781,8 +850,11 @@ content</a>`, target `<main id="main" tabindex="-1">`. Exists at
 - One `h1` per page, no skipped levels.
 - **The level decides the size.** A heading that needs to look smaller is the
   wrong level, or it is not a heading. Concretely:
-  - "In this post" and "Tags" (`[slug].astro:92,116`) stay h2, at `text-h4`,
-    because it is the nearest step that still reads as a heading.
+  - "In this post" and "Tags" in `[slug].astro` are not headings: each is a
+    `<p class="label">` that names its `<nav>` through `aria-labelledby`.
+  - The Career tagline is a `<p class="standfirst">`.
+  - A post's h3 takes `--text-post-h3`, clamp(19px, 2vw, 24px), a step under
+    the post h2. `tests/headings.spec.ts` holds the outline to the sizes.
   - The 404 and tag-page h1 go to `text-h1`.
   - Credits h2s go to `text-h2`, or become h3 under one h2.
 - `overflow-wrap: break-word`. Soft hyphen above twelve characters.
@@ -832,14 +904,14 @@ All buttons share:
 - `<button type="button|submit">` for actions and `<a href>` for navigation.
   Never a `div`.
 
-| State            | Primary                                                                                                                                              | Secondary                                                            | Tertiary                                            | Destructive (not in codebase)                                             | Icon-only                                                             |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| default          | `gold` fill, `on-accent` label (11.32), `line` border, `shadow-sm`                                                                                   | `plate` fill, `ink` label (13.51), `line` border (4.53), `shadow-sm` | no box, `ink` label underlined 2px, 24px min height | `plate` fill, `pink-text` label (7.18), `pink` border (4.59), `shadow-sm` | 48 × 48, `plate` fill, `line` border, `gold` glyph (10.60), no shadow |
-| hover            | `cyan` fill, `on-accent` label (11.20)                                                                                                               | `cyan` fill, `on-accent` label (11.20)                               | `cyan` label, underline 4px                         | `pink` fill, `on-accent` label (4.90)                                     | glyph `cyan` (10.49)                                                  |
-| focus-visible    | ring, offset 8px                                                                                                                                     | ring, offset 8px                                                     | ring, offset 4px                                    | ring, offset 8px                                                          | ring, offset 4px                                                      |
-| active           | `translate: 4px 4px`, `shadow-none`                                                                                                                  | same                                                                 | underline 4px                                       | same as primary                                                           | `on-accent` glyph on `cyan` fill                                      |
-| disabled         | `aria-disabled="true"`, `ground` fill, **dashed** 4px `line` border, `ink-quiet` label (8.62), `shadow-none`, `cursor: not-allowed`, stays focusable | same                                                                 | `ink-quiet`, no underline                           | same                                                                      | same                                                                  |
-| pending (submit) | label changes to "Sending", `aria-disabled="true"`, same look as disabled                                                                            | n/a                                                                  | n/a                                                 | n/a                                                                       | n/a                                                                   |
+| State            | Primary                                                                                                                                                                                                      | Secondary                                                            | Tertiary                                            | Destructive (not in codebase)                                             | Icon-only                                                             |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| default          | `gold` fill, `on-accent` label (11.32), `line` border, `shadow-sm`                                                                                                                                           | `plate` fill, `ink` label (13.51), `line` border (4.53), `shadow-sm` | no box, `ink` label underlined 2px, 24px min height | `plate` fill, `pink-text` label (7.18), `pink` border (4.59), `shadow-sm` | 48 × 48, `plate` fill, `line` border, `gold` glyph (10.60), no shadow |
+| hover            | `cyan` fill, `on-accent` label (11.20)                                                                                                                                                                       | `cyan` fill, `on-accent` label (11.20)                               | `cyan` label, underline 4px                         | `pink` fill, `on-accent` label (4.90)                                     | glyph `cyan` (10.49)                                                  |
+| focus-visible    | ring, offset 8px                                                                                                                                                                                             | ring, offset 8px                                                     | ring, offset 4px                                    | ring, offset 8px                                                          | ring, offset 4px                                                      |
+| active           | `translate: 4px 4px`, `shadow-none`                                                                                                                                                                          | same                                                                 | underline 4px                                       | same as primary                                                           | `on-accent` glyph on `cyan` fill                                      |
+| disabled         | `aria-disabled="true"`, `ground` fill, **dashed** 4px `line` border, `ink-quiet` label (8.62), `shadow-none`, `cursor: not-allowed`, stays focusable                                                         | same                                                                 | `ink-quiet`, no underline                           | same                                                                      | same                                                                  |
+| pending (submit) | label changes to "Sending", `aria-disabled="true"`, `aria-busy="true"` on the form; held pressed, `gold` fill, `on-accent` label (11.32), **solid** border, `cursor: progress`, no move under reduced motion | n/a                                                                  | n/a                                                 | n/a                                                                       | n/a                                                                   |
 
 - The destructive label names the action ("Delete draft"), so the pink is
   never the only cue.
@@ -918,16 +990,16 @@ accessibility tree.
 
 #### Cards and containers
 
-| Part                                     | Spec                                                                                                                                                                                                                                     |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Card                                     | `<article>` when it is a self-contained item (post, role), otherwise `<div>`; `plate` fill, `--border-thick` `line` (4.53 on plate edge, 4.84 against ground), `--spacing-card` padding, `shadow-lg`, `--lift: 8px`                      |
-| Title                                    | heading at the right level, `text-h3`, `ink`                                                                                                                                                                                             |
-| Label above title                        | `text-label`, `gold` (10.60 on plate)                                                                                                                                                                                                    |
-| Meta                                     | `text-small`, `ink-quiet` (8.07)                                                                                                                                                                                                         |
-| Linked card                              | stretched `.card-link::after` over the card; hover: title `cyan` + 4px underline; focus: **ring on the whole card** via `.card:has(.card-link:focus-visible)`, offset 12px, with the link's own outline suppressed only inside that rule |
-| Emphasis card                            | one per section at most: `.card.surface-gold`, which uses the gold set (`on-accent` 11.32, `gold-muted` 7.88, `darkcyan` links 8.00, `gold-line` edges 7.27); the pink shadow stays as decoration (2.31, never the delimiter)            |
-| Panel (words and pictures as one object) | a card, as now (`Section panel`)                                                                                                                                                                                                         |
-| Placeholder box                          | `--border-thick` **dashed** `line`, no shadow; dashed means "absent or unavailable" everywhere                                                                                                                                           |
+| Part                                     | Spec                                                                                                                                                                                                                                                                                     |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Card                                     | `<article>` when it is a self-contained item (post, role), otherwise `<div>`; `plate` fill, `--border-thick` `line` (4.53 on plate edge, 4.84 against ground), `--spacing-card` padding, `shadow-lg`, `--lift: 8px`                                                                      |
+| Title                                    | heading at the right level, `text-h3`, `ink`                                                                                                                                                                                                                                             |
+| Label above title                        | `text-label`, `gold` (10.60 on plate)                                                                                                                                                                                                                                                    |
+| Meta                                     | `text-small`, `ink-quiet` (8.07)                                                                                                                                                                                                                                                         |
+| Linked card                              | stretched `.card-link::after` over the card; hover: title `cyan` and the gold shadow `cyan` (`shadow-hard-cyan-8`), no underline; focus: **ring on the whole card** via `.card:has(.card-link:focus-visible)`, offset 12px, with the link's own outline suppressed only inside that rule |
+| Emphasis card                            | one per section at most: `.card.surface-gold`, which uses the gold set (`on-accent` 11.32, `gold-muted` 7.88, `darkcyan` links 8.00, `gold-line` edges 7.27); the pink shadow stays as decoration (2.31, never the delimiter)                                                            |
+| Panel (words and pictures as one object) | a card, as now (`Section panel`)                                                                                                                                                                                                                                                         |
+| Placeholder box                          | `--border-thick` **dashed** `line`, no shadow; dashed means "absent or unavailable" everywhere                                                                                                                                                                                           |
 
 Every bordered box in 1.2 that is not one of these becomes one:
 
@@ -1028,11 +1100,11 @@ aria-controls>` that shows a panel with `popover`, containing text only.
 - **Tag** (link chip, `.chip`, e.g. `BlogListing.astro:115`):
   - `plate` fill, `--border-thin` `line`, `text-label` `ink`, 8/16px padding,
     24px min height (renders about 41px).
-  - Hover: `cyan` text. Focus: ring.
-  - Current: `gold` fill, `on-accent` (11.32), `shadow-sm`,
-    `aria-current="page"`, `--lift: 4px`.
-  - Drop the 8px square marker inside the current chip
-    (`BlogListing.astro:118`): the fill and `aria-current` already say it.
+  - Hover: `cyan` text, except on the current chip. Focus: ring.
+  - Current: `ink` fill, `ground` text (14.42), no shadow,
+    `aria-current="page"`, `--lift: 0`.
+  - The 8px square marker inside the current chip stays, in `ground` on the
+    fill: `tests/blog.spec.ts` holds it as the non-colour cue.
 - **Badge** (a fact, not a link: "Current" at `career.astro:242`, skills):
   - `ink` fill, `ground` text (14.42), `text-label`, 4/8px padding, **no
     border, no shadow**.
@@ -1071,7 +1143,8 @@ aria-controls>` that shows a panel with `popover`, containing text only.
   40.8px target; `py-2` from `md` gives 32.8px. Hover `cyan`.
 - **Policy links:** same, in `ink-quiet` (8.62).
 - **Stickers:**
-  - 48 × 48px (`--size-control`) at every width, `--border-thin`.
+  - 48 × 48px (`--size-sticker`), 56 × 56px from `lg`
+    (`--size-sticker-lg`), `--border-width-sticker`.
   - Rotation ±3deg by position, and 0 on hover, **instantly**.
   - Fills: `gold` with an `on-accent` glyph (11.32), `plate` with a
     `pink-text` glyph (7.18), or `ink` with a `ground` glyph (14.42).
@@ -1086,8 +1159,9 @@ aria-controls>` that shows a panel with `popover`, containing text only.
 - **Loading:** none exist, and a static site should not grow any. Server
   round trips show the next page. Two cases need something:
   - **Contact submit:** the button label becomes "Sending" with
-    `aria-disabled="true"` until the response arrives. This needs a small
-    plain script, with no island.
+    `aria-disabled="true"` until the response arrives, and a `role="status"`
+    paragraph says "Sending your message.". A plain script,
+    `src/scripts/contact-sending.ts`, with no island.
   - **Photo viewer image:** the frame shows `ink-quiet` text "Loading photo"
     in a `role="status"` region until `load`. No spinner, and nothing
     rotates.

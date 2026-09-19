@@ -61,8 +61,8 @@ const SIZES = {
   panorama:
     '(min-width: 40rem) min(calc(100vw - 9rem), 74rem), calc(100vw - 6rem)',
   food: '(min-width: 64rem) min(calc(50vw - 7.5rem), 32.75rem), (min-width: 40rem) calc(100vw - 9rem), calc(100vw - 6rem)',
-  cat: '(min-width: 40rem) min(calc(33.34vw - 4.8rem), 22.85rem), calc(100vw - 7.25rem)',
-  half: '(min-width: 40rem) min(calc(50vw - 6.15rem), 35.35rem), calc(100vw - 7.25rem)',
+  cat: '(min-width: 40rem) min(calc(33.34vw - 4.65rem), 23rem), calc(100vw - 7rem)',
+  half: '(min-width: 40rem) min(calc(50vw - 6rem), 35.5rem), calc(100vw - 7rem)',
 } as const;
 
 /** The bunny mark in the Lepus Ridet tile, drawn `h-16` from `lg`. */
@@ -173,7 +173,7 @@ const CATS = [
     </p>
 
     <nav aria-label="On this page" class="mt-8">
-      <ul class="flex flex-wrap gap-3">
+      <ul class="flex flex-wrap gap-6">
         {SECTIONS.map((section) => (
           <li>
             <a href={`#${section.id}`} class="chip">
@@ -268,7 +268,7 @@ const CATS = [
     panel
   >
     {/* Johann and Hemu on a row of their own across the panel, then every other photo in one strip. */}
-    <div class="grid gap-3.5 sm:grid-cols-2">
+    <div class="grid gap-4 sm:grid-cols-2">
       <PhotoTile
         image={withJohann}
         alt="Sinduri and Johann at their wedding, sitting side by side in flower garlands, both smiling."
@@ -291,14 +291,14 @@ const CATS = [
       </PhotoTile>
     </div>
 
-    <div class="mb-3.5 mt-8 flex items-center justify-between gap-4">
+    <div class="mb-4 mt-8 flex items-center justify-between gap-4">
       <p class="label text-subtle">More photos</p>
       {/*
         Hidden until src/scripts/photo-viewer.ts wires them: without
         JavaScript they would scroll nothing, and the strip still scrolls on
         its own.
       */}
-      <div class="flex gap-2.5">
+      <div class="flex gap-3">
         <button
           type="button"
           class="strip-button"
@@ -406,7 +406,7 @@ const CATS = [
       <div class="card sm:col-span-2 lg:col-span-4">
         <dt class="card-title">Three cats</dt>
         <dd class="mt-6">
-          <ul class="grid gap-3.5 sm:grid-cols-3">
+          <ul class="grid gap-4 sm:grid-cols-3">
             {CATS.map((cat) => (
               <li class="min-w-0">
                 <PhotoTile
@@ -437,7 +437,7 @@ const CATS = [
       leaves an empty block under a shorter neighbour. Both photos belong to
       the "after", so neither is paired with "Before".
     */}
-    <div class="grid gap-3.5 sm:grid-cols-2">
+    <div class="grid gap-4 sm:grid-cols-2">
       <div class="bg-background p-card-tight">
         <p class="label text-gold">Before</p>
         <p class="mt-3 text-body text-text text-pretty">
@@ -461,7 +461,7 @@ const CATS = [
       </div>
     </div>
 
-    <div class="mt-3.5 grid gap-3.5 sm:grid-cols-2">
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
       <PhotoTile
         image={lectureHall}
         alt="Sinduri standing and clapping in a lecture hall full of Drupal event attendees."

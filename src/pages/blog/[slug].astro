@@ -89,9 +89,14 @@ const article = placeholder
 
       {contents.length > 0 ? (
         <nav aria-labelledby="post-contents" class="post-contents">
-          <h2 id="post-contents" class="label px-card-tight pt-5 text-subtle">
+          {/*
+            A label, not a heading: it names the navigation landmark, which
+            is how a screen reader user reaches it. As an h2 it sat in the
+            outline ahead of the article's first real section.
+          */}
+          <p id="post-contents" class="label px-card-tight pt-4 text-subtle">
             In this post
-          </h2>
+          </p>
           <ol class="mt-3">
             {contents.map((heading) => (
               <li class="border-t-4 border-border">
@@ -112,9 +117,11 @@ const article = placeholder
       </div>
 
       {tags.length > 0 ? (
-        <div class="border-t-4 border-border pt-10">
-          <h2 class="label text-subtle">Tags</h2>
-          <ul class="mt-6 flex flex-wrap gap-3">
+        <nav aria-labelledby="post-tags" class="border-t-4 border-border pt-8">
+          <p id="post-tags" class="label text-subtle">
+            Tags
+          </p>
+          <ul class="mt-6 flex flex-wrap gap-6">
             {tags.map((tag) => (
               <li>
                 <a href={tagHref(tag)} class="chip">
@@ -123,7 +130,7 @@ const article = placeholder
               </li>
             ))}
           </ul>
-        </div>
+        </nav>
       ) : null}
     </div>
   </article>

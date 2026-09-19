@@ -77,7 +77,8 @@ const CONTROL_ID: Record<FieldError['field'], string> = {
   method="post"
   action={ACTION}
   novalidate
-  class:list={[errors.length > 0 && 'mt-10']}
+  data-contact-form
+  class:list={[errors.length > 0 && 'mt-8']}
 >
   <div class="field">
     <label class="field-label" for="contact-name">
@@ -179,7 +180,17 @@ const CONTROL_ID: Record<FieldError['field'], string> = {
     />
   </div>
 
-  <button class="btn-primary mt-10" type="submit">
+  <button class="btn-primary mt-8" type="submit">
     Send message
   </button>
+
+  {/*
+    In the page from the start, empty, so a screen reader has registered the
+    region before src/scripts/contact-sending.ts writes into it.
+  */}
+  <p class="mt-3 text-body text-text" role="status" data-contact-status></p>
 </form>
+
+<script>
+  import '../scripts/contact-sending';
+</script>

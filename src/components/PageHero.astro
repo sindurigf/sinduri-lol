@@ -99,7 +99,7 @@ const IMAGE_SIZES =
           class="block h-auto w-full border-4 border-border shadow-hard-gold-8"
         />
         {Astro.slots.has('credit') && (
-          <figcaption class="mt-5 text-body text-text">
+          <figcaption class="mt-4 text-body text-text">
             <slot name="credit" />
           </figcaption>
         )}
@@ -112,7 +112,7 @@ const IMAGE_SIZES =
     wall, which is the section's box.
   */}
   {roundel && (
-    <div class="cast-blocks-crossing mt-10 flex justify-end lg:mt-0">
+    <div class="cast-blocks-crossing mt-8 flex justify-end lg:mt-0">
       <Roundel eager />
     </div>
   )}

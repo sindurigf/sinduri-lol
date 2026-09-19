@@ -49,8 +49,19 @@ blur, uppercase typography, rotated accents.
 
 **No arbitrary values in components.** Every colour, size, shadow and radius
 comes from a token. If you need something that does not exist, add a token.
-`scripts/check-tokens.mjs` fails on a Tailwind arbitrary value or a raw hex
-anywhere in `src/` outside `global.css`.
+`scripts/check-tokens.mjs` scans `src/`, ignoring comments, and fails on:
+
+- a Tailwind arbitrary value, anywhere
+- a raw hex outside `global.css`, and `rgb()` or `hsl()` outside its `@theme`
+  block
+- px, rem or em in a CSS declaration outside `@theme`; a custom property
+  definition, a media condition and zero are allowed
+- a margin, padding, gap or inset utility off the 0, 1, 2, 3, 4, 6, 8, 12, 16,
+  24 spacing scale
+- an inline `style` attribute in a component
+
+Its `PENDING` list names the exceptions waiting on a decision (PageHero's
+`lg:py-20`, the 404's `py-28`), and fails when an entry no longer matches.
 
 ### Colours
 
@@ -223,10 +234,13 @@ middle term, so all three are identical wherever the floor bites, 305px and
 
 **A blog post is set on its own, smaller scale**, because it reads as an
 article rather than a page: `--text-post-title`, up to 60px in the case the
-title is written in, and `--text-post-h2`, up to 36px, for its section
-headings, a step under the title so the two cannot read as one size. At the
+title is written in, `--text-post-h2`, up to 36px, for its section
+headings, a step under the title so the two cannot read as one size, and
+`--text-post-h3`, `clamp(19px, 2vw, 24px)`, a step under that. At the
 page scale a post opened with a 104px title and 64px headings and read as a
 poster. `--text-contents` sets the contents list beside it.
+`tests/headings.spec.ts` checks every route for one h1, no skipped level and
+no heading under 19px, and a size step between levels in a post.
 
 `Sticker` is not a heading. It is the size of the two rotated brand words in
 the homepage hero, and it is its own token so H3 could come down for lead
@@ -361,11 +375,12 @@ thing's job:
 | `shadow-hard-pink-4`  | `4px 4px 0` pink   | Actions: buttons, link chips, footer stickers, `.nav-cta`                            |
 | `shadow-hard-pink-8`  | `8px 8px 0` pink   | The bunny marks: the logo tile, the roundel, the homepage stickers                   |
 | `shadow-hard-pink-12` | `12px 12px 0` pink | The logo tile's larger copies on 404 and About only                                  |
-| `shadow-hard-cyan-4`  | `4px 4px 0` cyan   | Where you are: the current nav item, chip and `.nav-cta`                             |
+| `shadow-hard-cyan-8`  | `8px 8px 0` cyan   | What you are touching: a hovered linked card or contact card, in place of gold       |
 
-State is never the shadow colour alone, since pink against cyan is 2.29: the
-current nav item gains a border box, the current chip a marker, and the
-current `.nav-cta` an inset ring.
+Where you are casts no shadow. The current nav item, mobile menu item and chip
+are a flat `bg-text` block with a background-coloured label (14.42), like a
+`.badge`, and the current chip keeps its marker. The current `.nav-cta` drops
+its shadow and keeps an inset ring, pressed in.
 
 Anything focusable that casts one also sets `lift-control` (4px) or
 `lift-object` (8px), which adds the shadow's offset to the focus ring's, so the
@@ -385,6 +400,11 @@ Defined in `@layer components` in `src/styles/global.css`:
   shadow and drops the shadow, without the move under reduced motion; and
   `aria-disabled="true"` draws a dashed border on `bg-background` with a
   `subtle` label (8.62) and no shadow
+- The contact form's submit button while sending
+  (`src/scripts/contact-sending.ts`) is `aria-disabled` inside a form with
+  `aria-busy="true"`, but not drawn as unavailable: it holds the pressed
+  position, gold with its label (11.32) and a solid border, and does not move
+  under reduced motion
 - `.actions`: a row of buttons. Its 32px vertical gap clears the 4px shadow
   and the focus ring beyond it when the row wraps
 - `.card`: surface background, `border-8`, the 8px gold shadow built in, 24px
@@ -392,13 +412,19 @@ Defined in `@layer components` in `src/styles/global.css`:
   40px a side the content box is 177px at a 305px viewport, where a real post
   title runs to six lines; 24px leaves 209px
 - `.card-title`: every card's heading, at `text-h3` / 900, whatever its level
+- `.card-link`: a linked card's title link, stretched over the card.
+  Inline-block with a 24px minimum height, so a wrapped title's focus ring is
+  one rectangle. Hovering the card turns the title and the shadow cyan, with no
+  underline, which crossed the next line of a wrapped title at 320px
 - `.lead` / `.standfirst`: the paragraph under a section heading and the line
   under PageHero's page title, both text colour at 400
 - `.bullet-list`: a bulleted list with gold markers
 - `.chip`: tags, jump links, filters and the pager, always a link. Square,
   `border-4`, label type, a 24px target of its own. The current filter or page
-  adds `aria-current`, the 4px cyan shadow in place of the pink one and an
-  `aria-hidden` square marker in the text colour
+  adds `aria-current`, a flat `bg-text` fill with a background-coloured label
+  (14.42) and no shadow, and an `aria-hidden` square marker in the background
+  colour. A chip list is `gap-6`, so a focused chip's ring clears a
+  neighbour's border and shadow
 - `.badge`: a fact that is not a link, such as the current role, a skill or
   "Episode 404" on the 404 page. Flat `bg-text` with a background-coloured
   label (14.42), label type, no border and no shadow, so it does not read as
@@ -409,9 +435,9 @@ Defined in `@layer components` in `src/styles/global.css`:
   the box to each call site. Its current-page rule lives in
   `@layer components` with it rather than as utilities in the markup, because
   `box-shadow` is one property and the same layer lets source order settle it.
-  `[aria-current='page']` swaps the pink shadow for cyan and draws
+  `[aria-current='page']` drops the shadow and draws
   `--inset-shadow-cta-current`, an inset 4px ring in the background colour,
-  11.32 on the fill, as the shape half of the state
+  11.32 on the fill, so it reads as pressed in
 - `.label`: 14px / 900 uppercase, 0.1em tracking
 - `.link`: the running-text underline for a standalone link that carries a
   class for layout and is not a box
@@ -497,9 +523,10 @@ machine can see.
   panel and hero photo casts an 8px gold shadow, and gold is also the page
   title, card labels and the primary fill. Pink is things you press: buttons,
   tags and the call to action cast a 4px pink shadow; the bunny marks (the
-  logo tile, its copies, the roundel) keep the tile's pink too. Cyan is where
-  you are: focus, hover, and a 4px cyan shadow under the unchanged blue border
-  of the current nav item, tag and call to action. On the blog, colour means
+  logo tile, its copies, the roundel) keep the tile's pink too. Cyan is what
+  you are touching: focus, hover, and a hovered linked card's shadow. Where
+  you are is not a colour: the current nav item and chip are a flat
+  text-colour block, and the current call to action is pressed in. On the blog, colour means
   category on the label and the glyph tile only.
 - **One card.** `.card`, which carries its 8px gold shadow itself, and
   `.card-title` for its heading. A state such as "current" is a `.badge` with

@@ -165,8 +165,9 @@ nothing else, so a ring never looks like a gold control or a gold link. Its
 offset is 4px plus the element's own hard shadow: a cyan ring crossing the
 pink shadow measures 2.29:1, under SC 1.4.11, so everything focusable that
 casts a shadow sets `lift-control` (4px) or `lift-object` (8px) and the ring
-lands on the ground past it. Native media controls take the same 4px cyan
-ring at a 4px offset.
+lands on the ground past it. Chip lists and the no-JavaScript nav are spaced
+24px apart so a ring never reaches a neighbour's border or shadow either.
+Native media controls take the same 4px cyan ring at a 4px offset.
 
 ### Text that crosses the cast-block joints
 
@@ -337,6 +338,8 @@ it, and a violation fails the build.
 | Console errors       | Playwright, under the real CSP      | Every route: no error, exception, violation, 4xx    |
 | No-JavaScript nav    | Playwright, scripting off           | Fallback visible, below the header, not doubled     |
 | Current page         | Playwright                          | `aria-current` in all three navs, and the ring      |
+| Heading outline      | Playwright, every route             | One h1, no skipped level, no heading under 19px     |
+| Contact sending      | Playwright, POST held at 204        | `aria-busy`, status text, no second submit          |
 | Hero fit             | Playwright, hero viewports          | Fits the screen; control clears name and stickers   |
 | Accessibility page   | Playwright over the built `dist/`   | Linked from every page, status matches section 1    |
 | Contact form         | Playwright, POST to the endpoint    | Validation, honeypot, rate limit, 422 keeping text  |
@@ -441,6 +444,16 @@ Stated honestly. This list is not filtered for how it looks.
    `/contact/send/` is on demand and outside `tests/routes.ts`, so no
    route-level suite (axe, keyboard walk, reflow, target size) ever renders the
    error state, and no test checks that focus lands on the summary.
+
+   While the request is in flight, `src/scripts/contact-sending.ts` sets
+   `aria-busy="true"` on the form, `aria-disabled="true"` on the button (never
+   `disabled`, so it keeps focus and stays in the accessibility tree),
+   relabels it "Sending" and writes "Sending your message." into a
+   `role="status"` paragraph that is in the page, empty, from load. A second
+   submit is blocked, and a page restored from the back-forward cache is
+   reset. `tests/contact-sending.spec.ts` asserts each of those
+   except the reset. Nobody has heard the status announced with a screen
+   reader.
 
    What is not: whether the error messages actually help. SC 3.3.1 Error
    Identification and SC 3.3.3 Error Suggestion are satisfied by a message

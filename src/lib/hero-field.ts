@@ -466,13 +466,17 @@ const drawStem = (
  * near ones so it veils the distance rather than the whole scene. It stands in
  * for the horizon, which is never drawn.
  */
-const drawVeil = (ctx: CanvasRenderingContext2D, scene: Scene): void => {
+const drawVeil = (
+  ctx: CanvasRenderingContext2D,
+  palette: HeroPalette,
+  scene: Scene,
+): void => {
   const top = scene.horizon - 64 * scene.world;
   const depth = 260 * scene.world;
   const gradient = ctx.createLinearGradient(0, top, 0, top + depth);
-  gradient.addColorStop(0, 'rgba(90, 135, 168, 0)');
-  gradient.addColorStop(0.34, 'rgba(90, 135, 168, 0.085)');
-  gradient.addColorStop(1, 'rgba(90, 135, 168, 0)');
+  gradient.addColorStop(0, palette.veilEdge);
+  gradient.addColorStop(0.34, palette.veil);
+  gradient.addColorStop(1, palette.veilEdge);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, top, scene.boxWidth, depth);
 };
@@ -481,12 +485,16 @@ const drawVeil = (ctx: CanvasRenderingContext2D, scene: Scene): void => {
  * Weight under the near ground. On the back layer deliberately: on the front
  * it darkens the hare, the one thing in the scene that must not lose contrast.
  */
-const drawFloor = (ctx: CanvasRenderingContext2D, scene: Scene): void => {
+const drawFloor = (
+  ctx: CanvasRenderingContext2D,
+  palette: HeroPalette,
+  scene: Scene,
+): void => {
   const { boxWidth, boxHeight } = scene;
   const top = boxHeight - 230 * scene.world;
   const gradient = ctx.createLinearGradient(0, top, 0, boxHeight);
-  gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
-  gradient.addColorStop(1, 'rgba(0, 0, 0, 0.34)');
+  gradient.addColorStop(0, palette.floorEdge);
+  gradient.addColorStop(1, palette.floor);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, top, boxWidth, boxHeight - top);
 };
@@ -568,9 +576,9 @@ const drawBack = (
   seconds: number,
 ): void => {
   paintWhere(ctx, palette, state, seconds, (z) => z > 7);
-  drawVeil(ctx, state.scene);
+  drawVeil(ctx, palette, state.scene);
   paintWhere(ctx, palette, state, seconds, (z) => z <= 7 && z >= HARE_DEPTH);
-  drawFloor(ctx, state.scene);
+  drawFloor(ctx, palette, state.scene);
   ctx.globalAlpha = 1;
 };
 

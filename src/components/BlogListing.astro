@@ -34,8 +34,7 @@ import BlogCard from './BlogCard.astro';
  *   - a small square marker present on the active option and absent from the
  *     others, which is the shape difference. It is aria-hidden: it
  *     reinforces, it does not inform;
- *   - the cyan shadow, which on its own is insufficient: pink against cyan
- *     is 2.29.
+ *   - the text-colour fill, which on its own is insufficient.
  */
 
 /**
@@ -105,7 +104,7 @@ const emptyState =
   landmarks list of unlabelled "navigation" entries is a list of nothing.
 */}
 <nav aria-label="Filter posts by category">
-  <ul class="flex flex-wrap gap-3">
+  <ul class="flex flex-wrap gap-6">
     {filterOptions.map((option) => {
       const isActive = option.href === activeHref;
       return (
@@ -116,7 +115,7 @@ const emptyState =
             class="chip"
           >
             {isActive ? (
-              <span aria-hidden="true" class="block size-2 bg-text" />
+              <span aria-hidden="true" class="block size-2 bg-background" />
             ) : null}
             {option.label}
           </a>
@@ -168,7 +167,7 @@ const emptyState =
         two tab stops for one destination, and WAVE's "Redundant link" alert.
         See tests/wave-alerts.spec.ts.
       */}
-    <ul class="flex flex-wrap items-center gap-3">
+    <ul class="flex flex-wrap items-center gap-6">
       {pageNumbers.map((page) => {
         const isCurrent = page === currentPage;
         return (
@@ -188,7 +187,7 @@ const emptyState =
               class="chip"
             >
               {isCurrent ? (
-                <span aria-hidden="true" class="block size-2 bg-text" />
+                <span aria-hidden="true" class="block size-2 bg-background" />
               ) : null}
               <span class="sr-only">Page&nbsp;</span>
               {page}

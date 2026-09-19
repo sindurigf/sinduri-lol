@@ -65,6 +65,20 @@ export interface HeroPalette {
    * layer is exactly the point.
    */
   readonly background: string;
+  /*
+   * The horizon veil and the shade under the near ground, each with its
+   * fully transparent end. The ends keep their own hue rather than
+   * `transparent`, because a canvas gradient interpolates unpremultiplied
+   * and would grey the veil on its way to transparent black.
+   */
+  /** `--color-hero-veil`. */
+  readonly veil: string;
+  /** `--color-hero-veil-edge`. */
+  readonly veilEdge: string;
+  /** `--color-hero-floor`. */
+  readonly floor: string;
+  /** `--color-hero-floor-edge`. */
+  readonly floorEdge: string;
 }
 
 export interface HeroField {

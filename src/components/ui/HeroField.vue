@@ -114,6 +114,10 @@ const readPalette = (): HeroPalette | null => {
     subtle: read('--color-subtle'),
     bud: read('--color-bud'),
     background: read('--color-background'),
+    veil: read('--color-hero-veil'),
+    veilEdge: read('--color-hero-veil-edge'),
+    floor: read('--color-hero-floor'),
+    floorEdge: read('--color-hero-floor-edge'),
   };
   /*
    * If the tokens are not there the stylesheet has not arrived, and drawing in

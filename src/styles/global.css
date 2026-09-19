@@ -120,6 +120,16 @@
    */
   --color-bud: #d4c5ab;
 
+  /*
+   * The homepage canvas's atmosphere: a faint border-blue veil at the horizon
+   * and a shade under the near ground, each with its transparent end. Read by
+   * HeroField.vue; decoration that carries no text.
+   */
+  --color-hero-veil: rgba(90, 135, 168, 0.085);
+  --color-hero-veil-edge: rgba(90, 135, 168, 0);
+  --color-hero-floor: rgba(0, 0, 0, 0.34);
+  --color-hero-floor-edge: rgba(0, 0, 0, 0);
+
   /* Typography */
   /*
    * 'Lexend Variable' is the family name exposed by @fontsource-variable/lexend.
@@ -182,6 +192,9 @@
   --text-post-title--line-height: 1.06;
   --text-post-h2: clamp(22px, 3vw, 36px);
   --text-post-h2--line-height: 1.02;
+  /* A step under the post h2: 24 against 36, the page scale's 1.5 ratio. */
+  --text-post-h3: clamp(19px, 2vw, 24px);
+  --text-post-h3--line-height: 1.15;
   /* The contents list beside a post, a step under body text. */
   --text-contents: clamp(15px, 1vw, 16px);
   --text-contents--line-height: 1.35;
@@ -200,6 +213,9 @@
    */
   --text-hero-sticker: clamp(18px, min(2.1vw, 3.4svh), 30px);
   --text-hero-sticker--line-height: 1.02;
+  /* The mobile menu's links, one per row in a full-screen panel. */
+  --text-menu: clamp(34px, 8vw, 56px);
+  --text-menu--line-height: 1;
   --text-body: clamp(17px, 1.2vw, 19px);
   --text-body--line-height: 1.62;
   --text-label: 14px;
@@ -255,19 +271,20 @@
    *   pink  things you press, and the bunny marks: buttons, tags, the call to
    *         action (4px); the logo tile, its copies and the roundel (8px, and
    *         12px on the tile's larger copies)
-   *   cyan  where you are: the current nav item, tag and call to action (4px),
-   *         with focus and hover
+   *   cyan  what you are touching: the focus ring, hover, and a linked card's
+   *         shadow while the pointer is on it (8px)
    *
-   * State is never the shadow colour alone (pink against cyan is 2.29): the
-   * current nav item gains a border box, the current tag a marker, the current
-   * call to action an inset ring. Whatever casts a shadow and takes focus also
-   * sets `lift-control` or `lift-object`, so its ring clears the shadow.
+   * Where you are is not a colour: the current nav item, tag and chip are a
+   * flat text-colour block with no shadow (background on text, 14.42), like a
+   * badge; the current call to action is pressed in with an inset ring.
+   * Whatever casts a shadow and takes focus also sets `lift-control` or
+   * `lift-object`, so its ring clears the shadow.
    */
   --shadow-hard-gold-8: 8px 8px 0 var(--color-gold);
   --shadow-hard-pink-4: 4px 4px 0 var(--color-pink);
   --shadow-hard-pink-8: 8px 8px 0 var(--color-pink);
   --shadow-hard-pink-12: 12px 12px 0 var(--color-pink);
-  --shadow-hard-cyan-4: 4px 4px 0 var(--color-cyan);
+  --shadow-hard-cyan-8: 8px 8px 0 var(--color-cyan);
 
   /*
    * The inner half of .btn-gold-primary's two-tone focus ring: 18.58 against
@@ -277,12 +294,11 @@
   --inset-shadow-gold-btn-ring: inset 0 0 0 3px var(--color-gold-btn-label);
 
   /*
-   * The current-page ring on .nav-cta, the shape half of its state: the cyan
-   * shadow beside it is a colour change only (2.29 against the resting pink),
-   * so it cannot carry SC 1.4.1 alone. An inset ring touches two colours, so
-   * both are measured: 11.32 on the gold fill, 11.20 on cyan when hovered, and
-   * 4.84 against the border on its outer edge; each clears the 3.0 of
-   * SC 1.4.11.
+   * The current-page ring on .nav-cta, which drops its shadow and reads as
+   * pressed in: a shape change, so the state never rests on colour. An inset
+   * ring touches two colours, so both are measured: 11.32 on the gold fill,
+   * 11.20 on cyan when hovered, and 4.84 against the border on its outer
+   * edge; each clears the 3.0 of SC 1.4.11.
    */
   --inset-shadow-cta-current: inset 0 0 0 4px var(--color-background);
 
@@ -403,7 +419,7 @@
      * The failure only shows walking focus backwards: tabbing forward scrolls
      * up from the bottom edge and never nears the header.
      */
-    scroll-padding-top: calc(var(--spacing-header) + 1rem);
+    scroll-padding-top: calc(var(--spacing-header) + --spacing(4));
     background-color: var(--color-background);
     -webkit-text-size-adjust: 100%;
     /*
@@ -517,8 +533,8 @@
   figcaption a:not([class]),
   .link {
     text-decoration: underline;
-    text-underline-offset: 0.2em;
-    text-decoration-thickness: 2px;
+    text-underline-offset: var(--underline-offset);
+    text-decoration-thickness: var(--underline-thin);
   }
 
   .prose a:hover,
@@ -527,7 +543,7 @@
   dd a:not([class]):hover,
   figcaption a:not([class]):hover,
   .link:hover {
-    text-decoration-thickness: 4px;
+    text-decoration-thickness: var(--underline-thick);
   }
 
   /*
@@ -546,6 +562,19 @@
     --focus-gap: 4px;
     --lift-control: 4px;
     --lift-object: 8px;
+
+    /* Link underlines: in running text, and thickened on hover. */
+    --underline-offset: 0.2em;
+    --underline-thin: 2px;
+    --underline-thick: 4px;
+
+    /* The footer's profile tiles, their icons, and the tuft under them. */
+    --size-sticker: 48px;
+    --size-sticker-lg: 56px;
+    --size-sticker-icon: 22px;
+    --border-width-sticker: 4px;
+    --size-tuft: 220px;
+    --size-tuft-md: 266px;
   }
 
   :focus-visible {
@@ -631,6 +660,23 @@
   }
 
   /*
+   * Sending is working, not unavailable, so it is not drawn dashed: the
+   * button holds its pressed position, gold with its label (11.32), until the
+   * response replaces the page. No spinner; under reduced motion it stays in
+   * place and only loses its shadow.
+   */
+  form[aria-busy='true'] .btn-primary[aria-disabled='true'] {
+    @apply cursor-progress translate-x-1 translate-y-1 border-solid bg-gold
+      text-background;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    form[aria-busy='true'] .btn-primary[aria-disabled='true'] {
+      @apply translate-x-0 translate-y-0;
+    }
+  }
+
+  /*
    * A row of buttons. When the row wraps, the vertical gap keeps the next
    * button well clear of the 4px hard shadow and the focus ring beyond it;
    * the horizontal one is the ordinary inline gap.
@@ -680,8 +726,8 @@
    * current page. A shared class is what makes the state rules below reach
    * every rendering rather than whichever one someone edited.
    *
-   * On its own page it takes the cyan "you are here" shadow and an inset
-   * ring, which changes nothing about its box. The rules are here rather than
+   * On its own page it drops its shadow and draws an inset ring, pressed in,
+   * which changes nothing about its box. The rules are here rather than
    * utilities in the markup because `box-shadow` is one property, and being
    * in the same layer lets source order settle it. See
    * --inset-shadow-cta-current for what the ring measures.
@@ -693,7 +739,8 @@
 
   .nav-cta[aria-current='page'],
   .nav-cta[aria-current='page']:hover {
-    box-shadow: var(--inset-shadow-cta-current), var(--shadow-hard-cyan-4);
+    --lift: 0px;
+    box-shadow: var(--inset-shadow-cta-current);
   }
 
   /*
@@ -898,8 +945,11 @@
   @media (width >= 40rem) {
     .hero-motion-toggle {
       top: auto;
-      bottom: 1.5rem;
-      bottom: max(1.5rem, calc(100% + var(--spacing-header) - 100svh + 1.5rem));
+      bottom: --spacing(6);
+      bottom: max(
+        --spacing(6),
+        calc(100% + var(--spacing-header) - 100svh + --spacing(6))
+      );
     }
   }
 
@@ -1111,6 +1161,10 @@
     @apply text-post-h2;
   }
 
+  .post-layout .prose h3 {
+    @apply text-post-h3;
+  }
+
   /*
    * A card that goes somewhere is clickable anywhere on it, not only on its
    * title. The title stays the one real link, so a screen reader or keyboard
@@ -1133,12 +1187,27 @@
    * sit in a later layer and beat the hover below: linked cards never showed
    * a hover at all while the markup carried `text-text`.
    */
+  /*
+   * Inline-block, so a focus ring round a title that wraps is one rectangle
+   * rather than a box per line running past the card's edge. As a box it has
+   * to meet SC 2.5.8 itself: a one-line title at the 20px h3 floor is 22px.
+   */
   .card-link {
-    @apply text-text;
+    @apply inline-block min-h-target text-text;
+  }
+
+  /*
+   * The whole card is the target, so the whole card answers the pointer: the
+   * title turns cyan and the gold shadow turns cyan, the colour of what you
+   * are touching. No underline: on a title that wraps it crossed the next
+   * line's letters.
+   */
+  .card:has(.card-link):hover {
+    @apply shadow-hard-cyan-8;
   }
 
   .card:has(.card-link):hover .card-link {
-    @apply text-cyan underline decoration-4 underline-offset-4;
+    @apply text-cyan;
   }
 
   /*
@@ -1162,7 +1231,7 @@
    * stylesheet, and an inline style needs a hash in the CSP.
    */
   .photo-viewer {
-    @apply m-0 size-full max-h-none max-w-none border-0 bg-background p-5 text-text;
+    @apply m-0 size-full max-h-none max-w-none border-0 bg-background p-4 text-text;
   }
 
   .photo-viewer::backdrop {
@@ -1191,7 +1260,7 @@
    * that mode needs (tests/forced-colors.spec.ts).
    */
   .photo-strip {
-    @apply flex snap-x snap-mandatory items-start gap-3.5 overflow-x-auto
+    @apply flex snap-x snap-mandatory items-start gap-4 overflow-x-auto
       border-2 border-transparent pb-3;
 
     container-type: inline-size;
@@ -1212,7 +1281,7 @@
   .strip-photo {
     @apply block h-auto;
 
-    max-width: calc(100cqi - --spacing(5));
+    max-width: calc(100cqi - --spacing(4));
   }
 
   /* A photo strip's scroll arrows: a 44px square, past SC 2.5.8 on its own. */
@@ -1256,12 +1325,19 @@
     @apply lift-control shadow-hard-pink-4;
   }
 
-  a.chip:hover {
+  a.chip:not([aria-current]):hover {
     @apply text-cyan;
   }
 
+  /*
+   * Where you are is a flat text-colour block, like a badge: a fact, not a
+   * thing to press, so it drops the shadow. Background on text is 14.42. The
+   * marker turns background colour to stay visible on the new fill.
+   */
   a.chip[aria-current] {
-    @apply shadow-hard-cyan-4;
+    @apply bg-text text-background shadow-none;
+
+    --lift: 0px;
   }
 
   /* Text on text: background on #E5E2E1 is 14.42. */
@@ -1395,7 +1471,7 @@
    * is the photo credit: `subtle`, AAA on all three dark grounds.
    */
   .prose figure {
-    @apply mt-10;
+    @apply mt-8;
   }
 
   /*
@@ -1409,7 +1485,7 @@
   }
 
   .prose figcaption {
-    @apply mt-5 text-label text-subtle;
+    @apply mt-4 text-label text-subtle;
   }
 
   /*
@@ -1489,7 +1565,7 @@
   .surface-gold a {
     color: var(--color-darkcyan);
     text-decoration: underline;
-    text-underline-offset: 0.2em;
+    text-underline-offset: var(--underline-offset);
   }
 
   .surface-gold a:hover {
@@ -1580,7 +1656,7 @@
     @apply absolute left-4 top-4 z-60 border-4 border-border bg-gold px-6 py-4
       text-label font-black uppercase tracking-label text-background;
 
-    transform: translateY(calc(-100% - 1.5rem));
+    transform: translateY(calc(-100% - --spacing(6)));
   }
 
   .skip-link:focus,
@@ -1634,7 +1710,7 @@
   --------------------------------------------------------------------------- */
 
   .footer-inner {
-    padding-top: 48px;
+    padding-top: --spacing(12);
   }
 
   .footer-top {
@@ -1653,8 +1729,8 @@
   }
 
   /*
-   * One link per row on a phone, each a full-width target 42.8px tall: the
-   * 16.8px line box of a 14px label and 13px above and below it. There is no
+   * One link per row on a phone, each a full-width target 40.8px tall: the
+   * 16.8px line box of a 14px label and 12px above and below it. There is no
    * gap between the two lists, so nothing but colour marks where the pages end
    * and the policies begin.
    */
@@ -1664,17 +1740,17 @@
   }
 
   .footer-pages {
-    margin-top: 28px;
+    margin-top: --spacing(8);
   }
 
   .footer-pages a,
   .footer-policies a {
     display: block;
-    padding-block: 13px;
+    padding-block: --spacing(3);
   }
 
   .footer-social {
-    margin-top: 32px;
+    margin-top: --spacing(8);
   }
 
   /*
@@ -1685,14 +1761,14 @@
    */
   .footer-stickers {
     display: grid;
-    grid-template-columns: repeat(4, 48px);
-    gap: 22px 20px;
-    padding: 6px 6px 14px;
+    grid-template-columns: repeat(4, var(--size-sticker));
+    gap: --spacing(6);
+    padding: --spacing(2) --spacing(2) --spacing(4);
   }
 
   .footer-stickers li:nth-child(n + 5) {
     position: relative;
-    left: 34px;
+    left: --spacing(8);
   }
 
   /*
@@ -1713,9 +1789,9 @@
   .footer-sticker {
     display: grid;
     place-items: center;
-    width: 48px;
-    height: 48px;
-    border: 4px solid var(--color-border);
+    width: var(--size-sticker);
+    height: var(--size-sticker);
+    border: var(--border-width-sticker) solid var(--color-border);
     --lift: var(--lift-control);
     rotate: var(--tilt, 0deg);
     background-clip: padding-box;
@@ -1727,8 +1803,8 @@
   }
 
   .footer-sticker svg {
-    width: 22px;
-    height: 22px;
+    width: var(--size-sticker-icon);
+    height: var(--size-sticker-icon);
     fill: currentColor;
   }
 
@@ -1777,8 +1853,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 18px;
-    margin-top: 28px;
+    gap: --spacing(4);
+    margin-top: --spacing(8);
   }
 
   .footer-copyright {
@@ -1798,7 +1874,7 @@
    */
   .footer-tuft {
     display: block;
-    width: 220px;
+    width: var(--size-tuft);
     height: auto;
     overflow: visible;
   }
@@ -1844,7 +1920,7 @@
    */
   @media (width >= 48rem) {
     .footer-inner {
-      padding-top: 56px;
+      padding-top: --spacing(12);
     }
 
     .footer-top {
@@ -1853,7 +1929,7 @@
       justify-content: space-between;
       justify-items: start;
       align-items: start;
-      column-gap: 32px;
+      column-gap: --spacing(8);
     }
 
     .footer-name {
@@ -1868,7 +1944,7 @@
       grid-row: 1 / span 2;
       justify-self: start;
       margin-top: 0;
-      padding-top: 6px;
+      padding-top: --spacing(2);
     }
 
     .footer-pages {
@@ -1879,22 +1955,22 @@
       grid-column: 3;
     }
 
-    /* 29.6px targets: the 16.8px line box and 7px above and below. */
+    /* 32.8px targets: the 16.8px line box and 8px above and below. */
     .footer-pages a,
     .footer-policies a {
-      padding-block: 7px;
+      padding-block: --spacing(2);
     }
 
     .footer-social {
       grid-column: 1;
       grid-row: 2;
-      margin-top: 22px;
+      margin-top: --spacing(6);
     }
 
     .footer-stickers {
-      grid-template-columns: repeat(7, 48px);
-      gap: 16px;
-      padding: 6px 6px 10px 0;
+      grid-template-columns: repeat(7, var(--size-sticker));
+      gap: --spacing(4);
+      padding: --spacing(2) --spacing(2) --spacing(2) 0;
     }
 
     .footer-stickers li:nth-child(n + 5) {
@@ -1905,32 +1981,32 @@
       flex-direction: row;
       justify-content: space-between;
       align-items: flex-end;
-      margin-top: 8px;
+      margin-top: --spacing(2);
     }
 
     .footer-copyright {
-      padding-bottom: 20px;
+      padding-bottom: --spacing(6);
       text-align: left;
     }
 
     .footer-tuft {
-      width: 266px;
+      width: var(--size-tuft-md);
     }
   }
 
   @media (width >= 64rem) {
     .footer-inner {
-      padding-inline: 32px;
+      padding-inline: --spacing(8);
     }
 
     .footer-stickers {
-      grid-template-columns: repeat(7, 56px);
-      gap: 24px;
+      grid-template-columns: repeat(7, var(--size-sticker-lg));
+      gap: --spacing(6);
     }
 
     .footer-sticker {
-      width: 56px;
-      height: 56px;
+      width: var(--size-sticker-lg);
+      height: var(--size-sticker-lg);
     }
   }
 
@@ -2201,14 +2277,14 @@
   width: 100%;
   height: 100%;
   margin: 0;
-  padding: 2.5rem 1.5rem 0;
+  padding: --spacing(8) --spacing(6) 0;
   border: 0;
   background-color: var(--color-background);
   color: var(--color-text);
   overflow-y: auto;
   /*
    * Room for a focus ring when the browser scrolls a focused link to the edge:
-   * the ring, its gap, and the current link's shadow it clears. Without it the
+   * the ring, its gap, and the Close button's shadow it clears. Without it the
    * ring is clipped (SC 2.4.7).
    */
   scroll-padding-block: calc(
@@ -2223,7 +2299,7 @@
  * on a child is part of that child's box, which every engine scrolls to.
  */
 .mobile-menu-content {
-  padding-bottom: 2.5rem;
+  padding-bottom: --spacing(8);
 }
 
 /*
@@ -2240,6 +2316,6 @@
 }
 
 .mobile-menu-dialog nav a {
-  font-size: clamp(34px, 8vw, 56px);
+  font-size: var(--text-menu);
   line-height: 1;
 }
