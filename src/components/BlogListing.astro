@@ -34,7 +34,8 @@ import BlogCard from './BlogCard.astro';
  *   - a small square marker present on the active option and absent from the
  *     others, which is the shape difference. It is aria-hidden: it
  *     reinforces, it does not inform;
- *   - the inverted gold fill, which on its own is insufficient.
+ *   - the cyan shadow, which on its own is insufficient: pink against cyan
+ *     is 2.29.
  */
 
 /**
@@ -115,7 +116,7 @@ const emptyState =
             class="chip"
           >
             {isActive ? (
-              <span aria-hidden="true" class="block size-2 bg-background" />
+              <span aria-hidden="true" class="block size-2 bg-text" />
             ) : null}
             {option.label}
           </a>
@@ -187,7 +188,7 @@ const emptyState =
               class="chip"
             >
               {isCurrent ? (
-                <span aria-hidden="true" class="block size-2 bg-background" />
+                <span aria-hidden="true" class="block size-2 bg-text" />
               ) : null}
               <span class="sr-only">Page&nbsp;</span>
               {page}

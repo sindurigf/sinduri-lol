@@ -149,7 +149,7 @@ onBeforeUnmount(() => {
           <ul class="flex flex-col gap-8">
             <!--
             The same active treatment as the desktop nav: a bordered box with
-            the site's offset gold shadow, the border present but transparent
+            the cyan shadow that marks where you are, the border present but transparent
             on every link, so becoming current changes colour and shadow
             rather than geometry. These are stacked, so a border appearing on
             one item would shift every item below it. `aria-current="page"` is
@@ -162,7 +162,7 @@ onBeforeUnmount(() => {
                 class="block border-4 px-4 py-2 font-black uppercase tracking-title"
                 :class="
                   isActive(link.href)
-                    ? 'lift-control border-border text-text shadow-hard-pink-4'
+                    ? 'lift-control border-border text-text shadow-hard-cyan-4'
                     : 'border-transparent text-text hover:text-cyan'
                 "
                 @click="close"

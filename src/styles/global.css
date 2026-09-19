@@ -248,18 +248,26 @@
   --radius-nav: 14px;
 
   /*
-   * Hard offset shadows: pink, zero blur, zero spread, in two sizes. 4px under
-   * a control, 8px under an object (a card, a photo on the hero wall, the
-   * roundel). One colour, the logo tile's, so every object on the site stands
-   * off the page the same way. Whatever casts one and takes focus also sets
-   * `lift-control` or `lift-object`, so its ring clears the shadow.
+   * Hard offset shadows, zero blur and zero spread. The colour says what a
+   * thing is, one job each:
    *
-   * pink-12 belongs to the logo tile's larger copies alone (404, About), which
-   * scale the tile's 8px with its size.
+   *   gold  things that stand on the page: cards, panels, a hero photo (8px)
+   *   pink  things you press, and the bunny marks: buttons, tags, the call to
+   *         action (4px); the logo tile, its copies and the roundel (8px, and
+   *         12px on the tile's larger copies)
+   *   cyan  where you are: the current nav item, tag and call to action (4px),
+   *         with focus and hover
+   *
+   * State is never the shadow colour alone (pink against cyan is 2.29): the
+   * current nav item gains a border box, the current tag a marker, the current
+   * call to action an inset ring. Whatever casts a shadow and takes focus also
+   * sets `lift-control` or `lift-object`, so its ring clears the shadow.
    */
+  --shadow-hard-gold-8: 8px 8px 0 var(--color-gold);
   --shadow-hard-pink-4: 4px 4px 0 var(--color-pink);
   --shadow-hard-pink-8: 8px 8px 0 var(--color-pink);
   --shadow-hard-pink-12: 12px 12px 0 var(--color-pink);
+  --shadow-hard-cyan-4: 4px 4px 0 var(--color-cyan);
 
   /*
    * The inner half of .btn-gold-primary's two-tone focus ring: 18.58 against
@@ -269,9 +277,10 @@
   --inset-shadow-gold-btn-ring: inset 0 0 0 3px var(--color-gold-btn-label);
 
   /*
-   * The current-page ring on .nav-cta, drawn in place of its shadow, so the
-   * control reads as pressed in. An inset ring touches two colours, so both
-   * are measured: 11.32 on the gold fill, 11.20 on cyan when hovered, and
+   * The current-page ring on .nav-cta, the shape half of its state: the cyan
+   * shadow beside it is a colour change only (2.29 against the resting pink),
+   * so it cannot carry SC 1.4.1 alone. An inset ring touches two colours, so
+   * both are measured: 11.32 on the gold fill, 11.20 on cyan when hovered, and
    * 4.84 against the border on its outer edge; each clears the 3.0 of
    * SC 1.4.11.
    */
@@ -659,8 +668,8 @@
    * current page. A shared class is what makes the state rules below reach
    * every rendering rather than whichever one someone edited.
    *
-   * On its own page it is pressed in: no shadow, and an inset ring instead,
-   * which changes nothing about its box. The rules are here rather than
+   * On its own page it takes the cyan "you are here" shadow and an inset
+   * ring, which changes nothing about its box. The rules are here rather than
    * utilities in the markup because `box-shadow` is one property, and being
    * in the same layer lets source order settle it. See
    * --inset-shadow-cta-current for what the ring measures.
@@ -672,8 +681,7 @@
 
   .nav-cta[aria-current='page'],
   .nav-cta[aria-current='page']:hover {
-    --lift: 0px;
-    box-shadow: var(--inset-shadow-cta-current);
+    box-shadow: var(--inset-shadow-cta-current), var(--shadow-hard-cyan-4);
   }
 
   /*
@@ -1024,7 +1032,7 @@
    */
   .card {
     @apply min-w-0 border-8 border-border bg-surface p-card-tight
-      shadow-hard-pink-8 sm:p-card;
+      shadow-hard-gold-8 sm:p-card;
   }
 
   /*
@@ -1084,7 +1092,7 @@
   }
 
   .post-contents {
-    @apply self-start border-4 border-border bg-surface shadow-hard-pink-8;
+    @apply self-start border-4 border-border bg-surface shadow-hard-gold-8;
   }
 
   .post-layout .prose h2 {
@@ -1232,12 +1240,16 @@
       text-text;
   }
 
+  a.chip {
+    @apply lift-control shadow-hard-pink-4;
+  }
+
   a.chip:hover {
     @apply text-cyan;
   }
 
   a.chip[aria-current] {
-    @apply lift-control bg-gold text-background shadow-hard-pink-4;
+    @apply shadow-hard-cyan-4;
   }
 
   /* Text on text: background on #E5E2E1 is 14.42. */

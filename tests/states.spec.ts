@@ -40,3 +40,48 @@ test.describe('hover is drawn', () => {
     await expect(button).toHaveCSS('background-color', CYAN);
   });
 });
+
+/**
+ * One colour, one job, read from the shadow each thing casts: gold for things
+ * that stand on the page, pink for things you press and the bunny marks, cyan
+ * for where you are.
+ *
+ * Proven able to fail, 2026-09-19, chromium: with the current nav item back on
+ * the pink shadow in Header.astro, "the current page is cyan" read
+ * rgb(255, 0, 122).
+ */
+const GOLD = 'rgb(255, 192, 0)';
+const PINK = 'rgb(255, 0, 122)';
+
+const shadowColour = async (
+  locator: import('@playwright/test').Locator,
+): Promise<string> =>
+  (await locator.evaluate((el) => getComputedStyle(el).boxShadow))
+    .match(/rgb\([^)]*\)/g)
+    ?.at(-1) ?? 'none';
+
+test.describe('each colour has one job', () => {
+  test('things stand on gold, actions and the bunny on pink', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await gotoSettled(page, '/');
+    expect(await shadowColour(page.locator('main .card').first())).toBe(GOLD);
+    expect(await shadowColour(page.locator('main .btn-primary').first())).toBe(
+      PINK,
+    );
+    expect(
+      await shadowColour(page.locator('header a[href="/"] > span').first()),
+    ).toBe(PINK);
+  });
+
+  test('the current page is cyan', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await gotoSettled(page, '/about/');
+    expect(
+      await shadowColour(
+        page.locator('header nav[aria-label="Primary"] a[aria-current="page"]'),
+      ),
+    ).toBe(CYAN);
+  });
+});
