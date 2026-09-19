@@ -3,10 +3,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ContactForm from '../../components/ContactForm.astro';
 import PageHero from '../../components/PageHero.astro';
 import { CONTACT_EMAIL } from '../../lib/contact';
-import { looksAutomated, validateSubmission } from '../../lib/contact-form';
 import { env } from 'cloudflare:workers';
 import { rateLimitKey, type ContactEnv } from '../../lib/contact-env';
-import { notificationFor } from '../../lib/contact-notification';
+import {
+  handleSubmission,
+  type SubmissionKind,
+} from '../../lib/contact-submission';
 import { applyGlobalHeaders } from '../../lib/response-headers';
 
 /*
@@ -51,113 +53,26 @@ try {
   return Astro.redirect(CONTACT_PAGE, 303);
 }
 
-const now = Date.now();
+const outcome = await handleSubmission(
+  form,
+  env as ContactEnv,
+  Date.now(),
+  await rateLimitKey(Astro.request),
+);
 
-/*
- * Answered exactly as a success is. A bot told which check caught it can be
- * adjusted until neither does, and nothing is stored.
- */
-if (looksAutomated(form)) {
+if (outcome.kind === 'sent') {
   return Astro.redirect(SENT_PAGE, 303);
 }
 
-const bindings = env as ContactEnv;
+const STATUS: Record<Exclude<SubmissionKind, 'sent'>, number> = {
+  invalid: 422,
+  limited: 429,
+  failed: 503,
+};
+Astro.response.status = STATUS[outcome.kind];
 
-const limiter = bindings.CONTACT_RATE_LIMIT;
-const limitKey = await rateLimitKey(Astro.request);
-
-if (limiter && limitKey !== null) {
-  const { success } = await limiter.limit({ key: limitKey });
-
-  if (!success) {
-    Astro.response.status = 429;
-  }
-}
-
-const tooMany = Astro.response.status === 429;
-const result = tooMany ? null : validateSubmission(form);
-
-if (result && !result.ok) {
-  Astro.response.status = 422;
-}
-
-let storageFailed = false;
-
-if (result?.ok && !tooMany) {
-  const database = bindings.MESSAGES_DB;
-
-  if (!database) {
-    console.error('contact: message not stored: MESSAGES_DB binding missing');
-    /*
-     * The binding is missing, which is a deploy that is not finished. Saying
-     * so beats a confirmation page for a message nothing received.
-     */
-    storageFailed = true;
-  } else {
-    try {
-      await database
-        .prepare(
-          'INSERT INTO messages (id, name, email, body, created_at) VALUES (?, ?, ?, ?, ?)',
-        )
-        .bind(
-          crypto.randomUUID(),
-          result.value.name,
-          result.value.email,
-          result.value.body,
-          now,
-        )
-        .run();
-    } catch (error) {
-      /*
-       * The reason only, never the submission: /privacy says nothing but the
-       * stored row is kept, and a log line is not the row. The visitor is still
-       * told the message was not received.
-       */
-      console.error(
-        'contact: message not stored:',
-        error instanceof Error ? error.message : String(error),
-      );
-      storageFailed = true;
-    }
-  }
-
-  if (!storageFailed) {
-    /*
-     * After the row is written, and never a reason to fail the submission:
-     * the message is already stored and readable in D1.
-     */
-    const sender = bindings.CONTACT_MAILER;
-    const recipient = bindings.CONTACT_NOTIFY_TO;
-
-    if (!sender) {
-      console.error(
-        'contact: notification not sent: CONTACT_MAILER binding missing',
-      );
-    } else if (!recipient) {
-      console.error(
-        'contact: notification not sent: CONTACT_NOTIFY_TO secret missing',
-      );
-    } else {
-      try {
-        await sender.send(
-          notificationFor(result.value, recipient, new Date(now)),
-        );
-      } catch (error) {
-        console.error(
-          'contact: notification not sent:',
-          error instanceof Error ? error.message : String(error),
-        );
-      }
-    }
-
-    return Astro.redirect(SENT_PAGE, 303);
-  }
-
-  Astro.response.status = 503;
-}
-
-const errors = result && !result.ok ? result.errors : [];
-const values = result && !result.ok ? result.submitted : {};
+const tooMany = outcome.kind === 'limited';
+const storageFailed = outcome.kind === 'failed';
 ---
 
 <BaseLayout
@@ -191,8 +106,12 @@ const values = result && !result.ok ? result.submitted : {};
 
   <section class="band py-section">
     <div class="mx-auto max-w-page">
-      <div class="card max-w-3xl shadow-hard-gold-8">
-        <ContactForm errors={errors} values={values} summaryHeading="h2" />
+      <div class="card max-w-3xl">
+        <ContactForm
+          errors={outcome.errors}
+          values={outcome.values}
+          summaryHeading="h2"
+        />
       </div>
     </div>
   </section>

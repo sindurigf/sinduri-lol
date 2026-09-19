@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import CloseRow from '../../components/CloseRow.astro';
 import PageHero from '../../components/PageHero.astro';
 import { CONTACT_EMAIL } from '../../lib/contact';
 
@@ -34,17 +35,18 @@ import { CONTACT_EMAIL } from '../../lib/contact';
 
   <section class="band py-section">
     <div class="mx-auto max-w-page">
-      <p class="max-w-3xl text-body text-muted text-pretty">
+      <p class="max-w-3xl text-body text-text text-pretty">
         Nothing else was stored, and you were not added to any list. If you need
         to add something, write to{' '}
         <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
       </p>
 
-      <p class="mt-actions">
-        <a class="btn-secondary" href="/contact/">
-          Back to contact
-        </a>
-      </p>
+      <CloseRow
+        readHref="/blog/five-years-in-drupal/"
+        readLabel="Five years in Drupal"
+        actionHref="/contact/"
+        actionLabel="Back to contact"
+      />
     </div>
   </section>
 </BaseLayout>

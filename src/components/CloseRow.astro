@@ -1,23 +1,32 @@
 ---
 /*
- * The end of a long page: a pointer to the post that tells the story at
- * length, and the one action that leads on from here. Closes /about and
- * /career.
+ * How a page ends when it points onward: one place to read next and the one
+ * action that leads on from here. Every page that closes on links closes on
+ * this, so they all end the same way: /, /about, /career, /contact/sent.
+ * Not /404 or /accessibility, whose buttons are the page's own content.
  */
 interface Props {
+  /** What the link is: a post to read, or the next page. */
+  eyebrow?: string;
   readHref: string;
   readLabel: string;
   actionHref: string;
   actionLabel: string;
 }
 
-const { readHref, readLabel, actionHref, actionLabel } = Astro.props;
+const {
+  eyebrow = 'Continue reading',
+  readHref,
+  readLabel,
+  actionHref,
+  actionLabel,
+} = Astro.props;
 ---
 
-<div class="card mt-actions flex flex-wrap items-center justify-between gap-x-inline gap-y-8 shadow-hard-gold-8">
+<div class="card mt-head flex flex-wrap items-center justify-between gap-x-inline gap-y-8">
   <p>
-    <span class="label block text-subtle">Continue reading</span>
-    <a href={readHref} class="mt-3 block text-h3 font-extrabold">
+    <span class="label block text-subtle">{eyebrow}</span>
+    <a href={readHref} class="link mt-3 block min-h-target text-h3 font-black">
       {readLabel}
     </a>
   </p>

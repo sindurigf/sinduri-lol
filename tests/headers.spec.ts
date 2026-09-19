@@ -869,8 +869,8 @@ test.describe('security headers', () => {
     const panel = page.getByRole('dialog');
     await expect(
       panel,
-      'the island did not hydrate, which is what a stale script hash looks ' +
-        'like from the outside',
+      'the menu did not open: src/scripts/mobile-menu.ts did not run, or ' +
+        'the policy blocked it from loading',
     ).toBeVisible();
 
     await expect(panel.getByRole('link')).not.toHaveCount(0);

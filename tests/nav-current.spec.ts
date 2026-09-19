@@ -17,7 +17,7 @@ import { gotoSettled } from './settle';
  * the collision is the only assertion that bites.
  *
  * The reverse holds for the second tier. `aria-current` reaching all three
- * navigations, the desktop nav, the island's dialog and the no-JavaScript
+ * navigations, the desktop nav, the mobile menu's dialog and the no-JavaScript
  * fallback, is a property of three call sites that used to disagree, not of
  * the function.
  *
@@ -299,4 +299,21 @@ test.describe('the current page, as the navigation reports it', () => {
       await unscripted.close();
     }
   });
+});
+
+/*
+ * The home link is named by its visible wordmark alone, so what a screen
+ * reader announces and what a voice-control user says match (SC 2.5.3). The
+ * bunny mark beside it is decoration with empty alt text. Proven able to fail,
+ * 2026-09-19, chromium: with alt="Lepus Ridet mark" back, the name read
+ * "Lepus Ridet mark SINDURI.LOL".
+ */
+test('the home link is named by its wordmark and nothing else', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await gotoSettled(page, '/about');
+  const home = page.locator(HEADER_LOGO);
+  await expect(home.locator('img')).toHaveAttribute('alt', '');
+  await expect(home).toHaveAccessibleName(/^sinduri\.lol$/i);
 });

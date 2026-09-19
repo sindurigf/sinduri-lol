@@ -8,19 +8,20 @@
 # ---------------------------------------------------------------------------
 # The CSP hashes are build output and they go stale.
 #
-# Astro emits two inline <script> blocks and one inline <style> on every page:
-# the `client:load` directive loader, the <astro-island> element that hydrates
-# MobileMenu.vue, and `astro-island,astro-slot,astro-static-slot
-# {display:contents}`. There is no `src` to point at and, on a static host, no
-# request-time nonce to issue, so hashing is the only way to allow exactly
-# those three. The JSON-LD block in BaseLayout.astro needs no hash: script-src
-# gates scripts the browser runs, and a <script type="application/ld+json">
-# never runs. See src/lib/structured-data.ts.
+# Astro emits two inline <script> blocks and one inline <style> on a page with
+# an island, which today is `/` alone, for HeroField.vue: the `client:load`
+# directive loader, the <astro-island> element that hydrates it, and
+# `astro-island,astro-slot,astro-static-slot {display:contents}`. There is no
+# `src` to point at and, on a static host, no request-time nonce to issue, so
+# hashing is the only way to allow exactly those three. The JSON-LD block in
+# BaseLayout.astro needs no hash: script-src gates scripts the browser runs,
+# and a <script type="application/ld+json"> never runs. See
+# src/lib/structured-data.ts.
 #
 # An Astro upgrade that changes one byte of that runtime changes its hash, the
-# browser refuses the script, and the island never hydrates: the mobile menu
-# stops opening, which is the only navigation a desktop user has at 400% zoom.
-# That failure is silent in the page and loud only in the console.
+# browser refuses the script, and the island never hydrates: the hero field on
+# `/` stays blank and its pause control never appears. That failure is silent
+# in the page and loud only in the console.
 #
 # tests/headers.spec.ts recomputes all three from dist/ and fails when this
 # file and the build have drifted. Do not hand-edit a hash; re-run the suite,

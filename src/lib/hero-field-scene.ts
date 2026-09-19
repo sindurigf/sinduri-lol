@@ -56,8 +56,8 @@ export interface HeroPalette {
   readonly text: string;
   /** `--color-subtle`. Buds on about a third of the stems. */
   readonly subtle: string;
-  /** `--color-muted`. Buds on about a fifth, the warmest thing in the scene. */
-  readonly muted: string;
+  /** `--color-bud`. Buds on about a fifth, the warmest thing in the scene. */
+  readonly bud: string;
   /**
    * `--color-background`. Filled into the hare's body before its outline is
    * stroked, so the legs and ears behind it do not show through. It has to be

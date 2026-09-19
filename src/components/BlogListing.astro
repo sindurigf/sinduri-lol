@@ -34,7 +34,8 @@ import BlogCard from './BlogCard.astro';
  *   - a small square marker present on the active option and absent from the
  *     others, which is the shape difference. It is aria-hidden: it
  *     reinforces, it does not inform;
- *   - the inverted gold fill, which on its own is insufficient.
+ *   - the cyan shadow, which on its own is insufficient: pink against cyan
+ *     is 2.29.
  */
 
 /**
@@ -115,7 +116,7 @@ const emptyState =
             class="chip"
           >
             {isActive ? (
-              <span aria-hidden="true" class="block size-2 bg-background" />
+              <span aria-hidden="true" class="block size-2 bg-text" />
             ) : null}
             {option.label}
           </a>
@@ -132,9 +133,9 @@ const emptyState =
   WAVE would guess at.
 */}
 {posts.length === 0 ? (
-  <div class="card mt-head shadow-hard-gold-8" data-empty-listing>
-    <p class="label-wide text-gold">No posts yet</p>
-    <p class="mt-4 max-w-prose text-body text-muted text-pretty">
+  <div class="card mt-head" data-empty-listing>
+    <p class="label text-gold">No posts yet</p>
+    <p class="mt-4 max-w-prose text-body text-text text-pretty">
       Nothing is {emptyState.holds} so far. {emptyState.other}, or read{' '}
       <a href="/blog/">every post</a>.
     </p>
@@ -160,7 +161,7 @@ const emptyState =
 )}
 
 {totalPages > 1 ? (
-  <nav aria-label="Pagination" class="mt-actions">
+  <nav aria-label="Pagination" class="mt-head">
     {/*
         Page numbers only. A "Previous page" or "Next page" link sits beside a
         number going to the same place, which is two adjacent links to one URL:
@@ -187,7 +188,7 @@ const emptyState =
               class="chip"
             >
               {isCurrent ? (
-                <span aria-hidden="true" class="block size-2 bg-background" />
+                <span aria-hidden="true" class="block size-2 bg-text" />
               ) : null}
               <span class="sr-only">Page&nbsp;</span>
               {page}

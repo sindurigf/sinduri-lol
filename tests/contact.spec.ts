@@ -111,6 +111,9 @@ const wranglerConfig = (): {
  * does not sit on the exact boundary.
  */
 const RATE_LIMIT_ATTEMPTS = 12;
+
+/* Where the 503 test moves the messages table while it runs. */
+const MESSAGES_ASIDE = 'messages_unavailable';
 const SENT = '/contact/sent/';
 const FORM = '/contact/';
 
@@ -183,6 +186,24 @@ const sameOrigin = (baseURL: string) => ({
 test.describe.configure({ mode: 'serial' });
 
 test.describe('the contact endpoint', () => {
+  /*
+   * The 503 test moves the table aside and restores it in a `finally`, which
+   * a killed run never reaches. The next run's migration then creates an
+   * empty `messages` beside the stranded one, so fail with the fix instead.
+   */
+  test.beforeAll(() => {
+    const stranded = localD1(
+      `SELECT name FROM sqlite_master WHERE type = 'table' AND name = '${MESSAGES_ASIDE}'`,
+    ).includes(`"${MESSAGES_ASIDE}"`);
+    if (stranded) {
+      throw new Error(
+        `Local D1 still holds ${MESSAGES_ASIDE}, left by an interrupted 503 ` +
+          'test. Restore it with: npx wrangler d1 execute sinduri-lol --local ' +
+          `--command "DROP TABLE messages; ALTER TABLE ${MESSAGES_ASIDE} RENAME TO messages"`,
+      );
+    }
+  });
+
   test('a GET is sent back to the form', async ({ request, baseURL }) => {
     const response = await request.get(ENDPOINT, {
       maxRedirects: 0,
@@ -251,6 +272,38 @@ test.describe('the contact endpoint', () => {
       'a failing control should carry aria-invalid, so the failure is exposed ' +
         'to a screen reader rather than only painted on the border.',
     ).toContain('aria-invalid="true"');
+
+    /*
+     * Each summary entry is a link to its control, and one pointed at an id
+     * nothing carried: the message error linked to #contact-body while the
+     * textarea is #contact-message, so following it went nowhere. The email
+     * and the message both fail in this submission. Verified to
+     * fail on that markup before the fix, 2026-09-19.
+     */
+    const summaryTargets = [...html.matchAll(/href="#(contact-[a-z]+)"/g)].map(
+      ([, id]) => id,
+    );
+    expect(
+      summaryTargets.length,
+      'the error summary should link to each failing field.',
+    ).toBeGreaterThan(0);
+    for (const id of summaryTargets) {
+      expect(
+        html,
+        `the error summary links to #${id}, and nothing on the page has that id.`,
+      ).toContain(`id="${id}"`);
+    }
+
+    /*
+     * `required` alone is invisible to a sighted reader (SC 3.3.2), so each
+     * label says it in words. Verified to fail before the labels carried it.
+     */
+    expect(
+      html.match(
+        /<label[^>]*for="contact-(?:name|email|message)"[^>]*>[^<]*<span[^>]*>\(required\)<\/span>/g,
+      )?.length,
+      'every required field should say "(required)" inside its label.',
+    ).toBe(3);
   });
 
   test('a filled honeypot is answered exactly like a success', async ({
@@ -313,6 +366,79 @@ test.describe('the contact endpoint', () => {
         'limited before the last one. Without this the form is an open relay ' +
         `into the inbox. Got: ${statuses.join(', ')}.`,
     ).toContain(429);
+  });
+
+  /*
+   * The 429 page tells the reader to wait and try again, which is only fair
+   * if what they wrote is still on it. The address range is TEST-NET-1, so
+   * this limits only itself.
+   */
+  test('a rate-limited submission keeps what was typed', async ({
+    request,
+    baseURL,
+  }) => {
+    const address = `192.0.2.${Math.floor(Math.random() * 254) + 1}`;
+    const headers = { ...sameOrigin(baseURL!), 'CF-Connecting-IP': address };
+    const typed = {
+      name: 'Grace Hopper',
+      email: 'grace@example.com',
+      message: `Rate limit check ${crypto.randomUUID()}`,
+    };
+
+    let html: string | undefined;
+    for (let attempt = 0; attempt < RATE_LIMIT_ATTEMPTS; attempt += 1) {
+      const response = await request.post(ENDPOINT, {
+        form: typed,
+        maxRedirects: 0,
+        headers,
+      });
+      if (response.status() === 429) {
+        html = await response.text();
+        break;
+      }
+    }
+
+    expect(
+      html,
+      `no 429 after ${RATE_LIMIT_ATTEMPTS} submissions from one address.`,
+    ).toBeDefined();
+    expectTypedValuesKept(html!, typed);
+  });
+
+  /*
+   * A D1 failure, induced by moving the table aside for one request. The
+   * 503 copy says the text is still in the form, so the form has to hold it.
+   */
+  test('a submission that cannot be stored answers 503 and keeps what was typed', async ({
+    request,
+    baseURL,
+  }) => {
+    const typed = {
+      name: 'Katherine Johnson',
+      email: 'katherine@example.com',
+      message: `Storage failure check ${crypto.randomUUID()}`,
+    };
+
+    localD1(`ALTER TABLE messages RENAME TO ${MESSAGES_ASIDE}`);
+    try {
+      const response = await request.post(ENDPOINT, {
+        form: typed,
+        maxRedirects: 0,
+        headers: sameOrigin(baseURL!),
+      });
+
+      expect(
+        response.status(),
+        'a message that could not be stored should answer 503, never the ' +
+          'redirect to the confirmation page.',
+      ).toBe(503);
+
+      const html = await response.text();
+      expect(html).toContain('Your message could not be saved');
+      expectTypedValuesKept(html, typed);
+    } finally {
+      localD1(`ALTER TABLE ${MESSAGES_ASIDE} RENAME TO messages`);
+    }
   });
 
   test('a stored message is emailed to the owner', async ({

@@ -9,6 +9,7 @@ import {
   UMAMI_SCRIPT_PATH,
   UMAMI_WEBSITE_ID,
 } from '../src/lib/analytics';
+import { CONTACT_EMAIL } from '../src/lib/contact';
 import { parseHeadersFile, startServer } from './policy-server';
 import { builtPages, DIST_DIR } from './routes';
 import { waitForHydration } from './settle';
@@ -308,6 +309,38 @@ test.describe('analytics', () => {
         [],
       );
     }
+  });
+
+  /*
+   * /contact's email card reads "Email lol@sinduri.lol", so a label taken
+   * from the link's text would carry the address. Every mailto link on the
+   * page is clicked, the footer's too.
+   */
+  test('no email click sends the address, in any field', async ({ page }) => {
+    const sent = await openAsProduction(page, '/contact/');
+    const email = 'a[href^="mailto:"]';
+    const links = page.locator(email);
+    const count = await links.count();
+    expect(count, '/contact should carry mailto links').toBeGreaterThan(1);
+
+    for (let index = 0; index < count; index += 1) {
+      const link = links.nth(index);
+      await link.evaluate((element) =>
+        element.addEventListener('click', (event) => event.preventDefault()),
+      );
+      await link.click();
+    }
+
+    const emailEvents = (): Record<string, unknown>[] =>
+      events(sent).filter((event) => event.name === CLICK_EVENTS.email);
+    await expect
+      .poll(() => emailEvents().length, { timeout: SEND_TIMEOUT_MS })
+      .toBe(count);
+
+    expect(
+      JSON.stringify(emailEvents()),
+      '/privacy says an email click leaves the address out',
+    ).not.toContain(CONTACT_EMAIL);
   });
 
   test('typing into the contact form sends nothing', async ({ page }) => {

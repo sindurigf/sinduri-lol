@@ -145,24 +145,23 @@ export const getPostsByTag = async (): Promise<Map<string, BlogPost[]>> => {
  * because Tailwind scans source text: a composed `text-${accent}` is
  * invisible to it.
  *
- * On `surface` #1A1A1A: gold 10.60, cyan 10.49, pink-text 7.18. `pink-text`
+ * On `surface` #1A1A1A: gold 10.60, text 13.51, pink-text 7.18. Not cyan,
+ * which is kept for focus and hover alone: a cyan label read as a hovered link.
+ * Glyph tiles: background on gold 11.32, on text 14.42, on pink 4.90. `pink-text`
  * and never `pink` for a glyph, `pink` and never `pink-text` for a fill or a
  * shadow; see the two-pinks rule in the design system.
  */
 const ACCENTS = {
   gold: {
     text: 'text-gold',
-    shadow: 'shadow-hard-gold-8',
     tile: 'bg-gold text-background',
   },
-  cyan: {
-    text: 'text-cyan',
-    shadow: 'shadow-hard-cyan-8',
-    tile: 'bg-cyan text-darkcyan',
+  ink: {
+    text: 'text-text',
+    tile: 'bg-text text-background',
   },
   pink: {
     text: 'text-pink-text',
-    shadow: 'shadow-hard-pink-8',
     tile: 'bg-pink text-background',
   },
 } as const;
@@ -172,8 +171,8 @@ export type CategoryAccent = (typeof ACCENTS)[keyof typeof ACCENTS];
 const CATEGORY_ACCENT: Record<BlogCategory, keyof typeof ACCENTS> = {
   'open-source': 'gold',
   'professional-journey': 'gold',
-  skincare: 'cyan',
-  travel: 'cyan',
+  skincare: 'ink',
+  travel: 'ink',
   'personal-thoughts': 'pink',
 };
 

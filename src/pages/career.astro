@@ -183,8 +183,8 @@ const OPEN_SOURCE = [
   <PageHero title="Career">
     <h2 class="standfirst">
       <span class="block text-text">Open Source Enthusiast.</span>{' '}
-      <span class="block text-muted">Positivity Advocate.</span>{' '}
-      <span class="block text-muted">Continuous Learner.</span>
+      <span class="block text-text">Positivity Advocate.</span>{' '}
+      <span class="block text-text">Continuous Learner.</span>
     </h2>
 
     {/*
@@ -193,7 +193,7 @@ const OPEN_SOURCE = [
       recoverable from "Download my CV" alone. Both buttons render uppercase,
       so PDF and KB read as the acronyms they are.
     */}
-    <p class="actions mt-actions">
+    <p class="actions mt-head">
       <a href={CV_HREF} class="btn-primary">
         Download my CV (PDF, {CV_KB} KB)
       </a>
@@ -211,7 +211,7 @@ const OPEN_SOURCE = [
       engineering, and understand what developers actually need to be
       successful.
     </p>
-    <p class="max-w-3xl text-body text-muted text-pretty">
+    <p class="max-w-3xl text-body text-text text-pretty">
       I never say no to a challenge just because I do not know how to approach
       it. I commit to figuring it out and learning whatever it takes to make it
       work.
@@ -228,18 +228,13 @@ const OPEN_SOURCE = [
          * spans the card, with the dates and employer in the first column
          * under it and the points in the other three.
          *
-         * The current role is the section's one pink card, and says so in
-         * words with a chip, so colour is never the only signal (SC 1.4.1).
+         * The current role says so in words, with a badge, so nothing about
+         * it rests on colour (SC 1.4.1).
          */
         EXPERIENCE.map((role) => (
-          <li
-            class:list={[
-              'card grid gap-8 lg:grid-cols-4',
-              role.current ? 'shadow-hard-pink-8' : 'shadow-hard-gold-8',
-            ]}
-          >
+          <li class="card grid gap-8 lg:grid-cols-4">
             <div class="flex min-w-0 flex-col items-start gap-4 lg:col-span-4">
-              {role.current && <span class="chip">Current</span>}
+              {role.current && <span class="badge">Current</span>}
               <h3 class="card-title">{role.title}</h3>
             </div>
 
@@ -261,12 +256,12 @@ const OPEN_SOURCE = [
 
   <Section title="Skills and education">
     <div class="grid gap-grid lg:grid-cols-2">
-      <div class="card shadow-hard-gold-8">
+      <div class="card">
         <h3 class="card-title">Education</h3>
         <ul class="mt-8 flex flex-col gap-4">
           {EDUCATION.map((item) => (
-            <li class="text-body text-muted text-pretty">
-              <strong class="font-extrabold text-text">{item.award}</strong>
+            <li class="text-body text-text text-pretty">
+              <strong class="font-black text-text">{item.award}</strong>
               {': '}
               {item.detail}
               {'honour' in item ? (
@@ -281,23 +276,21 @@ const OPEN_SOURCE = [
       </div>
 
       <div class="flex min-w-0 flex-col gap-grid">
-        <div class="card shadow-hard-gold-8">
+        <div class="card">
           <h3 class="card-title">Skills</h3>
           <ul class="mt-8 flex flex-wrap gap-3">
             {SKILLS.map((skill) => (
-              <li class="chip">{skill}</li>
+              <li class="badge">{skill}</li>
             ))}
           </ul>
         </div>
 
-        <div class="card shadow-hard-gold-8">
+        <div class="card">
           <h3 class="card-title">Languages</h3>
           <ul class="mt-8 flex flex-col gap-4">
             {LANGUAGES.map((item) => (
-              <li class="text-body text-muted">
-                <strong class="font-extrabold text-text">
-                  {item.language}
-                </strong>
+              <li class="text-body text-text">
+                <strong class="font-black text-text">{item.language}</strong>
                 {': '}
                 {item.level}
               </li>
@@ -320,15 +313,10 @@ const OPEN_SOURCE = [
         and expertise, not hierarchy. There is room for everyone.
       </p>
       <dl class="grid gap-grid sm:grid-cols-2 lg:col-span-7">
-        {OPEN_SOURCE.map((item, index) => (
-          <div
-            class:list={[
-              'card',
-              index === 0 ? 'shadow-hard-pink-8' : 'shadow-hard-gold-8',
-            ]}
-          >
-            <dt class="label-wide text-gold">{item.award}</dt>
-            <dd class="mt-4 text-body text-muted text-pretty">{item.detail}</dd>
+        {OPEN_SOURCE.map((item) => (
+          <div class="card">
+            <dt class="label text-gold">{item.award}</dt>
+            <dd class="mt-4 text-body text-text text-pretty">{item.detail}</dd>
           </div>
         ))}
       </dl>

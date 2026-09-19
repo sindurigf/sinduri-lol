@@ -49,22 +49,20 @@
   /* Colors */
   --color-background: #131313;
   --color-surface: #1a1a1a;
-  --color-deep: #0e0e0e;
   --color-border: #5a87a8;
   --color-text: #e5e2e1;
-  --color-muted: #d4c5ab;
   --color-subtle: #9bb4c6;
   --color-gold: #ffc000;
   --color-cyan: #00dcfd;
   /*
    * Two pinks, split by role, not by size. Do not merge them.
    *
-   * `pink` #FF007A measures 4.90 / 4.59 / 5.09 against background / surface /
-   * deep. That is AA for text but not AAA, so it is restricted to non-text:
+   * `pink` #FF007A measures 4.90 / 4.59 against background / surface. That is
+   * AA for text but not AAA, so it is restricted to non-text:
    * borders, hard offset shadows, and decorative fills, where SC 1.4.11 asks
    * for 3:1 and it clears comfortably.
    *
-   * `pink-text` #FF79B6 measures 7.66 / 7.18 / 7.96 on the same three surfaces.
+   * `pink-text` #FF79B6 measures 7.66 / 7.18 on the same two surfaces.
    * It is AAA at any size, so every pink glyph on the site uses it, including
    * the section number.
    *
@@ -106,20 +104,21 @@
   --color-gold-btn-label: #ffffff;
 
   /*
-   * PageHero's cast blocks: the joints between the blocks and the bolt in each
-   * block's corner. Decoration, so SC 1.4.11 does not apply to them; they are
-   * 1.36 and 1.50 on the background, which is all they are for. What matters
-   * is the text that crosses them. Measured 2026-09-19, every foreground on
-   * the joint / the bolt: gold 8.29 / 7.52, text 10.57 / 9.59, muted
-   * 8.02 / 7.28, subtle 6.31 / 5.73, pink-text 5.62 / 5.10, and border
-   * 3.54 / 3.21 for chip edges. `subtle` and `pink-text` drop from AAA to AA
-   * where they cross a joint; nothing drops below AA.
+   * PageHero's cast blocks: the joints between the blocks, and the bolt in
+   * each block's corner, which is the same colour. Decoration, so SC 1.4.11
+   * does not apply; 1.36 on the background is all it is for. What matters is
+   * the text that crosses it, measured 2026-09-19: gold 8.29, text 10.57,
+   * subtle 6.31, pink-text 5.62, and border 3.54 for chip edges. `subtle` and
+   * `pink-text` drop from AAA to AA where they cross a joint; nothing drops
+   * below AA.
    */
   --color-joint: #262f36;
-  --color-bolt: #2a3640;
 
-  /* Header chrome. Translucent, so it stays a raw rgba rather than a hex. */
-  --color-header-bg: rgba(10, 10, 10, 0.94);
+  /*
+   * The homepage canvas's buds, the warmest thing in the scene. Read by
+   * HeroField.vue and used nowhere else: text on the site is `text`.
+   */
+  --color-bud: #d4c5ab;
 
   /* Typography */
   /*
@@ -193,7 +192,7 @@
   --text-h2: clamp(26px, 5.6vw, 64px);
   --text-h2--line-height: 0.96;
   --text-h3: clamp(20px, 2.6vw, 32px);
-  --text-h3--line-height: 1.15;
+  --text-h3--line-height: 1.1;
   /*
    * The hero's stickers, height-aware like --text-hero-h1: at a flat 30px they
    * keep their 1080p size while the name beside them shrinks, and a decoration
@@ -203,18 +202,18 @@
   --text-hero-sticker--line-height: 1.02;
   --text-body: clamp(17px, 1.2vw, 19px);
   --text-body--line-height: 1.62;
-  --text-label: 13px;
+  --text-label: 14px;
   --text-label--line-height: 1.2;
   /*
-   * Button labels. A step above the 13px label, which read as too small on
-   * a control, and larger again on a phone: 16px up to about 400px wide,
+   * Button labels. At least the 14px label, which read as too small on a
+   * control at 13px, and larger again on a phone: 16px up to about 400px wide,
    * easing to 14px by 1200px. Fluid rather than a breakpoint step, like every
    * other size here.
    */
   --text-button: clamp(14px, calc(17px - 0.25vw), 16px);
   --text-button--line-height: 1.2;
   /*
-   * The footer's copyright line. At the 13px of `text-label` it disappeared
+   * The footer's copyright line. At the size of `text-label` it disappeared
    * beside the 56px profile tiles; at 20px it holds its own, just under the
    * 22px of the icons inside them. One line, so the line-height is a label's.
    */
@@ -241,26 +240,34 @@
   --aspect-photo: 4 / 3;
 
   --tracking-heading: -0.05em;
-  --tracking-heading-tight: -0.04em;
   /* A heading in its own case: -0.05em suits capitals and crowds lowercase. */
   --tracking-title: -0.02em;
   --tracking-label: 0.1em;
-  --tracking-label-wide: 0.14em;
 
   /* Radius. Zero everywhere except the nav CTA and the logo tile. */
   --radius-nav: 14px;
 
-  /* Hard offset shadows. Zero blur, zero spread. */
+  /*
+   * Hard offset shadows, zero blur and zero spread. The colour says what a
+   * thing is, one job each:
+   *
+   *   gold  things that stand on the page: cards, panels, a hero photo (8px)
+   *   pink  things you press, and the bunny marks: buttons, tags, the call to
+   *         action (4px); the logo tile, its copies and the roundel (8px, and
+   *         12px on the tile's larger copies)
+   *   cyan  where you are: the current nav item, tag and call to action (4px),
+   *         with focus and hover
+   *
+   * State is never the shadow colour alone (pink against cyan is 2.29): the
+   * current nav item gains a border box, the current tag a marker, the current
+   * call to action an inset ring. Whatever casts a shadow and takes focus also
+   * sets `lift-control` or `lift-object`, so its ring clears the shadow.
+   */
   --shadow-hard-gold-8: 8px 8px 0 var(--color-gold);
-  --shadow-hard-gold-6: 6px 6px 0 var(--color-gold);
-  --shadow-hard-gold-4: 4px 4px 0 var(--color-gold);
-  --shadow-hard-pink-12: 12px 12px 0 var(--color-pink);
+  --shadow-hard-pink-4: 4px 4px 0 var(--color-pink);
   --shadow-hard-pink-8: 8px 8px 0 var(--color-pink);
-  --shadow-hard-cyan-8: 8px 8px 0 var(--color-cyan);
-  /* The footer's 56px profile tiles: an 8px offset there reads as a second
-   * tile rather than as a shadow. */
-  --shadow-hard-pink-6: 6px 6px 0 var(--color-pink);
-  --shadow-hard-cyan-6: 6px 6px 0 var(--color-cyan);
+  --shadow-hard-pink-12: 12px 12px 0 var(--color-pink);
+  --shadow-hard-cyan-4: 4px 4px 0 var(--color-cyan);
 
   /*
    * The inner half of .btn-gold-primary's two-tone focus ring: 18.58 against
@@ -270,13 +277,17 @@
   --inset-shadow-gold-btn-ring: inset 0 0 0 3px var(--color-gold-btn-label);
 
   /*
-   * The current-page ring on .nav-cta. That control already spends a border and
-   * the gold hover shadow, so an inset ring is the one shape left.
-   *
-   * An inset ring touches two colours, so both are measured: 7.91 on the cyan
-   * fill, 3.42 on the border, against the 3.0 SC 1.4.11 asks.
+   * The current-page ring on .nav-cta, the shape half of its state: the cyan
+   * shadow beside it is a colour change only (2.29 against the resting pink),
+   * so it cannot carry SC 1.4.1 alone. An inset ring touches two colours, so
+   * both are measured: 11.32 on the gold fill, 11.20 on cyan when hovered, and
+   * 4.84 against the border on its outer edge; each clears the 3.0 of
+   * SC 1.4.11.
    */
-  --inset-shadow-cta-current: inset 0 0 0 4px var(--color-darkcyan);
+  --inset-shadow-cta-current: inset 0 0 0 4px var(--color-background);
+
+  /* The second 4px of a failing field's 8px edge, drawn inside the border. */
+  --inset-shadow-invalid: inset 0 0 0 4px var(--color-pink);
 
   /* Layout */
   /*
@@ -288,7 +299,7 @@
    */
   --container-page: 80rem;
   /*
-   * The sticky header's height: clears the nav's 39.6px current-page box plus
+   * The sticky header's height: clears the nav's 40.8px current-page box plus
    * its 4px shadow, with air either side. Fixed pixels out of every viewport
    * including a 720px one at 400% zoom, which is the reason not to grow it.
    * scroll-padding-top on html is calc()'d from this, so SC 2.4.11 follows it.
@@ -330,19 +341,10 @@
    * cards reads as them touching.
    */
   --spacing-section: clamp(56px, 8vw, 96px);
+  /* Heading to content, and content to the actions under it. */
   --spacing-head: clamp(32px, 4vw, 48px);
   --spacing-grid: clamp(28px, 3.4vw, 40px);
-  --spacing-actions: clamp(32px, 4vw, 48px);
   --spacing-inline: clamp(16px, 2vw, 24px);
-  /*
-   * Gold-surface button padding, from the comps. The vertical number is also a
-   * conformance floor: `text-button` at 14px and 1.2 is a 16.8px line box, so
-   * the control renders 60.8px tall including its borders against the 24px
-   * SC 2.5.8 asks, and 63.2px on a phone, where the label reaches 16px.
-   * Do not reduce it below 5px without re-measuring.
-   */
-  --spacing-btn-gold-y: 18px;
-  --spacing-btn-gold-x: 34px;
 
   /*
    * PageHero's cast blocks, fluid between a phone and 1200px like the rhythm
@@ -370,10 +372,6 @@
   --spacing-menu-bar: 3px;
   --spacing-menu-bar-mid: 7px;
   --spacing-menu-bar-end: 14px;
-
-  /* The header fill is not fully opaque, so content shows through as it scrolls
-   * under; 10px keeps it from competing with the wordmark and nav labels. */
-  --blur-header: 10px;
 }
 
 @layer base {
@@ -474,13 +472,18 @@
 
   h3 {
     font-size: var(--text-h3);
-    line-height: 1.02;
-    font-weight: 800;
-    letter-spacing: var(--tracking-heading-tight);
+    line-height: var(--text-h3--line-height);
+    letter-spacing: var(--tracking-title);
   }
 
+  /*
+   * Links are the text colour. Gold is kept for the page title, the primary
+   * action and the current page, and cyan for hover and focus, so neither
+   * says "link" by itself; the underline below does, and a link that is a box
+   * (a nav item, a button, a card) says it by its shape.
+   */
   a {
-    color: var(--color-gold);
+    color: var(--color-text);
     text-decoration: none;
   }
 
@@ -499,66 +502,138 @@
   /*
    * SC 1.4.1, for links in running text. The rule above strips the underline,
    * which is right for a nav item or a button and wrong inside a sentence,
-   * where colour is the only signal left: gold against muted is 1.03:1.
+   * where a link is the colour of the words around it: the underline is the
+   * whole signal. Hover thickens it as well as turning it cyan, so the change
+   * is a shape and not only a colour.
    *
    * Scoped by `:not([class])` because Markdown links arrive without a class
-   * while every link that is already a box carries one. Known cost: giving a
-   * prose link a class silently drops its underline.
+   * while every link that is already a box carries one. A standalone link that
+   * carries a class for layout and is not a box takes `.link` instead.
    */
   .prose a,
   p a:not([class]),
   li a:not([class]),
   dd a:not([class]),
-  figcaption a:not([class]) {
+  figcaption a:not([class]),
+  .link {
     text-decoration: underline;
     text-underline-offset: 0.2em;
     text-decoration-thickness: 2px;
   }
 
-  /*
-   * One focus indicator for the whole site. Gold measures 11.32 / 10.60 / 11.76
-   * against background / surface / deep.
-   *
-   * The offset is not cosmetic: gold on the gold button is 1.00:1, so a flush
-   * ring would be invisible on .btn-primary. Never set outline-offset to 0.
-   */
-  :focus-visible {
-    outline: 3px solid var(--color-gold);
-    outline-offset: 3px;
+  .prose a:hover,
+  p a:not([class]):hover,
+  li a:not([class]):hover,
+  dd a:not([class]):hover,
+  figcaption a:not([class]):hover,
+  .link:hover {
+    text-decoration-thickness: 4px;
   }
 
   /*
-   * Native media controls are tab stops inside the element's user-agent shadow
-   * tree. While one has focus the host does not match :focus-visible, and in
-   * one of the two engines tests/focus.spec.ts runs not :focus either;
-   * :focus-within matches in both. Without this a keyboard user tabbing
-   * through a video's controls sees no site ring. A mouse click shows it too,
-   * which costs nothing.
+   * One focus indicator for the whole site: 4px of cyan, 11.20 / 10.49 / 8.21
+   * against background / surface / joint. Cyan is spent on nothing but focus
+   * and hover, so a ring never looks like a gold control or a gold link.
+   *
+   * The offset clears the element's own hard shadow. A cyan ring crossing the
+   * pink shadow is 2.29:1, under SC 1.4.11, so every element that casts a
+   * shadow sets `--lift` to that shadow's offset (the `lift-control` and
+   * `lift-object` utilities) and the ring lands on the ground beyond it.
+   * Never set outline-offset to 0.
    */
-  :is(video, audio)[controls]:is(:focus, :focus-within) {
-    outline: 3px solid var(--color-gold);
-    outline-offset: 3px;
+  :root {
+    --focus-width: 4px;
+    --focus-gap: 4px;
+    --lift-control: 4px;
+    --lift-object: 8px;
   }
+
+  :focus-visible {
+    outline: var(--focus-width) solid var(--color-cyan);
+    outline-offset: calc(var(--focus-gap) + var(--lift, 0px));
+  }
+
+  :is(video, audio)[controls]:is(:focus, :focus-within) {
+    outline: var(--focus-width) solid var(--color-cyan);
+    outline-offset: var(--focus-gap);
+  }
+}
+
+/*
+ * The shadow an element casts, restated for its focus ring. Set beside every
+ * hard shadow on something focusable; see :focus-visible above.
+ */
+@utility lift-control {
+  --lift: var(--lift-control);
+}
+
+@utility lift-object {
+  --lift: var(--lift-object);
+}
+
+/*
+ * For a tilted box with a border. The fill is clipped to inside the border,
+ * because a fill painted under it bleeds through the anti-aliased outer edge
+ * as a fringe (the gold footer tile showed one around its dark border); and
+ * the box is drawn as its own layer, which Chromium smooths as a whole rather
+ * than stair-stepping each edge at 3deg.
+ */
+@utility tilt-smooth {
+  background-clip: padding-box;
+  backface-visibility: hidden;
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-block border-4 border-border bg-gold px-8 py-4
+    @apply lift-control inline-block border-4 border-border bg-gold px-8 py-4
       text-button font-black uppercase tracking-label text-background
-      shadow-hard-pink-12;
+      shadow-hard-pink-4;
   }
 
   .btn-secondary {
-    @apply inline-block border-4 border-border bg-surface px-8 py-4
+    @apply lift-control inline-block border-4 border-border bg-surface px-8 py-4
       text-button font-black uppercase tracking-label text-text
-      shadow-hard-gold-6;
+      shadow-hard-pink-4;
   }
 
   /*
-   * A row of buttons. When the row wraps, the next button would sit 16px
-   * under the one above, and that one's 12px hard shadow fills most of the
-   * gap, so two buttons read as touching. The vertical gap clears the shadow
-   * with room to spare; the horizontal one is the ordinary inline gap.
+   * Button states, shared by both. Hover fills with cyan, the interaction
+   * colour: background on cyan is 11.20, and the fill against the page is
+   * 11.20 too. Pressing moves the button 4px into its own shadow, which then
+   * has nowhere to fall; the move is a state, not a transition, and is left
+   * out under reduced motion, where the shadow still goes.
+   *
+   * Unavailable is `aria-disabled`, never `disabled`, so the control stays
+   * focusable and announced. It is drawn by shape as well as tone: a dashed
+   * edge and no shadow, with the label at `subtle`, 8.62 on background.
+   */
+  :is(.btn-primary, .btn-secondary, .nav-cta):not(
+      [aria-disabled='true']
+    ):hover {
+    @apply bg-cyan text-background;
+  }
+
+  :is(.btn-primary, .btn-secondary, .nav-cta):not(
+      [aria-disabled='true']
+    ):active {
+    @apply translate-x-1 translate-y-1 shadow-none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :is(.btn-primary, .btn-secondary, .nav-cta):active {
+      @apply translate-x-0 translate-y-0;
+    }
+  }
+
+  :is(.btn-primary, .btn-secondary)[aria-disabled='true'] {
+    @apply cursor-not-allowed border-dashed bg-background text-subtle
+      shadow-none;
+  }
+
+  /*
+   * A row of buttons. When the row wraps, the vertical gap keeps the next
+   * button well clear of the 4px hard shadow and the focus ring beyond it;
+   * the horizontal one is the ordinary inline gap.
    */
   .actions {
     @apply flex flex-wrap items-start gap-x-inline gap-y-8;
@@ -584,7 +659,7 @@
       display: block;
     }
 
-    .mobile-menu-island {
+    .mobile-menu {
       display: none;
     }
   }
@@ -593,33 +668,32 @@
    * The navigation's call to action, in one place because it is rendered in
    * two: the header row and the mobile dialog.
    *
+   * It is a primary action, so it looks like one: gold, square, on the 4px
+   * pink shadow. The logo tile is the one rounded thing in the header, and a
+   * rounded button beside it made the logo read as a button style.
+   *
    * The class carries what makes it that control, the fill, the border, the
-   * radius and the label type, and each call site adds its own box. The
+   * shadow and the label type, and each call site adds its own box. The
    * header one is a row item, the dialog one is a full-width block with a top
    * margin; those differ, the identity does not. Written out twice the two
    * came apart, one carrying a hover state and neither marking itself as the
    * current page. A shared class is what makes the state rules below reach
    * every rendering rather than whichever one someone edited.
    *
-   * The rules are here rather than utilities in the markup because
-   * `box-shadow` is one property: a `hover:` utility naming the gold shadow
-   * would replace the current-page ring while the pointer was over the
-   * control, on the one page where that ring is the only thing saying you are
-   * already there. Being in the same layer lets source order settle it.
-   * See --inset-shadow-cta-current for what the ring measures.
+   * On its own page it takes the cyan "you are here" shadow and an inset
+   * ring, which changes nothing about its box. The rules are here rather than
+   * utilities in the markup because `box-shadow` is one property, and being
+   * in the same layer lets source order settle it. See
+   * --inset-shadow-cta-current for what the ring measures.
    */
   .nav-cta {
-    @apply rounded-nav border-4 border-border bg-cyan
-      text-label font-black uppercase tracking-label text-darkcyan;
-  }
-
-  .nav-cta:hover {
-    box-shadow: var(--shadow-hard-gold-4);
+    @apply lift-control border-4 border-border bg-gold text-label font-black
+      uppercase tracking-label text-background shadow-hard-pink-4;
   }
 
   .nav-cta[aria-current='page'],
   .nav-cta[aria-current='page']:hover {
-    box-shadow: var(--inset-shadow-cta-current);
+    box-shadow: var(--inset-shadow-cta-current), var(--shadow-hard-cyan-4);
   }
 
   /*
@@ -700,7 +774,7 @@
   }
 
   .cast-blocks > span::after {
-    @apply absolute right-bolt-inset bottom-bolt-inset size-bolt rounded-full bg-bolt;
+    @apply absolute right-bolt-inset bottom-bolt-inset size-bolt rounded-full bg-joint;
 
     content: '';
   }
@@ -912,7 +986,7 @@
     font-size: var(--text-hero-sticker);
     line-height: var(--text-hero-sticker--line-height);
 
-    @apply border-4 px-4 py-2 font-extrabold uppercase;
+    @apply border-4 px-4 py-2 font-black uppercase;
   }
 
   @media (width >= 40rem) {
@@ -969,7 +1043,8 @@
    * is inert anywhere else: a block element's min-width is already 0.
    */
   .card {
-    @apply min-w-0 border-8 border-border bg-surface p-card-tight sm:p-card;
+    @apply min-w-0 border-8 border-border bg-surface p-card-tight
+      shadow-hard-gold-8 sm:p-card;
   }
 
   /*
@@ -978,7 +1053,7 @@
    * sits in.
    */
   .card-title {
-    @apply text-h3 font-extrabold text-text;
+    @apply text-h3 font-black text-text;
   }
 
   /*
@@ -1053,21 +1128,31 @@
     content: '';
   }
 
+  /*
+   * The colour is set here rather than as a utility on the link, which would
+   * sit in a later layer and beat the hover below: linked cards never showed
+   * a hover at all while the markup carried `text-text`.
+   */
+  .card-link {
+    @apply text-text;
+  }
+
   .card:has(.card-link):hover .card-link {
-    @apply text-cyan;
+    @apply text-cyan underline decoration-4 underline-offset-4;
   }
 
   /*
    * The paragraph under a section heading, and the line on a PageHero plate
-   * under the page title. `.lead` is a reading size and stays muted; a
-   * standfirst is the page's own line and sits in the text colour.
+   * under the page title. Both are a reading size at weight 400, since type
+   * here is 400 or 900 and nothing between; the standfirst sits further from
+   * the title it follows.
    */
   .lead {
-    @apply mt-6 max-w-2xl text-h3 font-normal text-muted text-pretty;
+    @apply mt-6 max-w-2xl text-h3 font-normal text-text text-pretty;
   }
 
   .standfirst {
-    @apply mt-8 max-w-2xl text-h3 font-bold text-text text-pretty;
+    @apply mt-8 max-w-2xl text-h3 font-normal text-text text-pretty;
   }
 
   /*
@@ -1077,11 +1162,11 @@
    * stylesheet, and an inline style needs a hash in the CSP.
    */
   .photo-viewer {
-    @apply m-0 size-full max-h-none max-w-none border-0 bg-deep p-5 text-text;
+    @apply m-0 size-full max-h-none max-w-none border-0 bg-background p-5 text-text;
   }
 
   .photo-viewer::backdrop {
-    @apply bg-deep;
+    @apply bg-background;
   }
 
   .photo-viewer-frame {
@@ -1146,18 +1231,20 @@
 
   /* The lead inside a panel Section, a size down from `.lead`. */
   .panel-lead {
-    @apply mt-3 max-w-2xl text-body text-muted text-pretty;
+    @apply mt-3 max-w-2xl text-body text-text text-pretty;
   }
 
   .bullet-list {
-    @apply list-disc pl-6 text-muted marker:text-gold;
+    @apply list-disc pl-6 text-text marker:text-gold;
   }
 
   /*
-   * A chip: a tag, a skill, a jump link or a filter. Square like every other
-   * box here. As a link it carries its own 24px target (SC 2.5.8) from its
+   * A chip: a tag, a jump link or a filter, always a link. Square like every
+   * other box here. It carries its own 24px target (SC 2.5.8) from its
    * padding and border. The current filter carries `aria-current` and a
-   * square marker span as well as the fill; see BlogListing.astro.
+   * square marker span as well as the fill; see BlogListing.astro. A fact that
+   * is not a link is a `.badge`, which has no edge, so it does not look
+   * clickable.
    */
   .chip {
     @apply inline-flex min-h-target items-center gap-2 border-4 border-border
@@ -1165,12 +1252,22 @@
       text-text;
   }
 
+  a.chip {
+    @apply lift-control shadow-hard-pink-4;
+  }
+
   a.chip:hover {
     @apply text-cyan;
   }
 
   a.chip[aria-current] {
-    @apply bg-gold text-background shadow-hard-pink-8;
+    @apply shadow-hard-cyan-4;
+  }
+
+  /* Text on text: background on #E5E2E1 is 14.42. */
+  .badge {
+    @apply inline-flex items-center bg-text px-2 py-1 text-label font-black
+      uppercase tracking-label text-background;
   }
 
   /*
@@ -1199,11 +1296,11 @@
   }
 
   .prose p {
-    @apply mt-6 text-body text-muted;
+    @apply mt-6 text-body text-text;
   }
 
   .prose :is(ul, ol) {
-    @apply mt-6 pl-6 text-muted;
+    @apply mt-6 pl-6 text-text;
   }
 
   .prose ul {
@@ -1273,15 +1370,14 @@
   }
 
   /*
-   * Quoted text is `text` rather than `muted`, which is what separates it
-   * from the paragraph above it once the border is out of the picture: in
-   * forced-colors, where the border is repainted to the system colour, and
-   * for a reader who does not see the gold. It is also why the quote is not
-   * set in italic: Lexend Variable ships no italic face, so an italic here
-   * would be a browser-synthesised oblique of a 900-capable variable font.
+   * Quoted text is set at 900, which is what separates it from the paragraph
+   * above it once the border is out of the picture: in forced-colors, where
+   * the border is repainted to the system colour, and for a reader who does
+   * not see the gold. Weight, not italic: Lexend Variable ships no italic
+   * face, so an italic here would be a browser-synthesised oblique.
    */
   .prose blockquote p {
-    @apply text-text;
+    @apply font-black text-text;
   }
 
   .prose blockquote > :first-child {
@@ -1330,7 +1426,7 @@
    * where automatic hyphenation is worth setting.
    */
   .prose table {
-    @apply mt-6 w-full border-4 border-border text-body text-muted;
+    @apply mt-6 w-full border-4 border-border text-body text-text;
     border-collapse: collapse;
     table-layout: fixed;
     hyphens: auto;
@@ -1364,12 +1460,12 @@
    * rules are wrong on this ground and three fail silently:
    *
    *   1. TEXT. `text` is 1.27 on gold.
-   *   2. LINKS. Painted `gold` (1.00) and `cyan` on hover (1.01), so invisible.
+   *   2. LINKS. Painted `text` (1.27) and `cyan` on hover (1.01), so invisible.
    *      Underlined here and nowhere else: darkcyan measures 1.42 against the
    *      body colour, under the 3:1 that would let colour carry it alone, so
    *      the underline is what satisfies SC 1.4.1. Do not remove it.
-   *   3. FOCUS. The ring's 3px offset saves it elsewhere by putting the dark
-   *      page background either side; here the gap is gold too.
+   *   3. FOCUS. The cyan ring is 1.01 on gold, and its offset gap is gold
+   *      too, so nothing dark sits either side of it here.
    *   4. BORDERS. Default `border` is 2.34 on gold.
    *
    * An explicit utility still beats the subtree default, so `border-border`
@@ -1377,7 +1473,7 @@
    * tests/gold-surface.spec.ts is what catches it.
    *
    * .btn-primary and .btn-secondary must not be used here: the first is a
-   * 1.00:1 fill, the second carries a 2.34 border and a 1.00 gold shadow.
+   * 1.00:1 fill, the second carries a 2.34 border and a 2.31 pink shadow.
    */
   .surface-gold {
     @apply bg-gold text-gold-text;
@@ -1402,8 +1498,8 @@
 
   /*
    * Higher specificity than the base :focus-visible, and in a later layer, so
-   * it wins twice over. Offset stays 3px; the gap is gold and gold-text
-   * measures 11.32 against it.
+   * it wins twice over. The offset is unchanged; the gap is gold and
+   * gold-text measures 11.32 against it.
    */
   .surface-gold :focus-visible {
     outline-color: var(--color-gold-text);
@@ -1426,19 +1522,19 @@
    */
   .surface-gold .btn-gold-primary {
     @apply inline-block border-4 border-gold-text bg-gold-text
-      px-btn-gold-x py-btn-gold-y text-button font-black uppercase
-      tracking-label text-gold-btn-label shadow-hard-pink-8;
+      px-8 py-4 text-button font-black uppercase
+      tracking-label text-gold-btn-label shadow-hard-pink-4 lift-control;
   }
 
   .surface-gold .btn-gold-secondary {
     @apply inline-block border-4 border-gold-text bg-transparent
-      px-btn-gold-x py-btn-gold-y text-button font-black uppercase
+      px-8 py-4 text-button font-black uppercase
       tracking-label text-gold-text;
   }
 
   /*
    * A two-tone focus ring, on this one control only: its ring colour is its own
-   * fill, so ring-against-fill is 1.00 and only the 3px offset made it visible.
+   * fill, so ring-against-fill is 1.00 and only the offset made it visible.
    * That put the whole indicator on one property staying non-zero. Two rings
    * instead, one for each thing it can abut: inner #FFFFFF on the fill at
    * 18.58, outer #131313 on gold at 11.32.
@@ -1448,7 +1544,7 @@
    * button had focus.
    */
   .surface-gold .btn-gold-primary:focus-visible {
-    box-shadow: var(--inset-shadow-gold-btn-ring), var(--shadow-hard-pink-8);
+    box-shadow: var(--inset-shadow-gold-btn-ring), var(--shadow-hard-pink-4);
   }
 
   /*
@@ -1473,10 +1569,6 @@
 
   .label {
     @apply text-label font-black uppercase tracking-label;
-  }
-
-  .label-wide {
-    @apply text-label font-black uppercase tracking-label-wide;
   }
 
   /*
@@ -1554,15 +1646,15 @@
   .footer-name {
     font-size: var(--text-footer-name);
     line-height: var(--text-footer-name--line-height);
-    letter-spacing: var(--tracking-heading-tight);
+    letter-spacing: var(--tracking-title);
     text-align: center;
 
     @apply font-black uppercase text-text;
   }
 
   /*
-   * One link per row on a phone, each a full-width target 41.6px tall: the
-   * 15.6px line box of a 13px label and 13px above and below it. There is no
+   * One link per row on a phone, each a full-width target 42.8px tall: the
+   * 16.8px line box of a 14px label and 13px above and below it. There is no
    * gap between the two lists, so nothing but colour marks where the pages end
    * and the policies begin.
    */
@@ -1607,16 +1699,16 @@
    * THE TILES. The tilt is a custom property so hover can straighten a tile
    * without knowing which one it is. Three colourways, cycling:
    *
-   *   cyan    icon `darkcyan`, 7.91 on cyan; edge `border`, 5.02 on deep
-   *   surface icon `pink-text`, 7.18 on surface; edge `pink`, 5.09 on deep
+   *   text    icon `background`, 14.42 on text; edge `border`, 4.84 on background
+   *   surface icon `pink-text`, 7.18 on surface; edge `border`, 4.84 on background
    *   gold    icon `gold-text`, 11.32 on gold; the fill is the edge, 12.6
    *
    * The pink icon is `pink-text`, not `pink`: it is a glyph that carries the
    * link's meaning, which is the role the text pink exists for.
    *
    * The colour is set here in the components layer, which the base layer's
-   * `a:hover { color: cyan }` cannot beat. That matters: cyan on the cyan tile
-   * would make the icon vanish under the pointer.
+   * `a:hover { color: cyan }` cannot beat, so each tile keeps its icon colour
+   * under the pointer and says hover by straightening instead.
    */
   .footer-sticker {
     display: grid;
@@ -1624,8 +1716,10 @@
     width: 48px;
     height: 48px;
     border: 4px solid var(--color-border);
+    --lift: var(--lift-control);
     rotate: var(--tilt, 0deg);
-    transition: rotate 150ms ease-out;
+    background-clip: padding-box;
+    backface-visibility: hidden;
   }
 
   .footer-sticker:hover {
@@ -1639,45 +1733,44 @@
   }
 
   .footer-stickers li:nth-child(3n + 1) .footer-sticker {
-    background: var(--color-cyan);
-    color: var(--color-darkcyan);
-    box-shadow: var(--shadow-hard-pink-6);
+    background-color: var(--color-text);
+    color: var(--color-background);
+    box-shadow: var(--shadow-hard-pink-4);
   }
 
   .footer-stickers li:nth-child(3n + 2) .footer-sticker {
-    background: var(--color-surface);
+    background-color: var(--color-surface);
     color: var(--color-pink-text);
-    border-color: var(--color-pink);
-    box-shadow: var(--shadow-hard-cyan-6);
+    box-shadow: var(--shadow-hard-pink-4);
   }
 
   .footer-stickers li:nth-child(3n) .footer-sticker {
-    background: var(--color-gold);
+    background-color: var(--color-gold);
     color: var(--color-gold-text);
     border-color: var(--color-gold-text);
-    box-shadow: var(--shadow-hard-pink-6);
+    box-shadow: var(--shadow-hard-pink-4);
   }
 
   .footer-stickers li:nth-child(1) {
-    --tilt: -5deg;
+    --tilt: -3deg;
   }
   .footer-stickers li:nth-child(2) {
-    --tilt: 4deg;
+    --tilt: 3deg;
   }
   .footer-stickers li:nth-child(3) {
     --tilt: -3deg;
   }
   .footer-stickers li:nth-child(4) {
-    --tilt: 6deg;
+    --tilt: 3deg;
   }
   .footer-stickers li:nth-child(5) {
-    --tilt: -4deg;
+    --tilt: -3deg;
   }
   .footer-stickers li:nth-child(6) {
     --tilt: 3deg;
   }
   .footer-stickers li:nth-child(7) {
-    --tilt: -6deg;
+    --tilt: -3deg;
   }
 
   .footer-base {
@@ -1786,7 +1879,7 @@
       grid-column: 3;
     }
 
-    /* 29.6px targets: the 15.6px line box and 7px above and below. */
+    /* 29.6px targets: the 16.8px line box and 7px above and below. */
     .footer-pages a,
     .footer-policies a {
       padding-block: 7px;
@@ -1926,7 +2019,12 @@
   }
 
   .field-label {
-    @apply block text-label font-black uppercase tracking-label text-gold;
+    @apply block text-label font-black uppercase tracking-label text-text;
+  }
+
+  /* Said in words, since `required` alone is invisible (SC 3.3.2). */
+  .field-required {
+    @apply font-normal normal-case tracking-normal text-subtle;
   }
 
   .field-control {
@@ -1944,16 +2042,24 @@
   }
 
   /*
-   * A failing control is marked three ways, because colour alone fails SC
-   * 1.4.1: the border changes, aria-invalid is set, and the message below is
-   * text. Pink is a non-text use here and clears SC 1.4.11 on surface at 4.59.
+   * A failing control is marked by shape, not only colour: pink against the
+   * resting `border` blue is 1.01:1, so a recoloured 4px edge is no visible
+   * change at all. The inset ring doubles the edge to 8px without moving
+   * anything, aria-invalid carries the state, and the message below is text.
+   * Pink clears SC 1.4.11 on surface at 4.59.
    */
   .field-control[aria-invalid='true'] {
-    @apply border-pink;
+    @apply border-pink inset-shadow-invalid;
   }
 
   .field-error {
     @apply mt-3 text-body text-pink-text;
+  }
+
+  /* The mark is decoration beside the words, so it is given empty alt text. */
+  .field-error::before {
+    content: '\2715\00a0' / '';
+    @apply font-black;
   }
 
   /*
@@ -1971,31 +2077,169 @@
 
 /*
  * The 404 page's starfield: a still night sky of token-coloured points on the
- * deep surface. Decoration only, and no text is set on it, because text over a
- * background image cannot be measured and tests/contrast-incomplete.spec.ts
- * fails it. It does not move, so SC 2.2.2 asks nothing of it.
+ * page ground. Hard-edged points: each gradient stops dead at `--star`, so
+ * nothing glows or feathers. Decoration only, and no text is set on it,
+ * because text over a background image cannot be measured and
+ * tests/contrast-incomplete.spec.ts fails it. It does not move, so SC 2.2.2
+ * asks nothing of it.
  */
 @layer components {
   .starfield {
-    background-color: var(--color-deep);
+    --star: 2px;
+    background-color: var(--color-background);
     background-image:
-      radial-gradient(3px 3px at 12% 18%, var(--color-text), transparent),
-      radial-gradient(2px 2px at 28% 72%, var(--color-muted), transparent),
-      radial-gradient(3px 3px at 44% 36%, var(--color-cyan), transparent),
-      radial-gradient(2px 2px at 58% 84%, var(--color-text), transparent),
-      radial-gradient(3px 3px at 71% 22%, var(--color-gold), transparent),
-      radial-gradient(2px 2px at 83% 58%, var(--color-text), transparent),
-      radial-gradient(3px 3px at 91% 12%, var(--color-muted), transparent),
-      radial-gradient(2px 2px at 8% 88%, var(--color-cyan), transparent),
-      radial-gradient(2px 2px at 36% 8%, var(--color-text), transparent),
-      radial-gradient(3px 3px at 64% 64%, var(--color-text), transparent),
-      radial-gradient(2px 2px at 19% 48%, var(--color-gold), transparent),
-      radial-gradient(2px 2px at 77% 92%, var(--color-muted), transparent),
-      radial-gradient(2px 2px at 5% 34%, var(--color-text), transparent),
-      radial-gradient(3px 3px at 52% 12%, var(--color-text), transparent),
-      radial-gradient(2px 2px at 95% 76%, var(--color-cyan), transparent),
-      radial-gradient(2px 2px at 40% 94%, var(--color-text), transparent),
-      radial-gradient(3px 3px at 24% 28%, var(--color-muted), transparent),
-      radial-gradient(2px 2px at 87% 38%, var(--color-text), transparent);
+      radial-gradient(
+        circle at 12% 18%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 28% 72%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 44% 36%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 58% 84%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 71% 22%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 83% 58%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 91% 12%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 8% 88%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 36% 8%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 64% 64%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 19% 48%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 77% 92%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 5% 34%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 52% 12%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 95% 76%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 40% 94%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 24% 28%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 87% 38%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      );
   }
+}
+
+/* ---------------------------------------------------------------------------
+   The mobile menu dialog in Header.astro.
+
+   Unlayered, as the component's scoped styles were, so each rule keeps the
+   precedence it had there. Nothing here sets the links' colour: an unlayered
+   colour would beat their `hover:text-cyan`, which tests/states.spec.ts
+   asserts.
+--------------------------------------------------------------------------- */
+
+/*
+ * A <dialog> is display: none until opened and centred in the top layer by
+ * default, so it is reset to the full-bleed panel this design wants. Sizing
+ * stays here: dialog mechanics, not a token.
+ */
+.mobile-menu-dialog {
+  max-width: none;
+  max-height: none;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 2.5rem 1.5rem 0;
+  border: 0;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  overflow-y: auto;
+  /*
+   * Room for a focus ring when the browser scrolls a focused link to the edge:
+   * the ring, its gap, and the current link's shadow it clears. Without it the
+   * ring is clipped (SC 2.4.7).
+   */
+  scroll-padding-block: calc(
+    var(--focus-width) + var(--focus-gap) + var(--lift-control)
+  );
+}
+
+/*
+ * The space below the Close button lives inside the content rather than in
+ * the dialog's own bottom padding, so there is always room below the last
+ * control for keepInView to scroll its focus ring clear of the edge. Padding
+ * on a child is part of that child's box, which every engine scrolls to.
+ */
+.mobile-menu-content {
+  padding-bottom: 2.5rem;
+}
+
+/*
+ * When the content overflows, the dialog itself becomes a tab stop. It fills
+ * the viewport, so the site's outward ring would land off screen. Draw it
+ * inside the edge instead.
+ */
+.mobile-menu-dialog:focus-visible {
+  outline-offset: calc(-1 * (var(--focus-width) + var(--focus-gap)));
+}
+
+.mobile-menu-dialog::backdrop {
+  background-color: var(--color-background);
+}
+
+.mobile-menu-dialog nav a {
+  font-size: clamp(34px, 8vw, 56px);
+  line-height: 1;
 }

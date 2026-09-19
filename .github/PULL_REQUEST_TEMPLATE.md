@@ -14,8 +14,8 @@ applicable" is a valid answer; leaving it blank is not.
 - [ ] Every new target meets SC 2.5.8 on its own size (24x24 CSS px), without
       relying on the spacing exception.
 - [ ] No size, colour, shadow, or radius is an arbitrary value. Any new colour
-      is a token from `src/styles/global.css`, measured against all three
-      surfaces (`#131313`, `#1A1A1A`, `#0E0E0E`), with the ratios recorded in
+      is a token from `src/styles/global.css`, measured against both
+      surfaces (`#131313`, `#1A1A1A`), with the ratios recorded in
       [ACCESSIBILITY.md](../ACCESSIBILITY.md) §5.
 - [ ] No heading floor was raised without re-running `tests/reflow.spec.ts`.
 

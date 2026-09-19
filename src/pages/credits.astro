@@ -74,7 +74,7 @@ const photographers = Object.entries(PHOTOGRAPHERS).map(([name, href]) => ({
   href,
 }));
 
-const LINK_ITEM = 'inline-flex min-h-target items-center';
+const LINK_ITEM = 'link inline-flex min-h-target items-center';
 const CARD_HEADING = 'card-title';
 
 /*
@@ -100,14 +100,14 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
 
   <section class="band py-section">
     <div class="mx-auto max-w-page">
-      <div id="name" class="card shadow-hard-pink-8">
+      <div id="name" class="card">
         <h2 class={CARD_HEADING}>Where the name comes from</h2>
-        <p class="mt-6 max-w-4xl text-h3 font-bold text-text text-pretty">
+        <p class="mt-6 max-w-4xl text-h3 font-normal text-text text-pretty">
           The inspiration for the name came from{' '}
           <a href={NAME_INSPIRATION.href}>{NAME_INSPIRATION.site}</a>, the
           website of my fellow Drupalist and friend {NAME_INSPIRATION.name}.
         </p>
-        <p class="mt-6 max-w-prose text-body text-muted text-pretty">
+        <p class="mt-6 max-w-prose text-body text-text text-pretty">
           I loved it so much that I used the same pattern for this site and even
           my email address,{' '}
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. Thank you,
@@ -123,17 +123,17 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
         </p>
       </div>
 
-      <div class="card mt-grid shadow-hard-gold-8">
+      <div class="card mt-grid">
         <h2 class={CARD_HEADING}>Thank you</h2>
         <dl class:list={[RULED_LIST, 'md:grid-cols-2 md:gap-x-12']}>
           {THANKS.map((person) => (
             <div class={RULED_ENTRY}>
-              <dt class="text-body font-bold">
+              <dt class="text-body font-black">
                 <a href={person.href} class={LINK_ITEM}>
                   {person.name}
                 </a>
               </dt>
-              <dd class="mt-1 max-w-prose text-body text-muted text-pretty">
+              <dd class="mt-1 max-w-prose text-body text-text text-pretty">
                 {person.reason}
               </dd>
             </div>
@@ -141,10 +141,10 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
         </dl>
       </div>
 
-      <div class="card mt-grid shadow-hard-gold-8">
+      <div class="card mt-grid">
         <h2 class={CARD_HEADING}>Photos</h2>
 
-        <p class="mt-6 text-body text-muted text-pretty">
+        <p class="mt-6 text-body text-text text-pretty">
           Photos on this site and in its posts are by:
         </p>
 
@@ -158,50 +158,50 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
           ))}
         </ul>
 
-        <p class="mt-4 text-body text-muted text-pretty">And more.</p>
+        <p class="mt-4 text-body text-text text-pretty">And more.</p>
       </div>
     </div>
   </section>
 
   <section class="band pb-section">
     <div class="mx-auto grid max-w-page gap-grid lg:grid-cols-2">
-      <div class="card shadow-hard-gold-8">
+      <div class="card">
         <h2 class={CARD_HEADING}>Design tools</h2>
 
         <dl class={RULED_LIST}>
           {DESIGNED_WITH.map((tool) => (
             <div class={RULED_ENTRY}>
-              <dt class="text-body font-bold">
+              <dt class="text-body font-black">
                 <a href={tool.href} class={LINK_ITEM}>
                   {tool.name}
                 </a>
               </dt>
-              <dd class="mt-1 text-body text-muted">{tool.role}</dd>
+              <dd class="mt-1 text-body text-text">{tool.role}</dd>
             </div>
           ))}
           <div class={RULED_ENTRY}>
-            <dt class="text-body font-bold text-text">
+            <dt class="text-body font-black text-text">
               Multiple artists on Fiverr and Upwork
             </dt>
-            <dd class="mt-1 text-body text-muted">
+            <dd class="mt-1 text-body text-text">
               Created and cleaned the logo
             </dd>
           </div>
         </dl>
       </div>
 
-      <div class="card shadow-hard-gold-8">
+      <div class="card">
         <h2 class={CARD_HEADING}>Guides</h2>
 
         <dl class={RULED_LIST}>
           {GUIDES.map((guide) => (
             <div class={RULED_ENTRY}>
-              <dt class="text-body font-bold">
+              <dt class="text-body font-black">
                 <a href={guide.href} class={LINK_ITEM}>
                   {guide.name}
                 </a>
               </dt>
-              <dd class="mt-1 text-body text-muted text-pretty">
+              <dd class="mt-1 text-body text-text text-pretty">
                 By <a href={guide.author.href}>{guide.author.name}</a>.{' '}
                 {guide.use}
               </dd>
@@ -210,7 +210,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
         </dl>
       </div>
 
-      <div class="card shadow-hard-gold-8 lg:col-span-2">
+      <div class="card lg:col-span-2">
         <h2 class={CARD_HEADING}>Built and tested with</h2>
 
         <ul class="bullet-list mt-6 gap-x-12 sm:columns-2 lg:columns-3">
