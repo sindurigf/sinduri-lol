@@ -60,11 +60,32 @@ const onClose = (): void => {
  * Keep the focused control, and its focus ring, inside the scrolled panel.
  * Chromium scrolls a partly visible control into view on focus; Firefox 153
  * scrolls only one that is fully out of view, so tabbing to a control at the
- * edge left it and its ring cut off (SC 2.4.7). `nearest` respects the panel's
- * scroll-padding, so the ring clears the edge.
+ * edge left it and its ring cut off (SC 2.4.7). `nearest` fixes that, and in
+ * Chromium and Firefox respects the panel's scroll-padding. WebKit's does not:
+ * it stops with the control flush against the edge, which drew the Close
+ * button's ring off screen in CI. So the ring's own reach is read from its
+ * style and the panel is nudged by whatever is still cut off. The room to
+ * nudge into is `.mobile-menu-content`'s bottom padding.
  */
 const keepInView = (event: FocusEvent): void => {
-  (event.target as HTMLElement | null)?.scrollIntoView({ block: 'nearest' });
+  const control = event.target as HTMLElement | null;
+  const panel = dialog.value;
+  if (!control || !panel) return;
+
+  control.scrollIntoView({ block: 'nearest' });
+
+  const style = getComputedStyle(control);
+  const reach =
+    parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
+  if (!Number.isFinite(reach) || reach <= 0) return;
+
+  const box = control.getBoundingClientRect();
+  const edge = panel.getBoundingClientRect();
+  const below = box.bottom + reach - edge.bottom;
+  const above = edge.top - (box.top - reach);
+  // Rounded up: scrollTop settles on whole pixels, and a box edge need not.
+  if (below > 0) panel.scrollTop += Math.ceil(below);
+  else if (above > 0) panel.scrollTop -= Math.ceil(above);
 };
 
 onBeforeUnmount(() => {
@@ -123,9 +144,10 @@ onBeforeUnmount(() => {
         heading, because an sr-only <h2> here would sit ahead of the page's
         <h1> in source order and corrupt the document outline.
       -->
-      <nav>
-        <ul class="flex flex-col gap-8">
-          <!--
+      <div class="mobile-menu-content">
+        <nav>
+          <ul class="flex flex-col gap-8">
+            <!--
             The same active treatment as the desktop nav: a bordered box with
             the site's offset gold shadow, the border present but transparent
             on every link, so becoming current changes colour and shadow
@@ -133,36 +155,37 @@ onBeforeUnmount(() => {
             one item would shift every item below it. `aria-current="page"` is
             what announces the state.
           -->
-          <li v-for="link in NAV_LINKS" :key="link.href">
-            <a
-              :href="link.href"
-              :aria-current="isActive(link.href) ? 'page' : undefined"
-              class="block border-4 px-4 py-2 font-black uppercase tracking-heading-tight"
-              :class="
-                isActive(link.href)
-                  ? 'border-border text-text shadow-hard-gold-4'
-                  : 'border-transparent text-text hover:text-cyan'
-              "
-              @click="close"
-            >
-              {{ link.label }}
-            </a>
-          </li>
-        </ul>
+            <li v-for="link in NAV_LINKS" :key="link.href">
+              <a
+                :href="link.href"
+                :aria-current="isActive(link.href) ? 'page' : undefined"
+                class="block border-4 px-4 py-2 font-black uppercase tracking-heading-tight"
+                :class="
+                  isActive(link.href)
+                    ? 'border-border text-text shadow-hard-gold-4'
+                    : 'border-transparent text-text hover:text-cyan'
+                "
+                @click="close"
+              >
+                {{ link.label }}
+              </a>
+            </li>
+          </ul>
 
-        <a
-          :href="CTA.href"
-          :aria-current="isActive(CTA.href) ? 'page' : undefined"
-          class="nav-cta mt-12 block px-8 py-5 text-center"
-          @click="close"
-        >
-          {{ CTA.label }}
-        </a>
-      </nav>
+          <a
+            :href="CTA.href"
+            :aria-current="isActive(CTA.href) ? 'page' : undefined"
+            class="nav-cta mt-12 block px-8 py-5 text-center"
+            @click="close"
+          >
+            {{ CTA.label }}
+          </a>
+        </nav>
 
-      <button type="button" class="btn-secondary mt-12 w-full" @click="close">
-        Close
-      </button>
+        <button type="button" class="btn-secondary mt-12 w-full" @click="close">
+          Close
+        </button>
+      </div>
     </dialog>
   </div>
 </template>
@@ -179,7 +202,7 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   margin: 0;
-  padding: 2.5rem 1.5rem;
+  padding: 2.5rem 1.5rem 0;
   border: 0;
   background-color: var(--color-background);
   color: var(--color-text);
@@ -189,6 +212,16 @@ onBeforeUnmount(() => {
    * a focused link to the edge. Without it the ring is clipped (SC 2.4.7).
    */
   scroll-padding-block: 6px;
+}
+
+/*
+ * The space below the Close button lives inside the content rather than in
+ * the dialog's own bottom padding, so there is always room below the last
+ * control for keepInView to scroll its focus ring clear of the edge. Padding
+ * on a child is part of that child's box, which every engine scrolls to.
+ */
+.mobile-menu-content {
+  padding-bottom: 2.5rem;
 }
 
 /*
