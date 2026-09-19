@@ -162,7 +162,7 @@ onBeforeUnmount(() => {
                 class="block border-4 px-4 py-2 font-black uppercase tracking-heading-tight"
                 :class="
                   isActive(link.href)
-                    ? 'border-border text-text shadow-hard-gold-4'
+                    ? 'lift-control border-border text-text shadow-hard-pink-4'
                     : 'border-transparent text-text hover:text-cyan'
                 "
                 @click="close"
@@ -208,10 +208,13 @@ onBeforeUnmount(() => {
   color: var(--color-text);
   overflow-y: auto;
   /*
-   * Room for a focus ring (3px outline + 3px offset) when the browser scrolls
-   * a focused link to the edge. Without it the ring is clipped (SC 2.4.7).
+   * Room for a focus ring when the browser scrolls a focused link to the edge:
+   * the ring, its gap, and the current link's shadow it clears. Without it the
+   * ring is clipped (SC 2.4.7).
    */
-  scroll-padding-block: 6px;
+  scroll-padding-block: calc(
+    var(--focus-width) + var(--focus-gap) + var(--lift-control)
+  );
 }
 
 /*
@@ -230,7 +233,7 @@ onBeforeUnmount(() => {
  * inside the edge instead.
  */
 .mobile-menu-dialog:focus-visible {
-  outline-offset: -6px;
+  outline-offset: calc(-1 * (var(--focus-width) + var(--focus-gap)));
 }
 
 .mobile-menu-dialog::backdrop {

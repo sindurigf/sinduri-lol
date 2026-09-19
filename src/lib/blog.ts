@@ -152,17 +152,14 @@ export const getPostsByTag = async (): Promise<Map<string, BlogPost[]>> => {
 const ACCENTS = {
   gold: {
     text: 'text-gold',
-    shadow: 'shadow-hard-gold-8',
     tile: 'bg-gold text-background',
   },
   cyan: {
     text: 'text-cyan',
-    shadow: 'shadow-hard-cyan-8',
     tile: 'bg-cyan text-darkcyan',
   },
   pink: {
     text: 'text-pink-text',
-    shadow: 'shadow-hard-pink-8',
     tile: 'bg-pink text-background',
   },
 } as const;

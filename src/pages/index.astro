@@ -201,7 +201,7 @@ const STATS = [
         <span class="hero-sticker -rotate-6 border-border bg-cyan text-darkcyan shadow-hard-pink-8">
           Lepus
         </span>
-        <span class="hero-sticker rotate-6 border-pink bg-surface text-pink-text shadow-hard-cyan-8">
+        <span class="hero-sticker rotate-6 border-border bg-surface text-pink-text shadow-hard-pink-8">
           Ridet
         </span>
       </div>
@@ -249,7 +249,7 @@ const STATS = [
         <Roundel class="absolute -bottom-8 right-0 sm:-right-3" />
       </div>
 
-      <div class="card shadow-hard-pink-8 lg:mt-16">
+      <div class="card lg:mt-16">
         <ul class="grid gap-6 sm:grid-cols-2">
           {STATS.map((stat) => (
             <li
@@ -287,7 +287,6 @@ const STATS = [
         <li
           class:list={[
             'card flex flex-col',
-            categoryAccent(card.category).shadow,
             index === 0 && leadSpansSm && 'sm:col-span-2',
             index === 0 && leadSpansLg && 'lg:col-span-2',
           ]}

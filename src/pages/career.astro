@@ -232,12 +232,7 @@ const OPEN_SOURCE = [
          * words with a chip, so colour is never the only signal (SC 1.4.1).
          */
         EXPERIENCE.map((role) => (
-          <li
-            class:list={[
-              'card grid gap-8 lg:grid-cols-4',
-              role.current ? 'shadow-hard-pink-8' : 'shadow-hard-gold-8',
-            ]}
-          >
+          <li class="card grid gap-8 lg:grid-cols-4">
             <div class="flex min-w-0 flex-col items-start gap-4 lg:col-span-4">
               {role.current && <span class="chip">Current</span>}
               <h3 class="card-title">{role.title}</h3>
@@ -261,7 +256,7 @@ const OPEN_SOURCE = [
 
   <Section title="Skills and education">
     <div class="grid gap-grid lg:grid-cols-2">
-      <div class="card shadow-hard-gold-8">
+      <div class="card">
         <h3 class="card-title">Education</h3>
         <ul class="mt-8 flex flex-col gap-4">
           {EDUCATION.map((item) => (
@@ -281,7 +276,7 @@ const OPEN_SOURCE = [
       </div>
 
       <div class="flex min-w-0 flex-col gap-grid">
-        <div class="card shadow-hard-gold-8">
+        <div class="card">
           <h3 class="card-title">Skills</h3>
           <ul class="mt-8 flex flex-wrap gap-3">
             {SKILLS.map((skill) => (
@@ -290,7 +285,7 @@ const OPEN_SOURCE = [
           </ul>
         </div>
 
-        <div class="card shadow-hard-gold-8">
+        <div class="card">
           <h3 class="card-title">Languages</h3>
           <ul class="mt-8 flex flex-col gap-4">
             {LANGUAGES.map((item) => (
@@ -320,13 +315,8 @@ const OPEN_SOURCE = [
         and expertise, not hierarchy. There is room for everyone.
       </p>
       <dl class="grid gap-grid sm:grid-cols-2 lg:col-span-7">
-        {OPEN_SOURCE.map((item, index) => (
-          <div
-            class:list={[
-              'card',
-              index === 0 ? 'shadow-hard-pink-8' : 'shadow-hard-gold-8',
-            ]}
-          >
+        {OPEN_SOURCE.map((item) => (
+          <div class="card">
             <dt class="label-wide text-gold">{item.award}</dt>
             <dd class="mt-4 text-body text-muted text-pretty">{item.detail}</dd>
           </div>

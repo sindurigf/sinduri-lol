@@ -250,17 +250,19 @@
   /* Radius. Zero everywhere except the nav CTA and the logo tile. */
   --radius-nav: 14px;
 
-  /* Hard offset shadows. Zero blur, zero spread. */
-  --shadow-hard-gold-8: 8px 8px 0 var(--color-gold);
-  --shadow-hard-gold-6: 6px 6px 0 var(--color-gold);
-  --shadow-hard-gold-4: 4px 4px 0 var(--color-gold);
-  --shadow-hard-pink-12: 12px 12px 0 var(--color-pink);
+  /*
+   * Hard offset shadows: pink, zero blur, zero spread, in two sizes. 4px under
+   * a control, 8px under an object (a card, a photo on the hero wall, the
+   * roundel). One colour, the logo tile's, so every object on the site stands
+   * off the page the same way. Whatever casts one and takes focus also sets
+   * `lift-control` or `lift-object`, so its ring clears the shadow.
+   *
+   * pink-12 belongs to the logo tile's larger copies alone (404, About), which
+   * scale the tile's 8px with its size.
+   */
+  --shadow-hard-pink-4: 4px 4px 0 var(--color-pink);
   --shadow-hard-pink-8: 8px 8px 0 var(--color-pink);
-  --shadow-hard-cyan-8: 8px 8px 0 var(--color-cyan);
-  /* The footer's 56px profile tiles: an 8px offset there reads as a second
-   * tile rather than as a shadow. */
-  --shadow-hard-pink-6: 6px 6px 0 var(--color-pink);
-  --shadow-hard-cyan-6: 6px 6px 0 var(--color-cyan);
+  --shadow-hard-pink-12: 12px 12px 0 var(--color-pink);
 
   /*
    * The inner half of .btn-gold-primary's two-tone focus ring: 18.58 against
@@ -519,42 +521,57 @@
   }
 
   /*
-   * One focus indicator for the whole site. Gold measures 11.32 / 10.60 / 11.76
-   * against background / surface / deep.
+   * One focus indicator for the whole site: 4px of cyan, 11.20 / 10.49 / 8.21
+   * against background / surface / joint. Cyan is spent on nothing but focus
+   * and hover, so a ring never looks like a gold control or a gold link.
    *
-   * The offset is not cosmetic: gold on the gold button is 1.00:1, so a flush
-   * ring would be invisible on .btn-primary. Never set outline-offset to 0.
+   * The offset clears the element's own hard shadow. A cyan ring crossing the
+   * pink shadow is 2.29:1, under SC 1.4.11, so every element that casts a
+   * shadow sets `--lift` to that shadow's offset (the `lift-control` and
+   * `lift-object` utilities) and the ring lands on the ground beyond it.
+   * Never set outline-offset to 0.
    */
-  :focus-visible {
-    outline: 3px solid var(--color-gold);
-    outline-offset: 3px;
+  :root {
+    --focus-width: 4px;
+    --focus-gap: 4px;
+    --lift-control: 4px;
+    --lift-object: 8px;
   }
 
-  /*
-   * Native media controls are tab stops inside the element's user-agent shadow
-   * tree. While one has focus the host does not match :focus-visible, and in
-   * one of the two engines tests/focus.spec.ts runs not :focus either;
-   * :focus-within matches in both. Without this a keyboard user tabbing
-   * through a video's controls sees no site ring. A mouse click shows it too,
-   * which costs nothing.
-   */
-  :is(video, audio)[controls]:is(:focus, :focus-within) {
-    outline: 3px solid var(--color-gold);
-    outline-offset: 3px;
+  :focus-visible {
+    outline: var(--focus-width) solid var(--color-cyan);
+    outline-offset: calc(var(--focus-gap) + var(--lift, 0px));
   }
+
+  :is(video, audio)[controls]:is(:focus, :focus-within) {
+    outline: var(--focus-width) solid var(--color-cyan);
+    outline-offset: var(--focus-gap);
+  }
+}
+
+/*
+ * The shadow an element casts, restated for its focus ring. Set beside every
+ * hard shadow on something focusable; see :focus-visible above.
+ */
+@utility lift-control {
+  --lift: var(--lift-control);
+}
+
+@utility lift-object {
+  --lift: var(--lift-object);
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-block border-4 border-border bg-gold px-8 py-4
+    @apply lift-control inline-block border-4 border-border bg-gold px-8 py-4
       text-button font-black uppercase tracking-label text-background
-      shadow-hard-pink-12;
+      shadow-hard-pink-4;
   }
 
   .btn-secondary {
-    @apply inline-block border-4 border-border bg-surface px-8 py-4
+    @apply lift-control inline-block border-4 border-border bg-surface px-8 py-4
       text-button font-black uppercase tracking-label text-text
-      shadow-hard-gold-6;
+      shadow-hard-pink-4;
   }
 
   /*
@@ -617,7 +634,7 @@
   }
 
   .nav-cta:hover {
-    box-shadow: var(--shadow-hard-gold-4);
+    box-shadow: var(--shadow-hard-pink-4);
   }
 
   .nav-cta[aria-current='page'],
@@ -972,7 +989,8 @@
    * is inert anywhere else: a block element's min-width is already 0.
    */
   .card {
-    @apply min-w-0 border-8 border-border bg-surface p-card-tight sm:p-card;
+    @apply min-w-0 border-8 border-border bg-surface p-card-tight
+      shadow-hard-pink-8 sm:p-card;
   }
 
   /*
@@ -1032,7 +1050,7 @@
   }
 
   .post-contents {
-    @apply self-start border-4 border-border bg-surface shadow-hard-gold-8;
+    @apply self-start border-4 border-border bg-surface shadow-hard-pink-8;
   }
 
   .post-layout .prose h2 {
@@ -1173,7 +1191,7 @@
   }
 
   a.chip[aria-current] {
-    @apply bg-gold text-background shadow-hard-pink-8;
+    @apply lift-control bg-gold text-background shadow-hard-pink-4;
   }
 
   /*
@@ -1430,7 +1448,7 @@
   .surface-gold .btn-gold-primary {
     @apply inline-block border-4 border-gold-text bg-gold-text
       px-btn-gold-x py-btn-gold-y text-button font-black uppercase
-      tracking-label text-gold-btn-label shadow-hard-pink-8;
+      tracking-label text-gold-btn-label shadow-hard-pink-4 lift-control;
   }
 
   .surface-gold .btn-gold-secondary {
@@ -1451,7 +1469,7 @@
    * button had focus.
    */
   .surface-gold .btn-gold-primary:focus-visible {
-    box-shadow: var(--inset-shadow-gold-btn-ring), var(--shadow-hard-pink-8);
+    box-shadow: var(--inset-shadow-gold-btn-ring), var(--shadow-hard-pink-4);
   }
 
   /*
@@ -1627,6 +1645,7 @@
     width: 48px;
     height: 48px;
     border: 4px solid var(--color-border);
+    --lift: var(--lift-control);
     rotate: var(--tilt, 0deg);
     transition: rotate 150ms ease-out;
   }
@@ -1644,21 +1663,20 @@
   .footer-stickers li:nth-child(3n + 1) .footer-sticker {
     background: var(--color-cyan);
     color: var(--color-darkcyan);
-    box-shadow: var(--shadow-hard-pink-6);
+    box-shadow: var(--shadow-hard-pink-4);
   }
 
   .footer-stickers li:nth-child(3n + 2) .footer-sticker {
     background: var(--color-surface);
     color: var(--color-pink-text);
-    border-color: var(--color-pink);
-    box-shadow: var(--shadow-hard-cyan-6);
+    box-shadow: var(--shadow-hard-pink-4);
   }
 
   .footer-stickers li:nth-child(3n) .footer-sticker {
     background: var(--color-gold);
     color: var(--color-gold-text);
     border-color: var(--color-gold-text);
-    box-shadow: var(--shadow-hard-pink-6);
+    box-shadow: var(--shadow-hard-pink-4);
   }
 
   .footer-stickers li:nth-child(1) {

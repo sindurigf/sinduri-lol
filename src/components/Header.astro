@@ -70,7 +70,7 @@ const isActive = (href: string): boolean => isCurrentPage(currentPath, href);
     <a
       href={HOME_HREF}
       aria-current={isActive(HOME_HREF) ? 'page' : undefined}
-      class="flex items-center gap-4 lg:justify-self-start"
+      class="lift-object flex items-center gap-4 lg:justify-self-start"
     >
       <span class="flex h-12 w-12 rotate-3 items-center justify-center rounded-nav border-4 border-border bg-gold shadow-hard-pink-8">
         {/*
@@ -126,7 +126,7 @@ const isActive = (href: string): boolean => isCurrentPage(currentPath, href);
               class:list={[
                 'label block border-4 px-3 py-2 lg:px-4',
                 isActive(link.href)
-                  ? 'border-border text-text shadow-hard-gold-4'
+                  ? 'lift-control border-border text-text shadow-hard-pink-4'
                   : 'border-transparent text-muted hover:text-cyan',
               ]}
             >

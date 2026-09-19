@@ -379,6 +379,15 @@ const CATEGORY_COLOURS: Record<string, typeof GOLD> = {
   'personal-thoughts': PINK,
 };
 
+/*
+ * Every card casts the same pink shadow whatever its category: colour on a
+ * card now says "this stands off the page", and the category is carried by the
+ * glyph tile and the label. Proven able to fail, 2026-09-19, chromium: the
+ * gold and cyan category shadows failed here as rgb(255, 192, 0) and
+ * rgb(0, 220, 253) before .card took the one shadow.
+ */
+const CARD_SHADOW = 'rgb(255, 0, 122)';
+
 const shadowColour = (boxShadow: string): string =>
   boxShadow.match(/rgb\([^)]*\)/)?.[0] ?? boxShadow;
 
@@ -416,7 +425,7 @@ test.describe('category colours', () => {
       const shadow = await tile.evaluate(
         (el) => getComputedStyle(el).boxShadow,
       );
-      expect(shadowColour(shadow), `${category} tile shadow`).toBe(colour.fill);
+      expect(shadowColour(shadow), `${category} tile shadow`).toBe(CARD_SHADOW);
 
       await expect(
         tile.locator('span[aria-hidden="true"]').first(),
@@ -449,7 +458,7 @@ test.describe('category colours', () => {
       const shadow = await card.evaluate(
         (el) => getComputedStyle(el).boxShadow,
       );
-      expect(shadowColour(shadow), 'card shadow').toBe(colour!.fill);
+      expect(shadowColour(shadow), 'card shadow').toBe(CARD_SHADOW);
       await expect(card.locator('p.label').first(), 'card label').toHaveCSS(
         'color',
         colour!.text,
