@@ -18,11 +18,12 @@
     "test:coverage": "COVERAGE=1 playwright test -c playwright.coverage.config.ts",
     "check:tokens": "node scripts/check-tokens.mjs",
     "check:links": "node scripts/check-links.mjs",
+    "check:classes": "node scripts/check-classes.mjs",
     "check:commits": "sh scripts/check-commits.sh",
     "check:live": "sh scripts/check-live.sh",
     "check:live:console": "playwright test -c playwright.live.config.ts",
     "check:umami": "sh scripts/check-umami.sh",
-    "check": "npm run check:tokens && npm run check:links && npm run format:check && npm run check:commits",
+    "check": "npm run check:tokens && npm run check:links && npm run check:classes && npm run format:check && npm run check:commits",
     "astro": "astro"
   },
   "dependencies": {
