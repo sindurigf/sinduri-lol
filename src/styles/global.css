@@ -255,19 +255,20 @@
    *   pink  things you press, and the bunny marks: buttons, tags, the call to
    *         action (4px); the logo tile, its copies and the roundel (8px, and
    *         12px on the tile's larger copies)
-   *   cyan  where you are: the current nav item, tag and call to action (4px),
-   *         with focus and hover
+   *   cyan  what you are touching: the focus ring, hover, and a linked card's
+   *         shadow while the pointer is on it (8px)
    *
-   * State is never the shadow colour alone (pink against cyan is 2.29): the
-   * current nav item gains a border box, the current tag a marker, the current
-   * call to action an inset ring. Whatever casts a shadow and takes focus also
-   * sets `lift-control` or `lift-object`, so its ring clears the shadow.
+   * Where you are is not a colour: the current nav item, tag and chip are a
+   * flat text-colour block with no shadow (background on text, 14.42), like a
+   * badge; the current call to action is pressed in with an inset ring.
+   * Whatever casts a shadow and takes focus also sets `lift-control` or
+   * `lift-object`, so its ring clears the shadow.
    */
   --shadow-hard-gold-8: 8px 8px 0 var(--color-gold);
   --shadow-hard-pink-4: 4px 4px 0 var(--color-pink);
   --shadow-hard-pink-8: 8px 8px 0 var(--color-pink);
   --shadow-hard-pink-12: 12px 12px 0 var(--color-pink);
-  --shadow-hard-cyan-4: 4px 4px 0 var(--color-cyan);
+  --shadow-hard-cyan-8: 8px 8px 0 var(--color-cyan);
 
   /*
    * The inner half of .btn-gold-primary's two-tone focus ring: 18.58 against
@@ -277,12 +278,11 @@
   --inset-shadow-gold-btn-ring: inset 0 0 0 3px var(--color-gold-btn-label);
 
   /*
-   * The current-page ring on .nav-cta, the shape half of its state: the cyan
-   * shadow beside it is a colour change only (2.29 against the resting pink),
-   * so it cannot carry SC 1.4.1 alone. An inset ring touches two colours, so
-   * both are measured: 11.32 on the gold fill, 11.20 on cyan when hovered, and
-   * 4.84 against the border on its outer edge; each clears the 3.0 of
-   * SC 1.4.11.
+   * The current-page ring on .nav-cta, which drops its shadow and reads as
+   * pressed in: a shape change, so the state never rests on colour. An inset
+   * ring touches two colours, so both are measured: 11.32 on the gold fill,
+   * 11.20 on cyan when hovered, and 4.84 against the border on its outer
+   * edge; each clears the 3.0 of SC 1.4.11.
    */
   --inset-shadow-cta-current: inset 0 0 0 4px var(--color-background);
 
@@ -680,8 +680,8 @@
    * current page. A shared class is what makes the state rules below reach
    * every rendering rather than whichever one someone edited.
    *
-   * On its own page it takes the cyan "you are here" shadow and an inset
-   * ring, which changes nothing about its box. The rules are here rather than
+   * On its own page it drops its shadow and draws an inset ring, pressed in,
+   * which changes nothing about its box. The rules are here rather than
    * utilities in the markup because `box-shadow` is one property, and being
    * in the same layer lets source order settle it. See
    * --inset-shadow-cta-current for what the ring measures.
@@ -693,7 +693,8 @@
 
   .nav-cta[aria-current='page'],
   .nav-cta[aria-current='page']:hover {
-    box-shadow: var(--inset-shadow-cta-current), var(--shadow-hard-cyan-4);
+    --lift: 0px;
+    box-shadow: var(--inset-shadow-cta-current);
   }
 
   /*
@@ -1133,12 +1134,27 @@
    * sit in a later layer and beat the hover below: linked cards never showed
    * a hover at all while the markup carried `text-text`.
    */
+  /*
+   * Inline-block, so a focus ring round a title that wraps is one rectangle
+   * rather than a box per line running past the card's edge. As a box it has
+   * to meet SC 2.5.8 itself: a one-line title at the 20px h3 floor is 22px.
+   */
   .card-link {
-    @apply text-text;
+    @apply inline-block min-h-target text-text;
+  }
+
+  /*
+   * The whole card is the target, so the whole card answers the pointer: the
+   * title turns cyan and the gold shadow turns cyan, the colour of what you
+   * are touching. No underline: on a title that wraps it crossed the next
+   * line's letters.
+   */
+  .card:has(.card-link):hover {
+    @apply shadow-hard-cyan-8;
   }
 
   .card:has(.card-link):hover .card-link {
-    @apply text-cyan underline decoration-4 underline-offset-4;
+    @apply text-cyan;
   }
 
   /*
@@ -1256,12 +1272,19 @@
     @apply lift-control shadow-hard-pink-4;
   }
 
-  a.chip:hover {
+  a.chip:not([aria-current]):hover {
     @apply text-cyan;
   }
 
+  /*
+   * Where you are is a flat text-colour block, like a badge: a fact, not a
+   * thing to press, so it drops the shadow. Background on text is 14.42. The
+   * marker turns background colour to stay visible on the new fill.
+   */
   a.chip[aria-current] {
-    @apply shadow-hard-cyan-4;
+    @apply bg-text text-background shadow-none;
+
+    --lift: 0px;
   }
 
   /* Text on text: background on #E5E2E1 is 14.42. */
@@ -2208,7 +2231,7 @@
   overflow-y: auto;
   /*
    * Room for a focus ring when the browser scrolls a focused link to the edge:
-   * the ring, its gap, and the current link's shadow it clears. Without it the
+   * the ring, its gap, and the Close button's shadow it clears. Without it the
    * ring is clipped (SC 2.4.7).
    */
   scroll-padding-block: calc(
