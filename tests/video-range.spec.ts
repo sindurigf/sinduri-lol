@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './test';
 import {
   UNSATISFIABLE,
   WHOLE_FILE,

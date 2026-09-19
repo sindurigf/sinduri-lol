@@ -1,4 +1,5 @@
 import { defineConfig } from '@playwright/test';
+import { TEST_WORKER_PORT } from './tests/ports';
 
 /*
  * The one spec that needs the Worker: tests/contact.spec.ts, which POSTs to the
@@ -18,18 +19,28 @@ import { defineConfig } from '@playwright/test';
  * already has it.
  */
 
-const PORT = 4322;
+const PORT = TEST_WORKER_PORT;
 
 /*
  * The notification recipient, a secret in production. Passed as process env,
  * which wrangler reads only with CLOUDFLARE_INCLUDE_PROCESS_ENV set.
  */
+/*
+ * The specs that need the Worker. playwright.config.ts ignores exactly these,
+ * so a spec is in one suite or the other and never in neither.
+ */
+export const WORKER_SPECS = [
+  'contact.spec.ts',
+  'video-range.spec.ts',
+  'served-types.spec.ts',
+] as const;
+
 export const NOTIFY_TO = 'owner@example.com';
 const BASE_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: ['contact.spec.ts', 'video-range.spec.ts'],
+  testMatch: [...WORKER_SPECS],
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   workers: 1,

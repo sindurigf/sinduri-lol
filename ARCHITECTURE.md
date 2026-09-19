@@ -428,6 +428,11 @@ ones a machine can see.
   roundel on the seam, rather than taking the photo inside it. A page with its
   own round mark (Contact's badge) passes it in the `mark` slot. A post uses
   `titleSize="post"`.
+- **Breadcrumbs.** Posts, category and tag listings, and `/blog/page/<n>`
+  put `Breadcrumbs` in the `PageHero` eyebrow slot: Home / Blog, then a post's
+  category. The trail stops at the parent, because the `h1` below it is the
+  page. The JSON-LD `BreadcrumbList` adds the page itself as its last item.
+  `tests/breadcrumbs.spec.ts` holds the two to each other.
 - **Sections.** Everything after the hero is a `Section`: a band with
   `py-section`, a white `text-h2` heading, an optional `.lead`, then the
   content at `mt-head`. There is no rule above the heading; the heading and the
@@ -523,6 +528,28 @@ category listing against the post count in the Markdown.
 
 The `placeholder` field stays in the schema. `/llms.txt` marks any post that
 sets it, and `tests/llms-txt.spec.ts` holds the field to each post's text.
+
+### Feeds
+
+`/rss.xml` carries every published post, and each tag listing has its own feed
+beside it at `/blog/tag/<tag>/rss.xml`. Both are RSS 2.0, written by
+`src/lib/feed.ts` rather than `@astrojs/rss`, with an `atom:link rel="self"`
+and RFC 822 dates. The Drupal tag feed is the one to give Drupal Planet, which
+wants a Drupal-only feed that passes the W3C validator. Every page's head links
+the site feed with `rel="alternate"`, and a tag page links its own as well.
+Placeholder posts are left out of every feed. `tests/rss.spec.ts` parses each
+feed with the browser's XML parser and checks it against the Markdown.
+
+### Markdown sources and discovery
+
+Every published post is also served as Markdown at `/blog/<slug>.md`, linked
+from the post's head with `rel="alternate" type="text/markdown"`: YAML
+frontmatter, then the body the page is rendered from, with images pointed at
+built WebPs and root-relative links made absolute
+(`src/lib/markdown-source.ts`). Reading any field of an imported image there
+would ship its full-size original, which is why that module never does.
+`public/_headers` sends a `Link` header naming `/llms.txt`, the sitemap and the
+feed. `tests/agent-readiness.spec.ts` checks both.
 
 ## Conventions
 
@@ -819,6 +846,20 @@ the spec did not send the header. `tests/contact.spec.ts` now does.
 `/videos/*` is listed for a different reason: those paths are assets, and
 listing them is what lets the Worker answer byte ranges the asset layer
 ignores. See Photos and video.
+
+### Speculation rules
+
+`Speculation-Rules: "/speculationrules.json"` prefetches a same-origin page
+once a pointer rests on its link, in Chromium. The rules are a file named by a
+header rather than an inline `<script type="speculationrules">`, because the
+file is outside the CSP while the inline block would need a hash that goes
+stale on every edit. They prefetch and never prerender: a prerendered page runs
+the Umami tracker, which would count a visit nobody made. They leave out
+`/contact/send/`, `/videos/`, PDFs and download links. The file's own rule in
+`_headers` sets `application/speculationrules+json`, without which Chromium
+loads no rule set at all. `tests/served-types.spec.ts` checks the type through
+the Worker, over HTTP, and `tests/headers.spec.ts` checks that Chromium accepts
+the rules.
 
 ### The CSP
 

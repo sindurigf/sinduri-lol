@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { ROUTES } from './routes';
 import { MIN_TARGET } from './wcag';

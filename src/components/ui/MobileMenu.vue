@@ -16,8 +16,21 @@ const isOpen = ref(false);
 const isActive = (href: string): boolean =>
   isCurrentPage(props.currentPath, href);
 
-// A modal dialog does not reliably stop the page behind it from scrolling.
+/*
+ * A modal dialog does not reliably stop the page behind it from scrolling.
+ *
+ * Hiding the overflow also removes a classic scrollbar, and everything behind
+ * the menu then reflows that much wider: 15px in headed Chromium, measured
+ * 2026-09-18. The body is padded by the scrollbar's width for as long as the
+ * lock holds, read before the lock takes it away. With overlay scrollbars the
+ * width is 0 and nothing changes. `scrollbar-gutter: stable` would do the same
+ * in CSS, but headless Chromium reserves the gutter with no scrollbar drawn,
+ * which narrows the 288px box the heading floors are calibrated against.
+ */
 const lockScroll = (locked: boolean): void => {
+  const scrollbar = window.innerWidth - document.documentElement.clientWidth;
+  document.body.style.paddingRight =
+    locked && scrollbar > 0 ? `${scrollbar}px` : '';
   document.body.style.overflow = locked ? 'hidden' : '';
 };
 

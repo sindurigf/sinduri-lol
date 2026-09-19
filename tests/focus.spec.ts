@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { NON_TEXT, PAGE_HELPERS } from './contrast';
 import { gotoSettled } from './settle';
 import { ROUTES } from './routes';

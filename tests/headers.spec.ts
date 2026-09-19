@@ -3,7 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { extname, join } from 'node:path';
-import { expect, test, type Page, type Response } from '@playwright/test';
+import { expect, test, type Page, type Response } from './test';
 import { DIST_DIR } from './routes';
 import { waitForHydration } from './settle';
 import { UMAMI_HOST_URL, UMAMI_SCRIPT_PATH } from '../src/lib/analytics';
@@ -81,6 +81,12 @@ const ASSET_PATTERN = '/_astro/*';
  * compressed.
  */
 const VENDOR_PATTERN = '/vendor/*';
+
+/**
+ * The speculation rules file. Its own rule only sets the Content-Type a
+ * browser requires before it will read the rules.
+ */
+const SPECULATION_PATTERN = '/speculationrules.json';
 
 /**
  * The one header two rules may both set, because `/_astro/*` detaches the
@@ -445,13 +451,18 @@ test.describe('security headers', () => {
     await new Promise<void>((done) => server.close(() => done()));
   });
 
-  test('the build ships the three rules this file knows about', () => {
+  test('the build ships the four rules this file knows about', () => {
     expect(
       rules.map((rule) => rule.pattern),
       'a rule was added or renamed. Every rule has to be understood here, ' +
         'because the ones this test does not know about are the ones that ' +
         'can collide with the others in production and not in CI.',
-    ).toEqual([GLOBAL_PATTERN, ASSET_PATTERN, VENDOR_PATTERN]);
+    ).toEqual([
+      GLOBAL_PATTERN,
+      ASSET_PATTERN,
+      VENDOR_PATTERN,
+      SPECULATION_PATTERN,
+    ]);
 
     expect(
       matches(VENDOR_PATTERN, UMAMI_SCRIPT_PATH),
@@ -789,6 +800,37 @@ test.describe('security headers', () => {
         'edit. An immutable response here would freeze the homepage in every ' +
         'browser that had already loaded it.',
     ).not.toMatch(/\bimmutable\b/);
+  });
+
+  /*
+   * The speculation rules reach the browser through the Speculation-Rules
+   * header and the file's own Content-Type rule. Chromium reports the rule set
+   * over DevTools, with an error type when it rejects one, and loads none at
+   * all when the file arrives as application/json.
+   *
+   * Verified not to be vacuous, 2026-09-19: with the /speculationrules.json
+   * rule removed from public/_headers, no rule set is loaded and this fails.
+   */
+  test('Chromium accepts the speculation rules', async ({
+    page,
+    browserName,
+  }) => {
+    test.skip(
+      browserName !== 'chromium',
+      'speculation rules are Chromium only',
+    );
+    const cdp = await page.context().newCDPSession(page);
+    const ruleSets: { errorType?: string }[] = [];
+    cdp.on('Preload.ruleSetUpdated', (event) => ruleSets.push(event.ruleSet));
+    await cdp.send('Preload.enable');
+    await page.goto(`${origin}/`);
+    await expect
+      .poll(() => ruleSets.length, { message: 'no rule set was loaded' })
+      .toBeGreaterThan(0);
+    expect(
+      ruleSets.map((set) => set.errorType ?? 'ok'),
+      'Chromium rejected the speculation rules',
+    ).toEqual(['ok']);
   });
 
   test('the site runs clean under the policy: no violations, fonts load', async ({

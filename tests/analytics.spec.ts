@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { join } from 'node:path';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import {
   CLICK_EVENTS,
   UMAMI_HOST_URL,

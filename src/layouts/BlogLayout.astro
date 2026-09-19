@@ -1,15 +1,19 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import type { ArticleMeta } from '../lib/structured-data';
+import type { Trail } from '../lib/breadcrumbs';
 
 interface Props {
   title: string;
   description: string;
   ogImage?: string;
   article?: ArticleMeta;
+  trail?: Trail;
+  markdownSource?: string;
 }
 
-const { title, description, ogImage, article } = Astro.props;
+const { title, description, ogImage, article, trail, markdownSource } =
+  Astro.props;
 ---
 
 <BaseLayout
@@ -17,6 +21,8 @@ const { title, description, ogImage, article } = Astro.props;
   description={description}
   ogImage={ogImage}
   article={article}
+  trail={trail}
+  markdownSource={markdownSource}
 >
   <article>
     <slot />

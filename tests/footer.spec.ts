@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './test';
 import { SOCIAL_PROFILES } from '../src/lib/profiles';
 import { gotoSettled } from './settle';
 

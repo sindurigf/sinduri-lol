@@ -1,0 +1,43 @@
+---
+import type { Crumb } from '../lib/breadcrumbs';
+
+/*
+ * The WAI-ARIA breadcrumb pattern: a named <nav> around an ordered list of
+ * links. It stops at the page's parent; see src/lib/breadcrumbs.ts.
+ *
+ * The separators are aria-hidden spans rather than CSS generated content,
+ * whose alternative-text syntax is not honoured in every engine, so a screen
+ * reader hears the three links and not the slashes between them.
+ *
+ * `py-2` takes each 13px label link past the 24px of SC 2.5.8 on its own box;
+ * `-my-2` pulls the row back to the height the bare labels occupied, so the
+ * heading below does not move. The same move the post's category link made
+ * before the trail replaced it.
+ */
+interface Props {
+  crumbs: readonly Crumb[];
+  /** A class for the last link, so a post can keep its category accent. */
+  lastClass?: string;
+}
+
+const { crumbs, lastClass } = Astro.props;
+---
+
+<nav aria-label="Breadcrumb" class="mb-6">
+  <ol class="label flex flex-wrap items-center gap-x-2 text-subtle">
+    {crumbs.map((crumb, index) => (
+      <li class="flex items-center gap-x-2">
+        {index > 0 && <span aria-hidden="true">/</span>}
+        <a
+          href={crumb.href}
+          class:list={[
+            '-my-2 inline-block py-2',
+            index === crumbs.length - 1 && lastClass,
+          ]}
+        >
+          {crumb.label}
+        </a>
+      </li>
+    ))}
+  </ol>
+</nav>

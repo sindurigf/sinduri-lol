@@ -1,4 +1,7 @@
 ---
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { postTrail } from '../../lib/breadcrumbs';
+import { markdownSourcePath } from '../../lib/markdown-source';
 import type { GetStaticPaths } from 'astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BlogLayout from '../../layouts/BlogLayout.astro';
@@ -41,7 +44,7 @@ const DATE_FORMAT: Intl.DateTimeFormatOptions = {
 
 const formattedDate = date.toLocaleDateString(DATE_LOCALE, DATE_FORMAT);
 const machineDate = date.toISOString().slice(0, 10);
-const categoryLabel = category.replaceAll('-', ' ');
+const trail = postTrail(category, title);
 const accent = categoryAccent(category);
 
 // A placeholder stays a plain page: BlogPosting would present lorem ipsum to
@@ -60,21 +63,11 @@ const article = placeholder
   description={post.data.seoDescription ?? teaser}
   ogImage={ogImage}
   article={article}
+  trail={trail}
+  markdownSource={placeholder ? undefined : markdownSourcePath(post.id)}
 >
   <PageHero title={title} titleSize="post">
-    {/*
-      `py-2` takes this label link past the 24px of SC 2.5.8; `-my-2` pulls
-      its layout box back to what the bare label occupied, so the heading
-      below does not move.
-    */}
-    <p slot="eyebrow" class="label mb-6 text-subtle">
-      <a
-        href={`/blog/${category}/`}
-        class:list={['-my-2 inline-block py-2', accent.text]}
-      >
-        {categoryLabel}
-      </a>
-    </p>
+    <Breadcrumbs slot="eyebrow" crumbs={trail.crumbs} lastClass={accent.text} />
 
     <p class="mt-8 max-w-2xl text-body text-muted text-pretty">{teaser}</p>
 

@@ -178,6 +178,9 @@ export const MIME: Record<string, string> = {
   '.webmanifest': 'application/manifest+json',
   '.pdf': 'application/pdf',
   '.txt': 'text/plain; charset=utf-8',
+  '.md': 'text/markdown; charset=utf-8',
+  /* Emitted only by the coverage build; see playwright.coverage.config.ts. */
+  '.map': 'application/json; charset=utf-8',
   /*
    * The sitemap and its index. No `charset`, deliberately: XML carries its own
    * encoding declaration in the prolog, and a charset parameter on the media
@@ -228,13 +231,18 @@ export const startServer = async (rules: Rule[]): Promise<Server> => {
     const file = resolved ?? join(DIST_DIR, '404.html');
     const status = resolved === null ? 404 : 200;
 
-    for (const [name, value] of headersFor(rules, pathname)) {
-      res.setHeader(name, asServed(name, value));
-    }
+    /*
+     * The type first, then the rules, which is the asset worker's order: a
+     * `Content-Type` in public/_headers replaces the one the file was uploaded
+     * with. The speculation rules file depends on that.
+     */
     res.setHeader(
       'content-type',
       MIME[extname(file)] ?? 'application/octet-stream',
     );
+    for (const [name, value] of headersFor(rules, pathname)) {
+      res.setHeader(name, asServed(name, value));
+    }
     res.writeHead(status);
     res.end(readFileSync(file));
   });

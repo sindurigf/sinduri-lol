@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './test';
 import { CTA, HOME_HREF, NAV_LINKS, isActive } from '../src/lib/nav';
 import { ROUTES } from './routes';
 import { gotoSettled } from './settle';
