@@ -895,6 +895,27 @@
   }
 
   /*
+   * A card that goes somewhere is clickable anywhere on it, not only on its
+   * title. The title stays the one real link, so a screen reader or keyboard
+   * user meets one link per card named by its title, and its own focus ring
+   * is unchanged; an empty layer on it covers the card for a pointer. The
+   * card must hold no other link, which the layer would cover.
+   */
+  .card:has(.card-link) {
+    @apply relative;
+  }
+
+  .card-link::after {
+    @apply absolute inset-0;
+
+    content: '';
+  }
+
+  .card:has(.card-link):hover .card-link {
+    @apply text-cyan;
+  }
+
+  /*
    * The paragraph under a section heading, and the line on a PageHero plate
    * under the page title. `.lead` is a reading size and stays muted; a
    * standfirst is the page's own line and sits in the text colour.
