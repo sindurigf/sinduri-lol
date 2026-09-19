@@ -1,8 +1,11 @@
 ---
 import { Image } from 'astro:assets';
+import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CloseRow from '../components/CloseRow.astro';
 import PageHero from '../components/PageHero.astro';
+import PhotoTile from '../components/PhotoTile.astro';
+import PhotoViewer from '../components/PhotoViewer.astro';
 import Section from '../components/Section.astro';
 import rainbowPortrait from '../assets/photos/sinduri-pride.jpg';
 import lake from '../assets/photos/sinduri-lake.jpg';
@@ -10,12 +13,16 @@ import bicycle from '../assets/photos/sinduri-bicycle.jpg';
 import bestFriendSelfie from '../assets/photos/best-friend-selfie.jpg';
 import bestFriendBeach from '../assets/photos/best-friend-beach.jpg';
 import withJohann from '../assets/photos/sinduri-johann.jpg';
+import johannCeremony from '../assets/photos/johann-ceremony.jpg';
+import ceremonyHands from '../assets/photos/ceremony-hands.jpg';
+import johannLights from '../assets/photos/johann-lights.jpg';
+import keralaSand from '../assets/photos/kerala-sand.jpg';
 import starTrek from '../assets/photos/sinduri-star-trek.jpg';
 import minerva from '../assets/photos/minerva.jpg';
 import hela from '../assets/photos/hela.jpg';
 import rudra from '../assets/photos/rudra.jpg';
 import mountainCamp from '../assets/photos/drupal-mountain-camp.jpg';
-import friendsMossWallPortrait from '../assets/photos/friends-moss-wall-portrait.jpg';
+import friendsMossWall from '../assets/photos/friends-moss-wall.jpg';
 import escapeRoom from '../assets/photos/escape-room.jpg';
 import kannurSea from '../assets/photos/kannur-sea.jpg';
 import withFriend from '../assets/photos/pride-with-friend.jpg';
@@ -42,16 +49,6 @@ const JOURNEY_POST_HREF = '/blog/five-years-in-drupal/';
 /** The Fandoms thumbnail, drawn `size-14`. */
 const THUMB_SIZE = 56;
 
-/** The Johann photo, drawn `w-64`; its master is only 278px wide. */
-const JOHANN_WIDTH = 256;
-
-/*
- * 1x only. Astro caps a 2x candidate at the master, so it would ship the
- * 278px file labelled 2x, and a 2x screen would draw it at 139px wide and
- * stretch it to 256 (WebKit in CI, 2026-09-13). A larger photo lifts this.
- */
-const JOHANN_DENSITIES = [1];
-
 /*
  * Only used to pick a file from WIDTHS. Each is the width the photo is drawn
  * at from `lg`, `sm` and below, net of the page gutter and card padding, and
@@ -61,15 +58,15 @@ const JOHANN_DENSITIES = [1];
  * tests/image-size.spec.ts fails when one drifts from the layout.
  */
 const SIZES = {
-  quote:
-    '(min-width: 64rem) min(calc(50vw - 1.5rem), 38.75rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)',
-  pair: '(min-width: 64rem) min(calc(25vw - 4.125rem), 16rem), (min-width: 40rem) calc(50vw - 4.875rem), calc(50vw - 3.375rem)',
-  masonry:
-    '(min-width: 64rem) min(calc(33.45vw - 2rem), 25.75rem), (min-width: 40rem) calc(50vw - 2.25rem), calc(100vw - 2rem)',
+  panorama:
+    '(min-width: 40rem) min(calc(100vw - 9rem), 74rem), calc(100vw - 6rem)',
   food: '(min-width: 64rem) min(calc(50vw - 7.5rem), 32.75rem), (min-width: 40rem) calc(100vw - 9rem), calc(100vw - 6rem)',
-  cat: '(min-width: 40rem) min(calc(33.45vw - 4rem), 23.75rem), calc(100vw - 6rem)',
-  side: '(min-width: 64rem) min(calc(41.67vw - 1.25rem), 31.875rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)',
+  cat: '(min-width: 40rem) min(calc(33.34vw - 4.8rem), 22.85rem), calc(100vw - 7.25rem)',
+  half: '(min-width: 40rem) min(calc(50vw - 6.15rem), 35.35rem), calc(100vw - 7.25rem)',
 } as const;
+
+/** The bunny mark in the Lepus Ridet tile, drawn `h-16` from `lg`. */
+const MARK_HEIGHT = 64;
 
 const COVER_PHOTOGRAPHER = 'Tdm Dilip';
 const LECTURE_HALL_PHOTOGRAPHER = 'Andrey Pshenichny';
@@ -83,43 +80,57 @@ const SECTIONS = [
 ] as const;
 
 /*
- * A caption under a photo, and a photo's frame. Photos take a border and no
- * shadow: shadows are kept for the cards, so the cards stay the objects that
- * stand forward.
+ * A photo's frame outside a photo panel. Photos take a border and no shadow:
+ * shadows are kept for the cards, so the cards stay the objects that stand
+ * forward.
  */
-const CAPTION = 'mt-3 text-body text-muted text-pretty';
 const PHOTO = 'block h-auto w-full border-4 border-border object-cover';
 
 /*
- * Photos from her life outside work, in a masonry of CSS columns so each keeps
- * its own shape. None is captioned, as she asked: a caption on some and not
- * others singles out the ones without.
+ * Photos from her life outside work, in one strip that scrolls sideways, each
+ * opening full size in the photo viewer. None is captioned, as she asked: a
+ * caption on some and not others singles out the ones without.
  */
 const PLACES = [
   {
+    src: bestFriendBeach,
+    alt: 'Sinduri and her best friend Hemu walking on a beach.',
+  },
+  {
+    src: johannCeremony,
+    alt: 'Sinduri and Johann sitting on the floor at a ceremony, Johann holding a leaf with a flower on it.',
+  },
+  {
+    src: ceremonyHands,
+    alt: 'Johann’s hands holding a leaf with two rings on it, above Sinduri’s hennaed hands and bangles.',
+  },
+  {
+    src: johannLights,
+    alt: 'Sinduri and Johann taking a selfie at night, under trees lit red and blue.',
+  },
+  {
     src: lake,
     alt: 'Sinduri in a pink dress on a balcony, with trees and a lake behind her.',
-    aspect: 'aspect-portrait',
   },
   {
     src: rainbowPortrait,
     alt: 'Sinduri smiling, with a rainbow painted on her cheek and rainbow wings behind her.',
-    aspect: 'aspect-portrait',
   },
   {
     src: kannurSea,
     alt: 'Sinduri standing at the edge of the sea in Kannur, Kerala, with her arms spread wide, a wave breaking behind her.',
-    aspect: 'aspect-square',
+  },
+  {
+    src: keralaSand,
+    alt: 'Handprints in the sand around the words Kerala 2012.',
   },
   {
     src: escapeRoom,
     alt: 'Sinduri with a group after an escape room, two of them holding Mission Complete signs.',
-    aspect: 'aspect-photo',
   },
   {
     src: withFriend,
     alt: 'Sinduri leaning on a friend’s shoulder, both smiling into the camera.',
-    aspect: 'aspect-portrait',
   },
 ] as const;
 
@@ -128,18 +139,21 @@ const CATS = [
     src: minerva,
     name: 'Minerva',
     role: 'the queen of the house.',
+    roleClass: 'text-gold',
     alt: 'Minerva, a tabby cat, curled up on a blanket.',
   },
   {
     src: hela,
     name: 'Hela',
     role: 'the conspirator.',
+    roleClass: 'text-cyan',
     alt: 'Hela, a white calico cat, asleep against a plush toy.',
   },
   {
     src: rudra,
     name: 'Rudra',
     role: 'the baby of the family.',
+    roleClass: 'text-pink-text',
     alt: 'Rudra, a black cat, having his head stroked.',
   },
 ] as const;
@@ -177,46 +191,79 @@ const CATS = [
     </Fragment>
   </PageHero>
 
-  <Section id="lepus-ridet">
-    <Fragment slot="title">
-      Why <span lang="la">Lepus Ridet</span>
-    </Fragment>
-    <p slot="lead" class="lead text-text">
-      My pet name is Bunny. That is what my family and close friends call me.
-    </p>
-    <p class="max-w-prose text-body text-muted text-pretty">
-      I try to always laugh and find fun in everything I do, and that is where{' '}
-      <span lang="la">Lepus Ridet</span> comes from: it is Latin for &ldquo;the
-      hare laughs&rdquo;.
-    </p>
-    <p class="mt-4 text-body">
-      <a href="/credits/#name" class="inline-flex min-h-target items-center">
-        Where the name sinduri.lol comes from
-      </a>
-    </p>
+  {/*
+    No heading above the panel: the name card is the heading, so the name, its
+    meaning and "Bunny" are each said once. "Why" is kept for the outline.
+  */}
+  <Section id="lepus-ridet" headless>
+    <div class="card grid gap-8 shadow-hard-gold-8 lg:grid-cols-5 lg:items-center lg:gap-grid">
+      <div class="flex flex-col items-start gap-6 bg-background p-5 sm:flex-row sm:items-center sm:p-card-tight lg:col-span-2 lg:flex-col lg:items-start lg:gap-8 lg:p-card">
+        {/* The logo tile drawn again, so it keeps the tile's radius and tilt. */}
+        <span class="flex size-20 shrink-0 rotate-3 items-center justify-center rounded-nav border-4 border-border bg-gold shadow-hard-pink-8 lg:size-28 lg:shadow-hard-pink-12">
+          <Image
+            src={bunnyDark}
+            alt=""
+            height={MARK_HEIGHT}
+            densities={DENSITIES}
+            class="h-11 w-auto lg:h-16"
+          />
+        </span>
+        <div class="min-w-0">
+          <h2 id="lepus-ridet-heading" class="text-h2 text-text">
+            <span class="sr-only">Why </span>
+            <span lang="la">Lepus Ridet</span>
+          </h2>
+          <p class="mt-3 text-body text-muted text-pretty">
+            Latin for &ldquo;the hare laughs&rdquo;
+          </p>
+        </div>
+      </div>
+
+      <div class="lg:col-span-3">
+        <p class="text-h3 font-extrabold text-text text-pretty">
+          My pet name is Bunny. That is what my family and close friends call
+          me.
+        </p>
+        <p class="mt-4 max-w-prose text-body text-muted text-pretty">
+          I try to always laugh and find fun in everything I do.
+        </p>
+        <p class="mt-8">
+          <a href="/credits/#name" class="chip">
+            Where the name sinduri.lol comes from
+          </a>
+        </p>
+      </div>
+    </div>
   </Section>
 
-  <Section id={SECTIONS[0].id} title={SECTIONS[0].title}>
+  <Section id={SECTIONS[0].id} headless>
     {/*
-      THE GOLD STATEMENT. `.surface-gold` supplies the foreground and the
-      border colour for the subtree; nothing inside names a dark-set token.
-      It holds no control, which is why tests/gold-surface.spec.ts counts
-      zero on this route. It is this section's one pink shadow.
+      One panel: the photo across the top, the gold statement and the heading
+      side by side under it. The heading comes first in the source and on a
+      phone. `.surface-gold` supplies the foreground and border colours for
+      its subtree and holds no control, which is why tests/gold-surface.spec.ts
+      counts zero on this route.
     */}
-    <div class="grid gap-grid lg:grid-cols-2 lg:items-center">
-      <blockquote class="surface-gold min-w-0 border-8 p-card-tight shadow-hard-pink-8 sm:p-card">
+    <div class="card grid shadow-hard-gold-8 lg:grid-cols-2">
+      <h2
+        id={`${SECTIONS[0].id}-heading`}
+        class="pb-6 text-h2 text-text lg:col-start-2 lg:row-start-2 lg:self-end lg:pb-0 lg:pl-card"
+      >
+        {SECTIONS[0].title}
+      </h2>
+      {/* A 16:9 file; the 2:1 box from `lg` trims a band above the hair and below the chins. */}
+      <Image
+        src={friendsMossWall}
+        alt="Sinduri between two friends in front of a moss wall, all three smiling."
+        widths={WIDTHS}
+        sizes={SIZES.panorama}
+        class="block aspect-video h-auto w-full object-cover lg:col-span-2 lg:row-start-1 lg:aspect-2/1"
+      />
+      <blockquote class="surface-gold min-w-0 p-card-tight sm:p-card lg:col-start-1 lg:row-start-2">
         <p class="text-h2 font-black text-pretty">
           We should all be a bit kinder and more empathetic.
         </p>
       </blockquote>
-
-      <Image
-        src={friendsMossWallPortrait}
-        alt="Sinduri between two friends in front of a moss wall, all three smiling."
-        widths={WIDTHS}
-        sizes={SIZES.quote}
-        class:list={[PHOTO, 'aspect-square min-w-0']}
-      />
     </div>
   </Section>
 
@@ -224,60 +271,75 @@ const CATS = [
     id={SECTIONS[1].id}
     title={SECTIONS[1].title}
     lead="I moved to Vienna in 2017. I love cats, travelling, and long evenings with my friends talking about nothing and anything."
+    panel
   >
-    <div class="grid gap-grid lg:grid-cols-2">
-      {/*
-        The photo keeps its drawn `w-64`: its master is 278px wide, so a
-        full-width photo here would be an upscale. The caption is centred
-        against it rather than parked at its foot, so the card's empty
-        corner is not the first thing you see.
-      */}
-      <figure class="card flex flex-col gap-6 shadow-hard-gold-8 sm:flex-row sm:items-center">
-        <Image
-          src={withJohann}
-          alt="Sinduri smiling with Johann, his arms wrapped around her."
-          width={JOHANN_WIDTH}
-          densities={JOHANN_DENSITIES}
-          class="block aspect-portrait h-auto w-64 max-w-full shrink-0 border-4 border-border object-cover"
-        />
-        <figcaption class="text-body text-muted text-pretty">
-          <strong class="card-title block">Johann</strong> My husband and the
-          non-Drupaler who always has my back.
-        </figcaption>
-      </figure>
-
-      <figure class="card flex flex-col gap-6 shadow-hard-gold-8">
-        <div class="grid grid-cols-2 gap-3">
-          <Image
-            src={bestFriendSelfie}
-            alt="Sinduri taking a selfie with her best friend, Hemu."
-            widths={WIDTHS}
-            sizes={SIZES.pair}
-            class:list={[PHOTO, 'aspect-square']}
-          />
-          <Image
-            src={bestFriendBeach}
-            alt="Sinduri and her best friend Hemu walking on a beach."
-            widths={WIDTHS}
-            sizes={SIZES.pair}
-            class:list={[PHOTO, 'aspect-square']}
-          />
-        </div>
-        <figcaption class="text-body text-muted text-pretty">
-          <strong class="card-title block">Hemu</strong> My best friend.
-        </figcaption>
-      </figure>
+    {/* Johann and Hemu on a row of their own across the panel, then every other photo in one strip. */}
+    <div class="grid gap-3.5 sm:grid-cols-2">
+      <PhotoTile
+        image={withJohann}
+        alt="Sinduri and Johann sitting side by side in flower garlands, both smiling."
+        group="people"
+        sizes={SIZES.half}
+      >
+        <span class="block font-extrabold text-text">Johann</span>
+        <span class="block text-gold">
+          My husband and the non-Drupaler who always has my back.
+        </span>
+      </PhotoTile>
+      <PhotoTile
+        image={bestFriendSelfie}
+        alt="Sinduri taking a selfie with her best friend, Hemu."
+        group="people"
+        sizes={SIZES.half}
+      >
+        <span class="block font-extrabold text-text">Hemu</span>
+        <span class="block text-cyan">My best friend.</span>
+      </PhotoTile>
     </div>
 
-    <ul class="mt-grid gap-6 sm:columns-2 lg:columns-3">
+    <div class="mb-3.5 mt-8 flex items-center justify-between gap-4">
+      <p class="label text-subtle">More photos</p>
+      {/*
+        Hidden until src/scripts/photo-viewer.ts wires them: without
+        JavaScript they would scroll nothing, and the strip still scrolls on
+        its own.
+      */}
+      <div class="flex gap-2.5">
+        <button
+          type="button"
+          class="strip-button"
+          aria-controls="people-photos"
+          aria-label="Scroll photos left"
+          data-strip-scroll="-1"
+          hidden
+        >
+          <span aria-hidden="true">&larr;</span>
+        </button>
+        <button
+          type="button"
+          class="strip-button"
+          aria-controls="people-photos"
+          aria-label="Scroll photos right"
+          data-strip-scroll="1"
+          hidden
+        >
+          <span aria-hidden="true">&rarr;</span>
+        </button>
+      </div>
+    </div>
+    <ul
+      id="people-photos"
+      class="photo-strip"
+      tabindex="0"
+      aria-label="More photos, scrolls sideways"
+    >
       {PLACES.map((place) => (
-        <li class="mb-6 break-inside-avoid">
-          <Image
-            src={place.src}
+        <li>
+          <PhotoTile
+            image={place.src}
             alt={place.alt}
-            widths={WIDTHS}
-            sizes={SIZES.masonry}
-            class:list={[PHOTO, place.aspect]}
+            group="people"
+            size="natural"
           />
         </li>
       ))}
@@ -348,23 +410,20 @@ const CATS = [
       </div>
 
       <div class="card shadow-hard-pink-8 sm:col-span-2 lg:col-span-4">
-        <dt class="label-wide text-gold">Three cats</dt>
+        <dt class="card-title">Three cats</dt>
         <dd class="mt-6">
-          <ul class="grid gap-6 sm:grid-cols-3">
+          <ul class="grid gap-3.5 sm:grid-cols-3">
             {CATS.map((cat) => (
-              <li>
-                <figure>
-                  <Image
-                    src={cat.src}
-                    alt={cat.alt}
-                    widths={WIDTHS}
-                    sizes={SIZES.cat}
-                    class:list={[PHOTO, 'aspect-square']}
-                  />
-                  <figcaption class={CAPTION}>
-                    <strong class="text-text">{cat.name},</strong> {cat.role}
-                  </figcaption>
-                </figure>
+              <li class="min-w-0">
+                <PhotoTile
+                  image={cat.src}
+                  alt={cat.alt}
+                  group="cats"
+                  sizes={SIZES.cat}
+                >
+                  <span class="block font-extrabold text-text">{cat.name}</span>
+                  <span class:list={['block', cat.roleClass]}>{cat.role}</span>
+                </PhotoTile>
               </li>
             ))}
           </ul>
@@ -373,75 +432,77 @@ const CATS = [
     </dl>
   </Section>
 
-  <Section id={SECTIONS[3].id} title={SECTIONS[3].title}>
-    <p slot="lead" class="lead">
+  <Section id={SECTIONS[3].id} title={SECTIONS[3].title} panel>
+    <p slot="lead" class="panel-lead">
       There is a Sinduri before <a href={PHOTOGRAPHERS[MENTOR]}>{MENTOR}</a> and
       Drupal, and a Sinduri after.
     </p>
 
-    <div class="grid gap-grid lg:grid-cols-12 lg:items-start">
-      <div class="flex min-w-0 flex-col gap-grid lg:col-span-7">
-        <div class="card shadow-hard-gold-8">
-          <p class="label-wide text-gold">Before</p>
-          <p class="mt-4 text-body text-muted text-pretty">
-            I studied civil engineering in India and environmental engineering
-            in the US. I always wanted to become a developer, but I never felt
-            ready until I moved to Vienna. Honestly, after a few German courses,
-            learning to code seemed much easier! A short Python course in 2019
-            showed me I loved programming, and a full-stack web development
-            course gave me the confidence to make the switch.
-          </p>
-        </div>
-
-        <div class="card shadow-hard-gold-8">
-          <p class="label-wide text-gold">After</p>
-          <p class="mt-4 text-body text-muted text-pretty">
-            In January 2021, Klaus Purer gave me a Drupal test. I had absolutely
-            no idea what Drupal was, but I did well enough to get the job. Since
-            then I have organised Drupal events with the Swiss and Austrian
-            communities, joined the Drupal Austria board, where I am deputy
-            marketing manager in 2026, and won the Women in Drupal Award in
-            2025.
-          </p>
-        </div>
+    {/*
+      The two paragraphs side by side, then the two photos, so neither row
+      leaves an empty block under a shorter neighbour. Both photos belong to
+      the "after", so neither is paired with "Before".
+    */}
+    <div class="grid gap-3.5 sm:grid-cols-2">
+      <div class="bg-background p-5">
+        <p class="label-wide text-gold">Before</p>
+        <p class="mt-3 text-body text-muted text-pretty">
+          I studied civil engineering in India and environmental engineering in
+          the US. I always wanted to become a developer, but I never felt ready
+          until I moved to Vienna. Honestly, after a few German courses,
+          learning to code seemed much easier! A short Python course in 2019
+          showed me I loved programming, and a full-stack web development course
+          gave me the confidence to make the switch.
+        </p>
       </div>
-
-      <div class="flex min-w-0 flex-col gap-8 lg:col-span-5">
-        <figure>
-          <Image
-            src={lectureHall}
-            alt="Sinduri standing and clapping in a lecture hall full of Drupal event attendees."
-            widths={WIDTHS}
-            sizes={SIZES.side}
-            class:list={[PHOTO, 'aspect-photo']}
-          />
-          <figcaption class={CAPTION}>
-            <strong class="text-text">The Drupal community.</strong> Photo:{' '}
-            <a href={PHOTOGRAPHERS[LECTURE_HALL_PHOTOGRAPHER]}>
-              {LECTURE_HALL_PHOTOGRAPHER}
-            </a>
-          </figcaption>
-        </figure>
-        <figure>
-          <Image
-            src={mountainCamp}
-            alt="The Drupal Mountain Camp group photo: a crowd of attendees standing in the snow."
-            widths={WIDTHS}
-            sizes={SIZES.side}
-            class:list={[PHOTO, 'aspect-video']}
-          />
-          <figcaption class={CAPTION}>
-            <strong class="text-text">Drupal Mountain Camp.</strong>
-          </figcaption>
-        </figure>
+      <div class="bg-background p-5">
+        <p class="label-wide text-gold">After</p>
+        <p class="mt-3 text-body text-muted text-pretty">
+          In January 2021, Klaus Purer gave me a Drupal test. I had absolutely
+          no idea what Drupal was, but I did well enough to get the job. Since
+          then I have organised Drupal events with the Swiss and Austrian
+          communities, joined the Drupal Austria board, where I am deputy
+          marketing manager in 2026, and won the Women in Drupal Award in 2025.
+        </p>
       </div>
     </div>
 
-    <CloseRow
-      readHref={JOURNEY_POST_HREF}
-      readLabel="Five years in Drupal"
-      actionHref="/career/"
-      actionLabel="Career and CV"
-    />
+    <div class="mt-3.5 grid gap-3.5 sm:grid-cols-2">
+      <PhotoTile
+        image={lectureHall}
+        alt="Sinduri standing and clapping in a lecture hall full of Drupal event attendees."
+        group="drupal"
+        sizes={SIZES.half}
+        aspect="video"
+      >
+        <span class="block font-extrabold text-text">The Drupal community</span>
+        Photo:{' '}
+        <a href={PHOTOGRAPHERS[LECTURE_HALL_PHOTOGRAPHER]}>
+          {LECTURE_HALL_PHOTOGRAPHER}
+        </a>
+      </PhotoTile>
+      <PhotoTile
+        image={mountainCamp}
+        alt="The Drupal Mountain Camp group photo: a crowd of attendees standing in the snow."
+        group="drupal"
+        sizes={SIZES.half}
+        aspect="video"
+      >
+        <span class="block font-extrabold text-text">Drupal Mountain Camp</span>
+      </PhotoTile>
+    </div>
   </Section>
+
+  <div class="band pb-section">
+    <div class="mx-auto max-w-page">
+      <CloseRow
+        readHref={JOURNEY_POST_HREF}
+        readLabel="Five years in Drupal"
+        actionHref="/career/"
+        actionLabel="Career and CV"
+      />
+    </div>
+  </div>
+
+  <PhotoViewer />
 </BaseLayout>

@@ -53,17 +53,39 @@ const measureImages = (page: Page) =>
     const all = [...document.querySelectorAll('img')];
     for (const img of all) img.loading = 'eager';
     await Promise.all(all.map((img) => img.decode()));
+    /*
+     * The file's own pixels, from a probe with a plain `src`. An `<img>` with
+     * width descriptors reports its natural size divided by the density the
+     * browser picked, so a 278px file chosen for a 541px slot reads as 541px
+     * wide and every upscale passes.
+     *
+     * Proven able to fail, 2026-09-19, chromium: with the probe in, /about
+     * failed on Johann's 278x348 file drawn 541x541 and on a 640x480 file
+     * drawn 541x304, both of which passed reading the `<img>` itself.
+     */
+    const filePixels = async (src: string) => {
+      const probe = new Image();
+      probe.src = src;
+      await probe.decode();
+      return { width: probe.naturalWidth, height: probe.naturalHeight };
+    };
+    const drawn = all.filter(
+      (img) => img.offsetWidth > 0 && img.offsetHeight > 0,
+    );
     return {
       ratio: window.devicePixelRatio,
-      images: all
-        .filter((img) => img.offsetWidth > 0 && img.offsetHeight > 0)
-        .map((img) => ({
-          src: img.currentSrc,
-          naturalWidth: img.naturalWidth,
-          naturalHeight: img.naturalHeight,
-          width: img.offsetWidth,
-          height: img.offsetHeight,
-        })),
+      images: await Promise.all(
+        drawn.map(async (img) => {
+          const file = await filePixels(img.currentSrc);
+          return {
+            src: img.currentSrc,
+            naturalWidth: file.width,
+            naturalHeight: file.height,
+            width: img.offsetWidth,
+            height: img.offsetHeight,
+          };
+        }),
+      ),
     };
   });
 

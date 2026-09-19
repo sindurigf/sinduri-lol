@@ -334,9 +334,9 @@ varies by reader as well as by browser, and has not been tested here.
   is a bug.
 
   `rounded-nav` (14px) is the **softened-box** exception: the nav CTA button in
-  `Header.astro` and `MobileMenu.vue`, the logo tile in `Header.astro`, and the
-  larger copy of that tile in the starfield panel of `404.astro`. The third is the same
-  object drawn twice, not a new use. The exception belongs to the logo tile
+  `Header.astro` and `MobileMenu.vue`, the logo tile in `Header.astro`, and its
+  larger copies in the starfield panel of `404.astro` and the Lepus Ridet panel
+  on `/about`. The copies are the same object drawn again, not new uses. The exception belongs to the logo tile
   wherever it is drawn; a tile that is not a copy of it does not qualify,
   however much it looks like one.
 
@@ -440,6 +440,14 @@ ones a machine can see.
   `py-section`, a white `text-h2` heading, an optional `.lead`, then the
   content at `mt-head`. There is no rule above the heading; the heading and the
   spacing mark the section.
+- **Panels.** A section that is one object, words and pictures together, is
+  one `.card`. `Section panel` puts the heading at `.card-title` size inside
+  it. `Section headless` leaves the heading to the section's own layout, for
+  a panel whose heading sits beside its picture rather than above it (Lepus
+  Ridet, Positivity advocate on `/about`); the slot renders the `h2` with the
+  id `<id>-heading`.
+- **A long page ends** on `CloseRow`: a card with the post to continue with and
+  the one action that leads on.
 - **Colour has a job.** Gold is structure: the hero shadow, every card's
   default shadow, card labels. Pink is emphasis, on at most one card per
   section (the current role, the cats, the award). Cyan is the round marks: the
@@ -448,7 +456,11 @@ ones a machine can see.
   its heading. A state such as "current" is a `.chip` with words in it, never a
   border colour alone (SC 1.4.1).
 - **Photos** take a 4px `border` frame and no shadow or tilt; only cards stand
-  forward.
+  forward. Inside a panel they take no frame of their own: `PhotoTile` sets
+  each on a quiet `bg-background` tile, links it to its full-size file, and
+  `PhotoViewer` opens that link in a native `<dialog>`. A group too long for a
+  row is one `.photo-strip` that scrolls sideways, each photo uncropped in
+  its own shape and never wider than the strip.
 - **Spacing** comes from `--spacing-section`, `-head`, `-grid`, `-actions` and
   `-inline`. Each is fluid from 390px to 1200px, because the desktop values
   left a phone with screens of empty ground between one-column sections.

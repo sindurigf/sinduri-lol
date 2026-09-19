@@ -165,8 +165,16 @@ type Unbounded = { tag: string; text: string; display: string };
 
 const withoutABoundary = (page: Page): Promise<Unbounded[]> =>
   page.evaluate((selector) => {
+    /*
+     * Only a colour with a zero alpha. The first version matched any colour
+     * ending in ", 0)", which includes opaque black, rgb(0, 0, 0): the
+     * CanvasText headless Chromium paints in this mode. A control whose only
+     * edge was a CanvasText border was reported as having none (2026-09-19,
+     * the /about photo strip). Measured after the fix, chromium: the strip
+     * with its 2px border passes, and with the border removed it is reported.
+     */
     const transparent = (colour: string) =>
-      colour === 'transparent' || /,\s*0\)$/.test(colour);
+      colour === 'transparent' || /^rgba\(.*,\s*0\)$/.test(colour);
 
     const out: Unbounded[] = [];
     for (const element of document.querySelectorAll(selector)) {
