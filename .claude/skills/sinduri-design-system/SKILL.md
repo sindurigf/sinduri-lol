@@ -1109,7 +1109,7 @@ another.
 
 | Image                                   | Alt                                                                       |
 | --------------------------------------- | ------------------------------------------------------------------------- |
-| Header bunny mark, inside the home link | `Lepus Ridet mark`                                                        |
+| Header bunny mark, inside the home link | `""`, the wordmark names the link                                         |
 | Badge standing alone as the only name   | `Sinduri — Lepus Ridet`                                                   |
 | Large decorative watermark badges       | `""`                                                                      |
 | Share image, `og:image:alt`             | `The Sinduri, Lepus Ridet badge: a line drawing of a hare inside a ring.` |

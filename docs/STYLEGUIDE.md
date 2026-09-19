@@ -57,8 +57,8 @@ Not done, and why:
 
 - **Heading visual levels (A9).** The 404 and tag-page h1 sizes have
   documented reasons; "In this post" and "Tags" stay at label size. Open.
-- **Tile alt text (1.1, flag 2).** It needs your decision, since the
-  design-system skill asks for "Lepus Ridet mark".
+- **Tile alt text (1.1, flag 2).** Done: the mark has empty alt text and the
+  home link is named "sinduri.lol" by its wordmark.
 - **The whole-card focus ring on linked cards.** `tests/focus.spec.ts`
   expects the ring on the focused element itself, so the ring stays on the
   title link.

@@ -524,8 +524,8 @@ design and this section is not the place to check that.
       English, so judge them as prose as well as structure.
       Listed: `__________________________________________` → SC 1.3.1, 2.4.6
 
-- [ ] `G` from `Ctrl+Home` reaches the header bunny mark and announces
-      "Lepus Ridet mark".
+- [ ] `G` from `Ctrl+Home` does **not** stop on the header bunny mark: it has
+      empty alt text, and the home link is announced as "sinduri.lol" alone.
       Heard: `___________________________________________` → SC 1.1.1
 - [ ] `G` again finds **no second image**. The footer hare is `aria-hidden`
       and must be silent. "Hare", "graphic", or "image" means it has been

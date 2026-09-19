@@ -23,7 +23,6 @@ import { DENSITIES } from '../lib/image-densities';
  * 458x900 master. tests/image-size.spec.ts fails if the class and this number
  * drift apart.
  */
-const BUNNY_ALT = 'Lepus Ridet mark';
 const MARK_HEIGHT = 24;
 
 const currentPath = Astro.url.pathname;
@@ -59,9 +58,10 @@ const isActive = (href: string): boolean => isCurrentPage(currentPath, href);
       that can mark the homepage as current, so it carries `aria-current`. The
       attribute only: the logo draws no current-page box.
 
-      No aria-label. It would override both the image's alt and the visible
-      wordmark, hiding the mark from assistive tech and breaking voice control
-      for anyone who says "sinduri.lol".
+      Named by its visible wordmark alone, "sinduri.lol": the mark is
+      decoration beside it and takes empty alt text, so the name a screen
+      reader announces and the words a voice-control user says are the same
+      (SC 2.5.3). No aria-label either, which would override the wordmark.
 
       `lg:justify-self-start` because a grid item stretches to fill its track
       by default. Stretched, this link's box is the whole first track, and a
@@ -81,7 +81,7 @@ const isActive = (href: string): boolean => isCurrentPage(currentPath, href);
         */}
         <Image
           src={bunnyDark}
-          alt={BUNNY_ALT}
+          alt=""
           height={MARK_HEIGHT}
           densities={DENSITIES}
           loading="eager"
