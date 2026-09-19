@@ -16,11 +16,22 @@ something using, so a token nothing references yet is tree-shaken away and
 **Never write an arbitrary value in a component.** No raw hex, no `text-[32px]`,
 no `shadow-[8px_8px_0]`. If the value you need does not exist, add a token.
 
-`scripts/check-tokens.mjs` (`npm run check:tokens`, run in CI) fails on any
-Tailwind arbitrary value anywhere in `src/`, `global.css` included, and on any
-raw hex outside `src/styles/global.css`, across `.astro`, `.vue`, `.ts` and
-`.css`. Comments are ignored. It does not catch `rgb()` or `rgba()` literals,
-or radius.
+`scripts/check-tokens.mjs` (`npm run check:tokens`, run in CI) scans `.astro`,
+`.vue`, `.ts` and `.css` in `src/`, ignoring comments, and fails on:
+
+- a Tailwind arbitrary value anywhere, `global.css` included;
+- a raw hex outside `src/styles/global.css`, and `rgb()`, `rgba()`, `hsl()` or
+  `hsla()` outside its `@theme` block;
+- px, rem or em in a CSS declaration outside `@theme`: in `global.css` and in a
+  component's `<style>`. A custom property definition, a media condition and
+  zero are allowed, so a new length is a token;
+- a margin, padding, gap or inset utility off the spacing scale, 0, 1, 2, 3,
+  4, 6, 8, 12, 16 and 24: no half steps, no 5, 7, 10, 14, 20 or 28;
+- an inline `style` attribute in an `.astro` or `.vue` file.
+
+Its `PENDING` list holds the exceptions waiting on a decision, PageHero's
+`lg:py-20` and the 404's `py-28`, and fails when an entry no longer matches,
+so remove an entry with the code it excused. It does not catch radius.
 
 ---
 
@@ -64,12 +75,14 @@ before building anything on `#FFC000`.
 things that stand on the page: cards, panels, a hero photo (`shadow-hard-gold-8`),
 plus the page title, card labels and the primary fill. Pink is things you
 press: buttons, link chips, the call to action (`shadow-hard-pink-4`), and the
-bunny marks, which keep the locked logo tile's pink. Cyan is where you are:
-focus, hover, and `shadow-hard-cyan-4` on the current nav item, chip and call
-to action, under their unchanged blue border. A cyan label, fill or shadow at
-rest would read as the current page or a control under the pointer. State is
-never the shadow colour alone: pink against cyan is 2.29. Links are `text`,
-underlined in running text.
+bunny marks, which keep the locked logo tile's pink. Cyan is what you are
+touching: focus, hover, and `shadow-hard-cyan-8` in place of the gold shadow on
+a hovered linked card or contact card. A cyan label, fill or shadow at rest
+would read as a control under the pointer. Where you are is not a colour: the
+current nav item, mobile menu item and chip are a flat `bg-text` block with a
+background-coloured label (14.42) and no shadow, like a `.badge`, and the
+current call to action drops its shadow and keeps an inset ring, pressed in.
+Links are `text`, underlined in running text.
 
 ### Contrast-critical tokens
 
@@ -508,8 +521,9 @@ do not lower it to 64px, which is `text-h2`'s ceiling.
 
 **A blog post has its own, smaller scale**, because it reads as an article
 rather than a page. `text-post-title` sets the title up to 60px in the case it
-is written in, and `text-post-h2` its section headings up to 36px, a step under
-the title so the two never read as one size. At the page scale a post opened
+is written in, `text-post-h2` its section headings up to 36px, a step under
+the title so the two never read as one size, and `text-post-h3`,
+`clamp(19px, 2vw, 24px)`, a step under that. At the page scale a post opened
 with a 104px title over 64px headings and read as a poster. Do not raise
 either back to the page scale without asking; the smaller scale was the
 request.
@@ -750,13 +764,13 @@ Nothing may flash more than three times per second (SC 2.3.1).
 - The active item uses **`aria-current="page"`**. That is the machine-readable
   indicator and it is not optional.
 - The active item's **box** is visual reinforcement only: `border-4
-border-border` with `shadow-hard-cyan-4`, and `lift-control` so its focus ring
-  clears the shadow. It must never be the sole signal of
+border-border bg-text text-background`, a flat text-colour block with no
+  shadow, like a `.badge` (14.42). It must never be the sole signal of
   the active page. It carries no meaning to assistive tech and needs no ARIA of
-  its own, because it is drawn with border and shadow rather than an element.
-  (It replaced an 8x8 gold dot, which was a separate `aria-hidden` span.)
-- **Every link carries the border and padding; only the colour and shadow
-  change.** Inactive links get `border-transparent`, which is holding space,
+  its own, because it is drawn with border and fill rather than an element.
+  (It replaced an 8x8 gold dot, which was a separate `aria-hidden` span.) The
+  mobile menu and the no-JavaScript nav draw their current item the same way.
+- **Every link carries the border and padding; only the colours change.** Inactive links get `border-transparent`, which is holding space,
   not decorating. An indicator applied to the active link alone makes that item
   wider on its own page and reflows the whole row as you navigate.
 - Never signal state with color alone (SC 1.4.1). A box is a shape cue and
@@ -768,11 +782,11 @@ border-border` with `shadow-hard-cyan-4`, and `lift-control` so its focus ring
   which is `NAV_LINKS` without Home: the logo link directly before it already
   goes to `/`, and a Home item beside it was two adjacent links to one URL. On
   `/` the logo link carries `aria-current="page"` instead. The call to action sits outside the
-  Primary `<nav>` and marks the current page with its own indicator: its pink
-  shadow turns cyan, and it draws an inset 4px ring in the background colour
-  (`--inset-shadow-cta-current`), 11.32 on its gold fill. The ring is the
-  shape half: its border and shadow are already spent on its resting state,
-  and a shadow colour change alone would fail SC 1.4.1.
+  Primary `<nav>` and marks the current page with its own indicator: it drops
+  its pink shadow and draws an inset 4px ring in the background colour
+  (`--inset-shadow-cta-current`), 11.32 on its gold fill, so it reads as
+  pressed in. Both are shape changes, so the state never rests on colour
+  (SC 1.4.1).
 - The call to action, `.nav-cta`, is a square gold primary action: `bg-gold`,
   a background-coloured label, `border-4` and `shadow-hard-pink-4`, with no
   radius. It shares the buttons' hover (cyan fill) and pressed (4px into its
@@ -899,10 +913,16 @@ A cyan ring crossing the pink shadow measures **2.29**, under the 3:1 of SC
 for that shadow**: `lift-control` beside `shadow-hard-pink-4`, `lift-object`
 beside an 8px shadow, gold or pink. Each sets `--lift`, which the offset adds to the
 4px gap, so the ring lands on the ground past the shadow rather than across
-it. `.btn-primary`, `.btn-secondary`, `.btn-gold-primary`, `.nav-cta` and the
-current chip carry it in their class; the current nav item, the logo link, the
-contact cards and the footer stickers set it where they draw the shadow. A new
+it. `.btn-primary`, `.btn-secondary`, `.btn-gold-primary`, `.nav-cta` and
+`.chip` carry it in their class; the logo link, the contact cards and the
+footer stickers set it where they draw the shadow. A current item casts no
+shadow, so the current chip and the current `.nav-cta` set `--lift: 0px`. A new
 shadow on a focusable element without its lift is a bug.
+
+The ring must not touch a neighbour either. Chip lists (the category filter,
+the pager, About's on-page nav, a post's tags) and the no-JavaScript nav are
+`gap-6`: a chip's ring reaches 12px past its box and the next chip's shadow
+4px, and at `gap-3` the two met. `tests/states.spec.ts` measures it.
 
 ### The offset is a mitigation, and it has an assumption in it
 
@@ -1027,13 +1047,17 @@ machine can see.
   panel and hero photo casts an 8px gold shadow, and gold is also the page
   title, card labels and the primary fill. Pink is things you press: buttons,
   tags and the call to action cast a 4px pink shadow; the bunny marks (the
-  logo tile, its copies, the roundel) keep the tile's pink too. Cyan is where
-  you are: focus, hover, and a 4px cyan shadow under the unchanged blue border
-  of the current nav item, tag and call to action. On the blog, colour means
+  logo tile, its copies, the roundel) keep the tile's pink too. Cyan is what
+  you are touching: focus, hover, and a hovered linked card's shadow. Where
+  you are is not a colour: the current nav item and chip are a flat
+  text-colour block, and the current call to action is pressed in. On the blog, colour means
   category on the label and the glyph tile only.
 - **One card.** `.card`, which carries its 8px gold shadow itself, and
   `.card-title` for its heading. Section has no `shadow` prop and no card
-  picks a shadow colour. A state such as "current" is a `.badge` with words in
+  picks a shadow colour. A linked card's title is `.card-link`, inline-block
+  with a 24px minimum height so a wrapped title's focus ring is one rectangle;
+  hovering the card turns the title and the shadow cyan, with no underline,
+  which crossed the next line of a wrapped title at 320px. A state such as "current" is a `.badge` with words in
   it, never a border or shadow colour alone (SC 1.4.1).
 - **Chip or badge.** A `.chip` is always a link: a tag, a jump link, a filter.
   A fact that is not a link, such as the current role, a skill or "Episode
@@ -1062,7 +1086,11 @@ machine can see.
   cyan under a background-coloured label on hover (11.20), and move 4px into
   their shadow when pressed, dropping it, with no move under reduced motion.
   Unavailable is `aria-disabled="true"`, never `disabled`: a dashed border,
-  `bg-background`, a `subtle` label (8.62) and no shadow.
+  `bg-background`, a `subtle` label (8.62) and no shadow. Sending is not
+  unavailable: while the contact form posts (`src/scripts/contact-sending.ts`,
+  `aria-busy` on the form, `aria-disabled` and the label "Sending" on the
+  button), the button holds its pressed position, gold with its label (11.32)
+  and a solid border, and does not move under reduced motion.
 - **Reading pages** (Privacy, Accessibility) are a PageHero with
   `measure="reading"`, whose text sits in a centred `max-w-3xl` while the wall
   stays full width, then one `.prose` column of the same width, so the title
@@ -1227,7 +1255,7 @@ Any other rounded corner is a bug.
 ```sh
 npm run build        # must be warning-free
 npm run typecheck    # 0 errors, 0 warnings, 0 hints
-npm run check:tokens # no arbitrary value or raw hex in src/
+npm run check:tokens # no arbitrary value, raw colour, raw length, off-scale spacing or inline style in src/
 npm run test:a11y    # the whole Playwright suite, axe included, 0 failures
 ```
 
