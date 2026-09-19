@@ -13,6 +13,10 @@ import bicycle from '../assets/photos/sinduri-bicycle.jpg';
 import bestFriendSelfie from '../assets/photos/best-friend-selfie.jpg';
 import bestFriendBeach from '../assets/photos/best-friend-beach.jpg';
 import withJohann from '../assets/photos/sinduri-johann.jpg';
+import johannCeremony from '../assets/photos/johann-ceremony.jpg';
+import ceremonyHands from '../assets/photos/ceremony-hands.jpg';
+import johannLights from '../assets/photos/johann-lights.jpg';
+import keralaSand from '../assets/photos/kerala-sand.jpg';
 import starTrek from '../assets/photos/sinduri-star-trek.jpg';
 import minerva from '../assets/photos/minerva.jpg';
 import hela from '../assets/photos/hela.jpg';
@@ -58,8 +62,7 @@ const SIZES = {
     '(min-width: 40rem) min(calc(100vw - 9rem), 74rem), calc(100vw - 6rem)',
   food: '(min-width: 64rem) min(calc(50vw - 7.5rem), 32.75rem), (min-width: 40rem) calc(100vw - 9rem), calc(100vw - 6rem)',
   cat: '(min-width: 40rem) min(calc(33.34vw - 4.8rem), 22.85rem), calc(100vw - 7.25rem)',
-  drupal:
-    '(min-width: 40rem) min(calc(50vw - 6.15rem), 35.35rem), calc(100vw - 7.25rem)',
+  half: '(min-width: 40rem) min(calc(50vw - 6.15rem), 35.35rem), calc(100vw - 7.25rem)',
 } as const;
 
 /** The bunny mark in the Lepus Ridet tile, drawn `h-16` from `lg`. */
@@ -94,6 +97,18 @@ const PLACES = [
     alt: 'Sinduri and her best friend Hemu walking on a beach.',
   },
   {
+    src: johannCeremony,
+    alt: 'Sinduri and Johann sitting on the floor at a ceremony, Johann holding a leaf with a flower on it.',
+  },
+  {
+    src: ceremonyHands,
+    alt: 'Johann’s hands holding a leaf with two rings on it, above Sinduri’s hennaed hands and bangles.',
+  },
+  {
+    src: johannLights,
+    alt: 'Sinduri and Johann taking a selfie at night, under trees lit red and blue.',
+  },
+  {
     src: lake,
     alt: 'Sinduri in a pink dress on a balcony, with trees and a lake behind her.',
   },
@@ -104,6 +119,10 @@ const PLACES = [
   {
     src: kannurSea,
     alt: 'Sinduri standing at the edge of the sea in Kannur, Kerala, with her arms spread wide, a wave breaking behind her.',
+  },
+  {
+    src: keralaSand,
+    alt: 'Handprints in the sand around the words Kerala 2012.',
   },
   {
     src: escapeRoom,
@@ -254,17 +273,13 @@ const CATS = [
     lead="I moved to Vienna in 2017. I love cats, travelling, and long evenings with my friends talking about nothing and anything."
     panel
   >
-    {/*
-      Johann and Hemu on a row of their own, then every other photo in one
-      strip. The tiles keep one size: Johann's master is 278px wide, so a
-      larger tile would stretch it.
-    */}
-    <div class="flex flex-wrap gap-3.5">
+    {/* Johann and Hemu on a row of their own across the panel, then every other photo in one strip. */}
+    <div class="grid gap-3.5 sm:grid-cols-2">
       <PhotoTile
         image={withJohann}
-        alt="Sinduri smiling with Johann, his arms wrapped around her."
+        alt="Sinduri and Johann sitting side by side in flower garlands, both smiling."
         group="people"
-        size="fixed"
+        sizes={SIZES.half}
       >
         <span class="block font-extrabold text-text">Johann</span>
         <span class="block text-gold">
@@ -275,7 +290,7 @@ const CATS = [
         image={bestFriendSelfie}
         alt="Sinduri taking a selfie with her best friend, Hemu."
         group="people"
-        size="fixed"
+        sizes={SIZES.half}
       >
         <span class="block font-extrabold text-text">Hemu</span>
         <span class="block text-cyan">My best friend.</span>
@@ -324,7 +339,7 @@ const CATS = [
             image={place.src}
             alt={place.alt}
             group="people"
-            size="fixed"
+            size="natural"
           />
         </li>
       ))}
@@ -457,7 +472,7 @@ const CATS = [
         image={lectureHall}
         alt="Sinduri standing and clapping in a lecture hall full of Drupal event attendees."
         group="drupal"
-        sizes={SIZES.drupal}
+        sizes={SIZES.half}
         aspect="video"
       >
         <span class="block font-extrabold text-text">The Drupal community</span>
@@ -470,7 +485,7 @@ const CATS = [
         image={mountainCamp}
         alt="The Drupal Mountain Camp group photo: a crowd of attendees standing in the snow."
         group="drupal"
-        sizes={SIZES.drupal}
+        sizes={SIZES.half}
         aspect="video"
       >
         <span class="block font-extrabold text-text">Drupal Mountain Camp</span>

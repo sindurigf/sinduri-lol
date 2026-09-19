@@ -971,7 +971,8 @@ ones a machine can see.
   forward. Inside a panel they take no frame of their own: `PhotoTile` sets
   each on a quiet `bg-background` tile, links it to its full-size file, and
   `PhotoViewer` opens that link in a native `<dialog>`. A group too long for a
-  row is one `.photo-strip` that scrolls sideways.
+  row is one `.photo-strip` that scrolls sideways, each photo uncropped in
+  its own shape and never wider than the strip.
 - **Spacing** comes from `--spacing-section`, `-head`, `-grid`, `-actions` and
   `-inline`. Each is fluid from 390px to 1200px, because the desktop values
   left a phone with screens of empty ground between one-column sections.

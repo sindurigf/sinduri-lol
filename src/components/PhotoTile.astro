@@ -1,7 +1,7 @@
 ---
 import type { ImageMetadata } from 'astro';
 import { Image, getImage } from 'astro:assets';
-import { DENSITIES, WIDTHS } from '../lib/image-densities';
+import { WIDTHS } from '../lib/image-densities';
 
 /*
  * One photo in a photo panel: the photo on a quiet tile, no border of its
@@ -12,15 +12,17 @@ import { DENSITIES, WIDTHS } from '../lib/image-densities';
  * With it, src/scripts/photo-viewer.ts opens the link in the photo viewer
  * instead, and moves through every link that shares its `group`.
  *
- * `fixed` draws the photo as a 256px square, for rows and strips of tiles
- * that keep one size. `fluid` fills the tile, for a grid that grows with the
- * page, and takes `sizes` for that.
+ * `fluid` fills the tile, for a grid that grows with the page, and takes
+ * `sizes` for that. `natural` keeps
+ * the photo's own shape, uncropped, for a `.photo-strip`: 320px tall, and
+ * never wider than the strip, so on a phone it shrinks to fit rather than
+ * spilling out of view.
  */
 interface Props {
   image: ImageMetadata;
   alt: string;
   group: string;
-  size?: 'fixed' | 'fluid';
+  size?: 'fluid' | 'natural';
   /** `fluid` only: the width the photo is drawn at, for picking a file. */
   sizes?: string;
   aspect?: 'square' | 'video';
@@ -37,9 +39,6 @@ const {
   class: className = '',
 } = Astro.props;
 
-/** `size-64`, the drawn side of a `fixed` photo; its tile is `w-69`, with the padding. */
-const FIXED_SIDE = 256;
-
 /*
  * The master's size, read from a copy. In a static build, reading any field
  * of the imported image directly marks its original file as used, and Astro
@@ -49,26 +48,31 @@ const FIXED_SIDE = 256;
  */
 const master = (image as ImageMetadata & { clone: ImageMetadata }).clone;
 
+/** The drawn height of a `natural` photo while the strip is wide enough. */
+const NATURAL_HEIGHT = 320;
+
+/*
+ * A strip's inner width on a phone, where it can be narrower than the photo:
+ * the page gutter, the panel's border and padding, the strip's border and
+ * the tile's padding. tests/image-size.spec.ts fails when it drifts.
+ */
+const STRIP_INSET = '7.25rem';
+
+const naturalWidth = Math.round(
+  NATURAL_HEIGHT * (master.width / master.height),
+);
+const naturalSizes = `min(${naturalWidth}px, calc(100vw - ${STRIP_INSET}))`;
+
+/* Every candidate the master can supply without upscaling, and the drawn width itself. */
+const naturalWidths = [
+  ...new Set([
+    ...WIDTHS.filter((width) => width <= master.width),
+    naturalWidth,
+  ]),
+].sort((a, b) => a - b);
+
 /** The largest file the viewer opens, and the no-JavaScript link. */
 const FULL_WIDTH = 1600;
-
-/*
- * A square box crops a landscape photo at its sides, so the file has to be
- * as tall as the box, not just as wide, or tests/image-size.spec.ts reads the
- * short side as stretched.
- */
-const fixedWidth = Math.ceil(
-  FIXED_SIDE * Math.max(1, master.width / master.height),
-);
-
-/*
- * A density whose file would be wider than the master is left out: Astro
- * caps it at the master and labels it with the density anyway, so a 2x screen
- * would stretch it. Johann's photo is 278px wide, so it gets 1x only.
- */
-const fixedDensities = DENSITIES.filter(
-  (density) => fixedWidth * density <= master.width,
-);
 
 /* WebP like every other image here: a master's .jpg is a type nothing else serves. */
 const full = await getImage({
@@ -99,26 +103,21 @@ const cropWidths = [
 const hasCaption = Astro.slots.has('default');
 ---
 
-<figure
-  class:list={[
-    'min-w-0 bg-background p-2.5',
-    size === 'fixed' && 'w-69 max-w-full',
-    className,
-  ]}
->
+<figure class:list={['min-w-0 bg-background p-2.5', className]}>
   {/*
     `relative` keeps the visually hidden text below inside the link: it is
     absolutely positioned, and in a scrolled strip it otherwise escapes the
     strip's clipping and widens the page.
   */}
   <a href={full.src} class="relative block" data-photo={group}>
-    {size === 'fixed' ? (
+    {size === 'natural' ? (
       <Image
         src={image}
         alt={alt}
-        width={fixedWidth}
-        densities={fixedDensities.length > 0 ? fixedDensities : [1]}
-        class="block size-64 max-w-full object-cover"
+        width={naturalWidth}
+        widths={naturalWidths}
+        sizes={naturalSizes}
+        class="strip-photo"
       />
     ) : (
       <Image
