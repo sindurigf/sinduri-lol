@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import CloseRow from '../../components/CloseRow.astro';
 import PageHero from '../../components/PageHero.astro';
 import { CONTACT_EMAIL } from '../../lib/contact';
 
@@ -40,11 +41,12 @@ import { CONTACT_EMAIL } from '../../lib/contact';
         <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
       </p>
 
-      <p class="mt-head">
-        <a class="btn-secondary" href="/contact/">
-          Back to contact
-        </a>
-      </p>
+      <CloseRow
+        readHref="/blog/five-years-in-drupal/"
+        readLabel="Five years in Drupal"
+        actionHref="/contact/"
+        actionLabel="Back to contact"
+      />
     </div>
   </section>
 </BaseLayout>

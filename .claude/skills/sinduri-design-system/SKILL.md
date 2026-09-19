@@ -1018,8 +1018,11 @@ machine can see.
   a panel whose heading sits beside its picture rather than above it (Lepus
   Ridet, Positivity advocate on `/about`); the slot renders the `h2` with the
   id `<id>-heading`.
-- **A long page ends** on `CloseRow`: a card with the post to continue with and
-  the one action that leads on.
+- **A page that closes on links closes on `CloseRow`**: a card with one place
+  to read next (labelled "Continue reading" for a post, "Next" for a page) and
+  the one action that leads on. `/`, `/about`, `/career` and `/contact/sent`
+  end this way; `/404` and `/accessibility` do not, because their buttons are
+  the page's own content.
 - **Colour has a job.** Gold is things that stand on the page: every card,
   panel and hero photo casts an 8px gold shadow, and gold is also the page
   title, card labels and the primary fill. Pink is things you press: buttons,

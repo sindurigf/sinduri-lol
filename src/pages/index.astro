@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BlogCard from '../components/BlogCard.astro';
+import CloseRow from '../components/CloseRow.astro';
 import Roundel from '../components/Roundel.astro';
 import Section from '../components/Section.astro';
 import HeroField from '../components/ui/HeroField.vue';
@@ -343,13 +344,12 @@ const STATS = [
       ))}
     </ul>
 
-    <p class="actions mt-head">
-      <a href="/career/" class="btn-primary">
-        Career and CV
-      </a>
-      <a href="/contact/" class="btn-secondary">
-        Get in touch
-      </a>
-    </p>
+    <CloseRow
+      eyebrow="Next"
+      readHref="/career/"
+      readLabel="Career and CV"
+      actionHref="/contact/"
+      actionLabel="Get in touch"
+    />
   </Section>
 </BaseLayout>
