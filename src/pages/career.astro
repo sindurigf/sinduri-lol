@@ -228,13 +228,13 @@ const OPEN_SOURCE = [
          * spans the card, with the dates and employer in the first column
          * under it and the points in the other three.
          *
-         * The current role is the section's one pink card, and says so in
-         * words with a chip, so colour is never the only signal (SC 1.4.1).
+         * The current role says so in words, with a badge, so nothing about
+         * it rests on colour (SC 1.4.1).
          */
         EXPERIENCE.map((role) => (
           <li class="card grid gap-8 lg:grid-cols-4">
             <div class="flex min-w-0 flex-col items-start gap-4 lg:col-span-4">
-              {role.current && <span class="chip">Current</span>}
+              {role.current && <span class="badge">Current</span>}
               <h3 class="card-title">{role.title}</h3>
             </div>
 
@@ -280,7 +280,7 @@ const OPEN_SOURCE = [
           <h3 class="card-title">Skills</h3>
           <ul class="mt-8 flex flex-wrap gap-3">
             {SKILLS.map((skill) => (
-              <li class="chip">{skill}</li>
+              <li class="badge">{skill}</li>
             ))}
           </ul>
         </div>

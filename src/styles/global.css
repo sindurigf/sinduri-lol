@@ -271,13 +271,13 @@
   --inset-shadow-gold-btn-ring: inset 0 0 0 3px var(--color-gold-btn-label);
 
   /*
-   * The current-page ring on .nav-cta. That control already spends a border and
-   * the gold hover shadow, so an inset ring is the one shape left.
-   *
-   * An inset ring touches two colours, so both are measured: 7.91 on the cyan
-   * fill, 3.42 on the border, against the 3.0 SC 1.4.11 asks.
+   * The current-page ring on .nav-cta, drawn in place of its shadow, so the
+   * control reads as pressed in. An inset ring touches two colours, so both
+   * are measured: 11.32 on the gold fill, 11.32 on cyan when hovered, and
+   * 1.00 against the border on its outer edge, where the fill, not the ring,
+   * is what meets 3.0.
    */
-  --inset-shadow-cta-current: inset 0 0 0 4px var(--color-darkcyan);
+  --inset-shadow-cta-current: inset 0 0 0 4px var(--color-background);
 
   /* The second 4px of a failing field's 8px edge, drawn inside the border. */
   --inset-shadow-invalid: inset 0 0 0 4px var(--color-pink);
@@ -588,10 +588,43 @@
   }
 
   /*
-   * A row of buttons. When the row wraps, the next button would sit 16px
-   * under the one above, and that one's 12px hard shadow fills most of the
-   * gap, so two buttons read as touching. The vertical gap clears the shadow
-   * with room to spare; the horizontal one is the ordinary inline gap.
+   * Button states, shared by both. Hover fills with cyan, the interaction
+   * colour: background on cyan is 11.20, and the fill against the page is
+   * 11.20 too. Pressing moves the button 4px into its own shadow, which then
+   * has nowhere to fall; the move is a state, not a transition, and is left
+   * out under reduced motion, where the shadow still goes.
+   *
+   * Unavailable is `aria-disabled`, never `disabled`, so the control stays
+   * focusable and announced. It is drawn by shape as well as tone: a dashed
+   * edge and no shadow, with the label at `subtle`, 8.62 on background.
+   */
+  :is(.btn-primary, .btn-secondary, .nav-cta):not(
+      [aria-disabled='true']
+    ):hover {
+    @apply bg-cyan text-background;
+  }
+
+  :is(.btn-primary, .btn-secondary, .nav-cta):not(
+      [aria-disabled='true']
+    ):active {
+    @apply translate-x-1 translate-y-1 shadow-none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :is(.btn-primary, .btn-secondary, .nav-cta):active {
+      @apply translate-x-0 translate-y-0;
+    }
+  }
+
+  :is(.btn-primary, .btn-secondary)[aria-disabled='true'] {
+    @apply cursor-not-allowed border-dashed bg-background text-subtle
+      shadow-none;
+  }
+
+  /*
+   * A row of buttons. When the row wraps, the vertical gap keeps the next
+   * button well clear of the 4px hard shadow and the focus ring beyond it;
+   * the horizontal one is the ordinary inline gap.
    */
   .actions {
     @apply flex flex-wrap items-start gap-x-inline gap-y-8;
@@ -626,32 +659,32 @@
    * The navigation's call to action, in one place because it is rendered in
    * two: the header row and the mobile dialog.
    *
+   * It is a primary action, so it looks like one: gold, square, on the 4px
+   * pink shadow. The logo tile is the one rounded thing in the header, and a
+   * rounded button beside it made the logo read as a button style.
+   *
    * The class carries what makes it that control, the fill, the border, the
-   * radius and the label type, and each call site adds its own box. The
+   * shadow and the label type, and each call site adds its own box. The
    * header one is a row item, the dialog one is a full-width block with a top
    * margin; those differ, the identity does not. Written out twice the two
    * came apart, one carrying a hover state and neither marking itself as the
    * current page. A shared class is what makes the state rules below reach
    * every rendering rather than whichever one someone edited.
    *
-   * The rules are here rather than utilities in the markup because
-   * `box-shadow` is one property: a `hover:` utility naming the gold shadow
-   * would replace the current-page ring while the pointer was over the
-   * control, on the one page where that ring is the only thing saying you are
-   * already there. Being in the same layer lets source order settle it.
-   * See --inset-shadow-cta-current for what the ring measures.
+   * On its own page it is pressed in: no shadow, and an inset ring instead,
+   * which changes nothing about its box. The rules are here rather than
+   * utilities in the markup because `box-shadow` is one property, and being
+   * in the same layer lets source order settle it. See
+   * --inset-shadow-cta-current for what the ring measures.
    */
   .nav-cta {
-    @apply rounded-nav border-4 border-border bg-cyan
-      text-label font-black uppercase tracking-label text-darkcyan;
-  }
-
-  .nav-cta:hover {
-    box-shadow: var(--shadow-hard-pink-4);
+    @apply lift-control border-4 border-border bg-gold text-label font-black
+      uppercase tracking-label text-background shadow-hard-pink-4;
   }
 
   .nav-cta[aria-current='page'],
   .nav-cta[aria-current='page']:hover {
+    --lift: 0px;
     box-shadow: var(--inset-shadow-cta-current);
   }
 
@@ -1087,8 +1120,17 @@
     content: '';
   }
 
+  /*
+   * The colour is set here rather than as a utility on the link, which would
+   * sit in a later layer and beat the hover below: linked cards never showed
+   * a hover at all while the markup carried `text-text`.
+   */
+  .card-link {
+    @apply text-text;
+  }
+
   .card:has(.card-link):hover .card-link {
-    @apply text-cyan;
+    @apply text-cyan underline decoration-4 underline-offset-4;
   }
 
   /*
@@ -1188,10 +1230,12 @@
   }
 
   /*
-   * A chip: a tag, a skill, a jump link or a filter. Square like every other
-   * box here. As a link it carries its own 24px target (SC 2.5.8) from its
+   * A chip: a tag, a jump link or a filter, always a link. Square like every
+   * other box here. It carries its own 24px target (SC 2.5.8) from its
    * padding and border. The current filter carries `aria-current` and a
-   * square marker span as well as the fill; see BlogListing.astro.
+   * square marker span as well as the fill; see BlogListing.astro. A fact that
+   * is not a link is a `.badge`, which has no edge, so it does not look
+   * clickable.
    */
   .chip {
     @apply inline-flex min-h-target items-center gap-2 border-4 border-border
@@ -1205,6 +1249,12 @@
 
   a.chip[aria-current] {
     @apply lift-control bg-gold text-background shadow-hard-pink-4;
+  }
+
+  /* Text on text: background on #E5E2E1 is 14.42. */
+  .badge {
+    @apply inline-flex items-center bg-text px-2 py-1 text-label font-black
+      uppercase tracking-label text-background;
   }
 
   /*

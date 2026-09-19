@@ -244,13 +244,4 @@ onBeforeUnmount(() => {
   font-size: clamp(34px, 8vw, 56px);
   line-height: 1;
 }
-
-/*
- * Every link in the panel except the call to action, which brings its own
- * colour with its fill. The exclusion names `.nav-cta` rather than matching a
- * utility in the class attribute, so it moves with that class.
- */
-.mobile-menu-dialog nav a[href]:not(.nav-cta) {
-  color: var(--color-text);
-}
 </style>
