@@ -62,26 +62,25 @@ anywhere in `src/` outside `global.css`.
 | text       | `#E5E2E1` | Primary text               |
 | subtle     | `#9BB4C6` | Footer, captions           |
 | gold       | `#FFC000` | Primary accent             |
-| cyan       | `#00DCFD` | Secondary accent           |
+| cyan       | `#00DCFD` | Focus and hover only       |
 | pink       | `#FF007A` | Borders, shadows, decor    |
 | pinkText   | `#FF79B6` | All pink text, any size    |
-| darkcyan   | `#00363F` | Text on cyan backgrounds   |
+| darkcyan   | `#00363F` | Links on the gold surface  |
 
-Plus `header-bg` (`rgba(10, 10, 10, 0.94)`), used only by the sticky header,
-and `joint` (`#262F36`) and `bolt` (`#2A3640`), used only by PageHero's cast
-blocks. Those two are decoration, 1.36 and 1.50 on the background, and what
-was measured is the text that crosses them, on the joint / the bolt: gold
-8.29 / 7.52, text 10.57 / 9.59, muted 8.02 / 7.28, subtle 6.31 / 5.73,
-pink-text 5.62 / 5.10, and border 3.54 / 3.21 for chip edges. `subtle` and
-`pink-text` fall from AAA to AA where they cross a joint; nothing falls below
-AA.
+Plus `joint` (`#262F36`), used only by PageHero's cast blocks, for the joints
+between them and the bolt in each block's corner. It is decoration, 1.36 on
+the background, and what was measured is the text that crosses it: gold 8.29,
+text 10.57, subtle 6.31, pink-text 5.62, and border 3.54 for chip edges.
+`subtle` and `pink-text` fall from AAA to AA where they cross a joint; nothing
+falls below AA. And `bud` (`#D4C5AB`), read by the homepage canvas for its
+buds and used nowhere else; text on the site is `text`.
 
-Those are the dark-surface tokens. There is a fourth surface, `gold` used as a
+Those are the dark-surface tokens. There is a third surface, `gold` used as a
 ground, and none of them work on it. See [The gold surface](#the-gold-surface).
 
 `border` and `subtle` are contrast-critical and must not be changed without
-re-verifying against all three surface colours. `#5A87A8` measures
-4.84 / 4.53 / 5.02 and `#9BB4C6` measures 8.62 / 8.07 / 8.95. The two were
+re-verifying against both surface colours. `#5A87A8` measures 4.84 / 4.53 and
+`#9BB4C6` measures 8.62 / 8.07. The two were
 replaced for different reasons, which must not be conflated: `border` was a
 conformance fix, since its predecessor `#504632` measured 2.00 on `#131313` and
 failed SC 1.4.11; `subtle` was a palette decision, since its predecessor
@@ -96,13 +95,13 @@ The split is by role, not by size. The CSS variables are `--color-pink` and
 `--color-pink-text`; the utilities are `bg-pink` / `border-pink` and
 `text-pink-text`.
 
-| Token      | Hex       | Ratios             | Allowed on                     |
-| ---------- | --------- | ------------------ | ------------------------------ |
-| `pink`     | `#FF007A` | 4.90 / 4.59 / 5.09 | Borders, offset shadows, fills |
-| `pinkText` | `#FF79B6` | 7.66 / 7.18 / 7.96 | All pink text, at any size     |
+| Token      | Hex       | Ratios      | Allowed on                     |
+| ---------- | --------- | ----------- | ------------------------------ |
+| `pink`     | `#FF007A` | 4.90 / 4.59 | Borders, offset shadows, fills |
+| `pinkText` | `#FF79B6` | 7.66 / 7.18 | All pink text, at any size     |
 
 `pink` is never used for text and `pinkText` is never used for a border or a
-shadow. `#FF79B6` is AAA on all three surfaces at every size, so the rule needs
+shadow. `#FF79B6` is AAA on both surfaces at every size, so the rule needs
 no reference to the large-text exemption and does not break if the type scale
 changes. Do not merge the two tokens.
 
@@ -165,10 +164,10 @@ There is deliberately no `gold-subtle`: a third step would land near luminance
 
 **Build a gold section with `.surface-gold` and nothing else.** Four site-wide
 rules are wrong on this ground and three fail silently: links are painted
-`gold` by the base layer (1.00) and `cyan` on hover (1.01); the focus ring is
-`gold`, and the 3px offset that saves it elsewhere does not help when the gap
-is also gold; borders default to `border` (2.34); text defaults to `text`
-(1.27). Neither `.btn-primary` nor `.btn-secondary` may be used there.
+`text` by the base layer (1.27) and `cyan` on hover (1.01); the focus ring is
+`cyan`, 1.01 on gold, and its offset gap is gold too; borders default to
+`border` (2.34); text defaults to `text` (1.27). Neither `.btn-primary` nor
+`.btn-secondary` may be used there.
 `.btn-gold-primary` and `.btn-gold-secondary` are the gold-surface pair, scoped
 to `.surface-gold` so using one elsewhere renders it unstyled.
 
@@ -191,18 +190,18 @@ self-hosted by design.
 
 The scale is fluid via `clamp()` rather than breakpoint steps.
 
-| Role           | Size                                    | Weight | Tracking |
-| -------------- | --------------------------------------- | ------ | -------- |
-| H1             | `clamp(33px, 9vw, 104px)`               | 900    | -0.05em  |
-| H1, hero       | `clamp(33px, min(9vw, 13svh), 104px)`   | 900    | -0.05em  |
-| H1, post title | `clamp(33px, 9vw, 80px)`                | 900    | -0.05em  |
-| H2             | `clamp(26px, 5.6vw, 64px)`              | 900    | -0.05em  |
-| H3             | `clamp(20px, 2.6vw, 32px)`              | 800    | -0.04em  |
-| Sticker, hero  | `clamp(18px, min(2.1vw, 3.4svh), 30px)` | 800    | normal   |
-| Body           | `clamp(17px, 1.2vw, 19px)`              | 400    | normal   |
-| Label / tag    | `13px`                                  | 900    | 0.1em    |
-| Section number | `clamp(21px, 2.4vw, 28px)`              | 800    | n/a      |
-| Footer name    | `clamp(32px, 3vw, 40px)`                | 900    | -0.04em  |
+| Role             | Size                                    | Weight | Tracking |
+| ---------------- | --------------------------------------- | ------ | -------- |
+| H1               | `clamp(33px, 9vw, 104px)`               | 900    | -0.05em  |
+| H1, hero         | `clamp(33px, min(9vw, 13svh), 104px)`   | 900    | -0.05em  |
+| H1, reading page | `clamp(33px, 9vw, 80px)`                | 900    | -0.05em  |
+| H2               | `clamp(26px, 5.6vw, 64px)`              | 900    | -0.05em  |
+| H3               | `clamp(20px, 2.6vw, 32px)`              | 900    | -0.02em  |
+| Sticker, hero    | `clamp(18px, min(2.1vw, 3.4svh), 30px)` | 900    | normal   |
+| Body             | `clamp(17px, 1.2vw, 19px)`              | 400    | normal   |
+| Label / tag      | `14px`                                  | 900    | 0.1em    |
+| Section number   | `clamp(21px, 2.4vw, 28px)`              | 900    | n/a      |
+| Footer name      | `clamp(32px, 3vw, 40px)`                | 900    | -0.02em  |
 
 The scale is deliberately top-heavy: H1 is the display size, H2 and H3 are the
 reading sizes.
@@ -243,8 +242,7 @@ in the 288px phone box.
 matched pair reads as one mark; a mismatched pair reads as two unrelated
 labels.
 
-Headings are uppercase. Labels and tags are uppercase. Use `tracking-label-wide`
-(0.14em) where a label needs more air.
+Headings are uppercase. Labels and tags are uppercase.
 
 #### The heading floors are a reflow constraint, not a taste call
 
@@ -315,7 +313,7 @@ one thing that would disable it.
 #### Weight
 
 Body copy is weight 400 and never lighter. Weight 300 halates against the dark
-background.
+background. Type is set at 400 and 900 and nothing between.
 
 #### Uppercase
 
@@ -343,9 +341,8 @@ varies by reader as well as by browser, and has not been tested here.
   `border-radius: 0` on every element, so both are opt-in, and any other radius
   is a bug.
 
-  `rounded-nav` (14px) is the **softened-box** exception: the nav CTA button in
-  `Header.astro` and `MobileMenu.vue`, the logo tile in `Header.astro`, and its
-  larger copies in the starfield panel of `404.astro` and the Lepus Ridet panel
+  `rounded-nav` (14px) is the **softened-box** exception: the logo tile in
+  `Header.astro`, and its larger copies in the starfield panel of `404.astro` and the Lepus Ridet panel
   on `/about`. The copies are the same object drawn again, not new uses. The exception belongs to the logo tile
   wherever it is drawn; a tile that is not a copy of it does not qualify,
   however much it looks like one.
@@ -355,50 +352,62 @@ varies by reader as well as by browser, and has not been tested here.
   thumbnail on `/about`. A circle is a shape the comps draw, not a box with its
   corners taken off.
 
-Hard offset shadow utilities, all zero blur and zero spread:
+Hard offset shadow utilities, all pink, zero blur and zero spread:
 
-| Utility               | Value              |
-| --------------------- | ------------------ |
-| `shadow-hard-gold-8`  | `8px 8px 0` gold   |
-| `shadow-hard-gold-6`  | `6px 6px 0` gold   |
-| `shadow-hard-gold-4`  | `4px 4px 0` gold   |
-| `shadow-hard-pink-12` | `12px 12px 0` pink |
-| `shadow-hard-pink-8`  | `8px 8px 0` pink   |
-| `shadow-hard-cyan-8`  | `8px 8px 0` cyan   |
-| `shadow-hard-pink-6`  | `6px 6px 0` pink   |
-| `shadow-hard-cyan-6`  | `6px 6px 0` cyan   |
+| Utility               | Value              | Casts it                                                                                       |
+| --------------------- | ------------------ | ---------------------------------------------------------------------------------------------- |
+| `shadow-hard-pink-4`  | `4px 4px 0` pink   | Controls: buttons, the current nav item and chip, footer stickers, `.nav-cta`                  |
+| `shadow-hard-pink-8`  | `8px 8px 0` pink   | Objects: every `.card`, a PageHero photo, the roundel, post contents, contact cards, logo tile |
+| `shadow-hard-pink-12` | `12px 12px 0` pink | The logo tile's larger copies on 404 and About only                                            |
+
+Anything focusable that casts one also sets `lift-control` (4px) or
+`lift-object` (8px), which adds the shadow's offset to the focus ring's, so the
+ring lands on the ground past the shadow rather than across it.
 
 ### Component classes
 
 Defined in `@layer components` in `src/styles/global.css`:
 
 - `.btn-primary`: gold background, background-coloured text, `border-4`,
-  `12px 12px 0` pink shadow, `text-button` / 900 / 0.1em uppercase.
+  `4px 4px 0` pink shadow, `text-button` / 900 / 0.1em uppercase.
   `text-button` is 14px on a desktop and up to 16px on a phone
 - `.btn-secondary`: surface background, text-coloured text, `border-4`,
-  `6px 6px 0` gold shadow
-- `.actions`: a row of buttons. Its 32px vertical gap clears the 12px shadow
-  when the row wraps
-- `.card`: surface background, `border-8`, 24px padding below `sm` and 40px
-  from `sm` up. The split is a measure decision: at 40px a side the content box
-  is 177px at a 305px viewport, where a real post title runs to six lines;
-  24px leaves 209px
-- `.card-title`: every card's heading, at `text-h3`, whatever its level
-- `.lead` / `.standfirst`: the paragraph under a section heading (muted) and
-  the line under PageHero's page title (text colour)
+  `4px 4px 0` pink shadow
+- Both buttons and `.nav-cta` share their states: hover fills with cyan under a
+  background-coloured label (11.20); pressing moves the button 4px into its
+  shadow and drops the shadow, without the move under reduced motion; and
+  `aria-disabled="true"` draws a dashed border on `bg-background` with a
+  `subtle` label (8.62) and no shadow
+- `.actions`: a row of buttons. Its 32px vertical gap clears the 4px shadow
+  and the focus ring beyond it when the row wraps
+- `.card`: surface background, `border-8`, the 8px pink shadow built in, 24px
+  padding below `sm` and 40px from `sm` up. The split is a measure decision: at
+  40px a side the content box is 177px at a 305px viewport, where a real post
+  title runs to six lines; 24px leaves 209px
+- `.card-title`: every card's heading, at `text-h3` / 900, whatever its level
+- `.lead` / `.standfirst`: the paragraph under a section heading and the line
+  under PageHero's page title, both text colour at 400
 - `.bullet-list`: a bulleted list with gold markers
-- `.chip`: tags, skills, jump links, filters and the pager. Square, `border-4`,
-  label type, a 24px target of its own as a link. The current filter or page
-  adds `aria-current`, the gold fill and an `aria-hidden` square marker
+- `.chip`: tags, jump links, filters and the pager, always a link. Square,
+  `border-4`, label type, a 24px target of its own. The current filter or page
+  adds `aria-current`, the gold fill, the 4px pink shadow and an
+  `aria-hidden` square marker
+- `.badge`: a fact that is not a link, such as the current role, a skill or
+  "Episode 404" on the 404 page. Flat `bg-text` with a background-coloured
+  label (14.42), label type, no border and no shadow, so it does not read as
+  clickable
 - `.nav-cta`: the navigation's call to action, in both the header row and the
-  mobile dialog. It carries the identity and leaves the box to each call site.
-  Its hover and current-page rules live in `@layer components` with it rather
-  than as utilities in the markup, because `box-shadow` is one property and a
-  `hover:` utility would replace the current-page ring while the pointer is
-  over the control. `[aria-current='page']` draws
-  `--inset-shadow-cta-current`, measured at 7.91 on the fill and 3.42 on the
-  border
-- `.label` / `.label-wide`: 13px / 900 uppercase, 0.1em / 0.14em tracking
+  mobile dialog. A gold primary action: `bg-gold`, background-coloured label,
+  `border-4`, the 4px pink shadow, square. It carries the identity and leaves
+  the box to each call site. Its current-page rule lives in
+  `@layer components` with it rather than as utilities in the markup, because
+  `box-shadow` is one property and the same layer lets source order settle it.
+  `[aria-current='page']` drops the shadow and draws
+  `--inset-shadow-cta-current`, an inset 4px ring in the background colour,
+  11.32 on the fill
+- `.label`: 14px / 900 uppercase, 0.1em tracking
+- `.link`: the running-text underline for a standalone link that carries a
+  class for layout and is not a box
 - `.page-gutter`: the horizontal gutter (`px-4 sm:px-6`), declared once and
   applied to the header, `<main>` and the footer. **The base `px-4` is a reflow
   constraint, not a spacing preference.** The heading floors are calibrated
@@ -425,8 +434,12 @@ Defined in `@layer components` in `src/styles/global.css`:
 - `.surface-gold`, `.btn-gold-primary`, `.btn-gold-secondary`: the gold-ground
   set
 
-Links are gold with no underline, and turn cyan on hover, set in the base
-layer, so plain `<a>` elements are already correct.
+Links are the text colour and turn cyan on hover, set in the base layer. In
+running text (`.prose`, and a class-less link in a `p`, `li`, `dd` or
+`figcaption`) they are underlined at 2px, thickening to 4px on hover; a
+standalone link that carries a class takes `.link` for the same underline. A
+link that is a box, such as a nav item, a button or a card, says so by its
+shape.
 
 ### Page rules
 
@@ -444,7 +457,7 @@ machine can see.
   a phone and six from `sm`. The wall is what ends the hero: the blocks stop,
   and no line, fill or card separates the hero from the first section. A page
   with a photo passes `image`, and the photo sits on the wall beside the text
-  with its border and gold shadow. Contact passes `roundel`, which puts the
+  with its border and 8px pink shadow. Contact passes `roundel`, which puts the
   roundel on a joint crossing from `lg`. Career uses the same hero for now; a
   recruiter-facing opening of its own is still to be chosen.
 - **Posts.** A post is an article: the breadcrumb, the title in the case it is
@@ -470,26 +483,31 @@ machine can see.
   id `<id>-heading`.
 - **A long page ends** on `CloseRow`: a card with the post to continue with and
   the one action that leads on.
-- **Colour has a job.** Gold is structure: the page title, every card's
-  default shadow, card labels. Pink is emphasis, on at most one card per
-  section (the current role, the cats, the award). Cyan is the round mark's
-  shadow. On the blog, colour means category, as before.
-- **One card.** `.card` with an 8px hard shadow, always, and `.card-title` for
-  its heading. A state such as "current" is a `.chip` with words in it, never a
-  border colour alone (SC 1.4.1).
+- **Colour has a job.** Pink is depth: every hard shadow. Gold is the page
+  title, the primary action, the current state and card labels. Cyan is focus
+  and hover and nothing else. On the blog, colour means category, as before,
+  on the label and the glyph tile rather than the card's shadow.
+- **One card.** `.card`, which carries its 8px pink shadow itself, and
+  `.card-title` for its heading. A state such as "current" is a `.badge` with
+  words in it, never a border or shadow colour alone (SC 1.4.1).
+- **Tilt.** Every tilted mark is at 3deg: the homepage stickers, the glyph
+  tiles, the roundel, the logo tile and its copies, the footer stickers. Text
+  is never rotated.
 - **Photos** take a 4px `border` frame and no shadow or tilt; only cards stand
-  forward. The one exception is a PageHero photo, which casts the gold shadow
-  because it stands on the wall rather than on the page.
+  forward. The one exception is a PageHero photo, which casts the 8px pink
+  shadow because it stands on the wall rather than on the page.
   Inside a panel they take no frame of their own: `PhotoTile` sets
   each on a quiet `bg-background` tile, links it to its full-size file, and
   `PhotoViewer` opens that link in a native `<dialog>`. A group too long for a
   row is one `.photo-strip` that scrolls sideways, each photo uncropped in
   its own shape and never wider than the strip.
-- **Spacing** comes from `--spacing-section`, `-head`, `-grid`, `-actions` and
-  `-inline`. Each is fluid from 390px to 1200px, because the desktop values
-  left a phone with screens of empty ground between one-column sections.
+- **Spacing** comes from `--spacing-section`, `-head`, `-grid` and `-inline`.
+  `-head` is both heading to content and content to the actions under it. Each
+  is fluid from 390px to 1200px, because the desktop values left a phone with
+  screens of empty ground between one-column sections.
 - **Links**: a link in a sentence uses the base underline; an action is
-  `.btn-primary` or `.btn-secondary`; tags, skills and jump links are `.chip`.
+  `.btn-primary` or `.btn-secondary`; tags, jump links and filters are
+  `.chip`. A fact that is not a link, such as a skill, is a `.badge`.
 - **Reading pages** (Privacy, Accessibility) are a PageHero with
   `measure="reading"`, whose text sits in a centred `max-w-3xl` while the wall
   stays full width, then one `.prose` column of the same width, so the title
@@ -530,9 +548,12 @@ the list.
 Each category has one accent colour, in `CATEGORY_ACCENT` in `src/lib/blog.ts`,
 and every surface that shows a category reads it from there: the homepage
 tiles, the post cards and the category link above a post title. Gold is the
-work pair, `open-source` and `professional-journey`; cyan is `skincare` and
-`travel`; pink is `personal-thoughts`. `tests/blog.spec.ts` compares the three
-surfaces, because three copies of the map is what they were before.
+work pair, `open-source` and `professional-journey`; the text colour is
+`skincare` and `travel`; pink is `personal-thoughts`. Cyan is not a category
+colour, because a cyan label reads as a hovered link. The accent colours the
+label and the glyph tile; every card casts the same pink shadow whatever its
+category. `tests/blog.spec.ts` compares the three surfaces, because three
+copies of the map is what they were before.
 
 Each tag is a URL segment on `/blog/tag/<tag>/`, so the schema holds it to
 kebab-case rather than escaping it per use. A tag reads as its slug with the

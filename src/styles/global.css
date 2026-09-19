@@ -271,9 +271,9 @@
   /*
    * The current-page ring on .nav-cta, drawn in place of its shadow, so the
    * control reads as pressed in. An inset ring touches two colours, so both
-   * are measured: 11.32 on the gold fill, 11.32 on cyan when hovered, and
-   * 1.00 against the border on its outer edge, where the fill, not the ring,
-   * is what meets 3.0.
+   * are measured: 11.32 on the gold fill, 11.20 on cyan when hovered, and
+   * 4.84 against the border on its outer edge; each clears the 3.0 of
+   * SC 1.4.11.
    */
   --inset-shadow-cta-current: inset 0 0 0 4px var(--color-background);
 
@@ -1436,12 +1436,12 @@
    * rules are wrong on this ground and three fail silently:
    *
    *   1. TEXT. `text` is 1.27 on gold.
-   *   2. LINKS. Painted `gold` (1.00) and `cyan` on hover (1.01), so invisible.
+   *   2. LINKS. Painted `text` (1.27) and `cyan` on hover (1.01), so invisible.
    *      Underlined here and nowhere else: darkcyan measures 1.42 against the
    *      body colour, under the 3:1 that would let colour carry it alone, so
    *      the underline is what satisfies SC 1.4.1. Do not remove it.
-   *   3. FOCUS. The ring's 3px offset saves it elsewhere by putting the dark
-   *      page background either side; here the gap is gold too.
+   *   3. FOCUS. The cyan ring is 1.01 on gold, and its offset gap is gold
+   *      too, so nothing dark sits either side of it here.
    *   4. BORDERS. Default `border` is 2.34 on gold.
    *
    * An explicit utility still beats the subtree default, so `border-border`
@@ -1449,7 +1449,7 @@
    * tests/gold-surface.spec.ts is what catches it.
    *
    * .btn-primary and .btn-secondary must not be used here: the first is a
-   * 1.00:1 fill, the second carries a 2.34 border and a 1.00 gold shadow.
+   * 1.00:1 fill, the second carries a 2.34 border and a 2.31 pink shadow.
    */
   .surface-gold {
     @apply bg-gold text-gold-text;
@@ -1474,8 +1474,8 @@
 
   /*
    * Higher specificity than the base :focus-visible, and in a later layer, so
-   * it wins twice over. Offset stays 3px; the gap is gold and gold-text
-   * measures 11.32 against it.
+   * it wins twice over. The offset is unchanged; the gap is gold and
+   * gold-text measures 11.32 against it.
    */
   .surface-gold :focus-visible {
     outline-color: var(--color-gold-text);
@@ -1510,7 +1510,7 @@
 
   /*
    * A two-tone focus ring, on this one control only: its ring colour is its own
-   * fill, so ring-against-fill is 1.00 and only the 3px offset made it visible.
+   * fill, so ring-against-fill is 1.00 and only the offset made it visible.
    * That put the whole indicator on one property staying non-zero. Two rings
    * instead, one for each thing it can abut: inner #FFFFFF on the fill at
    * 18.58, outer #131313 on gold at 11.32.

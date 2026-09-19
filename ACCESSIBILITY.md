@@ -59,9 +59,9 @@ What is currently true:
   decides each by walking the paint stack and measuring against the resolved
   ground. All clear their floors; the tightest is 4.90:1 against a 3:1
   large-text floor.
-- All text colour tokens are measured against all three dark surfaces
-  (`#131313`, `#1A1A1A`, `#0E0E0E`) and against `#FFC000`, the fourth surface
-  the design uses and the one every dark token fails on. An inverted token set
+- All text colour tokens are measured against both dark surfaces
+  (`#131313`, `#1A1A1A`) and against `#FFC000`, the third surface the design
+  uses and the one every dark token fails on. An inverted token set
   covers it; see section 5.
 - Every route is checked for horizontal overflow at 320px and 305px, with and
   without the SC 1.4.12 text-spacing override, and at 640px and 1280px without
@@ -129,21 +129,21 @@ not Safari, and says nothing about VoiceOver.
 
 ## 5. Colour and contrast
 
-Every foreground token measured against all three dark surfaces:
+Every foreground token measured against both dark surfaces:
 
-| Token      | Value     | `#131313` | `#1A1A1A` | `#0E0E0E` |
-| ---------- | --------- | --------- | --------- | --------- |
-| `text`     | `#E5E2E1` | 14.42     | 13.51     | 14.98     |
-| `subtle`   | `#9BB4C6` | 8.62      | 8.07      | 8.95      |
-| `gold`     | `#FFC000` | 11.32     | 10.60     | 11.76     |
-| `cyan`     | `#00DCFD` | 11.20     | 10.49     | 11.63     |
-| `border`   | `#5A87A8` | 4.84      | 4.53      | 5.02      |
-| `pink`     | `#FF007A` | 4.90      | 4.59      | 5.09      |
-| `pinkText` | `#FF79B6` | 7.66      | 7.18      | 7.96      |
+| Token      | Value     | `#131313` | `#1A1A1A` |
+| ---------- | --------- | --------- | --------- |
+| `text`     | `#E5E2E1` | 14.42     | 13.51     |
+| `subtle`   | `#9BB4C6` | 8.62      | 8.07      |
+| `gold`     | `#FFC000` | 11.32     | 10.60     |
+| `cyan`     | `#00DCFD` | 11.20     | 10.49     |
+| `border`   | `#5A87A8` | 4.84      | 4.53      |
+| `pink`     | `#FF007A` | 4.90      | 4.59      |
+| `pinkText` | `#FF79B6` | 7.66      | 7.18      |
 
-`text`, `muted`, `subtle`, `gold`, `cyan` and `pinkText` clear AAA (7:1) on
-every surface. `border` carries every visible boundary, is governed by SC
-1.4.11 (3:1), and clears it on all three.
+`text`, `subtle`, `gold`, `cyan` and `pinkText` clear AAA (7:1) on every
+surface. `border` carries every visible boundary, is governed by SC 1.4.11
+(3:1), and clears it on both.
 
 **The two pinks are split by role, not by size.** `pink` clears AA but not AAA,
 so it is restricted to non-text: borders, hard offset shadows and decorative
@@ -156,30 +156,33 @@ the guarantee depended on the type scale. The role split removes the condition.
 Two predecessor colours were replaced for different reasons. `border`'s
 predecessor `#504632` measured 2.00 and failed SC 1.4.11. `subtle`'s
 predecessor `#9C8F78` measured 5.85 / 5.48 / 6.08 and passed SC 1.4.3 AA on all
-three surfaces; replacing it was an AA-to-AAA palette decision, not a
-conformance fix.
+three surfaces the site then had; replacing it was an AA-to-AAA palette
+decision, not a conformance fix.
 
-The focus indicator is a 3px gold outline at a 3px offset. The offset is
-required: gold against the gold button measures 1.00:1, so a ring flush with
-the element would be invisible there. The offset puts surface colour on both
-sides of the ring, which is what SC 1.4.11 measures.
+The focus indicator is a 4px cyan outline, 11.20 on `#131313`, 10.49 on
+`#1A1A1A` and 8.21 on a cast-block joint. Cyan is used for focus and hover and
+nothing else, so a ring never looks like a gold control or a gold link. Its
+offset is 4px plus the element's own hard shadow: a cyan ring crossing the
+pink shadow measures 2.29:1, under SC 1.4.11, so everything focusable that
+casts a shadow sets `lift-control` (4px) or `lift-object` (8px) and the ring
+lands on the ground past it. Native media controls take the same 4px cyan
+ring at a 4px offset.
 
 ### Text that crosses the cast-block joints
 
-PageHero's wall puts two decorative colours behind its text: the joints
-between the blocks, `joint` `#262F36`, and the bolt in each block's corner,
-`bolt` `#2A3640`. They are 1.36 and 1.50 on `#131313` and carry no meaning,
-so SC 1.4.11 does not apply to them. The text on top of them was measured,
-2026-09-19:
+PageHero's wall puts one decorative colour behind its text, `joint`
+`#262F36`, in the joints between the blocks and the bolt in each block's
+corner. It is 1.36 on `#131313` and carries no meaning, so SC 1.4.11 does not
+apply to it. The text on top of it was measured, 2026-09-19:
 
-| Token      | on `joint` | on `bolt` |
-| ---------- | ---------- | --------- |
-| `text`     | 10.57      | 9.59      |
-| `subtle`   | 6.31       | 5.73      |
-| `gold`     | 8.29       | 7.52      |
-| `cyan`     | 8.21       | 7.44      |
-| `border`   | 3.54       | 3.21      |
-| `pinkText` | 5.62       | 5.10      |
+| Token      | on `joint` |
+| ---------- | ---------- |
+| `text`     | 10.57      |
+| `subtle`   | 6.31       |
+| `gold`     | 8.29       |
+| `cyan`     | 8.21       |
+| `border`   | 3.54       |
+| `pinkText` | 5.62       |
 
 Where hero text crosses a joint or a bolt, `subtle` and `pinkText` fall from
 AAA to AA, and `border` on a chip edge keeps 3:1. Nothing falls below AA.
@@ -242,16 +245,14 @@ rather than a contrast one.
 **Three site-wide rules break silently on this ground** and are overridden by
 the `.surface-gold` class, which is the only supported way to build one:
 
-- **Links.** The base layer paints every `<a>` `gold` (1.00 here) and `cyan` on
+- **Links.** The base layer paints every `<a>` `text` (1.27 here) and `cyan` on
   hover (1.01). They are repainted `darkcyan` and underlined. The underline is
   required, not stylistic: `darkcyan` measures 1.42 against `gold-text`, well
   under the 3:1 that would let colour carry the distinction alone, so the
   underline is what satisfies SC 1.4.1.
-- **Focus.** The site's ring is gold at a 3px offset, and works elsewhere
-  because of the offset: gold on gold is 1.00, and the offset puts the dark
-  page background on both sides. On a large gold surface the offset gap is gold
-  too, so the ring would be completely invisible. It is repainted `gold-text`
-  (11.32).
+- **Focus.** The site's ring is cyan, which is 1.01 on gold, and its offset
+  gap is gold too, so on this ground the ring would be completely invisible.
+  It is repainted `gold-text` (11.32).
 - **Borders.** The base layer defaults every border to `border`, 2.34 on gold.
   The subtree is re-defaulted to `gold-border`.
 
@@ -263,7 +264,7 @@ edge, in case the offset is ever reduced.
 
 `.btn-gold-primary` is where the second check bites. Its ring is `gold-text`,
 the same colour as its own fill and border, so ring-against-fill measures 1.00
-and only the 3px offset made it 11.32 against what it actually touches. That
+and only the offset made it 11.32 against what it actually touches. That
 put the whole indicator on one property staying non-zero, on the single control
 where getting it wrong hides the indicator completely. Its ring is therefore
 two rings, one for each background it can end up against:
@@ -285,7 +286,7 @@ to its interior sits on the gold showing through at 11.32.
 
 Neither `.btn-primary` nor `.btn-secondary` may be used on this surface.
 `.btn-primary` is `bg-gold`, a 1.00:1 fill; `.btn-secondary` carries
-`border-border` (2.34 on gold) and a gold offset shadow (1.00 on gold).
+`border-border` (2.34 on gold) and a pink offset shadow (2.31 on gold).
 `.btn-gold-primary` and `.btn-gold-secondary` are the pair the comps specify.
 Both render 56.8px tall on a desktop and 59.2px on a phone: a `text-button`
 line box of 16.8px to 19.2px, with 16px of padding and a 4px border either side, so each passes SC 2.5.8 on its own size without the spacing
@@ -426,11 +427,17 @@ Stated honestly. This list is not filtered for how it looks.
    axe with every other route; `/contact/sent`, which is in `tests/routes.ts`;
    and, over HTTP with no browser (`tests/contact.spec.ts`), a 422 response that
    keeps the typed values, the summary text, `aria-invalid="true"` on a failing
-   field, the honeypot and the rate limit.
+   field, every summary link resolving to a control on the page, "(required)"
+   in words inside each of the three labels, the honeypot and the rate limit.
 
-   What exists in markup and nothing asserts: the error summary is
-   `role="alert" tabindex="-1" autofocus` (`src/components/ContactForm.astro`)
-   and each failing field points at its message with `aria-describedby`.
+   What exists in markup and nothing asserts: the form is `novalidate`, so
+   every reader gets the error summary rather than the browser's own bubbles;
+   the summary is `tabindex="-1" autofocus` with no `role="alert"`, since with
+   focus already moved there some screen readers would read it twice
+   (`src/components/ContactForm.astro`); each failing field points at its
+   message with `aria-describedby`, doubles its edge with an inset 4px pink
+   ring, because pink against the resting border is 1.01:1, and leads its
+   message with a cross that has empty alternative text.
    `/contact/send/` is on demand and outside `tests/routes.ts`, so no
    route-level suite (axe, keyboard walk, reflow, target size) ever renders the
    error state, and no test checks that focus lands on the summary.
@@ -480,13 +487,13 @@ Stated honestly. This list is not filtered for how it looks.
    one. `tests/gold-surface.spec.ts` measures the Contact band in situ at 305px
    and 320px on the shipped markup:
 
-   | Measured on `/contact`          | Result                                                                                           |
-   | ------------------------------- | ------------------------------------------------------------------------------------------------ |
-   | `.btn-gold-primary`             | at least 24px both ways; label 18.58 on its own `#131313` fill; fill 11.32 on gold               |
-   | its focus ring                  | outer 11.32 on gold, 1.00 against its own fill; inner `#FFFFFF` 18.58; 3px solid at a 3px offset |
-   | every string on the gold ground | nothing below 4.5:1                                                                              |
-   | content box                     | 273px at 305px, 288px at 320px, unchanged by the full-bleed band                                 |
-   | document                        | does not scroll sideways at either width                                                         |
+   | Measured on `/contact`          | Result                                                                                            |
+   | ------------------------------- | ------------------------------------------------------------------------------------------------- |
+   | `.btn-gold-primary`             | at least 24px both ways; label 18.58 on its own `#131313` fill; fill 11.32 on gold                |
+   | its focus ring                  | outer 11.32 on gold, 1.00 against its own fill; inner `#FFFFFF` 18.58; 4px solid at an 8px offset |
+   | every string on the gold ground | nothing below 4.5:1                                                                               |
+   | content box                     | 273px at 305px, 288px at 320px, unchanged by the full-bleed band                                  |
+   | document                        | does not scroll sideways at either width                                                          |
 
    `.btn-gold-secondary` is on no shipped page, so only the mounted fixtures
    measure it. Every number came from headless Chromium. No person has looked
@@ -496,7 +503,7 @@ Stated honestly. This list is not filtered for how it looks.
 5. **The mounted fixtures are kept, not deleted.** A fixture can be broken on
    purpose to prove an assertion still bites without editing a shipped route.
    Only the in-situ test can fail on a mistake made in `contact.astro`, such as
-   a `text-muted` written inside the section or `.btn-primary` reached for out
+   a `text-subtle` written inside the section or `.btn-primary` reached for out
    of habit. Neither covers the other. The route-level walk short-circuits when
    a page has no gold section, so a non-vacuity guard sits beside it.
 

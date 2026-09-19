@@ -95,7 +95,7 @@ if (failures.length > 0) {
   for (const failure of failures) console.error(`  ${failure}`);
   console.error(
     '\nAdd a token to src/styles/global.css and use it by name. See the' +
-      '\n--spacing-menu-bar and --blur-header comments for the house style.',
+      '\n--spacing-menu-bar and --spacing-joint comments for the house style.',
   );
   process.exit(1);
 }

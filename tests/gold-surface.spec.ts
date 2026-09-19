@@ -7,8 +7,8 @@ import { builtPages, ROUTES } from './routes';
 /**
  * The gold surface exception.
  *
- * Every foreground token in this palette was chosen against #131313, #1A1A1A
- * and #0E0E0E. A `.surface-gold` section uses `gold` as a *ground* rather than
+ * Every foreground token in this palette was chosen against #131313 and
+ * #1A1A1A. A `.surface-gold` section uses `gold` as a *ground* rather than
  * as an accent, and against #FFC000 not one of those tokens passes; the
  * numbers are in RATIOS below. An inverted set lives in @theme and
  * `.surface-gold` in global.css applies it. The reasoning is in both places
@@ -648,7 +648,7 @@ const expectGoldButtonRingAndLabel = (name: string, button: GoldButton) => {
   /*
    * The ring is `gold-text`, which is exactly the primary button's fill
    * and both buttons' border colour. Flush against the element it would
-   * measure 1.00, and the 3px offset is what puts gold on either side of
+   * measure 1.00, and the offset is what puts gold on either side of
    * it.
    *
    * Kept, and deliberately redundant on the primary. The two-tone ring
@@ -800,7 +800,7 @@ const expectDocumentedRingRatios = (result: FocusRingReadout) => {
 
   expect(
     result.outlineOnGold,
-    'the outer ring against the gold ground, which is what the 3px offset ' +
+    'the outer ring against the gold ground, which is what the offset ' +
       'gap shows',
   ).toBeCloseTo(11.32, 1);
   expect(result.outlineOnGold).toBeGreaterThanOrEqual(NON_TEXT);
@@ -822,7 +822,7 @@ const expectDocumentedRingRatios = (result: FocusRingReadout) => {
 
 const MEASURE_GOLD_CONTROL = `
   const ringRatios = (fill, outline, inner) => ({
-    // The outer ring against the gold the 3px offset gap exposes.
+    // The outer ring against the gold the offset gap exposes.
     outlineOnGold:
       outline === null ? null : Number(ratio(outline, gold).toFixed(2)),
     // The outer ring against the control it marks. 1.00 on the
@@ -1187,7 +1187,7 @@ test.describe('the gold surface exception', () => {
     expect(
       result.outline,
       'the focus ring on .surface-gold. The site-wide ring is gold, 1.00 on ' +
-        'this ground, and the 3px offset does not save it here the way it does ' +
+        'this ground, and the offset does not save it here the way it does ' +
         'on a dark page: the offset gap is gold too.',
     ).toBeGreaterThanOrEqual(NON_TEXT);
 
