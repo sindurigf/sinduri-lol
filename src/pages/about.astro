@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CloseRow from '../components/CloseRow.astro';
 import PageHero from '../components/PageHero.astro';
@@ -60,6 +61,9 @@ const SIZES = {
   drupal:
     '(min-width: 40rem) min(calc(50vw - 6.15rem), 35.35rem), calc(100vw - 7.25rem)',
 } as const;
+
+/** The bunny mark in the Lepus Ridet tile, drawn `h-16` from `lg`. */
+const MARK_HEIGHT = 64;
 
 const COVER_PHOTOGRAPHER = 'Tdm Dilip';
 const LECTURE_HALL_PHOTOGRAPHER = 'Andrey Pshenichny';
@@ -168,23 +172,49 @@ const CATS = [
     </Fragment>
   </PageHero>
 
-  <Section id="lepus-ridet">
-    <Fragment slot="title">
-      Why <span lang="la">Lepus Ridet</span>
-    </Fragment>
-    <p slot="lead" class="lead text-text">
-      My pet name is Bunny. That is what my family and close friends call me.
-    </p>
-    <p class="max-w-prose text-body text-muted text-pretty">
-      I try to always laugh and find fun in everything I do, and that is where{' '}
-      <span lang="la">Lepus Ridet</span> comes from: it is Latin for &ldquo;the
-      hare laughs&rdquo;.
-    </p>
-    <p class="mt-4 text-body">
-      <a href="/credits/#name" class="inline-flex min-h-target items-center">
-        Where the name sinduri.lol comes from
-      </a>
-    </p>
+  {/*
+    No heading above the panel: the name card is the heading, so the name, its
+    meaning and "Bunny" are each said once. "Why" is kept for the outline.
+  */}
+  <Section id="lepus-ridet" headless>
+    <div class="card grid gap-8 shadow-hard-gold-8 lg:grid-cols-5 lg:items-center lg:gap-grid">
+      <div class="flex flex-col items-start gap-6 bg-background p-5 sm:flex-row sm:items-center sm:p-card-tight lg:col-span-2 lg:flex-col lg:items-start lg:gap-8 lg:p-card">
+        {/* The logo tile drawn again, so it keeps the tile's radius and tilt. */}
+        <span class="flex size-20 shrink-0 rotate-3 items-center justify-center rounded-nav border-4 border-border bg-gold shadow-hard-pink-8 lg:size-28 lg:shadow-hard-pink-12">
+          <Image
+            src={bunnyDark}
+            alt=""
+            height={MARK_HEIGHT}
+            densities={DENSITIES}
+            class="h-11 w-auto lg:h-16"
+          />
+        </span>
+        <div class="min-w-0">
+          <h2 id="lepus-ridet-heading" class="text-h2 text-text">
+            <span class="sr-only">Why </span>
+            <span lang="la">Lepus Ridet</span>
+          </h2>
+          <p class="mt-3 text-body text-muted text-pretty">
+            Latin for &ldquo;the hare laughs&rdquo;
+          </p>
+        </div>
+      </div>
+
+      <div class="lg:col-span-3">
+        <p class="text-h3 font-extrabold text-text text-pretty">
+          My pet name is Bunny. That is what my family and close friends call
+          me.
+        </p>
+        <p class="mt-4 max-w-prose text-body text-muted text-pretty">
+          I try to always laugh and find fun in everything I do.
+        </p>
+        <p class="mt-8">
+          <a href="/credits/#name" class="chip">
+            Where the name sinduri.lol comes from
+          </a>
+        </p>
+      </div>
+    </div>
   </Section>
 
   <Section id={SECTIONS[0].id} title={SECTIONS[0].title}>
