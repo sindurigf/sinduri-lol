@@ -952,6 +952,14 @@ ones a machine can see.
   `py-section`, a white `text-h2` heading, an optional `.lead`, then the
   content at `mt-head`. There is no rule above the heading; the heading and the
   spacing mark the section.
+- **Panels.** A section that is one object, words and pictures together, is
+  one `.card`. `Section panel` puts the heading at `.card-title` size inside
+  it. `Section headless` leaves the heading to the section's own layout, for
+  a panel whose heading sits beside its picture rather than above it (Lepus
+  Ridet, Positivity advocate on `/about`); the slot renders the `h2` with the
+  id `<id>-heading`.
+- **A long page ends** on `CloseRow`: a card with the post to continue with and
+  the one action that leads on.
 - **Colour has a job.** Gold is structure: the hero shadow, every card's
   default shadow, card labels. Pink is emphasis, on at most one card per
   section (the current role, the cats, the award). Cyan is the round marks: the
@@ -960,7 +968,10 @@ ones a machine can see.
   its heading. A state such as "current" is a `.chip` with words in it, never a
   border colour alone (SC 1.4.1).
 - **Photos** take a 4px `border` frame and no shadow or tilt; only cards stand
-  forward.
+  forward. Inside a panel they take no frame of their own: `PhotoTile` sets
+  each on a quiet `bg-background` tile, links it to its full-size file, and
+  `PhotoViewer` opens that link in a native `<dialog>`. A group too long for a
+  row is one `.photo-strip` that scrolls sideways.
 - **Spacing** comes from `--spacing-section`, `-head`, `-grid`, `-actions` and
   `-inline`. Each is fluid from 390px to 1200px, because the desktop values
   left a phone with screens of empty ground between one-column sections.
@@ -1092,7 +1103,7 @@ Everything is `0` unless it is one of two named exceptions. The base layer sets
 `border-radius: 0` on every element, so any radius has to be opted into.
 
 **`rounded-nav` (14px) is the softened-box exception**, and it applies to
-exactly three things:
+the logo tile and the one control that shares its shape:
 
 1. the nav CTA button, via `.nav-cta` in global.css. It renders in
    `Header.astro` and `MobileMenu.vue`, and the radius is declared once for
@@ -1105,6 +1116,8 @@ exactly three things:
    exception belongs to the logo tile as an object, so a copy of it takes the
    tile's radius the way it takes its colour, border and tilt. A tile that is
    not a copy of the logo tile does not qualify, however much it looks like one
+4. the bunny tile in the Lepus Ridet panel on `/about`, the same copy again at
+   112px from `lg` and 80px below it, as the name card's mark
 
 **`rounded-full` is the circle exception.** It applies to the spinning badge
 frame (`SpinBadge.vue`), the bunny roundel (`Roundel.astro`, on every
@@ -1114,7 +1127,7 @@ PageHero and in the homepage About teaser), and the Star Trek thumbnail on
 The two are not degrees of the same thing and the second is not a loophole in
 the first. `rounded-nav` softens a rectangle, which is the move this design
 language is built to avoid, so it is capped at the CTA and the logo tile, drawn
-in two places, and stays there.
+in the places listed, and stays there.
 `rounded-full` draws a circle, which is a shape in its own right:
 there is no rectangle underneath it to have gone soft. The comps write
 `border-radius: 9999px` on every one of these.
