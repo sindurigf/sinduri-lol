@@ -134,7 +134,6 @@ Every foreground token measured against all three dark surfaces:
 | Token      | Value     | `#131313` | `#1A1A1A` | `#0E0E0E` |
 | ---------- | --------- | --------- | --------- | --------- |
 | `text`     | `#E5E2E1` | 14.42     | 13.51     | 14.98     |
-| `muted`    | `#D4C5AB` | 10.95     | 10.26     | 11.37     |
 | `subtle`   | `#9BB4C6` | 8.62      | 8.07      | 8.95      |
 | `gold`     | `#FFC000` | 11.32     | 10.60     | 11.76     |
 | `cyan`     | `#00DCFD` | 11.20     | 10.49     | 11.63     |
@@ -176,7 +175,6 @@ so SC 1.4.11 does not apply to them. The text on top of them was measured,
 | Token      | on `joint` | on `bolt` |
 | ---------- | ---------- | --------- |
 | `text`     | 10.57      | 9.59      |
-| `muted`    | 8.02       | 7.28      |
 | `subtle`   | 6.31       | 5.73      |
 | `gold`     | 8.29       | 7.52      |
 | `cyan`     | 8.21       | 7.44      |
@@ -198,7 +196,6 @@ The closing band on `/contact` and the kindness quote on `/about` are
 | ---------- | --------- | ------------ | ----- | ------ |
 | `border`   | `#5A87A8` | 2.34         | 3.0   | FAIL   |
 | `text`     | `#E5E2E1` | 1.27         | 4.5   | FAIL   |
-| `muted`    | `#D4C5AB` | 1.03         | 4.5   | FAIL   |
 | `subtle`   | `#9BB4C6` | 1.31         | 4.5   | FAIL   |
 | `pinkText` | `#FF79B6` | 1.48         | 4.5   | FAIL   |
 | `pink`     | `#FF007A` | 2.31         | 3.0   | FAIL   |

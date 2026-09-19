@@ -31,7 +31,7 @@ const { crumbs, lastClass } = Astro.props;
         <a
           href={crumb.href}
           class:list={[
-            '-my-2 inline-block py-2',
+            'link -my-2 inline-block py-2',
             index === crumbs.length - 1 && lastClass,
           ]}
         >

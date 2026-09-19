@@ -74,7 +74,7 @@ const photographers = Object.entries(PHOTOGRAPHERS).map(([name, href]) => ({
   href,
 }));
 
-const LINK_ITEM = 'inline-flex min-h-target items-center';
+const LINK_ITEM = 'link inline-flex min-h-target items-center';
 const CARD_HEADING = 'card-title';
 
 /*
@@ -107,7 +107,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
           <a href={NAME_INSPIRATION.href}>{NAME_INSPIRATION.site}</a>, the
           website of my fellow Drupalist and friend {NAME_INSPIRATION.name}.
         </p>
-        <p class="mt-6 max-w-prose text-body text-muted text-pretty">
+        <p class="mt-6 max-w-prose text-body text-text text-pretty">
           I loved it so much that I used the same pattern for this site and even
           my email address,{' '}
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. Thank you,
@@ -133,7 +133,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
                   {person.name}
                 </a>
               </dt>
-              <dd class="mt-1 max-w-prose text-body text-muted text-pretty">
+              <dd class="mt-1 max-w-prose text-body text-text text-pretty">
                 {person.reason}
               </dd>
             </div>
@@ -144,7 +144,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
       <div class="card mt-grid">
         <h2 class={CARD_HEADING}>Photos</h2>
 
-        <p class="mt-6 text-body text-muted text-pretty">
+        <p class="mt-6 text-body text-text text-pretty">
           Photos on this site and in its posts are by:
         </p>
 
@@ -158,7 +158,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
           ))}
         </ul>
 
-        <p class="mt-4 text-body text-muted text-pretty">And more.</p>
+        <p class="mt-4 text-body text-text text-pretty">And more.</p>
       </div>
     </div>
   </section>
@@ -176,14 +176,14 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
                   {tool.name}
                 </a>
               </dt>
-              <dd class="mt-1 text-body text-muted">{tool.role}</dd>
+              <dd class="mt-1 text-body text-text">{tool.role}</dd>
             </div>
           ))}
           <div class={RULED_ENTRY}>
             <dt class="text-body font-bold text-text">
               Multiple artists on Fiverr and Upwork
             </dt>
-            <dd class="mt-1 text-body text-muted">
+            <dd class="mt-1 text-body text-text">
               Created and cleaned the logo
             </dd>
           </div>
@@ -201,7 +201,7 @@ const RULED_ENTRY = 'border-t-4 border-border pt-5';
                   {guide.name}
                 </a>
               </dt>
-              <dd class="mt-1 text-body text-muted text-pretty">
+              <dd class="mt-1 text-body text-text text-pretty">
                 By <a href={guide.author.href}>{guide.author.name}</a>.{' '}
                 {guide.use}
               </dd>

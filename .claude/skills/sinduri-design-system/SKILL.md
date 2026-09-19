@@ -26,23 +26,19 @@ or radius.
 
 ## Colors
 
-| Token        | Value                    | Use                        |
-| ------------ | ------------------------ | -------------------------- |
-| `background` | `#131313`                | Main background            |
-| `surface`    | `#1A1A1A`                | Cards, boxes               |
-| `deep`       | `#0E0E0E`                | Alternate sections, footer |
-| `border`     | `#5A87A8`                | All borders                |
-| `text`       | `#E5E2E1`                | Primary text               |
-| `muted`      | `#D4C5AB`                | Secondary body copy        |
-| `subtle`     | `#9BB4C6`                | Footer, captions           |
-| `gold`       | `#FFC000`                | Primary accent             |
-| `cyan`       | `#00DCFD`                | Secondary accent           |
-| `pink`       | `#FF007A`                | Borders, shadows, decor    |
-| `pink-text`  | `#FF79B6`                | All pink text, any size    |
-| `darkcyan`   | `#00363F`                | Text on cyan backgrounds   |
-| `header-bg`  | `rgba(10, 10, 10, 0.94)` | Sticky header only         |
-| `joint`      | `#262F36`                | Cast-block joints only     |
-| `bolt`       | `#2A3640`                | Cast-block bolts only      |
+| Token        | Value     | Use                      |
+| ------------ | --------- | ------------------------ |
+| `background` | `#131313` | Main background          |
+| `surface`    | `#1A1A1A` | Cards, boxes             |
+| `border`     | `#5A87A8` | All borders              |
+| `text`       | `#E5E2E1` | Primary text             |
+| `subtle`     | `#9BB4C6` | Footer, captions         |
+| `gold`       | `#FFC000` | Primary accent           |
+| `cyan`       | `#00DCFD` | Secondary accent         |
+| `pink`       | `#FF007A` | Borders, shadows, decor  |
+| `pink-text`  | `#FF79B6` | All pink text, any size  |
+| `darkcyan`   | `#00363F` | Text on cyan backgrounds |
+| `joint`      | `#262F36` | Cast-block joints only   |
 
 The three **dark** surfaces are `#131313`, `#1A1A1A`, and `#0E0E0E`. Every
 foreground color must be checked against **all three**, not just one.
@@ -153,7 +149,6 @@ and the kindness quote on `/about` are `background: #FFC000` with
 | ----------- | --------- | ------------ | ----- | ------ |
 | `border`    | `#5A87A8` | 2.34         | 3.0   | FAIL   |
 | `text`      | `#E5E2E1` | 1.27         | 4.5   | FAIL   |
-| `muted`     | `#D4C5AB` | 1.03         | 4.5   | FAIL   |
 | `subtle`    | `#9BB4C6` | 1.31         | 4.5   | FAIL   |
 | `pink-text` | `#FF79B6` | 1.48         | 4.5   | FAIL   |
 | `pink`      | `#FF007A` | 2.31         | 3.0   | FAIL   |

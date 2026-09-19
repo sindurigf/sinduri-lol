@@ -368,14 +368,15 @@ test.describe('the category filter', () => {
  * failed expecting rgb(255, 0, 122) and receiving rgb(255, 192, 0).
  */
 const GOLD = { text: 'rgb(255, 192, 0)', fill: 'rgb(255, 192, 0)' };
-const CYAN = { text: 'rgb(0, 220, 253)', fill: 'rgb(0, 220, 253)' };
+/* Not cyan, which is kept for focus and hover: a cyan label read as a link. */
+const INK = { text: 'rgb(229, 226, 225)', fill: 'rgb(229, 226, 225)' };
 const PINK = { text: 'rgb(255, 121, 182)', fill: 'rgb(255, 0, 122)' };
 
 const CATEGORY_COLOURS: Record<string, typeof GOLD> = {
   'open-source': GOLD,
   'professional-journey': GOLD,
-  skincare: CYAN,
-  travel: CYAN,
+  skincare: INK,
+  travel: INK,
   'personal-thoughts': PINK,
 };
 

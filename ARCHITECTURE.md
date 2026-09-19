@@ -58,10 +58,8 @@ anywhere in `src/` outside `global.css`.
 | ---------- | --------- | -------------------------- |
 | background | `#131313` | Main background            |
 | surface    | `#1A1A1A` | Cards, boxes               |
-| deep       | `#0E0E0E` | Alternate sections, footer |
 | border     | `#5A87A8` | All borders, cool mid blue |
 | text       | `#E5E2E1` | Primary text               |
-| muted      | `#D4C5AB` | Secondary body copy        |
 | subtle     | `#9BB4C6` | Footer, captions           |
 | gold       | `#FFC000` | Primary accent             |
 | cyan       | `#00DCFD` | Secondary accent           |
@@ -118,7 +116,6 @@ dark-surface token works on it. Measured against `#FFC000`:
 | ---------- | --------- | ------------ | ----- | ------ |
 | `border`   | `#5A87A8` | 2.34         | 3.0   | FAIL   |
 | `text`     | `#E5E2E1` | 1.27         | 4.5   | FAIL   |
-| `muted`    | `#D4C5AB` | 1.03         | 4.5   | FAIL   |
 | `subtle`   | `#9BB4C6` | 1.31         | 4.5   | FAIL   |
 | `pinkText` | `#FF79B6` | 1.48         | 4.5   | FAIL   |
 | `pink`     | `#FF007A` | 2.31         | 3.0   | FAIL   |

@@ -125,7 +125,6 @@ const RATIOS: ReadonlyArray<{
   // The dark set. Listed to pin the numbers the docs quote as the reason the
   // exception exists. No floor: on this surface they have no job at all.
   { variable: '--color-text', expected: 1.27, floor: null },
-  { variable: '--color-muted', expected: 1.03, floor: null },
   { variable: '--color-subtle', expected: 1.31, floor: null },
   { variable: '--color-pink-text', expected: 1.48, floor: null },
   { variable: '--color-border', expected: 2.34, floor: null },

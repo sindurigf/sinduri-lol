@@ -36,7 +36,7 @@ const isActive = (href: string): boolean => isCurrentPage(currentPath, href);
   presents the same content box as <main> and the footer. See the
   --container-page comment in global.css.
 */}
-<header class="page-gutter sticky top-0 z-50 h-header border-b-8 border-border bg-header-bg backdrop-blur-header">
+<header class="page-gutter sticky top-0 z-50 h-header border-b-8 border-border bg-background">
   {/*
     Three tracks from `lg`, a flex row below it. The navigation holds the
     middle track, on the page's centre line, with the wordmark and the call to
@@ -127,7 +127,7 @@ const isActive = (href: string): boolean => isCurrentPage(currentPath, href);
                 'label block border-4 px-3 py-2 lg:px-4',
                 isActive(link.href)
                   ? 'lift-control border-border text-text shadow-hard-pink-4'
-                  : 'border-transparent text-muted hover:text-cyan',
+                  : 'border-transparent text-text hover:text-cyan',
               ]}
             >
               {link.label}
@@ -224,7 +224,7 @@ const isActive = (href: string): boolean => isCurrentPage(currentPath, href);
   which is the trade the client:load comment above weighs.
 */}
 <nav
-  class="noscript-nav page-gutter border-b-4 border-border bg-deep py-4 md:hidden"
+  class="noscript-nav page-gutter border-b-4 border-border bg-background py-4 md:hidden"
   aria-label="Primary"
 >
   <ul class="mx-auto flex max-w-page flex-wrap items-center gap-3">

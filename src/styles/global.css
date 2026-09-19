@@ -49,22 +49,20 @@
   /* Colors */
   --color-background: #131313;
   --color-surface: #1a1a1a;
-  --color-deep: #0e0e0e;
   --color-border: #5a87a8;
   --color-text: #e5e2e1;
-  --color-muted: #d4c5ab;
   --color-subtle: #9bb4c6;
   --color-gold: #ffc000;
   --color-cyan: #00dcfd;
   /*
    * Two pinks, split by role, not by size. Do not merge them.
    *
-   * `pink` #FF007A measures 4.90 / 4.59 / 5.09 against background / surface /
-   * deep. That is AA for text but not AAA, so it is restricted to non-text:
+   * `pink` #FF007A measures 4.90 / 4.59 against background / surface. That is
+   * AA for text but not AAA, so it is restricted to non-text:
    * borders, hard offset shadows, and decorative fills, where SC 1.4.11 asks
    * for 3:1 and it clears comfortably.
    *
-   * `pink-text` #FF79B6 measures 7.66 / 7.18 / 7.96 on the same three surfaces.
+   * `pink-text` #FF79B6 measures 7.66 / 7.18 on the same two surfaces.
    * It is AAA at any size, so every pink glyph on the site uses it, including
    * the section number.
    *
@@ -106,20 +104,21 @@
   --color-gold-btn-label: #ffffff;
 
   /*
-   * PageHero's cast blocks: the joints between the blocks and the bolt in each
-   * block's corner. Decoration, so SC 1.4.11 does not apply to them; they are
-   * 1.36 and 1.50 on the background, which is all they are for. What matters
-   * is the text that crosses them. Measured 2026-09-19, every foreground on
-   * the joint / the bolt: gold 8.29 / 7.52, text 10.57 / 9.59, muted
-   * 8.02 / 7.28, subtle 6.31 / 5.73, pink-text 5.62 / 5.10, and border
-   * 3.54 / 3.21 for chip edges. `subtle` and `pink-text` drop from AAA to AA
-   * where they cross a joint; nothing drops below AA.
+   * PageHero's cast blocks: the joints between the blocks, and the bolt in
+   * each block's corner, which is the same colour. Decoration, so SC 1.4.11
+   * does not apply; 1.36 on the background is all it is for. What matters is
+   * the text that crosses it, measured 2026-09-19: gold 8.29, text 10.57,
+   * subtle 6.31, pink-text 5.62, and border 3.54 for chip edges. `subtle` and
+   * `pink-text` drop from AAA to AA where they cross a joint; nothing drops
+   * below AA.
    */
   --color-joint: #262f36;
-  --color-bolt: #2a3640;
 
-  /* Header chrome. Translucent, so it stays a raw rgba rather than a hex. */
-  --color-header-bg: rgba(10, 10, 10, 0.94);
+  /*
+   * The homepage canvas's buds, the warmest thing in the scene. Read by
+   * HeroField.vue and used nowhere else: text on the site is `text`.
+   */
+  --color-bud: #d4c5ab;
 
   /* Typography */
   /*
@@ -375,10 +374,6 @@
   --spacing-menu-bar: 3px;
   --spacing-menu-bar-mid: 7px;
   --spacing-menu-bar-end: 14px;
-
-  /* The header fill is not fully opaque, so content shows through as it scrolls
-   * under; 10px keeps it from competing with the wordmark and nav labels. */
-  --blur-header: 10px;
 }
 
 @layer base {
@@ -484,8 +479,14 @@
     letter-spacing: var(--tracking-heading-tight);
   }
 
+  /*
+   * Links are the text colour. Gold is kept for the page title, the primary
+   * action and the current page, and cyan for hover and focus, so neither
+   * says "link" by itself; the underline below does, and a link that is a box
+   * (a nav item, a button, a card) says it by its shape.
+   */
   a {
-    color: var(--color-gold);
+    color: var(--color-text);
     text-decoration: none;
   }
 
@@ -504,20 +505,32 @@
   /*
    * SC 1.4.1, for links in running text. The rule above strips the underline,
    * which is right for a nav item or a button and wrong inside a sentence,
-   * where colour is the only signal left: gold against muted is 1.03:1.
+   * where a link is the colour of the words around it: the underline is the
+   * whole signal. Hover thickens it as well as turning it cyan, so the change
+   * is a shape and not only a colour.
    *
    * Scoped by `:not([class])` because Markdown links arrive without a class
-   * while every link that is already a box carries one. Known cost: giving a
-   * prose link a class silently drops its underline.
+   * while every link that is already a box carries one. A standalone link that
+   * carries a class for layout and is not a box takes `.link` instead.
    */
   .prose a,
   p a:not([class]),
   li a:not([class]),
   dd a:not([class]),
-  figcaption a:not([class]) {
+  figcaption a:not([class]),
+  .link {
     text-decoration: underline;
     text-underline-offset: 0.2em;
     text-decoration-thickness: 2px;
+  }
+
+  .prose a:hover,
+  p a:not([class]):hover,
+  li a:not([class]):hover,
+  dd a:not([class]):hover,
+  figcaption a:not([class]):hover,
+  .link:hover {
+    text-decoration-thickness: 4px;
   }
 
   /*
@@ -720,7 +733,7 @@
   }
 
   .cast-blocks > span::after {
-    @apply absolute right-bolt-inset bottom-bolt-inset size-bolt rounded-full bg-bolt;
+    @apply absolute right-bolt-inset bottom-bolt-inset size-bolt rounded-full bg-joint;
 
     content: '';
   }
@@ -1080,11 +1093,11 @@
 
   /*
    * The paragraph under a section heading, and the line on a PageHero plate
-   * under the page title. `.lead` is a reading size and stays muted; a
-   * standfirst is the page's own line and sits in the text colour.
+   * under the page title. `.lead` is a reading size at weight 400; a
+   * standfirst is the page's own line and is heavier.
    */
   .lead {
-    @apply mt-6 max-w-2xl text-h3 font-normal text-muted text-pretty;
+    @apply mt-6 max-w-2xl text-h3 font-normal text-text text-pretty;
   }
 
   .standfirst {
@@ -1098,11 +1111,11 @@
    * stylesheet, and an inline style needs a hash in the CSP.
    */
   .photo-viewer {
-    @apply m-0 size-full max-h-none max-w-none border-0 bg-deep p-5 text-text;
+    @apply m-0 size-full max-h-none max-w-none border-0 bg-background p-5 text-text;
   }
 
   .photo-viewer::backdrop {
-    @apply bg-deep;
+    @apply bg-background;
   }
 
   .photo-viewer-frame {
@@ -1167,11 +1180,11 @@
 
   /* The lead inside a panel Section, a size down from `.lead`. */
   .panel-lead {
-    @apply mt-3 max-w-2xl text-body text-muted text-pretty;
+    @apply mt-3 max-w-2xl text-body text-text text-pretty;
   }
 
   .bullet-list {
-    @apply list-disc pl-6 text-muted marker:text-gold;
+    @apply list-disc pl-6 text-text marker:text-gold;
   }
 
   /*
@@ -1220,11 +1233,11 @@
   }
 
   .prose p {
-    @apply mt-6 text-body text-muted;
+    @apply mt-6 text-body text-text;
   }
 
   .prose :is(ul, ol) {
-    @apply mt-6 pl-6 text-muted;
+    @apply mt-6 pl-6 text-text;
   }
 
   .prose ul {
@@ -1294,15 +1307,14 @@
   }
 
   /*
-   * Quoted text is `text` rather than `muted`, which is what separates it
-   * from the paragraph above it once the border is out of the picture: in
-   * forced-colors, where the border is repainted to the system colour, and
-   * for a reader who does not see the gold. It is also why the quote is not
-   * set in italic: Lexend Variable ships no italic face, so an italic here
-   * would be a browser-synthesised oblique of a 900-capable variable font.
+   * Quoted text is set at 900, which is what separates it from the paragraph
+   * above it once the border is out of the picture: in forced-colors, where
+   * the border is repainted to the system colour, and for a reader who does
+   * not see the gold. Weight, not italic: Lexend Variable ships no italic
+   * face, so an italic here would be a browser-synthesised oblique.
    */
   .prose blockquote p {
-    @apply text-text;
+    @apply font-black text-text;
   }
 
   .prose blockquote > :first-child {
@@ -1351,7 +1363,7 @@
    * where automatic hyphenation is worth setting.
    */
   .prose table {
-    @apply mt-6 w-full border-4 border-border text-body text-muted;
+    @apply mt-6 w-full border-4 border-border text-body text-text;
     border-collapse: collapse;
     table-layout: fixed;
     hyphens: auto;
@@ -1628,16 +1640,16 @@
    * THE TILES. The tilt is a custom property so hover can straighten a tile
    * without knowing which one it is. Three colourways, cycling:
    *
-   *   cyan    icon `darkcyan`, 7.91 on cyan; edge `border`, 5.02 on deep
-   *   surface icon `pink-text`, 7.18 on surface; edge `pink`, 5.09 on deep
+   *   text    icon `background`, 14.42 on text; edge `border`, 4.84 on background
+   *   surface icon `pink-text`, 7.18 on surface; edge `border`, 4.84 on background
    *   gold    icon `gold-text`, 11.32 on gold; the fill is the edge, 12.6
    *
    * The pink icon is `pink-text`, not `pink`: it is a glyph that carries the
    * link's meaning, which is the role the text pink exists for.
    *
    * The colour is set here in the components layer, which the base layer's
-   * `a:hover { color: cyan }` cannot beat. That matters: cyan on the cyan tile
-   * would make the icon vanish under the pointer.
+   * `a:hover { color: cyan }` cannot beat, so each tile keeps its icon colour
+   * under the pointer and says hover by straightening instead.
    */
   .footer-sticker {
     display: grid;
@@ -1661,8 +1673,8 @@
   }
 
   .footer-stickers li:nth-child(3n + 1) .footer-sticker {
-    background: var(--color-cyan);
-    color: var(--color-darkcyan);
+    background: var(--color-text);
+    color: var(--color-background);
     box-shadow: var(--shadow-hard-pink-4);
   }
 
@@ -2005,31 +2017,106 @@
 
 /*
  * The 404 page's starfield: a still night sky of token-coloured points on the
- * deep surface. Decoration only, and no text is set on it, because text over a
- * background image cannot be measured and tests/contrast-incomplete.spec.ts
- * fails it. It does not move, so SC 2.2.2 asks nothing of it.
+ * page ground. Hard-edged points: each gradient stops dead at `--star`, so
+ * nothing glows or feathers. Decoration only, and no text is set on it,
+ * because text over a background image cannot be measured and
+ * tests/contrast-incomplete.spec.ts fails it. It does not move, so SC 2.2.2
+ * asks nothing of it.
  */
 @layer components {
   .starfield {
-    background-color: var(--color-deep);
+    --star: 2px;
+    background-color: var(--color-background);
     background-image:
-      radial-gradient(3px 3px at 12% 18%, var(--color-text), transparent),
-      radial-gradient(2px 2px at 28% 72%, var(--color-muted), transparent),
-      radial-gradient(3px 3px at 44% 36%, var(--color-cyan), transparent),
-      radial-gradient(2px 2px at 58% 84%, var(--color-text), transparent),
-      radial-gradient(3px 3px at 71% 22%, var(--color-gold), transparent),
-      radial-gradient(2px 2px at 83% 58%, var(--color-text), transparent),
-      radial-gradient(3px 3px at 91% 12%, var(--color-muted), transparent),
-      radial-gradient(2px 2px at 8% 88%, var(--color-cyan), transparent),
-      radial-gradient(2px 2px at 36% 8%, var(--color-text), transparent),
-      radial-gradient(3px 3px at 64% 64%, var(--color-text), transparent),
-      radial-gradient(2px 2px at 19% 48%, var(--color-gold), transparent),
-      radial-gradient(2px 2px at 77% 92%, var(--color-muted), transparent),
-      radial-gradient(2px 2px at 5% 34%, var(--color-text), transparent),
-      radial-gradient(3px 3px at 52% 12%, var(--color-text), transparent),
-      radial-gradient(2px 2px at 95% 76%, var(--color-cyan), transparent),
-      radial-gradient(2px 2px at 40% 94%, var(--color-text), transparent),
-      radial-gradient(3px 3px at 24% 28%, var(--color-muted), transparent),
-      radial-gradient(2px 2px at 87% 38%, var(--color-text), transparent);
+      radial-gradient(
+        circle at 12% 18%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 28% 72%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 44% 36%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 58% 84%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 71% 22%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 83% 58%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 91% 12%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 8% 88%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 36% 8%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 64% 64%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 19% 48%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 77% 92%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 5% 34%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 52% 12%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 95% 76%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 40% 94%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 24% 28%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 87% 38%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      );
   }
 }

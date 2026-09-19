@@ -237,7 +237,7 @@ onBeforeUnmount(() => {
 }
 
 .mobile-menu-dialog::backdrop {
-  background-color: var(--color-deep);
+  background-color: var(--color-background);
 }
 
 .mobile-menu-dialog nav a {

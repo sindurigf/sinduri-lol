@@ -80,7 +80,7 @@ const article = placeholder
       <header>
         <Breadcrumbs crumbs={trail.crumbs} lastClass={accent.text} />
         <h1 class="text-post-title post-title text-text">{title}</h1>
-        <p class="mt-8 text-body text-muted text-pretty">{teaser}</p>
+        <p class="mt-8 text-body text-text text-pretty">{teaser}</p>
         <p class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-label text-subtle">
           <time datetime={machineDate}>{formattedDate}</time>
           {readingTime ? <span>{readingTime} min read</span> : null}
