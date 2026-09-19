@@ -457,6 +457,11 @@ ones a machine can see.
 - **Reading pages** (Privacy, Accessibility, posts) are a PageHero with
   `measure="reading"`, then one `.prose` column, both `max-w-3xl` and centred
   in the page column, so the title and the text start on the same edge.
+- **Case.** Headings are uppercase, except a post's title, on its plate and
+  on its cards, which keeps the case it is written in (`.post-title`, with
+  `--text-post-title` and `--text-post-card`). Uppercase suits a page name
+  and makes a sentence long and loud: at 390px the first post's title ran to
+  five lines at 35px, and reads in three at 28px in its own case.
 - **One ground.** Sections do not alternate backgrounds. The gold surface is
   the only change of ground.
 

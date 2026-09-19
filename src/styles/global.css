@@ -160,6 +160,21 @@
    */
   --text-post-h1: clamp(33px, 9vw, 80px);
   --text-post-h1--line-height: 0.94;
+  /*
+   * A post's own title, on its plate and on its cards. Post titles are
+   * sentences, not one-word page names, so they keep the case they are
+   * written in (`.post-title`) and come down to 28px and 18px on a phone,
+   * where a 35px uppercase title ran to five lines before the text began.
+   * The ceilings are the old ones, so a desktop is unchanged. The floors can
+   * sit below the heading floors because those are fitted to the longest
+   * uppercase word, and a title in its own case is narrower.
+   */
+  --text-post-title: clamp(28px, 7.2vw, 80px);
+  --text-post-title--line-height: 1.02;
+  --text-post-card: clamp(18px, 2.6vw, 32px);
+  --text-post-card--line-height: 1.15;
+  --text-post-card-feature: clamp(18px, calc(5.6vw - 4px), 64px);
+  --text-post-card-feature--line-height: 1.02;
   --text-h2: clamp(26px, 5.6vw, 64px);
   --text-h2--line-height: 0.96;
   --text-h3: clamp(20px, 2.6vw, 32px);
@@ -212,6 +227,8 @@
 
   --tracking-heading: -0.05em;
   --tracking-heading-tight: -0.04em;
+  /* A heading in its own case: -0.05em suits capitals and crowds lowercase. */
+  --tracking-title: -0.02em;
   --tracking-label: 0.1em;
   --tracking-label-wide: 0.14em;
 
@@ -892,6 +909,14 @@
    */
   .card-title {
     @apply text-h3 font-extrabold text-text;
+  }
+
+  /*
+   * A post title keeps the case it is written in. Every other heading is
+   * uppercased, which suits a page name and makes a sentence long and loud.
+   */
+  .post-title {
+    @apply normal-case tracking-title;
   }
 
   /*

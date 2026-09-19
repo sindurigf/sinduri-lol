@@ -28,7 +28,8 @@ interface Props {
    * `h2` for a title that is data rather than a chosen string: a tag is one
    * long word no soft hyphen can be written into, and `text-h1`'s 33px floor
    * does not fit `sustainability` in the 273px box. `post` for a blog post's
-   * title; see `--text-post-h1`. The level stays h1 in every case.
+   * title, in the case it is written in; see `--text-post-title`. The level
+   * stays h1 in every case.
    */
   titleSize?: 'h1' | 'h2' | 'post';
   /*
@@ -61,7 +62,7 @@ const reading = measure === 'reading' && !image;
 const TITLE_CLASS = {
   h1: 'text-h1',
   h2: 'text-h2',
-  post: 'text-post-h1',
+  post: 'text-post-title post-title',
 } as const;
 
 /*
@@ -69,8 +70,10 @@ const TITLE_CLASS = {
  * 104px ceiling broke ACCESSIBILITY mid-word at 1440px, so a reading plate
  * takes `text-post-h1`, the size fitted to `max-w-3xl`.
  */
+const READING_TITLE_CLASS = 'text-post-h1';
+
 const titleClass =
-  reading && titleSize === 'h1' ? TITLE_CLASS.post : TITLE_CLASS[titleSize];
+  reading && titleSize === 'h1' ? READING_TITLE_CLASS : TITLE_CLASS[titleSize];
 
 /*
  * A page can replace the roundel with its own corner mark, as Contact does
