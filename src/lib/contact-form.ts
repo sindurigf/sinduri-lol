@@ -80,6 +80,13 @@ const MESSAGES = {
   bodyLong: `Use ${LIMITS.bodyMax} characters or fewer. Email works for anything longer.`,
 } as const;
 
+/** What was typed, trimmed and unchecked, for refilling the form. */
+export const readSubmission = (form: FormData): ContactSubmission => ({
+  name: readField(form, FIELDS.name),
+  email: readField(form, FIELDS.email),
+  body: readField(form, FIELDS.body),
+});
+
 /**
  * Validates a submitted form.
  *
@@ -87,10 +94,8 @@ const MESSAGES = {
  * three fields is told about three fields once instead of three times.
  */
 export const validateSubmission = (form: FormData): ValidationResult => {
-  const name = readField(form, FIELDS.name);
-  const email = readField(form, FIELDS.email);
-  const body = readField(form, FIELDS.body);
-  const submitted = { name, email, body };
+  const submitted = readSubmission(form);
+  const { name, email, body } = submitted;
 
   const errors: FieldError[] = [];
 

@@ -1,6 +1,7 @@
 import type { ContactEnv, D1Database } from './contact-env';
 import {
   looksAutomated,
+  readSubmission,
   validateSubmission,
   type ContactSubmission,
   type FieldError,
@@ -126,7 +127,7 @@ export const handleSubmission = async (
   if (looksAutomated(form)) return SENT;
 
   if (await isRateLimited(bindings.CONTACT_RATE_LIMIT, limitKey)) {
-    return { kind: 'limited', values: {}, errors: [] };
+    return { kind: 'limited', values: readSubmission(form), errors: [] };
   }
 
   const result = validateSubmission(form);
@@ -135,7 +136,7 @@ export const handleSubmission = async (
   }
 
   if (!(await store(bindings.MESSAGES_DB, result.value, now))) {
-    return { kind: 'failed', values: {}, errors: [] };
+    return { kind: 'failed', values: readSubmission(form), errors: [] };
   }
 
   await notify(bindings, result.value, now);
