@@ -98,9 +98,11 @@ const IMAGE_SIZES =
           fetchpriority="high"
           class="block h-auto w-full border-4 border-border shadow-hard-gold-8"
         />
-        <figcaption class="mt-5 text-body text-text">
-          <slot name="credit" />
-        </figcaption>
+        {Astro.slots.has('credit') && (
+          <figcaption class="mt-5 text-body text-text">
+            <slot name="credit" />
+          </figcaption>
+        )}
       </figure>
     )}
   </div>

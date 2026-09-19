@@ -760,7 +760,8 @@ address. A file in `src/assets/` that nothing imports is not emitted at all.
   Sinduri's order of preference (personal site, then Drupal.org, then
   LinkedIn), the site-name inspiration and the people thanked. A
   caption naming someone listed there links them, `/about` links its credited
-  photos from the same list, and `/credits` lists them all.
+  photos from the same list, and `/credits` lists them all. The About hero
+  photo carries no caption; its photographer is credited on `/credits`.
 - **Video** goes in `public/videos/`, and none is published today: the post
   that had one uses a photo instead. The serving below stays in place for the
   next one. Encode an AV1 WebM with an H.264 MP4 fallback, a WebP poster and a
