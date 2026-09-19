@@ -78,6 +78,24 @@ const full = await getImage({
 });
 
 const ASPECT = { square: 'aspect-square', video: 'aspect-video' } as const;
+const RATIO = { square: 1, video: 16 / 9 } as const;
+
+/*
+ * A `fluid` photo's files are cut to its box, the largest crop the master
+ * holds. Cropped only by CSS, a 4:3 photo in a 16:9 box ships a third more
+ * height than it shows, which tests/image-size.spec.ts fails as oversized.
+ */
+const cropWidth = Math.min(
+  master.width,
+  Math.floor(master.height * RATIO[aspect]),
+);
+const crop = {
+  width: cropWidth,
+  height: Math.round(cropWidth / RATIO[aspect]),
+};
+const cropWidths = [
+  ...new Set([...WIDTHS.filter((width) => width < crop.width), crop.width]),
+];
 const hasCaption = Astro.slots.has('default');
 ---
 
@@ -106,7 +124,10 @@ const hasCaption = Astro.slots.has('default');
       <Image
         src={image}
         alt={alt}
-        widths={WIDTHS}
+        width={crop.width}
+        height={crop.height}
+        fit="cover"
+        widths={cropWidths}
         sizes={sizes}
         class:list={['block h-auto w-full object-cover', ASPECT[aspect]]}
       />
