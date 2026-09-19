@@ -177,7 +177,7 @@ const isActive = (href: string): boolean => isCurrentPage(currentPath, href);
       follow aria-expanded through `group-aria-expanded:`, so the icon and the
       announced state cannot disagree.
     */}
-    <div class="mobile-menu-island md:hidden" data-mobile-menu>
+    <div class="mobile-menu md:hidden" data-mobile-menu>
       <button
         type="button"
         class="group flex h-12 w-12 items-center justify-center border-4 border-border bg-surface"
@@ -266,11 +266,11 @@ const isActive = (href: string): boolean => isCurrentPage(currentPath, href);
 {/*
   The no-JavaScript fallback, and what it does and does not cover.
 
-  Below `md` the primary nav above is `hidden`, so the island is the only
-  navigation there is. The island server-renders its whole <dialog>, links
-  included, but a <dialog> is display:none until showModal() runs and the
-  trigger cannot call it without hydration. With scripting off at mobile width
-  and without this list, a reader reaches `/` from the logo and the footer's
+  Below `md` the primary nav above is `hidden`, so the mobile menu is the
+  only navigation there is. Its whole <dialog>, links included, is in the
+  markup, but a <dialog> is display:none until showModal() runs, and only
+  src/scripts/mobile-menu.ts calls it. With scripting off at mobile width and
+  without this list, a reader reaches `/` from the logo and the footer's
   social links, and no other page on the site.
 
   Shown by a media query rather than by a <noscript> element, which WAVE
@@ -305,10 +305,10 @@ const isActive = (href: string): boolean => isCurrentPage(currentPath, href);
   landmarks named "Primary". tests/no-script.spec.ts runs at 305px and 1280px
   for that reason.
 
-  What this does not fix, deliberately. Scripting enabled but hydration
-  failing is a different failure, and `scripting: none` does not match for it,
-  so this list stays hidden. Only not depending on JavaScript would cover it,
-  which is the trade the client:load comment above weighs.
+  What this does not fix, deliberately. Scripting enabled but the menu script
+  failing to load or run is a different failure, and `scripting: none` does
+  not match for it, so this list stays hidden. Only a menu that needs no
+  JavaScript would cover it.
 */}
 <nav
   class="noscript-nav page-gutter border-b-4 border-border bg-background py-4 md:hidden"

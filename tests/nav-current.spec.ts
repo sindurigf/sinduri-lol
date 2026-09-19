@@ -17,7 +17,7 @@ import { gotoSettled } from './settle';
  * the collision is the only assertion that bites.
  *
  * The reverse holds for the second tier. `aria-current` reaching all three
- * navigations, the desktop nav, the island's dialog and the no-JavaScript
+ * navigations, the desktop nav, the mobile menu's dialog and the no-JavaScript
  * fallback, is a property of three call sites that used to disagree, not of
  * the function.
  *

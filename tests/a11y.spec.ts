@@ -131,7 +131,7 @@ test.describe('axe: best practice', () => {
 
 /**
  * The scans above run at the default desktop viewport with the menu closed. At
- * that width the whole MobileMenu subtree is display:none and the <dialog> has
+ * that width the whole mobile menu subtree is display:none and the <dialog> has
  * never been opened, so axe has never seen a single element inside the panel:
  * not the nav links, not the CTA, not the close button. A rule only fires on
  * markup it can reach, so open the thing before scanning it.

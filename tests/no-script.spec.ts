@@ -5,9 +5,9 @@ import { ROUTES } from './routes';
  * Navigation with JavaScript disabled.
  *
  * Below `md` the primary <nav> in Header.astro is `hidden md:block`, so the
- * only navigation at that width is MobileMenu.vue. The island server-renders
- * its whole <dialog>, links included, but a <dialog> is display:none until
- * showModal() runs and the trigger cannot call it without hydration. Measured
+ * only navigation at that width is the mobile menu. Its whole <dialog>, links
+ * included, is in the markup, but a <dialog> is display:none until
+ * showModal() runs, and only src/scripts/mobile-menu.ts calls it. Measured
  * on the built homepage before the fix: with scripting off at 320px a reader
  * could reach `/` from the logo and the footer's social links and no other
  * page, with the trigger sitting inert announcing aria-expanded="false".
@@ -18,10 +18,10 @@ import { ROUTES } from './routes';
  * asks a browser with scripting genuinely off what a reader can see and click,
  * which is the only way to prove `@media (scripting: none)` matched.
  *
- * It deliberately does not cover scripting enabled with hydration failing.
- * `scripting: none` does not match then, so the fallback stays hidden. That is
- * a real failure mode and a different one; see the client:load comment in
- * Header.astro for the trade it weighs.
+ * It deliberately does not cover scripting enabled with the menu script
+ * failing to load or run. `scripting: none` does not match then, so the
+ * fallback stays hidden. That is a real failure mode and a different one; see
+ * the fallback's comment in Header.astro.
  *
  * The fallback is visible by default and scoped with `md:hidden` rather than
  * revealed by an inline <style>. While the reveal lived in that <style>, a CSP
@@ -36,7 +36,7 @@ import { ROUTES } from './routes';
  *     fallback is hidden, and it is;
  *   - the default `.noscript-nav { display: none }` deleted fails exactly "the
  *     fallback is hidden from a scripted browser";
- *   - the `.mobile-menu-island` rule inside that media query deleted fails
+ *   - the `.mobile-menu` rule inside that media query deleted fails
  *     exactly "the dead trigger is hidden rather than left inert".
  *
  * Earlier, 2026-09-10: deleting `md:hidden` from the fallback nav failed
@@ -92,7 +92,7 @@ test.describe('navigation without JavaScript', () => {
         await expect(
           fallback,
           `${route} renders no visible fallback nav with scripting off. The ` +
-            "links exist in the island's <dialog>, but a <dialog> is " +
+            "links exist in the mobile menu's <dialog>, but a <dialog> is " +
             'display:none until showModal() runs, which needs the JavaScript ' +
             'that is off.',
         ).toBeVisible();
@@ -128,7 +128,7 @@ test.describe('navigation without JavaScript', () => {
        * screen reader there is a menu to open, and there is not.
        */
       await expect(
-        page.locator('.mobile-menu-island'),
+        page.locator('.mobile-menu'),
         'the menu trigger is still visible with scripting off. It cannot ' +
           'open anything, and it announces aria-expanded="false", which ' +
           'promises a menu that will never appear.',
@@ -173,7 +173,7 @@ test.describe('navigation without JavaScript', () => {
       /*
        * Which of the two survives is not incidental. The primary nav is the
        * one a reader already sees at this width; the fallback exists for a
-       * width where the island cannot open.
+       * width where the mobile menu cannot open.
        */
       await expect(
         page.locator('nav.noscript-nav'),
