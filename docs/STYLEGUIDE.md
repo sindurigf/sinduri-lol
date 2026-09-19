@@ -539,52 +539,69 @@ Names are the Tailwind `@theme` names they would become. For example,
 
 #### 3.1.1 Colour
 
-| Token            | Hex       | Role                                             | Replaces                                       |
-| ---------------- | --------- | ------------------------------------------------ | ---------------------------------------------- |
-| `ground`         | `#131313` | page, header, footer, dialogs, backdrops         | `background`, `deep`, `header-bg`, `gold-text` |
-| `plate`          | `#1A1A1A` | fill of cards, inputs, chips, secondary buttons  | `surface`                                      |
-| `line`           | `#5A87A8` | every boundary                                   | `border`                                       |
-| `joint`          | `#262F36` | cast-block joints and bolts only                 | `joint`, `bolt`                                |
-| `ink`            | `#E5E2E1` | all reading text, h2–h6                          | `text`, `muted`                                |
-| `ink-quiet`      | `#9BB4C6` | captions, meta, helper text, footer policy links | `subtle`                                       |
-| `gold`           | `#FFC000` | h1, primary fill, current-state fill, the tile   | `gold`                                         |
-| `pink`           | `#FF007A` | every hard shadow, error edge, destructive edge  | `pink`                                         |
-| `pink-text`      | `#FF79B6` | error text, destructive label, pink glyphs       | `pink-text`                                    |
-| `cyan`           | `#00DCFD` | focus ring, hover                                | `cyan`                                         |
-| `on-accent`      | `#131313` | text and glyphs on gold or cyan fills            | `background` used as text                      |
-| `gold-muted`     | `#3A3020` | secondary text on the gold surface               | kept                                           |
-| `gold-line`      | `#22394D` | borders on the gold surface                      | `gold-border`                                  |
-| `darkcyan`       | `#00363F` | links on the gold surface                        | kept; no longer text on cyan                   |
-| `gold-btn-label` | `#FFFFFF` | label on the dark button on gold only            | kept                                           |
+The tokens kept their live names (`background`, `surface`, `border`, `text`,
+`subtle`); the names this section first proposed (ground, plate, line, ink,
+ink-quiet) were never adopted. Each colour has one job:
 
-**Approved foregrounds on each ground.** Text needs 4.5, and large text and
-non-text need 3.0. Ratios below the threshold for a role are banned for that
-role.
+- `gold`: things that stand on the page (their 8px shadow), the page title,
+  card labels and the primary fill.
+- `pink`: things you press (their 4px shadow), the bunny marks, error edges.
+  Its text form is `pink-text`.
+- `cyan`: what you are touching: the focus ring, hover, and a hovered linked
+  card's shadow.
+- Where you are is not a colour: a flat `text`-colour block with a
+  `background` label, like a badge.
 
-| Foreground                           | on `ground` | on `plate` | on `joint` | on `gold`            | on `cyan`   |
-| ------------------------------------ | ----------- | ---------- | ---------- | -------------------- | ----------- |
-| `ink`                                | **14.42**   | **13.51**  | **10.57**  | 1.27 banned          | 1.29 banned |
-| `ink-quiet`                          | **8.62**    | **8.07**   | **6.31**   | 1.31 banned          | 1.30 banned |
-| `line` (non-text)                    | **4.84**    | **4.53**   | **3.54**   | 2.34 banned          | 2.32 banned |
-| `gold`                               | **11.32**   | **10.60**  | **8.29**   | n/a                  | 1.01 banned |
-| `cyan` (ring, hover text)            | **11.20**   | **10.49**  | **8.21**   | 1.01 banned          | n/a         |
-| `pink` (non-text only)               | **4.90**    | **4.59**   | **3.59**   | 2.31 decoration only | 2.29 banned |
-| `pink-text`                          | **7.66**    | **7.18**   | **5.62**   | 1.48 banned          | 1.46 banned |
-| `on-accent`                          | n/a         | n/a        | n/a        | **11.32**            | **11.20**   |
-| `gold-muted`                         | n/a         | n/a        | n/a        | **7.88**             | n/a         |
-| `gold-line` (non-text)               | n/a         | n/a        | n/a        | **7.27**             | n/a         |
-| `darkcyan`                           | n/a         | n/a        | n/a        | **8.00**             | n/a         |
-| `ground` on `ink` (badge)            | **14.42**   |            |            |                      |             |
-| `gold-btn-label` on `on-accent` fill | **18.58**   |            |            |                      |             |
+Every approved pairing, measured from the live tokens. Text needs 4.5
+(SC 1.4.3); large text and non-text need 3.0 (SC 1.4.11). "Kept apart" rows
+are colours that must never touch, and why.
 
-Pairs that matter because they touch, and are not text:
+<!-- contrast-table:start -->
 
-- `cyan` ring against a `pink` shadow: **2.29**. This is why the ring is
-  offset past every shadow (3.1.5).
-- `pink` against `line`: **1.01**. This is why error is a shape change, not a
-  colour change.
-- `ink` against `ink-quiet`: **1.67**. This is why the two text colours cannot
-  carry a state difference by themselves.
+<!-- Generated by scripts/contrast-table.mjs --write from src/styles/global.css. tests/contrast-table.spec.ts fails if it drifts. -->
+
+| Foreground               | Background           | Job        | Used for                                   | Needs | Ratio | Result     |
+| ------------------------ | -------------------- | ---------- | ------------------------------------------ | ----- | ----- | ---------- |
+| `text` #E5E2E1           | `background` #131313 | text       | Reading text, headings                     | 4.5   | 14.42 | pass       |
+| `text` #E5E2E1           | `surface` #1A1A1A    | text       | Text inside cards and inputs               | 4.5   | 13.51 | pass       |
+| `text` #E5E2E1           | `joint` #262F36      | text       | Hero text crossing a cast-block joint      | 4.5   | 10.57 | pass       |
+| `subtle` #9BB4C6         | `background` #131313 | text       | Captions, meta, helper text                | 4.5   | 8.62  | pass       |
+| `subtle` #9BB4C6         | `surface` #1A1A1A    | text       | Helper and required text in cards          | 4.5   | 8.07  | pass       |
+| `subtle` #9BB4C6         | `joint` #262F36      | text       | Meta crossing a joint                      | 4.5   | 6.31  | pass       |
+| `gold` #FFC000           | `background` #131313 | text       | Page title, card labels                    | 4.5   | 11.32 | pass       |
+| `gold` #FFC000           | `surface` #1A1A1A    | text       | Card labels                                | 4.5   | 10.60 | pass       |
+| `gold` #FFC000           | `joint` #262F36      | text       | Page title crossing a joint                | 4.5   | 8.29  | pass       |
+| `pink-text` #FF79B6      | `background` #131313 | text       | Error text, pink glyphs                    | 4.5   | 7.66  | pass       |
+| `pink-text` #FF79B6      | `surface` #1A1A1A    | text       | Error text in the form card                | 4.5   | 7.18  | pass       |
+| `pink-text` #FF79B6      | `joint` #262F36      | text       | Pink glyphs crossing a joint               | 4.5   | 5.62  | pass       |
+| `cyan` #00DCFD           | `background` #131313 | text       | Hover text; the focus ring (needs 3)       | 4.5   | 11.20 | pass       |
+| `cyan` #00DCFD           | `surface` #1A1A1A    | text       | Hover text and focus ring in cards         | 4.5   | 10.49 | pass       |
+| `cyan` #00DCFD           | `joint` #262F36      | text       | Focus ring crossing a joint                | 4.5   | 8.21  | pass       |
+| `border` #5A87A8         | `background` #131313 | non-text   | Every boundary                             | 3.0   | 4.84  | pass       |
+| `border` #5A87A8         | `surface` #1A1A1A    | non-text   | Input and chip edges on a card             | 3.0   | 4.53  | pass       |
+| `border` #5A87A8         | `joint` #262F36      | non-text   | Chip edges crossing a joint                | 3.0   | 3.54  | pass       |
+| `pink` #FF007A           | `background` #131313 | non-text   | Error edge; action shadow                  | 3.0   | 4.90  | pass       |
+| `pink` #FF007A           | `surface` #1A1A1A    | non-text   | Error edge on the form card                | 3.0   | 4.59  | pass       |
+| `background` #131313     | `gold` #FFC000       | text       | Label on a gold fill                       | 4.5   | 11.32 | pass       |
+| `background` #131313     | `cyan` #00DCFD       | text       | Label on a hovered button                  | 4.5   | 11.20 | pass       |
+| `background` #131313     | `text` #E5E2E1       | text       | Badge; the current page block              | 4.5   | 14.42 | pass       |
+| `background` #131313     | `pink` #FF007A       | text       | Glyph on the pink category tile            | 4.5   | 4.90  | pass       |
+| `gold-text` #131313      | `gold` #FFC000       | text       | Text on the gold surface                   | 4.5   | 11.32 | pass       |
+| `gold-muted` #3A3020     | `gold` #FFC000       | text       | Secondary text on gold                     | 4.5   | 7.88  | pass       |
+| `darkcyan` #00363F       | `gold` #FFC000       | text       | Links on gold                              | 4.5   | 8.00  | pass       |
+| `gold-border` #22394D    | `gold` #FFC000       | non-text   | Boundaries on gold                         | 3.0   | 7.27  | pass       |
+| `gold-btn-label` #FFFFFF | `gold-text` #131313  | text       | Label on the dark button on gold           | 4.5   | 18.58 | pass       |
+| `gold` #FFC000           | `background` #131313 | decoration | Object shadow                              | n/a   | 11.32 | decoration |
+| `cyan` #00DCFD           | `background` #131313 | decoration | Hovered card shadow                        | n/a   | 11.20 | decoration |
+| `joint` #262F36          | `background` #131313 | decoration | Cast-block joints and bolts                | n/a   | 1.36  | decoration |
+| `pink` #FF007A           | `gold` #FFC000       | decoration | Button shadow on the gold surface          | n/a   | 2.31  | decoration |
+| `cyan` #00DCFD           | `pink` #FF007A       | apart      | A ring never touches a pink shadow         | n/a   | 2.29  | kept apart |
+| `cyan` #00DCFD           | `gold` #FFC000       | apart      | A ring never touches a gold shadow or fill | n/a   | 1.01  | kept apart |
+| `cyan` #00DCFD           | `border` #5A87A8     | apart      | A ring never touches a neighbour edge      | n/a   | 2.32  | kept apart |
+| `pink` #FF007A           | `border` #5A87A8     | apart      | An error is a shape change, not a recolour | n/a   | 1.01  | kept apart |
+| `text` #E5E2E1           | `subtle` #9BB4C6     | apart      | The two text colours never carry a state   | n/a   | 1.67  | kept apart |
+
+<!-- contrast-table:end -->
 
 **Blog categories.** This reverses the approved per-category colour. Today a
 category is gold, cyan or pink (`lib/blog.ts:152–166`). Cyan text would now
