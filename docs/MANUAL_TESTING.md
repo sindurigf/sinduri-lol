@@ -76,7 +76,7 @@ Chrome, 1280px, `/`. Start with focus in the address bar, then Tab.
       → SC 2.4.1
 - [ ] The skip link is **visible** when focused. It slides down to the top-left
       and is not clipped or hidden behind the header. → SC 2.4.7
-- [ ] Press Enter on it. The page jumps to the main region **and a gold outline
+- [ ] Press Enter on it. The page jumps to the main region **and a cyan outline
       appears around the main content area**, showing where you landed.
       → SC 2.4.1
 - [ ] From there, one more Tab goes to the first control inside the page
@@ -88,7 +88,7 @@ Chrome, 1280px, `/`. Start with focus in the address bar, then Tab.
       Privacy → the footer's profile tiles (GitHub, LinkedIn, Instagram,
       Bluesky, Mastodon, Drupal, Email). Nothing is reached in a surprising
       order. → SC 2.4.3
-- [ ] **Every** stop shows a gold outline with a visible gap around it. No stop
+- [ ] **Every** stop shows a cyan outline with a visible gap around it. No stop
       is silent. → SC 2.4.7
 - [ ] Shift+Tab all the way back out. The order reverses exactly and you exit
       the top of the page. → SC 2.1.2
@@ -185,43 +185,49 @@ Verify the browser picked it up at `chrome://settings` or by running
 `matchMedia('(prefers-reduced-motion: reduce)').matches` in the console: it
 must return `true`.
 
-- [ ] With it enabled, open and close the mobile menu. The hamburger bars
-      **snap** rather than animate. → SC 2.3.3
+- [ ] With it enabled, press and hold a primary button. It loses its shadow
+      but does **not** move 4px into it. → SC 2.3.3
 - [ ] Nothing else on the page moves, fades, or slides. → SC 2.3.3
 - [ ] With it enabled, open `/`. The hero field is drawn once and held, and it
       reads as a picture rather than as something that failed to load. There
       is no pause control. → SC 2.3.3
-- [ ] Turn it back off and confirm the transition returns, so you know the
-      media query is actually what changed. → SC 2.3.3
+- [ ] Turn it back off and confirm the button moves when pressed and the field
+      moves, so you know the media query is actually what changed. → SC 2.3.3
 
-> Two things move. The hero field on `/` is a canvas animation with its own
-> pause control (`HeroField.vue`); and there are short transitions, the three
-> 0.15s hamburger bars and the 150ms straightening of a footer profile tile on
-> hover. The field reads `prefers-reduced-motion` itself and renders no pause
-> control when it is set. `tests/motion.spec.ts` asserts that,
-> and that nothing on any route still moves under the preference.
+> One thing animates: the hero field on `/`, a canvas animation with its own
+> pause control (`HeroField.vue`). Nothing on the site has a transition; the
+> hamburger bars and a footer profile tile straightening on hover change
+> state at once, and a pressed button's 4px move is a state rather than an
+> animation. The field reads `prefers-reduced-motion` itself and renders no
+> pause control when it is set. `tests/motion.spec.ts` asserts that, and that
+> nothing on any route still moves under the preference.
 
 ## 5. Focus indicator visibility
 
-The indicator is a **3px gold `#FFC000` outline at 3px offset**. Measured
-against the three surfaces: 11.32 / 10.60 / 11.76, all far above the 3:1 of
-SC 1.4.11. What the numbers cannot tell you is whether you can _see_ it.
+The indicator is a **4px cyan `#00DCFD` outline at a 4px offset**, plus the
+element's own shadow where it casts one (`lift-control` 4px, `lift-object`
+8px). Shadows are gold on things, pink on actions and cyan on the current
+page. Measured against the two surfaces and a cast-block joint: 11.20 / 10.49
+/ 8.21, all far above the 3:1 of SC 1.4.11. The lift exists because cyan
+against the pink shadow is 2.29, and it must never merge with the cyan shadow
+of a current item. What the numbers cannot tell you is whether
+you can _see_ it.
 
 Look, do not measure:
 
-- [ ] On `#131313` (page background): header nav links. → SC 1.4.11, 2.4.7
-- [ ] On `#1A1A1A` (surface): the pink-edged footer profile tiles, LinkedIn
-      and Mastodon. → SC 1.4.11, 2.4.7
-- [ ] On `#0E0E0E` (deep): anything in the footer region. → SC 1.4.11, 2.4.7
-- [ ] **On the gold footer tiles, Instagram and Drupal.** The ring is gold
-      around a gold tile, so it is visible only because the 3px gap shows
-      `deep` between them. The tiles are tilted; the ring follows the tilt.
+- [ ] On `#131313` (page background): header nav links, and anything in the
+      footer. → SC 1.4.11, 2.4.7
+- [ ] On `#1A1A1A` (surface): a link inside a card. → SC 1.4.11, 2.4.7
+- [ ] **On the current nav item and the footer profile tiles.** Each casts a
+      4px shadow, cyan on the current item and pink on the tiles, and the ring
+      must sit on the page background past it, never across it. The tiles are tilted; the ring follows the tilt.
       → SC 1.4.11, 2.4.7
-- [ ] **On the gold "Skip to main content" link.** Gold on gold is 1.00:1, so
-      the ring is only visible because of the 3px offset putting dark
-      background on both sides. Confirm you can see it. If this looks wrong,
-      the offset is the thing to check, never remove it. → SC 1.4.11
-- [ ] On the cyan "Get in touch" button. → SC 1.4.11
+- [ ] **On the logo and the contact cards.** They cast the 8px shadow, so
+      the ring sits 12px out. Confirm it still reads as belonging to the
+      control. → SC 1.4.11, 2.4.7
+- [ ] On the gold "Skip to main content" link and the gold "Get in touch"
+      button. The ring is cyan on the dark background beyond the gap, never
+      on gold. → SC 1.4.11
 - [ ] The ring is never clipped by a parent, and never hidden under the sticky
       header. → SC 2.4.11
 - [ ] Nothing relies on the hard offset shadow to signal focus. The shadows are
@@ -337,8 +343,9 @@ below without triggering it.
 layout it is the numeric keypad's `Enter`.
 
 The single-letter keys are structural navigation, and they only work while you
-are reading a document rather than typing into a field. This site has no form
-fields yet, so they work everywhere on it.
+are reading a document rather than typing into a field. The one form, on
+`/contact/`, is the only place they type instead: switch to browse mode to
+leave a field.
 
 ### 6.3 How to fill this in
 
@@ -368,7 +375,7 @@ the only engine on this machine that puts `"CAREER"` into the tree. Firefox is
 still run, as the control that establishes what the untransformed name sounds
 like on the same link, in the same voice, at the same setting.
 
-It is not only the nav. Every `h1`–`h6`, `.label`, `.label-wide`,
+It is not only the nav. Every `h1`–`h6`, `.label`, `.badge`,
 `.btn-primary`, `.btn-secondary`, `.nav-cta` ("Get in touch"), the mobile
 menu's links and the skip link carry `text-transform: uppercase`, so the answer
 applies to the whole site.
@@ -517,8 +524,8 @@ design and this section is not the place to check that.
       English, so judge them as prose as well as structure.
       Listed: `__________________________________________` → SC 1.3.1, 2.4.6
 
-- [ ] `G` from `Ctrl+Home` reaches the header bunny mark and announces
-      "Lepus Ridet mark".
+- [ ] `G` from `Ctrl+Home` does **not** stop on the header bunny mark: it has
+      empty alt text, and the home link is announced as "sinduri.lol" alone.
       Heard: `___________________________________________` → SC 1.1.1
 - [ ] `G` again finds **no second image**. The footer hare is `aria-hidden`
       and must be silent. "Hare", "graphic", or "image" means it has been
@@ -823,12 +830,13 @@ used anywhere on this site, so a change to nav spacing cannot break 2.5.8.
       touches the edge has picked up its own container padding rules again, or
       lost `.page-gutter`. → SC 1.4.10
 - [ ] Header nav links are **at least 24px tall**. `py-2` on the `.label` link
-      takes the 15.6px line box to 31.6px, and the `border-4` every link now
-      carries takes it to 39.6px. Measure one in DevTools; do not infer it from
-      the gap between links. This is the check to redo after any header layout
-      change. → pass at 1440px, measured while Home was still in the header
-      nav (it left on 2026-09-11): Home 87.2x39.6, About 94.5x39.6,
-      Career 101.8x39.6, Blog 83.2x39.6, Get in touch 177.6x47.6
+      takes the 16.8px line box of the 14px label to 32.8px, and the
+      `border-4` every link now carries takes it to 40.8px. Measure one in
+      DevTools; do not infer it from the gap between links. This is the check
+      to redo after any header layout change. → pass at 1440px, measured with
+      the 13px label and while Home was still in the header nav (it left on
+      2026-09-11): Home 87.2x39.6, About 94.5x39.6, Career 101.8x39.6, Blog
+      83.2x39.6, Get in touch 177.6x47.6
 - [ ] Every header nav link is the **same height**, active or not. They were not
       before: the gold dot sat inside the anchor with `mt-2`, so the current
       page's link was 47.6px and the other three 31.6px. The box that replaced
@@ -840,10 +848,11 @@ used anywhere on this site, so a change to nav spacing cannot break 2.5.8.
       link on every post, and "All posts" on `/blog/page/<n>` once the index
       paginates. It was the last
       target passing only by the spacing exception, at 87x16 and 179x16.
-      `inline-block py-2 -my-2` takes each to **31.6px** tall: the padding
-      grows the hit area and the matching negative margin keeps the layout box
-      at the 15.6px it occupied, so no glyph moved. Measured at 305px after the
-      fix, on routes that have since changed: 86.7x31.6 and 178.1x31.6, with
+      `inline-block py-2 -my-2` takes each to **32.8px** tall with the 14px
+      label: the padding grows the hit area and the matching negative margin
+      keeps the layout box at the 16.8px line box, so no glyph moved. Measured
+      at 305px after the fix, with the 13px label and on routes that have
+      since changed: 86.7x31.6 and 178.1x31.6, with
       the `<h1>` below at the same y as before (199.6px) on both. Confirm by
       hovering that the clickable area is taller than the words, and that the
       gap to the `<h1>` still looks right. → SC 2.5.8
@@ -919,8 +928,8 @@ and `duplicate-id-active` are deprecated in axe 4.13 and do not run at all.
 there is no `target=` attribute anywhere; captions, transcripts and audio
 description, since no video is published (the byte-range serving for one
 stays built); dragging movements, accessible
-authentication, redundant entry and consistent help, since there is no form, no
-login and no multi-step flow. Revisit each when the contact form lands. Data
+authentication, redundant entry and consistent help, since nothing drags,
+there is no login, and the contact form is a single step. Data
 tables are no longer on this list: `/blog/open-source-is-not-just-code` has one.
 
 **Already satisfied by construction:** the `inert` behaviour behind an open
@@ -939,12 +948,9 @@ practice; it is not adopted either.
 
 Not gaps in the testing, gaps in the site.
 
-- The **contact form** does not exist, and this is the one entry that is still
-  true. SC 1.3.5, 3.3.1, 3.3.2, 3.3.3, 3.3.7, 3.3.8 and 4.1.3 are untestable
-  until it does. TODO.md records a recommendation not to build one, put and
-  declined on 2026-09-09: the form is deferred, not dropped, so these criteria
-  stay outstanding. The case for and against is in TODO.md and is not
-  repeated here.
+- The **contact form** is built, and its form criteria (SC 1.3.5, 3.3.1,
+  3.3.2, 3.3.3 and 4.1.3) have not been checked by a person; that is
+  ACCESSIBILITY.md §7 gap 1. What is automated is in `tests/contact.spec.ts`.
 - **Language, not structure.** Reading order, in-page heading structure and
   link text in prose are all testable now, on lorem as well as on English, and
   §6 tests them. What is not testable is whether the prose reads plainly, and

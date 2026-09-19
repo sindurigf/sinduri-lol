@@ -29,8 +29,6 @@ interface Props {
   lead?: string;
   panel?: boolean;
   headless?: boolean;
-  /** The panel's hard shadow; see the colour roles in ARCHITECTURE.md. */
-  shadow?: 'gold' | 'pink';
   class?: string;
 }
 
@@ -40,14 +38,9 @@ const {
   lead,
   panel = false,
   headless = false,
-  shadow = 'gold',
   class: className = '',
 } = Astro.props;
 
-const SHADOW = {
-  gold: 'shadow-hard-gold-8',
-  pink: 'shadow-hard-pink-8',
-} as const;
 const headingId = id ? `${id}-heading` : undefined;
 ---
 
@@ -60,7 +53,7 @@ const headingId = id ? `${id}-heading` : undefined;
     {headless ? (
       <slot />
     ) : panel ? (
-      <div class:list={['card', SHADOW[shadow]]}>
+      <div class="card">
         <h2 id={headingId} class="card-title">
           <slot name="title">{title}</slot>
         </h2>

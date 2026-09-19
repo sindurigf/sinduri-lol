@@ -26,60 +26,70 @@ or radius.
 
 ## Colors
 
-| Token        | Value                    | Use                        |
-| ------------ | ------------------------ | -------------------------- |
-| `background` | `#131313`                | Main background            |
-| `surface`    | `#1A1A1A`                | Cards, boxes               |
-| `deep`       | `#0E0E0E`                | Alternate sections, footer |
-| `border`     | `#5A87A8`                | All borders                |
-| `text`       | `#E5E2E1`                | Primary text               |
-| `muted`      | `#D4C5AB`                | Secondary body copy        |
-| `subtle`     | `#9BB4C6`                | Footer, captions           |
-| `gold`       | `#FFC000`                | Primary accent             |
-| `cyan`       | `#00DCFD`                | Secondary accent           |
-| `pink`       | `#FF007A`                | Borders, shadows, decor    |
-| `pink-text`  | `#FF79B6`                | All pink text, any size    |
-| `darkcyan`   | `#00363F`                | Text on cyan backgrounds   |
-| `header-bg`  | `rgba(10, 10, 10, 0.94)` | Sticky header only         |
-| `joint`      | `#262F36`                | Cast-block joints only     |
-| `bolt`       | `#2A3640`                | Cast-block bolts only      |
+| Token        | Value     | Use                              |
+| ------------ | --------- | -------------------------------- |
+| `background` | `#131313` | Main background                  |
+| `surface`    | `#1A1A1A` | Cards, boxes                     |
+| `border`     | `#5A87A8` | All borders                      |
+| `text`       | `#E5E2E1` | Primary text                     |
+| `subtle`     | `#9BB4C6` | Footer, captions                 |
+| `gold`       | `#FFC000` | Primary accent                   |
+| `cyan`       | `#00DCFD` | Focus and hover only             |
+| `pink`       | `#FF007A` | Borders, shadows, decor          |
+| `pink-text`  | `#FF79B6` | All pink text, any size          |
+| `darkcyan`   | `#00363F` | Links on the gold surface        |
+| `joint`      | `#262F36` | Cast-block joints and bolts only |
+| `bud`        | `#D4C5AB` | Homepage canvas buds only        |
 
-The three **dark** surfaces are `#131313`, `#1A1A1A`, and `#0E0E0E`. Every
-foreground color must be checked against **all three**, not just one.
+The two **dark** surfaces are `#131313` and `#1A1A1A`. Every foreground color
+must be checked against **both**, not just one. The header, the footer and
+every band sit on `#131313`; there is no third, deeper ground.
 
-`joint` and `bolt` are decoration, not surfaces, but PageHero's text crosses
-them, so every foreground was measured on them too: the lowest is `border` on
-the bolt at 3.21, and `subtle` and `pink-text` drop from AAA to AA there.
-`global.css` beside `--color-joint` and ARCHITECTURE.md carry the numbers. A
-new foreground used in a hero is measured on both.
+`joint` is decoration, not a surface, but PageHero's text crosses it, in the
+joints and in the bolts, so every foreground was measured on it too: the
+lowest is `border` at 3.54, and `subtle` and `pink-text` drop from AAA to AA
+there. `global.css` beside `--color-joint` and ARCHITECTURE.md carry the
+numbers. A new foreground used in a hero is measured on it.
 
-**Those three are not the only surfaces, and the tokens above are not
-universal.** There is a fourth: `gold` used as a ground rather than as an
+`bud` is not a text colour. Body copy is `text`, at 14.42 on the background.
+
+**Those two are not the only surfaces, and the tokens above are not
+universal.** There is a third: `gold` used as a ground rather than as an
 accent. Not one foreground token in the table above passes on it except
-`darkcyan`, which is text on cyan rather than a dark-surface foreground, and
-measures 8.00 on gold. See
-[The gold surface](#the-gold-surface-the-dark-tokens-are-not-universal) before
-building anything on `#FFC000`.
+`darkcyan`, which exists for links on that ground, and measures 8.00 on gold.
+See [The gold surface](#the-gold-surface-the-dark-tokens-are-not-universal)
+before building anything on `#FFC000`.
+
+**Each colour has one job, read from the shadow a thing casts.** Gold is
+things that stand on the page: cards, panels, a hero photo (`shadow-hard-gold-8`),
+plus the page title, card labels and the primary fill. Pink is things you
+press: buttons, link chips, the call to action (`shadow-hard-pink-4`), and the
+bunny marks, which keep the locked logo tile's pink. Cyan is where you are:
+focus, hover, and `shadow-hard-cyan-4` on the current nav item, chip and call
+to action, under their unchanged blue border. A cyan label, fill or shadow at
+rest would read as the current page or a control under the pointer. State is
+never the shadow colour alone: pink against cyan is 2.29. Links are `text`,
+underlined in running text.
 
 ### Contrast-critical tokens
 
 `border` and `subtle` were chosen for contrast, not aesthetics. Do not change
 them without re-verifying.
 
-| Token    | on `#131313` | on `#1A1A1A` | on `#0E0E0E` |
-| -------- | ------------ | ------------ | ------------ |
-| `border` | 4.84         | 4.53         | 5.02         |
-| `subtle` | 8.62         | 8.07         | 8.95         |
+| Token    | on `#131313` | on `#1A1A1A` |
+| -------- | ------------ | ------------ |
+| `border` | 4.84         | 4.53         |
+| `subtle` | 8.62         | 8.07         |
 
 `border` carries every visible boundary in the design, so it is governed by
 WCAG 2.2 SC 1.4.11 Non-text Contrast, which requires **3:1**. Its predecessor
 `#504632` measured 2.00 and failed. Anything that replaces it must clear 3:1 on
-all three surfaces, and the numbers above must be updated in the same commit.
+both surfaces, and the numbers above must be updated in the same commit.
 
 `subtle` is a different case, and the two are easy to confuse. It is text, so
 SC 1.4.3 governs it, not 1.4.11. Its predecessor `#9C8F78` measured
-5.85 / 5.48 / 6.08 and **passed AA on all three surfaces**; it only fell short
-of AAA. Replacing it with `#9BB4C6` was an AA-to-AAA upgrade and a palette
+5.85 / 5.48 / 6.08 and **passed AA on all three surfaces the site then had**;
+it only fell short of AAA. Replacing it with `#9BB4C6` was an AA-to-AAA upgrade and a palette
 decision, not a conformance fix. Do not describe it as one.
 
 ### Adding a color
@@ -87,8 +97,8 @@ decision, not a conformance fix. Do not describe it as one.
 Do all four steps, in order. Do not skip step 2 because a color "looks fine".
 
 1. Add it as a token in the `@theme` block. Never inline it.
-2. Measure it against `#131313`, `#1A1A1A`, and `#0E0E0E` — and against
-   `#FFC000` too if it will ever appear on a gold surface.
+2. Measure it against `#131313` and `#1A1A1A`, and against `#FFC000` too if
+   it will ever appear on a gold surface.
 3. Meet the threshold for its job: **4.5:1** for body text, **3:1** for large
    text, borders, focus rings, icons, and any other non-text boundary.
 4. Record the ratios in `ARCHITECTURE.md` next to the token.
@@ -104,24 +114,24 @@ they did against the warm brown that preceded it. Use accents sparingly.
 
 There are two pink tokens and they are split by **role**, never by size.
 
-| Token       | Hex       | on `#131313` | on `#1A1A1A` | on `#0E0E0E` |
-| ----------- | --------- | ------------ | ------------ | ------------ |
-| `pink`      | `#FF007A` | 4.90         | 4.59         | 5.09         |
-| `pink-text` | `#FF79B6` | 7.66         | 7.18         | 7.96         |
+| Token       | Hex       | on `#131313` | on `#1A1A1A` |
+| ----------- | --------- | ------------ | ------------ |
+| `pink`      | `#FF007A` | 4.90         | 4.59         |
+| `pink-text` | `#FF79B6` | 7.66         | 7.18         |
 
 - **`pink` is decoration only.** Borders, hard offset shadows, decorative
   fills. It clears the 3:1 that SC 1.4.11 asks of non-text by a wide margin.
   **Never put `pink` on text.** Not on a heading, not on a section number, not
   on a label, not at any size.
 - **`pink-text` is for every pink glyph on the site**, including category
-  labels. It is AAA (7:1) on all three surfaces at every size and weight.
+  labels. It is AAA (7:1) on both surfaces at every size and weight.
   **Never use `pink-text` for a border, a shadow, or a fill.** Keeping it off
   non-text is what stops the two drifting back into one token.
 
 ```html
 <!-- Yes -->
 <span class="label text-pink-text">Personal thoughts</span>
-<div class="border-4 border-pink shadow-hard-pink-12">…</div>
+<div class="border-4 border-pink shadow-hard-pink-8">…</div>
 
 <!-- No -->
 <span class="label text-pink">Personal thoughts</span>
@@ -134,7 +144,7 @@ did, and it contradicted `--text-section-number`, whose value at the time was
 split has no size condition, so it cannot be invalidated by a change to the
 scale.
 
-Text tokens `text`, `muted`, and `subtle` all clear AAA on all three surfaces.
+Text tokens `text` and `subtle` both clear AAA on both surfaces.
 Prefer them for anything readable that is not deliberately pink.
 
 ---
@@ -142,7 +152,7 @@ Prefer them for anything readable that is not deliberately pink.
 ## The gold surface: the dark tokens are not universal
 
 This site is dark-mode only and every foreground token was picked against
-`#131313`, `#1A1A1A` and `#0E0E0E`. **There is one exception, and it is a real
+`#131313` and `#1A1A1A`. **There is one exception, and it is a real
 section of the design, not a hypothetical.** The closing band on `/contact`
 and the kindness quote on `/about` are `background: #FFC000` with
 `color: #131313`: a light ground inside a dark-only palette.
@@ -153,7 +163,6 @@ and the kindness quote on `/about` are `background: #FFC000` with
 | ----------- | --------- | ------------ | ----- | ------ |
 | `border`    | `#5A87A8` | 2.34         | 3.0   | FAIL   |
 | `text`      | `#E5E2E1` | 1.27         | 4.5   | FAIL   |
-| `muted`     | `#D4C5AB` | 1.03         | 4.5   | FAIL   |
 | `subtle`    | `#9BB4C6` | 1.31         | 4.5   | FAIL   |
 | `pink-text` | `#FF79B6` | 1.48         | 4.5   | FAIL   |
 | `pink`      | `#FF007A` | 2.31         | 3.0   | FAIL   |
@@ -191,7 +200,7 @@ gold and must never touch it**, because it never does. It sits on
 `.btn-gold-primary`'s `#131313` fill, where it measures **18.58**. It is named
 for the button rather than for a role because the site's text colour is `text`
 `#E5E2E1`, and that softness is deliberate: pure white blooms on a dark ground.
-That argument is about continuous prose, not about a 13px uppercase label on a
+That argument is about continuous prose, not about a 14px uppercase label on a
 small control, and the component-scoped name is what stops `#FFFFFF` leaking
 into body copy.
 
@@ -240,7 +249,7 @@ including for a shadow: `pink` is 2.31, under the 3:1 a boundary needs.
 <!-- No: the dark set on a gold ground -->
 <section class="bg-gold">
   <h2 class="text-text">Career</h2>
-  <p class="text-muted">…</p>
+  <p class="text-subtle">…</p>
   <div class="border-8 border-border">…</div>
 </section>
 ```
@@ -248,18 +257,16 @@ including for a shadow: `pink` is 2.31, under the 3:1 a boundary needs.
 The class exists because **four site-wide rules are wrong on this surface and
 three of them fail silently.** Applying `bg-gold` by hand gets none of them.
 
-1. **Links.** The base layer paints every `<a>` `gold`, which is **1.00** on
+1. **Links.** The base layer paints every `<a>` `text`, which is **1.27** on
    this ground, and `cyan` on hover, **1.01**. Every link in a hand-rolled gold
    section is invisible. `.surface-gold` repaints them `darkcyan` and
    **underlines them**. The underline is not decoration: `darkcyan` measures
    only 1.42 against `gold-text`, far under the 3:1 that would let colour carry
    the distinction on its own, so the underline is what satisfies SC 1.4.1.
    Do not remove it.
-2. **Focus.** The site's ring is `gold` with a 3px offset, and it works
-   everywhere else _because_ of that offset: gold on gold is 1.00, and the
-   offset puts the dark page background on both sides of the ring. **On a large
-   gold surface the offset gap is gold too, so the ring disappears entirely.**
-   `.surface-gold` repaints it `gold-text` (11.32).
+2. **Focus.** The site's ring is `cyan`, which is **1.01** on gold. **On a
+   large gold surface the offset gap is gold too, so the ring disappears
+   entirely.** `.surface-gold` repaints it `gold-text` (11.32).
 3. **Borders.** The base layer defaults every border to `border` `#5A87A8`,
    2.34 on gold. `.surface-gold` re-defaults the subtree to `gold-border`.
 4. **Text.** `text` is 1.27 on gold, so the class sets the foreground rather
@@ -270,7 +277,7 @@ three of them fail silently.** Applying `bg-gold` by hand gets none of them.
 **Neither `.btn-primary` nor `.btn-secondary` may be used on this surface.**
 `.btn-primary` is `bg-gold`, so on this ground it is a 1.00:1 fill: an
 invisible button identified only by its border. `.btn-secondary` carries
-`border-border` (2.34 on gold) and a gold offset shadow (1.00 on gold).
+`border-border` (2.34 on gold) and a pink offset shadow (2.31 on gold).
 
 Use `.btn-gold-primary` and `.btn-gold-secondary`, which are scoped to
 `.surface-gold` so that using one anywhere else renders it unstyled — loudly
@@ -285,11 +292,11 @@ wrong rather than quietly wrong.
 
 | Button      | Fill        | Label            | Border          | Shadow               |
 | ----------- | ----------- | ---------------- | --------------- | -------------------- |
-| `primary`   | `gold-text` | `gold-btn-label` | 4px `gold-text` | `shadow-hard-pink-8` |
+| `primary`   | `gold-text` | `gold-btn-label` | 4px `gold-text` | `shadow-hard-pink-4` |
 | `secondary` | transparent | `gold-text`      | 4px `gold-text` | none                 |
 
 Both are `text-button` (14px on a desktop, up to 16px on a phone) / weight 900
-/ 0.1em / uppercase with 18px 34px of padding, from the comps. Measured, each colour against what it is actually adjacent to:
+/ 0.1em / uppercase with 16px 32px of padding, the same as every other button. Measured, each colour against what it is actually adjacent to:
 
 | Measurement                             | Ratio     | Needs |
 | --------------------------------------- | --------- | ----- |
@@ -310,16 +317,15 @@ Four things about these that are easy to get wrong:
   goes, the shadow does not inherit the job.
 - **The padding is a conformance floor, not a spacing preference.** The label
   is `text-button`, 14px on a desktop and up to 16px on a phone; at
-  line-height 1.2 that is a 16.8px to 19.2px line box. `18px` top and bottom
-  and the 4px border take the rendered control to **60.8px to 63.2px**, well
+  line-height 1.2 that is a 16.8px to 19.2px line box. `16px` top and bottom
+  and the 4px border take the rendered control to **56.8px to 59.2px**, well
   past the 24px SC 2.5.8 asks of a target on its own size. Measured on the
   Career hero while it was gold, at 305px, 320px and 1280px, with the 13px
   label it had then: 59.6px tall at all three, 226.2px and 197.6px wide. An earlier version of this note quoted
   51.6px as the rendered height, which is the padding box with the border left
   out; SC 2.5.8 measures the target, and the border is part of it.
-  `--spacing-btn-gold-y` and `--spacing-btn-gold-x` exist as tokens because 18
-  and 34 are not multiples of the 4px Tailwind step and this project does not
-  allow arbitrary values.
+  The comps' 18px and 34px were folded into the shared 16px and 32px, a 2px
+  difference that needed two tokens of its own.
 - **`.btn-gold-primary`'s focus ring is two rings, and it is the only one.**
   Its ring colour is its own fill colour, so a single ring depends entirely on
   the offset gap. See
@@ -338,7 +344,7 @@ rule.
 
 An explicit utility still beats the subtree default, because utilities come
 after components in the cascade. That is intentional, and it is also the hole:
-`class="border-border"` or `class="text-muted"` written inside a gold section
+`class="border-border"` or `class="text-subtle"` written inside a gold section
 is a bug no CSS can prevent.
 
 **A rule engine will not catch this for you.** Measured twice, on a real route
@@ -411,7 +417,7 @@ markup.**
 <a class="label" href="/about">ABOUT</a>
 ```
 
-`.label`, `.label-wide`, `.btn-primary`, `.btn-secondary`, and every heading
+`.label`, `.badge`, `.btn-primary`, `.btn-secondary`, and every heading
 already apply `text-transform: uppercase`. Write sentence case and let the CSS
 do it.
 
@@ -459,10 +465,14 @@ halation: light strokes on a dark ground bloom and smear, which is worst for
 readers with low vision or astigmatism. 300 is available on the axis; do not
 use it for anything a person reads in continuous prose.
 
+**Two weights, 400 and 900, and nothing between.** Reading text is 400;
+headings, card titles, labels, buttons, names and quoted text are 900. There is
+no `font-bold` or `font-extrabold` on the site.
+
 ### Scale
 
 Every size is a token. Headings, body, the stickers and the glyph tile are
-fluid via `clamp()`; `text-label` (13px) and `text-copyright` (20px) are fixed.
+fluid via `clamp()`; `text-label` (14px) and `text-copyright` (20px) are fixed.
 Do not add breakpoint steps.
 
 | Role                   | Token                                     | Weight |
@@ -473,13 +483,16 @@ Do not add breakpoint steps.
 | H1, post title         | `text-post-title`                         | 900    |
 | H2, in a post          | `text-post-h2`                            | 900    |
 | H2                     | `text-h2`                                 | 900    |
-| H3                     | `text-h3`                                 | 800    |
-| Sticker, homepage hero | `--text-hero-sticker` via `.hero-sticker` | 800    |
+| H3                     | `text-h3`                                 | 900    |
+| Sticker, homepage hero | `--text-hero-sticker` via `.hero-sticker` | 900    |
 | Body                   | `text-body`                               | 400    |
 | Label / tag            | `text-label`                              | 900    |
 | Copyright              | `text-copyright`                          | 900    |
 | Footer name            | `text-footer-name`                        | 900    |
-| Category glyph tile    | `text-section-number`                     | 800    |
+| Category glyph tile    | `text-section-number`                     | 900    |
+
+H3 sets its line height, 1.1, from its token, and its tracking at
+`--tracking-title` (-0.02em) rather than the -0.05em of H1 and H2.
 
 Headings must not skip levels. One `<h1>` per page.
 
@@ -737,7 +750,8 @@ Nothing may flash more than three times per second (SC 2.3.1).
 - The active item uses **`aria-current="page"`**. That is the machine-readable
   indicator and it is not optional.
 - The active item's **box** is visual reinforcement only: `border-4
-border-border` with `shadow-hard-gold-4`. It must never be the sole signal of
+border-border` with `shadow-hard-cyan-4`, and `lift-control` so its focus ring
+  clears the shadow. It must never be the sole signal of
   the active page. It carries no meaning to assistive tech and needs no ARIA of
   its own, because it is drawn with border and shadow rather than an element.
   (It replaced an 8x8 gold dot, which was a separate `aria-hidden` span.)
@@ -754,36 +768,41 @@ border-border` with `shadow-hard-gold-4`. It must never be the sole signal of
   which is `NAV_LINKS` without Home: the logo link directly before it already
   goes to `/`, and a Home item beside it was two adjacent links to one URL. On
   `/` the logo link carries `aria-current="page"` instead. The call to action sits outside the
-  Primary `<nav>` and marks the current page with its own indicator, an inset
-  4px `darkcyan` ring (`--inset-shadow-cta-current`), 7.91 on its cyan fill and
-  3.42 on `border`, because its border and the gold shadow are already spent on
-  its resting and hover states.
+  Primary `<nav>` and marks the current page with its own indicator: its pink
+  shadow turns cyan, and it draws an inset 4px ring in the background colour
+  (`--inset-shadow-cta-current`), 11.32 on its gold fill. The ring is the
+  shape half: its border and shadow are already spent on its resting state,
+  and a shadow colour change alone would fail SC 1.4.1.
+- The call to action, `.nav-cta`, is a square gold primary action: `bg-gold`,
+  a background-coloured label, `border-4` and `shadow-hard-pink-4`, with no
+  radius. It shares the buttons' hover (cyan fill) and pressed (4px into its
+  shadow) states.
 
 ### Target size: every nav link is at least 24px tall
 
 **Every nav link carries its own 24x24 CSS px hit area (SC 2.5.8).** Size the
 target, never the gap between targets.
 
-A `.label` link is 13px at line-height 1.2, so its line box is 15.6px and the
-link fails on its own. `py-2` adds 8px top and bottom and takes it to 31.6px;
-the `border-4` the active-item box needs adds 8px more, to **39.6px**, measured
-on `/about` at 1440px. The `ul` is `items-center`, so symmetric padding grows
-the hit area about the same centre line and moves no glyph.
+A `.label` link is 14px at line-height 1.2, so its line box is 16.8px and the
+link fails on its own. `py-2` adds 8px top and bottom and takes it to 32.8px;
+the `border-4` the active-item box needs adds 8px more, to **40.8px**. The `ul`
+is `items-center`, so symmetric padding grows the hit area about the same
+centre line and moves no glyph.
 
 Every link now measures the same height, which they did not before: the old
 gold dot sat inside the anchor with `mt-2`, so the active link alone was 47.6px
-and the other three were 31.6px.
+and the other three were 31.6px, with the 13px label it had then.
 
 ```html
-<!-- Yes: 39.6px tall, passes on its own size, same box active or not -->
+<!-- Yes: 40.8px tall, passes on its own size, same box active or not -->
 <a
-  class="label block border-4 border-transparent px-4 py-2 text-muted"
+  class="label block border-4 border-transparent px-4 py-2 text-text"
   href="/about"
   >About</a
 >
 
-<!-- No: 15.6px tall, passing only while a neighbour stays far enough away -->
-<a class="label block text-muted hover:text-cyan" href="/about">About</a>
+<!-- No: 16.8px tall, passing only while a neighbour stays far enough away -->
+<a class="label block text-text hover:text-cyan" href="/about">About</a>
 ```
 
 SC 2.5.8 does offer a spacing exception, where an undersized target passes if a
@@ -799,7 +818,7 @@ row does not otherwise fit between 768px and about 830px: it needed 730px
 inside a 720px column, and the wordmark touched the first link while the call
 to action wrapped onto two lines. `tests/header-fit.spec.ts` measures that
 band. Check the link's own box, not its neighbours: none of this moves the
-39.6px that satisfies 2.5.8, which is `py-2` and `border-4` and is deliberately
+40.8px that satisfies 2.5.8, which is `py-2` and `border-4` and is deliberately
 independent of every horizontal number here.
 
 ### The sticky header
@@ -837,8 +856,8 @@ engine that matters for text inputs, which runs in CI only.
 
 - **Every** interactive element has a visible focus indicator. Buttons, links,
   form controls, the menu trigger, cards that are links, all of them.
-- The indicator must reach **3:1 against adjacent colors** (SC 1.4.11) on all
-  three surfaces.
+- The indicator must reach **3:1 against adjacent colors** (SC 1.4.11) on both
+  surfaces.
 - **Never remove an outline without replacing it.** `outline: none` on its own
   is a bug.
 - **The hard offset shadow aesthetic is not a focus indicator.** An offset
@@ -847,11 +866,22 @@ engine that matters for text inputs, which runs in CI only.
   outline with an offset:
 
 ```css
+:root {
+  --focus-width: 4px;
+  --focus-gap: 4px;
+  --lift-control: 4px;
+  --lift-object: 8px;
+}
+
 :focus-visible {
-  outline: 3px solid var(--color-gold);
-  outline-offset: 3px;
+  outline: var(--focus-width) solid var(--color-cyan);
+  outline-offset: calc(var(--focus-gap) + var(--lift, 0px));
 }
 ```
+
+Cyan measures **11.20** on `#131313`, **10.49** on `#1A1A1A` and **8.21** on a
+cast-block joint. It is spent on focus and hover and nothing else, so a ring
+never looks like a gold control or a gold link.
 
 Use `:focus-visible`, not `:focus`, so a mouse click does not leave a ring
 behind. Never rely on the browser default alone against these dark surfaces.
@@ -859,22 +889,30 @@ behind. Never rely on the browser default alone against these dark surfaces.
 **The one exception is native media controls.** A `<video controls>` holds its
 buttons in a user-agent shadow tree; while one has focus the host matches
 neither `:focus-visible` nor, in one engine, `:focus`. `global.css` rings
-`:is(video, audio)[controls]:is(:focus, :focus-within)` instead, and
-`tests/focus.spec.ts` steps through the controls to check it.
+`:is(video, audio)[controls]:is(:focus, :focus-within)` instead, 4px cyan at a
+4px offset, and `tests/focus.spec.ts` steps through the controls to check it.
 
-### The 3px offset is a mitigation, and it has an assumption in it
+### The ring clears the shadow: `lift-control` and `lift-object`
 
-The site-wide ring is `gold` with a 3px offset, and the offset is not spacing.
-Gold on the gold `.btn-primary` fill measures **1.00**, so a ring flush against
-that button would be invisible. The offset works by putting the _page_
-background on both sides of the ring, and 3:1 is then measured against that
-rather than against the element.
+A cyan ring crossing the pink shadow measures **2.29**, under the 3:1 of SC
+1.4.11. So **anything focusable that casts a hard shadow also sets the lift
+for that shadow**: `lift-control` beside `shadow-hard-pink-4`, `lift-object`
+beside an 8px shadow, gold or pink. Each sets `--lift`, which the offset adds to the
+4px gap, so the ring lands on the ground past the shadow rather than across
+it. `.btn-primary`, `.btn-secondary`, `.btn-gold-primary`, `.nav-cta` and the
+current chip carry it in their class; the current nav item, the logo link, the
+contact cards and the footer stickers set it where they draw the shadow. A new
+shadow on a focusable element without its lift is a bug.
+
+### The offset is a mitigation, and it has an assumption in it
+
+The offset is not spacing. It puts the _page_ background on both sides of the
+ring, and 3:1 is then measured against that rather than against the element.
 
 **That only holds while the ring colour differs from the surface behind the
 element.** It is an assumption, not a guarantee, and it breaks the moment a
-surface matches an accent — which is exactly what the gold ground does. On
-`.surface-gold` the offset gap is gold too, so the mitigation buys nothing and
-the ring has to be repainted (`gold-text`, 11.32).
+surface matches the ring. On `.surface-gold` the offset gap is gold, cyan on
+gold is 1.01, and the ring has to be repainted (`gold-text`, 11.32).
 
 So, as a standing rule:
 
@@ -899,7 +937,7 @@ this is not a general pattern to copy.**
 
 The check above found it, and finding it was not the same as fixing it. The
 ring on that button was a single `gold-text` `#131313` ring, 1.00:1 against the
-button's own `#131313` fill, made visible only by the 3px offset gap, which is
+button's own `#131313` fill, made visible only by the offset gap, which is
 gold, at 11.32. So the entire indicator rested on one property staying
 non-zero, on the one control where getting it wrong hides the indicator
 completely rather than merely weakening it. Asserting the offset guards that
@@ -915,7 +953,7 @@ against.**
 
 ```css
 .surface-gold .btn-gold-primary:focus-visible {
-  box-shadow: var(--inset-shadow-gold-btn-ring), var(--shadow-hard-pink-8);
+  box-shadow: var(--inset-shadow-gold-btn-ring), var(--shadow-hard-pink-4);
 }
 ```
 
@@ -923,7 +961,7 @@ Three things that are easy to get wrong here:
 
 - **It folds into `box-shadow`, it does not replace it.** `box-shadow` is one
   property, so a `:focus-visible` rule naming only the ring deletes
-  `8px 8px 0` pink for as long as the button has focus: the resting decoration
+  `4px 4px 0` pink for as long as the button has focus: the resting decoration
   vanishes at exactly the moment someone is looking at the control. Both
   layers are named, and the pink one is the same token the resting rule uses,
   so they cannot drift.
@@ -967,7 +1005,7 @@ machine can see.
   colour between them. The wall is what ends the hero. **Never add a line,
   fill, card or separator strip between the hero and the first section**;
   each was tried and rejected, a blue rule last. A photo passes `image` and
-  stands on the wall with its border and gold shadow; Contact passes
+  stands on the wall with its border and 8px gold shadow; Contact passes
   `roundel`, which sits on a joint crossing from `lg`. Career uses PageHero
   until its own recruiter-facing opening is chosen.
 - **Sections.** Everything after the hero is a `Section`: a band with
@@ -980,28 +1018,51 @@ machine can see.
   a panel whose heading sits beside its picture rather than above it (Lepus
   Ridet, Positivity advocate on `/about`); the slot renders the `h2` with the
   id `<id>-heading`.
-- **A long page ends** on `CloseRow`: a card with the post to continue with and
-  the one action that leads on.
-- **Colour has a job.** Gold is structure: the page title, every card's
-  default shadow, card labels. Pink is emphasis, on at most one card per
-  section (the current role, the cats, the award). Cyan is the round mark's
-  shadow. On the blog, colour means category, as before.
-- **One card.** `.card` with an 8px hard shadow, always, and `.card-title` for
-  its heading. A state such as "current" is a `.chip` with words in it, never a
-  border colour alone (SC 1.4.1).
+- **A page that closes on links closes on `CloseRow`**: a card with one place
+  to read next (labelled "Continue reading" for a post, "Next" for a page) and
+  the one action that leads on. `/`, `/about`, `/career` and `/contact/sent`
+  end this way; `/404` and `/accessibility` do not, because their buttons are
+  the page's own content.
+- **Colour has a job.** Gold is things that stand on the page: every card,
+  panel and hero photo casts an 8px gold shadow, and gold is also the page
+  title, card labels and the primary fill. Pink is things you press: buttons,
+  tags and the call to action cast a 4px pink shadow; the bunny marks (the
+  logo tile, its copies, the roundel) keep the tile's pink too. Cyan is where
+  you are: focus, hover, and a 4px cyan shadow under the unchanged blue border
+  of the current nav item, tag and call to action. On the blog, colour means
+  category on the label and the glyph tile only.
+- **One card.** `.card`, which carries its 8px gold shadow itself, and
+  `.card-title` for its heading. Section has no `shadow` prop and no card
+  picks a shadow colour. A state such as "current" is a `.badge` with words in
+  it, never a border or shadow colour alone (SC 1.4.1).
+- **Chip or badge.** A `.chip` is always a link: a tag, a jump link, a filter.
+  A fact that is not a link, such as the current role, a skill or "Episode
+  404", is a `.badge`: flat `bg-text`, a background-coloured label (14.42), no
+  border and no shadow, so it does not look clickable.
+- **Tilt.** Every tilted mark is at 3deg: the homepage stickers, the glyph
+  tiles, the roundel, the logo tile and its copies, the footer stickers. Text
+  is never rotated.
 - **Photos** take a 4px `border` frame and no shadow or tilt; only cards stand
-  forward. A PageHero photo is the exception: it casts the gold shadow,
+  forward. A PageHero photo is the exception: it casts the 8px gold shadow,
   because it stands on the wall rather than on the page.
   Inside a panel they take no frame of their own: `PhotoTile` sets
   each on a quiet `bg-background` tile, links it to its full-size file, and
   `PhotoViewer` opens that link in a native `<dialog>`. A group too long for a
   row is one `.photo-strip` that scrolls sideways, each photo uncropped in
   its own shape and never wider than the strip.
-- **Spacing** comes from `--spacing-section`, `-head`, `-grid`, `-actions` and
-  `-inline`. Each is fluid from 390px to 1200px, because the desktop values
+- **Spacing** comes from `--spacing-section`, `-head`, `-grid` and `-inline`.
+  `-head` is both heading to content and content to the actions under it
+  (`mt-head`). Each is fluid from 390px to 1200px, because the desktop values
   left a phone with screens of empty ground between one-column sections.
-- **Links**: a link in a sentence uses the base underline; an action is
-  `.btn-primary` or `.btn-secondary`; tags, skills and jump links are `.chip`.
+- **Links**: a link in a sentence uses the base underline, 2px, thickening to
+  4px in cyan on hover; a standalone link that carries a class and is not a
+  box takes `.link` for the same underline; an action is `.btn-primary` or
+  `.btn-secondary`; tags, jump links and filters are `.chip`.
+- **Button states.** `.btn-primary`, `.btn-secondary` and `.nav-cta` fill with
+  cyan under a background-coloured label on hover (11.20), and move 4px into
+  their shadow when pressed, dropping it, with no move under reduced motion.
+  Unavailable is `aria-disabled="true"`, never `disabled`: a dashed border,
+  `bg-background`, a `subtle` label (8.62) and no shadow.
 - **Reading pages** (Privacy, Accessibility) are a PageHero with
   `measure="reading"`, whose text sits in a centred `max-w-3xl` while the wall
   stays full width, then one `.prose` column of the same width, so the title
@@ -1049,11 +1110,15 @@ Alt text is decided by what the image does **in its position**, not by which
 file it is. The same badge is informative in one place and decorative in
 another.
 
-| Image                                   | Alt                     |
-| --------------------------------------- | ----------------------- |
-| Header bunny mark, inside the home link | `Lepus Ridet mark`      |
-| Badge standing alone as the only name   | `Sinduri — Lepus Ridet` |
-| Large decorative watermark badges       | `""`                    |
+| Image                                   | Alt                                                                       |
+| --------------------------------------- | ------------------------------------------------------------------------- |
+| Header bunny mark, inside the home link | `""`, the wordmark names the link                                         |
+| Badge standing alone as the only name   | `Sinduri — Lepus Ridet`                                                   |
+| Large decorative watermark badges       | `""`                                                                      |
+| Share image, `og:image:alt`             | `The Sinduri, Lepus Ridet badge: a line drawing of a hare inside a ring.` |
+
+Describe an image by what it shows, not by its type: a screen reader already
+announces an image, so "logo" or "group photo" in the alt text adds nothing.
 
 The footer carries no image. "Lepus Ridet" there is real text, a `<div lang="la">`
 rather than a heading or a paragraph, and the hare in its tuft is an `aria-hidden` inline SVG.
@@ -1066,29 +1131,28 @@ rather than a heading or a paragraph, and the hare in its tuft is an `aria-hidde
 Some changes here are only correct when a second, non-obvious edit lands in the
 **same** commit. Each of these has already failed once, or would fail silently.
 
-### A contact form needs the CSP widened in the same change
+### A form that posts anywhere new needs the CSP widened in the same change
 
-`public/_headers` sets `form-action 'none'`. That is a claim about today: there
-are no forms on this site, so the safest possible value is free.
+`public/_headers` sets `form-action 'self'`, because the one form on the site,
+the contact form, posts same-origin to `/contact/send/`. It was `'none'` until
+that form landed, and `tests/headers.spec.ts` now asserts `'self'`.
 
-**The moment a `<form>` with a real submission target is added — the Contact
-page is the one that will want it — that directive has to be widened in the
-same commit.** Otherwise the browser blocks the submission outright. The
+**If a form ever posts to another origin, that directive has to be widened in
+the same commit.** Otherwise the browser blocks the submission outright. The
 failure is bad in a specific way:
 
 - **It is silent.** Nothing appears on the page. The form looks like it
   submitted, or looks like it did nothing. Only the console carries the
   refusal, and only if someone has it open.
-- **It survives the tests.** `tests/headers.spec.ts` asserts there is no
-  `'unsafe-inline'` and no hash drift; it does not know what `form-action`
-  should permit, because that depends on where the form posts.
+- **It survives the tests.** `tests/headers.spec.ts` asserts `'self'`; it
+  cannot know about an origin nobody has told it a form posts to.
 - **It is worst for the people the form exists for.** `ACCESSIBILITY.md`
-  section 8 asks people to report barriers, today by GitHub issue or by email.
-  A contact form would become a third route, and a submission that fails
-  without saying so turns the barrier-reporting path into a barrier.
+  section 8 asks people to report barriers, and the contact form is one of
+  the routes; a submission that fails without saying so turns the
+  barrier-reporting path into a barrier.
 
-Widen it to the exact origin the form posts to, never to `*`. If the form posts
-same-origin, `form-action 'self'` is the value. Add an assertion to
+Widen it to the exact origin the form posts to, never to `*`. Update the
+assertion in
 `tests/headers.spec.ts` for whatever it becomes, and update the CSP section in
 `ARCHITECTURE.md` and its header table in the same commit.
 
@@ -1129,29 +1193,26 @@ Everything is `0` unless it is one of two named exceptions. The base layer sets
 `border-radius: 0` on every element, so any radius has to be opted into.
 
 **`rounded-nav` (14px) is the softened-box exception**, and it applies to
-the logo tile and the one control that shares its shape:
+the logo tile and its copies only:
 
-1. the nav CTA button, via `.nav-cta` in global.css. It renders in
-   `Header.astro` and `MobileMenu.vue`, and the radius is declared once for
-   both rather than in each of them
-2. the logo tile in `Header.astro`
-3. the bunny tile on `404.astro`, in its starfield panel. It is the logo tile drawn a second
+1. the logo tile in `Header.astro`
+2. the bunny tile on `404.astro`, in its starfield panel. It is the logo tile drawn a second
    time, not a new element: the same mark on the same gold tile, with the same
    `border-4` and `rotate-3`, at 96px where the header draws 48px, and with its
    pink hard shadow scaled to match (`shadow-hard-pink-12` against `-8`). The
    exception belongs to the logo tile as an object, so a copy of it takes the
    tile's radius the way it takes its colour, border and tilt. A tile that is
    not a copy of the logo tile does not qualify, however much it looks like one
-4. the bunny tile in the Lepus Ridet panel on `/about`, the same copy again at
+3. the bunny tile in the Lepus Ridet panel on `/about`, the same copy again at
    112px from `lg` and 80px below it, as the name card's mark
 
 **`rounded-full` is the circle exception.** It applies to the bunny roundel
 (`Roundel.astro`, on Contact's PageHero and in the homepage About teaser), the
-bolts in PageHero's cast blocks, and the Star Trek thumbnail on `/about`. There is no pill: tags and labels are the square `.chip`.
+bolts in PageHero's cast blocks, and the Star Trek thumbnail on `/about`. There is no pill: tags are the square `.chip` and facts the square `.badge`.
 
 The two are not degrees of the same thing and the second is not a loophole in
 the first. `rounded-nav` softens a rectangle, which is the move this design
-language is built to avoid, so it is capped at the CTA and the logo tile, drawn
+language is built to avoid, so it is capped at the logo tile, drawn
 in the places listed, and stays there.
 `rounded-full` draws a circle, which is a shape in its own right:
 there is no rectangle underneath it to have gone soft. The comps write

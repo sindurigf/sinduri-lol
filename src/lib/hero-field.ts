@@ -342,7 +342,7 @@ const settle = (
  * ---------------------------------------------------------------- */
 
 const budTone = (palette: HeroPalette, tone: number): string => {
-  if (tone > 0.78) return palette.muted;
+  if (tone > 0.78) return palette.bud;
   if (tone > 0.5) return palette.subtle;
   return palette.border;
 };

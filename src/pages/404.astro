@@ -42,9 +42,9 @@ const MARK_HEIGHT = 48;
 >
   <div class="mx-auto grid max-w-page gap-16 py-28 lg:grid-cols-2 lg:items-center">
     <div class="min-w-0">
-      <p class="chip text-gold">Episode 404</p>
+      <p class="badge">Episode 404</p>
 
-      <p class="mt-10 text-h3 font-normal text-cyan text-pretty">
+      <p class="mt-10 text-h3 font-normal text-text text-pretty">
         A long time ago, on a website not so far, far away&hellip;
       </p>
 
@@ -54,11 +54,11 @@ const MARK_HEIGHT = 48;
         title still reads "Page not found" for anyone who only hears that. Set
         at the h2 size because it is a sentence: at h1 it ran to six lines.
       */}
-      <h1 class="mt-6 -rotate-1 text-h2 text-gold">
+      <h1 class="mt-6 text-h2 text-gold">
         These are not the droids you are looking for.
       </h1>
 
-      <p class="mt-10 max-w-2xl text-body text-muted text-pretty">
+      <p class="mt-10 max-w-2xl text-body text-text text-pretty">
         This page does not exist. It may have moved, or the address has a typo.
         Nothing is broken on your end, so move along.
       </p>
@@ -83,9 +83,9 @@ const MARK_HEIGHT = 48;
     */}
     <div
       aria-hidden="true"
-      class="starfield flex min-h-80 min-w-0 items-center justify-center border-8 border-border shadow-hard-cyan-8"
+      class="starfield flex min-h-80 min-w-0 items-center justify-center border-8 border-border shadow-hard-gold-8"
     >
-      <span class="flex h-24 w-24 rotate-3 items-center justify-center rounded-nav border-4 border-border bg-gold shadow-hard-pink-12">
+      <span class="tilt-smooth flex h-24 w-24 rotate-3 items-center justify-center rounded-nav border-4 border-border bg-gold shadow-hard-pink-12">
         {/* loading="eager": in view on arrival at every width. */}
         <Image
           src={bunnyDark}

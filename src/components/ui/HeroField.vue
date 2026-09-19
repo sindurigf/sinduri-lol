@@ -112,7 +112,7 @@ const readPalette = (): HeroPalette | null => {
     border: read('--color-border'),
     text: read('--color-text'),
     subtle: read('--color-subtle'),
-    muted: read('--color-muted'),
+    bud: read('--color-bud'),
     background: read('--color-background'),
   };
   /*

@@ -251,6 +251,38 @@ test.describe('the contact endpoint', () => {
       'a failing control should carry aria-invalid, so the failure is exposed ' +
         'to a screen reader rather than only painted on the border.',
     ).toContain('aria-invalid="true"');
+
+    /*
+     * Each summary entry is a link to its control, and one pointed at an id
+     * nothing carried: the message error linked to #contact-body while the
+     * textarea is #contact-message, so following it went nowhere. The email
+     * and the message both fail in this submission. Verified to
+     * fail on that markup before the fix, 2026-09-19.
+     */
+    const summaryTargets = [...html.matchAll(/href="#(contact-[a-z]+)"/g)].map(
+      ([, id]) => id,
+    );
+    expect(
+      summaryTargets.length,
+      'the error summary should link to each failing field.',
+    ).toBeGreaterThan(0);
+    for (const id of summaryTargets) {
+      expect(
+        html,
+        `the error summary links to #${id}, and nothing on the page has that id.`,
+      ).toContain(`id="${id}"`);
+    }
+
+    /*
+     * `required` alone is invisible to a sighted reader (SC 3.3.2), so each
+     * label says it in words. Verified to fail before the labels carried it.
+     */
+    expect(
+      html.match(
+        /<label[^>]*for="contact-(?:name|email|message)"[^>]*>[^<]*<span[^>]*>\(required\)<\/span>/g,
+      )?.length,
+      'every required field should say "(required)" inside its label.',
+    ).toBe(3);
   });
 
   test('a filled honeypot is answered exactly like a success', async ({

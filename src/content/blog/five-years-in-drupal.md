@@ -45,7 +45,7 @@ At drunomics I worked on mossbo, our cloud CMS, and the projects that tie into i
 
 In 2023 Klausi asked me to volunteer at Drupal Dev Days Vienna. I enjoyed working with the community so much that I started saying yes to every organising committee that asked for help. Soon I was helping organise Drupal Mountain Camp, Drupal Dev Days and DrupalCamp Berlin, all in the same year.
 
-![The Drupal Mountain Camp group photo: a crowd of attendees standing in the snow, with a mountain behind them.](../../assets/blog/five-years-in-drupal/drupal-mountain-camp.jpg)
+![Drupal Mountain Camp attendees gathered together in the snow, with a mountain behind them.](../../assets/blog/five-years-in-drupal/drupal-mountain-camp.jpg)
 
 The Swiss community adopted me and taught me so much about events. The Austrian community welcomed me so warmly that it feels like home. I was elected to the Drupal Austria board as marketing manager, and in 2026 I am deputy marketing manager. My work continues through my commitment to Drupal Switzerland and Drupal Austria.
 
@@ -55,7 +55,7 @@ Why do I keep showing up? It comes down to two things: my passion for open sourc
 
 I was reminded of this at a workshop organised by Mikko Hämäläinen, CEO of Druid, at Drupal Mountain Camp, where we discussed everyone's motivations for contributing. Despite our different backgrounds and journeys, we all shared the same core goal: contribute to something meaningful while growing personally in the process. That is what makes these events special. They are not just about networking. They are about channelling our collective passion for Drupal into something bigger and better.
 
-![The DrupalCamp Berlin group photo: attendees gathered in a courtyard in front of a white tent.](../../assets/blog/five-years-in-drupal/drupalcamp-berlin.jpg)
+![DrupalCamp Berlin attendees gathered in a courtyard in front of a white tent.](../../assets/blog/five-years-in-drupal/drupalcamp-berlin.jpg)
 
 ## The Women in Drupal Award
 

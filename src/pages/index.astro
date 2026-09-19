@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BlogCard from '../components/BlogCard.astro';
+import CloseRow from '../components/CloseRow.astro';
 import Roundel from '../components/Roundel.astro';
 import Section from '../components/Section.astro';
 import HeroField from '../components/ui/HeroField.vue';
@@ -86,12 +87,12 @@ const STATS = [
   {
     value: '3 cats',
     label: '1 queen, 1 conspirator, 1 baby',
-    frame: 'border-gold text-gold',
+    frame: 'text-gold',
   },
   {
     value: '1 ring',
     label: 'Rules my calendar every year',
-    frame: 'border-gold text-gold',
+    frame: 'text-gold',
   },
 ] as const;
 ---
@@ -198,10 +199,10 @@ const STATS = [
         block without being told to. See tests/wave-alerts.spec.ts.
       */}
       <div class="hero-marks" aria-hidden="true">
-        <span class="hero-sticker -rotate-6 border-border bg-cyan text-darkcyan shadow-hard-pink-8">
+        <span class="hero-sticker tilt-smooth -rotate-3 border-border bg-gold text-background shadow-hard-pink-8">
           Lepus
         </span>
-        <span class="hero-sticker rotate-6 border-pink bg-surface text-pink-text shadow-hard-cyan-8">
+        <span class="hero-sticker tilt-smooth rotate-3 border-border bg-surface text-pink-text shadow-hard-pink-8">
           Ridet
         </span>
       </div>
@@ -249,27 +250,27 @@ const STATS = [
         <Roundel class="absolute -bottom-8 right-0 sm:-right-3" />
       </div>
 
-      <div class="card shadow-hard-pink-8 lg:mt-16">
+      <div class="card lg:mt-16">
         <ul class="grid gap-6 sm:grid-cols-2">
           {STATS.map((stat) => (
             <li
               class:list={[
-                'flex min-w-0 flex-col items-center border-8 bg-background p-6 text-center',
+                'flex min-w-0 flex-col items-center border-8 border-border bg-surface p-card-tight text-center',
                 stat.frame,
               ]}
             >
-              <span class="text-h3 font-extrabold">{stat.value}</span>
+              <span class="text-h3 font-black">{stat.value}</span>
               <span class="label mt-2 text-text">{stat.label}</span>
             </li>
           ))}
         </ul>
 
-        <p class="mt-10 text-body text-muted text-pretty">
+        <p class="mt-10 text-body text-text text-pretty">
           I discovered Drupal in 2021, and the community has held my heart ever
           since. I help organise events and serve on the Drupal Austria board.
         </p>
 
-        <p class="mt-actions">
+        <p class="mt-head">
           <a href="/about/" class="btn-secondary">
             Learn more about me
           </a>
@@ -287,7 +288,6 @@ const STATS = [
         <li
           class:list={[
             'card flex flex-col',
-            categoryAccent(card.category).shadow,
             index === 0 && leadSpansSm && 'sm:col-span-2',
             index === 0 && leadSpansLg && 'lg:col-span-2',
           ]}
@@ -295,7 +295,7 @@ const STATS = [
           <span
             aria-hidden="true"
             class:list={[
-              'flex size-16 -rotate-6 items-center justify-center border-4 border-border text-section-number font-black leading-none',
+              'tilt-smooth flex size-16 -rotate-3 items-center justify-center border-4 border-border text-section-number font-black leading-none',
               categoryAccent(card.category).tile,
             ]}
           >
@@ -303,19 +303,19 @@ const STATS = [
           </span>
 
           <h3 class="card-title mt-8">
-            <a href={`/blog/${card.category}/`} class="card-link text-text">
+            <a href={`/blog/${card.category}/`} class="card-link">
               {categoryLabel(card.category)}
             </a>
           </h3>
 
-          <p class="mt-5 text-body text-muted text-pretty">
+          <p class="mt-5 text-body text-text text-pretty">
             {CATEGORY_TEASERS[card.category]}
           </p>
         </li>
       ))}
     </ul>
 
-    <p class="mt-actions">
+    <p class="mt-head">
       <a href="/blog/" class="btn-secondary">
         View all posts
       </a>
@@ -344,13 +344,12 @@ const STATS = [
       ))}
     </ul>
 
-    <p class="actions mt-actions">
-      <a href="/career/" class="btn-primary">
-        Career and CV
-      </a>
-      <a href="/contact/" class="btn-secondary">
-        Get in touch
-      </a>
-    </p>
+    <CloseRow
+      eyebrow="Next"
+      readHref="/career/"
+      readLabel="Career and CV"
+      actionHref="/contact/"
+      actionLabel="Get in touch"
+    />
   </Section>
 </BaseLayout>

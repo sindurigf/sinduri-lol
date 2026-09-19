@@ -368,16 +368,25 @@ test.describe('the category filter', () => {
  * failed expecting rgb(255, 0, 122) and receiving rgb(255, 192, 0).
  */
 const GOLD = { text: 'rgb(255, 192, 0)', fill: 'rgb(255, 192, 0)' };
-const CYAN = { text: 'rgb(0, 220, 253)', fill: 'rgb(0, 220, 253)' };
+/* Not cyan, which is kept for focus and hover: a cyan label read as a link. */
+const INK = { text: 'rgb(229, 226, 225)', fill: 'rgb(229, 226, 225)' };
 const PINK = { text: 'rgb(255, 121, 182)', fill: 'rgb(255, 0, 122)' };
 
 const CATEGORY_COLOURS: Record<string, typeof GOLD> = {
   'open-source': GOLD,
   'professional-journey': GOLD,
-  skincare: CYAN,
-  travel: CYAN,
+  skincare: INK,
+  travel: INK,
   'personal-thoughts': PINK,
 };
+
+/*
+ * Every card casts the same gold shadow whatever its category: gold is the
+ * colour of things that stand on the page, and the category is carried by the
+ * glyph tile and the label. Proven able to fail, 2026-09-19, chromium: the
+ * per-category shadows failed here before .card took the one shadow.
+ */
+const CARD_SHADOW = 'rgb(255, 192, 0)';
 
 const shadowColour = (boxShadow: string): string =>
   boxShadow.match(/rgb\([^)]*\)/)?.[0] ?? boxShadow;
@@ -416,7 +425,7 @@ test.describe('category colours', () => {
       const shadow = await tile.evaluate(
         (el) => getComputedStyle(el).boxShadow,
       );
-      expect(shadowColour(shadow), `${category} tile shadow`).toBe(colour.fill);
+      expect(shadowColour(shadow), `${category} tile shadow`).toBe(CARD_SHADOW);
 
       await expect(
         tile.locator('span[aria-hidden="true"]').first(),
@@ -449,7 +458,7 @@ test.describe('category colours', () => {
       const shadow = await card.evaluate(
         (el) => getComputedStyle(el).boxShadow,
       );
-      expect(shadowColour(shadow), 'card shadow').toBe(colour!.fill);
+      expect(shadowColour(shadow), 'card shadow').toBe(CARD_SHADOW);
       await expect(card.locator('p.label').first(), 'card label').toHaveCSS(
         'color',
         colour!.text,
