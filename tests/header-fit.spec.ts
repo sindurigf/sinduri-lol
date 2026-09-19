@@ -79,7 +79,7 @@ const measureRow = async (page: Page): Promise<RowMetrics> =>
     /*
      * The header's own call to action, not the mobile dialog's copy. Both
      * carry `.nav-cta` and both are in the DOM at every width, because the
-     * island server-renders its whole panel.
+     * mobile menu's whole panel is in the markup.
      */
     const cta = [
       ...document.querySelectorAll(`header a[href="${ctaHref}"]`),

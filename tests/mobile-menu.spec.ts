@@ -71,7 +71,8 @@ test.describe('mobile menu at 320px', () => {
  * a link scrolled flush to the edge lost its ring the same way (SC 2.4.7). The
  * focus walk in focus.spec.ts runs with the menu closed and cannot see this.
  *
- * Verified 2026-09-12, removing one rule at a time from MobileMenu.vue:
+ * Verified 2026-09-12, removing one rule at a time from what is now
+ * `.mobile-menu-dialog` in global.css and src/scripts/mobile-menu.ts:
  * without `scroll-padding-block` both engines fail on "Career"; without the
  * inset ring Chromium fails on `mobile-menu-panel`, which is a tab stop there
  * and not in Firefox; without the `focusin` handler Firefox fails on "Career",

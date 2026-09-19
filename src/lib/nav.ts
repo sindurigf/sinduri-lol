@@ -1,14 +1,10 @@
 /*
  * The header's link set, and the test for which of them is the current page.
  *
- * One module because the site has three navigations, in Header.astro, in its
- * no-JavaScript fallback and in MobileMenu.vue. Written out separately they
- * disagreed about what "current" means, and no test could see it, because
- * each nav was only ever asked about itself.
- *
- * The island imports these rather than receiving them as props: Astro
- * serialises an island's props into the document, so props would write the
- * whole link set into the HTML of every page as JSON as well as as markup.
+ * One module because the site has three navigations in Header.astro: the
+ * desktop row, the mobile dialog and the no-JavaScript fallback. Written out
+ * separately they disagreed about what "current" means, and no test could see
+ * it, because each nav was only ever asked about itself.
  */
 
 export interface NavLink {

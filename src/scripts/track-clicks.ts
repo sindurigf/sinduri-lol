@@ -64,10 +64,16 @@ const isDownload = (url: URL): boolean =>
 const describeLink = (
   link: HTMLAnchorElement,
   origin: string,
-): { name: ClickEventName; target?: string } => {
+): { name: ClickEventName; label?: string; target?: string } => {
   const url = new URL(link.href);
 
-  if (url.protocol === 'mailto:') return { name: CLICK_EVENTS.email };
+  /*
+   * A fixed label, not the link's text: that text is often the address itself,
+   * and /privacy says an email click never sends it.
+   */
+  if (url.protocol === 'mailto:') {
+    return { name: CLICK_EVENTS.email, label: CLICK_EVENTS.email };
+  }
 
   /*
    * The query string is dropped from outbound URLs, where it can carry another
@@ -104,10 +110,14 @@ const describeClick = (
   };
 
   if (element instanceof HTMLAnchorElement) {
-    const { name, target: destination } = describeLink(element, origin);
+    const { name, label, target: destination } = describeLink(element, origin);
+    const linkData = label === undefined ? data : { ...data, label };
     return {
       name,
-      data: destination === undefined ? data : { ...data, target: destination },
+      data:
+        destination === undefined
+          ? linkData
+          : { ...linkData, target: destination },
     };
   }
 
