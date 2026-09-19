@@ -42,9 +42,10 @@ interface Props {
   imageAlt?: string;
   /*
    * `reading` for a page that is one column of text: a post, Privacy,
-   * Accessibility. The plate narrows to that column's `max-w-3xl` and sits
-   * centred over it, so the title and the first line of text start on the
-   * same edge. A photo layout is always `page`.
+   * Accessibility. The plate narrows and sits centred over that column: to
+   * its own `max-w-3xl` for Privacy and Accessibility, and to `max-w-5xl` for
+   * a post, whose sentence-length title read as squeezed at the text's width
+   * on a desktop. A photo layout is always `page`.
    */
   measure?: 'page' | 'reading';
 }
@@ -111,7 +112,8 @@ const IMAGE_SIZES =
   >
     <div
       class:list={[
-        reading && 'mx-auto max-w-3xl',
+        reading &&
+          (titleSize === 'post' ? 'mx-auto max-w-5xl' : 'mx-auto max-w-3xl'),
         image && 'relative z-10 lg:col-span-8 lg:col-start-1 lg:row-start-1',
       ]}
     >
