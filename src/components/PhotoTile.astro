@@ -1,0 +1,121 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image, getImage } from 'astro:assets';
+import { DENSITIES, WIDTHS } from '../lib/image-densities';
+
+/*
+ * One photo in a photo panel: the photo on a quiet tile, no border of its
+ * own, and an optional caption in the default slot. The panel around it
+ * carries the frame and the shadow, so the photos stay subtle.
+ *
+ * The photo is a link to its full-size file, so it opens without JavaScript.
+ * With it, src/scripts/photo-viewer.ts opens the link in the photo viewer
+ * instead, and moves through every link that shares its `group`.
+ *
+ * `fixed` draws the photo as a 256px square, for rows and strips of tiles
+ * that keep one size. `fluid` fills the tile, for a grid that grows with the
+ * page, and takes `sizes` for that.
+ */
+interface Props {
+  image: ImageMetadata;
+  alt: string;
+  group: string;
+  size?: 'fixed' | 'fluid';
+  /** `fluid` only: the width the photo is drawn at, for picking a file. */
+  sizes?: string;
+  aspect?: 'square' | 'video';
+  class?: string;
+}
+
+const {
+  image,
+  alt,
+  group,
+  size = 'fluid',
+  sizes,
+  aspect = 'square',
+  class: className = '',
+} = Astro.props;
+
+/** `size-64`, the drawn side of a `fixed` photo; its tile is `w-69`, with the padding. */
+const FIXED_SIDE = 256;
+
+/*
+ * The master's size, read from a copy. In a static build, reading any field
+ * of the imported image directly marks its original file as used, and Astro
+ * then ships the untouched .jpg beside the optimised files: thirteen of them,
+ * in a type nothing else serves. `clone` is the copy Astro's own image
+ * proxy provides for this.
+ */
+const master = (image as ImageMetadata & { clone: ImageMetadata }).clone;
+
+/** The largest file the viewer opens, and the no-JavaScript link. */
+const FULL_WIDTH = 1600;
+
+/*
+ * A square box crops a landscape photo at its sides, so the file has to be
+ * as tall as the box, not just as wide, or tests/image-size.spec.ts reads the
+ * short side as stretched.
+ */
+const fixedWidth = Math.ceil(
+  FIXED_SIDE * Math.max(1, master.width / master.height),
+);
+
+/*
+ * A density whose file would be wider than the master is left out: Astro
+ * caps it at the master and labels it with the density anyway, so a 2x screen
+ * would stretch it. Johann's photo is 278px wide, so it gets 1x only.
+ */
+const fixedDensities = DENSITIES.filter(
+  (density) => fixedWidth * density <= master.width,
+);
+
+/* WebP like every other image here: a master's .jpg is a type nothing else serves. */
+const full = await getImage({
+  src: image,
+  ...(master.width > FULL_WIDTH && { width: FULL_WIDTH }),
+  format: 'webp',
+});
+
+const ASPECT = { square: 'aspect-square', video: 'aspect-video' } as const;
+const hasCaption = Astro.slots.has('default');
+---
+
+<figure
+  class:list={[
+    'min-w-0 bg-background p-2.5',
+    size === 'fixed' && 'w-69 max-w-full',
+    className,
+  ]}
+>
+  {/*
+    `relative` keeps the visually hidden text below inside the link: it is
+    absolutely positioned, and in a scrolled strip it otherwise escapes the
+    strip's clipping and widens the page.
+  */}
+  <a href={full.src} class="relative block" data-photo={group}>
+    {size === 'fixed' ? (
+      <Image
+        src={image}
+        alt={alt}
+        width={fixedWidth}
+        densities={fixedDensities.length > 0 ? fixedDensities : [1]}
+        class="block size-64 max-w-full object-cover"
+      />
+    ) : (
+      <Image
+        src={image}
+        alt={alt}
+        widths={WIDTHS}
+        sizes={sizes}
+        class:list={['block h-auto w-full object-cover', ASPECT[aspect]]}
+      />
+    )}
+    <span class="sr-only">, opens full size</span>
+  </a>
+  {hasCaption && (
+    <figcaption class="px-0.5 pt-3 text-body text-muted text-pretty">
+      <slot />
+    </figcaption>
+  )}
+</figure>

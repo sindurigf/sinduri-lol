@@ -1,0 +1,46 @@
+---
+/*
+ * The full-size view for every PhotoTile on the page. One per page, opened by
+ * src/scripts/photo-viewer.ts when a tile's link is followed.
+ *
+ * A native <dialog> with showModal(): the browser traps focus inside it,
+ * Escape closes it, and closing puts focus back on the photo that opened it. Previous and Next move through the photos in the same group, as do the
+ * arrow keys, and the count says where you are. The caption is the photo's
+ * own alt text, so the view says what the photo shows in words as well.
+ *
+ * Without JavaScript nothing here is used: the tile's link opens the file.
+ */
+---
+
+<dialog id="photo-viewer" class="photo-viewer" aria-label="Photo">
+  <div class="photo-viewer-frame">
+    <div class="flex items-center justify-between gap-4">
+      <p class="label text-subtle" data-viewer-count aria-live="polite"></p>
+      <button type="button" class="btn-secondary" data-viewer-close>
+        Close
+      </button>
+    </div>
+
+    {/* The script puts the <img> here on first open; an empty one cannot decode. */}
+    <figure class="photo-viewer-figure" data-viewer-figure></figure>
+
+    <div>
+      <p
+        class="mx-auto max-w-prose text-center text-body text-muted text-pretty"
+        data-viewer-caption
+      ></p>
+      <div class="actions mt-6 justify-center" data-viewer-steps>
+        <button type="button" class="btn-secondary" data-viewer-step="-1">
+          Previous
+        </button>
+        <button type="button" class="btn-secondary" data-viewer-step="1">
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  import '../scripts/photo-viewer';
+</script>
