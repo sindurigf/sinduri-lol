@@ -278,6 +278,9 @@
    */
   --inset-shadow-cta-current: inset 0 0 0 4px var(--color-darkcyan);
 
+  /* The second 4px of a failing field's 8px edge, drawn inside the border. */
+  --inset-shadow-invalid: inset 0 0 0 4px var(--color-pink);
+
   /* Layout */
   /*
    * The content column. The structure is what aligns header, main and footer,
@@ -1926,7 +1929,12 @@
   }
 
   .field-label {
-    @apply block text-label font-black uppercase tracking-label text-gold;
+    @apply block text-label font-black uppercase tracking-label text-text;
+  }
+
+  /* Said in words, since `required` alone is invisible (SC 3.3.2). */
+  .field-required {
+    @apply font-normal normal-case tracking-normal text-subtle;
   }
 
   .field-control {
@@ -1944,16 +1952,24 @@
   }
 
   /*
-   * A failing control is marked three ways, because colour alone fails SC
-   * 1.4.1: the border changes, aria-invalid is set, and the message below is
-   * text. Pink is a non-text use here and clears SC 1.4.11 on surface at 4.59.
+   * A failing control is marked by shape, not only colour: pink against the
+   * resting `border` blue is 1.01:1, so a recoloured 4px edge is no visible
+   * change at all. The inset ring doubles the edge to 8px without moving
+   * anything, aria-invalid carries the state, and the message below is text.
+   * Pink clears SC 1.4.11 on surface at 4.59.
    */
   .field-control[aria-invalid='true'] {
-    @apply border-pink;
+    @apply border-pink inset-shadow-invalid;
   }
 
   .field-error {
     @apply mt-3 text-body text-pink-text;
+  }
+
+  /* The mark is decoration beside the words, so it is given empty alt text. */
+  .field-error::before {
+    content: '\2715\00a0' / '';
+    @apply font-black;
   }
 
   /*
