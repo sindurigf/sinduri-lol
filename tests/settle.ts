@@ -18,33 +18,26 @@ import { expect, type Page, type Response } from '@playwright/test';
  */
 
 /**
- * Waits for every island on the page to hydrate.
+ * Waits for the page's scripts: the header menu wired and every island
+ * hydrated.
+ *
+ * The mobile menu is on every route and marks its wrapper `data-menu-ready`
+ * once src/scripts/mobile-menu.ts has run, so this is the page's own signal
+ * that the bundled script was fetched, allowed by the CSP, and ran.
  *
  * Astro renders `<astro-island ssr>` and removes `ssr` once the component
- * mounts, so this is the page's own signal that the island script was
- * fetched, allowed by the CSP, and ran. The element itself stays, so it can
- * be counted.
- *
- * The first assertion is what makes the second mean anything: `toHaveCount(0)`
- * on `astro-island[ssr]` passes at once on a page with no islands, so without
- * it a route that lost its island, or an Astro that stopped emitting the
- * attribute, would turn every wait into a race.
- *
- * Every route has at least one island: the header's MobileMenu is
- * `client:load` on every route and `/` adds the hero field (checked against
- * dist/, 2026-09-11; Contact's spinning badge, the third island, was removed
- * on 2026-09-19). A page with no islands
- * needs a different wait, not a looser helper; tests/not-found.spec.ts uses a
- * plain `goto` for the host's 404 fallback.
+ * mounts. Only `/` has an island, the hero field, so the second assertion
+ * passes at once elsewhere; the first is what keeps every wait from being a
+ * race. A page without the header needs a different wait, not a looser
+ * helper; tests/not-found.spec.ts uses a plain `goto` for the host's 404
+ * fallback.
  */
 export const waitForHydration = async (page: Page): Promise<void> => {
   await expect(
-    page.locator('astro-island'),
-    'this page renders no islands at all, so the hydration wait below is ' +
-      'waiting for nothing and every navigation using it has quietly become ' +
-      'a race. Either a route stopped rendering the header island, or Astro ' +
-      'stopped emitting <astro-island>.',
-  ).not.toHaveCount(0);
+    page.locator('[data-mobile-menu][data-menu-ready]'),
+    'the header menu never marked itself ready, so its script did not run. ' +
+      'A failed module load or a route without the header looks like this.',
+  ).toHaveCount(1);
 
   await expect(
     page.locator('astro-island[ssr]'),
