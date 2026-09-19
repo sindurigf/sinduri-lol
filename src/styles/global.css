@@ -990,6 +990,59 @@
   }
 
   /*
+   * A blog post: one reading column in the middle of the page, and the post's
+   * contents list in the track to its right from `xl`, where it sticks under
+   * the header while the text scrolls. Below `xl` the side tracks are too
+   * narrow for a list of sentence-length headings, 64px at 1024px, so the list
+   * sits between the opening and the text instead.
+   *
+   * The middle track is `max-w-3xl`, the measure prose is set in everywhere
+   * else, and the two side tracks are equal so the column stays on the page's
+   * centre line whether or not a post has a contents list.
+   */
+  .post-layout {
+    @apply grid gap-y-head;
+
+    & > * {
+      @apply mx-auto w-full max-w-3xl;
+    }
+
+    @media (width >= 80rem) {
+      grid-template-columns:
+        minmax(0, 1fr) min(100%, var(--container-3xl))
+        minmax(0, 1fr);
+      column-gap: var(--spacing-grid);
+
+      & > * {
+        grid-column: 2;
+      }
+
+      & > .post-contents {
+        grid-column: 3;
+        grid-row: 1 / span 3;
+        position: sticky;
+        top: calc(var(--spacing-header) + var(--spacing-head));
+      }
+    }
+  }
+
+  .post-contents {
+    @apply self-start border-4 border-border bg-surface shadow-hard-gold-8;
+
+    @media (width >= 80rem) {
+      /* Twelve headings run past a short window; the list scrolls, not the page. */
+      max-height: calc(
+        100svh - var(--spacing-header) - 2 * var(--spacing-head)
+      );
+      overflow-y: auto;
+    }
+  }
+
+  .post-layout .prose h2 {
+    @apply text-post-h2;
+  }
+
+  /*
    * A card that goes somewhere is clickable anywhere on it, not only on its
    * title. The title stays the one real link, so a screen reader or keyboard
    * user meets one link per card named by its title, and its own focus ring

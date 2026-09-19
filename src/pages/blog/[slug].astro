@@ -5,7 +5,6 @@ import { markdownSourcePath } from '../../lib/markdown-source';
 import type { GetStaticPaths } from 'astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BlogLayout from '../../layouts/BlogLayout.astro';
-import PageHero from '../../components/PageHero.astro';
 import { categoryAccent, tagHref, tagLabel } from '../../lib/blog';
 
 interface Props {
@@ -22,7 +21,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 const { post } = Astro.props as Props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
 
 const {
   title,
@@ -41,6 +40,10 @@ const DATE_FORMAT: Intl.DateTimeFormatOptions = {
   month: 'long',
   day: 'numeric',
 };
+
+/* The contents list names the post's own sections, not their subsections. */
+const CONTENTS_DEPTH = 2;
+const contents = headings.filter((heading) => heading.depth === CONTENTS_DEPTH);
 
 const formattedDate = date.toLocaleDateString(DATE_LOCALE, DATE_FORMAT);
 const machineDate = date.toISOString().slice(0, 10);
@@ -66,29 +69,50 @@ const article = placeholder
   trail={trail}
   markdownSource={placeholder ? undefined : markdownSourcePath(post.id)}
 >
-  <PageHero title={title} titleSize="post" measure="reading">
-    <Breadcrumbs slot="eyebrow" crumbs={trail.crumbs} lastClass={accent.text} />
-
-    <p class="mt-8 max-w-2xl text-body text-muted text-pretty">{teaser}</p>
-
-    <p class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-label text-subtle">
-      <time datetime={machineDate}>{formattedDate}</time>
-      {readingTime ? <span>{readingTime} min read</span> : null}
-    </p>
-  </PageHero>
-
   {/*
-    One centred reading column, the width of the plate above it, so the title
-    and the text start on the same edge.
+    A post opens as an article, not with PageHero: the breadcrumb, the title
+    in the case it is written in and in the text colour, the teaser and the
+    date, then the text. The contents list sits beside the text from `xl`
+    and above it below that; see `.post-layout` in global.css.
   */}
-  <section class="band py-section">
-    <div class="mx-auto max-w-page">
-      <div class="prose mx-auto max-w-3xl">
+  <article class="band py-section">
+    <div class="post-layout mx-auto max-w-page">
+      <header>
+        <Breadcrumbs crumbs={trail.crumbs} lastClass={accent.text} />
+        <h1 class="text-post-title post-title text-text">{title}</h1>
+        <p class="mt-8 text-body text-muted text-pretty">{teaser}</p>
+        <p class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-label text-subtle">
+          <time datetime={machineDate}>{formattedDate}</time>
+          {readingTime ? <span>{readingTime} min read</span> : null}
+        </p>
+      </header>
+
+      {contents.length > 0 ? (
+        <nav aria-labelledby="post-contents" class="post-contents">
+          <h2 id="post-contents" class="label px-card-tight pt-5 text-subtle">
+            In this post
+          </h2>
+          <ol class="mt-3">
+            {contents.map((heading) => (
+              <li class="border-t-4 border-border">
+                <a
+                  href={`#${heading.slug}`}
+                  class="block px-card-tight py-3 text-contents font-bold text-text"
+                >
+                  {heading.text}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      ) : null}
+
+      <div class="prose">
         <Content />
       </div>
 
       {tags.length > 0 ? (
-        <div class="mx-auto mt-section max-w-3xl border-t-4 border-border pt-10">
+        <div class="border-t-4 border-border pt-10">
           <h2 class="label text-subtle">Tags</h2>
           <ul class="mt-6 flex flex-wrap gap-3">
             {tags.map((tag) => (
@@ -102,5 +126,5 @@ const article = placeholder
         </div>
       ) : null}
     </div>
-  </section>
+  </article>
 </BlogLayout>
