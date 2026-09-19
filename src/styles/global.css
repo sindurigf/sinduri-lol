@@ -991,8 +991,11 @@
 
   /*
    * A blog post: one reading column in the middle of the page, and the post's
-   * contents list in the track to its right from `xl`, where it sticks under
-   * the header while the text scrolls. Below `xl` the side tracks are too
+   * contents list at the top of the track to its right from `xl`. Not sticky:
+   * a post with twelve sections gives a list taller than a short window, and
+   * a sticky list that tall hides its last links, while giving it a scrollbar
+   * of its own makes Firefox add it to the tab order as a stop that is not a
+   * link, which tests/focus.spec.ts caught. Below `xl` the side tracks are too
    * narrow for a list of sentence-length headings, 64px at 1024px, so the list
    * sits between the opening and the text instead.
    *
@@ -1020,22 +1023,12 @@
       & > .post-contents {
         grid-column: 3;
         grid-row: 1 / span 3;
-        position: sticky;
-        top: calc(var(--spacing-header) + var(--spacing-head));
       }
     }
   }
 
   .post-contents {
     @apply self-start border-4 border-border bg-surface shadow-hard-gold-8;
-
-    @media (width >= 80rem) {
-      /* Twelve headings run past a short window; the list scrolls, not the page. */
-      max-height: calc(
-        100svh - var(--spacing-header) - 2 * var(--spacing-head)
-      );
-      overflow-y: auto;
-    }
   }
 
   .post-layout .prose h2 {
