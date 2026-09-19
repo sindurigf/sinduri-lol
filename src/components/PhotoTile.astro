@@ -1,0 +1,141 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image, getImage } from 'astro:assets';
+import { WIDTHS } from '../lib/image-densities';
+
+/*
+ * One photo in a photo panel: the photo on a quiet tile, no border of its
+ * own, and an optional caption in the default slot. The panel around it
+ * carries the frame and the shadow, so the photos stay subtle.
+ *
+ * The photo is a link to its full-size file, so it opens without JavaScript.
+ * With it, src/scripts/photo-viewer.ts opens the link in the photo viewer
+ * instead, and moves through every link that shares its `group`.
+ *
+ * `fluid` fills the tile, for a grid that grows with the page, and takes
+ * `sizes` for that. `natural` keeps
+ * the photo's own shape, uncropped, for a `.photo-strip`: 320px tall, and
+ * never wider than the strip, so on a phone it shrinks to fit rather than
+ * spilling out of view.
+ */
+interface Props {
+  image: ImageMetadata;
+  alt: string;
+  group: string;
+  size?: 'fluid' | 'natural';
+  /** `fluid` only: the width the photo is drawn at, for picking a file. */
+  sizes?: string;
+  aspect?: 'square' | 'video';
+  class?: string;
+}
+
+const {
+  image,
+  alt,
+  group,
+  size = 'fluid',
+  sizes,
+  aspect = 'square',
+  class: className = '',
+} = Astro.props;
+
+/*
+ * The master's size, read from a copy. In a static build, reading any field
+ * of the imported image directly marks its original file as used, and Astro
+ * then ships the untouched .jpg beside the optimised files: thirteen of them,
+ * in a type nothing else serves. `clone` is the copy Astro's own image
+ * proxy provides for this.
+ */
+const master = (image as ImageMetadata & { clone: ImageMetadata }).clone;
+
+/** The drawn height of a `natural` photo while the strip is wide enough. */
+const NATURAL_HEIGHT = 320;
+
+/*
+ * A strip's inner width on a phone, where it can be narrower than the photo:
+ * the page gutter, the panel's border and padding, the strip's border and
+ * the tile's padding. tests/image-size.spec.ts fails when it drifts.
+ */
+const STRIP_INSET = '7.25rem';
+
+const naturalWidth = Math.round(
+  NATURAL_HEIGHT * (master.width / master.height),
+);
+const naturalSizes = `min(${naturalWidth}px, calc(100vw - ${STRIP_INSET}))`;
+
+/* Every candidate the master can supply without upscaling, and the drawn width itself. */
+const naturalWidths = [
+  ...new Set([
+    ...WIDTHS.filter((width) => width <= master.width),
+    naturalWidth,
+  ]),
+].sort((a, b) => a - b);
+
+/** The largest file the viewer opens, and the no-JavaScript link. */
+const FULL_WIDTH = 1600;
+
+/* WebP like every other image here: a master's .jpg is a type nothing else serves. */
+const full = await getImage({
+  src: image,
+  ...(master.width > FULL_WIDTH && { width: FULL_WIDTH }),
+  format: 'webp',
+});
+
+const ASPECT = { square: 'aspect-square', video: 'aspect-video' } as const;
+const RATIO = { square: 1, video: 16 / 9 } as const;
+
+/*
+ * A `fluid` photo's files are cut to its box, the largest crop the master
+ * holds. Cropped only by CSS, a 4:3 photo in a 16:9 box ships a third more
+ * height than it shows, which tests/image-size.spec.ts fails as oversized.
+ */
+const cropWidth = Math.min(
+  master.width,
+  Math.floor(master.height * RATIO[aspect]),
+);
+const crop = {
+  width: cropWidth,
+  height: Math.round(cropWidth / RATIO[aspect]),
+};
+const cropWidths = [
+  ...new Set([...WIDTHS.filter((width) => width < crop.width), crop.width]),
+];
+const hasCaption = Astro.slots.has('default');
+---
+
+<figure class:list={['min-w-0 bg-background p-2.5', className]}>
+  {/*
+    `relative` keeps the visually hidden text below inside the link: it is
+    absolutely positioned, and in a scrolled strip it otherwise escapes the
+    strip's clipping and widens the page.
+  */}
+  <a href={full.src} class="relative block" data-photo={group}>
+    {size === 'natural' ? (
+      <Image
+        src={image}
+        alt={alt}
+        width={naturalWidth}
+        widths={naturalWidths}
+        sizes={naturalSizes}
+        class="strip-photo"
+      />
+    ) : (
+      <Image
+        src={image}
+        alt={alt}
+        width={crop.width}
+        height={crop.height}
+        fit="cover"
+        widths={cropWidths}
+        sizes={sizes}
+        class:list={['block h-auto w-full object-cover', ASPECT[aspect]]}
+      />
+    )}
+    <span class="sr-only">, opens full size</span>
+  </a>
+  {hasCaption && (
+    <figcaption class="px-0.5 pt-3 text-body text-muted text-pretty">
+      <slot />
+    </figcaption>
+  )}
+</figure>
