@@ -223,8 +223,8 @@ test.describe('the category filter', () => {
 
     expect(
       filter.total,
-      'the filter should offer every category plus "All posts"',
-    ).toBe(CATEGORY_ROUTES.length + 1);
+      'the filter should offer every category with a post, plus "All posts"',
+    ).toBe(LISTED_ROUTES.length + 1);
     expect(filter.currentCount, 'exactly one option is current').toBe(1);
     expect(filter.href, '"All posts" is current on /blog').toBe('/blog/');
 
@@ -238,6 +238,15 @@ test.describe('the category filter', () => {
   });
 
   const counts = postCountByCategory();
+
+  /*
+   * The categories the filter offers from /blog: only those with a post. An
+   * empty category's page still exists and still marks its own option, so
+   * the per-route test below walks every CATEGORY_ROUTES entry.
+   */
+  const LISTED_ROUTES = CATEGORY_ROUTES.filter(
+    (route) => (counts.get(route.replace('/blog/', '')) ?? 0) > 0,
+  );
 
   const cardCategoryLabels = (page: Page): Promise<string[]> =>
     page.evaluate(() =>
@@ -303,7 +312,7 @@ test.describe('the category filter', () => {
     const filter = page.getByRole('navigation', {
       name: /filter posts by category/i,
     });
-    const target = CATEGORY_ROUTES[0] as string;
+    const target = LISTED_ROUTES[0] as string;
     const option = filter.locator(`a[href="${target}/"]`);
 
     await option.focus();
@@ -329,7 +338,7 @@ test.describe('the category filter', () => {
       .getByRole('navigation', { name: /filter posts by category/i })
       .getByRole('link');
     const count = await links.count();
-    expect(count).toBe(CATEGORY_ROUTES.length + 1);
+    expect(count).toBe(LISTED_ROUTES.length + 1);
 
     for (let i = 0; i < count; i += 1) {
       const box = await links.nth(i).boundingBox();
@@ -386,10 +395,22 @@ test.describe('category colours', () => {
   test('each homepage tile uses its category colour', async ({ page }) => {
     await gotoSettled(page, '/');
 
+    const counts = postCountByCategory();
+
     for (const [category, colour] of Object.entries(CATEGORY_COLOURS)) {
       const tile = page.locator('li.card', {
         has: page.locator(`h3 a[href="/blog/${category}/"]`),
       });
+
+      /* A category with no post is not offered on the homepage at all. */
+      if ((counts.get(category) ?? 0) === 0) {
+        await expect(
+          tile,
+          `${category} has no posts but has a tile`,
+        ).toHaveCount(0);
+        continue;
+      }
+
       await expect(tile, `${category} tile`).toHaveCount(1);
 
       const shadow = await tile.evaluate(

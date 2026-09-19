@@ -30,7 +30,6 @@ interface Props {
   category: BlogCategory;
   date: Date;
   readingTime?: number;
-  featured?: boolean;
   /** The wide, two-column treatment the comps give the lead post. */
   feature?: boolean;
   headingLevel?: 2 | 3;
@@ -47,7 +46,6 @@ const {
   category,
   date,
   readingTime,
-  featured = false,
   feature = false,
   headingLevel = 3,
   cover,
@@ -87,12 +85,6 @@ const readableDate = date.toLocaleDateString(DATE_LOCALE, DATE_FORMAT);
         class:list={['label flex flex-wrap items-center gap-x-3', accent.text]}
       >
         <span>{categoryLabel(category)}</span>
-        {featured ? (
-          <Fragment>
-            <span aria-hidden="true">&middot;</span>
-            <span>Featured</span>
-          </Fragment>
-        ) : null}
         {readingTime ? (
           <Fragment>
             <span aria-hidden="true">&middot;</span>
@@ -101,8 +93,13 @@ const readableDate = date.toLocaleDateString(DATE_LOCALE, DATE_FORMAT);
         ) : null}
       </p>
 
-      <Heading class:list={['mt-5', feature ? 'text-h2' : 'text-h3']}>
-        <a href={href} class="text-text hover:text-cyan">
+      <Heading
+        class:list={[
+          'post-title mt-5',
+          feature ? 'text-post-card-feature' : 'text-post-card',
+        ]}
+      >
+        <a href={href} class="card-link text-text">
           {title}
         </a>
       </Heading>

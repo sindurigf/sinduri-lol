@@ -23,6 +23,14 @@ export const getSortedPosts = async (): Promise<BlogPost[]> =>
 export const getFeaturedPosts = async (limit: number): Promise<BlogPost[]> =>
   (await getSortedPosts()).filter((post) => post.data.featured).slice(0, limit);
 
+/**
+ * The categories at least one post is filed under. Only these are offered as
+ * places to go: a category with nothing in it is a promise the site cannot
+ * keep yet. Its page is still built, and `noindex` while empty.
+ */
+export const getCategoriesWithPosts = async (): Promise<Set<BlogCategory>> =>
+  new Set((await getCollection('blog')).map((post) => post.data.category));
+
 /** The props every post card takes straight from the post. */
 export const cardProps = (post: BlogPost) => ({
   href: `/blog/${post.id}/`,
@@ -31,7 +39,6 @@ export const cardProps = (post: BlogPost) => ({
   category: post.data.category,
   date: post.data.date,
   readingTime: post.data.readingTime,
-  featured: post.data.featured,
 });
 
 export const pageCount = (total: number): number =>

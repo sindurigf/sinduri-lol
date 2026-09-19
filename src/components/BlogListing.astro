@@ -4,6 +4,7 @@ import {
   cardProps,
   CATEGORY_FILTERS,
   categoryLabel,
+  getCategoriesWithPosts,
   indexPageHref,
   tagLabel,
   type BlogPost,
@@ -69,6 +70,19 @@ const {
 
 const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
+/*
+ * Only categories with a post in them, plus the one being viewed: someone
+ * who arrives at an empty category from an old link still sees where they
+ * are marked in the filter.
+ */
+const withPosts = await getCategoriesWithPosts();
+const filterOptions = CATEGORY_FILTERS.filter(
+  (option) =>
+    option.category === null ||
+    withPosts.has(option.category) ||
+    (filter.kind === 'category' && filter.category === option.category),
+);
+
 const activeHref =
   filter.kind === 'all'
     ? '/blog/'
@@ -91,7 +105,7 @@ const emptyState =
 */}
 <nav aria-label="Filter posts by category">
   <ul class="flex flex-wrap gap-3">
-    {CATEGORY_FILTERS.map((option) => {
+    {filterOptions.map((option) => {
       const isActive = option.href === activeHref;
       return (
         <li>

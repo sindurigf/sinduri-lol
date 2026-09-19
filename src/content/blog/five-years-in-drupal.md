@@ -13,7 +13,7 @@ coverAlt: 'Sinduri and a friend laughing together, each holding a bottle.'
 seoDescription: 'How a civil engineer in Vienna discovered Drupal, said yes to the community, and won the Women in Drupal Award at DrupalCon Vienna.'
 ---
 
-In January 2021, Klaus Purer brought me into the Drupal community. There is a Sinduri before Klausi and Drupal, and a Sinduri after. This is how one became the other.
+This is how one became the other.
 
 ![Sinduri holding her award next to Klaus Purer, in front of the DrupalCon Vienna backdrop.](../../assets/blog/five-years-in-drupal/with-klausi.jpg 'Photo: Klaus Purer')
 

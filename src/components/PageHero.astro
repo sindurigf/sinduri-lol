@@ -28,7 +28,8 @@ interface Props {
    * `h2` for a title that is data rather than a chosen string: a tag is one
    * long word no soft hyphen can be written into, and `text-h1`'s 33px floor
    * does not fit `sustainability` in the 273px box. `post` for a blog post's
-   * title; see `--text-post-h1`. The level stays h1 in every case.
+   * title, in the case it is written in; see `--text-post-title`. The level
+   * stays h1 in every case.
    */
   titleSize?: 'h1' | 'h2' | 'post';
   /*
@@ -39,15 +40,41 @@ interface Props {
    */
   image?: ImageMetadata;
   imageAlt?: string;
+  /*
+   * `reading` for a page that is one column of text: a post, Privacy,
+   * Accessibility. The plate narrows and sits centred over that column: to
+   * its own `max-w-3xl` for Privacy and Accessibility, and to `max-w-5xl` for
+   * a post, whose sentence-length title read as squeezed at the text's width
+   * on a desktop. A photo layout is always `page`.
+   */
+  measure?: 'page' | 'reading';
 }
 
-const { title, titleSize = 'h1', image, imageAlt = '' } = Astro.props;
+const {
+  title,
+  titleSize = 'h1',
+  image,
+  imageAlt = '',
+  measure = 'page',
+} = Astro.props;
+
+const reading = measure === 'reading' && !image;
 
 const TITLE_CLASS = {
   h1: 'text-h1',
   h2: 'text-h2',
-  post: 'text-post-h1',
+  post: 'text-post-title post-title',
 } as const;
+
+/*
+ * `text-h1` is fitted to the page column. In the narrower reading column its
+ * 104px ceiling broke ACCESSIBILITY mid-word at 1440px, so a reading plate
+ * takes `text-post-h1`, the size fitted to `max-w-3xl`.
+ */
+const READING_TITLE_CLASS = 'text-post-h1';
+
+const titleClass =
+  reading && titleSize === 'h1' ? READING_TITLE_CLASS : TITLE_CLASS[titleSize];
 
 /*
  * A page can replace the roundel with its own corner mark, as Contact does
@@ -85,27 +112,37 @@ const IMAGE_SIZES =
   >
     <div
       class:list={[
-        'page-hero-plate relative -mx-4 border-4 border-border bg-surface px-4 pb-20 pt-10 shadow-hard-gold-8 sm:mx-0 sm:p-card sm:pb-24 lg:pb-card',
-        image
-          ? 'z-10 lg:col-span-8 lg:col-start-1 lg:row-start-1 lg:pr-28'
-          : hasOwnMark
-            ? 'sm:pb-28 lg:pr-64'
-            : 'lg:pr-48',
+        reading &&
+          (titleSize === 'post' ? 'mx-auto max-w-5xl' : 'mx-auto max-w-3xl'),
+        image && 'relative z-10 lg:col-span-8 lg:col-start-1 lg:row-start-1',
       ]}
     >
-      <div class="page-hero-level">
-        <slot name="eyebrow" />
-        <h1 class:list={[TITLE_CLASS[titleSize], 'text-gold']}>{title}</h1>
-        <slot />
-      </div>
-
       <div
         class:list={[
-          'absolute bottom-0 right-4 translate-y-1/2 sm:right-10',
-          image && 'lg:right-0 lg:translate-x-1/2',
+          'page-hero-plate relative -mx-4 border-4 border-border bg-surface px-4 pb-20 pt-10 shadow-hard-gold-8 sm:mx-0 sm:p-card sm:pb-24',
+          image
+            ? 'lg:pb-card lg:pr-28'
+            : hasOwnMark
+              ? 'sm:pb-28 lg:pb-card lg:pr-64'
+              : reading
+                ? ''
+                : 'lg:pb-card lg:pr-48',
         ]}
       >
-        {hasOwnMark ? <slot name="mark" /> : <Roundel eager />}
+        <div class="page-hero-level">
+          <slot name="eyebrow" />
+          <h1 class:list={[titleClass, 'text-gold']}>{title}</h1>
+          <slot />
+        </div>
+
+        <div
+          class:list={[
+            'absolute bottom-0 right-4 translate-y-1/2 sm:right-10',
+            image && 'lg:right-0 lg:translate-x-1/2',
+          ]}
+        >
+          {hasOwnMark ? <slot name="mark" /> : <Roundel eager />}
+        </div>
       </div>
     </div>
 

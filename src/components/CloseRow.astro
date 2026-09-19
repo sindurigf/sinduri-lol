@@ -14,7 +14,7 @@ interface Props {
 const { readHref, readLabel, actionHref, actionLabel } = Astro.props;
 ---
 
-<div class="mt-actions flex flex-wrap items-center justify-between gap-inline border-t-4 border-border pt-8">
+<div class="mt-actions flex flex-wrap items-center justify-between gap-x-inline gap-y-8 border-t-4 border-border pt-8">
   <p class="text-body text-text">
     Continue reading: <a href={readHref}>{readLabel}</a>
   </p>

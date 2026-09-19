@@ -11,7 +11,7 @@
 | Private reporting   | lol@sinduri.lol                                            |
 | Target standard     | WCAG 2.2 Level AA, with AAA text contrast where achievable |
 | Conformance status  | **Target only. No conformance claim.**                     |
-| Last reviewed       | 2026-09-11                                                 |
+| Last reviewed       | 2026-09-19                                                 |
 
 ## 2. Commitment
 
@@ -30,7 +30,9 @@ The aims are to:
 
 In scope: the built static output at `dist/`, meaning every route listed in
 `tests/routes.ts`, the layouts, the components, the design tokens, and the
-Markdown content rendered through them.
+Markdown content rendered through them. Also in scope: the on-demand
+`/contact/send/` response, which is not in the build and is covered by
+`tests/contact.spec.ts` over HTTP only, with no browser.
 
 Not in scope: third-party sites linked from the footer, the Fontsource
 package's own site, and anything a fork of this repository produces after
@@ -89,11 +91,11 @@ What is currently true:
   painted border or an opaque background, links are painted distinctly from
   body text, and the focus ring keeps a non-zero width.
 - Reduced motion is checked site-wide. Zero elements animate under
-  `prefers-reduced-motion: reduce` across all 17 routes. That walk reads
+  `prefers-reduced-motion: reduce` across all 25 routes in `tests/routes.ts`. That walk reads
   computed styles, which a `<canvas>` is invisible to, so the homepage hero is
   measured separately by fingerprinting its pixels.
 - Every page names itself. axe's `document-title` fires only on a missing or
-  empty title and says nothing about two pages sharing one. All 17 titles are
+  empty title and says nothing about two pages sharing one. All 25 titles are
   distinct, and every one except the homepage's names the page before the site.
 
 **None of the above says anything about the words.** Every page now carries
@@ -264,8 +266,8 @@ Neither `.btn-primary` nor `.btn-secondary` may be used on this surface.
 `.btn-primary` is `bg-gold`, a 1.00:1 fill; `.btn-secondary` carries
 `border-border` (2.34 on gold) and a gold offset shadow (1.00 on gold).
 `.btn-gold-primary` and `.btn-gold-secondary` are the pair the comps specify.
-Both render 59.6px tall, a 15.6px line box with 18px of padding and a 4px
-border either side, so each passes SC 2.5.8 on its own size without the spacing
+Both render 60.8px tall on a desktop and 63.2px on a phone: a `text-button`
+line box of 16.8px to 19.2px, with 18px of padding and a 4px border either side, so each passes SC 2.5.8 on its own size without the spacing
 exception. The border is part of the target.
 
 **The pink offset shadow on the primary button measures 2.31 on gold**, under
@@ -286,7 +288,7 @@ it, and a violation fails the build.
 | -------------------- | ----------------------------------- | --------------------------------------------------- |
 | WCAG rule scan       | axe-core via `@axe-core/playwright` | Every built route                                   |
 | Rule scan, menu on   | axe-core at 320px, dialog open      | Every route, with the mobile menu open              |
-| Reflow overflow      | Playwright at 320px and 305px       | Every route, with and without SC 1.4.12             |
+| Reflow overflow      | Playwright at 320, 305, 640, 1280px | Every route; 320 and 305 also under SC 1.4.12       |
 | Content box width    | Playwright at 320px and 305px       | 288px / 273px, the box the floors assume            |
 | Heading word fit     | Playwright at 320px and 305px       | No heading word wider than its own box              |
 | Reflow navigation    | Playwright at 320px                 | Menu opens, takes focus, closes on Escape           |
@@ -316,6 +318,7 @@ it, and a violation fails the build.
 | Hero fit             | Playwright, hero viewports          | Fits the screen; control clears name and stickers   |
 | Accessibility page   | Playwright over the built `dist/`   | Linked from every page, status matches section 1    |
 | Contact form         | Playwright, POST to the endpoint    | Validation, honeypot, rate limit, 422 keeping text  |
+| Glued words          | Playwright over the built `dist/`   | No word fused to a link, emphasis or opening span   |
 | Type safety          | `astro check`                       | Templates and components                            |
 
 Two of those are accessibility checks for less obvious reasons:
@@ -398,10 +401,18 @@ Stated honestly. This list is not filtered for how it looks.
 
 1. **The contact form is built; its form criteria are untested by a person.**
    `/contact` carries a name, email and message form posting to
-   `/contact/send/`. What is automated: labels, the error summary taking focus,
-   `aria-invalid` and `aria-describedby` on failing fields, and a success state
-   reachable with scripting off, all walked by the route-level suites like any
-   other page.
+   `/contact/send/`. What is automated: the labels on `/contact`, scanned by
+   axe with every other route; `/contact/sent`, which is in `tests/routes.ts`;
+   and, over HTTP with no browser (`tests/contact.spec.ts`), a 422 response that
+   keeps the typed values, the summary text, `aria-invalid="true"` on a failing
+   field, the honeypot and the rate limit.
+
+   What exists in markup and nothing asserts: the error summary is
+   `role="alert" tabindex="-1" autofocus` (`src/components/ContactForm.astro`)
+   and each failing field points at its message with `aria-describedby`.
+   `/contact/send/` is on demand and outside `tests/routes.ts`, so no
+   route-level suite (axe, keyboard walk, reflow, target size) ever renders the
+   error state, and no test checks that focus lands on the summary.
 
    What is not: whether the error messages actually help. SC 3.3.1 Error
    Identification and SC 3.3.3 Error Suggestion are satisfied by a message
@@ -433,8 +444,10 @@ Stated honestly. This list is not filtered for how it looks.
    screen reader through one engine on one machine.
 
 3. **Closed 2026-09-14: no page carries lorem ipsum any more.** Measured by
-   counting distinctive lorem words in the visible text of all 17 pages in
-   `dist/`: none has one. The ten placeholder posts were removed, and the last
+   counting distinctive lorem words in the visible text of all 17 pages built
+   on 2026-09-14: none had one. Re-measured 2026-09-19 over all 25 built pages:
+   none has one. The only Latin left is marked `lang="la"` on purpose, "Lepus
+   Ridet" and "Summa cum laude". The ten placeholder posts were removed, and the last
    placeholder copy, on the homepage and `/blog`, was replaced with text drawn
    from `/about`. Lorem had been Latin inside a `lang="en"` document, announced
    with English pronunciation, and it left SC 3.1.2 Language of Parts
@@ -466,11 +479,12 @@ Stated honestly. This list is not filtered for how it looks.
    of habit. Neither covers the other. The route-level walk short-circuits when
    a page has no gold section, so a non-vacuity guard sits beside it.
 
-6. **Prose judgements have one post to make them on and none have been made.**
-   Long-form reading order, whether the in-page heading structure helps, and
-   whether link text makes sense out of context are judgements about real
-   writing. `/blog/open-source-is-not-just-code` is the only real writing on
-   the site and no manual pass has been recorded against it.
+6. **Prose judgements have not been made.** Long-form reading order, whether
+   the in-page heading structure helps, and whether link text makes sense out
+   of context are judgements about real writing. Every page now carries real
+   copy, and there are two posts, `/blog/five-years-in-drupal` and
+   `/blog/open-source-is-not-just-code`. No manual pass has been recorded
+   against any of it.
 
 ### Defects found and fixed
 
@@ -537,7 +551,7 @@ Update this file in the same commit as the change it describes.
 
 Review it when:
 
-- a page moves out of placeholder into real content;
+- a post is added, which adds routes and changes every count here;
 - a manual pass is run against the contact form, which closes the rest of gap
   1;
 - any animation lands;

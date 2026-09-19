@@ -362,9 +362,12 @@ Hard offset shadow utilities, all zero blur and zero spread:
 Defined in `@layer components` in `src/styles/global.css`:
 
 - `.btn-primary`: gold background, background-coloured text, `border-4`,
-  `12px 12px 0` pink shadow, 13px / 900 / 0.1em uppercase
+  `12px 12px 0` pink shadow, `text-button` / 900 / 0.1em uppercase.
+  `text-button` is 14px on a desktop and up to 16px on a phone
 - `.btn-secondary`: surface background, text-coloured text, `border-4`,
   `6px 6px 0` gold shadow
+- `.actions`: a row of buttons. Its 32px vertical gap clears the 12px shadow
+  when the row wraps
 - `.card`: surface background, `border-8`, 24px padding below `sm` and 40px
   from `sm` up. The split is a measure decision: at 40px a side the content box
   is 177px at a 305px viewport, where a real post title runs to six lines;
@@ -396,8 +399,8 @@ Defined in `@layer components` in `src/styles/global.css`:
   point**, not the width: applying the gutter inside one column and outside
   another reads identically below the column width and diverges by exactly one
   gutter above it, measured at 24px on `/about` at 1440px. Every route has
-  one; a reading column is a narrower `max-w-3xl` inside it, left-aligned under
-  the PageHero plate's text
+  one; a reading column is a narrower `max-w-3xl` centred inside it, with the
+  PageHero plate narrowed to match
 - `.page-column` is not a thing. Do not add one; the column is the utility above
 - `.skip-link`: the skip-to-content link, visible on focus
 - `.band`: a full-bleed band inside `<main>`, breaking out of the gutter with
@@ -451,8 +454,14 @@ ones a machine can see.
   left a phone with screens of empty ground between one-column sections.
 - **Links**: a link in a sentence uses the base underline; an action is
   `.btn-primary` or `.btn-secondary`; tags, skills and jump links are `.chip`.
-- **Reading pages** (Privacy, Accessibility, posts) are a PageHero, then one
-  `.prose max-w-3xl` column at the left of the page column.
+- **Reading pages** (Privacy, Accessibility, posts) are a PageHero with
+  `measure="reading"`, then one `.prose` column, both `max-w-3xl` and centred
+  in the page column, so the title and the text start on the same edge.
+- **Case.** Headings are uppercase, except a post's title, on its plate and
+  on its cards, which keeps the case it is written in (`.post-title`, with
+  `--text-post-title` and `--text-post-card`). Uppercase suits a page name
+  and makes a sentence long and loud: at 390px the first post's title ran to
+  five lines at 35px, and reads in three at 28px in its own case.
 - **One ground.** Sections do not alternate backgrounds. The gold surface is
   the only change of ground.
 

@@ -280,8 +280,8 @@ wrong rather than quietly wrong.
 | `primary`   | `gold-text` | `gold-btn-label` | 4px `gold-text` | `shadow-hard-pink-8` |
 | `secondary` | transparent | `gold-text`      | 4px `gold-text` | none                 |
 
-Both are 13px / weight 900 / 0.1em / uppercase with 18px 34px of padding, from
-the comps. Measured, each colour against what it is actually adjacent to:
+Both are `text-button` (14px on a desktop, up to 16px on a phone) / weight 900
+/ 0.1em / uppercase with 18px 34px of padding, from the comps. Measured, each colour against what it is actually adjacent to:
 
 | Measurement                             | Ratio     | Needs |
 | --------------------------------------- | --------- | ----- |
@@ -300,12 +300,13 @@ Four things about these that are easy to get wrong:
   fill against gold at 11.32. **Never let an offset shadow become the thing
   that delimits a control**, on this surface or any other. If the fill ever
   goes, the shadow does not inherit the job.
-- **The padding is a conformance floor, not a spacing preference.** A 13px
-  label at line-height 1.2 is a 15.6px line box; `18px` top and bottom takes
-  the padding box to 51.6px, and the 4px border takes the rendered control to
-  **59.6px**, well past the 24px SC 2.5.8 asks of a target on its own size.
-  Measured on the Career hero while it was gold, at 305px, 320px and 1280px:
-  59.6px tall at all three, 226.2px and 197.6px wide. An earlier version of this note quoted
+- **The padding is a conformance floor, not a spacing preference.** The label
+  is `text-button`, 14px on a desktop and up to 16px on a phone; at
+  line-height 1.2 that is a 16.8px to 19.2px line box. `18px` top and bottom
+  and the 4px border take the rendered control to **60.8px to 63.2px**, well
+  past the 24px SC 2.5.8 asks of a target on its own size. Measured on the
+  Career hero while it was gold, at 305px, 320px and 1280px, with the 13px
+  label it had then: 59.6px tall at all three, 226.2px and 197.6px wide. An earlier version of this note quoted
   51.6px as the rendered height, which is the padding box with the border left
   out; SC 2.5.8 measures the target, and the border is part of it.
   `--spacing-btn-gold-y` and `--spacing-btn-gold-x` exist as tokens because 18
@@ -472,15 +473,17 @@ Do not add breakpoint steps.
 
 Headings must not skip levels. One `<h1>` per page.
 
-**`text-post-h1` is the blog post title and nothing else.** A post heading sits
-in `blog/[slug].astro`'s `max-w-3xl` measure, not the full page column, so it
-is the one h1 on the site sized against a box that stops growing at 768px while
-`text-h1`'s `9vw` does not. At the 104px ceiling a 12-character title word
+**`text-post-h1` is the title of a reading page and nothing else**: a post,
+Privacy and Accessibility. Their PageHero uses `measure="reading"`, which sits
+in the `max-w-3xl` measure, not the full page column, so these are the h1s on
+the site sized against a box that stops growing at 768px while `text-h1`'s
+`9vw` does not. PageHero applies it itself for a reading plate. At the 104px ceiling a 12-character title word
 overflows that column and `overflow-wrap: break-word` breaks it mid-word with
 no hyphen: the first real post rendered `COMMUNITIE / S` at 1280px. Its floor
 and middle term are `text-h1`'s own, so it changes nothing at 305px or at 400%
-zoom, where the floor is what bites. Do not use it for a page title, and do not
-lower it to 64px, which is `text-h2`'s ceiling.
+zoom, where the floor is what bites. `text-h1` in the same box broke
+`ACCESSIBILITY` as `ACCESSIBIL / ITY` at 1440px. Do not use it for a title in
+the page column, and do not lower it to 64px, which is `text-h2`'s ceiling.
 
 H3 came down from a 48px ceiling to 32px because it also sizes lead
 paragraphs and card titles, which were reading as headings; the stickers are
@@ -963,8 +966,14 @@ ones a machine can see.
   left a phone with screens of empty ground between one-column sections.
 - **Links**: a link in a sentence uses the base underline; an action is
   `.btn-primary` or `.btn-secondary`; tags, skills and jump links are `.chip`.
-- **Reading pages** (Privacy, Accessibility, posts) are a PageHero, then one
-  `.prose max-w-3xl` column at the left of the page column.
+- **Reading pages** (Privacy, Accessibility, posts) are a PageHero with
+  `measure="reading"`, then one `.prose` column, both `max-w-3xl` and centred
+  in the page column, so the title and the text start on the same edge.
+- **Case.** Headings are uppercase, except a post's title, on its plate and
+  on its cards, which keeps the case it is written in (`.post-title`, with
+  `--text-post-title` and `--text-post-card`). Uppercase suits a page name
+  and makes a sentence long and loud: at 390px the first post's title ran to
+  five lines at 35px, and reads in three at 28px in its own case.
 - **One ground.** Sections do not alternate backgrounds. The gold surface is
   the only change of ground.
 
