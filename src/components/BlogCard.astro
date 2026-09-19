@@ -61,7 +61,7 @@ const Heading = `h${headingLevel}` as 'h2' | 'h3';
  * tests/image-size.spec.ts fails when it drifts from the layout.
  */
 const COVER_SIZES =
-  '(min-width: 48rem) min(calc(50vw - 5.75rem), 35.75rem), (min-width: 40rem) calc(100vw - 9rem), calc(100vw - 6rem)';
+  '(min-width: 48rem) min(calc(50vw - 5.5rem), 36rem), (min-width: 40rem) calc(100vw - 9rem), calc(100vw - 6rem)';
 
 const accent = categoryAccent(category);
 
@@ -78,7 +78,7 @@ const readableDate = date.toLocaleDateString(DATE_LOCALE, DATE_FORMAT);
 
 <article class:list={['card flex flex-col', className]}>
   <div
-    class:list={[feature ? 'grid gap-10 md:grid-cols-2 md:items-center' : '']}
+    class:list={[feature ? 'grid gap-8 md:grid-cols-2 md:items-center' : '']}
   >
     <div class="flex flex-col">
       <p
@@ -95,7 +95,7 @@ const readableDate = date.toLocaleDateString(DATE_LOCALE, DATE_FORMAT);
 
       <Heading
         class:list={[
-          'post-title mt-5',
+          'post-title mt-4',
           feature ? 'text-post-card-feature' : 'text-post-card',
         ]}
       >

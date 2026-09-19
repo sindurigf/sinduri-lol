@@ -120,6 +120,16 @@
    */
   --color-bud: #d4c5ab;
 
+  /*
+   * The homepage canvas's atmosphere: a faint border-blue veil at the horizon
+   * and a shade under the near ground, each with its transparent end. Read by
+   * HeroField.vue; decoration that carries no text.
+   */
+  --color-hero-veil: rgba(90, 135, 168, 0.085);
+  --color-hero-veil-edge: rgba(90, 135, 168, 0);
+  --color-hero-floor: rgba(0, 0, 0, 0.34);
+  --color-hero-floor-edge: rgba(0, 0, 0, 0);
+
   /* Typography */
   /*
    * 'Lexend Variable' is the family name exposed by @fontsource-variable/lexend.
@@ -203,6 +213,9 @@
    */
   --text-hero-sticker: clamp(18px, min(2.1vw, 3.4svh), 30px);
   --text-hero-sticker--line-height: 1.02;
+  /* The mobile menu's links, one per row in a full-screen panel. */
+  --text-menu: clamp(34px, 8vw, 56px);
+  --text-menu--line-height: 1;
   --text-body: clamp(17px, 1.2vw, 19px);
   --text-body--line-height: 1.62;
   --text-label: 14px;
@@ -406,7 +419,7 @@
      * The failure only shows walking focus backwards: tabbing forward scrolls
      * up from the bottom edge and never nears the header.
      */
-    scroll-padding-top: calc(var(--spacing-header) + 1rem);
+    scroll-padding-top: calc(var(--spacing-header) + --spacing(4));
     background-color: var(--color-background);
     -webkit-text-size-adjust: 100%;
     /*
@@ -520,8 +533,8 @@
   figcaption a:not([class]),
   .link {
     text-decoration: underline;
-    text-underline-offset: 0.2em;
-    text-decoration-thickness: 2px;
+    text-underline-offset: var(--underline-offset);
+    text-decoration-thickness: var(--underline-thin);
   }
 
   .prose a:hover,
@@ -530,7 +543,7 @@
   dd a:not([class]):hover,
   figcaption a:not([class]):hover,
   .link:hover {
-    text-decoration-thickness: 4px;
+    text-decoration-thickness: var(--underline-thick);
   }
 
   /*
@@ -549,6 +562,19 @@
     --focus-gap: 4px;
     --lift-control: 4px;
     --lift-object: 8px;
+
+    /* Link underlines: in running text, and thickened on hover. */
+    --underline-offset: 0.2em;
+    --underline-thin: 2px;
+    --underline-thick: 4px;
+
+    /* The footer's profile tiles, their icons, and the tuft under them. */
+    --size-sticker: 48px;
+    --size-sticker-lg: 56px;
+    --size-sticker-icon: 22px;
+    --border-width-sticker: 4px;
+    --size-tuft: 220px;
+    --size-tuft-md: 266px;
   }
 
   :focus-visible {
@@ -919,8 +945,11 @@
   @media (width >= 40rem) {
     .hero-motion-toggle {
       top: auto;
-      bottom: 1.5rem;
-      bottom: max(1.5rem, calc(100% + var(--spacing-header) - 100svh + 1.5rem));
+      bottom: --spacing(6);
+      bottom: max(
+        --spacing(6),
+        calc(100% + var(--spacing-header) - 100svh + --spacing(6))
+      );
     }
   }
 
@@ -1202,7 +1231,7 @@
    * stylesheet, and an inline style needs a hash in the CSP.
    */
   .photo-viewer {
-    @apply m-0 size-full max-h-none max-w-none border-0 bg-background p-5 text-text;
+    @apply m-0 size-full max-h-none max-w-none border-0 bg-background p-4 text-text;
   }
 
   .photo-viewer::backdrop {
@@ -1231,7 +1260,7 @@
    * that mode needs (tests/forced-colors.spec.ts).
    */
   .photo-strip {
-    @apply flex snap-x snap-mandatory items-start gap-3.5 overflow-x-auto
+    @apply flex snap-x snap-mandatory items-start gap-4 overflow-x-auto
       border-2 border-transparent pb-3;
 
     container-type: inline-size;
@@ -1252,7 +1281,7 @@
   .strip-photo {
     @apply block h-auto;
 
-    max-width: calc(100cqi - --spacing(5));
+    max-width: calc(100cqi - --spacing(4));
   }
 
   /* A photo strip's scroll arrows: a 44px square, past SC 2.5.8 on its own. */
@@ -1442,7 +1471,7 @@
    * is the photo credit: `subtle`, AAA on all three dark grounds.
    */
   .prose figure {
-    @apply mt-10;
+    @apply mt-8;
   }
 
   /*
@@ -1456,7 +1485,7 @@
   }
 
   .prose figcaption {
-    @apply mt-5 text-label text-subtle;
+    @apply mt-4 text-label text-subtle;
   }
 
   /*
@@ -1536,7 +1565,7 @@
   .surface-gold a {
     color: var(--color-darkcyan);
     text-decoration: underline;
-    text-underline-offset: 0.2em;
+    text-underline-offset: var(--underline-offset);
   }
 
   .surface-gold a:hover {
@@ -1627,7 +1656,7 @@
     @apply absolute left-4 top-4 z-60 border-4 border-border bg-gold px-6 py-4
       text-label font-black uppercase tracking-label text-background;
 
-    transform: translateY(calc(-100% - 1.5rem));
+    transform: translateY(calc(-100% - --spacing(6)));
   }
 
   .skip-link:focus,
@@ -1681,7 +1710,7 @@
   --------------------------------------------------------------------------- */
 
   .footer-inner {
-    padding-top: 48px;
+    padding-top: --spacing(12);
   }
 
   .footer-top {
@@ -1700,8 +1729,8 @@
   }
 
   /*
-   * One link per row on a phone, each a full-width target 42.8px tall: the
-   * 16.8px line box of a 14px label and 13px above and below it. There is no
+   * One link per row on a phone, each a full-width target 40.8px tall: the
+   * 16.8px line box of a 14px label and 12px above and below it. There is no
    * gap between the two lists, so nothing but colour marks where the pages end
    * and the policies begin.
    */
@@ -1711,17 +1740,17 @@
   }
 
   .footer-pages {
-    margin-top: 28px;
+    margin-top: --spacing(8);
   }
 
   .footer-pages a,
   .footer-policies a {
     display: block;
-    padding-block: 13px;
+    padding-block: --spacing(3);
   }
 
   .footer-social {
-    margin-top: 32px;
+    margin-top: --spacing(8);
   }
 
   /*
@@ -1732,14 +1761,14 @@
    */
   .footer-stickers {
     display: grid;
-    grid-template-columns: repeat(4, 48px);
-    gap: 22px 20px;
-    padding: 6px 6px 14px;
+    grid-template-columns: repeat(4, var(--size-sticker));
+    gap: --spacing(6);
+    padding: --spacing(2) --spacing(2) --spacing(4);
   }
 
   .footer-stickers li:nth-child(n + 5) {
     position: relative;
-    left: 34px;
+    left: --spacing(8);
   }
 
   /*
@@ -1760,9 +1789,9 @@
   .footer-sticker {
     display: grid;
     place-items: center;
-    width: 48px;
-    height: 48px;
-    border: 4px solid var(--color-border);
+    width: var(--size-sticker);
+    height: var(--size-sticker);
+    border: var(--border-width-sticker) solid var(--color-border);
     --lift: var(--lift-control);
     rotate: var(--tilt, 0deg);
     background-clip: padding-box;
@@ -1774,8 +1803,8 @@
   }
 
   .footer-sticker svg {
-    width: 22px;
-    height: 22px;
+    width: var(--size-sticker-icon);
+    height: var(--size-sticker-icon);
     fill: currentColor;
   }
 
@@ -1824,8 +1853,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 18px;
-    margin-top: 28px;
+    gap: --spacing(4);
+    margin-top: --spacing(8);
   }
 
   .footer-copyright {
@@ -1845,7 +1874,7 @@
    */
   .footer-tuft {
     display: block;
-    width: 220px;
+    width: var(--size-tuft);
     height: auto;
     overflow: visible;
   }
@@ -1891,7 +1920,7 @@
    */
   @media (width >= 48rem) {
     .footer-inner {
-      padding-top: 56px;
+      padding-top: --spacing(12);
     }
 
     .footer-top {
@@ -1900,7 +1929,7 @@
       justify-content: space-between;
       justify-items: start;
       align-items: start;
-      column-gap: 32px;
+      column-gap: --spacing(8);
     }
 
     .footer-name {
@@ -1915,7 +1944,7 @@
       grid-row: 1 / span 2;
       justify-self: start;
       margin-top: 0;
-      padding-top: 6px;
+      padding-top: --spacing(2);
     }
 
     .footer-pages {
@@ -1926,22 +1955,22 @@
       grid-column: 3;
     }
 
-    /* 29.6px targets: the 16.8px line box and 7px above and below. */
+    /* 32.8px targets: the 16.8px line box and 8px above and below. */
     .footer-pages a,
     .footer-policies a {
-      padding-block: 7px;
+      padding-block: --spacing(2);
     }
 
     .footer-social {
       grid-column: 1;
       grid-row: 2;
-      margin-top: 22px;
+      margin-top: --spacing(6);
     }
 
     .footer-stickers {
-      grid-template-columns: repeat(7, 48px);
-      gap: 16px;
-      padding: 6px 6px 10px 0;
+      grid-template-columns: repeat(7, var(--size-sticker));
+      gap: --spacing(4);
+      padding: --spacing(2) --spacing(2) --spacing(2) 0;
     }
 
     .footer-stickers li:nth-child(n + 5) {
@@ -1952,32 +1981,32 @@
       flex-direction: row;
       justify-content: space-between;
       align-items: flex-end;
-      margin-top: 8px;
+      margin-top: --spacing(2);
     }
 
     .footer-copyright {
-      padding-bottom: 20px;
+      padding-bottom: --spacing(6);
       text-align: left;
     }
 
     .footer-tuft {
-      width: 266px;
+      width: var(--size-tuft-md);
     }
   }
 
   @media (width >= 64rem) {
     .footer-inner {
-      padding-inline: 32px;
+      padding-inline: --spacing(8);
     }
 
     .footer-stickers {
-      grid-template-columns: repeat(7, 56px);
-      gap: 24px;
+      grid-template-columns: repeat(7, var(--size-sticker-lg));
+      gap: --spacing(6);
     }
 
     .footer-sticker {
-      width: 56px;
-      height: 56px;
+      width: var(--size-sticker-lg);
+      height: var(--size-sticker-lg);
     }
   }
 
@@ -2248,7 +2277,7 @@
   width: 100%;
   height: 100%;
   margin: 0;
-  padding: 2.5rem 1.5rem 0;
+  padding: --spacing(8) --spacing(6) 0;
   border: 0;
   background-color: var(--color-background);
   color: var(--color-text);
@@ -2270,7 +2299,7 @@
  * on a child is part of that child's box, which every engine scrolls to.
  */
 .mobile-menu-content {
-  padding-bottom: 2.5rem;
+  padding-bottom: --spacing(8);
 }
 
 /*
@@ -2287,6 +2316,6 @@
 }
 
 .mobile-menu-dialog nav a {
-  font-size: clamp(34px, 8vw, 56px);
+  font-size: var(--text-menu);
   line-height: 1;
 }

@@ -56,7 +56,7 @@ const NATURAL_HEIGHT = 320;
  * the page gutter, the panel's border and padding, the strip's border and
  * the tile's padding. tests/image-size.spec.ts fails when it drifts.
  */
-const STRIP_INSET = '7.25rem';
+const STRIP_INSET = '7rem';
 
 const naturalWidth = Math.round(
   NATURAL_HEIGHT * (master.width / master.height),
@@ -103,7 +103,7 @@ const cropWidths = [
 const hasCaption = Astro.slots.has('default');
 ---
 
-<figure class:list={['min-w-0 bg-background p-2.5', className]}>
+<figure class:list={['min-w-0 bg-background p-2', className]}>
   {/*
     `relative` keeps the visually hidden text below inside the link: it is
     absolutely positioned, and in a scrolled strip it otherwise escapes the
@@ -134,7 +134,7 @@ const hasCaption = Astro.slots.has('default');
     <span class="sr-only">, opens full size</span>
   </a>
   {hasCaption && (
-    <figcaption class="px-0.5 pt-3 text-body text-text text-pretty">
+    <figcaption class="px-1 pt-3 text-body text-text text-pretty">
       <slot />
     </figcaption>
   )}
