@@ -1,7 +1,5 @@
 ---
-import { badgeImage } from '../lib/badge-image';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import SpinBadge from '../components/ui/SpinBadge.vue';
 import ContactForm from '../components/ContactForm.astro';
 import PageHero from '../components/PageHero.astro';
 import Section from '../components/Section.astro';
@@ -53,29 +51,12 @@ const REASONS = [
   title="Contact | sinduri.lol"
   description="Write to Sinduri in Vienna by email, on LinkedIn or GitHub, or with the contact form."
 >
-  <PageHero title="Get in touch">
+  <PageHero title="Get in touch" roundel>
     <p class="standfirst">
       I am always happy to talk about work opportunities and open source, or to
       get nerdy about Lord of the Rings and Star Trek. I would love to hear from
       you.
     </p>
-
-    {/*
-      The badge takes the roundel's corner: both are the site's round mark,
-      and one corner mark per plate keeps this hero the same as every other.
-      client:load because the animation is applied by the island on mount,
-      so the pause control SC 2.2.2 asks for and the motion it pauses arrive
-      together or not at all.
-    */}
-    <SpinBadge
-      slot="mark"
-      client:load
-      badge={badgeImage}
-      frameClass="h-40 w-40 lg:h-48 lg:w-48"
-      markClass="w-28 lg:w-32"
-      borderClass="border-8"
-      shadowClass="shadow-hard-cyan-8"
-    />
   </PageHero>
 
   {/*

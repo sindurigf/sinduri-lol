@@ -1424,33 +1424,6 @@
   }
 
   /*
-   * The spinning badge. One instance, on Contact, at the comps' 28s, linear
-   * and infinite.
-   *
-   * The animation is applied by src/components/ui/SpinBadge.vue AFTER the
-   * island mounts, never by the server-rendered HTML. That is what makes the
-   * SC 2.2.2 claim true: the pause control is JavaScript, so if the island
-   * never hydrates there must be no motion for it to have failed to stop.
-   *
-   * The component also refuses to animate when `prefers-reduced-motion:
-   * reduce` matches, so the reduced-motion block at the end of this file is a
-   * backstop here rather than the mechanism, and no pause button is rendered
-   * into a page with nothing moving on it. A hidden-but-focusable control
-   * would be worse than no control.
-   *
-   * The duration lives here rather than in @theme because it belongs to one
-   * effect, not a value the design reuses, the same reason
-   * .mobile-menu-dialog keeps its sizing in the component.
-   */
-  .spin-badge {
-    animation: slowspin 28s linear infinite;
-  }
-
-  .spin-badge[data-paused='true'] {
-    animation-play-state: paused;
-  }
-
-  /*
    * The pause control SC 2.2.2 requires, wherever motion needs one. Square,
    * 4px border, gold on `surface`, per the comps.
    *
@@ -1470,17 +1443,11 @@
    * Appearance only. Position comes from a second class at every call site,
    * because two single-class rules on one element are resolved by their order
    * in the STYLESHEET, not in the class attribute, so a positioning class
-   * would silently lose to whichever rule was written later. SpinBadge.vue's
-   * `borderClass` prop exists for the same reason and has the longer note.
+   * would silently lose to whichever rule was written later.
    */
   .motion-toggle {
     @apply absolute grid h-10 w-10 place-items-center border-4 border-border
       bg-surface text-gold;
-  }
-
-  /* Hung off the corner of the badge it pauses. */
-  .motion-toggle-corner {
-    @apply -bottom-3 -right-3;
   }
 
   .motion-toggle:hover {
@@ -1845,19 +1812,6 @@
   }
 }
 
-/*
- * Top level rather than inside a layer, so nothing about cascade layers can
- * affect whether the browser sees the keyframes at all.
- */
-@keyframes slowspin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* ---------------------------------------------------------------------------
    Reduced motion. Anything animated must honour this; see the design system
    skill.
@@ -1865,16 +1819,14 @@
    Necessary, not sufficient. SC 2.2.2 Pause, Stop, Hide asks for a control
    the user can operate, not an OS setting: a reader who has not set this
    preference, or who is distracted by the motion in the moment, gets nothing
-   from a media query. The two things that animate, the spinning badge and the
-   homepage hero field, each carry a keyboard-operable pause control
-   (SpinBadge.vue, HeroField.vue). This block is the backstop for anything
-   animated that is neither of them.
+   from a media query. The one thing that animates, the homepage hero field,
+   carries a keyboard-operable pause control (HeroField.vue). This block is
+   the backstop for anything animated that is not it.
 
-   Neither relies on it in either direction: each component reads
-   `prefers-reduced-motion` itself. The badge never starts and the field is
-   drawn once and held, so a reader with the preference set sees a still
-   picture and no pause control, rather than an animation neutralised to
-   0.01ms with a dead button beside it.
+   The field does not rely on it in either direction: it reads
+   `prefers-reduced-motion` itself and is drawn once and held, so a reader
+   with the preference set sees a still picture and no pause control, rather
+   than an animation neutralised to 0.01ms with a dead button beside it.
 --------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {

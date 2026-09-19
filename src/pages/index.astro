@@ -118,13 +118,13 @@ const STATS = [
 
       Three canvases, a hare, and the pause control SC 2.2.2 requires. The
       animation is applied by the component on mount and never by what the
-      server sends, for the reason SpinBadge.vue gives: the control that stops
-      the motion is JavaScript, so motion in the server-rendered HTML would
-      run in a browser where the control failed to hydrate. With scripting off
+      server sends: the control that stops the motion is JavaScript, so
+      motion in the server-rendered HTML would run in a browser where the
+      control failed to hydrate. With scripting off
       the canvases render empty and this section is the name and the two
       stickers on a flat ground.
 
-      client:load, matching SpinBadge and MobileMenu. A lazier directive would
+      client:load, matching MobileMenu. A lazier directive would
       delay the control and the motion together, and `client:visible` on an
       element already visible at the top of the page fires immediately anyway,
       having first shipped an IntersectionObserver to decide so.
