@@ -31,8 +31,9 @@ import { expect, type Page, type Response } from '@playwright/test';
  * attribute, would turn every wait into a race.
  *
  * Every route has at least one island: the header's MobileMenu is
- * `client:load` on all 25, `/` adds the hero field and `/contact` the
- * spinning badge (checked against dist/, 2026-09-11). A page with no islands
+ * `client:load` on every route and `/` adds the hero field (checked against
+ * dist/, 2026-09-11; Contact's spinning badge, the third island, was removed
+ * on 2026-09-19). A page with no islands
  * needs a different wait, not a looser helper; tests/not-found.spec.ts uses a
  * plain `goto` for the host's 404 fallback.
  */

@@ -1,234 +1,17 @@
 import { expect, test, type Locator, type Page } from './test';
 import { gotoSettled, sweepTimeout } from './settle';
 import { readFileSync } from 'node:fs';
-import { builtPages, islandRoutesFromBuild, ROUTES } from './routes';
+import { builtPages, ROUTES } from './routes';
 import { MIN_TARGET } from './wcag';
 
 /**
- * The spinning badge and its pause control (SC 2.2.2 Pause, Stop, Hide).
+ * The hero's field of stems and its hopping hare, and SC 2.2.2 Pause, Stop,
+ * Hide: it starts on its own, runs indefinitely and sits alongside other
+ * content. A `prefers-reduced-motion` query is not the mechanism the
+ * criterion asks for; it helps only a reader who has already set the
+ * preference.
  *
- * The badge starts on its own, runs indefinitely and sits alongside other
- * content, which is the shape the criterion covers. A
- * `prefers-reduced-motion` query is not the mechanism it asks for: it helps
- * only a reader who has already set the preference, and does nothing for
- * someone distracted by the movement in the moment.
- *
- * What this asserts that reading the component cannot:
- *
- *  1. Something is actually moving: `animation-play-state: running` on a real
- *     `slowspin` animation, read from the rendered DOM. Without it the rest
- *     would pass against a badge that never animated, which is the state the
- *     server-rendered HTML is deliberately in.
- *  2. The control is operable from the keyboard, by a key press rather than by
- *     calling click().
- *  3. Pressing it stops the motion, measured as `animation-play-state`, not as
- *     a class name or a data attribute.
- *  4. Its accessible name says what it will do next and changes when the state
- *     does. The name carries the state and nothing else does; see
- *     SpinBadge.vue.
- *  5. SC 2.5.8: the control passes target size on its own dimensions.
- *  6. Under `prefers-reduced-motion: reduce` there is neither animation nor
- *     button, rather than a dead button beside a neutralised animation.
- *
- * BADGE_ROUTES is a literal with a guard. It has to be a literal, because
- * Playwright collects this file before the `webServer` command builds the site
- * (see tests/routes.ts). The guard below reads the build and fails when a
- * badge exists on a route the list does not name, which is how the Contact
- * badge went uncovered while this file reported green.
- */
-
-/**
- * The island whose presence in the built HTML defines "this route has a
- * badge".
- */
-const BADGE_COMPONENT = 'SpinBadge';
-
-const BADGE_ROUTES = ['/contact'] as const;
-
-test('BADGE_ROUTES names every route that renders a badge', () => {
-  const built = islandRoutesFromBuild(BADGE_COMPONENT);
-
-  /*
-   * The floor first. If the marker stops matching, `built` goes empty and the
-   * comparison below would pass against an emptied BADGE_ROUTES rather than
-   * fail. The route walks in gold-surface.spec.ts guard the same vacuity with
-   * their own `length > 0` assertions.
-   */
-  expect(
-    built.length,
-    `no route in dist/ carries a ${BADGE_COMPONENT} island. Either the site ` +
-      `stopped rendering the badge, or Astro changed the \`component-url\` ` +
-      `attribute that islandRoutesFromBuild matches on — in which case this ` +
-      `whole file is measuring nothing.`,
-  ).toBeGreaterThan(0);
-
-  expect(
-    built,
-    `BADGE_ROUTES is out of sync with the build. Every route that renders a ` +
-      `${BADGE_COMPONENT} needs SC 2.2.2 coverage, and this file only walks ` +
-      `the routes named in that list, so a badge on an unlisted route has no ` +
-      `pause-control test at all.`,
-  ).toEqual([...BADGE_ROUTES].sort());
-});
-
-const PAUSE_NAME = /pause the spinning badge/i;
-const PLAY_NAME = /play the spinning badge/i;
-
-/** The rendered animation state of the badge frame, straight from the DOM. */
-const animationState = (page: Page) =>
-  page.evaluate(() => {
-    const frame = document.querySelector('.spin-badge');
-    if (frame === null) return { present: false, name: null, state: null };
-    const style = getComputedStyle(frame);
-    return {
-      present: true,
-      name: style.animationName,
-      state: style.animationPlayState,
-    };
-  });
-
-const expectBadgeRunning = async (page: Page, route: string) => {
-  const running = await animationState(page);
-  expect(
-    running.present,
-    `${route} has no .spin-badge. The animation is applied by the island ` +
-      `on mount, so this failing means the island did not hydrate — which ` +
-      `is also why the pause control would be missing.`,
-  ).toBe(true);
-  expect(running.name, 'the badge should run the slowspin keyframes').toBe(
-    'slowspin',
-  );
-  expect(
-    running.state,
-    'the badge should be moving before anything is pressed. If it is not, ' +
-      'every assertion below is about a control that pauses nothing.',
-  ).toBe('running');
-};
-
-/*
- * SC 2.5.8, on the control's own size rather than on the spacing
- * exception, which nothing on this site relies on.
- */
-const expectBadgeTargetSize = async (control: Locator) => {
-  const box = await control.boundingBox();
-  expect(box?.width, 'pause control target width').toBeGreaterThanOrEqual(
-    MIN_TARGET,
-  );
-  expect(box?.height, 'pause control target height').toBeGreaterThanOrEqual(
-    MIN_TARGET,
-  );
-};
-
-/*
- * Operated by a real key press on a focused control, not by click().
- * click() would pass against a div with a mouse handler on it.
- */
-const pressBadgeControl = async (page: Page, control: Locator) => {
-  await control.focus();
-  await expect(control).toBeFocused();
-  await expect(
-    control,
-    'the control must show a focus indicator; :focus-visible is what the ' +
-      'site-wide gold ring hangs off',
-  ).toHaveCSS('outline-style', 'solid');
-
-  await page.keyboard.press('Enter');
-};
-
-for (const route of BADGE_ROUTES) {
-  test.describe(`the spinning badge on ${route}`, () => {
-    test('auto-starts, and a keyboard press pauses and resumes it', async ({
-      page,
-    }) => {
-      await gotoSettled(page, route);
-      await expectBadgeRunning(page, route);
-
-      const control = page.getByRole('button', { name: PAUSE_NAME });
-      await expect(control).toBeVisible();
-      await expectBadgeTargetSize(control);
-      await pressBadgeControl(page, control);
-
-      const paused = await animationState(page);
-      expect(
-        paused.state,
-        'pressing the control must stop the motion, not merely re-label itself',
-      ).toBe('paused');
-
-      /*
-       * The name now says what the button will do next. It is the only
-       * carrier of the state, so it has to change, and there is deliberately
-       * no aria-pressed to contradict it.
-       */
-      const resume = page.getByRole('button', { name: PLAY_NAME });
-      await expect(resume).toBeFocused();
-      await expect(
-        page.getByRole('button', { name: PAUSE_NAME }),
-        'the paused control must not still be named "Pause"',
-      ).toHaveCount(0);
-
-      await page.keyboard.press('Enter');
-
-      expect(
-        (await animationState(page)).state,
-        'pressing it again must resume the motion',
-      ).toBe('running');
-      await expect(
-        page.getByRole('button', { name: PAUSE_NAME }),
-      ).toBeFocused();
-    });
-
-    /*
-     * The preference is emulated with `page.emulateMedia`, before `goto` so
-     * the island reads the right answer on its first mount. On
-     * @playwright/test 1.62.1, which this suite is pinned to, the
-     * `test.use({ reducedMotion })` form silently does not apply inside a
-     * nested describe: the media query came back false and the badge animated.
-     * `emulateMedia` is the form that was never broken. See
-     * tests/forced-colors.spec.ts for the longer note and playwright.config.ts
-     * for the pin.
-     *
-     * The assertion below that the preference actually matched is what made
-     * that bug visible rather than silent.
-     */
-    test('under reduced motion there is no motion and no control', async ({
-      page,
-    }) => {
-      await page.emulateMedia({ reducedMotion: 'reduce' });
-      await gotoSettled(page, route);
-
-      expect(
-        await page.evaluate(
-          () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-        ),
-        'the preference was not emulated, so this test proves nothing',
-      ).toBe(true);
-
-      expect(
-        (await animationState(page)).present,
-        'the badge must not be given the animation class at all under ' +
-          'reduced motion. Relying on the global media query to neutralise ' +
-          'it to 0.01ms would leave the animation nominally running.',
-      ).toBe(false);
-
-      await expect(
-        page.getByRole('button', { name: /the spinning badge/i }),
-        'a control that pauses nothing is one more stop in the tab order ' +
-          'that changes nothing a reader can perceive',
-      ).toHaveCount(0);
-    });
-  });
-}
-
-/* ------------------------------------------------------------------ *
- * The homepage hero field
- * ------------------------------------------------------------------ */
-
-/**
- * The hero's field of stems and its hopping hare, and the same criterion.
- *
- * It needs its own block because everything above measures
- * `animation-play-state` on a CSS animation, which reads nothing on a canvas.
- * The motion here is a `requestAnimationFrame` loop painting pixels, so the
+ * A canvas has no `animation-play-state` to read. The motion here is a `requestAnimationFrame` loop painting pixels, so the
  * only honest question is whether the pixels change. This fingerprints a
  * horizontal strip of the middle layer, the one carrying the hare and the
  * stems nearest it, and compares two samples taken a few hundred milliseconds
@@ -465,7 +248,8 @@ test.describe('the hero field on /', () => {
     await expect(
       page.getByRole('button', { name: HERO_PLAY_NAME }),
       'the name has to say what the button will do next, and change when the ' +
-        'state does. See the note in SpinBadge.vue about not stating it twice.',
+        'state does. See Motion in the design system skill about not stating ' +
+        'it twice.',
     ).toBeFocused();
 
     /* And the pixels actually stopped, not just the attribute. */
@@ -717,11 +501,9 @@ const movingElements = (page: Page) =>
   });
 
 /**
- * The same preference, swept across every route rather than the one that
- * renders a badge.
+ * The same preference, swept across every route rather than the homepage.
  *
- * The tests above run on BADGE_ROUTES. The other routes have no badge, so an
- * animation added to a blog post, a card hover that grows a transition, or a
+ * The tests above run on `/`. An animation added to a blog post, a card hover that grows a transition, or a
  * keyframe escaping the global block through `!important` would move for a
  * reader who asked for stillness while every test above stayed green.
  *

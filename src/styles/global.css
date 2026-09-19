@@ -105,6 +105,19 @@
    */
   --color-gold-btn-label: #ffffff;
 
+  /*
+   * PageHero's cast blocks: the joints between the blocks and the bolt in each
+   * block's corner. Decoration, so SC 1.4.11 does not apply to them; they are
+   * 1.36 and 1.50 on the background, which is all they are for. What matters
+   * is the text that crosses them. Measured 2026-09-19, every foreground on
+   * the joint / the bolt: gold 8.29 / 7.52, text 10.57 / 9.59, muted
+   * 8.02 / 7.28, subtle 6.31 / 5.73, pink-text 5.62 / 5.10, and border
+   * 3.54 / 3.21 for chip edges. `subtle` and `pink-text` drop from AAA to AA
+   * where they cross a joint; nothing drops below AA.
+   */
+  --color-joint: #262f36;
+  --color-bolt: #2a3640;
+
   /* Header chrome. Translucent, so it stays a raw rgba rather than a hex. */
   --color-header-bg: rgba(10, 10, 10, 0.94);
 
@@ -150,27 +163,29 @@
   --text-hero-h1: clamp(33px, min(9vw, 13svh), 104px);
   --text-hero-h1--line-height: 0.94;
   /*
-   * The blog post title. Only the ceiling differs from text-h1: a post sits in
-   * a max-w-3xl measure that stops growing at 768px while 9vw keeps going, so
-   * at 104px a 12-character word overflows and break-word fires with no hyphen
-   * drawn. The first real post read "COMMUNITIE / S THAT" at 1280px.
-   *
-   * Do not lower this to 64px: it would read as one size with the .prose h2
-   * headings inside its own body.
+   * The title of a reading page, Privacy and Accessibility, whose PageHero
+   * text sits in the `max-w-3xl` column the page's prose does. Only the
+   * ceiling differs from text-h1: that column stops growing at 768px while
+   * 9vw keeps going, and at 104px ACCESSIBILITY broke mid-word at 1440px.
    */
-  --text-post-h1: clamp(33px, 9vw, 80px);
-  --text-post-h1--line-height: 0.94;
+  --text-reading-h1: clamp(33px, 9vw, 80px);
+  --text-reading-h1--line-height: 0.94;
   /*
-   * A post's own title, on its plate and on its cards. Post titles are
-   * sentences, not one-word page names, so they keep the case they are
-   * written in (`.post-title`) and come down to 28px and 18px on a phone,
-   * where a 35px uppercase title ran to five lines before the text began.
-   * The ceilings are the old ones, so a desktop is unchanged. The floors can
-   * sit below the heading floors because those are fitted to the longest
-   * uppercase word, and a title in its own case is narrower.
+   * A blog post, set as an article rather than a page. The title keeps the
+   * case it is written in (`.post-title`) and its section headings stay
+   * uppercase, and both come down from the page scale, where a 104px title
+   * and 64px headings made a post read as a poster: the title to 60px, the
+   * headings to 36px, a step under it so they cannot read as one size.
+   * The floors are the old post title's, which a phone was already set in.
+   * Privacy and Accessibility keep `text-h2` for theirs.
    */
-  --text-post-title: clamp(28px, 7.2vw, 80px);
-  --text-post-title--line-height: 1.02;
+  --text-post-title: clamp(28px, 4.8vw, 60px);
+  --text-post-title--line-height: 1.06;
+  --text-post-h2: clamp(22px, 3vw, 36px);
+  --text-post-h2--line-height: 1.02;
+  /* The contents list beside a post, a step under body text. */
+  --text-contents: clamp(15px, 1vw, 16px);
+  --text-contents--line-height: 1.35;
   --text-post-card: clamp(18px, 2.6vw, 32px);
   --text-post-card--line-height: 1.15;
   --text-post-card-feature: clamp(18px, calc(5.6vw - 4px), 64px);
@@ -328,6 +343,15 @@
    */
   --spacing-btn-gold-y: 18px;
   --spacing-btn-gold-x: 34px;
+
+  /*
+   * PageHero's cast blocks, fluid between a phone and 1200px like the rhythm
+   * above: a 6px joint and a 10px bolt read as a wall on a desktop and as a
+   * grid of lines on a 390px phone, where 4px and 7px keep the blocks heavy.
+   */
+  --spacing-joint: clamp(4px, 0.5vw, 6px);
+  --spacing-bolt: clamp(7px, 0.84vw, 10px);
+  --spacing-bolt-inset: clamp(8px, 1vw, 12px);
 
   /*
    * The SC 2.5.8 floor. Everything clears it by construction except
@@ -644,18 +668,64 @@
   }
 
   /*
-   * PageHero's plate leans half a degree, the quietest tilt that still reads
-   * as a tilt at 1280px; the homepage stickers lean six. Authored rather than
-   * a utility because Tailwind's rotate scale has no half step and this
-   * project allows no arbitrary values. `.page-hero-level` turns the content
-   * back so the text and the buttons stay level.
+   * PageHero's wall of cast blocks: page-ground blocks with the joint colour
+   * showing through the gaps between them, and a bolt in each block's corner.
+   * The wall is what ends the hero: the blocks stop and the page carries on
+   * without them, so no line or fill separates the hero from the next section.
+   *
+   * The rows are `1fr`, so the wall stretches to whatever height the text
+   * needs, at 200% text zoom and under the text-spacing override included, and
+   * always ends on a whole row rather than cutting a block in half. Always
+   * three rows, and three columns on a phone where six from `sm` would be
+   * slivers: PageHero renders eighteen blocks and a phone shows the first nine.
+   * Six rows on a phone were tried and read as stripes under a one-word title,
+   * about 28px each on /blog.
+   *
+   * A layer of elements rather than a background gradient: text over a
+   * background image is text tests/contrast-incomplete.spec.ts cannot measure,
+   * and it fails, rightly. Behind the text in its own stacking layer, the
+   * blocks leave every heading measurable against the page ground; the ratios
+   * against the joints themselves are measured beside `--color-joint`.
    */
-  .page-hero-plate {
-    rotate: -0.5deg;
+  .cast-blocks {
+    @apply pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3 gap-joint bg-joint sm:grid-cols-6;
   }
 
-  .page-hero-level {
-    rotate: 0.5deg;
+  .cast-blocks > span {
+    @apply relative bg-background;
+  }
+
+  .cast-blocks > span:nth-child(n + 10) {
+    @apply hidden sm:block;
+  }
+
+  .cast-blocks > span::after {
+    @apply absolute right-bolt-inset bottom-bolt-inset size-bolt rounded-full bg-bolt;
+
+    content: '';
+  }
+
+  /*
+   * Contact's roundel sits where two joints cross: from `lg`, the joint
+   * between the fifth and sixth columns and the one under the first row. Five
+   * sixths across keeps it clear of the standfirst's `max-w-2xl` at 1024px,
+   * where four sixths would sit on its last words. A column is
+   * (100% + joint) / 6 wide including one joint, so the crossing is that many
+   * columns in, back by half a joint. Below `lg` the columns are too narrow
+   * for a 96px disc to clear the text, so it stays in the flow.
+   */
+  .cast-blocks-crossing {
+    /* Positioned in the flow too, or the wall, which is, paints over it. */
+    position: relative;
+
+    @media (width >= 64rem) {
+      position: absolute;
+      left: calc(
+        (100% + var(--spacing-joint)) * 5 / 6 - var(--spacing-joint) / 2
+      );
+      top: calc((100% + var(--spacing-joint)) / 3 - var(--spacing-joint) / 2);
+      translate: -50% -50%;
+    }
   }
 
   /*
@@ -917,6 +987,53 @@
    */
   .post-title {
     @apply normal-case tracking-title;
+  }
+
+  /*
+   * A blog post: one reading column in the middle of the page, and the post's
+   * contents list in the track to its right from `xl`, starting level with the
+   * text rather than the title, so the opening reads first. Not sticky:
+   * a post with twelve sections gives a list taller than a short window, and
+   * a sticky list that tall hides its last links, while giving it a scrollbar
+   * of its own makes Firefox add it to the tab order as a stop that is not a
+   * link, which tests/focus.spec.ts caught. Below `xl` the side tracks are too
+   * narrow for a list of sentence-length headings, 64px at 1024px, so the list
+   * sits between the opening and the text instead.
+   *
+   * The middle track is `max-w-3xl`, the measure prose is set in everywhere
+   * else, and the two side tracks are equal so the column stays on the page's
+   * centre line whether or not a post has a contents list.
+   */
+  .post-layout {
+    @apply grid gap-y-head;
+
+    & > * {
+      @apply mx-auto w-full max-w-3xl;
+    }
+
+    @media (width >= 80rem) {
+      grid-template-columns:
+        minmax(0, 1fr) min(100%, var(--container-3xl))
+        minmax(0, 1fr);
+      column-gap: var(--spacing-grid);
+
+      & > * {
+        grid-column: 2;
+      }
+
+      & > .post-contents {
+        grid-column: 3;
+        grid-row: 2 / span 2;
+      }
+    }
+  }
+
+  .post-contents {
+    @apply self-start border-4 border-border bg-surface shadow-hard-gold-8;
+  }
+
+  .post-layout .prose h2 {
+    @apply text-post-h2;
   }
 
   /*
@@ -1380,33 +1497,6 @@
   }
 
   /*
-   * The spinning badge. One instance, on Contact, at the comps' 28s, linear
-   * and infinite.
-   *
-   * The animation is applied by src/components/ui/SpinBadge.vue AFTER the
-   * island mounts, never by the server-rendered HTML. That is what makes the
-   * SC 2.2.2 claim true: the pause control is JavaScript, so if the island
-   * never hydrates there must be no motion for it to have failed to stop.
-   *
-   * The component also refuses to animate when `prefers-reduced-motion:
-   * reduce` matches, so the reduced-motion block at the end of this file is a
-   * backstop here rather than the mechanism, and no pause button is rendered
-   * into a page with nothing moving on it. A hidden-but-focusable control
-   * would be worse than no control.
-   *
-   * The duration lives here rather than in @theme because it belongs to one
-   * effect, not a value the design reuses, the same reason
-   * .mobile-menu-dialog keeps its sizing in the component.
-   */
-  .spin-badge {
-    animation: slowspin 28s linear infinite;
-  }
-
-  .spin-badge[data-paused='true'] {
-    animation-play-state: paused;
-  }
-
-  /*
    * The pause control SC 2.2.2 requires, wherever motion needs one. Square,
    * 4px border, gold on `surface`, per the comps.
    *
@@ -1426,17 +1516,11 @@
    * Appearance only. Position comes from a second class at every call site,
    * because two single-class rules on one element are resolved by their order
    * in the STYLESHEET, not in the class attribute, so a positioning class
-   * would silently lose to whichever rule was written later. SpinBadge.vue's
-   * `borderClass` prop exists for the same reason and has the longer note.
+   * would silently lose to whichever rule was written later.
    */
   .motion-toggle {
     @apply absolute grid h-10 w-10 place-items-center border-4 border-border
       bg-surface text-gold;
-  }
-
-  /* Hung off the corner of the badge it pauses. */
-  .motion-toggle-corner {
-    @apply -bottom-3 -right-3;
   }
 
   .motion-toggle:hover {
@@ -1801,19 +1885,6 @@
   }
 }
 
-/*
- * Top level rather than inside a layer, so nothing about cascade layers can
- * affect whether the browser sees the keyframes at all.
- */
-@keyframes slowspin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* ---------------------------------------------------------------------------
    Reduced motion. Anything animated must honour this; see the design system
    skill.
@@ -1821,16 +1892,14 @@
    Necessary, not sufficient. SC 2.2.2 Pause, Stop, Hide asks for a control
    the user can operate, not an OS setting: a reader who has not set this
    preference, or who is distracted by the motion in the moment, gets nothing
-   from a media query. The two things that animate, the spinning badge and the
-   homepage hero field, each carry a keyboard-operable pause control
-   (SpinBadge.vue, HeroField.vue). This block is the backstop for anything
-   animated that is neither of them.
+   from a media query. The one thing that animates, the homepage hero field,
+   carries a keyboard-operable pause control (HeroField.vue). This block is
+   the backstop for anything animated that is not it.
 
-   Neither relies on it in either direction: each component reads
-   `prefers-reduced-motion` itself. The badge never starts and the field is
-   drawn once and held, so a reader with the preference set sees a still
-   picture and no pause control, rather than an animation neutralised to
-   0.01ms with a dead button beside it.
+   The field does not rely on it in either direction: it reads
+   `prefers-reduced-motion` itself and is drawn once and held, so a reader
+   with the preference set sees a still picture and no pause control, rather
+   than an animation neutralised to 0.01ms with a dead button beside it.
 --------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {

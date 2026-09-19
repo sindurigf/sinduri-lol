@@ -16,13 +16,20 @@ import { gotoSettled } from './settle';
  * for a bare `h1` failed /accessibility; PageHero's `h1` set to `text-text`
  * failed all 23 routes that use it. The assertions are soft so that one
  * broken rule does not hide another on the same route. Restored, 25 passed.
+ *
+ * Since 2026-09-19 a page opens one of two ways: PageHero's wall of cast
+ * blocks with a gold `h1`, or, on a blog post, the article opening with its
+ * title in the text colour, toned down so a post reads as an article.
+ * Proven able to fail the same day: a post title set to `text-gold` failed
+ * both posts on "h1 text that is not the text colour". Restored, 25 passed.
  */
 
 /** Home keeps its canvas hero and 404 its joke page; see ARCHITECTURE.md. */
 const OWN_OPENING = ['/', '/404'] as const;
 
-/** `--color-gold`, as the browser reports it. */
+/** `--color-gold` and `--color-text`, as the browser reports them. */
 const GOLD = 'rgb(255, 192, 0)';
+const TEXT = 'rgb(229, 226, 225)';
 
 for (const route of ROUTES) {
   test(`${route} follows the page rules`, async ({ page }) => {
@@ -33,7 +40,11 @@ for (const route of ROUTES) {
       const first = main?.firstElementChild ?? null;
       const cards = [...document.querySelectorAll('main .card')];
       return {
-        opensWithHero: Boolean(first?.querySelector('.page-hero-plate')),
+        opensWith: first?.matches('.page-hero')
+          ? 'hero'
+          : first?.matches('article') && first.querySelector('.post-layout')
+            ? 'post'
+            : 'nothing recognised',
         h1Colours: [...document.querySelectorAll('main h1 *, main h1')]
           .filter((el) =>
             [...el.childNodes].some(
@@ -51,12 +62,16 @@ for (const route of ROUTES) {
 
     if (!(OWN_OPENING as readonly string[]).includes(route)) {
       expect
-        .soft(found.opensWithHero, `${route} does not open with PageHero`)
-        .toBe(true);
+        .soft(
+          found.opensWith,
+          `${route} opens with neither PageHero nor a post's article opening`,
+        )
+        .not.toBe('nothing recognised');
+      const expected = found.opensWith === 'post' ? TEXT : GOLD;
       expect
         .soft(
-          found.h1Colours.filter((colour) => colour !== GOLD),
-          `${route} has h1 text that is not gold`,
+          found.h1Colours.filter((colour) => colour !== expected),
+          `${route} has h1 text that is not ${found.opensWith === 'post' ? 'the text colour' : 'gold'}`,
         )
         .toEqual([]);
     }

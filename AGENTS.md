@@ -80,9 +80,9 @@ in CI, because hooks are not cloned and `core.hooksPath` is opt-in.
 - Check for an existing pattern before introducing a new one.
 - Prefer stdlib or an existing dependency over adding a package. **Ask before
   installing anything not already in `package.json`.**
-- Vue is for components with real state: the mobile menu dialog, the canvas
-  hero, the badge. A small script that nothing else depends on is a plain
-  module, not an island.
+- Vue is for components with real state: the mobile menu dialog and the
+  canvas hero. A small script that nothing else depends on is a plain module,
+  not an island.
 
 ## Copy: two kinds, two different rules
 

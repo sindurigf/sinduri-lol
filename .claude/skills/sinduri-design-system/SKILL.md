@@ -41,9 +41,17 @@ or radius.
 | `pink-text`  | `#FF79B6`                | All pink text, any size    |
 | `darkcyan`   | `#00363F`                | Text on cyan backgrounds   |
 | `header-bg`  | `rgba(10, 10, 10, 0.94)` | Sticky header only         |
+| `joint`      | `#262F36`                | Cast-block joints only     |
+| `bolt`       | `#2A3640`                | Cast-block bolts only      |
 
 The three **dark** surfaces are `#131313`, `#1A1A1A`, and `#0E0E0E`. Every
 foreground color must be checked against **all three**, not just one.
+
+`joint` and `bolt` are decoration, not surfaces, but PageHero's text crosses
+them, so every foreground was measured on them too: the lowest is `border` on
+the bolt at 3.21, and `subtle` and `pink-text` drop from AAA to AA there.
+`global.css` beside `--color-joint` and ARCHITECTURE.md carry the numbers. A
+new foreground used in a hero is measured on both.
 
 **Those three are not the only surfaces, and the tokens above are not
 universal.** There is a fourth: `gold` used as a ground rather than as an
@@ -461,7 +469,9 @@ Do not add breakpoint steps.
 | ---------------------- | ----------------------------------------- | ------ |
 | H1                     | `text-h1`                                 | 900    |
 | H1, homepage hero      | `text-hero-h1`                            | 900    |
-| H1, post title         | `text-post-h1`                            | 900    |
+| H1, reading page       | `text-reading-h1`                         | 900    |
+| H1, post title         | `text-post-title`                         | 900    |
+| H2, in a post          | `text-post-h2`                            | 900    |
 | H2                     | `text-h2`                                 | 900    |
 | H3                     | `text-h3`                                 | 800    |
 | Sticker, homepage hero | `--text-hero-sticker` via `.hero-sticker` | 800    |
@@ -473,17 +483,23 @@ Do not add breakpoint steps.
 
 Headings must not skip levels. One `<h1>` per page.
 
-**`text-post-h1` is the title of a reading page and nothing else**: a post,
-Privacy and Accessibility. Their PageHero uses `measure="reading"`, which sits
+**`text-reading-h1` is the title of a reading page and nothing else**: Privacy
+and Accessibility. Their PageHero uses `measure="reading"`, which puts the text
 in the `max-w-3xl` measure, not the full page column, so these are the h1s on
 the site sized against a box that stops growing at 768px while `text-h1`'s
-`9vw` does not. PageHero applies it itself for a reading plate. At the 104px ceiling a 12-character title word
-overflows that column and `overflow-wrap: break-word` breaks it mid-word with
-no hyphen: the first real post rendered `COMMUNITIE / S` at 1280px. Its floor
-and middle term are `text-h1`'s own, so it changes nothing at 305px or at 400%
-zoom, where the floor is what bites. `text-h1` in the same box broke
-`ACCESSIBILITY` as `ACCESSIBIL / ITY` at 1440px. Do not use it for a title in
-the page column, and do not lower it to 64px, which is `text-h2`'s ceiling.
+`9vw` does not. PageHero applies it itself. Its floor and middle term are
+`text-h1`'s own, so it changes nothing at 305px or at 400% zoom, where the
+floor is what bites. `text-h1` in the same box broke `ACCESSIBILITY` as
+`ACCESSIBIL / ITY` at 1440px. Do not use it for a title in the page column, and
+do not lower it to 64px, which is `text-h2`'s ceiling.
+
+**A blog post has its own, smaller scale**, because it reads as an article
+rather than a page. `text-post-title` sets the title up to 60px in the case it
+is written in, and `text-post-h2` its section headings up to 36px, a step under
+the title so the two never read as one size. At the page scale a post opened
+with a 104px title over 64px headings and read as a poster. Do not raise
+either back to the page scale without asking; the smaller scale was the
+request.
 
 H3 came down from a 48px ceiling to 32px because it also sizes lead
 paragraphs and card titles, which were reading as headings; the stickers are
@@ -677,12 +693,11 @@ That media query is necessary but **not sufficient**. WCAG 2.2 SC 2.2.2 Pause,
 Stop, Hide applies to anything that moves automatically for more than five
 seconds, and it requires a control the user can operate, not an OS setting.
 
-Two elements in this design fall under it. The **spinning badge**, `slowspin`
-at 28s on Contact, linear and infinite, in `src/components/ui/SpinBadge.vue`.
-And the **homepage hero field**, a `<canvas>` of stems with a hare hopping
-through it, driven by a `requestAnimationFrame` loop in
-`src/components/ui/HeroField.vue`. `tests/motion.spec.ts` measures both, and
-the field needed a different instrument: a canvas has no
+One element in this design falls under it: the **homepage hero field**, a
+`<canvas>` of stems with a hare hopping through it, driven by a
+`requestAnimationFrame` loop in `src/components/ui/HeroField.vue`. Contact's
+spinning badge did too, until it became the plain roundel on 2026-09-19.
+`tests/motion.spec.ts` measures the field. A canvas has no
 `animation-play-state` to read, so the test fingerprints its pixels and
 asserts they change while running and stop when paused. Three things about
 how, because each is the difference between meeting 2.2.2 and appearing to:
@@ -690,10 +705,10 @@ how, because each is the difference between meeting 2.2.2 and appearing to:
 - **The animation is added by the island on mount, never by the server-rendered
   HTML.** The control is JavaScript, so motion in the static markup would run
   in a browser where the island failed to hydrate with nothing able to stop
-  it. No JS, no spin. Reuse this shape for anything animated that is paused by
-  script.
-- **Under `prefers-reduced-motion: reduce` neither component animates or
-  renders its button.** Leaving the global media query to neutralise the
+  it. No JS, no motion. Reuse this shape for anything animated that is paused
+  by script.
+- **Under `prefers-reduced-motion: reduce` the component does not animate or
+  render its button.** Leaving the global media query to neutralise the
   animation to 0.01ms would leave a control in the tab order that pauses
   nothing. The hero field still paints one still frame rather than hiding: the
   preference asks for less movement, not for less picture.
@@ -939,15 +954,22 @@ is still 18.58.
 Every page is built from the same parts in the same order, so no page decides
 its own opening, heading treatment or rhythm. Agreed with Sinduri on
 2026-09-18 after a cohesion audit found five openings, six section-heading
-treatments and five section paddings. `tests/page-structure.spec.ts` checks the
-ones a machine can see.
+treatments and five section paddings, and the openings revised on 2026-09-19.
+`tests/page-structure.spec.ts` and `tests/page-hero.spec.ts` check the ones a
+machine can see.
 
-- **Opening.** Every page except Home and 404 opens with `PageHero`: the
-  tilted plate, a gold `h1`, the roundel on its bottom corner. A page with a
-  photo passes `image`, and the plate sits over the photo's left edge with the
-  roundel on the seam, rather than taking the photo inside it. A page with its
-  own round mark (Contact's badge) passes it in the `mark` slot. A post uses
-  `titleSize="post"`.
+- **Opening.** There are three, and a page does not invent a fourth. Home
+  has its canvas hero, which nothing else copies. A blog post opens as an
+  article: breadcrumb, the title in its own case in the text colour, teaser,
+  date, then the text in `.post-layout`, with the contents box beside it from
+  `xl`. Every other page opens with `PageHero`: a full-bleed wall of cast
+  blocks behind a gold `h1`, three rows of page-ground blocks with the joint
+  colour between them. The wall is what ends the hero. **Never add a line,
+  fill, card or separator strip between the hero and the first section**;
+  each was tried and rejected, a blue rule last. A photo passes `image` and
+  stands on the wall with its border and gold shadow; Contact passes
+  `roundel`, which sits on a joint crossing from `lg`. Career uses PageHero
+  until its own recruiter-facing opening is chosen.
 - **Sections.** Everything after the hero is a `Section`: a band with
   `py-section`, a white `text-h2` heading, an optional `.lead`, then the
   content at `mt-head`. There is no rule above the heading; the heading and the
@@ -960,15 +982,17 @@ ones a machine can see.
   id `<id>-heading`.
 - **A long page ends** on `CloseRow`: a card with the post to continue with and
   the one action that leads on.
-- **Colour has a job.** Gold is structure: the hero shadow, every card's
+- **Colour has a job.** Gold is structure: the page title, every card's
   default shadow, card labels. Pink is emphasis, on at most one card per
-  section (the current role, the cats, the award). Cyan is the round marks: the
-  roundel and the badge. On the blog, colour means category, as before.
+  section (the current role, the cats, the award). Cyan is the round mark's
+  shadow. On the blog, colour means category, as before.
 - **One card.** `.card` with an 8px hard shadow, always, and `.card-title` for
   its heading. A state such as "current" is a `.chip` with words in it, never a
   border colour alone (SC 1.4.1).
 - **Photos** take a 4px `border` frame and no shadow or tilt; only cards stand
-  forward. Inside a panel they take no frame of their own: `PhotoTile` sets
+  forward. A PageHero photo is the exception: it casts the gold shadow,
+  because it stands on the wall rather than on the page.
+  Inside a panel they take no frame of their own: `PhotoTile` sets
   each on a quiet `bg-background` tile, links it to its full-size file, and
   `PhotoViewer` opens that link in a native `<dialog>`. A group too long for a
   row is one `.photo-strip` that scrolls sideways, each photo uncropped in
@@ -978,11 +1002,12 @@ ones a machine can see.
   left a phone with screens of empty ground between one-column sections.
 - **Links**: a link in a sentence uses the base underline; an action is
   `.btn-primary` or `.btn-secondary`; tags, skills and jump links are `.chip`.
-- **Reading pages** (Privacy, Accessibility, posts) are a PageHero with
-  `measure="reading"`, then one `.prose` column, both `max-w-3xl` and centred
-  in the page column, so the title and the text start on the same edge.
-- **Case.** Headings are uppercase, except a post's title, on its plate and
-  on its cards, which keeps the case it is written in (`.post-title`, with
+- **Reading pages** (Privacy, Accessibility) are a PageHero with
+  `measure="reading"`, whose text sits in a centred `max-w-3xl` while the wall
+  stays full width, then one `.prose` column of the same width, so the title
+  and the text start on the same edge.
+- **Case.** Headings are uppercase, except a post's title, at the top of the
+  post and on its cards, which keeps the case it is written in (`.post-title`, with
   `--text-post-title` and `--text-post-card`). Uppercase suits a page name
   and makes a sentence long and loud: at 390px the first post's title ran to
   five lines at 35px, and reads in three at 28px in its own case.
@@ -1075,8 +1100,8 @@ forbidden forever.
 ### Anything animated needs a pause control, not just a media query
 
 See [Motion](#motion). `prefers-reduced-motion` is necessary and not
-sufficient; SC 2.2.2 wants a control. The spinning badge and the hero field
-both carry one; the next animated element is the one this will bite.
+sufficient; SC 2.2.2 wants a control. The hero field carries one; the next
+animated element is the one this will bite.
 
 ---
 
@@ -1090,11 +1115,11 @@ dead, and that is exactly the population that depends on magnification
 (SC 1.4.10 Reflow). The saving is a few kilobytes. The cost is a broken site for
 a magnification user. See the comment in `Header.astro`.
 
-All three islands are `client:load`: `MobileMenu` in `Header.astro`,
-`HeroField` in `index.astro`, and `SpinBadge` in `contact.astro`. The two
-animated ones load with the pause control SC 2.2.2 needs, and `client:visible`
-on the hero, which is in view at load, would fire at once anyway after first
-shipping an IntersectionObserver. See the comment in `index.astro`.
+Both islands are `client:load`: `MobileMenu` in `Header.astro` and
+`HeroField` in `index.astro`. The field loads with the pause control SC 2.2.2
+needs, and `client:visible` on the hero, which is in view at load, would fire
+at once anyway after first shipping an IntersectionObserver. See the comment in
+`index.astro`.
 
 ---
 
@@ -1120,10 +1145,9 @@ the logo tile and the one control that shares its shape:
 4. the bunny tile in the Lepus Ridet panel on `/about`, the same copy again at
    112px from `lg` and 80px below it, as the name card's mark
 
-**`rounded-full` is the circle exception.** It applies to the spinning badge
-frame (`SpinBadge.vue`), the bunny roundel (`Roundel.astro`, on every
-PageHero and in the homepage About teaser), and the Star Trek thumbnail on
-`/about`. There is no pill: tags and labels are the square `.chip`.
+**`rounded-full` is the circle exception.** It applies to the bunny roundel
+(`Roundel.astro`, on Contact's PageHero and in the homepage About teaser), the
+bolts in PageHero's cast blocks, and the Star Trek thumbnail on `/about`. There is no pill: tags and labels are the square `.chip`.
 
 The two are not degrees of the same thing and the second is not a loophole in
 the first. `rounded-nav` softens a rectangle, which is the move this design

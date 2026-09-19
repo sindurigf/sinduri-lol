@@ -79,7 +79,7 @@ type RegionColumns = {
 
 /**
  * The page column inside a landmark. Every route has one: blog posts used to
- * set a narrower measure instead, and since they open with PageHero they share
+ * set a narrower measure instead, and now centre their reading column inside
  * the page column like everything else.
  *
  * The page column is identified by its used max-width matching

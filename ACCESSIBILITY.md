@@ -165,6 +165,30 @@ required: gold against the gold button measures 1.00:1, so a ring flush with
 the element would be invisible there. The offset puts surface colour on both
 sides of the ring, which is what SC 1.4.11 measures.
 
+### Text that crosses the cast-block joints
+
+PageHero's wall puts two decorative colours behind its text: the joints
+between the blocks, `joint` `#262F36`, and the bolt in each block's corner,
+`bolt` `#2A3640`. They are 1.36 and 1.50 on `#131313` and carry no meaning,
+so SC 1.4.11 does not apply to them. The text on top of them was measured,
+2026-09-19:
+
+| Token      | on `joint` | on `bolt` |
+| ---------- | ---------- | --------- |
+| `text`     | 10.57      | 9.59      |
+| `muted`    | 8.02       | 7.28      |
+| `subtle`   | 6.31       | 5.73      |
+| `gold`     | 8.29       | 7.52      |
+| `cyan`     | 8.21       | 7.44      |
+| `border`   | 3.54       | 3.21      |
+| `pinkText` | 5.62       | 5.10      |
+
+Where hero text crosses a joint or a bolt, `subtle` and `pinkText` fall from
+AAA to AA, and `border` on a chip edge keeps 3:1. Nothing falls below AA.
+`tests/contrast-incomplete.spec.ts` measures hero text against the page
+ground, because the blocks sit behind it in their own layer; these are the
+numbers for the joints themselves.
+
 ### The gold surface is an exception, and every dark token fails on it
 
 The closing band on `/contact` and the kindness quote on `/about` are
@@ -293,7 +317,7 @@ it, and a violation fails the build.
 | Heading word fit     | Playwright at 320px and 305px       | No heading word wider than its own box              |
 | Reflow navigation    | Playwright at 320px                 | Menu opens, takes focus, closes on Escape           |
 | Route drift          | Playwright                          | Test list matches real build output                 |
-| Badge route coverage | Playwright over the built `dist/`   | Every route rendering a badge is tested for 2.2.2   |
+| Page hero wall       | Playwright at 1280px and 390px      | Ends on a whole row; roundel on a joint crossing    |
 | Hero field motion    | Playwright, canvas pixels           | It repaints, a key press stops it, still when asked |
 | Unknown path         | Playwright                          | A path with no page returns 404, not 200            |
 | Response headers     | Playwright over the built `dist/`   | The CSP does not break fonts or the menu            |

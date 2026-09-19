@@ -5,47 +5,35 @@ import Roundel from './Roundel.astro';
 import { WIDTHS } from '../lib/image-densities';
 
 /*
- * The opening of every page except Home and 404. A dark plate tilted half a
- * degree, like the stickers on the homepage, with a thin `border` edge and a
- * hard gold shadow, and the bunny roundel on its bottom corner. The
- * plate's own edge and shadow end the hero; nothing else separates it from
- * the page. The tilt lives in `.page-hero-plate` in global.css.
+ * The opening of every page except Home, 404 and a blog post: a full-bleed
+ * wall of cast blocks behind a gold `h1`, chosen with Sinduri on 2026-09-19.
+ * The wall ends the hero. There is no card, no fill and no rule under it;
+ * the blocks stop and the page carries on. See `.cast-blocks` in global.css.
  *
- * Below `sm` the plate runs to the screen edges with a 16px inset, so its
- * content box is the page's own: the heading floors are fitted to that box,
- * and `PROFESSIONAL` or a tag like `sustainability` would not fit a padded
- * card inside it. The section is a full-bleed `.band`, so its
- * `overflow-x-clip` cuts at the screen edge and takes only the corners the
- * tilt pushes past it; the page never scrolls sideways.
- *
- * The roundel hangs half below the plate, so the plate reserves room for it:
- * below `lg` its content runs the full width, so the bottom padding clears
- * the roundel; from `lg` the content keeps clear of the right edge instead.
+ * The section is a `.band`, so the wall runs edge to edge while the text keeps
+ * the page column and the heading floors keep the box they are fitted to.
  */
 interface Props {
   title: string;
   /*
    * `h2` for a title that is data rather than a chosen string: a tag is one
    * long word no soft hyphen can be written into, and `text-h1`'s 33px floor
-   * does not fit `sustainability` in the 273px box. `post` for a blog post's
-   * title, in the case it is written in; see `--text-post-title`. The level
-   * stays h1 in every case.
+   * does not fit `sustainability` in the 273px box. The level stays h1.
    */
-  titleSize?: 'h1' | 'h2' | 'post';
+  titleSize?: 'h1' | 'h2';
   /*
-   * A page that opens with a photo. The plate keeps its size and sits over
-   * the photo's left edge, with the roundel on the seam between them, rather
-   * than taking the photo inside it: inside, the plate grew to the photo's
-   * height and the photo shrank to a thumbnail.
+   * A page that opens with a photo. It sits on the wall beside the text with
+   * its own border and gold shadow, overlapping the blocks rather than
+   * replacing any: chosen over a photo cut into the wall on its joints.
    */
   image?: ImageMetadata;
   imageAlt?: string;
+  /* The roundel on a joint crossing. Contact is the one page that has it. */
+  roundel?: boolean;
   /*
-   * `reading` for a page that is one column of text: a post, Privacy,
-   * Accessibility. The plate narrows and sits centred over that column: to
-   * its own `max-w-3xl` for Privacy and Accessibility, and to `max-w-5xl` for
-   * a post, whose sentence-length title read as squeezed at the text's width
-   * on a desktop. A photo layout is always `page`.
+   * `reading` for a page that is one column of prose, Privacy and
+   * Accessibility: the text sits in that column's `max-w-3xl`, centred, so
+   * the title and the text start on one edge. The wall stays full width.
    */
   measure?: 'page' | 'reading';
 }
@@ -55,99 +43,52 @@ const {
   titleSize = 'h1',
   image,
   imageAlt = '',
+  roundel = false,
   measure = 'page',
 } = Astro.props;
 
 const reading = measure === 'reading' && !image;
 
-const TITLE_CLASS = {
-  h1: 'text-h1',
-  h2: 'text-h2',
-  post: 'text-post-title post-title',
-} as const;
-
-/*
- * `text-h1` is fitted to the page column. In the narrower reading column its
- * 104px ceiling broke ACCESSIBILITY mid-word at 1440px, so a reading plate
- * takes `text-post-h1`, the size fitted to `max-w-3xl`.
- */
-const READING_TITLE_CLASS = 'text-post-h1';
-
+const TITLE_CLASS = { h1: 'text-h1', h2: 'text-h2' } as const;
 const titleClass =
-  reading && titleSize === 'h1' ? READING_TITLE_CLASS : TITLE_CLASS[titleSize];
+  reading && titleSize === 'h1' ? 'text-reading-h1' : TITLE_CLASS[titleSize];
+
+/* Six columns by three rows from `sm`; a phone shows three columns, nine. */
+const BLOCK_COUNT = 18;
 
 /*
- * A page can replace the roundel with its own corner mark, as Contact does
- * with the spinning badge. The badge is larger, so the plate reserves more
- * room beside and below it.
- */
-const hasOwnMark = Astro.slots.has('mark');
-
-/*
- * The photo column: five of twelve tracks of `max-w-page` from `lg`, the full
- * column below it, net of the gutter. Only used to pick a file from WIDTHS;
- * tests/image-size.spec.ts fails when it drifts from the layout.
+ * The photo column: four of twelve tracks of `max-w-page` from `lg`, and at
+ * most 24rem below it, where a full-width portrait would be a screen and a
+ * half tall. Only used to pick a file from WIDTHS; tests/image-size.spec.ts
+ * fails when it drifts from the layout.
  */
 const IMAGE_SIZES =
-  '(min-width: 64rem) min(calc((100vw - 3rem) * 0.4167), 33.34rem), (min-width: 40rem) calc(100vw - 3rem), calc(100vw - 2rem)';
+  '(min-width: 64rem) min(calc((100vw - 3rem) * 0.3333), 26.67rem), min(calc(100vw - 2rem), 24rem)';
 ---
 
-{/*
-  The bottom padding is the mark's overhang below the plate: half the roundel's
-  96px and 128px, or the badge's 160px and 192px, plus its 8px shadow, so the
-  next section starts clear. With a photo the plate is not the lowest thing,
-  so the photo's own caption ends the hero.
-*/}
-<section
-  class:list={[
-    'band overflow-x-clip pt-16 lg:pt-20',
-    image ? 'pb-10' : hasOwnMark ? 'pb-24 lg:pb-28' : 'pb-16 lg:pb-20',
-  ]}
->
+<section class="page-hero band relative isolate py-16 lg:py-20">
+  <div class="cast-blocks" aria-hidden="true">
+    {Array.from({ length: BLOCK_COUNT }, () => (
+      <span />
+    ))}
+  </div>
+
   <div
     class:list={[
-      'mx-auto max-w-page',
-      image && 'lg:grid lg:grid-cols-12 lg:items-center',
+      'relative mx-auto max-w-page',
+      image && 'lg:grid lg:grid-cols-12 lg:items-start',
     ]}
   >
     <div
-      class:list={[
-        reading &&
-          (titleSize === 'post' ? 'mx-auto max-w-5xl' : 'mx-auto max-w-3xl'),
-        image && 'relative z-10 lg:col-span-8 lg:col-start-1 lg:row-start-1',
-      ]}
+      class:list={[image && 'lg:col-span-7', reading && 'mx-auto max-w-3xl']}
     >
-      <div
-        class:list={[
-          'page-hero-plate relative -mx-4 border-4 border-border bg-surface px-4 pb-20 pt-10 shadow-hard-gold-8 sm:mx-0 sm:p-card sm:pb-24',
-          image
-            ? 'lg:pb-card lg:pr-28'
-            : hasOwnMark
-              ? 'sm:pb-28 lg:pb-card lg:pr-64'
-              : reading
-                ? ''
-                : 'lg:pb-card lg:pr-48',
-        ]}
-      >
-        <div class="page-hero-level">
-          <slot name="eyebrow" />
-          <h1 class:list={[titleClass, 'text-gold']}>{title}</h1>
-          <slot />
-        </div>
-
-        <div
-          class:list={[
-            'absolute bottom-0 right-4 translate-y-1/2 sm:right-10',
-            image && 'lg:right-0 lg:translate-x-1/2',
-          ]}
-        >
-          {hasOwnMark ? <slot name="mark" /> : <Roundel eager />}
-        </div>
-      </div>
+      <slot name="eyebrow" />
+      <h1 class:list={[titleClass, 'text-gold']}>{title}</h1>
+      <slot />
     </div>
 
     {image && (
-      <figure class="mt-20 lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:mt-0">
+      <figure class="mt-12 max-w-sm lg:col-span-4 lg:col-start-9 lg:mt-0 lg:max-w-none">
         <Image
           src={image}
           alt={imageAlt}
@@ -155,12 +96,22 @@ const IMAGE_SIZES =
           sizes={IMAGE_SIZES}
           loading="eager"
           fetchpriority="high"
-          class="block h-auto w-full border-4 border-border object-cover"
+          class="block h-auto w-full border-4 border-border shadow-hard-gold-8"
         />
-        <figcaption class="mt-3 text-body text-muted">
+        <figcaption class="mt-5 text-body text-muted">
           <slot name="credit" />
         </figcaption>
       </figure>
     )}
   </div>
+
+  {/*
+    A child of the section, not of the column: its crossing is measured on the
+    wall, which is the section's box.
+  */}
+  {roundel && (
+    <div class="cast-blocks-crossing mt-10 flex justify-end lg:mt-0">
+      <Roundel eager />
+    </div>
+  )}
 </section>

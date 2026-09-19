@@ -13,9 +13,8 @@ import {
  * Everything it draws lives in src/lib/hero-field.ts, along with the
  * reasoning about projection, stem density and the springs.
  *
- * NOTHING ANIMATES UNTIL THIS ISLAND MOUNTS, the same rule SpinBadge.vue
- * follows and for the same reason: the pause control is JavaScript, so a
- * server-rendered field would animate in a browser where this island failed
+ * NOTHING ANIMATES UNTIL THIS ISLAND MOUNTS: the pause control is
+ * JavaScript, so a server-rendered field would animate in a browser where this island failed
  * to hydrate, with no control to stop it. Gating both on `mounted` makes them
  * arrive together or not at all. With scripting off the canvases render empty
  * and the hero is the name and the two stickers on a flat ground.

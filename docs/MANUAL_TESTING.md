@@ -191,17 +191,14 @@ must return `true`.
 - [ ] With it enabled, open `/`. The hero field is drawn once and held, and it
       reads as a picture rather than as something that failed to load. There
       is no pause control. → SC 2.3.3
-- [ ] With it enabled, open `/contact`. The badge is still, the page still
-      makes sense without the motion, and there is no pause control. → SC 2.3.3
 - [ ] Turn it back off and confirm the transition returns, so you know the
       media query is actually what changed. → SC 2.3.3
 
-> Three things move. The hero field on `/` is a canvas animation with its own
-> pause control (`HeroField.vue`); the badge on `/contact` spins at 28s, also
-> with a pause control (`SpinBadge.vue`); and there are short transitions, the
-> three 0.15s hamburger bars and the 150ms straightening of a footer profile
-> tile on hover. Both animations read `prefers-reduced-motion` themselves and
-> render no pause control when it is set. `tests/motion.spec.ts` asserts that,
+> Two things move. The hero field on `/` is a canvas animation with its own
+> pause control (`HeroField.vue`); and there are short transitions, the three
+> 0.15s hamburger bars and the 150ms straightening of a footer profile tile on
+> hover. The field reads `prefers-reduced-motion` itself and renders no pause
+> control when it is set. `tests/motion.spec.ts` asserts that,
 > and that nothing on any route still moves under the preference.
 
 ## 5. Focus indicator visibility
@@ -957,17 +954,13 @@ Not gaps in the testing, gaps in the site.
   `/career`, `/blog/open-source-is-not-just-code`, `/privacy` and
   `/accessibility` are the routes to use for any check that needs real
   sentences.
-- ~~The **spinning badge** is not built.~~ **It is built, and SC 2.2.2 has
-  been tested by machine since 2026-09-04.** `SpinBadge.vue` renders on Contact
-  at 28s with a keyboard-operable pause control, and `tests/motion.spec.ts`
-  asserts the animation class is never applied under `prefers-reduced-motion`
-  and that no dead pause control is rendered. It used to be on the homepage
-  hero at 24s as well; that hero is now the canvas field in `HeroField.vue`,
-  which has its own pause control and its own tests in the same file, measured
-  by comparing the canvas's pixels rather than by reading a CSS animation.
-  What is left here is the human half in §4: whether the still page still
-  makes sense, and whether the field's still frame reads as a picture rather
-  than as something that failed to load.
+- ~~The **spinning badge** is not built.~~ **It was built and tested, and
+  went on 2026-09-19**, when Contact's hero took the plain roundel. The one
+  animation left is the canvas field in `HeroField.vue`, which has its own
+  pause control and its own tests in `tests/motion.spec.ts`, measured by
+  comparing the canvas's pixels rather than by reading a CSS animation. What
+  is left here is the human half in §4: whether the field's still frame reads
+  as a picture rather than as something that failed to load.
 - ~~**SC 2.4.11 is only partly testable.** No page is long enough.~~ **Pages
   are long enough now.** `/blog/open-source-is-not-just-code` runs to 26
   headings and roughly 14 minutes of reading, which is more than enough
