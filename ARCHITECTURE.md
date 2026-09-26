@@ -284,13 +284,13 @@ in `wrangler.jsonc`).
 - `src/assets/`: rendered artwork, through `astro:assets`, WebP, hashed into
   `/_astro/`, cached immutably. Unimported files are not emitted.
 - `public/images/`: stable URLs for outside consumers (Open Graph PNGs).
-- `artwork/`: source artwork the build never reads (the OG badge, the
-  `favicon.ico` frames). Nothing in it ships.
+- `artwork/`: source artwork the build never reads (the Lepus Ridet badge,
+  the `favicon.ico` frames). Nothing in it ships.
 
 | Path                           | Artwork   | Goes on              | Used by                                          |
 | ------------------------------ | --------- | -------------------- | ------------------------------------------------ |
 | `src/assets/bunny-dark.png`    | `#111111` | Gold, light surfaces | `Header.astro` logo tile, `Roundel.astro`, About |
-| `artwork/badge-white.png`      | `#FFFFFF` | Dark surfaces        | Source of the OG image                           |
+| `artwork/badge-white.png`      | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge                   |
 | `public/images/og-default.png` | Composite | n/a                  | `BaseLayout.astro`, every page                   |
 
 | Artwork             | on `#131313` | on `#1A1A1A` | on `#FFFFFF` | on `#FFC000` |
@@ -298,8 +298,10 @@ in `wrangler.jsonc`).
 | `-dark`, `#111111`  | 1.02         | 1.08         | **18.88**    | **11.50**    |
 | `-white`, `#FFFFFF` | **18.58**    | **17.40**    | 1.00         | 1.64         |
 
-- `og-default.png`: 1200x630, `badge-white.png` on `#131313` in an 8px gold
-  frame. PNG in `public/` because scrapers need a stable URL and format.
+- `og-default.png`: 1200x630. Gold panel with the name and the tagline in two
+  lines, `#131313` strip with the logo tile, Lepus and Ridet stickers on the
+  seam. Drawn in Chromium with Lexend 900 and the site tokens. PNG in
+  `public/` because scrapers need a stable URL and format.
 - Every placement renders through `<Image>` at its drawn size with `DENSITIES`
   (1x, 2x). The roundel resizes, so it passes `widths` and `sizes`.
 - A `.vue` component cannot reach `astro:assets`: call `getImage()` in Astro
