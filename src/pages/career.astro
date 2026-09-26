@@ -1,0 +1,278 @@
+---
+import { statSync } from 'node:fs';
+import { join } from 'node:path';
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CloseRow from '../components/CloseRow.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
+import { JOURNEY_POST_HREF } from '../lib/paths';
+
+/*
+ * Every claim comes from the published CV or five-years-in-drupal.md; lines
+ * from the post are marked. Change the PDF and this page together: no test
+ * compares their text. A slot neither source fills gets fewer items, not new copy.
+ */
+const CV_HREF = '/sinduri-guntupalli-cv.pdf';
+const PUBLIC_DIR = 'public';
+const BYTES_PER_KB = 1024;
+
+/* From cwd, not import.meta.url: this runs bundled in dist/.prerender/chunks/. */
+const CV_KB = Math.round(
+  statSync(join(process.cwd(), PUBLIC_DIR, CV_HREF)).size / BYTES_PER_KB,
+);
+
+const EXPERIENCE = [
+  {
+    dates: 'Jan 2026–Present',
+    where: 'Dynatrace',
+    title: 'Sr Developer Programs Engineer',
+    current: true,
+    points: [
+      'Rebranded the Open Ecosystem Discourse community to OffOn and restructured its categories, navigation and gamification from community metrics.',
+      "Built offon.dev, the OffOn community's landing site, in React, then migrated it to Astro.",
+      'Built AI automation for community operations: content generation, community digests and metrics reports.',
+    ],
+  },
+  {
+    dates: 'Jun 2023–Nov 2025',
+    where: 'drunomics',
+    title: 'Product Manager',
+    current: false,
+    points: [
+      'Led the development and launch of mossbo, a managed cloud CMS with AI tools, with a team of developers, designers and marketers.',
+      'Defined and documented the product lifecycle process with management.',
+      'Clarified requirements and priorities with clients and developers.',
+      'Contributed to Playwright testing and to Nuxt and Tailwind frontend development.',
+      'Launched four projects on mossbo end to end: requirements, timelines, stakeholder communication and launch documentation.',
+      /* From the journey post, not the CV. */
+      'mossbo collected multiple awards in 2025.',
+    ],
+  },
+  {
+    dates: 'Jan 2021–May 2023',
+    where: 'Jobiqo',
+    title: 'Software Developer & Configuration Manager',
+    current: false,
+    points: [
+      'Developed and maintained Drupal job board websites, backend and frontend.',
+      'Led the UI and frontend implementation for a client job board website relaunch on Drupal.',
+      'Configured and integrated Google APIs, Analytics, Tag Manager, Search Console, social logins and the Usercentrics CMP with client websites, and monitored their SEO performance.',
+    ],
+  },
+] as const;
+
+const SKILLS = [
+  'Product and program management',
+  'Web development',
+  'Configuration management',
+  'Web analytics',
+  'SEO',
+  'Community and ecosystem management',
+] as const;
+
+/* `honour` renders in `lang="la"` (SC 3.1.2). */
+const EDUCATION = [
+  {
+    award: 'Java',
+    detail: 'Code Factory, Austria, 2020.',
+    honour: 'Summa cum laude',
+  },
+  {
+    award: 'Full Stack Web Development',
+    detail:
+      'Code Factory, Austria, 2019. HTML, CSS, JS, Bootstrap, TypeScript, Angular, PHP, Symfony, MySQL.',
+    honour: 'Summa cum laude',
+  },
+  /* From the journey post, not the CV, which names no school for it. */
+  { award: 'Python', detail: 'Short course, 2019.' },
+  {
+    award: 'Environmental Engineering, Master of Science',
+    detail: 'University of Alabama, Tuscaloosa, USA, 2006–2009. 3.44/4.00.',
+  },
+  {
+    award: 'Civil Engineering, Bachelor of Engineering',
+    detail: 'Andhra University, India, 2001–2005. 64%.',
+  },
+] as const;
+
+const LANGUAGES = [
+  { language: 'English', level: 'Fluent' },
+  { language: 'German', level: 'A2' },
+] as const;
+
+/* The award is on the CV; its event and the community roles are from the post. */
+const OPEN_SOURCE = [
+  {
+    award: 'Women in Drupal Award',
+    detail: 'Build category, DrupalCon Vienna, 2025.',
+  },
+  {
+    award: 'Drupal Austria',
+    detail:
+      'Elected to the board as marketing manager. Deputy marketing manager in 2026.',
+  },
+  {
+    award: 'Drupal Switzerland',
+    detail:
+      'Active in the Swiss community, which taught me so much about events.',
+  },
+  {
+    award: 'Event organising',
+    detail:
+      'Volunteered at Drupal Dev Days Vienna in 2023, then helped organise Drupal Mountain Camp, Drupal Dev Days and DrupalCamp Berlin.',
+  },
+] as const;
+---
+
+<BaseLayout
+  title="Career"
+  description="Sinduri Guntupalli: work history, education and skills, from Drupal development to product management and developer programs, with a CV to download."
+>
+  <PageHero title="Career">
+    <p class="standfirst">
+      <span class="block">Open Source Enthusiast.</span>{' '}
+      <span class="block">Positivity Advocate.</span>{' '}
+      <span class="block">Continuous Learner.</span>
+    </p>
+
+    {/* Size, not only colour, carries the hierarchy: forced colours flattens colour. */}
+    <p class="mt-4 text-body text-gold-muted">
+      Development, product management, open source community programs.
+    </p>
+
+    {/* No `download` attribute: the browser's viewer is the more accessible default. */}
+    <p class="actions mt-head">
+      <a href={CV_HREF} class="btn-gold-primary">
+        Download my CV (PDF, {CV_KB} KB)
+      </a>
+      <a href="/contact/" class="btn-gold-secondary">
+        Get in touch
+      </a>
+    </p>
+  </PageHero>
+
+  <Section title="Summary" panel>
+    <p slot="lead" class="lead max-w-3xl">
+      I am passionate about open source and actively involved in the Drupal
+      community. My developer background helps me every single day: it helps me
+      create realistic timelines, improve communication between stakeholders and
+      engineering, and understand what developers actually need to be
+      successful.
+    </p>
+    <p class="max-w-3xl text-body text-text text-pretty">
+      I never say no to a challenge just because I do not know how to approach
+      it. I commit to figuring it out and learning whatever it takes to make it
+      work.
+    </p>
+  </Section>
+
+  <Section title="Work experience">
+    <ol class="card-block flex flex-col gap-grid">
+      {
+        /* Title first, so heading navigation lands before the employer. */
+        EXPERIENCE.map((role) => (
+          <li
+            class:list={[
+              'card grid gap-8 lg:grid-cols-12',
+              role.current && 'card-solid',
+            ]}
+          >
+            <div class="flex min-w-0 flex-col items-start gap-4 lg:col-span-12">
+              {role.current && <span class="badge">Current</span>}
+              <h3 class="card-title">{role.title}</h3>
+            </div>
+
+            {/* No `text-*` inside the solid block: a utility beats its rule (tests/solid-block.spec.ts). */}
+            <p class="flex min-w-0 flex-col gap-2 lg:col-span-3">
+              <span class:list={['label', !role.current && 'text-subtle']}>
+                {role.dates}
+              </span>
+              <span class:list={['label', !role.current && 'text-subtle']}>
+                {role.where}
+              </span>
+            </p>
+
+            <ul class="bullet-list min-w-0 lg:col-span-9">
+              {role.points.map((point) => (
+                <li class="mt-3 text-body text-pretty first:mt-0">{point}</li>
+              ))}
+            </ul>
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  <Section title="Skills and education">
+    <div class="grid gap-grid lg:grid-cols-2">
+      <div class="card">
+        <h3 class="card-title">Education</h3>
+        <ul class="mt-8 flex flex-col gap-4">
+          {EDUCATION.map((item) => (
+            <li class="text-body text-text text-pretty">
+              <strong class="font-black text-text">{item.award}</strong>
+              {': '}
+              {item.detail}
+              {'honour' in item ? (
+                <>
+                  {' '}
+                  <span lang="la">{item.honour}</span>.
+                </>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="flex min-w-0 flex-col gap-grid">
+        <div class="card">
+          <h3 class="card-title">Skills</h3>
+          <ul class="mt-8 flex flex-wrap gap-3">
+            {SKILLS.map((skill) => (
+              <li class="badge">{skill}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Languages</h3>
+          <ul class="mt-8 flex flex-col gap-4">
+            {LANGUAGES.map((item) => (
+              <li class="text-body text-text">
+                <strong class="font-black text-text">{item.language}</strong>
+                {': '}
+                {item.level}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <Section title="Open source" surface="gold" class="gold-column">
+    <div class="grid gap-grid lg:grid-cols-12 lg:items-start">
+      <p class="lead mt-0 lg:col-span-5">
+        What I love about open source is that people contribute based on passion
+        and expertise, not hierarchy. There is room for everyone.
+      </p>
+      <dl class="grid gap-grid sm:grid-cols-2 lg:col-span-7">
+        {OPEN_SOURCE.map((item) => (
+          <div class="card">
+            {/* `text-gold` and `text-text` fail SC 1.4.3 on this ground. */}
+            <dt class="label text-gold-muted">{item.award}</dt>
+            <dd class="mt-4 text-body text-pretty">{item.detail}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </Section>
+
+  <CloseRow
+    readHref={JOURNEY_POST_HREF}
+    readLabel="Five years in Drupal"
+    actionHref="/about/"
+    actionLabel="Learn more about me"
+  />
+</BaseLayout>

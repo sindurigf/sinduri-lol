@@ -1,0 +1,101 @@
+/*
+ * 404 starfield: hard-edged points stopping at `--star`. Decoration only; no
+ * text over it (the axe scans in tests/a11y.spec.ts). Still, so SC 2.2.2 does not
+ * apply.
+ */
+@layer components {
+  .starfield {
+    background-color: var(--color-background);
+    background-image:
+      radial-gradient(
+        circle at 12% 18%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 28% 72%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 44% 36%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 58% 84%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 71% 22%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 83% 58%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 91% 12%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 8% 88%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 36% 8%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 64% 64%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 19% 48%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 77% 92%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 5% 34%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 52% 12%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 95% 76%,
+        var(--color-gold) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 40% 94%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 24% 28%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 87% 38%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      );
+  }
+}

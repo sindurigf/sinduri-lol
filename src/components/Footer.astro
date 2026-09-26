@@ -1,0 +1,166 @@
+---
+import { CONTACT_EMAIL } from '../lib/contact';
+import { NAV_LINKS } from '../lib/nav';
+import { SOCIAL_PROFILES } from '../lib/profiles';
+import { SITE_NAME } from '../lib/site';
+/* Hashed under /_astro/ and cached once, instead of inline on every page. */
+import socialIcons from '../assets/social-icons.svg?url';
+
+/* Source order is the reading order at every width; no CSS `order`. */
+
+/* Email is appended here, not in profiles.ts, which also feeds JSON-LD `sameAs`. */
+const SOCIAL_LINKS = [
+  ...SOCIAL_PROFILES,
+  { href: `mailto:${CONTACT_EMAIL}`, label: 'Email' },
+] as const;
+
+const POLICY_LINKS = [
+  { href: '/accessibility/', label: 'Accessibility' },
+  { href: '/privacy/', label: 'Privacy' },
+  { href: '/credits/', label: 'Credits' },
+] as const;
+
+/* The year of first publication, not the build year: a build date goes stale. */
+const FIRST_PUBLISHED = 2026;
+
+/* Not inline: Astro drops the space between two expressions on separate lines. */
+const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
+---
+
+<footer class="page-gutter bg-background">
+  <div class="mx-auto max-w-page">
+    <div class="footer-inner">
+      <div class="footer-top">
+        {/* A <div>: a <p> trips WAVE's "Possible heading" (tests/wave-alerts.spec.ts). */}
+        <div class="footer-name" lang="la">
+          Lepus Ridet
+        </div>
+
+        <nav aria-label="Site" class="footer-pages">
+          <ul>
+            {NAV_LINKS.map((link) => (
+              <li>
+                <a href={link.href} class="label text-text hover:text-cyan">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <nav aria-label="About this site" class="footer-policies">
+          <ul>
+            {POLICY_LINKS.map((link) => (
+              <li>
+                <a href={link.href} class="label text-subtle hover:text-cyan">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <nav aria-label="Social" class="footer-social">
+          <ul class="footer-stickers">
+            {SOCIAL_LINKS.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  class="footer-sticker"
+                  rel={link.href.startsWith('https:') ? 'me' : undefined}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <use href={`${socialIcons}#${link.label}`} />
+                  </svg>
+                  <span class="sr-only">{link.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+
+      <div class="footer-base">
+        <small class="footer-copyright">{copyright}</small>
+
+        {/* Origin at the hare's middle on the ground; viewBox cropped to the drawing. */}
+        <svg
+          class="footer-tuft"
+          viewBox="-142 -94 266 102"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <g class="tuft-back">
+            <path d="M-132.18 0Q-135.75 -32.73 -139.4 -59.5Q-128.18 -29.75 -122.83 0Z"></path>
+            <path d="M-113.47 0Q-115 -44.88 -113.9 -81.6Q-106.42 -40.8 -104.12 0Z"></path>
+            <path d="M-96.47 0Q-93.92 -27.12 -83.3 -49.3Q-83.3 -24.65 -87.12 0Z"></path>
+            <path d="M78.62 0Q81.69 -39.27 93.5 -71.4Q92.56 -35.7 87.97 0Z"></path>
+            <path d="M95.62 0Q100.22 -28.05 115.6 -51Q111.86 -25.5 104.97 0Z"></path>
+            <path d="M110.92 0Q112.45 -18.7 120.7 -34Q122.57 -17 120.27 0Z"></path>
+          </g>
+          <g class="hare-shadow" transform="translate(6 6) scale(1.7)">
+            <circle cx="-47" cy="-13" r="7"></circle>
+            <path d="M36 0C38-24 16-36-12-37C-36-38-52-24-48 0Z"></path>
+            <ellipse cx="42" cy="-3" rx="9" ry="3.6"></ellipse>
+            <ellipse
+              cx="34"
+              cy="-19"
+              rx="16"
+              ry="13"
+              transform="rotate(-8.6 34 -19)"
+            ></ellipse>
+            <ellipse
+              cx="8"
+              cy="-38"
+              rx="26"
+              ry="5.5"
+              transform="rotate(9.2 8 -38)"
+            ></ellipse>
+            <ellipse
+              cx="4"
+              cy="-44"
+              rx="24"
+              ry="5"
+              transform="rotate(12.6 4 -44)"
+            ></ellipse>
+          </g>
+          <g class="hare" transform="scale(1.7)">
+            <ellipse
+              cx="4"
+              cy="-44"
+              rx="24"
+              ry="5"
+              transform="rotate(12.6 4 -44)"
+            ></ellipse>
+            <circle cx="-47" cy="-13" r="7"></circle>
+            <path d="M36 0C38-24 16-36-12-37C-36-38-52-24-48 0Z"></path>
+            <path class="hare-line" d="M-8-3Q-6-26-28-29"></path>
+            <ellipse cx="42" cy="-3" rx="9" ry="3.6"></ellipse>
+            <ellipse
+              cx="34"
+              cy="-19"
+              rx="16"
+              ry="13"
+              transform="rotate(-8.6 34 -19)"
+            ></ellipse>
+            <ellipse
+              cx="8"
+              cy="-38"
+              rx="26"
+              ry="5.5"
+              transform="rotate(9.2 8 -38)"
+            ></ellipse>
+            <path class="hare-line" d="M28-34.5Q10-37.5-12-41"></path>
+            <path class="hare-line" d="M37.5-19.5Q40.5-24 43.5-19.5"></path>
+            <circle class="hare-nose" cx="49" cy="-16" r="1.6"></circle>
+          </g>
+          <g class="tuft-front">
+            <path d="M-63.75 0Q-65.79 -11.22 -66.3 -20.4Q-58.31 -10.2 -55.25 0Z"></path>
+            <path d="M-12.75 0Q-11.22 -8.42 -3.4 -15.3Q-1.96 -7.65 -4.25 0Z"></path>
+            <path d="M38.25 0Q40.8 -10.29 51 -18.7Q50.58 -9.35 46.75 0Z"></path>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,57 @@
+---
+import { Image } from 'astro:assets';
+import bunnyDark from '../assets/bunny-dark.png';
+
+/*
+ * The caller positions it with `class`. `bunny-dark` vanishes on the page, so
+ * the gold disc is what makes it visible. alt="": the header names the site.
+ */
+interface Props {
+  class?: string;
+  eager?: boolean;
+  /* `hero`: on a gold slab edge, dark ring, sized by --spacing-roundel. */
+  variant?: 'page' | 'hero';
+}
+
+const { class: className = '', eager = false, variant = 'page' } = Astro.props;
+
+const DISC_CLASS = {
+  page: 'size-24 border-8 lg:size-32',
+  hero: 'size-roundel border-4 border-gold-text lg:border-8',
+} as const;
+
+const ring = variant === 'page' && 'border-border';
+
+const MARK_CLASS = {
+  page: 'h-12 lg:h-16',
+  hero: 'h-roundel-mark',
+} as const;
+
+/*
+ * Drawn width is 458/900 of height: 25 and 33px for page (48, 64px tall), 15
+ * to 33px for hero (28 to 64px). tests/image-size.spec.ts fails on drift.
+ */
+const MARK_WIDTHS = [15, 25, 33, 50, 66];
+const MARK_SIZES = {
+  page: '(min-width: 64rem) 33px, 25px',
+  hero: 'clamp(15px, calc(4.07vw - 14px), 33px)',
+} as const;
+---
+
+<span
+  class:list={[
+    'flex rotate-3 items-center justify-center rounded-full bg-gold shadow-hard-bunny-8',
+    DISC_CLASS[variant],
+    ring,
+    className,
+  ]}
+>
+  <Image
+    src={bunnyDark}
+    alt=""
+    widths={MARK_WIDTHS}
+    sizes={MARK_SIZES[variant]}
+    loading={eager ? 'eager' : 'lazy'}
+    class:list={['w-auto', MARK_CLASS[variant]]}
+  />
+</span>
