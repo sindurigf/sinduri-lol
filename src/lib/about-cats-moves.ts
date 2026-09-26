@@ -528,18 +528,15 @@ export const MOVES = {
       }),
     ],
   }),
+  /* One dash that builds up and skids to a stop; any turn back is a separate, eased move. */
   zoomies: (): Move => ({
     steps: [
-      step(300, 'stand'),
-      step(550, 'stand', { x: 170, ba: -4 }, 'in'),
-      step(160, 'stand', { x: 185, ba: -10 }, 'out'),
-      step(240, 'stand', { x: 185, face: -1 }),
-      step(550, 'stand', { x: 15, face: -1, ba: -4 }, 'in'),
-      step(160, 'stand', { x: 0, face: -1, ba: -10 }, 'out'),
-      step(240, 'stand'),
-      step(500, 'sit'),
+      step(300, 'crouch', { sq: 0.92 }),
+      step(950, 'stand', { x: 150, ba: -5 }, 'inOut'),
+      step(220, 'stand', { x: 162, ba: -10 }, 'out'),
+      step(500, 'sit', { x: 162 }),
     ],
-    mods: [walking(300, 1010, 1.6), walking(1250, 1960, 1.6)],
+    mods: [walking(300, 1250, 1.4)],
   }),
   /* Watches the fly, crouches, leaps straight up for it, and the fly gets away. */
   fly: (): Move => ({
