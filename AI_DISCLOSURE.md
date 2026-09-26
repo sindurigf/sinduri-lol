@@ -36,9 +36,11 @@ How AI tooling was used to build this repository.
 
 - The site is a static build; no model runs, in the browser or on the server.
 - No visitor data is sent to a model.
-- No AI-written editorial copy or images are served. Functional microcopy and
-  the `/accessibility` and `/privacy` disclosure are agent-written by design
+- No AI-written editorial copy is served. Functional microcopy and the
+  `/accessibility` and `/privacy` disclosure are agent-written by design
   ([AGENTS.md](AGENTS.md#copy)).
+- One AI-made image set is served: the drawn, animated cats on `/about/`,
+  labelled on that page as drawn with AI. The cat photos are real.
 
 ## Keeping this current
 

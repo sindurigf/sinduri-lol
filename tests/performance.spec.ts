@@ -7,10 +7,11 @@ import { ROUTES } from './routes';
  * so it is checked with Lighthouse on the live site (docs/DEPLOYMENT.md).
  */
 
-const HERO_ROUTE = '/';
-
-/* Decoded script bytes. Only `/` carries Vue and the hero island. */
-const HERO_SCRIPT_BUDGET = 96_000;
+/* Decoded script bytes. Only these routes carry Vue and an island. */
+const ISLAND_SCRIPT_BUDGETS: Readonly<Record<string, number>> = {
+  '/': 96_000,
+  '/about': 108_000,
+};
 const PAGE_SCRIPT_BUDGET = 14_000;
 
 const scriptsFetched = async (
@@ -50,8 +51,7 @@ test.describe('page weight and stability', () => {
     test(`${route} stays within its script budget`, async ({ page }) => {
       const scripts = await scriptsFetched(page, route);
       const total = scripts.reduce((sum, script) => sum + script.bytes, 0);
-      const budget =
-        route === HERO_ROUTE ? HERO_SCRIPT_BUDGET : PAGE_SCRIPT_BUDGET;
+      const budget = ISLAND_SCRIPT_BUDGETS[route] ?? PAGE_SCRIPT_BUDGET;
 
       expect(
         total,
