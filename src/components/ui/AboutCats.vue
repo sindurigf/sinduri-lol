@@ -23,7 +23,10 @@ import {
  * own SC 2.2.2 control: closing its card puts a playing cat to sleep or wakes it.
  */
 
-const props = defineProps<{ cats: CatInfo[] }>();
+const props = defineProps<{
+  cats: CatInfo[];
+  inspiration: { name: string; href: string };
+}>();
 
 /* Where each cat starts on its card, 0 to 1, and which way it faces. */
 const PLACES: Record<CatId, { start: number; facing: 1 | -1 }> = {
@@ -325,6 +328,11 @@ onBeforeUnmount(() => {
       <form method="dialog" class="mt-4 flex justify-end">
         <button class="btn-secondary">Close</button>
       </form>
+      <p class="mt-4 text-label text-subtle">
+        Thank you for the inspiration,
+        <a :href="inspiration.href">{{ inspiration.name }}</a
+        >.
+      </p>
     </div>
   </dialog>
 </template>

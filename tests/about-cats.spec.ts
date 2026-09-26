@@ -1,7 +1,7 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { MIN_TARGET, REFLOW_VIEWPORT, DESKTOP_VIEWPORT } from './wcag';
-import { NON_TEXT, PAGE_HELPERS } from './contrast';
+import { AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { NODE } from './tags';
 import { readFileSync } from 'node:fs';
 import {
@@ -237,6 +237,51 @@ test.describe('About cats', () => {
       }
     }
   });
+
+  for (const colorScheme of ['dark', 'light'] as const) {
+    test(`the card thanks Arthur in underlined text of at least 4.5:1 in ${colorScheme} mode (SC 1.4.3, 1.4.1)`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ colorScheme });
+      const page = await context.newPage();
+      await gotoSettled(page, ROUTE);
+      await catButton(page, 'minerva').focus();
+      await page.keyboard.press('Enter');
+      const dialog = page.getByRole('dialog', { name: NAMES.minerva });
+      await expect(dialog).toContainText(
+        'Thank you for the inspiration, Arthur.',
+      );
+      const link = dialog.getByRole('link', { name: 'Arthur' });
+      await expect(link).toHaveAttribute('href', 'https://utor.io/');
+      const found = await page.evaluate(`(() => {
+        const link = document.querySelector('.cat-dialog a');
+        ${PAGE_HELPERS}
+        return [link.parentElement, link].map((node) => {
+          const style = getComputedStyle(node);
+          const fg = parse(style.color);
+          const bg = effectiveBackground(node);
+          return {
+            ratio: fg && bg ? ratio(fg, bg) : 0,
+            underline: style.textDecorationLine.includes('underline'),
+          };
+        });
+      })()`);
+      const [line, anchor] = found as { ratio: number; underline: boolean }[];
+      expect(
+        line.ratio,
+        'the thank-you line is under 4.5:1',
+      ).toBeGreaterThanOrEqual(AA_TEXT);
+      expect(
+        anchor.ratio,
+        'the Arthur link is under 4.5:1',
+      ).toBeGreaterThanOrEqual(AA_TEXT);
+      expect(
+        anchor.underline,
+        'the Arthur link is told apart by colour alone',
+      ).toBe(true);
+      await context.close();
+    });
+  }
 
   test('a click on the card itself, padding included, leaves it open', async ({
     page,

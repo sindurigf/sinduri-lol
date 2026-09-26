@@ -10,6 +10,7 @@ import PhotoViewer from '../components/PhotoViewer.astro';
 import Section from '../components/Section.astro';
 import AboutCats from '../components/ui/AboutCats.vue';
 import type { CatInfo } from '../lib/about-cats';
+import { THANKS } from '../lib/credits';
 import rainbowPortrait from '../assets/photos/sinduri-pride.jpg';
 import lake from '../assets/photos/sinduri-lake.jpg';
 import bicycle from '../assets/photos/sinduri-bicycle.jpg';
@@ -142,6 +143,10 @@ const CATS = [
 
 /* Matches `w-60` on `.cat-dialog-body`, which the photo fills. */
 const CAT_PHOTO_WIDTH = 240;
+
+/* Thanked in each cat's card for the idea; the link comes from the Credits list. */
+const catInspiration = THANKS.find((person) => person.name === 'Arthur Lorenz');
+if (!catInspiration) throw new Error('No THANKS entry for "Arthur Lorenz".');
 
 const catInfo: CatInfo[] = await Promise.all(
   CATS.map(async (cat) => {
@@ -471,5 +476,9 @@ const catInfo: CatInfo[] = await Promise.all(
   />
 
   <PhotoViewer />
-  <AboutCats client:load cats={catInfo} />
+  <AboutCats
+    client:load
+    cats={catInfo}
+    inspiration={{ name: 'Arthur', href: catInspiration.href }}
+  />
 </BaseLayout>
