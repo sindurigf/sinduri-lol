@@ -64,6 +64,23 @@
   --color-bunny: #ff007a;
   --color-tile-edge: #5a87a8;
   /*
+   * The About cats, read by AboutCats.vue. Fills are decoration: the sticker
+   * edge (`text`) carries SC 1.4.11, so none of these delimits a control.
+   */
+  --color-cat-minerva: #a57a4d;
+  --color-cat-minerva-far: #7e5b39;
+  --color-cat-minerva-stripe: #3b2716;
+  --color-cat-hela: #f4efe8;
+  --color-cat-hela-far: #cfc6ba;
+  --color-cat-hela-orange: #d38b45;
+  --color-cat-hela-black: #262626;
+  --color-cat-rudra: #211e1d;
+  --color-cat-rudra-far: #3a3431;
+  --color-cat-rudra-eye: #e0a52a;
+  --color-cat-mouth: #4a0f1c;
+  --color-cat-cardboard: #b0773a;
+  --color-cat-cardboard-line: #6b4520;
+  /*
    * Light mode's values, swapped in on <main> at the end of this file. Defined
    * here so each colour exists once: src/lib/css-token.ts fails on a second
    * definition.
@@ -441,6 +458,11 @@
   --spacing-head: clamp(32px, 4vw, 48px);
   --spacing-grid: clamp(28px, 3.4vw, 40px);
   --spacing-inline: clamp(16px, 2vw, 24px);
+  /*
+   * The strip above a card where an About cat lives. Holds the tallest pose
+   * plus the highest jump in about-cats-moves.ts: change them together.
+   */
+  --spacing-cat-band: 112px;
 
   /* SC 2.5.8 floor. Keep equal to MIN_TARGET in tests/target-size.spec.ts. */
   --spacing-target: 24px;
@@ -460,6 +482,7 @@
 @import './components/layout.css';
 @import './components/cards.css';
 @import './components/photos.css';
+@import './components/about-cats.css';
 @import './components/chips.css';
 @import './components/prose.css';
 @import './components/slides.css';

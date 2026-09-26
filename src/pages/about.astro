@@ -1,5 +1,5 @@
 ---
-import { Image, Picture } from 'astro:assets';
+import { getImage, Image, Picture } from 'astro:assets';
 import { PHOTO_FORMATS } from '../lib/photo-formats';
 import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -8,6 +8,8 @@ import PageHero from '../components/PageHero.astro';
 import PhotoTile from '../components/PhotoTile.astro';
 import PhotoViewer from '../components/PhotoViewer.astro';
 import Section from '../components/Section.astro';
+import AboutCats from '../components/ui/AboutCats.vue';
+import type { CatInfo } from '../lib/about-cats';
 import rainbowPortrait from '../assets/photos/sinduri-pride.jpg';
 import lake from '../assets/photos/sinduri-lake.jpg';
 import bicycle from '../assets/photos/sinduri-bicycle.jpg';
@@ -50,7 +52,6 @@ const SIZES = {
   panorama:
     '(min-width: 40rem) min(calc(100vw - 9rem), 74rem), calc(100vw - 6rem)',
   food: '(min-width: 64rem) min(calc(50vw - 120px), 34rem), (min-width: 40rem) calc(100vw - 9rem), calc(100vw - 6rem)',
-  cat: '(min-width: 40rem) min(calc(33.34vw - 4.65rem), 23rem), calc(100vw - 7rem)',
   half: '(min-width: 40rem) min(calc(50vw - 6rem), 35.5rem), calc(100vw - 7rem)',
 } as const;
 
@@ -117,24 +118,58 @@ const PLACES = [
 
 const CATS = [
   {
+    id: 'minerva',
     src: minerva,
     name: 'Minerva',
-    role: 'the queen of the house.',
+    role: 'The queen of the house.',
     alt: 'Minerva, a tabby cat, curled up on a blanket.',
   },
   {
+    id: 'hela',
     src: hela,
     name: 'Hela',
-    role: 'the conspirator.',
+    role: 'The conspirator.',
     alt: 'Hela, a white calico cat, asleep against a plush toy.',
   },
   {
+    id: 'rudra',
     src: rudra,
     name: 'Rudra',
-    role: 'the baby of the family.',
+    role: 'The baby of the family.',
     alt: 'Rudra, a black cat, having his head stroked.',
   },
 ] as const;
+
+/* Matches `w-60` on the photo in AboutCats.vue's dialog. */
+const CAT_PHOTO_WIDTH = 240;
+
+/* Placeholder until Sinduri writes a line about each cat. */
+const CAT_ABOUT =
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.';
+
+const catInfo: CatInfo[] = await Promise.all(
+  CATS.map(async (cat) => {
+    const photo = await getImage({
+      src: cat.src,
+      width: CAT_PHOTO_WIDTH,
+      densities: DENSITIES,
+      format: 'webp',
+    });
+    return {
+      id: cat.id,
+      name: cat.name,
+      role: cat.role,
+      about: CAT_ABOUT,
+      photo: {
+        src: photo.src,
+        srcset: photo.srcSet.attribute,
+        width: Number(photo.attributes['width']),
+        height: Number(photo.attributes['height']),
+        alt: cat.alt,
+      },
+    };
+  }),
+);
 ---
 
 <BaseLayout
@@ -194,18 +229,22 @@ const CATS = [
       </div>
     </div>
 
-    <div class="card mt-head">
-      <p class="text-h3 font-black text-text text-pretty">
-        My pet name is Bunny. That is what my family and close friends call me.
-      </p>
-      <p class="mt-4 max-w-prose text-body text-text text-pretty">
-        I try to always laugh and find fun in everything I do.
-      </p>
-      <p class="mt-8">
-        <a href="/credits/#name" class="chip">
-          Where the name sinduri.lol comes from
-        </a>
-      </p>
+    <div class="cat-perch mt-head">
+      <div class="cat-spot" id="cat-spot-minerva"></div>
+      <div class="card">
+        <p class="text-h3 font-black text-text text-pretty">
+          My pet name is Bunny. That is what my family and close friends call
+          me.
+        </p>
+        <p class="mt-4 max-w-prose text-body text-text text-pretty">
+          I try to always laugh and find fun in everything I do.
+        </p>
+        <p class="mt-8">
+          <a href="/credits/#name" class="chip">
+            Where the name sinduri.lol comes from
+          </a>
+        </p>
+      </div>
     </div>
   </Section>
 
@@ -235,144 +274,135 @@ const CATS = [
     title={SECTIONS[2].title}
     lead="I moved to Vienna in 2017. I love cats, travelling, and long evenings with my friends talking about nothing and anything."
   >
-    <div class="card">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <PhotoTile
-          image={withJohann}
-          alt="Sinduri and Johann at their wedding, sitting side by side in flower garlands, both smiling."
-          group="people"
-          sizes={SIZES.half}
-        />
-        <PhotoTile
-          image={bestFriendSelfie}
-          alt="Sinduri taking a selfie with her best friend, Hemu."
-          group="people"
-          sizes={SIZES.half}
-        />
-      </div>
-
-      <div class="mb-4 mt-8 flex items-center justify-between gap-4">
-        <span class="label block text-subtle">More photos</span>
-        {/* Unhidden by src/scripts/photo-viewer.ts. */}
-        <div class="flex gap-3">
-          <button
-            type="button"
-            class="strip-button"
-            aria-controls="people-photos"
-            aria-label="Scroll photos left"
-            data-strip-scroll="-1"
-            hidden
-          >
-            <span aria-hidden="true">&larr;</span>
-          </button>
-          <button
-            type="button"
-            class="strip-button"
-            aria-controls="people-photos"
-            aria-label="Scroll photos right"
-            data-strip-scroll="1"
-            hidden
-          >
-            <span aria-hidden="true">&rarr;</span>
-          </button>
+    <div class="cat-perch">
+      <div class="cat-spot" id="cat-spot-hela"></div>
+      <div class="card">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <PhotoTile
+            image={withJohann}
+            alt="Sinduri and Johann at their wedding, sitting side by side in flower garlands, both smiling."
+            group="people"
+            sizes={SIZES.half}
+          />
+          <PhotoTile
+            image={bestFriendSelfie}
+            alt="Sinduri taking a selfie with her best friend, Hemu."
+            group="people"
+            sizes={SIZES.half}
+          />
         </div>
+
+        <div class="mb-4 mt-8 flex items-center justify-between gap-4">
+          <span class="label block text-subtle">More photos</span>
+          {/* Unhidden by src/scripts/photo-viewer.ts. */}
+          <div class="flex gap-3">
+            <button
+              type="button"
+              class="strip-button"
+              aria-controls="people-photos"
+              aria-label="Scroll photos left"
+              data-strip-scroll="-1"
+              hidden
+            >
+              <span aria-hidden="true">&larr;</span>
+            </button>
+            <button
+              type="button"
+              class="strip-button"
+              aria-controls="people-photos"
+              aria-label="Scroll photos right"
+              data-strip-scroll="1"
+              hidden
+            >
+              <span aria-hidden="true">&rarr;</span>
+            </button>
+          </div>
+        </div>
+        {/* accesslint focus-order flags tabindex="0" here: false positive, a keyboard can only scroll a focusable region. */}
+        <ul
+          id="people-photos"
+          class="photo-strip"
+          tabindex="0"
+          aria-label="More photos, scrolls sideways"
+        >
+          {PLACES.map((place) => (
+            <li>
+              <PhotoTile
+                image={place.src}
+                alt={place.alt}
+                group="people"
+                size="natural"
+              />
+            </li>
+          ))}
+        </ul>
       </div>
-      {/* accesslint focus-order flags tabindex="0" here: false positive, a keyboard can only scroll a focusable region. */}
-      <ul
-        id="people-photos"
-        class="photo-strip"
-        tabindex="0"
-        aria-label="More photos, scrolls sideways"
-      >
-        {PLACES.map((place) => (
-          <li>
-            <PhotoTile
-              image={place.src}
-              alt={place.alt}
-              group="people"
-              size="natural"
-            />
-          </li>
-        ))}
-      </ul>
     </div>
   </Section>
 
   <Section id={SECTIONS[3].id} title={SECTIONS[3].title}>
     {/* A <dl>, so short bold values are not paragraphs WAVE reads as headings. */}
-    <div class="card-block flex flex-col lg:flex-row">
-      <dl class="card min-w-0 divide-y-4 divide-border lg:flex-1">
-        <div class="pb-6">
-          <dt class="label text-gold">Sacred tradition</dt>
-          <dd class="mt-4">
-            <span class="card-title block">Lord of the Rings</span>
-            <span class="mt-2 block text-body text-text">
-              The extended versions, every year
-            </span>
-          </dd>
-        </div>
-        <div class="py-6">
-          <dt class="label text-gold">Fandoms</dt>
-          <dd class="mt-4 flex items-start justify-between gap-4">
-            <span class="card-title block text-pretty">
-              Star Trek, One Piece, Star Wars
-            </span>
+    <div class="cat-perch">
+      <div class="cat-spot" id="cat-spot-rudra"></div>
+      <div class="card-block flex flex-col lg:flex-row">
+        <dl class="card min-w-0 divide-y-4 divide-border lg:flex-1">
+          <div class="pb-6">
+            <dt class="label text-gold">Sacred tradition</dt>
+            <dd class="mt-4">
+              <span class="card-title block">Lord of the Rings</span>
+              <span class="mt-2 block text-body text-text">
+                The extended versions, every year
+              </span>
+            </dd>
+          </div>
+          <div class="py-6">
+            <dt class="label text-gold">Fandoms</dt>
+            <dd class="mt-4 flex items-start justify-between gap-4">
+              <span class="card-title block text-pretty">
+                Star Trek, One Piece, Star Wars
+              </span>
+              <Picture
+                {...PHOTO_FORMATS}
+                src={starTrek}
+                alt="Sinduri in a Star Trek uniform."
+                width={THUMB_SIZE}
+                height={THUMB_SIZE}
+                densities={DENSITIES}
+                class="size-14 shrink-0 rounded-full border-4 border-border object-cover"
+              />
+            </dd>
+          </div>
+          <div class="py-6">
+            <dt class="label text-gold">Music</dt>
+            <dd class="card-title mt-4">All over the place</dd>
+          </div>
+          <div class="pt-6">
+            <dt class="label text-gold">Food</dt>
+            <dd class="mt-4">
+              <span class="card-title block">Love it</span>
+              <span class="mt-2 block text-body text-text">
+                But I am a picky eater
+              </span>
+            </dd>
+          </div>
+        </dl>
+        <div class="card card-raised lg:flex lg:w-1/2 lg:shrink-0 lg:flex-col lg:justify-center">
+          <div class:list={['aspect-frame aspect-square', PHOTO]}>
             <Picture
               {...PHOTO_FORMATS}
-              src={starTrek}
-              alt="Sinduri in a Star Trek uniform."
-              width={THUMB_SIZE}
-              height={THUMB_SIZE}
-              densities={DENSITIES}
-              class="size-14 shrink-0 rounded-full border-4 border-border object-cover"
+              src={dosa}
+              alt="Sinduri, eyes closed, about to take a bite of dosa with her hand."
+              widths={WIDTHS}
+              sizes={SIZES.food}
             />
-          </dd>
-        </div>
-        <div class="py-6">
-          <dt class="label text-gold">Music</dt>
-          <dd class="card-title mt-4">All over the place</dd>
-        </div>
-        <div class="pt-6">
-          <dt class="label text-gold">Food</dt>
-          <dd class="mt-4">
-            <span class="card-title block">Love it</span>
-            <span class="mt-2 block text-body text-text">
-              But I am a picky eater
-            </span>
-          </dd>
-        </div>
-      </dl>
-      <div class="card card-raised lg:flex lg:w-1/2 lg:shrink-0 lg:flex-col lg:justify-center">
-        <div class:list={['aspect-frame aspect-square', PHOTO]}>
-          <Picture
-            {...PHOTO_FORMATS}
-            src={dosa}
-            alt="Sinduri, eyes closed, about to take a bite of dosa with her hand."
-            widths={WIDTHS}
-            sizes={SIZES.food}
-          />
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="card mt-grid">
-      <span class="label block text-gold">Three cats</span>
-      <ul class="mt-6 flex flex-col gap-4 sm:flex-row">
-        {CATS.map((cat) => (
-          <li class="min-w-0 sm:flex-1">
-            <PhotoTile
-              image={cat.src}
-              alt={cat.alt}
-              group="cats"
-              sizes={SIZES.cat}
-            >
-              <span class="block font-black text-text">{cat.name}</span>
-              <span class="block text-subtle">{cat.role}</span>
-            </PhotoTile>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <p class="mt-grid text-body text-subtle">
+      The moving cats are drawn with AI.
+    </p>
   </Section>
 
   <Section id={SECTIONS[4].id} title={SECTIONS[4].title}>
@@ -446,4 +476,5 @@ const CATS = [
   />
 
   <PhotoViewer />
+  <AboutCats client:load cats={catInfo} />
 </BaseLayout>
