@@ -342,23 +342,28 @@ in `wrangler.jsonc`).
 
 ### The favicon set
 
-The mark on a full-bleed `#FFC000` square; each file carries its own ground.
+- Tab icons (`favicon.*`, `artwork/favicon-*`): the header logo tile, with its
+  `tile-edge` ring, 3deg tilt and `bunny` shadow, on a transparent ground.
+- App icons (`apple-touch-icon`, `android-chrome-*`, `maskable-icon`): the mark
+  on a full-bleed `#FFC000` square.
 
-| Path                                | Size         | Notes                                              |
-| ----------------------------------- | ------------ | -------------------------------------------------- |
-| `public/favicon.svg`                | vector       | Primary icon for modern browsers                   |
-| `public/favicon.ico`                | 16 / 32 / 48 | Legacy fallback, three frames                      |
-| `artwork/favicon-16x16.png`         | 16           | `favicon.ico` frame; filled silhouette             |
-| `artwork/favicon-32x32.png`         | 32           | `favicon.ico` frame; filled silhouette             |
-| `artwork/favicon-48x48.png`         | 48           | `favicon.ico` frame; line art                      |
-| `public/favicon-96x96.png`          | 96           | Line art, linked from the head                     |
-| `public/apple-touch-icon.png`       | 180          | Full-bleed; iOS rounds it, do not pre-round        |
-| `public/android-chrome-192x192.png` | 192          | PWA icon, from the manifest                        |
-| `public/android-chrome-512x512.png` | 512          | PWA icon, from the manifest                        |
-| `public/maskable-icon-512x512.png`  | 512          | `purpose: maskable`, mark inside the 80% safe zone |
+| Path                                | Size         | Notes                                                |
+| ----------------------------------- | ------------ | ---------------------------------------------------- |
+| `public/favicon.svg`                | vector       | Primary icon for modern browsers; source of the rest |
+| `public/favicon.ico`                | 16 / 32 / 48 | Legacy fallback, three frames                        |
+| `artwork/favicon-16x16.png`         | 16           | `favicon.ico` frame; filled silhouette               |
+| `artwork/favicon-32x32.png`         | 32           | `favicon.ico` frame; filled silhouette               |
+| `artwork/favicon-48x48.png`         | 48           | `favicon.ico` frame; line art                        |
+| `public/favicon-96x96.png`          | 96           | Line art, linked from the head                       |
+| `public/apple-touch-icon.png`       | 180          | Full-bleed; iOS rounds it, do not pre-round          |
+| `public/android-chrome-192x192.png` | 192          | PWA icon, from the manifest                          |
+| `public/android-chrome-512x512.png` | 512          | PWA icon, from the manifest                          |
+| `public/maskable-icon-512x512.png`  | 512          | `purpose: maskable`, mark inside the 80% safe zone   |
 
-- 16 and 32 are a filled silhouette: line art turns to mush below 48px. Do not
-  downscale the 96.
+- 16 and 32 are a filled silhouette at 1.25x the line art's size: line art
+  turns to mush below 48px. Do not downscale the 96.
+- Render the PNGs from `favicon.svg` in Chromium so the tilt and radius match
+  the browser's.
 - `favicon.ico` must hold 16, 32 and 48:
 
 ```sh
