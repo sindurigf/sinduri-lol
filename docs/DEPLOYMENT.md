@@ -116,6 +116,7 @@ Dashboard settings that change what ships without a file change.
 | Bot Fight Mode            | Off            | Challenges the search engine crawlers the site wants       |
 | Zone HSTS                 | Off            | Replaces the `Strict-Transport-Security` in `_headers`     |
 | Minimum TLS version       | 1.2            | 1.3 alone locks out older devices that cannot update       |
+| Hotlink Protection        | Off            | Refuses images to link previews and feed readers           |
 
 ## Repository settings
 

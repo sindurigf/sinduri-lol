@@ -14,6 +14,7 @@
 #  10. an unsent contact email over an hour old (production D1; needs
 #      `npx wrangler login`, or CLOUDFLARE_API_TOKEN with CLOUDFLARE_ACCOUNT_ID;
 #      else exits 2; CHECK_LIVE_SKIP_D1=1 skips it and says so)
+#  11. the default og:image refused to a request referred by another site
 # Body rules match anywhere, not inside expected tag shapes: injections vary.
 #
 # Usage: sh scripts/check-live.sh [origin]   (default: astro.config.mjs `site`)
@@ -438,6 +439,22 @@ if [ "$alias_status" != "$REDIRECT_STATUS" ] ||
 else
   printf 'ok    %s\n' "$SITEMAP_ALIAS"
 fi
+
+# Rule 11. Hotlink Protection refuses png/jpg/gif/ico referred by another
+# host, which breaks link previews and feed readers; docs/DEPLOYMENT.md.
+OG_IMAGE=/images/og-default.png
+FOREIGN_REFERER=https://example.com/
+RESPONSES=$((RESPONSES + 1))
+og_result=$(curl --silent --show-error --max-time "$TIMEOUT_SECONDS" \
+  --user-agent "$USER_AGENT" --referer "$FOREIGN_REFERER" --output /dev/null \
+  --write-out '%{http_code} %{content_type}' "$TARGET$OG_IMAGE?$CACHE_BUST") ||
+  die "could not fetch $TARGET$OG_IMAGE"
+case "$og_result" in
+  '200 image/png'*) printf 'ok    %s\n' "$OG_IMAGE referred by another site" ;;
+  *)
+    fail "$OG_IMAGE" "not served when referred by $FOREIGN_REFERER: $og_result; a 403 is Hotlink Protection"
+    ;;
+esac
 
 # Rule 9, with expected_for's glob. From a file: a `for` list would expand `/*`
 # and a pipe's subshell would lose FAILURES.
