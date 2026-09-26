@@ -190,14 +190,21 @@
 
   /*
    * A small card over the page, which stays in view behind a light scrim. The
-   * dialog itself is bare, so a click on the card's padding is not a backdrop click.
+   * dialog scrolls when the viewport is short (SC 1.4.10); its padding is the
+   * card's shadow, and AboutCats.vue closes only on clicks outside the card.
    */
   .cat-dialog {
-    @apply m-auto overflow-visible border-0 bg-transparent p-0 text-text;
+    @apply m-auto overflow-y-auto border-0 bg-transparent p-0 pr-1 pb-1
+      text-text;
   }
 
   .cat-card {
-    @apply border-8 border-border bg-surface p-card-tight shadow-hard-pink-8;
+    @apply border-4 border-border bg-surface p-4 shadow-hard-pink-4;
+  }
+
+  /* The site button at label size: still a 24px target (SC 2.5.8). */
+  .cat-close {
+    @apply min-h-target px-4 py-2;
   }
 
   .cat-dialog::backdrop {
@@ -205,6 +212,6 @@
   }
 
   .cat-dialog-body {
-    @apply w-60 max-w-full;
+    @apply w-48 max-w-full;
   }
 }

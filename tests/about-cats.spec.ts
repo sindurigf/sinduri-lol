@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import {
   MOVES,
   duration,
-  sample,
+  poseAt,
   walkMove,
   type Move,
 } from '../src/lib/about-cats-moves';
@@ -26,6 +26,12 @@ const NAMES = { minerva: 'Minerva', hela: 'Hela', rudra: 'Rudra' } as const;
 const STILL_WINDOW_MS = 800;
 
 const PHONE = { width: 390, height: 844 };
+
+/** 1280x1024 at 400%: the SC 1.4.10 reflow case, short as well as narrow. */
+const ZOOMED = { width: 320, height: 256 };
+
+/** Tall enough that all three bands are on screen at once. */
+const ALL_BANDS = { width: 1350, height: 4000 };
 
 /** Leg height from the bottom of the click box; a raised card covers the last few px. */
 const LEG_HEIGHT = 0.15;
@@ -128,11 +134,7 @@ test('no move lifts any part of a cat above its band', NODE, () => {
   for (const [name, move] of moves) {
     const start = move.steps[0].pose;
     for (let t = 0; t <= duration(move); t += FRAME_MS) {
-      const p = sample(move.steps, start, t);
-      for (const mod of move.mods) {
-        if (t >= mod.from && t <= mod.to)
-          mod.apply(p, t - mod.from, (t - mod.from) / (mod.to - mod.from || 1));
-      }
+      const p = poseAt(move, start, t);
       const height = highestPoint(p);
       if (height > band) {
         tooHigh.push(`${name} at ${Math.round(t)}ms: ${Math.round(height)}px`);
@@ -282,6 +284,67 @@ test.describe('About cats', () => {
       await context.close();
     });
   }
+
+  test('at 400% zoom the card scrolls, so its name and Close are reachable (SC 1.4.10)', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ viewport: ZOOMED });
+    const page = await context.newPage();
+    await gotoSettled(page, ROUTE);
+    await catButton(page, 'minerva').focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: NAMES.minerva });
+    await expect(dialog).toBeVisible();
+    const name = dialog.getByRole('heading', { name: NAMES.minerva });
+    await name.scrollIntoViewIfNeeded();
+    await expect(
+      name,
+      'the cat name cannot be scrolled into view',
+    ).toBeInViewport();
+    const close = dialog.getByRole('button', { name: 'Close' });
+    await close.scrollIntoViewIfNeeded();
+    await expect(close, 'Close cannot be scrolled into view').toBeInViewport();
+    await close.click();
+    await expect(dialog).toBeHidden();
+    await context.close();
+  });
+
+  test('a sleeping cat is not redrawn while another cat plays on screen', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ viewport: ALL_BANDS });
+    const page = await context.newPage();
+    await gotoSettled(page, ROUTE);
+    await catButton(page, 'minerva').focus();
+    await page.keyboard.press('Enter');
+    await expect(
+      page.getByRole('dialog', { name: NAMES.minerva }),
+    ).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expectMood(page, 'minerva', 'asleep', 'Minerva did not fall asleep');
+    await expectMood(page, 'hela', 'playing', 'Hela is not playing beside her');
+    await expect(async () => {
+      const writes = await page.evaluate(
+        (ms) =>
+          new Promise<number>((resolve) => {
+            let count = 0;
+            const observer = new MutationObserver((records) => {
+              count += records.length;
+            });
+            const spot = document.getElementById('cat-spot-minerva');
+            if (spot)
+              observer.observe(spot, { attributes: true, subtree: true });
+            setTimeout(() => {
+              observer.disconnect();
+              resolve(count);
+            }, ms);
+          }),
+        STILL_WINDOW_MS,
+      );
+      expect(writes, 'the sleeping cat kept being redrawn').toBe(0);
+    }).toPass({ timeout: SETTLE_MS });
+    await context.close();
+  });
 
   test('a click on the card itself, padding included, leaves it open', async ({
     page,

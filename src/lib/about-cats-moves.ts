@@ -705,5 +705,15 @@ export const sample = (steps: Step[], start: Pose, t: number): Pose => {
   return clonePose(from);
 };
 
+/** A move's pose `t` ms in, from `start`, with its modifiers applied. */
+export const poseAt = (move: Move, start: Pose, t: number): Pose => {
+  const p = sample(move.steps, start, t);
+  for (const mod of move.mods) {
+    if (t >= mod.from && t <= mod.to)
+      mod.apply(p, t - mod.from, (t - mod.from) / (mod.to - mod.from || 1));
+  }
+  return p;
+};
+
 export const duration = (move: Move): number =>
   move.steps.reduce((sum, s) => sum + s.ms, 0);

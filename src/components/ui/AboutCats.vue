@@ -42,6 +42,7 @@ const reducedMotion = ref(false);
 const moods = ref<Partial<Record<CatId, CatMood>>>({});
 const openId = ref<CatId | ''>('');
 const dialog = useTemplateRef<HTMLDialogElement>('dialog');
+const card = useTemplateRef<HTMLDivElement>('card');
 
 const open = computed(() => props.cats.find((cat) => cat.id === openId.value));
 
@@ -93,6 +94,7 @@ const tick = (now: number): void => {
 
 const start = (): void => {
   if (frame || !running()) return;
+  colony?.resume(performance.now());
   frame = requestAnimationFrame(tick);
 };
 
@@ -212,9 +214,16 @@ const onDialogClose = (): void => {
   afterClose();
 };
 
-/* The dialog has no padding or border, so only a backdrop click lands on it. */
+/* Outside the card is the backdrop; the dialog's own padding keeps the shadow in view. */
 const onDialogClick = (event: MouseEvent): void => {
-  if (event.target === dialog.value) dialog.value?.close();
+  const box = card.value?.getBoundingClientRect();
+  if (!box) return;
+  const inside =
+    event.clientX >= box.left &&
+    event.clientX <= box.right &&
+    event.clientY >= box.top &&
+    event.clientY <= box.bottom;
+  if (!inside) dialog.value?.close();
 };
 
 onMounted(async () => {
@@ -309,7 +318,7 @@ onBeforeUnmount(() => {
     @close="onDialogClose"
     @click="onDialogClick"
   >
-    <div class="cat-card">
+    <div ref="card" class="cat-card">
       <div v-if="open" class="cat-dialog-body">
         <div class="aspect-frame aspect-square w-full border-4 border-border">
           <img
@@ -320,15 +329,18 @@ onBeforeUnmount(() => {
             :alt="open.photo.alt"
           />
         </div>
-        <h2 :id="`cat-dialog-${open.id}`" class="mt-4 text-h3 text-text">
+        <h2
+          :id="`cat-dialog-${open.id}`"
+          class="mt-3 text-body font-black text-text"
+        >
           {{ open.name }}
         </h2>
-        <p class="mt-1 text-body text-subtle">{{ open.role }}</p>
+        <p class="text-label text-subtle">{{ open.role }}</p>
       </div>
-      <form method="dialog" class="mt-4 flex justify-end">
-        <button class="btn-secondary">Close</button>
+      <form method="dialog" class="mt-3 flex justify-end">
+        <button class="btn-secondary cat-close">Close</button>
       </form>
-      <p class="mt-4 text-label text-subtle">
+      <p class="mt-3 text-label text-subtle">
         Thank you for the inspiration,
         <a :href="inspiration.href">{{ inspiration.name }}</a
         >.

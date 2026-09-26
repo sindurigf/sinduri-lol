@@ -994,7 +994,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   still.
 - Pointing at a cat, or keyboard focus on it, holds it in place, so a target
   being aimed at never moves. A keyboard-woken cat stays held until focus
-  leaves it.
+  leaves it: a focused target that never moves suits keyboard and magnifier
+  users.
 - Each cat lives in a `.cat-perch` band above its card, sized by
   `--spacing-cat-band`, which no move may rise above
   (`tests/about-cats.spec.ts`).

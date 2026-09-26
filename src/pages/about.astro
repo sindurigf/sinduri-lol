@@ -141,8 +141,8 @@ const CATS = [
   },
 ] as const;
 
-/* Matches `w-60` on `.cat-dialog-body`, which the photo fills. */
-const CAT_PHOTO_WIDTH = 240;
+/* Matches `w-48` on `.cat-dialog-body`, which the photo fills. */
+const CAT_PHOTO_WIDTH = 192;
 
 /* Thanked in each cat's card for the idea; the link comes from the Credits list. */
 const catInspiration = THANKS.find((person) => person.name === 'Arthur Lorenz');
@@ -479,6 +479,9 @@ const catInfo: CatInfo[] = await Promise.all(
   <AboutCats
     client:load
     cats={catInfo}
-    inspiration={{ name: 'Arthur', href: catInspiration.href }}
+    inspiration={{
+      name: catInspiration.name.split(' ')[0] ?? catInspiration.name,
+      href: catInspiration.href,
+    }}
   />
 </BaseLayout>

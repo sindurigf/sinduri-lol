@@ -14,7 +14,7 @@ import {
   gait,
   mixPose,
   pose,
-  sample,
+  poseAt,
   walkMove,
   type Move,
   type MoveName,
@@ -53,8 +53,8 @@ const BLINK_MS = 160;
 const FRAME_MS = 1000 / 60;
 /** Longest gap one frame may cover, so a stalled tab does not jump the watcher. */
 const MAX_FRAMES_PER_STEP = 6;
-/** The pointer-watcher's walk at WALK_SPEED. */
-const WATCH_STEP = WALK_SPEED / 60;
+/** The pointer-watcher's walk at WALK_SPEED, per frame. */
+const WATCH_STEP = (WALK_SPEED * FRAME_MS) / 1000;
 /** A held cat has settled once no pose value moves more than this per frame. */
 const SETTLED = 0.01;
 /** Tail segment speed below which the tail counts as at rest. */
@@ -156,8 +156,10 @@ export interface Colony {
   /** After its dialog closes: wakes it, or puts it to sleep, as its button said on opening. */
   release: (id: CatSpot['id'], now: number, wake: boolean) => void;
   hold: (id: CatSpot['id'], reason: Hold, on: boolean) => void;
-  /** Reduced motion: drops every move and keeps each cat awake or asleep as it was. */
+  /** Reduced motion: drops every move, keeps each cat awake or asleep, and stops its clock. */
   still: () => void;
+  /** The loop starts again after idling, so the first frame covers no time. */
+  resume: (now: number) => void;
   pointer: (
     x: number,
     y: number,
@@ -408,11 +410,7 @@ export const createColony = (
 
   const advance = (cat: CatState, playing: Playing, now: number): void => {
     const t = Math.min(now - playing.t0, playing.length);
-    const p = sample(playing.move.steps, playing.from, t);
-    for (const mod of playing.move.mods) {
-      if (t >= mod.from && t <= mod.to)
-        mod.apply(p, t - mod.from, (t - mod.from) / (mod.to - mod.from || 1));
-    }
+    const p = poseAt(playing.move, playing.from, t);
     p.x = playing.origin + playing.dir * p.x;
     p.face *= playing.dir;
     cat.pose = p;
@@ -450,20 +448,22 @@ export const createColony = (
     let busy = false;
     for (const cat of cats) {
       if (cat.hiddenAt !== undefined) continue;
-      if (step(cat, now, frames)) busy = true;
+      const stepped = step(cat, now, frames);
+      const tailMoving = cat.rig.tailSpeed.some((v) => Math.abs(v) > TAIL_REST);
+      /* A settled or sleeping cat keeps its last drawing. */
+      if (!stepped && !tailMoving) continue;
+      busy = true;
       if (!cat.asleep && now > cat.nextBlink) {
         cat.blinkUntil = now + BLINK_MS;
         cat.nextBlink = now + rand(...BLINK_EVERY_MS);
       }
       draw(cat, now);
-      if (cat.rig.tailSpeed.some((v) => Math.abs(v) > TAIL_REST)) busy = true;
     }
     return busy;
   };
 
   const wakeCat = (cat: CatState, now: number): void => {
     cat.napAt = now + NAP_AFTER_MS;
-    cat.hiddenAt = undefined;
     cat.nextBlink = now + rand(...BLINK_EVERY_MS);
     if (!cat.asleep) return;
     setAsleep(cat, false);
@@ -538,9 +538,13 @@ export const createColony = (
           x: cat.pose.x,
           face: Math.sign(cat.pose.face) || cat.facing,
         });
+        cat.hiddenAt ??= now;
         settleTail(cat.rig);
         draw(cat, now);
       }
+    },
+    resume: (now) => {
+      lastFrame = now;
     },
     pointer: (x, y, now, rects) => {
       pointerTime = now;
