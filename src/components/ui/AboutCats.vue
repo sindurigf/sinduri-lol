@@ -170,6 +170,10 @@ const onPreferenceChange = (event: MediaQueryListEvent): void => {
   reducedMotion.value = event.matches;
   if (!colony) return;
   if (reducedMotion.value) {
+    /* The sleep control goes; focus on it moves to its cat rather than the page. */
+    const focused = document.activeElement;
+    if (focused instanceof HTMLElement && focused.matches('.cat-nap'))
+      focused.parentElement?.querySelector<HTMLElement>('.cat-button')?.focus();
     stop();
     colony.still();
   } else {
@@ -209,9 +213,16 @@ const onDialogClose = (): void => {
 };
 
 /* Outside the card is the backdrop; the dialog's own padding keeps the shadow in view. */
+/* A drag that starts on the card, selecting text, may end on the backdrop. */
+let pressedInCard = false;
+const onDialogPointerDown = (event: PointerEvent): void => {
+  pressedInCard =
+    event.target instanceof Node && Boolean(card.value?.contains(event.target));
+};
+
 const onDialogClick = (event: MouseEvent): void => {
-  /* A keyboard-made click (Enter on the link) has no pointer position. */
-  if (event.detail === 0) return;
+  /* Only the dialog itself: a click on the link or text inside the card never closes it. */
+  if (event.target !== dialog.value || pressedInCard) return;
   const box = card.value?.getBoundingClientRect();
   if (!box) return;
   const inside =
@@ -342,6 +353,7 @@ onBeforeUnmount(() => {
     class="cat-dialog"
     :aria-labelledby="open ? `cat-dialog-${open.id}` : undefined"
     @close="onDialogClose"
+    @pointerdown="onDialogPointerDown"
     @click="onDialogClick"
   >
     <div ref="card" class="cat-card">
@@ -363,7 +375,7 @@ onBeforeUnmount(() => {
             {{ open.name }}
           </h2>
         </div>
-        <p class="mt-6 text-label text-text">{{ open.role }}</p>
+        <p class="mt-8 text-label text-text">{{ open.role }}</p>
         <p class="mt-4 text-label text-subtle">
           Thank you for the inspiration,
           <a :href="inspiration.href">{{ inspiration.name }}</a

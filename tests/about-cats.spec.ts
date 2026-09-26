@@ -15,9 +15,9 @@ import {
 import { highestPoint } from '../src/lib/about-cats-rig';
 
 /**
- * The About cats (src/components/ui/AboutCats.vue): each cat is a button that
- * stops it and opens its photo (SC 2.2.2), stillness under reduced motion, and
- * never covering text. Their drawing is decoration and is not tested for its look.
+ * The About cats (src/components/ui/AboutCats.vue): each cat opens its photo,
+ * its sleep control stops it (SC 2.2.2), stillness under reduced motion, and
+ * never covering text. Their drawing and motion are decoration and not tested.
  */
 const ROUTE = '/about/';
 const CATS = ['minerva', 'hela', 'rudra'] as const;
@@ -48,6 +48,9 @@ const CARD_PADDING_HIT = 12;
 
 const napControl = (page: Page, id: (typeof CATS)[number]) =>
   page.locator(`#cat-spot-${id} .cat-nap`);
+
+/** The top-left corner of the viewport, outside the centred card. */
+const BACKDROP_POINT = { x: 4, y: 4 };
 
 const catButton = (page: Page, id: (typeof CATS)[number]) =>
   page.locator(`#cat-spot-${id} .cat-button`);
@@ -360,8 +363,60 @@ test.describe('About cats', () => {
         STILL_WINDOW_MS,
       );
       expect(writes, 'the sleeping cat kept being redrawn').toBe(0);
-    }).toPass({ timeout: SETTLE_MS });
+    }).toPass({ timeout: SC_2_2_2_MS + SETTLE_MS });
     await context.close();
+  });
+
+  test('opening and closing the card leaves a cat asleep or playing as it was', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    await napControl(page, 'minerva').click();
+    await expectMood(page, 'minerva', 'asleep', 'Minerva did not fall asleep');
+    for (const [id, mood] of [
+      ['minerva', 'asleep'],
+      ['hela', /^(playing|holding)$/],
+    ] as const) {
+      await catButton(page, id).focus();
+      await page.keyboard.press('Enter');
+      const dialog = page.getByRole('dialog', { name: NAMES[id] });
+      await expect(dialog).toBeVisible();
+      await dialog.getByRole('button', { name: 'Close' }).click();
+      await expect(dialog).toBeHidden();
+      await expectMood(page, id, mood, `closing the card changed ${NAMES[id]}`);
+    }
+  });
+
+  test('a click on the backdrop closes the card; Enter on the thank-you link does not', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    await catButton(page, 'hela').focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: NAMES.hela });
+    await expect(dialog).toBeVisible();
+    const link = dialog.getByRole('link', { name: 'Arthur' });
+    await link.evaluate((node) =>
+      node.addEventListener('click', (event) => event.preventDefault()),
+    );
+    await link.focus();
+    await page.keyboard.press('Enter');
+    await expect(dialog, 'Enter on the link closed the card').toBeVisible();
+    await page.mouse.click(BACKDROP_POINT.x, BACKDROP_POINT.y);
+    await expect(dialog, 'a backdrop click left the card open').toBeHidden();
+  });
+
+  test('a sleeping cat scrolled away and back is still asleep', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    await napControl(page, 'minerva').click();
+    await expectMood(page, 'minerva', 'asleep', 'Minerva did not fall asleep');
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(STILL_WINDOW_MS);
+    await catButton(page, 'minerva').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(STILL_WINDOW_MS);
+    await expectMood(page, 'minerva', 'asleep', 'Minerva woke off screen');
   });
 
   test('a click on the card itself, padding included, leaves it open', async ({
@@ -415,15 +470,35 @@ test.describe('About cats', () => {
       const control = napControl(page, id);
       await control.scrollIntoViewIfNeeded();
       await expect(control).toHaveAccessibleName(`Put ${NAMES[id]} to sleep`);
-      await control.click();
+      const lastChange = await page.evaluate(
+        ({ id, watch }) =>
+          new Promise<number>((resolve) => {
+            const spot = document.getElementById(`cat-spot-${id}`);
+            const control = spot?.querySelector<HTMLElement>('.cat-nap');
+            if (!spot || !control) return resolve(Infinity);
+            const cat = spot.querySelector('.cat-hit') ?? spot;
+            let last = 0;
+            const observer = new MutationObserver(() => {
+              last = performance.now();
+            });
+            observer.observe(cat, { attributes: true, subtree: true });
+            const clicked = performance.now();
+            control.click();
+            setTimeout(() => {
+              observer.disconnect();
+              resolve(last === 0 ? 0 : last - clicked);
+            }, watch);
+          }),
+        { id, watch: SC_2_2_2_MS + STILL_WINDOW_MS * 2 },
+      );
+      expect(
+        lastChange,
+        `${NAMES[id]} was still moving 5 s after the control`,
+      ).toBeLessThanOrEqual(SC_2_2_2_MS);
       await expect(
-        catButton(page, id),
-        `${NAMES[id]} was not asleep within 5 s`,
-      ).toHaveAttribute('data-cat-state', 'asleep', { timeout: SC_2_2_2_MS });
-      await expect(async () => {
-        await expectStill(page, id, `${NAMES[id]} kept moving asleep`);
-      }).toPass({ timeout: SETTLE_MS });
-      await expect(control).toHaveAccessibleName(`Wake ${NAMES[id]}`);
+        control,
+        'the control does not offer to wake the cat once it is asleep',
+      ).toHaveAccessibleName(`Wake ${NAMES[id]}`);
       await control.click();
       await expectMood(
         page,
@@ -477,6 +552,49 @@ test.describe('About cats', () => {
           'the sleep control edge is under 3:1',
         ).toBeGreaterThanOrEqual(NON_TEXT);
       }
+      await context.close();
+    });
+  }
+
+  for (const colorScheme of ['dark', 'light'] as const) {
+    test(`the sleep control keeps 3:1 when hovered and focused in ${colorScheme} mode (SC 1.4.11)`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ colorScheme });
+      const page = await context.newPage();
+      await gotoSettled(page, ROUTE);
+      const control = napControl(page, 'minerva');
+      const measure = () =>
+        page.evaluate(`(() => {
+          const button = document.querySelector('#cat-spot-minerva .cat-nap');
+          ${PAGE_HELPERS}
+          const style = getComputedStyle(button);
+          const own = effectiveBackground(button);
+          const icon = parse(style.color);
+          const ring = parse(style.outlineColor);
+          const ground = effectiveBackground(button.parentElement);
+          return {
+            icon: icon && own ? ratio(icon, own) : 0,
+            ring: ring && ground ? ratio(ring, ground) : 0,
+          };
+        })()`) as Promise<{ icon: number; ring: number }>;
+      await control.hover();
+      expect(
+        (await measure()).icon,
+        'the hovered sleep icon is under 3:1',
+      ).toBeGreaterThanOrEqual(NON_TEXT);
+      await page.mouse.move(0, 0);
+      await page.keyboard.press('Shift');
+      await control.focus();
+      const focused = await measure();
+      expect(
+        focused.icon,
+        'the focused sleep icon is under 3:1',
+      ).toBeGreaterThanOrEqual(NON_TEXT);
+      expect(
+        focused.ring,
+        'the focus ring is under 3:1',
+      ).toBeGreaterThanOrEqual(NON_TEXT);
       await context.close();
     });
   }

@@ -16,6 +16,7 @@ import {
   pose,
   poseAt,
   walkMove,
+  withTurn,
   exploreMove,
   EXPLORE_MIN,
   type Move,
@@ -40,6 +41,8 @@ const CONTROL_ROOM = 48;
 const TRAVEL_CHANCE = 0.25;
 const TRAVEL_MIN = 40;
 const TRAVEL_MAX = 150;
+/** Chance a trip carries on the way the cat faces, so it does not ping-pong. */
+const KEEP_HEADING = 0.75;
 /** A pointer that has not moved for this long no longer draws a cat's eye. */
 const POINTER_IDLE_MS = 4000;
 const FOLLOW_FAR = 220;
@@ -249,6 +252,7 @@ export const createColony = (
     const origin = from.x;
     from.x = 0;
     from.face = from.face * dir;
+    if (from.face < 0) move = withTurn(move, from);
     cat.rest = undefined;
     const prop = move.prop ? createProp(cat.props, move.prop) : undefined;
     cat.playing = {
@@ -264,13 +268,15 @@ export const createColony = (
     };
   };
 
+  /* Asleep from the first frame, so the control offers to wake it while it lies down. */
   const lieDown = (cat: CatState, now: number): void => {
+    setAsleep(cat, true);
     play(
       cat,
       MOVES.sleep(),
       now,
       Math.sign(cat.pose.face) || 1,
-      () => setAsleep(cat, true),
+      undefined,
       true,
     );
   };
@@ -307,10 +313,17 @@ export const createColony = (
     }
     if (cat.holds.size > 0) return;
     if (Math.random() < TRAVEL_CHANCE) {
-      const to =
-        cat.pose.x +
-        rand(TRAVEL_MIN, TRAVEL_MAX) * (Math.random() < 0.5 ? -1 : 1);
-      travel(cat, to, now, () => next(cat, performance.now()));
+      const facing = Math.sign(cat.pose.face) || 1;
+      let heading = Math.random() < KEEP_HEADING ? facing : -facing;
+      const reach = rand(TRAVEL_MIN, TRAVEL_MAX);
+      const room = (dir: number) =>
+        Math.abs(
+          clamp(cat.pose.x + dir * reach, cat.min, cat.max) - cat.pose.x,
+        );
+      if (room(heading) < TRAVEL_MIN) heading = -heading;
+      travel(cat, cat.pose.x + heading * reach, now, () =>
+        next(cat, performance.now()),
+      );
       return;
     }
     const name = pickWeighted(cat.id === 'hela' ? HELA_WEIGHTS : WEIGHTS);
@@ -522,8 +535,8 @@ export const createColony = (
     nap: (id) => {
       const cat = find(id);
       if (!cat || cat.asleep) return;
-      /* Mid-move it drops what it is doing, so it is still within 5 s. */
-      if (cat.playing && !cat.playing.settle) drop(cat);
+      /* Drops any move, getting up included, so it is still within 5 s. */
+      drop(cat);
       cat.napAt = -Infinity;
     },
     wake: (id, now) => {
@@ -540,10 +553,7 @@ export const createColony = (
     still: () => {
       const now = performance.now();
       for (const cat of cats) {
-        const settling = cat.playing?.settle;
         drop(cat);
-        /* Mid lie-down: finish it asleep, not sat up. */
-        if (settling && !cat.asleep && cat.napAt <= now) setAsleep(cat, true);
         cat.pose = pose(cat.asleep ? 'sleep' : 'sit', {
           x: cat.pose.x,
           face: Math.sign(cat.pose.face) || cat.facing,

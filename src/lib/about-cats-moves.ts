@@ -708,16 +708,46 @@ export const HELA_WEIGHTS: Partial<Record<MoveName, number>> = {
 /** px per second. */
 export const WALK_SPEED = 60;
 
+/** Standing up before a walk, and sitting after it. */
+const WALK_START_MS = 250;
+const WALK_END_MS = 300;
+/** Shortest leg of a walk, so a tiny step still reads as one. */
+const WALK_MIN_MS = 400;
+const EXPLORE_WALK_MIN_MS = 300;
+
+const walkMs = (distance: number, least: number): number =>
+  Math.max(least, (Math.abs(distance) / WALK_SPEED) * 1000);
+
 /** Walks to a spot `distance` ahead, stride-locked. */
 export const walkMove = (distance: number): Move => {
-  const ms = Math.max(400, (Math.abs(distance) / WALK_SPEED) * 1000);
+  const ms = walkMs(distance, WALK_MIN_MS);
   return {
     steps: [
-      step(250, 'stand'),
+      step(WALK_START_MS, 'stand'),
       step(ms, 'stand', { x: distance }),
-      step(300, 'sit', { x: distance }),
+      step(WALK_END_MS, 'sit', { x: distance }),
     ],
-    mods: [walking(0, 250 + ms)],
+    mods: [walking(0, WALK_START_MS + ms)],
+  };
+};
+
+/** A turn on the spot before a move that heads the other way: eased, never a flip. */
+export const TURN_MS = 550;
+
+export const withTurn = (move: Move, from: Pose): Move => {
+  const propAt = move.propAt;
+  return {
+    ...move,
+    steps: [
+      { ms: TURN_MS, pose: { ...clonePose(from), face: 1 }, ease: 'inOut' },
+      ...move.steps,
+    ],
+    mods: move.mods.map((mod) => ({
+      ...mod,
+      from: mod.from + TURN_MS,
+      to: mod.to + TURN_MS,
+    })),
+    propAt: propAt && ((t) => propAt(Math.max(0, t - TURN_MS))),
   };
 };
 
@@ -725,31 +755,34 @@ export const walkMove = (distance: number): Move => {
 const EXPLORE_SPLIT = 0.55;
 /** Shorter trips walk straight; longer ones explore. */
 export const EXPLORE_MIN = 80;
+const SNIFF_MS = 600;
+const LOOK_MS = 700;
 
 /** A curious walk: part way, a stop to sniff and look about, then the rest. */
 export const exploreMove = (distance: number): Move => {
   const first = distance * EXPLORE_SPLIT;
-  const walkMs = (d: number) =>
-    Math.max(300, (Math.abs(d) / WALK_SPEED) * 1000);
-  const ms1 = walkMs(first);
-  const ms2 = walkMs(distance - first);
-  const pause = 250 + ms1;
-  const pauseMs = 500 + 500 + 450 + 450;
+  const ms1 = walkMs(first, EXPLORE_WALK_MIN_MS);
+  const ms2 = walkMs(distance - first, EXPLORE_WALK_MIN_MS);
+  const pause: Step[] = [
+    step(SNIFF_MS, 'stand', { x: first, hx: 10, hy: -2, hr: 24 }),
+    step(SNIFF_MS, 'stand', { x: first, hx: 10, hy: -1, hr: 26 }),
+    step(LOOK_MS, 'stand', { x: first, hr: -10 }),
+    step(LOOK_MS, 'stand', { x: first, hr: 4 }),
+  ];
+  const stopAt = WALK_START_MS + ms1;
+  const onAt = stopAt + pause.reduce((sum, s) => sum + s.ms, 0);
   return {
     steps: [
-      step(250, 'stand'),
+      step(WALK_START_MS, 'stand'),
       step(ms1, 'stand', { x: first }),
-      step(500, 'stand', { x: first, hx: 10, hy: -2, hr: 26 }),
-      step(500, 'stand', { x: first, hx: 10, hy: -1, hr: 30 }),
-      step(450, 'stand', { x: first, hr: -16 }),
-      step(450, 'stand', { x: first, hr: 8 }),
+      ...pause,
       step(ms2, 'stand', { x: distance }),
-      step(300, 'sit', { x: distance }),
+      step(WALK_END_MS, 'sit', { x: distance }),
     ],
     mods: [
-      walking(0, pause),
-      earFlick(pause + 600),
-      walking(pause + pauseMs, pause + pauseMs + ms2),
+      walking(0, stopAt),
+      earFlick(stopAt + SNIFF_MS),
+      walking(onAt, onAt + ms2),
     ],
   };
 };
