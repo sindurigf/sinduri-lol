@@ -575,6 +575,12 @@ evidence.
 - **Emulate touch in the browser projects:** the menu, photo strip and
   slideshow use native buttons and links, which fire the same events for
   touch; pointer and keyboard runs already cover them.
+- **Draw the About cat's focus ring round the cat, not its band:** the ring on
+  the band passes SC 2.4.11 (sides and top stay visible), and the cat moves
+  while the band does not.
+- **Let a keyboard-woken About cat play while it has focus:** a focused target
+  that never moves suits keyboard and magnifier users; it plays once focus
+  leaves.
 
 ## Content notes
 

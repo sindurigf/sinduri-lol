@@ -984,11 +984,17 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   button. The state lives in the accessible name ("Play the hero animation" /
   "Pause the hero animation"), no `aria-pressed`.
 - `HeroField` loads `client:load`.
-- The About cats (`src/components/ui/AboutCats.vue`) start on mount and sit
-  still under reduced motion. Each cat is its own SC 2.2.2 control: "Stop and
-  meet Minerva" stops it and opens its card, closing the card puts it to sleep,
-  and "Wake Minerva" starts it again. Pointing at or focusing a cat stops it
-  walking. They nap after `NAP_AFTER_MS` (`src/lib/about-cats.ts`).
+- The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
+  first on screen and sit still under reduced motion. Each cat is its own SC
+  2.2.2 control: its button always opens its card. Closing the card puts a
+  playing cat to sleep ("Stop and meet Minerva") or wakes a sleeping one ("Meet
+  and wake Minerva").
+- A cat naps after `NAP_AFTER_MS` of on-screen play (`src/lib/about-cats.ts`).
+  Lying down, and the breaths and "z" after it, end within 5 s, then the cat is
+  still.
+- Pointing at a cat, or keyboard focus on it, holds it in place, so a target
+  being aimed at never moves. A keyboard-woken cat stays held until focus
+  leaves it.
 - Each cat lives in a `.cat-perch` band above its card, sized by
   `--spacing-cat-band`, which no move may rise above
   (`tests/about-cats.spec.ts`).
