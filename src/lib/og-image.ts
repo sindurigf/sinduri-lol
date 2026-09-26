@@ -20,7 +20,7 @@ export const DEFAULT_OG_IMAGE: OgImage = {
   src: '/images/og-default.png',
   width: CARD_WIDTH,
   height: CARD_HEIGHT,
-  alt: 'The Sinduri, Lepus Ridet badge: a line drawing of a hare inside a ring.',
+  alt: 'Sinduri Guntupalli, open source enthusiast and positivity advocate, beside the sinduri.lol hare logo.',
 };
 
 /* JPEG: WebP support among link unfurlers is uneven. */
