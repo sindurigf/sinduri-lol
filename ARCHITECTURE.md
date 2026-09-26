@@ -391,6 +391,9 @@ in `public/`.
   asset layer, and a POST gets 405. `tests/contact.spec.ts` sends that header.
 - `/videos/*` is in `run_worker_first` for byte ranges
   ([Photos and video](#photos-and-video)).
+- `/_image` is in `run_worker_first`: on-demand pages (the contact error pages)
+  point images at the adapter's passthrough endpoint, which serves the original
+  from `/_astro/`. Without it the asset layer answers with `404.html`.
 
 ### Rules and caching
 
