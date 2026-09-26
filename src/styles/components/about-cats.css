@@ -67,6 +67,11 @@
     stroke-linejoin: round;
   }
 
+  .cat-nap-icon .cat-nap-solid {
+    fill: currentColor;
+    stroke: none;
+  }
+
   /* Unpainted, so `all`: the box takes clicks between the legs and around the tail. */
   .cat-hit-area {
     fill: none;

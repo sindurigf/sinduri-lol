@@ -20,7 +20,7 @@ import {
 /*
  * The cats render into `#cat-spot-<id>` on the page, only after mount: no
  * server HTML, so nothing moves or waits without JavaScript. Each cat opens its
- * card; the bed or feather wand beside it puts it to sleep or wakes it (SC 2.2.2).
+ * card; the Zz or paw beside it puts it to sleep or wakes it (SC 2.2.2).
  */
 
 const props = defineProps<{
@@ -328,9 +328,14 @@ onBeforeUnmount(() => {
           aria-hidden="true"
           focusable="false"
         >
-          <path d="M4 21 13.5 11.5" />
-          <path d="M13.5 11.5c1-4.5 4.5-7.5 7-6.5 1 2.5-2 6-6.5 7" />
-          <path d="M13.5 11.5c3.5-1 6 0 6.5 1.5" />
+          <circle class="cat-nap-solid" cx="6" cy="10" r="2" />
+          <circle class="cat-nap-solid" cx="10" cy="6" r="2" />
+          <circle class="cat-nap-solid" cx="14" cy="6" r="2" />
+          <circle class="cat-nap-solid" cx="18" cy="10" r="2" />
+          <path
+            class="cat-nap-solid"
+            d="M12 11c3 0 5.5 3.3 5.5 6 0 2-1.7 3-3.2 2.5-1-.3-1.5-.8-2.3-.8s-1.3.5-2.3.8C8.2 20 6.5 19 6.5 17c0-2.7 2.5-6 5.5-6z"
+          />
         </svg>
         <svg
           v-else
@@ -339,9 +344,8 @@ onBeforeUnmount(() => {
           aria-hidden="true"
           focusable="false"
         >
-          <path d="M2.5 13.5c0 4 4.3 6.5 9.5 6.5s9.5-2.5 9.5-6.5" />
-          <path d="M2.5 13.5c0-1.7 4.3-3 9.5-3s9.5 1.3 9.5 3" />
-          <path d="M8 9.5h3l-3 3.5h3" />
+          <path d="M4 11h6l-6 7h6" />
+          <path d="M13 4h6l-6 7h6" />
         </svg>
         <span class="sr-only">{{ napLabel(cat) }}</span>
       </button>
