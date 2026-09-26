@@ -46,6 +46,13 @@ const WHISKERS = 'M11 3l9 -3M11 4.4l10 0.5M11 5.8l9 3.5';
 const STRIPES = [0.3, 0.5, 0.7];
 /** The feather wand hangs from here, above the cat's band. */
 const STRING_TOP = -100;
+/** A small and a larger "z", drawn from the lower left of the small one. */
+const ZZ = 'M0 0h4l-4 5h4M6 -9h6l-6 7h6';
+const ZZ_HEIGHT = 14;
+/** Where the "z" rests from the head centre, and how far it rises to get there. */
+const ZZ_AHEAD = 14;
+const ZZ_ABOVE = 24;
+const ZZ_RISE = 10;
 /** Half the click box's width: the whole cat either way it faces, over 24px (SC 2.5.8). */
 const HIT_HALF_WIDTH = 48;
 const WING_BEAT_MS = 16;
@@ -121,6 +128,7 @@ export interface CatRig {
   id: CatId;
   root: SVGGElement;
   hit: SVGRectElement;
+  zz: SVGPathElement;
   flip: SVGGElement;
   layers: Layer[];
   bodyClip: SVGPathElement;
@@ -270,11 +278,25 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
     },
     top.head,
   );
+  /* Outside the flip, so the letter never reads backwards. */
+  const zz = el(
+    'path',
+    {
+      d: ZZ,
+      class: 'cat-line-z',
+      'stroke-width': 1.6,
+      'stroke-linecap': 'round',
+      'stroke-linejoin': 'round',
+      visibility: 'hidden',
+    },
+    root,
+  );
 
   return {
     id,
     root,
     hit,
+    zz,
     flip,
     layers,
     bodyClip,
@@ -381,6 +403,10 @@ const rotateAbout = (q: Point, c: Point, degrees: number): Point => {
   );
 };
 
+/** The "z"'s lower left in the cat's ground coordinates, rising as `zz` goes to 1. */
+const zzAt = (p: Pose, head: Point): Point =>
+  pt(p.face * (head.x + ZZ_AHEAD), head.y - ZZ_ABOVE + ZZ_RISE * (1 - p.zz));
+
 /*
  * Height of a pose's highest drawn point above the ground, edge included.
  * The tail is taken straight at its targets; the spring only lags behind them.
@@ -404,6 +430,10 @@ export const highestPoint = (p: Pose): number => {
       pt(centre.x + p[k][0], centre.y + p[k][1]),
     ),
   ];
+  if (p.zz > 0) {
+    const z = zzAt(p, head);
+    points.push(pt(z.x, z.y - ZZ_HEIGHT));
+  }
   let q = at(-4, 0);
   for (const angle of tailTargets(p, 0)) {
     q = pt(
@@ -531,6 +561,14 @@ export const renderCat = (
   rig.eyesOpen.setAttribute('visibility', open ? 'visible' : 'hidden');
   rig.eyesShut.setAttribute('visibility', open ? 'hidden' : 'visible');
   rig.mouth.setAttribute('ry', f(3 * p.mouth));
+  if (p.zz > 0) {
+    const z = zzAt(p, head);
+    rig.zz.setAttribute('transform', `translate(${f(z.x)} ${f(z.y)})`);
+    rig.zz.setAttribute('opacity', f(Math.min(1, 2 * p.zz)));
+    rig.zz.setAttribute('visibility', 'visible');
+  } else {
+    rig.zz.setAttribute('visibility', 'hidden');
+  }
 
   const height = highestPoint(p);
   rig.hit.setAttribute('y', f(-height));

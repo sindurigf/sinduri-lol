@@ -146,7 +146,8 @@
     fill: var(--color-cat-mouth);
   }
 
-  .cat-line-whisker {
+  .cat-line-whisker,
+  .cat-line-z {
     stroke: var(--color-text);
   }
 

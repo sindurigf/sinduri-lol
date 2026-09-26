@@ -109,14 +109,19 @@ export const POSES = {
   stand: BASE,
   sit: SIT,
   loaf: LOAF,
+  /* Curled up: back rounded, chin down on the paws, tail wrapped to the chest. */
   sleep: derive(LOAF, {
-    hx: 9,
-    hy: -3,
-    hr: 14,
+    ba: -4,
+    by: 9,
+    bt: 24,
+    sq: 0.86,
+    hx: 13,
+    hy: 5,
+    hr: 30,
     eyes: 0,
-    ears: 0.25,
-    ta: 170,
-    tc: -24,
+    ears: 1,
+    ta: 122,
+    tc: -13,
     zz: 1,
   }),
   rear: derive(BASE, {
@@ -317,6 +322,20 @@ export const blinkAt = (at: number): Mod =>
 const arc = (from: number, to: number, height: number): Mod =>
   between(from, to, (p, _s, k) => {
     p.y += Math.sin(Math.PI * k) * height;
+  });
+/* Three slow breaths, ending on an exhale so the pose rests where it started. */
+const BREATH_MS = 1200;
+const BREATHS = 3;
+/** Body thickness in px the chest gains at the top of a breath. */
+const BREATH_DEPTH = 1.4;
+const breathing = (from: number): Mod =>
+  between(from, from + BREATH_MS * BREATHS, (p, s) => {
+    p.bt += BREATH_DEPTH * Math.sin((2 * Math.PI * s) / BREATH_MS);
+  });
+/** The "z" rises once per breath, then rests above the head, not back at the start. */
+const dozing = (from: number): Mod =>
+  between(from, from + BREATH_MS * BREATHS, (p, s) => {
+    p.zz = s >= BREATH_MS * BREATHS ? 1 : (s % BREATH_MS) / BREATH_MS;
   });
 const earFlick = (at: number): Mod =>
   between(at, at + 280, (p, _s, k) => {
@@ -607,8 +626,12 @@ export const MOVES = {
     mods: [],
   }),
   sleep: (): Move => ({
-    steps: [step(600, 'loaf'), step(700, 'sleep')],
-    mods: [],
+    steps: [
+      step(600, 'loaf'),
+      step(800, 'sleep'),
+      step(BREATH_MS * BREATHS, 'sleep'),
+    ],
+    mods: [breathing(1400), dozing(1400)],
   }),
   wake: (): Move => ({
     steps: [step(500, 'loaf', { hr: -12 }), step(500, 'sit')],
