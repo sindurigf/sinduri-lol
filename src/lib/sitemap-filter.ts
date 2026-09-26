@@ -9,7 +9,6 @@ import {
   PAGED_SEGMENT,
   TAG_PATH,
 } from './paths';
-import { isoDate } from './post-date';
 
 /* Plain Node, from astro.config.mjs: reads frontmatter, not astro:content. */
 
@@ -33,12 +32,9 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}/;
 
-/* YAML gives an unquoted date as a Date and a quoted one as a string. */
-const isoDay = (value: unknown): string | undefined => {
-  if (value instanceof Date) return isoDate(value);
-  if (typeof value === 'string') return ISO_DAY.exec(value)?.[0];
-  return undefined;
-};
+/* js-yaml's default schema has no timestamp type, so dates load as strings. */
+const isoDay = (value: unknown): string | undefined =>
+  typeof value === 'string' ? ISO_DAY.exec(value)?.[0] : undefined;
 
 const frontmatterOf = (raw: string, name: string): Record<string, unknown> => {
   const block = FRONTMATTER.exec(raw)?.[1];
