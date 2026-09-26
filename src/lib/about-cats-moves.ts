@@ -641,10 +641,10 @@ export const MOVES = {
 
 export type MoveName = keyof typeof MOVES;
 
-/** Relative weights; calm moves dominate so the cats mostly rest. */
+/** Relative weights; about one move in four is a rest. */
 export const WEIGHTS: Partial<Record<MoveName, number>> = {
-  look: 28,
-  lie: 22,
+  look: 10,
+  lie: 8,
   stalk: 5,
   pounce: 7,
   bigJump: 5,

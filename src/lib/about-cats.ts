@@ -28,14 +28,15 @@ import {
   type PropRig,
 } from './about-cats-rig';
 
-/** Play time after waking before a cat naps. */
+/** On-screen play time after waking before a cat naps. */
 export const NAP_AFTER_MS = 20_000;
 
 /** Distance from each card end the cat's origin keeps. */
 const TRACK_MARGIN = 40;
-const TRAVEL_CHANCE = 0.2;
+const TRAVEL_CHANCE = 0.3;
 const TRAVEL_MIN = 40;
 const TRAVEL_MAX = 180;
+/** A pointer that has not moved for this long no longer draws a cat's eye. */
 const POINTER_IDLE_MS = 4000;
 const FOLLOW_FAR = 220;
 const FOLLOW_NEAR = 110;
@@ -47,10 +48,17 @@ const TILT_GAIN = 20;
 const MAX_TILT = 25;
 const TURN_EASE = 0.15;
 const BLINK_EVERY_MS = [2500, 5000] as const;
-/** The pointer-watcher's walk, per 60fps frame at WALK_SPEED. */
+const BLINK_MS = 160;
+/** The eases and the watcher's walk are per 60fps frame; other rates scale to it. */
+const FRAME_MS = 1000 / 60;
+/** Longest gap one frame may cover, so a stalled tab does not jump the watcher. */
+const MAX_FRAMES_PER_STEP = 6;
+/** The pointer-watcher's walk at WALK_SPEED. */
 const WATCH_STEP = WALK_SPEED / 60;
 /** A held cat has settled once no pose value moves more than this per frame. */
 const SETTLED = 0.01;
+/** Tail segment speed below which the tail counts as at rest. */
+const TAIL_REST = 0.02;
 
 /** One cat as the page passes it in: names, roles and the dialog photo. */
 export interface CatInfo {
@@ -76,8 +84,10 @@ export interface CatSpot {
   facing: 1 | -1;
 }
 
-/** Why a cat holds still: pointed at, focused, or its dialog is open. */
+/** Why a cat holds still: pointed at, keyboard-focused, or its dialog is open. */
 export type Hold = 'pointer' | 'focus' | 'card';
+
+export type CatMood = 'playing' | 'holding' | 'asleep';
 
 interface Playing {
   move: Move;
@@ -102,6 +112,9 @@ interface CatState extends CatSpot {
   asleep: boolean;
   napAt: number;
   holds: Set<Hold>;
+  mood: CatMood;
+  /** When its band left the screen; it is not stepped and its play clock stops meanwhile. */
+  hiddenAt?: number;
   nextBlink: number;
   blinkUntil: number;
   /** The pointer-watcher's pose before its walk cycle is added. */
@@ -138,12 +151,12 @@ export interface Colony {
     sizes: Map<CatSpot['id'], { width: number; height: number }>,
   ) => void;
   frame: (now: number) => boolean;
-  /** Wakes every cat nobody has stopped or woken yet, when they first come into view. */
-  wakeAll: (now: number) => void;
-  wake: (id: CatSpot['id'], now: number) => void;
-  /** Puts a cat to sleep now, after its dialog closes. */
-  nap: (id: CatSpot['id']) => void;
+  /** Starts a cat's play clock the first time its band is on screen, and stops it while off. */
+  visible: (id: CatSpot['id'], on: boolean, now: number) => void;
+  /** After its dialog closes: wakes it, or puts it to sleep, as its button said on opening. */
+  release: (id: CatSpot['id'], now: number, wake: boolean) => void;
   hold: (id: CatSpot['id'], reason: Hold, on: boolean) => void;
+  /** Reduced motion: drops every move and keeps each cat awake or asleep as it was. */
   still: () => void;
   pointer: (
     x: number,
@@ -151,13 +164,13 @@ export interface Colony {
     now: number,
     rects: Map<CatSpot['id'], DOMRect>,
   ) => void;
-  asleep: (id: CatSpot['id']) => boolean;
-  watcher: () => CatSpot['id'] | '';
+  /** Whether any cat on screen is awake to see the pointer. */
+  watching: () => boolean;
 }
 
 export const createColony = (
   spots: CatSpot[],
-  onSleepChange: (id: CatSpot['id'], asleep: boolean) => void,
+  onMoodChange: (id: CatSpot['id'], mood: CatMood) => void,
 ): Colony => {
   const cats: CatState[] = spots.map((spot) => ({
     ...spot,
@@ -169,20 +182,33 @@ export const createColony = (
     asleep: false,
     napAt: Infinity,
     holds: new Set<Hold>(),
+    mood: 'playing' as CatMood,
+    hiddenAt: 0,
     nextBlink: 0,
     blinkUntil: 0,
   }));
-  let watcherId: CatSpot['id'] | '' = '';
+  const watcherId = cats[Math.floor(Math.random() * cats.length)]?.id ?? '';
   const pointerAt = new Map<CatSpot['id'], { x: number; y: number }>();
   let pointerTime = -Infinity;
+  let lastFrame = -Infinity;
 
   const find = (id: CatSpot['id']): CatState | undefined =>
     cats.find((cat) => cat.id === id);
 
+  const updateMood = (cat: CatState): void => {
+    const mood: CatMood = cat.asleep
+      ? 'asleep'
+      : cat.holds.size > 0
+        ? 'holding'
+        : 'playing';
+    if (mood === cat.mood) return;
+    cat.mood = mood;
+    onMoodChange(cat.id, mood);
+  };
+
   const setAsleep = (cat: CatState, asleep: boolean): void => {
-    if (cat.asleep === asleep) return;
     cat.asleep = asleep;
-    onSleepChange(cat.id, asleep);
+    updateMood(cat);
   };
 
   const draw = (cat: CatState, now: number): void => {
@@ -270,7 +296,7 @@ export const createColony = (
       lieDown(cat, now);
       return;
     }
-    if (cat.holds.size > 0 || cat.id === watcherId) return;
+    if (cat.holds.size > 0) return;
     if (Math.random() < TRAVEL_CHANCE) {
       const to =
         cat.pose.x +
@@ -322,8 +348,12 @@ export const createColony = (
       0,
     );
 
+  /** An ease per 60fps frame, applied over `frames` of them. */
+  const eased = (ease: number, frames: number): number =>
+    1 - (1 - ease) ** frames;
+
   /** A held cat sits where it is and turns its head to the pointer; true until it settles. */
-  const look = (cat: CatState, now: number): boolean => {
+  const look = (cat: CatState, now: number, frames: number): boolean => {
     const target = pointerFor(cat, now);
     const dx = target ? target.x - cat.pose.x : 0;
     const want =
@@ -333,54 +363,43 @@ export const createColony = (
     const settled = mixPose(
       cat.pose,
       pose('sit', { x: cat.pose.x, hr: target ? tiltTowards(cat, target) : 0 }),
-      WATCH_EASE,
+      eased(WATCH_EASE, frames),
     );
     settled.x = cat.pose.x;
-    settled.face = cat.pose.face + (want - cat.pose.face) * TURN_EASE;
+    settled.face =
+      cat.pose.face + (want - cat.pose.face) * eased(TURN_EASE, frames);
     const moving = poseGap(cat.pose, settled) > SETTLED;
     cat.rest = undefined;
     cat.pose = settled;
     return moving;
   };
 
-  const watch = (cat: CatState, now: number): void => {
-    const target = pointerFor(cat, now);
+  /** Follows a moving pointer; with none, the watcher plays like the others. */
+  const watch = (
+    cat: CatState,
+    target: { x: number; y: number },
+    frames: number,
+  ): void => {
     const base = cat.rest ?? cat.pose;
-    let calm: Pose;
-    let moving = false;
-    if (!target) {
-      calm = mixPose(
-        base,
-        pose('sit', {
-          x: base.x,
-          face: base.face,
-          hr: 8 * Math.sin(now / 1800),
-        }),
-        WATCH_EASE,
-      );
-    } else {
-      const dx = target.x - base.x;
-      moving =
-        Math.abs(dx) > FOLLOW_FAR ||
-        (base.by < STANDING_HEIGHT && Math.abs(dx) > FOLLOW_NEAR);
-      const want =
-        Math.abs(dx) > FACE_DEADBAND
-          ? Math.sign(dx)
-          : Math.sign(base.face) || 1;
-      const x = moving
-        ? clamp(base.x + Math.sign(dx) * WATCH_STEP, cat.min, cat.max)
-        : base.x;
-      calm = mixPose(
-        base,
-        pose(moving ? 'stand' : 'sit', {
-          x,
-          hr: moving ? 0 : tiltTowards(cat, target),
-        }),
-        WATCH_EASE,
-      );
-      calm.x = x;
-      calm.face = base.face + (want - base.face) * TURN_EASE;
-    }
+    const dx = target.x - base.x;
+    const moving =
+      Math.abs(dx) > FOLLOW_FAR ||
+      (base.by < STANDING_HEIGHT && Math.abs(dx) > FOLLOW_NEAR);
+    const want =
+      Math.abs(dx) > FACE_DEADBAND ? Math.sign(dx) : Math.sign(base.face) || 1;
+    const x = moving
+      ? clamp(base.x + Math.sign(dx) * WATCH_STEP * frames, cat.min, cat.max)
+      : base.x;
+    const calm = mixPose(
+      base,
+      pose(moving ? 'stand' : 'sit', {
+        x,
+        hr: moving ? 0 : tiltTowards(cat, target),
+      }),
+      eased(WATCH_EASE, frames),
+    );
+    calm.x = x;
+    calm.face = base.face + (want - base.face) * eased(TURN_EASE, frames);
     cat.rest = calm;
     const shown = clonePose(calm);
     if (moving) gait(shown, shown.x);
@@ -405,7 +424,7 @@ export const createColony = (
   };
 
   /** Moves one cat a frame on; true while it still has something to show. */
-  const step = (cat: CatState, now: number): boolean => {
+  const step = (cat: CatState, now: number, frames: number): boolean => {
     const held = cat.holds.size > 0;
     const playing = cat.playing;
     if (playing && (playing.settle || !held)) {
@@ -415,9 +434,10 @@ export const createColony = (
     if (cat.asleep) return false;
     if (playing) drop(cat);
     const napDue = now >= cat.napAt && !cat.holds.has('card');
-    if (held && !napDue) return look(cat, now);
-    if (!napDue && cat.id === watcherId) {
-      watch(cat, now);
+    if (held && !napDue) return look(cat, now, frames);
+    const target = cat.id === watcherId ? pointerFor(cat, now) : undefined;
+    if (!napDue && target) {
+      watch(cat, target, frames);
       return true;
     }
     next(cat, now);
@@ -425,22 +445,25 @@ export const createColony = (
   };
 
   const frame = (now: number): boolean => {
+    const frames = clamp((now - lastFrame) / FRAME_MS, 0, MAX_FRAMES_PER_STEP);
+    lastFrame = now;
     let busy = false;
     for (const cat of cats) {
-      if (step(cat, now)) busy = true;
+      if (cat.hiddenAt !== undefined) continue;
+      if (step(cat, now, frames)) busy = true;
       if (!cat.asleep && now > cat.nextBlink) {
-        cat.blinkUntil = now + 160;
+        cat.blinkUntil = now + BLINK_MS;
         cat.nextBlink = now + rand(...BLINK_EVERY_MS);
       }
       draw(cat, now);
+      if (cat.rig.tailSpeed.some((v) => Math.abs(v) > TAIL_REST)) busy = true;
     }
-    return (
-      busy || cats.some((c) => c.rig.tailSpeed.some((v) => Math.abs(v) > 0.02))
-    );
+    return busy;
   };
 
   const wakeCat = (cat: CatState, now: number): void => {
     cat.napAt = now + NAP_AFTER_MS;
+    cat.hiddenAt = undefined;
     cat.nextBlink = now + rand(...BLINK_EVERY_MS);
     if (!cat.asleep) return;
     setAsleep(cat, false);
@@ -472,33 +495,49 @@ export const createColony = (
       }
     },
     frame,
-    wakeAll: (now) => {
-      watcherId = cats[Math.floor(Math.random() * cats.length)].id;
-      for (const cat of cats) if (cat.napAt === Infinity) wakeCat(cat, now);
-    },
-    wake: (id, now) => {
+    visible: (id, on, now) => {
       const cat = find(id);
-      if (cat) wakeCat(cat, now);
+      if (!cat) return;
+      if (!on) {
+        cat.hiddenAt ??= now;
+        return;
+      }
+      const hiddenAt = cat.hiddenAt;
+      if (hiddenAt === undefined) return;
+      cat.hiddenAt = undefined;
+      if (cat.napAt === Infinity) {
+        wakeCat(cat, now);
+        return;
+      }
+      if (cat.napAt > hiddenAt) cat.napAt += now - hiddenAt;
+      if (cat.playing) cat.playing.t0 += now - hiddenAt;
     },
-    nap: (id) => {
+    release: (id, now, wake) => {
       const cat = find(id);
       if (!cat) return;
       cat.holds.delete('card');
-      if (!cat.asleep) cat.napAt = -Infinity;
+      if (wake) wakeCat(cat, now);
+      else if (!cat.asleep) cat.napAt = -Infinity;
+      updateMood(cat);
     },
     hold: (id, reason, on) => {
       const cat = find(id);
       if (!cat) return;
       if (on) cat.holds.add(reason);
       else cat.holds.delete(reason);
+      updateMood(cat);
     },
     still: () => {
       const now = performance.now();
       for (const cat of cats) {
+        const settling = cat.playing?.settle;
         drop(cat);
-        cat.napAt = Infinity;
-        cat.pose = pose('sit', { x: cat.pose.x, face: cat.facing });
-        setAsleep(cat, false);
+        /* Mid lie-down: finish it asleep, not sat up. */
+        if (settling && !cat.asleep && cat.napAt <= now) setAsleep(cat, true);
+        cat.pose = pose(cat.asleep ? 'sleep' : 'sit', {
+          x: cat.pose.x,
+          face: Math.sign(cat.pose.face) || cat.facing,
+        });
         settleTail(cat.rig);
         draw(cat, now);
       }
@@ -508,7 +547,7 @@ export const createColony = (
       for (const [id, rect] of rects)
         pointerAt.set(id, { x: x - rect.left, y: y - rect.top });
     },
-    asleep: (id) => find(id)?.asleep ?? false,
-    watcher: () => watcherId,
+    watching: () =>
+      cats.some((cat) => cat.hiddenAt === undefined && !cat.asleep),
   };
 };

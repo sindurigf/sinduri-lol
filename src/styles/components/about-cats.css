@@ -188,10 +188,16 @@
     stroke: var(--color-bunny);
   }
 
-  /* A small card over the page, which stays in view behind a light scrim. */
+  /*
+   * A small card over the page, which stays in view behind a light scrim. The
+   * dialog itself is bare, so a click on the card's padding is not a backdrop click.
+   */
   .cat-dialog {
-    @apply m-auto border-8 border-border bg-surface p-card-tight text-text
-      shadow-hard-pink-8;
+    @apply m-auto overflow-visible border-0 bg-transparent p-0 text-text;
+  }
+
+  .cat-card {
+    @apply border-8 border-border bg-surface p-card-tight shadow-hard-pink-8;
   }
 
   .cat-dialog::backdrop {

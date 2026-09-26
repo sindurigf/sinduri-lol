@@ -64,7 +64,7 @@
   --color-bunny: #ff007a;
   --color-tile-edge: #5a87a8;
   /*
-   * The About cats, read by AboutCats.vue. Fills are decoration: the sticker
+   * The About cats, read by about-cats.css. Fills are decoration: the sticker
    * edge (`text`) carries SC 1.4.11, so none of these delimits a control.
    */
   --color-cat-minerva: #a57a4d;
