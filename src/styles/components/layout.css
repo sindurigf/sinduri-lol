@@ -18,13 +18,33 @@
   }
 
   /*
-   * PageHero photo crossing the slab's bottom edge, from `lg`:
-   * --spacing-section clears the slab padding, --spacing-head is the overhang.
+   * PageHero photo crossing the slab's bottom edge: --spacing-section clears
+   * the slab padding, --spacing-head is the overhang.
    */
   .hero-photo {
-    @media (width >= 64rem) {
-      position: relative;
-      margin-bottom: calc(-1 * (var(--spacing-section) + var(--spacing-head)));
+    position: relative;
+    margin-bottom: calc(-1 * (var(--spacing-section) + var(--spacing-head)));
+  }
+
+  /*
+   * The next section keeps its usual distance from the photo, not the slab.
+   * On a landscape `lg` window the slab fills it less the overhang, so the
+   * photo's shadow lands on the fold: its 8px lift cancels the slab's border.
+   */
+  .page-hero-photo {
+    margin-block-end: var(--spacing-head);
+
+    @media (width >= 64rem) and (orientation: landscape) {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(
+        100svh - var(--spacing-header) - var(--hero-pad-block) -
+          var(--spacing-head)
+      );
+
+      > div {
+        flex-grow: 1;
+      }
     }
   }
 

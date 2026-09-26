@@ -624,7 +624,7 @@ how important the page is.
 | Variant  | Where                                                                | Title                            | Column                             |
 | -------- | -------------------------------------------------------------------- | -------------------------------- | ---------------------------------- |
 | Home     | `/` only                                                             | its own hero, `HeroField.vue`    | its own composition                |
-| Standard | About, Career, Contact, Blog, Credits                                | `text-h1`                        | `max-w-page`; 7 of 12 with a photo |
+| Standard | About, Career, Contact, Blog, Credits                                | `text-h1`                        | `max-w-page`; 6 of 12 with a photo |
 | Reading  | Privacy, Accessibility (`measure="reading"`)                         | `text-reading-h1`                | `max-w-measure`, the prose column  |
 | Compact  | category and tag listings, `/contact/send`, `/blog/page/<n>`, `/404` | `text-h2`, still the page's `h1` | `max-w-page`                       |
 | Thin     | `/contact/sent`                                                      | `text-post-title`                | `max-w-page`                       |
@@ -649,7 +649,13 @@ tier and takes its padding.
 - Edge: one 8px `border` and the 8px pink shadow, as a card. Text inset by
   `--hero-column-pad-inline`.
 - PageHero and `.post-slab` stand `--hero-pad-block` below the header.
-- With a photo, from 1024px: text on 7 of 12 columns, photo on columns 9 to 12. Below that the photo follows the text at `max-w-sm`, 48px under it.
+- With a photo, from 1024px: text on 6 of 12 columns, centred; photo on
+  columns 8 to 12, 4:5, on the slab's bottom. Below that the photo follows the
+  text at `max-w-sm`, 48px under it.
+- The photo hangs `--spacing-head` past the slab's bottom edge, and the hero
+  keeps `--spacing-head` below it so the next section clears the photo.
+- On a landscape window from 1024px the slab fills the window less the
+  overhang, so the photo's shadow ends on the fold.
 - No line, fill, card or separator strip between the hero and the first
   section.
 - Two `--spacing-section` (112 to 192px) between the hero's last line and the

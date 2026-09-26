@@ -4,7 +4,7 @@ import { gotoSettled } from './settle';
 import { NODE } from './tags';
 
 /**
- * PageHero's roundel covers no text in the hero or the next section, and in forced
+ * PageHero's roundel and photo cover no text in the hero or the next section, and in forced
  * colours the slab's bottom border still separates it from what follows.
  */
 
@@ -93,11 +93,11 @@ test.describe('the gold slab in forced colours', () => {
   }
 });
 
-/** Text the roundel's box overlaps in the hero and the next section, or null with no roundel. */
-const roundelOverlaps = (page: Page) =>
-  page.evaluate(() => {
+/** Text a hero mark's box overlaps in the hero and the next section, or null without the mark. */
+const markOverlaps = (page: Page, mark: string) =>
+  page.evaluate((selector) => {
     const hero = document.querySelector('main .page-hero, main .post-slab');
-    const holder = hero?.querySelector('.hero-roundel');
+    const holder = hero?.querySelector(selector);
     if (!hero || !holder) return null;
     const d = holder.getBoundingClientRect();
     const hits: string[] = [];
@@ -123,13 +123,15 @@ const roundelOverlaps = (page: Page) =>
       }
     }
     return hits;
-  });
+  }, mark);
+
+const roundelOverlaps = (page: Page) => markOverlaps(page, '.hero-roundel');
 
 /* The phone, `sm`, `md`, both sides of `lg`, and a laptop. */
 const CLEARANCE_WIDTHS = [320, 640, 768, 1023, 1024, 1280] as const;
 
 for (const width of CLEARANCE_WIDTHS) {
-  test.describe(`the gold slab's roundel at ${width}px`, () => {
+  test.describe(`the gold slab's mark at ${width}px`, () => {
     test.use({ viewport: { width, height: 900 } });
 
     for (const route of GOLD_ROUNDEL_ROUTES) {
@@ -138,6 +140,15 @@ for (const width of CLEARANCE_WIDTHS) {
         const overlaps = await roundelOverlaps(page);
         expect(overlaps, `${route} has no hero roundel`).not.toBeNull();
         expect(overlaps, 'text under the roundel').toEqual([]);
+      });
+    }
+
+    for (const route of PHOTO_ROUTES) {
+      test(`${route} keeps the hero photo off the text`, async ({ page }) => {
+        await gotoSettled(page, route);
+        const overlaps = await markOverlaps(page, '.hero-photo');
+        expect(overlaps, `${route} has no hero photo`).not.toBeNull();
+        expect(overlaps, 'text under the hero photo').toEqual([]);
       });
     }
   });
