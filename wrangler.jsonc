@@ -69,7 +69,13 @@
 
     // Navigations to asset-less paths skip the Worker, so a form POST gets 405.
     // /videos/*: the asset layer ignores Range; Safari needs a 206.
-    "run_worker_first": ["/contact/send", "/contact/send/", "/videos/*"],
+    // /_image: images on on-demand pages, which the asset layer answers with 404.html.
+    "run_worker_first": [
+      "/contact/send",
+      "/contact/send/",
+      "/videos/*",
+      "/_image",
+    ],
 
     // Workers does not serve 404.html by default: tests/not-found.spec.ts.
     "not_found_handling": "404-page",
