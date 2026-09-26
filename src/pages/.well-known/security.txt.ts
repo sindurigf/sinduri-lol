@@ -33,6 +33,8 @@ export const GET: APIRoute = ({ site }) => {
     '#   owner;',
     '#   /videos/*, a dormant route kept for serving video in byte ranges.',
     '#   No video is published, so every request there gets the 404 page;',
+    '#   /_image, which returns an image from /_astro/ for the contact error',
+    '#   pages and refuses remote and non-image sources;',
     `#   a daily job that deletes stored messages once they are ${RETENTION_DAYS} days old`,
     '#   and resends notifications that failed.',
     '# The surface worth testing is the contact endpoint, the response headers',
