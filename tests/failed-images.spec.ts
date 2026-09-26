@@ -176,7 +176,17 @@ for (const { label, width, scale } of VIEWS) {
         await page.route(IMAGE_REQUEST, (request) => request.abort());
         await gotoSettled(page, route);
 
-        const frames = await framesOnEveryScreen(page);
+        /* WebKit can report `img.complete` before it fires the error that marks the frame. */
+        let frames: Frame[] = [];
+        await expect
+          .poll(
+            async () => {
+              frames = await framesOnEveryScreen(page);
+              return frames.filter((f) => !f.marked).map((f) => f.alt);
+            },
+            { message: `${route} has a failed photo the script never marked` },
+          )
+          .toEqual([]);
         expect(frames.length, `${route} has no framed photo`).toBeGreaterThan(
           0,
         );
@@ -187,7 +197,6 @@ for (const { label, width, scale } of VIEWS) {
 
         for (const frame of frames) {
           const name = frame.alt.slice(0, 40) || '(decorative)';
-          expect(frame.marked, `${name}: not marked failed`).toBe(true);
           expect(frame.imageOpacity, `${name}: image not faded`).toBe(0);
           if (frame.border > 0) {
             expect(
