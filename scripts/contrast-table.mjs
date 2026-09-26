@@ -29,7 +29,7 @@ const PAIRS = [
   ['text', 'surface', 'text', 'Text inside cards and inputs'],
   ['subtle', 'background', 'text', 'Captions, meta, helper text'],
   ['subtle', 'surface', 'text', 'Helper and required text in cards'],
-  ['gold', 'background', 'text', 'Card labels, the 404 title'],
+  ['gold', 'background', 'text', 'Card labels'],
   ['gold', 'surface', 'text', 'Card labels'],
   ['pink-text', 'background', 'text', 'Error text, pink glyphs'],
   ['pink-text', 'surface', 'text', 'Error text in the form card'],
