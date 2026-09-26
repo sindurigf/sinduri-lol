@@ -196,6 +196,19 @@ test.describe('the web app manifest', NODE, () => {
     }
   });
 
+  test('iOS labels the home screen icon with its short_name', () => {
+    const tag =
+      /<meta\b[^>]*\bname=["']apple-mobile-web-app-title["'][^>]*>/i.exec(
+        homeHtml(),
+      )?.[0];
+    expect(tag, 'The head has no apple-mobile-web-app-title.').toBeTruthy();
+
+    expect(
+      /\scontent=["']([^"']*)["']/i.exec(tag!)?.[1],
+      'apple-mobile-web-app-title differs from the manifest short_name.',
+    ).toBe(manifest().short_name);
+  });
+
   test('declares exactly one maskable icon', () => {
     // Maskable art is padded to the 80% safe zone: too small where unmasked.
     const icons = manifest().icons as { purpose?: string }[];

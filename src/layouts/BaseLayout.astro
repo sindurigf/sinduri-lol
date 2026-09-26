@@ -17,7 +17,7 @@ import { DEFAULT_OG_IMAGE, type OgImage } from '../lib/og-image';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE_FEED_PATH, SITEMAP_PATH } from '../lib/paths';
-import { SITE_NAME } from '../lib/site';
+import { SITE_NAME, SITE_SHORT_NAME } from '../lib/site';
 
 interface Props {
   /** The page's own name; the site name is appended unless `titleSuffix` is false. */
@@ -154,6 +154,7 @@ const articleData = article && {
     {/* 180x180, full-bleed. iOS rounds the corners itself; do not pre-round. */}
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/site.webmanifest" />
+    <meta name="apple-mobile-web-app-title" content={SITE_SHORT_NAME} />
 
     <meta property="og:type" content={article ? 'article' : 'website'} />
     {article && (

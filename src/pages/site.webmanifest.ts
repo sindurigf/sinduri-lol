@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { SITE_NAME } from '../lib/site';
+import { SITE_NAME, SITE_SHORT_NAME } from '../lib/site';
 import { themeColor } from '../lib/theme-color';
 
 /*
@@ -9,7 +9,7 @@ import { themeColor } from '../lib/theme-color';
 
 const MANIFEST = {
   name: SITE_NAME,
-  short_name: 'sinduri',
+  short_name: SITE_SHORT_NAME,
   start_url: '/',
   display: 'standalone',
   theme_color: themeColor,
