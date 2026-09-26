@@ -794,6 +794,23 @@ test.describe('the contact error pages in a browser', () => {
     ).toEqual([]);
   };
 
+  /* On-demand pages point images at /_image, which only the Worker serves. */
+  const expectEveryImageLoaded = async (page: Page, label: string) => {
+    await expect
+      .poll(
+        () =>
+          page
+            .locator('img')
+            .evaluateAll((images) =>
+              (images as HTMLImageElement[])
+                .filter((img) => !img.complete || img.naturalWidth === 0)
+                .map((img) => img.currentSrc || img.src),
+            ),
+        { message: `the ${label} page has images that did not load` },
+      )
+      .toEqual([]);
+  };
+
   test('the rejected-submission page', async ({ page }) => {
     await submit(page, {
       name: 'Ada Lovelace',
@@ -801,6 +818,7 @@ test.describe('the contact error pages in a browser', () => {
       message: 'too short',
     });
     await expectSummaryFocusedAndClean(page, 'rejected-submission');
+    await expectEveryImageLoaded(page, 'rejected-submission');
   });
 
   test('the storage-failure page', async ({ page }) => {
@@ -811,6 +829,7 @@ test.describe('the contact error pages in a browser', () => {
         page.getByText('Your message could not be saved'),
       ).toBeVisible();
       await expectSummaryFocusedAndClean(page, 'storage-failure');
+      await expectEveryImageLoaded(page, 'storage-failure');
     } finally {
       localD1(`ALTER TABLE ${MESSAGES_ASIDE} RENAME TO messages`);
     }
