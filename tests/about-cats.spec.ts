@@ -14,9 +14,9 @@ import {
 import { highestPoint } from '../src/lib/about-cats-rig';
 
 /**
- * The About cats (src/components/ui/AboutCats.vue): real controls that open a
- * photo, an SC 2.2.2 pause, stillness under reduced motion, and never covering
- * text. Their drawing is decoration and is not tested for its look.
+ * The About cats (src/components/ui/AboutCats.vue): each cat is a button that
+ * stops it and opens its photo (SC 2.2.2), stillness under reduced motion, and
+ * never covering text. Their drawing is decoration and is not tested for its look.
  */
 const ROUTE = '/about/';
 const CATS = ['minerva', 'hela', 'rudra'] as const;
@@ -27,12 +27,25 @@ const STILL_WINDOW_MS = 800;
 
 const PHONE = { width: 390, height: 844 };
 
+/** Leg height from the bottom of the click box; a raised card covers the last few px. */
+const LEG_HEIGHT = 0.15;
+
+/** A cat that lies down settles its tail within this. */
+const SETTLE_MS = 3000;
+
 /** About 4.5s per cat: long enough to catch a jump or a rear up. */
 const BAND_SAMPLES = 30;
 const BAND_SAMPLE_MS = 150;
 
+/** Lying down plays out before the name changes; the longest move is well under this. */
+const NAP_TIMEOUT_MS = 10_000;
+
 const catButton = (page: Page, id: (typeof CATS)[number]) =>
-  page.getByRole('button', { name: `Meet ${NAMES[id]}` });
+  page.locator(`#cat-spot-${id} .cat-button`);
+
+/** Where the cat stands, not how it is posed: a held cat still blinks. */
+const place = (page: Page, id: (typeof CATS)[number]) =>
+  page.locator(`#cat-spot-${id} .cat-hit`).getAttribute('transform');
 
 /** Every drawn attribute of one cat, so any movement changes the string. */
 const drawing = (page: Page, id: (typeof CATS)[number]) =>
@@ -41,6 +54,21 @@ const drawing = (page: Page, id: (typeof CATS)[number]) =>
     .evaluate((node) =>
       node.outerHTML.replace(/ (?:x|y|width|height)="[^"]*"/g, ''),
     );
+
+/** Points at a cat and waits for it to stop, as a person aiming at it would. */
+const pointAt = async (page: Page, id: (typeof CATS)[number]) => {
+  const area = page.locator(`#cat-spot-${id} .cat-hit-area`);
+  await area.scrollIntoViewIfNeeded();
+  await area.hover({ force: true });
+  await expect(async () => {
+    const before = await place(page, id);
+    await page.waitForTimeout(STILL_WINDOW_MS);
+    expect(await place(page, id)).toBe(before);
+  }, `${NAMES[id]} kept walking under the pointer`).toPass({
+    timeout: NAP_TIMEOUT_MS,
+  });
+  return area;
+};
 
 const expectStill = async (
   page: Page,
@@ -102,12 +130,14 @@ test('no move lifts any part of a cat above its band', NODE, () => {
 });
 
 test.describe('About cats', () => {
-  test('each cat is a named button that opens its photo in a dialog and returns focus', async ({
+  test('each playing cat is a named button that opens its photo in a dialog and returns focus', async ({
     page,
   }) => {
     await gotoSettled(page, ROUTE);
     for (const id of CATS) {
       const button = catButton(page, id);
+      await expect(button).toHaveAccessibleName(`Stop and meet ${NAMES[id]}`);
+      await expect(button).toHaveAttribute('aria-haspopup', 'dialog');
       await button.focus();
       await page.keyboard.press('Enter');
       const dialog = page.getByRole('dialog', { name: NAMES[id] });
@@ -131,49 +161,74 @@ test.describe('About cats', () => {
     }
   });
 
-  test('a pointer click on a drawn cat opens its dialog', async ({ page }) => {
-    await gotoSettled(page, ROUTE);
-    await page.getByRole('button', { name: 'Pause the cats' }).first().click();
-    const cat = page.locator('#cat-spot-hela .cat-hit');
-    await cat.scrollIntoViewIfNeeded();
-    const box = await cat.boundingBox();
-    expect(box, 'Hela is not drawn').not.toBeNull();
-    if (!box) return;
-    await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.6);
-    await expect(page.getByRole('dialog', { name: 'Hela' })).toBeVisible();
-  });
-
-  test('the pause control stops every cat and says what it will do (SC 2.2.2)', async ({
+  test('a pointer click anywhere on a drawn cat, even between its legs, opens its dialog', async ({
     page,
   }) => {
     await gotoSettled(page, ROUTE);
-    const pause = page.getByRole('button', { name: 'Pause the cats' });
-    await expect(pause, 'each cat needs a pause control beside it').toHaveCount(
-      CATS.length,
-    );
-    for (const toggle of await pause.all()) {
-      const box = await toggle.boundingBox();
-      expect(
-        box?.width,
-        'pause control target width (SC 2.5.8)',
-      ).toBeGreaterThanOrEqual(MIN_TARGET);
-      expect(
-        box?.height,
-        'pause control target height (SC 2.5.8)',
-      ).toBeGreaterThanOrEqual(MIN_TARGET);
-    }
-    await pause.first().click();
-    await expect(
-      page.getByRole('button', { name: 'Play the cats' }),
-      'every control should switch to Play once paused',
-    ).toHaveCount(CATS.length);
     for (const id of CATS) {
-      await page.locator(`#cat-spot-${id}`).scrollIntoViewIfNeeded();
-      await expectStill(page, id, `${NAMES[id]} kept moving while paused`);
+      const area = await pointAt(page, id);
+      const box = await area.boundingBox();
+      expect(box, `${NAMES[id]} is not drawn`).not.toBeNull();
+      if (!box) return;
+      await page.mouse.click(
+        box.x + box.width / 2,
+        box.y + box.height * (1 - LEG_HEIGHT),
+      );
+      const dialog = page.getByRole('dialog', { name: NAMES[id] });
+      await expect(
+        dialog,
+        `a click at ${NAMES[id]}'s feet missed`,
+      ).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(dialog).toBeHidden();
     }
   });
 
-  test('under reduced motion the cats sit still and there is no pause control', async ({
+  test('pointing at a playing cat stops it where it is', async ({ page }) => {
+    await gotoSettled(page, ROUTE);
+    for (const id of CATS) await pointAt(page, id);
+  });
+
+  test("closing a cat's card puts it to sleep until it is clicked again (SC 2.2.2)", async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    for (const id of CATS) {
+      const button = catButton(page, id);
+      await button.scrollIntoViewIfNeeded();
+      await button.focus();
+      await page.keyboard.press('Enter');
+      await expect(page.getByRole('dialog', { name: NAMES[id] })).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(
+        button,
+        `${NAMES[id]} did not offer to wake after its card closed`,
+      ).toHaveAccessibleName(`Wake ${NAMES[id]}`, {
+        timeout: NAP_TIMEOUT_MS,
+      });
+      await expect(
+        button,
+        'a sleeping cat opens no dialog, so it announces none',
+      ).not.toHaveAttribute('aria-haspopup');
+      await page
+        .locator(`#cat-spot-${id} .cat-hit-area`)
+        .hover({ force: true });
+      await expect(async () => {
+        await expectStill(page, id, `${NAMES[id]} moved while asleep`);
+      }).toPass({ timeout: SETTLE_MS });
+
+      await page.keyboard.press('Enter');
+      await expect(
+        page.getByRole('dialog'),
+        'waking a cat opened its card',
+      ).toBeHidden();
+      await expect(button, `${NAMES[id]} did not wake`).toHaveAccessibleName(
+        `Stop and meet ${NAMES[id]}`,
+      );
+    }
+  });
+
+  test('under reduced motion the cats sit still and a click only opens the card', async ({
     browser,
   }) => {
     const context = await browser.newContext({ reducedMotion: 'reduce' });
@@ -182,12 +237,18 @@ test.describe('About cats', () => {
     await expect(page.getByRole('button', { name: /^Meet / })).toHaveCount(
       CATS.length,
     );
-    await expect(page.getByRole('button', { name: /the cats$/ })).toHaveCount(
-      0,
-    );
     for (const id of CATS) {
       await page.locator(`#cat-spot-${id}`).scrollIntoViewIfNeeded();
       await expectStill(page, id, `${NAMES[id]} moved under reduced motion`);
+      const button = catButton(page, id);
+      await button.focus();
+      await page.keyboard.press('Enter');
+      await expect(page.getByRole('dialog', { name: NAMES[id] })).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(
+        button,
+        'under reduced motion a cat never sleeps behind a Wake button',
+      ).toHaveAccessibleName(`Meet ${NAMES[id]}`);
     }
     await context.close();
   });
@@ -201,7 +262,7 @@ test.describe('About cats', () => {
   });
 
   for (const viewport of [REFLOW_VIEWPORT, PHONE, DESKTOP_VIEWPORT]) {
-    test(`no cat band or pause control covers text at ${viewport.width}px`, async ({
+    test(`no cat band covers text at ${viewport.width}px`, async ({
       browser,
     }) => {
       const context = await browser.newContext({ viewport });
@@ -275,9 +336,10 @@ test.describe('About cats', () => {
 
   test('a drawn cat is at least 24 by 24px (SC 2.5.8)', async ({ page }) => {
     await gotoSettled(page, ROUTE);
-    await page.getByRole('button', { name: 'Pause the cats' }).first().click();
     for (const id of CATS) {
-      const box = await page.locator(`#cat-spot-${id} .cat-hit`).boundingBox();
+      const box = await page
+        .locator(`#cat-spot-${id} .cat-hit-area`)
+        .boundingBox();
       expect(box?.width, `${NAMES[id]}'s target width`).toBeGreaterThanOrEqual(
         MIN_TARGET,
       );

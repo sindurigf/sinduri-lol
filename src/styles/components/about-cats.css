@@ -50,8 +50,10 @@
     @apply pointer-events-auto cursor-pointer;
   }
 
-  .cat-motion-toggle {
-    @apply pointer-events-auto top-0 right-0;
+  /* Unpainted, so `all`: the box takes clicks between the legs and around the tail. */
+  .cat-hit-area {
+    fill: none;
+    pointer-events: all;
   }
 
   .cat-button[data-cat='minerva'] {

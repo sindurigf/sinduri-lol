@@ -46,6 +46,8 @@ const WHISKERS = 'M11 3l9 -3M11 4.4l10 0.5M11 5.8l9 3.5';
 const STRIPES = [0.3, 0.5, 0.7];
 /** The feather wand hangs from here, above the cat's band. */
 const STRING_TOP = -100;
+/** Half the click box's width: the whole cat either way it faces, over 24px (SC 2.5.8). */
+const HIT_HALF_WIDTH = 48;
 const WING_BEAT_MS = 16;
 
 interface Point {
@@ -118,6 +120,7 @@ interface Layer {
 export interface CatRig {
   id: CatId;
   root: SVGGElement;
+  hit: SVGRectElement;
   flip: SVGGElement;
   layers: Layer[];
   bodyClip: SVGPathElement;
@@ -150,6 +153,11 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
     el('clipPath', { id: `${key}-h` }, defs),
   );
   const root = el('g', { class: 'cat-hit' }, svg);
+  const hit = el(
+    'rect',
+    { class: 'cat-hit-area', x: -HIT_HALF_WIDTH, width: 2 * HIT_HALF_WIDTH },
+    root,
+  );
   const flip = el('g', {}, root);
 
   const layer = (tone: 'shadow' | 'edge' | 'fill', extra: number): Layer => {
@@ -266,6 +274,7 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
   return {
     id,
     root,
+    hit,
     flip,
     layers,
     bodyClip,
@@ -523,6 +532,9 @@ export const renderCat = (
   rig.eyesShut.setAttribute('visibility', open ? 'hidden' : 'visible');
   rig.mouth.setAttribute('ry', f(3 * p.mouth));
 
+  const height = highestPoint(p);
+  rig.hit.setAttribute('y', f(-height));
+  rig.hit.setAttribute('height', f(height));
   rig.root.setAttribute('transform', `translate(${f(x)} ${f(groundY)})`);
   rig.flip.setAttribute(
     'transform',

@@ -13,12 +13,13 @@ import {
   type CatInfo,
   type CatSpot,
   type Colony,
+  type Hold,
 } from '../../lib/about-cats';
 
 /*
  * The cats render into `#cat-spot-<id>` on the page, only after mount: no
- * server HTML, so nothing moves or waits without JavaScript. Behaviour lives in
- * src/lib/about-cats.ts; this file owns the loop, the controls and the dialog.
+ * server HTML, so nothing moves or waits without JavaScript. Each cat is its
+ * own SC 2.2.2 control: a click stops it and opens its card, and wakes it again.
  */
 
 const props = defineProps<{ cats: CatInfo[] }>();
@@ -34,7 +35,7 @@ const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
 
 const mounted = ref(false);
 const reducedMotion = ref(false);
-const paused = ref(false);
+const asleep = ref<Partial<Record<CatId, boolean>>>({});
 const openId = ref<CatId | ''>('');
 const dialog = useTemplateRef<HTMLDialogElement>('dialog');
 
@@ -59,11 +60,17 @@ const spots = (): HTMLElement[] =>
     .filter((node): node is HTMLElement => node !== null);
 
 const running = (): boolean =>
-  mounted.value &&
-  !reducedMotion.value &&
-  !paused.value &&
-  onScreen &&
-  !document.hidden;
+  mounted.value && !reducedMotion.value && onScreen && !document.hidden;
+
+const opensCard = (id: CatId): boolean =>
+  reducedMotion.value || !asleep.value[id];
+
+const label = (cat: CatInfo): string => {
+  if (reducedMotion.value) return `Meet ${cat.name}`;
+  return asleep.value[cat.id]
+    ? `Wake ${cat.name}`
+    : `Stop and meet ${cat.name}`;
+};
 
 const tick = (now: number): void => {
   frame = 0;
@@ -82,9 +89,14 @@ const stop = (): void => {
   frame = 0;
 };
 
-const wake = (): void => {
+const wakeAll = (): void => {
   if (!colony || !running()) return;
-  colony.wake(performance.now());
+  colony.wakeAll(performance.now());
+  start();
+};
+
+const hold = (id: CatId, reason: Hold, on: boolean): void => {
+  colony?.hold(id, reason, on);
   start();
 };
 
@@ -107,6 +119,7 @@ const onPointer = (event: PointerEvent): void => {
   const rects = new Map<CatId, DOMRect>();
   for (const [id, svg] of svgs) rects.set(id, svg.getBoundingClientRect());
   colony.pointer(event.clientX, event.clientY, performance.now(), rects);
+  start();
 };
 
 const onVisibility = (): void => {
@@ -121,26 +134,44 @@ const onPreferenceChange = (event: MediaQueryListEvent): void => {
     stop();
     colony.still();
   } else {
-    wake();
+    wakeAll();
   }
 };
 
-const toggle = (): void => {
-  paused.value = !paused.value;
-  if (!colony) return;
-  if (paused.value) {
-    stop();
-    colony.pause();
-  } else {
-    wake();
-  }
+/* `close` fires a task later, so a quick second cat can open before it lands. */
+let shownFor: CatId | '' = '';
+
+const afterClose = (): void => {
+  const id = shownFor;
+  shownFor = '';
+  if (!id || !colony || reducedMotion.value) return;
+  colony.nap(id);
+  start();
 };
 
 const openCat = (id: CatId): void => {
+  if (shownFor && !dialog.value?.open) afterClose();
+  shownFor = id;
   openId.value = id;
   void nextTick(() => {
     if (dialog.value && !dialog.value.open) dialog.value.showModal();
   });
+};
+
+const onCatClick = (id: CatId): void => {
+  if (!opensCard(id)) {
+    colony?.wake(id, performance.now());
+    start();
+    return;
+  }
+  if (!reducedMotion.value) hold(id, 'card', true);
+  openCat(id);
+};
+
+const onDialogClose = (): void => {
+  if (dialog.value?.open) return;
+  openId.value = '';
+  afterClose();
 };
 
 /* A click on the backdrop lands on the <dialog> itself. */
@@ -167,7 +198,9 @@ onMounted(async () => {
     const rig = createCatRig(svg, cat.id);
     catSpots.push({ id: cat.id, rig, props: propLayer, ...PLACES[cat.id] });
   }
-  colony = createColony(catSpots);
+  colony = createColony(catSpots, (id, isAsleep) => {
+    asleep.value = { ...asleep.value, [id]: isAsleep };
+  });
   layout();
   if (reducedMotion.value) colony.still();
 
@@ -182,7 +215,7 @@ onMounted(async () => {
     }
     if (!woken) {
       woken = true;
-      wake();
+      wakeAll();
     } else {
       start();
     }
@@ -212,10 +245,12 @@ onBeforeUnmount(() => {
         type="button"
         class="cat-button"
         :data-cat="cat.id"
-        aria-haspopup="dialog"
-        @click="openCat(cat.id)"
-        @focus="wake"
-        @pointerover="wake"
+        :aria-haspopup="opensCard(cat.id) ? 'dialog' : undefined"
+        @click="onCatClick(cat.id)"
+        @focus="hold(cat.id, 'focus', true)"
+        @blur="hold(cat.id, 'focus', false)"
+        @pointerenter="hold(cat.id, 'pointer', true)"
+        @pointerleave="hold(cat.id, 'pointer', false)"
       >
         <svg
           :ref="(node) => setSvg(cat.id, node)"
@@ -223,21 +258,7 @@ onBeforeUnmount(() => {
           aria-hidden="true"
           focusable="false"
         ></svg>
-        <span class="sr-only">Meet {{ cat.name }}</span>
-      </button>
-      <button
-        v-if="!reducedMotion"
-        type="button"
-        class="motion-toggle cat-motion-toggle"
-        :data-cats-motion="paused ? 'paused' : 'running'"
-        @click="toggle"
-      >
-        <span aria-hidden="true" class="text-label leading-none">{{
-          paused ? '▶' : '❚❚'
-        }}</span>
-        <span class="sr-only">{{
-          paused ? 'Play the cats' : 'Pause the cats'
-        }}</span>
+        <span class="sr-only">{{ label(cat) }}</span>
       </button>
     </Teleport>
   </template>
@@ -246,7 +267,7 @@ onBeforeUnmount(() => {
     ref="dialog"
     class="cat-dialog"
     :aria-labelledby="open ? `cat-dialog-${open.id}` : undefined"
-    @close="openId = ''"
+    @close="onDialogClose"
     @click="onDialogClick"
   >
     <div v-if="open" class="cat-dialog-body">
