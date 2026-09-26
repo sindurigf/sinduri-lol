@@ -271,9 +271,7 @@ onBeforeUnmount(() => {
     @click="onDialogClick"
   >
     <div v-if="open" class="cat-dialog-body">
-      <div
-        class="aspect-frame aspect-square w-60 max-w-full border-4 border-border"
-      >
+      <div class="aspect-frame aspect-square w-full border-4 border-border">
         <img
           :src="open.photo.src"
           :srcset="open.photo.srcset"
@@ -282,15 +280,12 @@ onBeforeUnmount(() => {
           :alt="open.photo.alt"
         />
       </div>
-      <div class="min-w-0">
-        <h2 :id="`cat-dialog-${open.id}`" class="text-h3 text-text">
-          {{ open.name }}
-        </h2>
-        <p class="mt-2 text-body text-subtle">{{ open.role }}</p>
-        <p class="mt-4 max-w-prose text-body text-text">{{ open.about }}</p>
-      </div>
+      <h2 :id="`cat-dialog-${open.id}`" class="mt-4 text-h3 text-text">
+        {{ open.name }}
+      </h2>
+      <p class="mt-1 text-body text-subtle">{{ open.role }}</p>
     </div>
-    <form method="dialog" class="mt-8 flex justify-end">
+    <form method="dialog" class="mt-4 flex justify-end">
       <button class="btn-secondary">Close</button>
     </form>
   </dialog>

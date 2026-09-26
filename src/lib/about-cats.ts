@@ -57,7 +57,6 @@ export interface CatInfo {
   id: CatRig['id'];
   name: string;
   role: string;
-  about: string;
   photo: {
     src: string;
     srcset: string;

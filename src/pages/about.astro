@@ -140,12 +140,8 @@ const CATS = [
   },
 ] as const;
 
-/* Matches `w-60` on the photo in AboutCats.vue's dialog. */
+/* Matches `w-60` on `.cat-dialog-body`, which the photo fills. */
 const CAT_PHOTO_WIDTH = 240;
-
-/* Placeholder until Sinduri writes a line about each cat. */
-const CAT_ABOUT =
-  'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor.';
 
 const catInfo: CatInfo[] = await Promise.all(
   CATS.map(async (cat) => {
@@ -159,7 +155,6 @@ const catInfo: CatInfo[] = await Promise.all(
       id: cat.id,
       name: cat.name,
       role: cat.role,
-      about: CAT_ABOUT,
       photo: {
         src: photo.src,
         srcset: photo.srcSet.attribute,

@@ -187,16 +187,17 @@
     stroke: var(--color-bunny);
   }
 
+  /* A small card over the page, which stays in view behind a light scrim. */
   .cat-dialog {
-    @apply m-auto max-w-measure border-8 border-border bg-surface p-card-tight
-      text-text shadow-hard-pink-8 sm:p-card;
+    @apply m-auto border-8 border-border bg-surface p-card-tight text-text
+      shadow-hard-pink-8;
   }
 
   .cat-dialog::backdrop {
-    @apply bg-background;
+    @apply bg-background/60;
   }
 
   .cat-dialog-body {
-    @apply flex flex-wrap items-start gap-6;
+    @apply w-60 max-w-full;
   }
 }
