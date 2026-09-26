@@ -1,163 +1,203 @@
 /*
- * 404 starfield: hard-edged points stopping at `--star`, on their own layer
- * beside or under the slab's text, never behind it. Still, so SC 2.2.2 does not
- * apply. The phone set spans the slab's bottom band, left of the roundel.
+ * 404 starfield: hard-edged points stopping at their radius, spread over three
+ * tiles whose sizes repeat in turn down the layer list. Still, so SC 2.2.2 does
+ * not apply. `.star-clear` paints the slab's ground behind the text.
  */
 @layer components {
   .plain-slab-stars {
     position: absolute;
-    inset-inline: 0 calc(var(--hero-column-pad-inline) + var(--spacing-roundel));
-    bottom: 0;
-    height: calc(var(--spacing-roundel) / 2 + --spacing(6));
-
-    @media (width >= 64rem) {
-      inset-block: 0;
-      inset-inline: auto 0;
-      width: var(--stars-width);
-      height: auto;
-    }
-  }
-
-  /* Percentages here are of the text box, which is the slab less its inset. */
-  .plain-slab-text > * {
-    @media (width >= 64rem) {
-      max-width: calc(
-        100% + var(--hero-column-pad-inline) - var(--stars-width) -
-          var(--spacing-grid)
-      );
-    }
+    inset: 0;
   }
 
   .starfield {
     background-image:
       radial-gradient(
-        circle at 6% 30%,
+        circle at 76% 62%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 83% 94%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 8% 47%,
         var(--color-text) var(--star),
         transparent var(--star)
       ),
       radial-gradient(
-        circle at 14% 70%,
+        circle at 39% 44%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 90% 26%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 41% 73%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 52% 13%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 61% 2%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 58% 80%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 8% 69%,
+        var(--color-text) var(--star-large),
+        transparent var(--star-large)
+      ),
+      radial-gradient(
+        circle at 73% 45%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 56% 38%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 25% 72%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 71% 87%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 58% 30%,
+        var(--color-text) var(--star-large),
+        transparent var(--star-large)
+      ),
+      radial-gradient(
+        circle at 24% 21%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 98% 52%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 5% 67%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 77% 75%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 69% 90%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 86% 28%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 22% 59%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 56% 56%,
+        var(--color-gold) var(--star-large),
+        transparent var(--star-large)
+      ),
+      radial-gradient(
+        circle at 60% 65%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 75% 65%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 45% 93%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 65% 12%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 3% 89%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 86% 42%,
+        var(--color-text) var(--star-large),
+        transparent var(--star-large)
+      ),
+      radial-gradient(
+        circle at 15% 14%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 55% 61%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
+      ),
+      radial-gradient(
+        circle at 89% 64%,
+        var(--color-text) var(--star),
+        transparent var(--star)
+      ),
+      radial-gradient(
+        circle at 94% 73%,
         var(--color-gold) var(--star),
         transparent var(--star)
       ),
       radial-gradient(
-        circle at 23% 40%,
-        var(--color-text) var(--star),
-        transparent var(--star)
+        circle at 20% 94%,
+        var(--color-text) var(--star-small),
+        transparent var(--star-small)
       ),
       radial-gradient(
-        circle at 33% 78%,
-        var(--color-text) var(--star),
-        transparent var(--star)
+        circle at 91% 15%,
+        var(--color-text) var(--star-large),
+        transparent var(--star-large)
       ),
       radial-gradient(
-        circle at 41% 24%,
-        var(--color-gold) var(--star),
-        transparent var(--star)
-      ),
-      radial-gradient(
-        circle at 50% 62%,
-        var(--color-text) var(--star),
-        transparent var(--star)
-      ),
-      radial-gradient(
-        circle at 58% 34%,
-        var(--color-text) var(--star),
-        transparent var(--star)
-      ),
-      radial-gradient(
-        circle at 66% 80%,
-        var(--color-gold) var(--star),
-        transparent var(--star)
-      ),
-      radial-gradient(
-        circle at 72% 46%,
+        circle at 35% 31%,
         var(--color-text) var(--star),
         transparent var(--star)
       );
+    background-size: var(--starfield-tiles);
+  }
 
-    @media (width >= 64rem) {
-      background-image:
-        radial-gradient(
-          circle at 12% 14%,
-          var(--color-text) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 28% 72%,
-          var(--color-text) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 44% 36%,
-          var(--color-gold) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 58% 84%,
-          var(--color-text) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 71% 22%,
-          var(--color-gold) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 83% 58%,
-          var(--color-text) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 91% 12%,
-          var(--color-text) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 8% 88%,
-          var(--color-gold) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 36% 8%,
-          var(--color-text) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 64% 64%,
-          var(--color-text) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 19% 48%,
-          var(--color-gold) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 77% 92%,
-          var(--color-text) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 52% 12%,
-          var(--color-text) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 95% 76%,
-          var(--color-gold) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 40% 94%,
-          var(--color-text) var(--star),
-          transparent var(--star)
-        ),
-        radial-gradient(
-          circle at 87% 38%,
-          var(--color-text) var(--star),
-          transparent var(--star)
-        );
-    }
+  /* A block, not inline: the h1's 0.96 leading lets a line's background cover the line above. */
+  .star-clear {
+    display: block;
+    width: fit-content;
+    background-color: var(--color-surface);
   }
 }

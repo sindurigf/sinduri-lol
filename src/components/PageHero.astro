@@ -21,7 +21,7 @@ interface Props {
   measure?: 'page' | 'reading';
   /* Read before the title by assistive technology only. */
   hiddenPrefix?: string;
-  /* Plain tier only: stars beside and under the text, never behind it. */
+  /* Plain tier only: stars across the slab, cleared behind every line of text. */
   starfield?: boolean;
 }
 
@@ -76,11 +76,11 @@ const IMAGE_SIZES =
       {starfield && (
         <span aria-hidden="true" class="plain-slab-stars starfield" />
       )}
-      <div class:list={['max-w-page', starfield && 'plain-slab-text']}>
+      <div class:list={['max-w-page', starfield && 'relative']}>
         <slot name="kicker" />
         <h1 class:list={[titleClass, 'text-text']}>
           {hiddenPrefix && <span class="sr-only">{hiddenPrefix} </span>}
-          {title}
+          <span class:list={[starfield && 'star-clear']}>{title}</span>
         </h1>
       </div>
       <div class="hero-roundel">

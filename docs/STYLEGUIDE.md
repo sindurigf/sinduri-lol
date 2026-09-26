@@ -615,9 +615,9 @@ how important the page is.
   and roundel; the breadcrumb sits above it and everything else under it, on
   the page body's column (the measure on a reading page, the page column on a
   listing).
-- `/404` sets `starfield`: stars on an `aria-hidden` layer right of the text
-  from `lg`, and in the band under the text below it. Never behind text;
-  `tests/not-found.spec.ts` measures it.
+- `/404` sets `starfield`: stars across the whole slab on an `aria-hidden`
+  layer; `.star-clear` puts the slab's ground behind the kicker and title, so
+  no star shows behind text. `tests/not-found.spec.ts` checks it.
 
 ### Variants
 
