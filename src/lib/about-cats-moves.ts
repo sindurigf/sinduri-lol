@@ -203,8 +203,9 @@ export const POSES = {
     hF: [-19, 12],
     hx: 9,
     hy: -9,
-    ta: 200,
-    tc: -2,
+    /* Tail streams out behind in a leap, not up: that is the band's headroom. */
+    ta: 182,
+    tc: 1,
   }),
   reach: derive(BASE, {
     ba: -8,
@@ -216,8 +217,23 @@ export const POSES = {
     hF: [-15, 6],
     hx: 9,
     hy: -8,
-    ta: 215,
-    tc: 4,
+    ta: 186,
+    tc: 2,
+  }),
+  /* Straight up after a fly: body upright, front paws high, tail streaming. */
+  leap: derive(BASE, {
+    ba: 62,
+    by: 24,
+    haunch: 6,
+    fN: [15, -14],
+    fF: [13, -11],
+    hN: [0, 24],
+    hF: [2, 26],
+    hx: 4,
+    hy: -14,
+    hr: -24,
+    ta: 150,
+    tc: -6,
   }),
 } satisfies Record<string, Pose>;
 
@@ -324,7 +340,7 @@ const arc = (from: number, to: number, height: number): Mod =>
     p.y += Math.sin(Math.PI * k) * height;
   });
 /* Three slow breaths, ending on an exhale so the pose rests where it started. */
-const BREATH_MS = 1200;
+const BREATH_MS = 1000;
 const BREATHS = 3;
 /** Body thickness in px the chest gains at the top of a breath. */
 const BREATH_DEPTH = 1.4;
@@ -342,8 +358,11 @@ const earFlick = (at: number): Mod =>
     p.ears = Math.max(p.ears, Math.sin(Math.PI * k) * 0.6);
   });
 
-/** The big jump's arc; with it the tallest move stays under --spacing-cat-band. */
-export const JUMP_HEIGHT = 34;
+/* Arcs in px; with them the tallest move stays under --spacing-cat-band (tests/about-cats.spec.ts). */
+export const JUMP_HEIGHT = 39;
+const POUNCE_HEIGHT = 34;
+const LEAP_HEIGHT = 27;
+const HOP_HEIGHT = 30;
 
 const still = (kind: PropKind, x: number, y = 0): PropState => ({
   kind,
@@ -396,7 +415,7 @@ export const MOVES = {
       step(280, 'crouch', { x: 62 }, 'back'),
       step(600, 'sit', { x: 62 }),
     ],
-    mods: [wiggle(400, 1300), arc(1440, 1840, 18)],
+    mods: [wiggle(400, 1300), arc(1440, 1840, POUNCE_HEIGHT)],
   }),
   bigJump: (): Move => ({
     steps: [
@@ -522,21 +541,28 @@ export const MOVES = {
     ],
     mods: [walking(300, 1010, 1.6), walking(1250, 1960, 1.6)],
   }),
+  /* Watches the fly, crouches, leaps straight up for it, and the fly gets away. */
   fly: (): Move => ({
     steps: [
-      step(1800, 'sit'),
-      step(400, 'rear'),
-      step(160, 'rear', { fN: [16, -22], fF: [16, -20] }, 'out'),
-      step(600, 'sit'),
+      step(1400, 'sit'),
+      step(300, 'crouch', { x: 4 }),
+      step(500, 'crouch', { x: 4 }),
+      step(160, 'crouch', { x: 4, sq: 0.86 }, 'in'),
+      step(260, 'leap', { x: 12 }, 'out'),
+      step(260, 'leap', { x: 16 }, 'in'),
+      step(150, 'crouch', { x: 18, sq: 0.84 }, 'out'),
+      step(500, 'sit', { x: 18 }),
     ],
     mods: [
-      between(0, 2300, (p, s) => {
+      between(0, 1700, (p, s) => {
         p.hr = -18 + 14 * Math.sin(s / 260);
       }),
+      wiggle(1700, 2200),
+      arc(2360, 2880, LEAP_HEIGHT),
     ],
     prop: 'fly',
     propAt: (t) => {
-      const away = Math.min(1, Math.max(0, (t - 2300) / 600));
+      const away = Math.min(1, Math.max(0, (t - 2620) / 600));
       return {
         kind: 'fly',
         x: 26 + 16 * Math.sin(t / 260) + away * 50,
@@ -545,6 +571,18 @@ export const MOVES = {
         o: 1 - away,
       };
     },
+  }),
+  /* A springy hop on the spot, at nothing in particular. */
+  hop: (): Move => ({
+    steps: [
+      step(300, 'crouch'),
+      step(140, 'crouch', { sq: 0.88 }, 'in'),
+      step(220, 'air', { x: 8 }, 'out'),
+      step(220, 'air', { x: 14 }, 'in'),
+      step(140, 'crouch', { x: 16, sq: 0.86 }, 'out'),
+      step(400, 'sit', { x: 16 }),
+    ],
+    mods: [arc(440, 880, HOP_HEIGHT)],
   }),
   post: (): Move => ({
     steps: [
@@ -646,15 +684,16 @@ export const WEIGHTS: Partial<Record<MoveName, number>> = {
   look: 10,
   lie: 8,
   stalk: 5,
-  pounce: 7,
-  bigJump: 5,
+  pounce: 9,
+  bigJump: 7,
+  hop: 6,
   stretch: 6,
   knead: 5,
   toy: 3,
   knock: 3,
   belly: 4,
   zoomies: 2,
-  fly: 3,
+  fly: 5,
   post: 3,
   box: 3,
   yarn: 3,
@@ -679,6 +718,39 @@ export const walkMove = (distance: number): Move => {
       step(300, 'sit', { x: distance }),
     ],
     mods: [walking(0, 250 + ms)],
+  };
+};
+
+/** Walks stop here to sniff, look about, then carry on. */
+const EXPLORE_SPLIT = 0.55;
+/** Shorter trips walk straight; longer ones explore. */
+export const EXPLORE_MIN = 80;
+
+/** A curious walk: part way, a stop to sniff and look about, then the rest. */
+export const exploreMove = (distance: number): Move => {
+  const first = distance * EXPLORE_SPLIT;
+  const walkMs = (d: number) =>
+    Math.max(300, (Math.abs(d) / WALK_SPEED) * 1000);
+  const ms1 = walkMs(first);
+  const ms2 = walkMs(distance - first);
+  const pause = 250 + ms1;
+  const pauseMs = 500 + 500 + 450 + 450;
+  return {
+    steps: [
+      step(250, 'stand'),
+      step(ms1, 'stand', { x: first }),
+      step(500, 'stand', { x: first, hx: 10, hy: -2, hr: 26 }),
+      step(500, 'stand', { x: first, hx: 10, hy: -1, hr: 30 }),
+      step(450, 'stand', { x: first, hr: -16 }),
+      step(450, 'stand', { x: first, hr: 8 }),
+      step(ms2, 'stand', { x: distance }),
+      step(300, 'sit', { x: distance }),
+    ],
+    mods: [
+      walking(0, pause),
+      earFlick(pause + 600),
+      walking(pause + pauseMs, pause + pauseMs + ms2),
+    ],
   };
 };
 

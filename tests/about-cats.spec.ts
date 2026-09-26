@@ -9,6 +9,7 @@ import {
   duration,
   poseAt,
   walkMove,
+  exploreMove,
   type Move,
 } from '../src/lib/about-cats-moves';
 import { highestPoint } from '../src/lib/about-cats-rig';
@@ -129,6 +130,7 @@ test('no move lifts any part of a cat above its band', NODE, () => {
       ([name, make]) => [name, make()] as [string, Move],
     ),
     ['walk', walkMove(200)],
+    ['explore', exploreMove(200)],
   ];
   const tooHigh: string[] = [];
   for (const [name, move] of moves) {

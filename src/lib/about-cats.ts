@@ -16,6 +16,8 @@ import {
   pose,
   poseAt,
   walkMove,
+  exploreMove,
+  EXPLORE_MIN,
   type Move,
   type MoveName,
   type Pose,
@@ -33,9 +35,11 @@ export const NAP_AFTER_MS = 20_000;
 
 /** Distance from each card end the cat's origin keeps. */
 const TRACK_MARGIN = 40;
-const TRAVEL_CHANCE = 0.3;
+/** Room at the right end for the sleep control. */
+const CONTROL_ROOM = 48;
+const TRAVEL_CHANCE = 0.25;
 const TRAVEL_MIN = 40;
-const TRAVEL_MAX = 180;
+const TRAVEL_MAX = 150;
 /** A pointer that has not moved for this long no longer draws a cat's eye. */
 const POINTER_IDLE_MS = 4000;
 const FOLLOW_FAR = 220;
@@ -289,7 +293,9 @@ export const createColony = (
       then();
       return;
     }
-    play(cat, walkMove(Math.abs(distance)), now, Math.sign(distance), then);
+    const length = Math.abs(distance);
+    const move = length >= EXPLORE_MIN ? exploreMove(length) : walkMove(length);
+    play(cat, move, now, Math.sign(distance), then);
   };
 
   const next = (cat: CatState, now: number): void => {
@@ -487,7 +493,7 @@ export const createColony = (
         cat.groundY = size.height;
         cat.props.setAttribute('transform', `translate(0 ${size.height})`);
         cat.min = TRACK_MARGIN;
-        cat.max = Math.max(cat.min, size.width - TRACK_MARGIN);
+        cat.max = Math.max(cat.min, size.width - TRACK_MARGIN - CONTROL_ROOM);
         if (first) cat.pose.x = cat.min + (cat.max - cat.min) * cat.start;
         cat.pose.x = clamp(cat.pose.x, cat.min, cat.max);
         settleTail(cat.rig);
