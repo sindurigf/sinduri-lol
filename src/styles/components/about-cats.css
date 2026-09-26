@@ -34,7 +34,9 @@
    * drop the transparent button's edge (tests/forced-colors.spec.ts).
    */
   .cat-svg,
-  .cat-svg * {
+  .cat-svg *,
+  .cat-nap-icon,
+  .cat-nap-icon * {
     forced-color-adjust: auto;
   }
 
@@ -48,6 +50,21 @@
 
   .cat-hit {
     @apply pointer-events-auto cursor-pointer;
+  }
+
+  /* Each cat's SC 2.2.2 control, in the band's corner the cat never walks to. */
+  .cat-nap {
+    @apply pointer-events-auto top-0 right-0;
+  }
+
+  .cat-nap-icon {
+    @apply size-6;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   /* Unpainted, so `all`: the box takes clicks between the legs and around the tail. */
@@ -202,9 +219,20 @@
     @apply border-4 border-border bg-surface p-4 shadow-hard-pink-4;
   }
 
-  /* The site button at label size: still a 24px target (SC 2.5.8). */
+  /* The site button, small: still a 24px target (SC 2.5.8). */
   .cat-close {
-    @apply min-h-target px-4 py-2;
+    @apply min-h-target px-3 py-1;
+  }
+
+  .cat-photo {
+    @apply relative mt-3;
+  }
+
+  /* The home hero's gold sticker (gold-text on gold), hung off the photo's edge. */
+  .cat-name {
+    @apply absolute -bottom-4 -left-2 -rotate-3 border-4 border-border bg-gold
+      px-3 py-1 text-label font-black uppercase tracking-label text-gold-text
+      shadow-hard-bunny-4;
   }
 
   .cat-dialog::backdrop {

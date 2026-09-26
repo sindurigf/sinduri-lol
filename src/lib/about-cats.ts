@@ -157,8 +157,9 @@ export interface Colony {
   frame: (now: number) => boolean;
   /** Starts a cat's play clock the first time its band is on screen, and stops it while off. */
   visible: (id: CatSpot['id'], on: boolean, now: number) => void;
-  /** After its dialog closes: wakes it, or puts it to sleep, as its button said on opening. */
-  release: (id: CatSpot['id'], now: number, wake: boolean) => void;
+  /** Its sleep control: lies down now, then sleeps until woken. */
+  nap: (id: CatSpot['id']) => void;
+  wake: (id: CatSpot['id'], now: number) => void;
   hold: (id: CatSpot['id'], reason: Hold, on: boolean) => void;
   /** Reduced motion: drops every move, keeps each cat awake or asleep, and stops its clock. */
   still: () => void;
@@ -518,13 +519,16 @@ export const createColony = (
       if (cat.napAt > hiddenAt) cat.napAt += now - hiddenAt;
       if (cat.playing) cat.playing.t0 += now - hiddenAt;
     },
-    release: (id, now, wake) => {
+    nap: (id) => {
       const cat = find(id);
-      if (!cat) return;
-      cat.holds.delete('card');
-      if (wake) wakeCat(cat, now);
-      else if (!cat.asleep) cat.napAt = -Infinity;
-      updateMood(cat);
+      if (!cat || cat.asleep) return;
+      /* Mid-move it drops what it is doing, so it is still within 5 s. */
+      if (cat.playing && !cat.playing.settle) drop(cat);
+      cat.napAt = -Infinity;
+    },
+    wake: (id, now) => {
+      const cat = find(id);
+      if (cat?.asleep) wakeCat(cat, now);
     },
     hold: (id, reason, on) => {
       const cat = find(id);

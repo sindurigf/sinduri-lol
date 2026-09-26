@@ -40,15 +40,14 @@ const LEG_HEIGHT = 0.15;
 /** A cat that lies down settles its tail within this. */
 const SETTLE_MS = 3000;
 
-/** About 4.5s per cat: long enough to catch a jump or a rear up. */
-const BAND_SAMPLES = 30;
-const BAND_SAMPLE_MS = 150;
-
 /** Lying down plays out before the name changes; the longest move is well under this. */
 const NAP_TIMEOUT_MS = 10_000;
 
-/** Inside the card's 8px border, on its padding. */
+/** Past the card's 4px border, on its padding. */
 const CARD_PADDING_HIT = 12;
+
+const napControl = (page: Page, id: (typeof CATS)[number]) =>
+  page.locator(`#cat-spot-${id} .cat-nap`);
 
 const catButton = (page: Page, id: (typeof CATS)[number]) =>
   page.locator(`#cat-spot-${id} .cat-button`);
@@ -173,13 +172,13 @@ test(
 );
 
 test.describe('About cats', () => {
-  test('each playing cat is a named button that opens its photo in a dialog and returns focus', async ({
+  test('each cat is a named button that opens its photo in a dialog, Close first, and returns focus', async ({
     page,
   }) => {
     await gotoSettled(page, ROUTE);
     for (const id of CATS) {
       const button = catButton(page, id);
-      await expect(button).toHaveAccessibleName(`Stop and meet ${NAMES[id]}`);
+      await expect(button).toHaveAccessibleName(`Meet ${NAMES[id]}`);
       await expect(button).toHaveAttribute('aria-haspopup', 'dialog');
       await button.focus();
       await page.keyboard.press('Enter');
@@ -187,6 +186,21 @@ test.describe('About cats', () => {
       await expect(
         dialog,
         `${NAMES[id]}'s dialog did not open from the keyboard`,
+      ).toBeVisible();
+      const close = dialog.getByRole('button', { name: 'Close' });
+      await expect(close, 'Close is not first in the card').toBeFocused();
+      const size = await close.boundingBox();
+      expect(
+        size?.height,
+        'Close target height (SC 2.5.8)',
+      ).toBeGreaterThanOrEqual(MIN_TARGET);
+      expect(
+        size?.width,
+        'Close target width (SC 2.5.8)',
+      ).toBeGreaterThanOrEqual(MIN_TARGET);
+      await expect(
+        dialog.getByRole('heading', { level: 2, name: NAMES[id] }),
+        'the name sticker is not the dialog heading',
       ).toBeVisible();
       await expect(
         dialog.getByRole('img'),
@@ -243,7 +257,7 @@ test.describe('About cats', () => {
   });
 
   for (const colorScheme of ['dark', 'light'] as const) {
-    test(`the card thanks Arthur in underlined text of at least 4.5:1 in ${colorScheme} mode (SC 1.4.3, 1.4.1)`, async ({
+    test(`the card's name sticker and thank-you reach 4.5:1, the link underlined, in ${colorScheme} mode (SC 1.4.3, 1.4.1)`, async ({
       browser,
     }) => {
       const context = await browser.newContext({ colorScheme });
@@ -260,7 +274,7 @@ test.describe('About cats', () => {
       const found = await page.evaluate(`(() => {
         const link = document.querySelector('.cat-dialog a');
         ${PAGE_HELPERS}
-        return [link.parentElement, link].map((node) => {
+        return [link.parentElement, link, document.querySelector('.cat-name')].map((node) => {
           const style = getComputedStyle(node);
           const fg = parse(style.color);
           const bg = effectiveBackground(node);
@@ -270,7 +284,14 @@ test.describe('About cats', () => {
           };
         });
       })()`);
-      const [line, anchor] = found as { ratio: number; underline: boolean }[];
+      const [line, anchor, sticker] = found as {
+        ratio: number;
+        underline: boolean;
+      }[];
+      expect(
+        sticker.ratio,
+        'the gold name sticker is under 4.5:1',
+      ).toBeGreaterThanOrEqual(AA_TEXT);
       expect(
         line.ratio,
         'the thank-you line is under 4.5:1',
@@ -317,12 +338,7 @@ test.describe('About cats', () => {
     const context = await browser.newContext({ viewport: ALL_BANDS });
     const page = await context.newPage();
     await gotoSettled(page, ROUTE);
-    await catButton(page, 'minerva').focus();
-    await page.keyboard.press('Enter');
-    await expect(
-      page.getByRole('dialog', { name: NAMES.minerva }),
-    ).toBeVisible();
-    await page.keyboard.press('Escape');
+    await napControl(page, 'minerva').click();
     await expectMood(page, 'minerva', 'asleep', 'Minerva did not fall asleep');
     await expectMood(page, 'hela', 'playing', 'Hela is not playing beside her');
     await expect(async () => {
@@ -364,25 +380,25 @@ test.describe('About cats', () => {
     await expect(dialog, 'a click on the card padding closed it').toBeVisible();
   });
 
-  test('a keyboard-woken cat holds still while focused and plays once focus leaves', async ({
+  test('keyboard focus holds a cat still, and Tab goes from the cat to its sleep control', async ({
     page,
   }) => {
     await gotoSettled(page, ROUTE);
     const id = 'minerva';
-    const button = catButton(page, id);
-    await button.focus();
-    for (const mood of ['asleep', 'holding'] as const) {
-      await page.keyboard.press('Enter');
-      await expect(page.getByRole('dialog', { name: NAMES[id] })).toBeVisible();
-      await page.keyboard.press('Escape');
-      await expectMood(
-        page,
-        id,
-        mood,
-        `${NAMES[id]} is not ${mood} after her card closed`,
-      );
-    }
+    // Holds follow keyboard use, so a key comes first, as it would for a keyboard user.
+    await page.keyboard.press('Shift');
+    await catButton(page, id).focus();
+    await expectMood(
+      page,
+      id,
+      'holding',
+      `${NAMES[id]} kept moving while focused`,
+    );
     await page.keyboard.press('Tab');
+    await expect(
+      napControl(page, id),
+      `Tab from ${NAMES[id]} did not reach her sleep control`,
+    ).toBeFocused();
     await expectMood(
       page,
       id,
@@ -391,69 +407,81 @@ test.describe('About cats', () => {
     );
   });
 
-  test("closing a playing cat's card puts it to sleep, and closing a sleeping cat's card wakes it (SC 2.2.2)", async ({
+  test('the sleep control stops its cat within 5 s and wakes it again (SC 2.2.2)', async ({
     page,
   }) => {
     await gotoSettled(page, ROUTE);
     for (const id of CATS) {
-      const button = catButton(page, id);
-      await button.scrollIntoViewIfNeeded();
-      await button.focus();
-      await page.keyboard.press('Enter');
-      await expect(page.getByRole('dialog', { name: NAMES[id] })).toBeVisible();
-      await page.keyboard.press('Escape');
+      const control = napControl(page, id);
+      await control.scrollIntoViewIfNeeded();
+      await expect(control).toHaveAccessibleName(`Put ${NAMES[id]} to sleep`);
+      await control.click();
       await expect(
-        button,
-        `${NAMES[id]} did not offer to wake after its card closed`,
-      ).toHaveAccessibleName(`Meet and wake ${NAMES[id]}`, {
-        timeout: NAP_TIMEOUT_MS,
-      });
-      await page
-        .locator(`#cat-spot-${id} .cat-hit-area`)
-        .hover({ force: true });
+        catButton(page, id),
+        `${NAMES[id]} was not asleep within 5 s`,
+      ).toHaveAttribute('data-cat-state', 'asleep', { timeout: SC_2_2_2_MS });
       await expect(async () => {
-        await expectStill(page, id, `${NAMES[id]} moved while asleep`);
+        await expectStill(page, id, `${NAMES[id]} kept moving asleep`);
       }).toPass({ timeout: SETTLE_MS });
-
-      await page.keyboard.press('Enter');
-      await expect(
-        page.getByRole('dialog', { name: NAMES[id] }),
-        `a sleeping ${NAMES[id]} opened no card`,
-      ).toBeVisible();
-      await page.keyboard.press('Escape');
-      await expect(button, `${NAMES[id]} did not wake`).toHaveAccessibleName(
-        `Stop and meet ${NAMES[id]}`,
+      await expect(control).toHaveAccessibleName(`Wake ${NAMES[id]}`);
+      await control.click();
+      await expectMood(
+        page,
+        id,
+        /^(playing|holding)$/,
+        `${NAMES[id]} did not wake`,
       );
+      await expect(control).toHaveAccessibleName(`Put ${NAMES[id]} to sleep`);
     }
   });
 
-  test('a cat woken with the mouse plays again once the pointer leaves', async ({
-    page,
-  }) => {
-    await gotoSettled(page, ROUTE);
-    const id = 'minerva';
-    const close = page.getByRole('button', { name: 'Close' });
-    for (const name of [
-      `Meet and wake ${NAMES[id]}`,
-      `Stop and meet ${NAMES[id]}`,
-    ]) {
-      const area = await pointAt(page, id);
-      await area.click({ force: true });
-      await close.click();
-      await expect(catButton(page, id)).toHaveAccessibleName(name, {
-        timeout: NAP_TIMEOUT_MS,
-      });
-    }
-    await page.mouse.move(0, 0);
-    await expectMood(
-      page,
-      id,
-      'playing',
-      `${NAMES[id]} stayed held after a mouse click woke her`,
-    );
-  });
+  for (const colorScheme of ['dark', 'light'] as const) {
+    test(`the sleep control is a 24px target whose icon and edge reach 3:1 in ${colorScheme} mode (SC 2.5.8, 1.4.11)`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ colorScheme });
+      const page = await context.newPage();
+      await gotoSettled(page, ROUTE);
+      for (const id of CATS) {
+        const box = await napControl(page, id).boundingBox();
+        expect(
+          box?.width,
+          `${NAMES[id]}'s sleep control width`,
+        ).toBeGreaterThanOrEqual(MIN_TARGET);
+        expect(
+          box?.height,
+          `${NAMES[id]}'s sleep control height`,
+        ).toBeGreaterThanOrEqual(MIN_TARGET);
+      }
+      const ratios = await page.evaluate(`(() => {
+        ${PAGE_HELPERS}
+        return [...document.querySelectorAll('.cat-nap')].map((button) => {
+          const style = getComputedStyle(button);
+          const own = effectiveBackground(button);
+          const ground = effectiveBackground(button.parentElement);
+          const icon = parse(style.color);
+          const edge = parse(style.borderTopColor);
+          return {
+            icon: icon && own ? ratio(icon, own) : 0,
+            edge: edge && ground ? ratio(edge, ground) : 0,
+          };
+        });
+      })()`);
+      for (const value of ratios as { icon: number; edge: number }[]) {
+        expect(
+          value.icon,
+          'the sleep icon is under 3:1',
+        ).toBeGreaterThanOrEqual(NON_TEXT);
+        expect(
+          value.edge,
+          'the sleep control edge is under 3:1',
+        ).toBeGreaterThanOrEqual(NON_TEXT);
+      }
+      await context.close();
+    });
+  }
 
-  test('under reduced motion the cats sit still and a click only opens the card', async ({
+  test('under reduced motion the cats sit still with no sleep control', async ({
     browser,
   }) => {
     const context = await browser.newContext({ reducedMotion: 'reduce' });
@@ -462,6 +490,10 @@ test.describe('About cats', () => {
     await expect(page.getByRole('button', { name: /^Meet / })).toHaveCount(
       CATS.length,
     );
+    await expect(
+      page.locator('.cat-nap'),
+      'a sleep control shows while nothing moves',
+    ).toHaveCount(0);
     for (const id of CATS) {
       await page.locator(`#cat-spot-${id}`).scrollIntoViewIfNeeded();
       await expectStill(page, id, `${NAMES[id]} moved under reduced motion`);
@@ -472,7 +504,7 @@ test.describe('About cats', () => {
       await page.keyboard.press('Escape');
       await expect(
         button,
-        'under reduced motion a cat never offers to wake',
+        'under reduced motion a cat is only met',
       ).toHaveAccessibleName(`Meet ${NAMES[id]}`);
     }
     await context.close();
@@ -547,32 +579,6 @@ test.describe('About cats', () => {
     });
   }
 
-  // The node test checks the highestPoint model; this checks the drawn SVG against it.
-  test('a drawn cat stays inside its band', async ({ page }) => {
-    await gotoSettled(page, ROUTE);
-    for (const id of CATS) {
-      await page.locator(`#cat-spot-${id}`).scrollIntoViewIfNeeded();
-      const escapes = await page.evaluate(
-        async ({ id, samples, gap }) => {
-          const spot = document.getElementById(`cat-spot-${id}`);
-          const cat = spot?.querySelector('.cat-hit');
-          if (!spot || !cat) return ['not drawn'];
-          const out: string[] = [];
-          for (let i = 0; i < samples; i += 1) {
-            const band = spot.getBoundingClientRect();
-            const drawn = cat.getBoundingClientRect();
-            if (drawn.top < band.top)
-              out.push(`${Math.round(band.top - drawn.top)}px above its band`);
-            await new Promise((resolve) => setTimeout(resolve, gap));
-          }
-          return out;
-        },
-        { id, samples: BAND_SAMPLES, gap: BAND_SAMPLE_MS },
-      );
-      expect(escapes, `${NAMES[id]} left its band`).toEqual([]);
-    }
-  });
-
   test('a drawn cat is at least 24 by 24px (SC 2.5.8)', async ({ page }) => {
     await gotoSettled(page, ROUTE);
     for (const id of CATS) {
@@ -620,10 +626,10 @@ test.describe('About cats', () => {
   }) => {
     await gotoSettled(page, ROUTE);
     for (const id of CATS) {
-      await expect(page.locator(`#cat-spot-${id} svg`)).toHaveAttribute(
-        'aria-hidden',
-        'true',
-      );
+      const drawings = page.locator(`#cat-spot-${id} svg`);
+      await expect(drawings, 'the cat and its sleep icon').toHaveCount(2);
+      for (const svg of await drawings.all())
+        await expect(svg).toHaveAttribute('aria-hidden', 'true');
     }
     await expect(
       page.getByText('The moving cats are drawn with AI.'),

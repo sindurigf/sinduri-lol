@@ -19,8 +19,8 @@ import {
 
 /*
  * The cats render into `#cat-spot-<id>` on the page, only after mount: no
- * server HTML, so nothing moves or waits without JavaScript. Each cat is its
- * own SC 2.2.2 control: closing its card puts a playing cat to sleep or wakes it.
+ * server HTML, so nothing moves or waits without JavaScript. Each cat opens its
+ * card; the bed or feather wand beside it puts it to sleep or wakes it (SC 2.2.2).
  */
 
 const props = defineProps<{
@@ -69,11 +69,14 @@ const running = (): boolean =>
 
 const asleep = (id: CatId): boolean => moods.value[id] === 'asleep';
 
-const label = (cat: CatInfo): string => {
-  if (reducedMotion.value) return `Meet ${cat.name}`;
-  return asleep(cat.id)
-    ? `Meet and wake ${cat.name}`
-    : `Stop and meet ${cat.name}`;
+const napLabel = (cat: CatInfo): string =>
+  asleep(cat.id) ? `Wake ${cat.name}` : `Put ${cat.name} to sleep`;
+
+const toggleNap = (id: CatId): void => {
+  if (!colony) return;
+  if (asleep(id)) colony.wake(id, performance.now());
+  else colony.nap(id);
+  start();
 };
 
 /* Rects are read here, once a frame before drawing, not on every pointermove. */
@@ -178,25 +181,16 @@ const onPreferenceChange = (event: MediaQueryListEvent): void => {
 
 /* `close` fires a task later, so a quick second cat can open before it lands. */
 let shownFor: CatId | '' = '';
-/* What the button promised when the card opened: close then wakes, or naps. */
-let wakeOnClose = false;
 
 const afterClose = (): void => {
   const id = shownFor;
   shownFor = '';
-  if (!id || !colony) return;
-  if (reducedMotion.value) {
-    colony.hold(id, 'card', false);
-    return;
-  }
-  colony.release(id, performance.now(), wakeOnClose);
-  start();
+  if (id) hold(id, 'card', false);
 };
 
 const openCat = (id: CatId): void => {
   if (shownFor && !dialog.value?.open) afterClose();
   shownFor = id;
-  wakeOnClose = asleep(id);
   openId.value = id;
   void nextTick(() => {
     if (dialog.value && !dialog.value.open) dialog.value.showModal();
@@ -216,6 +210,8 @@ const onDialogClose = (): void => {
 
 /* Outside the card is the backdrop; the dialog's own padding keeps the shadow in view. */
 const onDialogClick = (event: MouseEvent): void => {
+  /* A keyboard-made click (Enter on the link) has no pointer position. */
+  if (event.detail === 0) return;
   const box = card.value?.getBoundingClientRect();
   if (!box) return;
   const inside =
@@ -306,7 +302,37 @@ onBeforeUnmount(() => {
           aria-hidden="true"
           focusable="false"
         ></svg>
-        <span class="sr-only">{{ label(cat) }}</span>
+        <span class="sr-only">Meet {{ cat.name }}</span>
+      </button>
+      <button
+        v-if="!reducedMotion"
+        type="button"
+        class="motion-toggle cat-nap"
+        @click="toggleNap(cat.id)"
+      >
+        <svg
+          v-if="asleep(cat.id)"
+          class="cat-nap-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M4 21 13.5 11.5" />
+          <path d="M13.5 11.5c1-4.5 4.5-7.5 7-6.5 1 2.5-2 6-6.5 7" />
+          <path d="M13.5 11.5c3.5-1 6 0 6.5 1.5" />
+        </svg>
+        <svg
+          v-else
+          class="cat-nap-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M2.5 13.5c0 4 4.3 6.5 9.5 6.5s9.5-2.5 9.5-6.5" />
+          <path d="M2.5 13.5c0-1.7 4.3-3 9.5-3s9.5 1.3 9.5 3" />
+          <path d="M8 9.5h3l-3 3.5h3" />
+        </svg>
+        <span class="sr-only">{{ napLabel(cat) }}</span>
       </button>
     </Teleport>
   </template>
@@ -319,32 +345,31 @@ onBeforeUnmount(() => {
     @click="onDialogClick"
   >
     <div ref="card" class="cat-card">
-      <div v-if="open" class="cat-dialog-body">
-        <div class="aspect-frame aspect-square w-full border-4 border-border">
-          <img
-            :src="open.photo.src"
-            :srcset="open.photo.srcset"
-            :width="open.photo.width"
-            :height="open.photo.height"
-            :alt="open.photo.alt"
-          />
-        </div>
-        <h2
-          :id="`cat-dialog-${open.id}`"
-          class="mt-3 text-body font-black text-text"
-        >
-          {{ open.name }}
-        </h2>
-        <p class="text-label text-subtle">{{ open.role }}</p>
-      </div>
-      <form method="dialog" class="mt-3 flex justify-end">
+      <form method="dialog" class="flex justify-end">
         <button class="btn-secondary cat-close">Close</button>
       </form>
-      <p class="mt-3 text-label text-subtle">
-        Thank you for the inspiration,
-        <a :href="inspiration.href">{{ inspiration.name }}</a
-        >.
-      </p>
+      <div v-if="open" class="cat-dialog-body">
+        <div class="cat-photo">
+          <div class="aspect-frame aspect-square w-full border-4 border-border">
+            <img
+              :src="open.photo.src"
+              :srcset="open.photo.srcset"
+              :width="open.photo.width"
+              :height="open.photo.height"
+              :alt="open.photo.alt"
+            />
+          </div>
+          <h2 :id="`cat-dialog-${open.id}`" class="cat-name">
+            {{ open.name }}
+          </h2>
+        </div>
+        <p class="mt-6 text-label text-text">{{ open.role }}</p>
+        <p class="mt-4 text-label text-subtle">
+          Thank you for the inspiration,
+          <a :href="inspiration.href">{{ inspiration.name }}</a
+          >.
+        </p>
+      </div>
     </div>
   </dialog>
 </template>
