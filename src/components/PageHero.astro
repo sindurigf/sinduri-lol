@@ -19,6 +19,10 @@ interface Props {
   imageAlt?: string;
   /* `reading` picks the prose pages' title scale; layout is unchanged. */
   measure?: 'page' | 'reading';
+  /* Read before the title by assistive technology only. */
+  hiddenPrefix?: string;
+  /* Plain tier only: stars beside and under the text, never behind it. */
+  starfield?: boolean;
 }
 
 const {
@@ -28,6 +32,8 @@ const {
   image,
   imageAlt = '',
   measure = 'page',
+  hiddenPrefix,
+  starfield = false,
 } = Astro.props;
 
 const reading = measure === 'reading' && !image;
@@ -67,8 +73,15 @@ const IMAGE_SIZES =
       </div>
     )}
     <div class="plain-slab gold-column relative bg-surface">
-      <div class="max-w-page">
-        <h1 class:list={[titleClass, 'text-text']}>{title}</h1>
+      {starfield && (
+        <span aria-hidden="true" class="plain-slab-stars starfield" />
+      )}
+      <div class:list={['max-w-page', starfield && 'plain-slab-text']}>
+        <slot name="kicker" />
+        <h1 class:list={[titleClass, 'text-text']}>
+          {hiddenPrefix && <span class="sr-only">{hiddenPrefix} </span>}
+          {title}
+        </h1>
       </div>
       <div class="hero-roundel">
         <Roundel eager variant="hero" />

@@ -287,11 +287,11 @@ in `wrangler.jsonc`).
 - `artwork/`: source artwork the build never reads (the OG badge, the
   `favicon.ico` frames). Nothing in it ships.
 
-| Path                           | Artwork   | Goes on              | Used by                                                       |
-| ------------------------------ | --------- | -------------------- | ------------------------------------------------------------- |
-| `src/assets/bunny-dark.png`    | `#111111` | Gold, light surfaces | `Header.astro` logo tile, `Roundel.astro`, `404.astro`, About |
-| `artwork/badge-white.png`      | `#FFFFFF` | Dark surfaces        | Source of the OG image                                        |
-| `public/images/og-default.png` | Composite | n/a                  | `BaseLayout.astro`, every page                                |
+| Path                           | Artwork   | Goes on              | Used by                                          |
+| ------------------------------ | --------- | -------------------- | ------------------------------------------------ |
+| `src/assets/bunny-dark.png`    | `#111111` | Gold, light surfaces | `Header.astro` logo tile, `Roundel.astro`, About |
+| `artwork/badge-white.png`      | `#FFFFFF` | Dark surfaces        | Source of the OG image                           |
+| `public/images/og-default.png` | Composite | n/a                  | `BaseLayout.astro`, every page                   |
 
 | Artwork             | on `#131313` | on `#1A1A1A` | on `#FFFFFF` | on `#FFC000` |
 | ------------------- | ------------ | ------------ | ------------ | ------------ |

@@ -43,7 +43,7 @@ blur, uppercase headings, tilted marks.
 | 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                 | `/about`, `/accessibility`, `/contact` |
 | 4a  | A talk slide's label, bold words and part number, as the original deck set them                   | `/talks/<deck>/`                       |
 | 5   | Category: the blog label and the homepage glyph tiles                                             | 3 routes                               |
-| 6   | Display words: `Guntupalli`, the 404 headline                                                     | `/`, `/404`                            |
+| 6   | Display words: `Guntupalli`                                                                       | `/`                                    |
 | 7   | List markers in `.bullet-list`                                                                    | wherever a bulleted list is            |
 
 - A use with a replacement takes it: a `/career` date is `subtle`; the
@@ -138,7 +138,7 @@ Every approved pairing, measured from the live tokens. Text needs 4.5 (SC
 | `text` #E5E2E1           | `surface` #1A1A1A    | text       | Text inside cards and inputs                | 4.5   | 13.51 | pass       |
 | `subtle` #9BB4C6         | `background` #131313 | text       | Captions, meta, helper text                 | 4.5   | 8.62  | pass       |
 | `subtle` #9BB4C6         | `surface` #1A1A1A    | text       | Helper and required text in cards           | 4.5   | 8.07  | pass       |
-| `gold` #FFC000           | `background` #131313 | text       | Card labels, the 404 title                  | 4.5   | 11.32 | pass       |
+| `gold` #FFC000           | `background` #131313 | text       | Card labels                                 | 4.5   | 11.32 | pass       |
 | `gold` #FFC000           | `surface` #1A1A1A    | text       | Card labels                                 | 4.5   | 10.60 | pass       |
 | `pink-text` #FF79B6      | `background` #131313 | text       | Error text, pink glyphs                     | 4.5   | 7.66  | pass       |
 | `pink-text` #FF79B6      | `surface` #1A1A1A    | text       | Error text in the form card                 | 4.5   | 7.18  | pass       |
@@ -410,19 +410,18 @@ with a comment beside it.
 | Utility                     | Casts it                                                                                                 |
 | --------------------------- | -------------------------------------------------------------------------------------------------------- |
 | `shadow-hard-pink-4`        | `.btn-primary`, `.btn-secondary`, link chips, `.nav-cta`, the theme switch, footer stickers, slide cards |
-| `shadow-hard-pink-8`        | Cards, card groups, post contents, the 404 panel, gold areas, the PageHero photo                         |
+| `shadow-hard-pink-8`        | Cards, card groups, post contents, gold areas, the PageHero photo                                        |
 | `shadow-hard-cyan-8`        | A hovered linked card or contact card, in place of pink                                                  |
 | `shadow-hard-gold-border-8` | A card on gold                                                                                           |
 | `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                          |
 | `shadow-hard-bunny-8`       | The logo tile, the roundel, the homepage stickers                                                        |
-| `shadow-hard-bunny-12`      | The logo tile's larger copies on 404 and `/about`                                                        |
+| `shadow-hard-bunny-12`      | The logo tile's larger copy on `/about`                                                                  |
 
 - `bunny` is `pink`'s hex but stays pink in light mode, where `pink` turns
   ink.
 - Anything focusable with a shadow sets its lift: [Focus](#focus).
 - Radius is 0 everywhere (base layer). `rounded-nav` (14px): the logo tile and
-  its copies (`Header.astro`, `404.astro`, the Lepus Ridet panel on
-  `/about`). `rounded-full`: the roundel and the Star Trek thumbnail on
+  its copies (`Header.astro`, the Lepus Ridet panel on `/about`). `rounded-full`: the roundel and the Star Trek thumbnail on
   `/about`. No pills; any other rounded corner is a bug.
 
 ## Components
@@ -578,7 +577,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
 | Privacy, Accessibility    | Hero (reading measure), Reading                                |
 | Blog index, category, tag | Hero, Listing                                                  |
 | Post                      | Article header, Reading (contents box from 1280px), Tags nav   |
-| 404                       | Hero only                                                      |
+| 404                       | Hero (starfield) only                                          |
 
 - Contact ends on its gold surface, not a closing row: the band is its call to
   action.
@@ -597,11 +596,11 @@ Four openings, no fifth: Home's canvas hero, a talk's cover slide, a post's
 Set by `PageHero`'s `slab` prop. The tier follows what is under the title, not
 how important the page is.
 
-| Tier  | `slab`   | Routes                                                                                  | Ground   | Title                                               | Aside              | Padding              |
-| ----- | -------- | --------------------------------------------------------------------------------------- | -------- | --------------------------------------------------- | ------------------ | -------------------- |
-| Full  | `"full"` | `/about`, `/career`, `/contact`, `/blog`, `/credits`; `/contact/send`, `/blog/page/<n>` | gold     | `text-h1`; `text-h2` on the last two                | `.standfirst`      | `py-section`         |
-| Thin  | `"thin"` | `/contact/sent`, and a post's own `.post-slab`                                          | gold     | `text-post-title`                                   | `text-post-teaser` | `pt-head pb-section` |
-| Plain | `"none"` | `/privacy`, `/accessibility`, category and tag listings                                 | the page | `text-reading-h1`; `text-h2` on categories and tags | `text-post-teaser` | `pt-head pb-section` |
+| Tier  | `slab`   | Routes                                                                                  | Ground   | Title                                                       | Aside              | Padding              |
+| ----- | -------- | --------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------- | ------------------ | -------------------- |
+| Full  | `"full"` | `/about`, `/career`, `/contact`, `/blog`, `/credits`; `/contact/send`, `/blog/page/<n>` | gold     | `text-h1`; `text-h2` on the last two                        | `.standfirst`      | `py-section`         |
+| Thin  | `"thin"` | `/contact/sent`, and a post's own `.post-slab`                                          | gold     | `text-post-title`                                           | `text-post-teaser` | `pt-head pb-section` |
+| Plain | `"none"` | `/privacy`, `/accessibility`, category and tag listings, `/404`                         | the page | `text-reading-h1`; `text-h2` on categories, tags and `/404` | `text-post-teaser` | `pt-head pb-section` |
 
 - **Full:** the opening is a statement and the other half of the composition
   has content.
@@ -616,19 +615,22 @@ how important the page is.
   and roundel; the breadcrumb sits above it and everything else under it, on
   the page body's column (the measure on a reading page, the page column on a
   listing).
+- `/404` sets `starfield`: stars on an `aria-hidden` layer right of the text
+  from `lg`, and in the band under the text below it. Never behind text;
+  `tests/not-found.spec.ts` measures it.
 
 ### Variants
 
-| Variant  | Where                                                        | Title                            | Column                             |
-| -------- | ------------------------------------------------------------ | -------------------------------- | ---------------------------------- |
-| Home     | `/` only                                                     | its own hero, `HeroField.vue`    | its own composition                |
-| Standard | About, Career, Contact, Blog, Credits                        | `text-h1`                        | `max-w-page`; 7 of 12 with a photo |
-| Reading  | Privacy, Accessibility (`measure="reading"`)                 | `text-reading-h1`                | `max-w-measure`, the prose column  |
-| Compact  | category and tag listings, `/contact/send`, `/blog/page/<n>` | `text-h2`, still the page's `h1` | `max-w-page`                       |
-| Thin     | `/contact/sent`                                              | `text-post-title`                | `max-w-page`                       |
+| Variant  | Where                                                                | Title                            | Column                             |
+| -------- | -------------------------------------------------------------------- | -------------------------------- | ---------------------------------- |
+| Home     | `/` only                                                             | its own hero, `HeroField.vue`    | its own composition                |
+| Standard | About, Career, Contact, Blog, Credits                                | `text-h1`                        | `max-w-page`; 7 of 12 with a photo |
+| Reading  | Privacy, Accessibility (`measure="reading"`)                         | `text-reading-h1`                | `max-w-measure`, the prose column  |
+| Compact  | category and tag listings, `/contact/send`, `/blog/page/<n>`, `/404` | `text-h2`, still the page's `h1` | `max-w-page`                       |
+| Thin     | `/contact/sent`                                                      | `text-post-title`                | `max-w-page`                       |
 
-A post opens on its article header and 404 on its own page; neither uses
-PageHero, but a post's slab is the thin tier and takes its padding.
+A post opens on its article header, not PageHero, but its slab is the thin
+tier and takes its padding.
 
 ### Semantics
 

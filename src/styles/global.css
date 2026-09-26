@@ -397,6 +397,8 @@
 
   /* Where each 404 star's gradient stops dead, so no point glows. */
   --star: 2px;
+  /* The 404 star layer's width from `lg`; the slab's text stops a grid gap short. */
+  --stars-width: clamp(16rem, 36vw, 32rem);
 
   /*
    * Footer profile tiles (48px, 56px from `lg`, each past SC 2.5.8's 24px),

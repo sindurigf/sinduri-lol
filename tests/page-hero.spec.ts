@@ -8,9 +8,9 @@ import { NODE } from './tags';
  * colours the slab's bottom border still separates it from what follows.
  */
 
-/** Home keeps its canvas hero, 404 its joke page, a post its article, a talk its cover slide. */
+/** Home keeps its canvas hero, a post its article, a talk its cover slide. */
 const HERO_ROUTES = ROUTES.filter(
-  (route) => !['/', '/404', ...POST_ROUTES, ...TALK_ROUTES].includes(route),
+  (route) => !['/', ...POST_ROUTES, ...TALK_ROUTES].includes(route),
 );
 
 /**
