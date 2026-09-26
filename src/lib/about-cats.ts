@@ -7,18 +7,13 @@ import {
   MOVES,
   HELA_WEIGHTS,
   WEIGHTS,
-  WALK_SPEED,
   clonePose,
   duration,
   extent,
-  gait,
   mixPose,
   pose,
   poseAt,
-  walkMove,
   withTurn,
-  exploreMove,
-  EXPLORE_MIN,
   type Move,
   type MoveName,
   type Pose,
@@ -38,19 +33,20 @@ export const NAP_AFTER_MS = 20_000;
 const TRACK_MARGIN = 40;
 /** Room at the right end for the sleep control. */
 const CONTROL_ROOM = 48;
-const TRAVEL_CHANCE = 0.25;
-const TRAVEL_MIN = 40;
-const TRAVEL_MAX = 150;
-/** Chance a trip carries on the way the cat faces, so it does not ping-pong. */
-const KEEP_HEADING = 0.75;
+/** Chance a cat leaps across its band instead of playing where it is. */
+const LEAP_CHANCE = 0.25;
+/** Closer than this, a cat is already there. */
+const NEAR = 40;
+/* Ways to get about, longest first; there is no walking. */
+const LEAPS = [
+  'bigJump',
+  'stalk',
+  'pounce',
+] as const satisfies readonly MoveName[];
 /** A pointer that has not moved for this long no longer draws a cat's eye. */
 const POINTER_IDLE_MS = 4000;
-const FOLLOW_FAR = 220;
-const FOLLOW_NEAR = 110;
 const FACE_DEADBAND = 20;
 const WATCH_EASE = 0.12;
-/** Below this body height the watcher is standing, so it keeps walking to the near mark. */
-const STANDING_HEIGHT = 25;
 const TILT_GAIN = 20;
 const MAX_TILT = 25;
 const TURN_EASE = 0.15;
@@ -60,8 +56,6 @@ const BLINK_MS = 160;
 const FRAME_MS = 1000 / 60;
 /** Longest gap one frame may cover, so a stalled tab does not jump the watcher. */
 const MAX_FRAMES_PER_STEP = 6;
-/** The pointer-watcher's walk at WALK_SPEED, per frame. */
-const WATCH_STEP = (WALK_SPEED * FRAME_MS) / 1000;
 /** A held cat has settled once no pose value moves more than this per frame. */
 const SETTLED = 0.01;
 /** Tail segment speed below which the tail counts as at rest. */
@@ -85,6 +79,8 @@ export interface CatSpot {
   id: CatRig['id'];
   rig: CatRig;
   props: SVGGElement;
+  /** Props drawn over the cat, such as a box's front. */
+  propsFront: SVGGElement;
   /** Starting place along the track, 0 to 1. */
   start: number;
   /** Starting direction: 1 faces right. */
@@ -124,8 +120,6 @@ interface CatState extends CatSpot {
   hiddenAt?: number;
   nextBlink: number;
   blinkUntil: number;
-  /** The pointer-watcher's pose before its walk cycle is added. */
-  rest?: Pose;
 }
 
 const rand = (lo: number, hi: number): number => lo + Math.random() * (hi - lo);
@@ -228,7 +222,7 @@ export const createColony = (
   };
 
   const drop = (cat: CatState): void => {
-    cat.playing?.prop?.node.remove();
+    cat.playing?.prop?.remove();
     cat.playing = undefined;
     cat.pose.face = Math.sign(cat.pose.face) || 1;
   };
@@ -253,8 +247,9 @@ export const createColony = (
     from.x = 0;
     from.face = from.face * dir;
     if (from.face < 0) move = withTurn(move, from);
-    cat.rest = undefined;
-    const prop = move.prop ? createProp(cat.props, move.prop) : undefined;
+    const prop = move.prop
+      ? createProp(cat.props, cat.propsFront, move.prop)
+      : undefined;
     cat.playing = {
       move,
       from,
@@ -288,21 +283,28 @@ export const createColony = (
     return Math.min(a, b) >= cat.min && Math.max(a, b) <= cat.max;
   };
 
+  /** Leaps to `to` by the longest leap that fits, then again until near; no walking. */
   const travel = (
     cat: CatState,
     to: number,
     now: number,
     then: () => void,
   ): void => {
-    const target = clamp(to, cat.min, cat.max);
-    const distance = target - cat.pose.x;
-    if (Math.abs(distance) < 1) {
+    const distance = clamp(to, cat.min, cat.max) - cat.pose.x;
+    if (Math.abs(distance) < NEAR) {
       then();
       return;
     }
-    const length = Math.abs(distance);
-    const move = length >= EXPLORE_MIN ? exploreMove(length) : walkMove(length);
-    play(cat, move, now, Math.sign(distance), then);
+    const dir = Math.sign(distance);
+    const leap =
+      LEAPS.map((name) => MOVES[name]()).find(
+        (move) => extent(move)[1] <= Math.abs(distance) && fits(cat, move, dir),
+      ) ?? MOVES.pounce();
+    if (!fits(cat, leap, dir)) {
+      then();
+      return;
+    }
+    play(cat, leap, now, dir, () => travel(cat, to, performance.now(), then));
   };
 
   const next = (cat: CatState, now: number): void => {
@@ -312,18 +314,13 @@ export const createColony = (
       return;
     }
     if (cat.holds.size > 0) return;
-    if (Math.random() < TRAVEL_CHANCE) {
-      const facing = Math.sign(cat.pose.face) || 1;
-      let heading = Math.random() < KEEP_HEADING ? facing : -facing;
-      const reach = rand(TRAVEL_MIN, TRAVEL_MAX);
-      const room = (dir: number) =>
-        Math.abs(
-          clamp(cat.pose.x + dir * reach, cat.min, cat.max) - cat.pose.x,
-        );
-      if (room(heading) < TRAVEL_MIN) heading = -heading;
-      travel(cat, cat.pose.x + heading * reach, now, () =>
-        next(cat, performance.now()),
-      );
+    if (Math.random() < LEAP_CHANCE) {
+      /* Across to the far side of the band, where there is more room. */
+      const far =
+        cat.pose.x - cat.min > cat.max - cat.pose.x
+          ? cat.min + NEAR
+          : cat.max - NEAR;
+      travel(cat, far, now, () => next(cat, performance.now()));
       return;
     }
     const name = pickWeighted(cat.id === 'hela' ? HELA_WEIGHTS : WEIGHTS);
@@ -391,41 +388,30 @@ export const createColony = (
     settled.face =
       cat.pose.face + (want - cat.pose.face) * eased(TURN_EASE, frames);
     const moving = poseGap(cat.pose, settled) > SETTLED;
-    cat.rest = undefined;
     cat.pose = settled;
     return moving;
   };
 
-  /** Follows a moving pointer; with none, the watcher plays like the others. */
+  /** Turns to a moving pointer and tilts its head to it; with none, the watcher plays like the others. */
   const watch = (
     cat: CatState,
     target: { x: number; y: number },
     frames: number,
   ): void => {
-    const base = cat.rest ?? cat.pose;
-    const dx = target.x - base.x;
-    const moving =
-      Math.abs(dx) > FOLLOW_FAR ||
-      (base.by < STANDING_HEIGHT && Math.abs(dx) > FOLLOW_NEAR);
+    const dx = target.x - cat.pose.x;
     const want =
-      Math.abs(dx) > FACE_DEADBAND ? Math.sign(dx) : Math.sign(base.face) || 1;
-    const x = moving
-      ? clamp(base.x + Math.sign(dx) * WATCH_STEP * frames, cat.min, cat.max)
-      : base.x;
+      Math.abs(dx) > FACE_DEADBAND
+        ? Math.sign(dx)
+        : Math.sign(cat.pose.face) || 1;
     const calm = mixPose(
-      base,
-      pose(moving ? 'stand' : 'sit', {
-        x,
-        hr: moving ? 0 : tiltTowards(cat, target),
-      }),
+      cat.pose,
+      pose('sit', { x: cat.pose.x, hr: tiltTowards(cat, target) }),
       eased(WATCH_EASE, frames),
     );
-    calm.x = x;
-    calm.face = base.face + (want - base.face) * eased(TURN_EASE, frames);
-    cat.rest = calm;
-    const shown = clonePose(calm);
-    if (moving) gait(shown, shown.x);
-    cat.pose = shown;
+    calm.x = cat.pose.x;
+    calm.face =
+      cat.pose.face + (want - cat.pose.face) * eased(TURN_EASE, frames);
+    cat.pose = calm;
   };
 
   const advance = (cat: CatState, playing: Playing, now: number): void => {
@@ -505,7 +491,8 @@ export const createColony = (
         const first = cat.width === 0;
         cat.width = size.width;
         cat.groundY = size.height;
-        cat.props.setAttribute('transform', `translate(0 ${size.height})`);
+        for (const layer of [cat.props, cat.propsFront])
+          layer.setAttribute('transform', `translate(0 ${size.height})`);
         cat.min = TRACK_MARGIN;
         cat.max = Math.max(cat.min, size.width - TRACK_MARGIN - CONTROL_ROOM);
         if (first) cat.pose.x = cat.min + (cat.max - cat.min) * cat.start;

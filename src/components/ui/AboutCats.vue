@@ -250,7 +250,18 @@ onMounted(async () => {
     );
     svg.append(propLayer);
     const rig = createCatRig(svg, cat.id);
-    catSpots.push({ id: cat.id, rig, props: propLayer, ...PLACES[cat.id] });
+    const frontLayer = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'g',
+    );
+    svg.append(frontLayer);
+    catSpots.push({
+      id: cat.id,
+      rig,
+      props: propLayer,
+      propsFront: frontLayer,
+      ...PLACES[cat.id],
+    });
   }
   colony = createColony(catSpots, (id, mood) => {
     moods.value = { ...moods.value, [id]: mood };

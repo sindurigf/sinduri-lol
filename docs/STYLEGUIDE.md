@@ -985,10 +985,11 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   "Pause the hero animation"), no `aria-pressed`.
 - `HeroField` loads `client:load`.
 - The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
-  first on screen and sit still under reduced motion. Each cat's button ("Meet
-  Minerva") opens its card and changes nothing else.
-- Each cat's SC 2.2.2 control sits in its band's corner: a bed ("Put Minerva to
-  sleep") while it plays, a feather wand ("Wake Minerva") while it sleeps.
+  first on screen, play mostly in place, get about only by leaps, and sit
+  still under reduced motion. Each cat's button ("Meet Minerva") opens its
+  card and changes nothing else.
+- Each cat's SC 2.2.2 control sits in its band's corner: Zz ("Put Minerva to
+  sleep") while it plays, a paw ("Wake Minerva") while it sleeps.
   Hidden under reduced motion, where nothing moves.
 - A cat naps after `NAP_AFTER_MS` of on-screen play (`src/lib/about-cats.ts`).
   Lying down, and the breaths and "z" after it, end within 5 s, then the cat is

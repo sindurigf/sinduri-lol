@@ -194,6 +194,10 @@
     fill: var(--color-subtle);
   }
 
+  .cat-prop-blanket {
+    fill: var(--color-border);
+  }
+
   .cat-prop-card {
     fill: var(--color-cat-cardboard);
   }

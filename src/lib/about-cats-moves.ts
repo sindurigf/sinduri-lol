@@ -306,7 +306,7 @@ const between = (from: number, to: number, apply: Mod['apply']): Mod => ({
 /** Stride in px per half cycle; the legs lock to distance, so paws never slide. */
 const STRIDE = 13;
 
-export const gait = (p: Pose, distance: number, strength = 1): void => {
+const gait = (p: Pose, distance: number, strength = 1): void => {
   const phase = (distance / STRIDE) * Math.PI;
   const legs: [keyof Pick<Pose, 'fN' | 'fF' | 'hN' | 'hF'>, number][] = [
     ['fN', 0],
@@ -363,6 +363,11 @@ export const JUMP_HEIGHT = 39;
 const POUNCE_HEIGHT = 34;
 const LEAP_HEIGHT = 27;
 const HOP_HEIGHT = 30;
+const YARN_BOUND_HEIGHT = 22;
+/* The yarn chase: a trot of 120px in 2.2 s, about the old walking pace, then a pounce. */
+const YARN_TROT = 120;
+const YARN_TROT_MS = 2200;
+const YARN_CATCH = YARN_TROT + 42;
 
 const still = (kind: PropKind, x: number, y = 0): PropState => ({
   kind,
@@ -449,6 +454,8 @@ export const MOVES = {
       step(500, 'loaf'),
       step(500, 'sit'),
     ],
+    prop: 'blanket',
+    propAt: (t) => ({ ...still('blanket', 12), o: Math.min(1, t / 300) }),
     mods: [
       between(500, 3100, (p, s) => {
         const w = Math.sin(s / 170);
@@ -527,16 +534,6 @@ export const MOVES = {
         p.hF[0] -= 5 * Math.sin(s / 70);
       }),
     ],
-  }),
-  /* One dash that builds up and skids to a stop; any turn back is a separate, eased move. */
-  zoomies: (): Move => ({
-    steps: [
-      step(300, 'crouch', { sq: 0.92 }),
-      step(950, 'stand', { x: 150, ba: -5 }, 'inOut'),
-      step(220, 'stand', { x: 162, ba: -10 }, 'out'),
-      step(500, 'sit', { x: 162 }),
-    ],
-    mods: [walking(300, 1250, 1.4)],
   }),
   /* Watches the fly, crouches, leaps straight up for it, and the fly gets away. */
   fly: (): Move => ({
@@ -620,32 +617,44 @@ export const MOVES = {
       o: Math.min(1, t / 300, Math.max(0, (4040 - t) / 300)),
     }),
   }),
+  /*
+   * Bats the ball and follows it at a steady, stride-locked trot as it slows,
+   * then crouches and pounces onto it and kicks it: one long, even chase.
+   */
   yarn: (): Move => ({
     steps: [
       step(300, 'sit', { fN: [20, 14] }, 'out'),
       step(400, 'sit'),
-      step(1400, 'stand', { x: 90 }),
-      step(500, 'belly', { x: 90 }),
-      step(1500, 'belly', { x: 90 }),
-      step(600, 'loaf', { x: 90 }),
-      step(500, 'sit', { x: 90 }),
+      step(300, 'stand'),
+      step(YARN_TROT_MS, 'stand', { x: YARN_TROT }, 'inOut'),
+      step(300, 'crouch', { x: YARN_TROT }),
+      step(140, 'crouch', { x: YARN_TROT, sq: 0.88 }, 'in'),
+      step(300, 'air', { x: YARN_TROT + 30 }, 'linear'),
+      step(180, 'crouch', { x: YARN_CATCH, sq: 0.84 }, 'out'),
+      step(500, 'belly', { x: YARN_CATCH }),
+      step(1500, 'belly', { x: YARN_CATCH }),
+      step(600, 'loaf', { x: YARN_CATCH }),
+      step(500, 'sit', { x: YARN_CATCH }),
     ],
     mods: [
-      walking(700, 2100),
-      between(2600, 4100, (p, s) => {
+      walking(1000, 1000 + YARN_TROT_MS),
+      wiggle(1000 + YARN_TROT_MS, 1300 + YARN_TROT_MS),
+      arc(1440 + YARN_TROT_MS, 1740 + YARN_TROT_MS, YARN_BOUND_HEIGHT),
+      between(2420 + YARN_TROT_MS, 3920 + YARN_TROT_MS, (p, s) => {
         p.hN[0] += 6 * Math.sin(s / 60);
         p.hF[0] -= 6 * Math.sin(s / 60);
       }),
     ],
     prop: 'yarn',
+    /* The ball rolls on ahead, slowing, and stops where the pounce lands. */
     propAt: (t) => {
-      const k = Math.min(1, Math.max(0, (t - 150) / 1200));
+      const k = Math.min(1, Math.max(0, (t - 150) / (YARN_TROT_MS + 600)));
       return {
         kind: 'yarn',
-        x: 22 + (1 - (1 - k) ** 3) * 88,
+        x: 22 + (1 - (1 - k) ** 2) * (YARN_CATCH + 10 - 22),
         y: -6,
-        r: k * 520,
-        o: Math.min(1, t / 200, Math.max(0, (5200 - t) / 300)),
+        r: k * 900,
+        o: Math.min(1, t / 200, Math.max(0, (5020 + YARN_TROT_MS - t) / 300)),
       };
     },
   }),
@@ -676,56 +685,29 @@ export const MOVES = {
 
 export type MoveName = keyof typeof MOVES;
 
-/** Relative weights; about one move in four is a rest. */
+/** Relative weights; play in place outweighs getting about, which is only by leaps. */
 export const WEIGHTS: Partial<Record<MoveName, number>> = {
-  look: 10,
-  lie: 8,
-  stalk: 5,
-  pounce: 9,
-  bigJump: 7,
+  look: 5,
+  lie: 4,
+  stalk: 2,
+  pounce: 5,
+  bigJump: 4,
   hop: 6,
-  stretch: 6,
+  stretch: 5,
   knead: 5,
-  toy: 3,
+  toy: 6,
   knock: 3,
   belly: 4,
-  zoomies: 2,
-  fly: 5,
-  post: 3,
-  box: 3,
-  yarn: 3,
+  fly: 6,
+  post: 4,
+  box: 5,
+  yarn: 6,
 };
 
 /** Hela hides behind her card now and then. */
 export const HELA_WEIGHTS: Partial<Record<MoveName, number>> = {
   ...WEIGHTS,
   peek: 8,
-};
-
-/** px per second. */
-export const WALK_SPEED = 60;
-
-/** Standing up before a walk, and sitting after it. */
-const WALK_START_MS = 250;
-const WALK_END_MS = 300;
-/** Shortest leg of a walk, so a tiny step still reads as one. */
-const WALK_MIN_MS = 400;
-const EXPLORE_WALK_MIN_MS = 300;
-
-const walkMs = (distance: number, least: number): number =>
-  Math.max(least, (Math.abs(distance) / WALK_SPEED) * 1000);
-
-/** Walks to a spot `distance` ahead, stride-locked. */
-export const walkMove = (distance: number): Move => {
-  const ms = walkMs(distance, WALK_MIN_MS);
-  return {
-    steps: [
-      step(WALK_START_MS, 'stand'),
-      step(ms, 'stand', { x: distance }),
-      step(WALK_END_MS, 'sit', { x: distance }),
-    ],
-    mods: [walking(0, WALK_START_MS + ms)],
-  };
 };
 
 /** A turn on the spot before a move that heads the other way: eased, never a flip. */
@@ -745,42 +727,6 @@ export const withTurn = (move: Move, from: Pose): Move => {
       to: mod.to + TURN_MS,
     })),
     propAt: propAt && ((t) => propAt(Math.max(0, t - TURN_MS))),
-  };
-};
-
-/** Walks stop here to sniff, look about, then carry on. */
-const EXPLORE_SPLIT = 0.55;
-/** Shorter trips walk straight; longer ones explore. */
-export const EXPLORE_MIN = 80;
-const SNIFF_MS = 600;
-const LOOK_MS = 700;
-
-/** A curious walk: part way, a stop to sniff and look about, then the rest. */
-export const exploreMove = (distance: number): Move => {
-  const first = distance * EXPLORE_SPLIT;
-  const ms1 = walkMs(first, EXPLORE_WALK_MIN_MS);
-  const ms2 = walkMs(distance - first, EXPLORE_WALK_MIN_MS);
-  const pause: Step[] = [
-    step(SNIFF_MS, 'stand', { x: first, hx: 10, hy: -2, hr: 24 }),
-    step(SNIFF_MS, 'stand', { x: first, hx: 10, hy: -1, hr: 26 }),
-    step(LOOK_MS, 'stand', { x: first, hr: -10 }),
-    step(LOOK_MS, 'stand', { x: first, hr: 4 }),
-  ];
-  const stopAt = WALK_START_MS + ms1;
-  const onAt = stopAt + pause.reduce((sum, s) => sum + s.ms, 0);
-  return {
-    steps: [
-      step(WALK_START_MS, 'stand'),
-      step(ms1, 'stand', { x: first }),
-      ...pause,
-      step(ms2, 'stand', { x: distance }),
-      step(WALK_END_MS, 'sit', { x: distance }),
-    ],
-    mods: [
-      walking(0, stopAt),
-      earFlick(stopAt + SNIFF_MS),
-      walking(onAt, onAt + ms2),
-    ],
   };
 };
 

@@ -7,7 +7,8 @@ import type { Pose } from './about-cats-moves';
 
 export type CatId = 'minerva' | 'hela' | 'rudra';
 
-export type PropKind = 'toy' | 'cup' | 'post' | 'fly' | 'box' | 'yarn';
+export type PropKind =
+  'toy' | 'cup' | 'post' | 'fly' | 'box' | 'yarn' | 'blanket';
 
 export interface PropState {
   kind: PropKind;
@@ -584,11 +585,22 @@ export const renderCat = (
 export interface PropRig {
   node: SVGGElement;
   draw: (state: PropState, now: number) => void;
+  remove: () => void;
 }
 
 /* Props share the cat classes, so they follow the theme too. */
-export const createProp = (parent: SVGGElement, kind: PropKind): PropRig => {
+/* `front` is drawn over the cat: a box's front panel hides the cat sitting in it. */
+export const createProp = (
+  parent: SVGGElement,
+  front: SVGGElement,
+  kind: PropKind,
+): PropRig => {
   const node = el('g', { class: 'cat-prop' }, parent);
+  const cover = kind === 'box' ? el('g', { class: 'cat-prop' }, front) : null;
+  const remove = (): void => {
+    node.remove();
+    cover?.remove();
+  };
   const edge = {
     class: 'cat-prop-solid',
     'stroke-width': 1.8,
@@ -618,6 +630,7 @@ export const createProp = (parent: SVGGElement, kind: PropKind): PropRig => {
     );
     return {
       node,
+      remove,
       draw: (s) => {
         const px = s.x + (s.y - STRING_TOP) * Math.sin(s.r * D);
         const py = STRING_TOP + (s.y - STRING_TOP) * Math.cos(s.r * D);
@@ -643,6 +656,7 @@ export const createProp = (parent: SVGGElement, kind: PropKind): PropRig => {
     el('ellipse', { rx: 2.2, ry: 1.6, class: 'cat-prop-body' }, node);
     return {
       node,
+      remove,
       draw: (s, now) => {
         node.setAttribute('transform', `translate(${f(s.x)} ${f(s.y)})`);
         node.setAttribute('opacity', f(s.o));
@@ -708,6 +722,16 @@ export const createProp = (parent: SVGGElement, kind: PropKind): PropRig => {
       },
       node,
     );
+  } else if (kind === 'blanket') {
+    el(
+      'path',
+      {
+        d: 'M-26 0V-4q4.3-3 8.7 0t8.7 0t8.7 0t8.7 0t8.7 0t8.7 0V0Z',
+        ...edge,
+        class: 'cat-prop-solid cat-prop-blanket',
+      },
+      node,
+    );
   } else if (kind === 'box') {
     el(
       'path',
@@ -729,7 +753,7 @@ export const createProp = (parent: SVGGElement, kind: PropKind): PropRig => {
         ...edge,
         class: 'cat-prop-solid cat-prop-card',
       },
-      node,
+      cover ?? node,
     );
   } else {
     el(
@@ -750,12 +774,15 @@ export const createProp = (parent: SVGGElement, kind: PropKind): PropRig => {
   }
   return {
     node,
+    remove,
     draw: (s) => {
-      node.setAttribute(
-        'transform',
-        `translate(${f(s.x)} ${f(s.y)}) rotate(${f(s.r)})`,
-      );
-      node.setAttribute('opacity', f(s.o));
+      for (const layer of cover ? [node, cover] : [node]) {
+        layer.setAttribute(
+          'transform',
+          `translate(${f(s.x)} ${f(s.y)}) rotate(${f(s.r)})`,
+        );
+        layer.setAttribute('opacity', f(s.o));
+      }
     },
   };
 };
