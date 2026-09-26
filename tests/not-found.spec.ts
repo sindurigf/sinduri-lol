@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { expect, test } from './test';
 import ts from 'typescript';
 import { DIST_DIR } from './routes';
+import { gotoSettled } from './settle';
 import { NODE } from './tags';
 
 /**
@@ -77,3 +78,55 @@ test.describe('unknown paths return 404', () => {
     });
   }
 });
+
+/** Phone, the last width below `lg`, and desktop. */
+const STARFIELD_WIDTHS = [320, 1023, 1280] as const;
+
+for (const width of STARFIELD_WIDTHS) {
+  test.describe(`the 404 starfield at ${width}px`, () => {
+    test.use({ viewport: { width, height: 900 } });
+
+    test('is hidden from assistive technology and shows no star behind text', async ({
+      page,
+    }) => {
+      await gotoSettled(page, '/404');
+      const stars = page.locator('main .plain-slab-stars');
+      await expect(stars).toHaveAttribute('aria-hidden', 'true');
+
+      const exposed = await stars.evaluate((layer) => {
+        const slab = layer.closest('.plain-slab');
+        const ground = slab ? getComputedStyle(slab).backgroundColor : '';
+        const clears = [...(slab?.querySelectorAll('.star-clear') ?? [])];
+        const unclear = [...(slab?.querySelectorAll('p, h1') ?? [])].filter(
+          (text) => !clears.some((clear) => text.contains(clear)),
+        );
+        const uncovered = clears.filter((clear) => {
+          const box = clear.getBoundingClientRect();
+          const top = document.elementFromPoint(
+            box.left + box.width / 2,
+            box.top + box.height / 2,
+          );
+          return (
+            getComputedStyle(clear).backgroundColor !== ground ||
+            !top ||
+            !clear.contains(top)
+          );
+        });
+        return {
+          measured: clears.length,
+          failures: [...unclear, ...uncovered].map((element) =>
+            element.textContent?.trim().slice(0, 40),
+          ),
+        };
+      });
+      expect(
+        exposed.measured,
+        'no .star-clear text in the slab',
+      ).toBeGreaterThan(0);
+      expect(
+        exposed.failures,
+        'slab text without the slab ground above the stars',
+      ).toEqual([]);
+    });
+  });
+}

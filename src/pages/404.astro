@@ -1,8 +1,6 @@
 ---
-import { Image } from 'astro:assets';
-import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { DENSITIES } from '../lib/image-densities';
+import PageHero from '../components/PageHero.astro';
 import { BLOG_PATH } from '../lib/paths';
 
 /*
@@ -10,9 +8,6 @@ import { BLOG_PATH } from '../lib/paths';
  * noCanonical: it answers every dead URL. noindex: /404 itself is a route that
  * answers 200, and would otherwise be indexable.
  */
-
-/* Matches `h-12`. */
-const MARK_HEIGHT = 48;
 ---
 
 <BaseLayout
@@ -21,53 +16,40 @@ const MARK_HEIGHT = 48;
   noCanonical
   noindex
 >
-  <div class="mx-auto grid max-w-page gap-16 py-section lg:grid-cols-2 lg:items-center">
-    <div class="min-w-0">
-      <span class="badge">Episode 404</span>
+  <PageHero
+    title="These are not the droids you are looking for."
+    titleSize="h2"
+    hiddenPrefix="Page not found:"
+    slab="none"
+    starfield
+  >
+    <span slot="eyebrow" class="badge">
+      Episode 404
+    </span>
 
-      <p class="mt-8 text-h3 font-normal text-text text-pretty">
+    <p slot="kicker" class="mb-6 text-post-teaser text-text text-pretty">
+      <span class="star-clear">
         A long time ago, on a website not so far, far away&hellip;
-      </p>
-
-      <h1 class="mt-6 text-h2 text-gold">
-        <span class="sr-only">Page not found: </span>These are not the droids
-        you are looking for.
-      </h1>
-
-      <p class="mt-8 max-w-2xl text-body text-text text-pretty">
-        This page does not exist. It may have moved, or the address has a typo.
-        Nothing is broken on your end, so move along. If a link on this site
-        brought you here, <a href="/contact/">tell me about the broken link</a>.
-      </p>
-
-      <ul class="actions mt-12">
-        <li>
-          <a href="/" class="btn-primary">
-            Go to the homepage
-          </a>
-        </li>
-        <li>
-          <a href={BLOG_PATH} class="btn-secondary">
-            Read the blog
-          </a>
-        </li>
-      </ul>
-    </div>
-
-    <div
-      aria-hidden="true"
-      class="starfield flex min-h-80 min-w-0 items-center justify-center border-8 border-border shadow-hard-pink-8"
-    >
-      <span class="flex h-24 w-24 rotate-3 items-center justify-center rounded-nav border-4 border-tile-edge bg-gold shadow-hard-bunny-12">
-        <Image
-          src={bunnyDark}
-          alt=""
-          height={MARK_HEIGHT}
-          densities={DENSITIES}
-          loading="eager"
-          class="h-12 w-auto"
-        />
       </span>
-    </div>
-  </div>
+    </p>
+
+    <p class="standfirst">
+      This page does not exist. It may have moved, or the address has a typo.
+      Nothing is broken on your end, so move along. If a link on this site
+      brought you here, <a href="/contact/">tell me about the broken link</a>.
+    </p>
+
+    <ul class="actions mt-head">
+      <li>
+        <a href="/" class="btn-primary">
+          Go to the homepage
+        </a>
+      </li>
+      <li>
+        <a href={BLOG_PATH} class="btn-secondary">
+          Read the blog
+        </a>
+      </li>
+    </ul>
+  </PageHero>
 </BaseLayout>
