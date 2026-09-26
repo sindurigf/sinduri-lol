@@ -125,6 +125,9 @@ Rules:
   written by whoever builds the UI. Plain, short, second person.
 - Editorial copy (posts, About, Career, taglines, bios, anything in Sinduri's
   voice) is never invented. It stays lorem ipsum until the owner writes it.
+- New images, video, audio or editorial text: ask the owner whether AI made or
+  edited it. If so, label it on the page and in
+  [AI_DISCLOSURE.md](AI_DISCLOSURE.md#keeping-this-current) (EU AI Act Art. 50).
 
 ## Hard rules
 
