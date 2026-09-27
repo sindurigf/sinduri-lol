@@ -159,7 +159,9 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
   schema requires `coverAlt` with it. `coverCardAlt` replaces `coverAlt` on
   the 1.91:1 `og:image` crop when the crop drops something `coverAlt` names.
 - `updated` sets `dateModified`; absent, it is omitted, not copied from `date`.
-- Pagination (`/blog/page/<n>`) builds only past `POSTS_PER_PAGE`.
+- Pagination (`/blog/page/<n>`) builds only past `POSTS_PER_PAGE`, 9 unless
+  the build's `POSTS_PER_PAGE` variable sets another positive whole number.
+  `test:worker` builds at 1 so `tests/blog-pages.spec.ts` reaches the pager.
 - Every blog, category, tag, feed and Markdown-copy URL comes from
   `src/lib/paths.ts`, which imports nothing.
 - `/llms.txt` and `[slug].astro` read with `getCollection`, not

@@ -68,8 +68,6 @@ export const ROUTES = [
   ...TALK_ROUTES,
 ] as const;
 
-export { POSTS_PER_PAGE } from '../src/lib/pagination';
-
 export const DIST_DIR = 'dist/client';
 
 export { BLOG_CONTENT_DIR };
