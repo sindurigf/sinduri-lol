@@ -7,7 +7,8 @@ import {
   isActive,
 } from '../src/lib/nav';
 import { NON_TEXT, PAGE_HELPERS } from './contrast';
-import { POST_ROUTES, ROUTES } from './routes';
+import { BLOG_PATH, indexPageHref } from '../src/lib/paths';
+import { CATEGORY_ROUTES, POST_ROUTES, ROUTES } from './routes';
 import { gotoSettled } from './settle';
 import { DESKTOP_VIEWPORT, NARROW_WIDTH } from './wcag';
 import { NODE } from './tags';
@@ -84,6 +85,24 @@ test.describe('the current page, as the navigation reports it', () => {
       }
       expect(ariaCurrent('/careers/', '/career/')).toBeUndefined();
       expect(ariaCurrent('/about/', '/')).toBeUndefined();
+    },
+  );
+
+  test(
+    'a blog filter is the page on its own listing and the section past page 1',
+    NODE,
+    () => {
+      expect(ariaCurrent(BLOG_PATH, BLOG_PATH)).toBe('page');
+      expect(
+        ariaCurrent(indexPageHref(2), BLOG_PATH),
+        `"All posts" would claim ${indexPageHref(2)}, which the page number is`,
+      ).toBe('true');
+      for (const route of CATEGORY_ROUTES) {
+        const href = `${route}/`;
+        expect(ariaCurrent(href, href), `${href} is its own filter`).toBe(
+          'page',
+        );
+      }
     },
   );
 
