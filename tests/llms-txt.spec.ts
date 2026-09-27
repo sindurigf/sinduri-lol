@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { expect, test } from './test';
 import {
   BLOG_CONTENT_DIR,
+  frontmatterField,
   postFrontmatter,
   DIST_DIR,
   POST_ROUTES,
@@ -46,8 +47,7 @@ const postSources = (): PostSource[] =>
     .filter((name) => name.endsWith('.md'))
     .map((name) => {
       const frontmatter = postFrontmatter(name);
-      const field = (key: string): string | undefined =>
-        new RegExp(`^${key}:\\s*(.+)$`, 'm').exec(frontmatter)?.[1];
+      const field = (key: string) => frontmatterField(frontmatter, key);
       return {
         slug: name.replace(/\.md$/, ''),
         placeholder: field('placeholder'),

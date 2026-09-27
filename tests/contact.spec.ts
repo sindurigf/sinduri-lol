@@ -2,7 +2,6 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from './test';
-import ts from 'typescript';
 import {
   FORM_MEDIA_TYPE,
   LIMITS,
@@ -20,6 +19,7 @@ import { request as httpRequest } from 'node:http';
 import { headersFor, parseHeadersFile } from './policy-server';
 import type { APIResponse } from '@playwright/test';
 import { DAY_MS } from '../src/lib/time';
+import { wranglerConfig } from './source';
 import { timedScan } from './axe';
 
 /**
@@ -69,21 +69,14 @@ const localD1 = (sql: string): string =>
     { encoding: 'utf8' },
   );
 
-const wranglerConfig = (): {
+interface WranglerConfig {
   send_email?: { name: string; allowed_sender_addresses?: string[] }[];
   triggers?: { crons?: string[] };
   ratelimits?: {
     name: string;
     simple?: { limit: number; period: number };
   }[];
-} => {
-  const { config, error } = ts.parseConfigFileTextToJson(
-    'wrangler.jsonc',
-    readFileSync('wrangler.jsonc', 'utf8'),
-  );
-  if (error) throw new Error('wrangler.jsonc does not parse');
-  return config;
-};
+}
 
 /* Well past the wrangler.jsonc limit, so the assertion is not on the boundary. */
 const RATE_LIMIT_ATTEMPTS = 12;
@@ -563,7 +556,7 @@ test.describe('the contact endpoint', () => {
   });
 
   test('the notification sender is the one wrangler.jsonc allows', () => {
-    const binding = wranglerConfig().send_email?.find(
+    const binding = wranglerConfig<WranglerConfig>().send_email?.find(
       (entry) => entry.name === 'CONTACT_MAILER',
     );
 
@@ -575,7 +568,7 @@ test.describe('the contact endpoint', () => {
 
   /* `isRateLimited` fails open without the binding, so only this catches its removal. */
   test('wrangler.jsonc still declares the rate limit /privacy promises', () => {
-    const binding = wranglerConfig().ratelimits?.find(
+    const binding = wranglerConfig<WranglerConfig>().ratelimits?.find(
       (entry) => entry.name === RATE_LIMIT_BINDING,
     );
 
@@ -717,7 +710,7 @@ test.describe('the contact endpoint', () => {
     request,
   }) => {
     expect(
-      wranglerConfig().triggers?.crons?.length,
+      wranglerConfig<WranglerConfig>().triggers?.crons?.length,
       `no cron trigger in wrangler.jsonc for the ${RETENTION_DAYS}-day retention sweep.`,
     ).toBeGreaterThan(0);
 

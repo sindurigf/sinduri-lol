@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from './test';
 import { gotoSettled, sweepTimeout } from './settle';
 import { readFileSync } from 'node:fs';
 import { builtPages, islandRoutesFromBuild, ROUTES } from './routes';
-import { MIN_TARGET } from './wcag';
+import { MIN_TARGET, PHONE_VIEWPORT } from './wcag';
 import { NODE } from './tags';
 
 /**
@@ -26,7 +26,7 @@ const HERO_DRAWN_MAX = 31;
 
 /** Both put the control inside the content column's box; at 1440px it sits outside and proves nothing. */
 const POINTER_VIEWPORTS = [
-  { width: 390, height: 844, note: 'phone' },
+  { ...PHONE_VIEWPORT, note: 'phone' },
   { width: 1280, height: 720, note: 'desktop' },
 ] as const;
 

@@ -10,6 +10,32 @@ import { NODE } from './tags';
  */
 const CSS_DIR = join(DIST_DIR, '_astro');
 
+/** esbuild's target name for each browser ARCHITECTURE.md names. */
+const ESBUILD_NAMES: Record<string, string> = {
+  Chrome: 'chrome',
+  Edge: 'edge',
+  Firefox: 'firefox',
+  Safari: 'safari',
+  'iOS Safari': 'ios',
+};
+
+/** The browser list opening ARCHITECTURE.md > Browser support, as esbuild targets. */
+const statedBrowsers = (): string[] => {
+  const doc = readFileSync('ARCHITECTURE.md', 'utf8');
+  const line = /^## Browser support\n\n([^(]+)\(/m.exec(doc)?.[1] ?? '';
+  return line.split(',').map((entry) => {
+    const text = entry.replace(/\s+/g, ' ').trim();
+    const [, name = '', version] = /^(.+) ([\d.]+)$/.exec(text) ?? [];
+    const target = ESBUILD_NAMES[name];
+    if (!target || !version) {
+      throw new Error(
+        `ARCHITECTURE.md lists "${text}", which maps to no esbuild target.`,
+      );
+    }
+    return `${target}${version}`;
+  });
+};
+
 /**
  * Only pairs where 16.4 predates the unprefixed version. Matched with the value:
  * `-webkit-hyphens:none` also appears in a Tailwind `@supports` probe.
@@ -76,8 +102,6 @@ test.describe('the pinned CSS target', NODE, () => {
     expect(
       targets,
       'CSS_TARGET drifted from ARCHITECTURE.md > Browser support.',
-    ).toEqual(
-      ['chrome111', 'edge111', 'firefox114', 'ios16.4', 'safari16.4'].sort(),
-    );
+    ).toEqual(statedBrowsers().sort());
   });
 });

@@ -1,3 +1,5 @@
+import { cssColorToken } from './source';
+
 /** WCAG floors: AA_TEXT SC 1.4.3, AA_LARGE its large-text floor, NON_TEXT SC 1.4.11. */
 export const AA_TEXT = 4.5;
 export const AA_LARGE = 3;
@@ -6,6 +8,11 @@ export const NON_TEXT = 3;
 /** Large text under SC 1.4.3, in CSS pixels at a 16px root. */
 export const LARGE_TEXT_PX = 24;
 export const LARGE_TEXT_BOLD_PX = 18.66;
+
+/** `--color-gold` as 0-255 channels; the token is six-digit hex. */
+const GOLD_CHANNELS = [1, 3, 5].map((at) =>
+  parseInt(cssColorToken('--color-gold').slice(at, at + 2), 16),
+);
 
 /**
  * Contrast maths spliced into `page.evaluate`, which cannot reach Node imports.
@@ -88,7 +95,10 @@ export const PAGE_HELPERS = `
   };
 
   const isGold = (colour) =>
-    colour !== null && colour.r === 255 && colour.g === 192 && colour.b === 0;
+    colour !== null &&
+    colour.r === ${GOLD_CHANNELS[0]} &&
+    colour.g === ${GOLD_CHANNELS[1]} &&
+    colour.b === ${GOLD_CHANNELS[2]};
 
   /* Tracks paren depth: each layer's rgb() has commas of its own. */
   const shadowLayers = (value) => {

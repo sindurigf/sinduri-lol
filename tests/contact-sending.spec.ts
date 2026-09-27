@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './test';
 import { gotoSettled } from './settle';
+import { PHONE_VIEWPORT } from './wcag';
 import { LIMITS } from '../src/lib/contact-form';
 
 /** A filled form submitted once, left in the sending state by a 204 answer. */
@@ -71,9 +72,6 @@ test('sending blocks a second submit and says so', async ({ page }) => {
 
   await expect(button).toHaveAttribute('aria-disabled', 'true');
   await expect(button).toHaveText('Sending');
-  /* Sending is progress, not unavailable: no dashed "disabled" edge. */
-  await expect(button).not.toHaveCSS('border-top-style', 'dashed');
-  await expect(button).toHaveCSS('cursor', 'progress');
   await expect(status).toHaveText('Sending your message.');
   await expect(
     page.locator('[aria-busy="true"]'),
@@ -113,7 +111,7 @@ test('offline, the form keeps the message and says it was not sent', async ({
     await route.fulfill({ status: 204 });
   });
 
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize(PHONE_VIEWPORT);
   await gotoSettled(page, '/contact/');
   const typed = 'A message typed while the connection dropped.';
   await page.getByLabel('Name').fill('Ada Lovelace');

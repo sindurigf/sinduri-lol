@@ -1,6 +1,7 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { TALK_ROUTES } from './routes';
+import { NARROW_WIDTH } from './wcag';
 
 /** src/scripts/slideshow.ts driven by buttons, keys, slide links, full screen, print, and without JavaScript. */
 
@@ -14,7 +15,13 @@ const next = (page: Page) => page.getByRole('button', { name: 'Next' });
 const previous = (page: Page) => page.getByRole('button', { name: 'Previous' });
 
 /** A narrow phone, where a slide can run past the screen and the bar sits below it. */
-const PHONE = { width: 305, height: 700 };
+const PHONE = { width: NARROW_WIDTH, height: 700 };
+
+/** 400% zoom, where a slide is taller than the screen. */
+const ZOOMED_SLIDE = { width: NARROW_WIDTH, height: 400 };
+
+/** The tightest projected size measured (1024x768 to 1920x1080). */
+const PROJECTOR = { width: 1280, height: 720 };
 
 const open = async (page: Page, hash = '') => {
   await gotoSettled(page, `${ROUTE}/${hash}`);
@@ -123,12 +130,11 @@ test.describe('the talk slideshow', () => {
     await expect(visible(page)).toHaveId('slide-1');
   });
 
-  /* 305x400 stands in for 400% zoom, where a slide is taller than the screen. */
   const MAX_PAGE_PRESSES = 10;
   test('Page Down scrolls a slide taller than the screen before it turns', async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 305, height: 400 });
+    await page.setViewportSize(ZOOMED_SLIDE);
     await open(page, '#slide-2');
     const runsPast = () =>
       page.evaluate(
@@ -160,7 +166,7 @@ test.describe('the talk slideshow', () => {
   test('Page Up scrolls a slide taller than the screen back to its start before it turns', async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 305, height: 400 });
+    await page.setViewportSize(ZOOMED_SLIDE);
     await open(page, '#slide-2');
     await page.evaluate(() =>
       window.scrollTo({
@@ -235,7 +241,7 @@ test.describe('the talk slideshow', () => {
   test('every slide fits a 1280x720 screen in full screen', async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.setViewportSize(PROJECTOR);
     await open(page);
     await page.getByRole('button', { name: 'Full screen' }).click();
     await page.waitForFunction(() => document.fullscreenElement !== null);

@@ -81,7 +81,7 @@ test('no :visited rule exists anywhere in the built CSS', NODE, () => {
 for (const route of ROUTES) {
   if (!(route in SOLID_ROUTES)) continue;
 
-  test(`${route} paints its solid block from the background token alone`, async ({
+  test(`${route} has text of at least ${AA_TEXT}:1 in its solid block (SC 1.4.3)`, async ({
     page,
   }) => {
     await gotoSettled(page, route);

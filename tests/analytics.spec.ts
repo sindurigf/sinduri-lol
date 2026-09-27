@@ -13,28 +13,37 @@ import { builtPages, DIST_DIR } from './routes';
 import { waitForHydration } from './settle';
 import { configuredSite } from './source';
 import { fakeCollector, type UmamiSend } from './umami';
+import { REFLOW_VIEWPORT } from './wcag';
 
 /**
- * Umami, held to what /privacy discloses (PAYLOAD_KEYS, EVENT_DATA_KEYS). The
- * tracker sends only from the production host, so the build is served as `site`.
+ * Umami, held to what /privacy discloses (PAYLOAD_DISCLOSED, EVENT_DATA_DISCLOSED).
+ * The tracker sends only from the production host, so the build is served as `site`.
  */
 
 const SITE = configuredSite().replace(/\/$/, '');
 
-const PAYLOAD_KEYS = [
-  'website',
-  'screen',
-  'language',
-  'title',
-  'hostname',
-  'url',
-  'referrer',
-  'tag',
-  'id',
-  'name',
-  'data',
-];
-const EVENT_DATA_KEYS = ['label', 'area', 'target'];
+/** Each field the tracker may send, and the words /privacy discloses it in; null is not about the visitor. */
+const PAYLOAD_DISCLOSED: Record<string, string | null> = {
+  website: null,
+  screen: 'your screen size',
+  language: "your browser's language",
+  title: "the page's address and title",
+  hostname: "the page's address",
+  url: "the page's address",
+  referrer: 'the address of the page that linked you here',
+  /* Set only by `data-tag` and `umami.identify()`, neither used here. */
+  tag: null,
+  id: null,
+  name: 'what kind of control it was',
+  data: 'its label',
+};
+const EVENT_DATA_DISCLOSED: Record<string, string> = {
+  label: 'its label',
+  area: 'which part of the page it is in',
+  target: 'where it goes',
+};
+const PAYLOAD_KEYS = Object.keys(PAYLOAD_DISCLOSED);
+const EVENT_DATA_KEYS = Object.keys(EVENT_DATA_DISCLOSED);
 
 const SEND_TIMEOUT_MS = 10_000;
 
@@ -154,6 +163,23 @@ test.describe('analytics', () => {
     ).toBe(true);
   });
 
+  test('every field the tracker may send is disclosed in the /privacy text', () => {
+    const privacy = readFileSync(
+      join(DIST_DIR, 'privacy', 'index.html'),
+      'utf8',
+    )
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ');
+    const phrases = [
+      ...Object.values(PAYLOAD_DISCLOSED),
+      ...Object.values(EVENT_DATA_DISCLOSED),
+    ].filter((phrase) => phrase !== null);
+    expect(
+      phrases.filter((phrase) => !privacy.includes(phrase)),
+      '/privacy no longer says it sends these',
+    ).toEqual([]);
+  });
+
   test('nothing is sent from any host but production', async ({ page }) => {
     const sent = await fakeCollector(page.context());
 
@@ -244,7 +270,7 @@ test.describe('analytics', () => {
   test('outbound, download, email and button clicks are counted', async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 320, height: 720 });
+    await page.setViewportSize(REFLOW_VIEWPORT);
     const sent = await openAsProduction(page, '/career/');
 
     const outbound = 'footer a[href^="https://github.com/"]';
@@ -291,7 +317,7 @@ test.describe('analytics', () => {
   test('only the mobile menu reports area menu; the photo viewer and cat card report main', async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 320, height: 720 });
+    await page.setViewportSize(REFLOW_VIEWPORT);
     const sent = await openAsProduction(page, '/about/');
 
     await page.getByRole('button', { name: /menu/i }).click();
@@ -303,18 +329,24 @@ test.describe('analytics', () => {
     await holdNavigation(page, menuLink);
     await page.locator(menuLink).first().click();
     await page.keyboard.press('Escape');
+    await expect(page.locator('#mobile-menu-panel')).toBeHidden();
 
-    await page.locator('a[data-photo]').first().click();
+    const photos = page.locator('a[data-photo="people"]');
+    await photos.first().click();
     const viewer = page.getByRole('dialog', { name: 'Photo' });
     await viewer.getByRole('button', { name: 'Next' }).click();
     await viewer.getByRole('button', { name: 'Close' }).click();
+    await expect(viewer).toBeHidden();
+    /* The viewer's close event, a task after Close, focuses the photo shown; a cat focused before it loses focus to it. */
+    await expect(photos.nth(1)).toBeFocused();
 
-    await page.locator('#cat-spot-minerva .cat-button').focus();
+    const cat = page.locator('#cat-spot-minerva .cat-button');
+    await cat.focus();
+    await expect(cat).toBeFocused();
     await page.keyboard.press('Enter');
-    await page
-      .getByRole('dialog', { name: 'Minerva' })
-      .getByRole('button', { name: 'Close' })
-      .click();
+    const card = page.getByRole('dialog', { name: 'Minerva' });
+    await expect(card).toBeVisible();
+    await card.getByRole('button', { name: 'Close' }).click();
 
     const areaOf = (label: string) =>
       events(sent)

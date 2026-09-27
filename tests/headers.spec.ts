@@ -189,8 +189,11 @@ test.describe('security headers', () => {
     );
 
     // Fails if the font moves off-origin without a font-src change.
+    /* Not `document.fonts.check`: it returns true for a family with no face at all. */
     const loaded = await page.evaluate(() =>
-      document.fonts.check('900 33px "Lexend Variable"'),
+      [...document.fonts].some(
+        (face) => face.family.includes('Lexend') && face.status === 'loaded',
+      ),
     );
     expect(loaded, "Lexend did not load under font-src 'self'").toBe(true);
   });

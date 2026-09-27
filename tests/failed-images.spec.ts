@@ -10,6 +10,7 @@ import { builtHtml } from './routes';
 import { gotoSettled } from './settle';
 import { NODE } from './tags';
 import { IMAGE_REQUEST } from './html';
+import { DESKTOP_VIEWPORT, REFLOW_VIEWPORT } from './wcag';
 
 /**
  * docs/STYLEGUIDE.md "Photo frames and the failed-photo state"
@@ -30,7 +31,7 @@ const FRAME_ROUTES = [
 const SCRIPT_DELAY_MS = 1_500;
 
 const VIEWS = [
-  { label: '320px', width: 320, scale: 1 },
+  { label: '320px', width: REFLOW_VIEWPORT.width, scale: 1 },
   { label: '200% zoom', width: 640, scale: 2 },
 ] as const;
 
@@ -301,7 +302,7 @@ test.describe('the failed-photo script', () => {
   test('marks a photo that failed before the script ran', async ({
     browser,
   }) => {
-    const { page } = await open(browser, 1280, 1);
+    const { page } = await open(browser, DESKTOP_VIEWPORT.width, 1);
     await page.route(IMAGE_REQUEST, (request) => request.abort());
     await page.route('**/_astro/*.js', async (request) => {
       await new Promise((resolve) => setTimeout(resolve, SCRIPT_DELAY_MS));
@@ -335,7 +336,7 @@ test.describe('the failed-photo script', () => {
   test('marks the About cat card photo, rendered after load', async ({
     browser,
   }) => {
-    const { page } = await open(browser, 1280, 1);
+    const { page } = await open(browser, DESKTOP_VIEWPORT.width, 1);
     await page.route(
       (url) =>
         IMAGE_REQUEST.test(url.pathname) && url.pathname.includes('minerva'),
@@ -364,7 +365,7 @@ test.describe('the failed-photo script', () => {
 
   for (const route of FRAME_ROUTES) {
     test(`${route} never marks a photo that loaded`, async ({ browser }) => {
-      const { page } = await open(browser, 1280, 1);
+      const { page } = await open(browser, DESKTOP_VIEWPORT.width, 1);
       await gotoSettled(page, route);
       const marked = (await framesOnEveryScreen(page)).filter((f) => f.marked);
       expect(marked.map((f) => f.alt)).toEqual([]);

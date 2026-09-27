@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from './test';
-import { builtPages } from './routes';
+import { builtPages, pagesNotLinking } from './routes';
 import { NODE } from './tags';
 
 /**
@@ -40,14 +40,8 @@ const pageText = (): string => {
 };
 
 test.describe('the accessibility statement', NODE, () => {
-  // The link itself, not the path: every page's own canonical carries a path.
   test('every page can reach the statement', () => {
-    const missing = builtPages()
-      .filter(({ route }) => route !== '/404')
-      .filter(
-        ({ file }) => !readFileSync(file, 'utf8').includes(`href="${PAGE}/"`),
-      )
-      .map(({ route }) => route);
+    const missing = pagesNotLinking(PAGE);
 
     expect(
       missing,

@@ -16,7 +16,11 @@ export const WORKER_SPECS = [
   'contact.spec.ts',
   'video-range.spec.ts',
   'served-types.spec.ts',
+  'blog-pages.spec.ts',
 ] as const;
+
+/* Small enough that today's posts span pages, so tests/blog-pages.spec.ts sees the pager. */
+export const WORKER_POSTS_PER_PAGE = 1;
 
 /* Secret in production; read with CLOUDFLARE_INCLUDE_PROCESS_ENV. */
 export const NOTIFY_TO = 'owner@example.com';
@@ -61,6 +65,7 @@ export default defineConfig({
       ASTRO_PREVIEW_BACKGROUND: '1',
       CLOUDFLARE_INCLUDE_PROCESS_ENV: 'true',
       CONTACT_NOTIFY_TO: NOTIFY_TO,
+      POSTS_PER_PAGE: String(WORKER_POSTS_PER_PAGE),
     },
 
     reuseExistingServer: false,

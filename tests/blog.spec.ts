@@ -7,36 +7,17 @@ import {
   CATEGORY_ROUTES,
   DIST_DIR,
   frontmatterTags,
-  POSTS_PER_PAGE,
   POST_ROUTES,
   postCountByCategory,
   postFrontmatter,
   TAG_ROUTES,
 } from './routes';
 import { pageCount } from '../src/lib/pagination';
-import { indexPageHref } from '../src/lib/paths';
 import { NODE } from './tags';
-
-/* Pagination skips itself while every post fits on one page. */
 
 const POST_COUNT = POST_ROUTES.length;
 const PAGE_COUNT = pageCount(POST_COUNT);
 const PAGINATES = PAGE_COUNT > 1;
-
-/** Full pages, then the remainder on the last. */
-const cardsOnPage = (page: number, total: number): number =>
-  Math.min(POSTS_PER_PAGE, total - (page - 1) * POSTS_PER_PAGE);
-
-test(
-  'every page but the last is full, and the last holds the remainder',
-  NODE,
-  () => {
-    const total = POSTS_PER_PAGE * 2 + 1;
-    expect(cardsOnPage(1, total)).toBe(POSTS_PER_PAGE);
-    expect(cardsOnPage(2, total)).toBe(POSTS_PER_PAGE);
-    expect(cardsOnPage(3, total)).toBe(1);
-  },
-);
 
 /** The href of every post card on the page, in render order. */
 const cardHrefs = (page: Page): Promise<string[]> =>
@@ -46,88 +27,11 @@ const cardHrefs = (page: Page): Promise<string[]> =>
     ),
   );
 
-test.describe('the blog index paginates', () => {
-  test.skip(
-    !PAGINATES,
-    `every post fits on one page (${POST_COUNT} of ${POSTS_PER_PAGE}), so there is no second page to test`,
-  );
-
-  test('page one holds exactly one page of posts', async ({ page }) => {
-    await gotoSettled(page, '/blog');
-
-    const hrefs = await cardHrefs(page);
-    expect(
-      hrefs.length,
-      `/blog should render ${POSTS_PER_PAGE} cards, one page of posts.`,
-    ).toBe(POSTS_PER_PAGE);
-  });
-
-  test('every page holds its share, and nothing is lost or repeated', async ({
-    page,
-  }) => {
-    const shown: string[] = [];
-
-    for (let number = 1; number <= PAGE_COUNT; number += 1) {
-      await gotoSettled(page, indexPageHref(number));
-      const hrefs = await cardHrefs(page);
-      expect(hrefs.length, `${indexPageHref(number)} post count`).toBe(
-        cardsOnPage(number, POST_COUNT),
-      );
-      shown.push(...hrefs);
-    }
-
-    expect(
-      new Set(shown).size,
-      `a post is repeated across the pages: ${shown.join(', ')}`,
-    ).toBe(shown.length);
-
-    /*
-     * The set, not just the count. A slice that drops one post and repeats
-     * another keeps both page counts correct and every other assertion here
-     * green.
-     */
-    expect(
-      shown.sort(),
-      'the pages between them must show every post exactly once',
-    ).toEqual(POST_ROUTES.map((route) => `${route}/`).sort());
-  });
-
-  test('page two is reachable by keyboard from page one', async ({ page }) => {
-    await gotoSettled(page, '/blog');
-
-    const pager = page.getByRole('navigation', { name: /pagination/i });
-    await expect(
-      pager,
-      'the pager must be a named landmark; there are three navs on this page',
-    ).toBeVisible();
-
-    /*
-     * By page number: the pager has no "Next page" link, because it sat beside
-     * this one and went to the same place. See BlogListing.astro.
-     */
-    const pageTwo = pager.getByRole('link', { name: /page\s*2/i });
-    await pageTwo.focus();
-    await expect(pageTwo).toBeFocused();
-
-    await page.keyboard.press('Enter');
-    await page.waitForURL('**/blog/page/2/');
-
-    expect(
-      await cardHrefs(page),
-      'following the "Page 2" link should land on the second page of posts',
-    ).toHaveLength(cardsOnPage(2, POST_COUNT));
-
-    /* The current page is marked, and it is still a link. */
-    const current = page
-      .getByRole('navigation', { name: /pagination/i })
-      .locator('a[aria-current="page"]');
-    await expect(current).toHaveCount(1);
-    await expect(current).toHaveAccessibleName(/page\s*2/i);
-  });
-});
-
 test.describe('the blog index while every post fits on one page', () => {
-  test.skip(PAGINATES, 'the index paginates; the block above covers it');
+  test.skip(
+    PAGINATES,
+    'the index paginates; tests/blog-pages.spec.ts covers the pager',
+  );
 
   test('lists every post exactly once, with no pager', async ({ page }) => {
     await gotoSettled(page, '/blog');

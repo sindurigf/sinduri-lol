@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from './test';
 import { builtPages, DIST_DIR, ROUTES } from './routes';
-import { GLOBAL_CSS, cssColorToken } from './source';
+import { GLOBAL_CSS, cssColorToken, pngSize } from './source';
 import { NODE } from './tags';
 
 /**
@@ -19,16 +19,10 @@ interface Size {
 
 const asText = (size: Size): string => `${size.width}x${size.height}`;
 
-/** Width and height from IHDR: big-endian uint32s at bytes 16 and 20. */
-const pngSize = (file: string): Size => {
-  const buffer = readFileSync(file);
-
-  expect(
-    buffer.subarray(1, 4).toString('ascii'),
-    `${file} does not start with a PNG signature.`,
-  ).toBe('PNG');
-
-  return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+const pngFileSize = (file: string): Size => {
+  const size = pngSize(readFileSync(file));
+  expect(size, `${file} does not start with a PNG signature.`).not.toBeNull();
+  return size!;
 };
 
 /**
@@ -132,7 +126,9 @@ test.describe('the favicon set', NODE, () => {
 
       if (file.endsWith('.svg')) continue; /* vector: any size is honest */
 
-      const present = file.endsWith('.ico') ? icoSizes(file) : [pngSize(file)];
+      const present = file.endsWith('.ico')
+        ? icoSizes(file)
+        : [pngFileSize(file)];
       rasters += 1;
 
       for (const size of wanted) {
@@ -190,7 +186,7 @@ test.describe('the web app manifest', NODE, () => {
       ).toBe(true);
 
       expect(
-        asText(pngSize(file)),
+        asText(pngFileSize(file)),
         `The manifest declares ${icon.src} as ${icon.sizes}, which it is not.`,
       ).toBe(icon.sizes);
     }

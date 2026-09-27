@@ -163,7 +163,9 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
   schema requires `coverAlt` with it. `coverCardAlt` replaces `coverAlt` on
   the 1.91:1 `og:image` crop when the crop drops something `coverAlt` names.
 - `updated` sets `dateModified`; absent, it is omitted, not copied from `date`.
-- Pagination (`/blog/page/<n>`) builds only past `POSTS_PER_PAGE`.
+- Pagination (`/blog/page/<n>`) builds only past `POSTS_PER_PAGE`, 9 unless
+  the build's `POSTS_PER_PAGE` variable sets another positive whole number.
+  `test:worker` builds at 1 so `tests/blog-pages.spec.ts` reaches the pager.
 - Every blog, category, tag, feed and Markdown-copy URL comes from
   `src/lib/paths.ts`, which imports nothing.
 - `/llms.txt` and `[slug].astro` read with `getCollection`, not
@@ -583,6 +585,9 @@ evidence.
 - **Emulate touch in the browser projects:** the menu, photo strip and
   slideshow use native buttons and links, which fire the same events for
   touch; pointer and keyboard runs already cover them.
+- **Drop the About cat card's "beside its cat, not over it" checks as
+  decoration:** the owner asked for the card to open beside its cat, so where
+  it opens is function; the test name in `tests/about-cats.spec.ts` says so.
 - **Draw the About cat's focus ring round the cat, not its band:** the ring on
   the band passes SC 2.4.11 (sides and top stay visible), and the cat moves
   while the band does not.

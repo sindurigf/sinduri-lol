@@ -2,13 +2,15 @@ import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { goldRoutesFromBuild, ROUTES } from './routes';
+import { cssColorToken } from './source';
+import { NARROW_WIDTH } from './wcag';
 
 /*
  * No dark-surface text token passes on gold, so text and controls on it are
  * measured in the rendered page. The token ratios on gold are in the generated
  * table (scripts/contrast-table.mjs, tests/contrast-table.spec.ts).
  */
-const GOLD = '#FFC000';
+const GOLD = cssColorToken('--color-gold');
 
 /** A control whose opaque fill, or its only boundary, its border, matches the ground behind it. */
 type InvisibleControl = { selector: string; detail: string; label: string };
@@ -181,7 +183,7 @@ test.describe('the gold surface exception', () => {
   test(`the ${GOLD_ROUTE} gold button keeps its inner ring at 305px`, async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 305, height: 900 });
+    await page.setViewportSize({ width: NARROW_WIDTH, height: 900 });
     await gotoSettled(page, GOLD_ROUTE);
 
     const controls = (await page.evaluate(

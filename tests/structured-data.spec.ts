@@ -5,6 +5,7 @@ import {
   builtHtml,
   DIST_DIR,
   POST_ROUTES,
+  frontmatterDay,
   postFrontmatter,
   ROUTES,
 } from './routes';
@@ -251,10 +252,8 @@ test.describe('a title cannot end the data block', NODE, () => {
 
 // A never-revised post has no `dateModified`, not a copy of `datePublished`.
 test.describe('a post says when it was revised, and only then', NODE, () => {
-  const updatedDay = (route: string): string | undefined => {
-    const frontmatter = postFrontmatter(route.split('/').pop()!);
-    return /^updated:\s*['"]?(\d{4}-\d{2}-\d{2})/m.exec(frontmatter)?.[1];
-  };
+  const updatedDay = (route: string): string | undefined =>
+    frontmatterDay(postFrontmatter(route.split('/').pop()!), 'updated');
 
   test('dateModified and article:modified_time are present exactly when the post says updated', () => {
     const wrong: string[] = [];
