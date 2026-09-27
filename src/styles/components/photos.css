@@ -84,7 +84,7 @@
   }
 
   /*
-   * Set by src/scripts/failed-images.ts: the image fades (`opacity` keeps it in
+   * Set by src/scripts/failed-frame.ts: the image fades (`opacity` keeps it in
    * the a11y tree) and its alt copy reads on `surface` (13.51), clamped to
    * `--alt-lines`. Inset, not padded: overflow clips at the padding edge.
    */

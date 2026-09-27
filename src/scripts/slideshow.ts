@@ -30,6 +30,10 @@ const titleOf = (slide: HTMLElement): string =>
     .replace(' :', ':')
     .trim();
 
+/* Below the sticky header: base.css sets it as html's scroll-padding-top. */
+const usableTop = (): number =>
+  parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+
 const offScreen = (element: HTMLElement): boolean => {
   const box = element.getBoundingClientRect();
   return box.top < 0 || box.bottom > window.innerHeight;
@@ -136,7 +140,7 @@ const wire = (deck: HTMLElement): void => {
   const slideRunsPast = (key: string): boolean => {
     const box = slides[current].getBoundingClientRect();
     if (key === 'PageDown') return box.bottom > window.innerHeight;
-    if (key === 'PageUp') return box.top < deck.getBoundingClientRect().top;
+    if (key === 'PageUp') return box.top < usableTop();
     return false;
   };
 

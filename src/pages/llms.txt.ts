@@ -55,10 +55,12 @@ const ROUTE_NOTES: { path: string; label: string; note: string }[] = [
 
 type Absolute = (path: string) => string;
 
+/* blog/[slug].md.ts builds no Markdown copy of a placeholder. */
 const postLine = (post: BlogPost, absolute: Absolute): string =>
-  `- [${post.data.title}](${absolute(postHref(post.id))}): ` +
-  `${post.data.teaser} ([Markdown](${absolute(markdownSourcePath(post.id))}))` +
-  (post.data.placeholder ? ` ${PLACEHOLDER_MARK}` : '');
+  `- [${post.data.title}](${absolute(postHref(post.id))}): ${post.data.teaser}` +
+  (post.data.placeholder
+    ? ` ${PLACEHOLDER_MARK}`
+    : ` ([Markdown](${absolute(markdownSourcePath(post.id))}))`);
 
 const noteLines = (
   posts: readonly BlogPost[],

@@ -8,6 +8,7 @@ import {
   useTemplateRef,
 } from 'vue';
 import { IDLE, useMotionLoop } from '../../composables/use-motion-loop';
+import { markFailed } from '../../scripts/failed-frame';
 import { clamp, createCatRig } from '../../lib/about-cats-rig';
 import type { CatId } from '../../lib/about-cats-types';
 import { MOVE_NAMES, moveExtent } from '../../lib/about-cats-moves';
@@ -286,6 +287,11 @@ const onCatClick = (id: CatId): void => {
   openCat(id);
 };
 
+/* Rendered after load, so failed-images.ts never sees this photo. */
+const onPhotoError = (event: Event): void => {
+  if (event.target instanceof HTMLImageElement) markFailed(event.target);
+};
+
 const onDialogClose = (): void => {
   if (dialog.value?.open) return;
   followCat(false);
@@ -432,7 +438,7 @@ onBeforeUnmount(() => {
       <form method="dialog" class="flex justify-end">
         <button class="btn-secondary cat-close">Close</button>
       </form>
-      <div v-if="open" class="cat-dialog-body">
+      <div v-if="open" :key="open.id" class="cat-dialog-body">
         <div class="cat-photo">
           <div class="aspect-frame aspect-square w-full border-4 border-border">
             <img
@@ -442,6 +448,7 @@ onBeforeUnmount(() => {
               :width="open.photo.width"
               :height="open.photo.height"
               :alt="open.photo.alt"
+              @error="onPhotoError"
             />
           </div>
           <h2 :id="`cat-dialog-${open.id}`" class="cat-name">

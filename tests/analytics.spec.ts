@@ -288,6 +288,62 @@ test.describe('analytics', () => {
     }
   });
 
+  test('only the mobile menu reports area menu; the photo viewer and cat card report main', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 720 });
+    const sent = await openAsProduction(page, '/about/');
+
+    await page.getByRole('button', { name: /menu/i }).click();
+    const menuLink = '#mobile-menu-panel a[href]';
+    const menuTarget = await page
+      .locator(menuLink)
+      .first()
+      .getAttribute('href');
+    await holdNavigation(page, menuLink);
+    await page.locator(menuLink).first().click();
+    await page.keyboard.press('Escape');
+
+    await page.locator('a[data-photo]').first().click();
+    const viewer = page.getByRole('dialog', { name: 'Photo' });
+    await viewer.getByRole('button', { name: 'Next' }).click();
+    await viewer.getByRole('button', { name: 'Close' }).click();
+
+    await page.locator('#cat-spot-minerva .cat-button').focus();
+    await page.keyboard.press('Enter');
+    await page
+      .getByRole('dialog', { name: 'Minerva' })
+      .getByRole('button', { name: 'Close' })
+      .click();
+
+    const areaOf = (label: string) =>
+      events(sent)
+        .filter(
+          (event) =>
+            event.name === CLICK_EVENTS.button &&
+            (event.data as { label?: unknown }).label === label,
+        )
+        .map((event) => (event.data as { area?: unknown }).area);
+
+    await expect
+      .poll(() => areaOf('Close').length, {
+        timeout: SEND_TIMEOUT_MS,
+      })
+      .toBe(2);
+    expect(
+      events(sent)
+        .filter(
+          (event) => (event.data as { target?: unknown }).target === menuTarget,
+        )
+        .map((event) => (event.data as { area?: unknown }).area),
+      'a menu link is not reported as menu',
+    ).toEqual(['menu']);
+    expect(
+      [...areaOf('Next'), ...areaOf('Close')],
+      'a click in the photo viewer or cat card is not reported as main',
+    ).toEqual(['main', 'main', 'main']);
+  });
+
   /* The /contact email card's text contains the address, so a text label would leak it. */
   test('no email click sends the address, in any field', async ({ page }) => {
     const sent = await openAsProduction(page, '/contact/');
