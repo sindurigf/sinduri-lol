@@ -45,9 +45,10 @@ const warmExtents = (names: readonly (typeof MOVE_NAMES)[number][]): void => {
   const [name, ...rest] = names;
   if (!name || !mounted.value) return;
   moveExtent(name);
-  if ('requestIdleCallback' in window)
+  /* The DOM types always declare it, but Safari lacks it. */
+  if (typeof window.requestIdleCallback === 'function')
     window.requestIdleCallback(() => warmExtents(rest));
-  else window.setTimeout(() => warmExtents(rest), WARM_GAP_MS);
+  else setTimeout(() => warmExtents(rest), WARM_GAP_MS);
 };
 
 const mounted = ref(false);
