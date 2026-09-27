@@ -477,12 +477,17 @@ export const createColony = (
     cat.nextBlink = now + rand(...BLINK_EVERY_MS);
     if (!cat.asleep) return;
     setAsleep(cat, false);
+    /* Getting up, then a stretch and a yawn in place, as a cat does on waking. */
+    const facing = Math.sign(cat.pose.face) || 1;
     play(
       cat,
       MOVES.wake(),
       now,
-      Math.sign(cat.pose.face) || 1,
-      undefined,
+      facing,
+      () =>
+        play(cat, moveToPlay('stretch'), performance.now(), facing, () =>
+          next(cat, performance.now()),
+        ),
       true,
     );
   };
