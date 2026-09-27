@@ -153,20 +153,27 @@ test.describe('mobile menu when its content overflows', () => {
 
 /*
  * Past 48rem the menu button is hidden, so focus cannot return to it on close.
- * It goes to the header nav's first link instead of the document.
+ * It goes to the header nav's first link instead of the document. Also run
+ * without `checkVisibility`, which Safari lacks before 17.4, inside the CSS target.
  */
+for (const variant of ['', ' without checkVisibility']) {
+  test(`closing the menu after widening past 48rem keeps focus in the header nav${variant}`, async ({
+    page,
+  }) => {
+    if (variant) {
+      await page.addInitScript(() => {
+        Reflect.deleteProperty(Element.prototype, 'checkVisibility');
+      });
+    }
+    await page.setViewportSize({ width: 390, height: 800 });
+    await gotoSettled(page, '/about');
+    await page.getByRole('button', { name: /menu/i }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
 
-test('closing the menu after widening past 48rem keeps focus in the header nav', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 390, height: 800 });
-  await gotoSettled(page, '/about');
-  await page.getByRole('button', { name: /menu/i }).click();
-  await expect(page.getByRole('dialog')).toBeVisible();
+    await page.setViewportSize({ width: 1024, height: 800 });
+    await page.keyboard.press('Escape');
 
-  await page.setViewportSize({ width: 1024, height: 800 });
-  await page.keyboard.press('Escape');
-
-  const first = page.locator('header nav[aria-label="Primary"] a').first();
-  await expect(first).toBeFocused();
-});
+    const first = page.locator('header nav[aria-label="Primary"] a').first();
+    await expect(first).toBeFocused();
+  });
+}
