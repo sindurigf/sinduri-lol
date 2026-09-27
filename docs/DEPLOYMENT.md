@@ -56,8 +56,9 @@ npx wrangler secret put CONTACT_NOTIFY_TO
 ```
 
 In the dashboard it goes under the Worker's Settings > Variables and Secrets,
-not Build (the runtime never sees Build). Without it, messages are still stored
-and the endpoint logs whether the binding or the secret is missing.
+not Build (the runtime never sees Build). Without it, messages are still stored,
+no email is sent, and the endpoint logs whether the binding or the secret is
+missing.
 
 ## Umami
 

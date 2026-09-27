@@ -33,8 +33,8 @@ npx wrangler d1 migrations apply sinduri-lol --local
 npm run preview
 ```
 
-Without the `CONTACT_NOTIFY_TO` secret a message is stored and no email is sent;
-the log says so.
+What happens without the `CONTACT_NOTIFY_TO` secret:
+[DEPLOYMENT.md](DEPLOYMENT.md#contact-form-email).
 
 ## Commands
 
