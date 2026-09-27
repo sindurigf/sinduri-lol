@@ -158,6 +158,9 @@ const articleData = article && {
     {article && (
       <meta property="article:published_time" content={article.datePublished} />
     )}
+    {article?.dateModified && (
+      <meta property="article:modified_time" content={article.dateModified} />
+    )}
     <meta property="og:site_name" content={SITE_NAME} />
     {/* og:site_name already names the site, so og:title has no suffix. */}
     <meta property="og:title" content={title} />

@@ -10,7 +10,7 @@ import {
 } from './routes';
 import { structuredDataScript } from '../src/lib/structured-data';
 import { NODE } from './tags';
-import { LD_JSON } from './html';
+import { LD_JSON, metaContent } from './html';
 
 /**
  * The JSON-LD graph in every page's head. `PERSON_NAME` must match the
@@ -256,7 +256,7 @@ test.describe('a post says when it was revised, and only then', NODE, () => {
     return /^updated:\s*['"]?(\d{4}-\d{2}-\d{2})/m.exec(frontmatter)?.[1];
   };
 
-  test('dateModified is present exactly when the post says updated', () => {
+  test('dateModified and article:modified_time are present exactly when the post says updated', () => {
     const wrong: string[] = [];
     const checked: string[] = [];
 
@@ -283,11 +283,17 @@ test.describe('a post says when it was revised, and only then', NODE, () => {
           `${route} dateModified ${String(declared)}, updated ${updated}`,
         );
       }
+      const modifiedTime = metaContent(html, 'article:modified_time');
+      if (modifiedTime !== (declared ?? null)) {
+        wrong.push(
+          `${route} article:modified_time ${String(modifiedTime)}, dateModified ${String(declared)}`,
+        );
+      }
     }
 
     expect(
       wrong,
-      "dateModified and the post's own `updated` disagree.",
+      "dateModified, article:modified_time and the post's own `updated` disagree.",
     ).toEqual([]);
     expect(checked.sort(), 'every post should be read here').toEqual(
       [...POST_ROUTES].sort(),
