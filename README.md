@@ -7,8 +7,8 @@ Guntupalli, Open Source Enthusiast.
 
 - [Astro](https://astro.build) 7, static output; `/contact/send/` renders on
   demand in the Worker
-- [Vue](https://vuejs.org) 3 for one island (the homepage canvas hero); plain
-  modules for other scripts
+- [Vue](https://vuejs.org) 3 for two islands (the homepage canvas hero and the
+  About cats); plain modules for other scripts
 - [Tailwind CSS](https://tailwindcss.com) 4, tokens in `src/styles/global.css`
 - TypeScript, strict, checked with `astro check` and `vue-tsc`
 - Markdown content collections, rendered by Sätteri

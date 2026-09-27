@@ -98,7 +98,7 @@ npm run test:webkit -- tests/reflow.spec.ts
   `tests/security-txt.spec.ts`. After a deploy:
   [DEPLOYMENT.md](DEPLOYMENT.md).
 - `test:coverage` writes `coverage/` (`index.html`, `lcov.info`). It covers
-  browser JavaScript only (the island and page scripts). It builds with source
+  browser JavaScript only (the Vue islands and page scripts). It builds with source
   maps: run a plain `npm run build` before anything else reads `dist/`.
 - `dev` and `build` pass `--force` to clear Astro's content cache, which does
   not invalidate when a plugin in `src/plugins/` changes. The resulting

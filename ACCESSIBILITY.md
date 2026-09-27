@@ -8,7 +8,7 @@ barrier. The public summary is [/accessibility](https://sinduri.lol/accessibilit
 | Field               | Value                                                      |
 | ------------------- | ---------------------------------------------------------- |
 | Project             | sinduri.lol                                                |
-| Project type        | Static personal website (Astro, one Vue island, Tailwind)  |
+| Project type        | Static personal website (Astro, two Vue islands, Tailwind) |
 | Accessibility owner | Sinduri Guntupalli                                         |
 | Public reporting    | <https://github.com/sindurigf/sinduri-lol/issues>          |
 | Private reporting   | <lol@sinduri.lol>                                          |
@@ -211,7 +211,7 @@ merge.
 | `tests/accessibility-page.spec.ts` |                                     | `/accessibility` linked from every page and matches section 1                       |
 | `scripts/check-pdf.mjs`            | PDF/UA-1                            | veraPDF on every PDF under `public/` (`npm run check:pdf`)                          |
 | `tests/talk-pdf.spec.ts`           |                                     | The talk PDF was printed from the current slides                                    |
-| `npm run typecheck`                |                                     | Templates, scripts and the Vue island type-check                                    |
+| `npm run typecheck`                |                                     | Templates, scripts and the Vue islands type-check                                   |
 
 Limits:
 
