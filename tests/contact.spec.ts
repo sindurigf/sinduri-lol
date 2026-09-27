@@ -111,6 +111,16 @@ const validFields = (): Record<string, string> => ({
   message: 'x'.repeat(LIMITS.bodyMin + 20),
 });
 
+/** The title starts with "Error: " (SC 3.3.1) and, like the h1, names the cause (SC 2.4.2). */
+const expectTitledAndHeaded = (html: string, heading: string) => {
+  expect(html, `the page title is not "Error: ${heading}"`).toContain(
+    `<title>Error: ${heading} `,
+  );
+  expect(html, `the h1 is not "${heading}"`).toMatch(
+    new RegExp(`<h1[^>]*>\\s*${heading}\\s*</h1>`),
+  );
+};
+
 const expectTypedValuesKept = (
   html: string,
   typed: Record<'name' | 'email' | 'message', string>,
@@ -277,10 +287,7 @@ test.describe('the contact endpoint', () => {
       html,
       'the rejected submission should render an error summary.',
     ).toContain('problems with this form');
-    expect(
-      html,
-      'the page title does not say there is an error (SC 3.3.1)',
-    ).toMatch(/<title>Error: /);
+    expectTitledAndHeaded(html, 'Check your message');
 
     expectTypedValuesKept(html, typed);
 
@@ -344,8 +351,11 @@ test.describe('the contact endpoint', () => {
     request,
     baseURL,
   }) => {
-    /* Cloudflare sets CF-Connecting-IP at the edge; locally it is honoured as sent. */
-    const address = `203.0.113.${Math.floor(Math.random() * 254) + 1}`;
+    /*
+     * Cloudflare sets CF-Connecting-IP at the edge; locally it is honoured as
+     * sent. 198.18.0.0/15 stays clear of the browser tests' TEST-NET-3 address.
+     */
+    const address = `198.18.0.${Math.floor(Math.random() * 254) + 1}`;
     const headers = { ...sameOrigin(baseURL!), 'CF-Connecting-IP': address };
 
     const statuses: number[] = [];
@@ -407,6 +417,7 @@ test.describe('the contact endpoint', () => {
     ).toBeDefined();
     expectTypedValuesKept(html!, typed);
     expectNotSentSummary(html!);
+    expectTitledAndHeaded(html!, 'Too many messages');
   });
 
   /* D1 failure induced by moving the table aside for one request. */
@@ -438,6 +449,7 @@ test.describe('the contact endpoint', () => {
       expect(html).toContain('Your message could not be saved');
       expectTypedValuesKept(html, typed);
       expectNotSentSummary(html);
+      expectTitledAndHeaded(html, 'Message not saved');
     } finally {
       localD1(`ALTER TABLE ${MESSAGES_ASIDE} RENAME TO messages`);
     }
@@ -817,6 +829,11 @@ test.describe('the contact error pages in a browser', () => {
       email: 'not-an-address',
       message: 'too short',
     });
+    await expect(
+      page.getByText(/problems? with this form/),
+      'the submission was not rejected as invalid, so the 422 page was never scanned',
+    ).toBeVisible();
+    await expect(page).toHaveTitle(/^Error: Check your message /);
     await expectSummaryFocusedAndClean(page, 'rejected-submission');
     await expectEveryImageLoaded(page, 'rejected-submission');
   });

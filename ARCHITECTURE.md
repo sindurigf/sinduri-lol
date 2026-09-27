@@ -583,6 +583,8 @@ evidence.
   while the band does not.
 - **Let an About cat keep playing while it has keyboard focus:** the hold is a
   rule, with its reason, in [STYLEGUIDE.md](docs/STYLEGUIDE.md#motion).
+- **Reset the contact form on a timer after Stop:** invites a double send; Esc
+  and `navigateerror` cover it, Firefox's Stop button does not.
 
 ## Content notes
 

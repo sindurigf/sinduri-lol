@@ -63,14 +63,22 @@ const STATUS: Record<Exclude<SubmissionKind, 'sent'>, number> = {
   failed: 503,
 };
 Astro.response.status = STATUS[outcome.kind];
+
+/* Names the cause; the error summary below says the message was not sent. */
+const HEADING: Record<Exclude<SubmissionKind, 'sent'>, string> = {
+  invalid: 'Check your message',
+  limited: 'Too many messages',
+  failed: 'Message not saved',
+};
+const heading = HEADING[outcome.kind];
 ---
 
 <BaseLayout
-  title="Error: Check your message"
+  title={`Error: ${heading}`}
   description="Something went wrong sending your message."
   noCanonical
 >
-  <PageHero title="Check your message" titleSize="h2">
+  <PageHero title={heading} titleSize="h2">
     <p class="standfirst">
       Nothing has been sent yet. What you wrote is still here.
     </p>

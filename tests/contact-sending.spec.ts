@@ -1,6 +1,48 @@
+import type { Page } from '@playwright/test';
 import { expect, test } from './test';
 import { gotoSettled } from './settle';
 import { LIMITS } from '../src/lib/contact-form';
+
+/** A filled form submitted once, left in the sending state by a 204 answer. */
+const sendOnce = async (page: Page) => {
+  const posts = { count: 0 };
+  await page.route('**/contact/send/', async (route) => {
+    posts.count += 1;
+    await route.fulfill({ status: 204 });
+  });
+
+  await gotoSettled(page, '/contact/');
+  await page.getByLabel('Name').fill('Ada Lovelace');
+  await page.getByLabel('Email').fill('ada@example.com');
+  await page.getByLabel('Message').fill('A message long enough to send.');
+
+  const form = page.locator('form[data-contact-form]');
+  const button = form.getByRole('button', { name: /send/i });
+  const status = form.getByRole('status');
+  const label = (await button.textContent())?.trim() ?? '';
+
+  await button.focus();
+  await page.keyboard.press('Enter');
+  await expect(button).toHaveText('Sending');
+  return { button, status, label, posts };
+};
+
+/** The form is ready again: its label, no `aria-disabled`, no status, and Enter posts. */
+const expectReadyToResend = async (
+  page: Page,
+  { button, status, label, posts }: Awaited<ReturnType<typeof sendOnce>>,
+  message: string,
+) => {
+  await expect(button, message).toHaveText(label);
+  await expect(button).not.toHaveAttribute('aria-disabled');
+  await expect(status).toHaveText('');
+
+  await button.focus();
+  await page.keyboard.press('Enter');
+  await expect
+    .poll(() => posts.count, 'the form stayed blocked after it was reset')
+    .toBe(2);
+};
 
 /** A 204 answer leaves the page in place, so it stays in the sending state. */
 test('sending blocks a second submit and says so', async ({ page }) => {
@@ -106,4 +148,52 @@ test('the message field states its limits and keeps pasted text past them', asyn
     message,
     'text past the limit was cut silently instead of named by the server',
   ).toHaveValue(pasted);
+});
+
+test('a page restored from the back-forward cache can send again', async ({
+  page,
+}) => {
+  const sent = await sendOnce(page);
+
+  await page.evaluate(() =>
+    window.dispatchEvent(
+      new PageTransitionEvent('pageshow', { persisted: true }),
+    ),
+  );
+
+  await expectReadyToResend(
+    page,
+    sent,
+    'a form restored from the back-forward cache stayed on Sending',
+  );
+});
+
+test('Esc during a send, which stops the post, lets the form send again', async ({
+  page,
+}) => {
+  const sent = await sendOnce(page);
+
+  await page.keyboard.press('Escape');
+
+  await expectReadyToResend(page, sent, 'the form stayed on Sending after Esc');
+});
+
+test('a stopped post reported by the Navigation API lets the form send again', async ({
+  page,
+}) => {
+  test.skip(
+    !(await page.evaluate(() => 'navigation' in window)),
+    'no Navigation API in this engine',
+  );
+  const sent = await sendOnce(page);
+
+  await page.evaluate(() =>
+    window.navigation.dispatchEvent(new ErrorEvent('navigateerror')),
+  );
+
+  await expectReadyToResend(
+    page,
+    sent,
+    'the form stayed on Sending after the Stop button',
+  );
 });

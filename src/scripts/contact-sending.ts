@@ -49,18 +49,33 @@ const onSubmit =
     if (status) status.textContent = SENDING_STATUS;
   };
 
-for (const form of document.querySelectorAll<HTMLFormElement>(
+const forms = document.querySelectorAll<HTMLFormElement>(
   'form[data-contact-form]',
-)) {
+);
+
+for (const form of forms) {
   form.addEventListener('submit', onSubmit(form));
 }
 
 /* A page restored from the back-forward cache is still mid-send. */
 window.addEventListener('pageshow', (event) => {
   if (!event.persisted) return;
-  for (const form of document.querySelectorAll<HTMLFormElement>(
-    'form[data-contact-form]',
-  )) {
-    reset(form);
-  }
+  for (const form of forms) reset(form);
 });
+
+const resetSending = (): void => {
+  for (const form of forms) {
+    if (form.dataset.sending === 'true') reset(form);
+  }
+};
+
+/*
+ * A stopped post leaves the page mid-send. Esc stops loading; Chromium also
+ * reports its Stop button as `navigateerror`, Firefox reports nothing.
+ */
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') resetSending();
+});
+if ('navigation' in window) {
+  window.navigation.addEventListener('navigateerror', resetSending);
+}
