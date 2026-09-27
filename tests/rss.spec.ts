@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import {
   BLOG_CONTENT_DIR,
   DIST_DIR,
+  frontmatterField,
+  frontmatterTags,
   postFrontmatter,
   TAG_ROUTES,
   builtHtml,
@@ -34,13 +36,12 @@ const publishedPosts = (): PublishedPost[] =>
     .map((name) => {
       const frontmatter = postFrontmatter(name);
       const field = (key: string): string =>
-        new RegExp(`^${key}:\\s*(.+)$`, 'm').exec(frontmatter)?.[1]?.trim() ??
-        '';
+        frontmatterField(frontmatter, key) ?? '';
       return {
         slug: name.replace(/\.md$/, ''),
         placeholder: field('placeholder'),
         date: field('date'),
-        tags: [...field('tags').matchAll(/'([^']+)'/g)].map((m) => m[1]!),
+        tags: frontmatterTags(frontmatter),
       };
     })
     .filter((post) => post.placeholder !== 'true')

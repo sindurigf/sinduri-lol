@@ -29,7 +29,7 @@ test.describe('/licenses.txt', () => {
     expect(response.headers()['content-type']).toMatch(/^text\/plain/);
   });
 
-  test('names what the island and the font ship', NODE, () => {
+  test('names a package from every source the collector reads', NODE, () => {
     const headings = readFileSync(LICENCES, 'utf8')
       .split('\n\n\n')
       .map((entry) => entry.split('\n')[0]);

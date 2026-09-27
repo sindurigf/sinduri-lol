@@ -1,10 +1,14 @@
 import { expect, test } from './test';
 import { gotoSettled } from './settle';
+import { DESKTOP_VIEWPORT } from './wcag';
 
 /** PhotoViewer.astro and src/scripts/photo-viewer.ts. */
 
 const ROUTE = '/about';
 const STRIP = '#people-photos';
+
+/** Sub-pixel layout rounding, in CSS px. */
+const ROUNDING_PX = 1;
 
 test.describe('the photo viewer', () => {
   test('a photo opens the viewer on itself, and the arrows move through its group', async ({
@@ -46,6 +50,20 @@ test.describe('the photo viewer', () => {
     await expect(first).toBeFocused();
   });
 
+  test('its Close button closes it and focus returns to the photo that opened it', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    const first = page.locator(`${STRIP} a[data-photo]`).first();
+    await first.click();
+    const viewer = page.locator('#photo-viewer');
+    await expect(viewer).toBeVisible();
+
+    await viewer.getByRole('button', { name: 'Close' }).click();
+    await expect(viewer, 'Close left the viewer open').toBeHidden();
+    await expect(first).toBeFocused();
+  });
+
   // SC 2.4.3: after stepping, the reader is at the photo shown, not the opener.
   test('closing after a step returns focus to the photo on screen', async ({
     page,
@@ -66,7 +84,7 @@ test.describe('the photo viewer', () => {
   });
 
   // SC 4.1.3: stepping announces the caption, not only "4 of 12".
-  test('the caption is announced when the photo changes', async ({ page }) => {
+  test('the caption is a polite live region', async ({ page }) => {
     await gotoSettled(page, ROUTE);
     await page.locator(`${STRIP} a[data-photo]`).first().click();
     await expect(
@@ -106,6 +124,24 @@ test.describe('the photo strip', () => {
     await expect
       .poll(() => strip.evaluate((el) => el.scrollLeft))
       .toBeGreaterThan(start);
+  });
+
+  test('under reduced motion an arrow moves the strip at once, not smoothly', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await gotoSettled(page, ROUTE);
+    const moved = await page
+      .getByRole('button', { name: 'Scroll photos right' })
+      .evaluate((button) => {
+        const strip = document.getElementById(
+          button.getAttribute('aria-controls') ?? '',
+        )!;
+        const start = strip.scrollLeft;
+        (button as HTMLButtonElement).click();
+        return strip.scrollLeft - start;
+      });
+    expect(moved, 'the strip animates under reduced motion').toBeGreaterThan(0);
   });
 
   test('an arrow that cannot scroll further says it is unavailable', async ({
@@ -158,7 +194,8 @@ test.describe('the photo strip', () => {
           box.right + ring - view.right,
         );
       });
-      if (overshoot > 1) clipped.push(`photo ${i + 1}: ${overshoot}px`);
+      if (overshoot > ROUNDING_PX)
+        clipped.push(`photo ${i + 1}: ${overshoot}px`);
     }
     expect(clipped, 'focus rings cut off by the strip edge').toEqual([]);
   });
@@ -404,10 +441,7 @@ test.describe('the photo viewer while a photo loads', () => {
 });
 
 /* On desktop the box is shorter than most portraits; `max-h-full` needs the figure's one-track grid. */
-const VIEWER_SIZES = [
-  { width: 1280, height: 800 },
-  { width: 1440, height: 900 },
-] as const;
+const VIEWER_SIZES = [DESKTOP_VIEWPORT, { width: 1440, height: 900 }] as const;
 
 /** How far the drawn shape may drift from the file's, in ratio. */
 const SHAPE_TOLERANCE = 0.01;
@@ -442,7 +476,7 @@ for (const viewport of VIEWER_SIZES) {
         );
       }, href);
 
-      const found = await page.evaluate(() => {
+      const found = await page.evaluate((rounding) => {
         const img = document.querySelector<HTMLImageElement>(
           '.photo-viewer-figure img',
         )!;
@@ -451,12 +485,14 @@ for (const viewport of VIEWER_SIZES) {
           .getBoundingClientRect();
         const r = img.getBoundingClientRect();
         return {
-          fits: r.width <= box.width + 1 && r.height <= box.height + 1,
+          fits:
+            r.width <= box.width + rounding &&
+            r.height <= box.height + rounding,
           drawn: r.width / r.height,
           file: img.naturalWidth / img.naturalHeight,
           size: `${Math.round(r.width)}x${Math.round(r.height)} in ${Math.round(box.width)}x${Math.round(box.height)}`,
         };
-      });
+      }, ROUNDING_PX);
       if (!found.fits) problems.push(`${href}: drawn ${found.size}`);
       if (Math.abs(found.drawn / found.file - 1) > SHAPE_TOLERANCE) {
         problems.push(`${href}: drawn at a different shape from the file`);

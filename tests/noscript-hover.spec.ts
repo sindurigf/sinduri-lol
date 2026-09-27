@@ -1,5 +1,6 @@
 import { expect, test, type Page } from './test';
 import { AA_TEXT, PAGE_HELPERS } from './contrast';
+import { PHONE_VIEWPORT } from './wcag';
 
 const LINK = '.noscript-nav a:not([aria-current])';
 
@@ -17,7 +18,7 @@ const linkState = (page: Page) =>
   })()`) as Promise<{ look: string; ratio: number }>;
 
 test.describe('without JavaScript', () => {
-  test.use({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
+  test.use({ javaScriptEnabled: false, viewport: PHONE_VIEWPORT });
 
   test('a hovered nav link changes and keeps its text contrast', async ({
     page,

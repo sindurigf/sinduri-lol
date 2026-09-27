@@ -367,10 +367,10 @@ test('the home link is named by its wordmark and nothing else', async ({
  * `page` on a link elsewhere tells a screen reader it is on that page. Walks
  * /blog/page/N too once ROUTES lists it, where the page number is the page.
  */
-test('every aria-current="page" link points at the page it is on', async ({
-  page,
-}) => {
-  for (const route of ROUTES) {
+for (const route of ROUTES) {
+  test(`${route}: every aria-current="page" link points at the page it is on`, async ({
+    page,
+  }) => {
     await page.goto(route);
     const here = new URL(page.url()).pathname;
     const claimed = await page
@@ -382,5 +382,5 @@ test('every aria-current="page" link points at the page it is on', async ({
       claimed.filter((path) => path !== here),
       `${here} announces another URL as the current page`,
     ).toEqual([]);
-  }
-});
+  });
+}

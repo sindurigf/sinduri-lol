@@ -1,5 +1,6 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
+import { DESKTOP_VIEWPORT } from './wcag';
 
 /** A pressed control drops its shadow, and moves only without reduced motion. `moves` carries the shadow. */
 interface Pressable {
@@ -120,7 +121,7 @@ const pressLook = (page: Page, selector: string) =>
 test.describe('a press is drawn', () => {
   for (const p of PRESSABLE) {
     test(`${p.name} looks different pressed than hovered`, async ({ page }) => {
-      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.setViewportSize(DESKTOP_VIEWPORT);
       await gotoSettled(page, p.route);
       await page.locator(p.control).first().hover();
       const hovered = await pressLook(page, p.moves);
@@ -138,7 +139,7 @@ test.describe('a press is drawn', () => {
       page,
     }) => {
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.setViewportSize(DESKTOP_VIEWPORT);
       await gotoSettled(page, p.route);
       await pressCentre(page, p.control);
       expect(await translateOf(page, p.moves)).toEqual([0, 0]);
@@ -158,7 +159,7 @@ test.describe('a press is drawn', () => {
 test.describe('a press on the edge still clicks', () => {
   for (const p of PRESSABLE) {
     test(p.name, async ({ page }) => {
-      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.setViewportSize(DESKTOP_VIEWPORT);
       await gotoSettled(page, p.route);
       const el = page.locator(p.control).first();
       await el.evaluate((node) => {
@@ -197,7 +198,7 @@ test.describe('a press on the edge still clicks', () => {
 test('a focused gold primary keeps its inner ring when pressed', async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.setViewportSize(DESKTOP_VIEWPORT);
   await gotoSettled(page, '/contact');
   const button = page.locator('main .surface-gold .btn-gold-primary').first();
   await button.focus();

@@ -2,6 +2,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from './test';
 import { VIDEO_FIXTURE_NAME } from '../playwright.worker.config';
+import { wranglerConfig } from './source';
 import {
   UNSATISFIABLE,
   WHOLE_FILE,
@@ -13,7 +14,6 @@ import {
   serveVideo,
   VIDEO_PATH_PREFIX,
 } from '../src/lib/video-range';
-import ts from 'typescript';
 
 /*
  * Safari and iOS need a 206 for a Range before playing video; Workers static assets
@@ -105,8 +105,13 @@ test.describe('serveVideo, against an in-memory file', () => {
   /* Streamed in pieces, as the ASSETS binding does, so offsets cross chunks. */
   const ASSET_CHUNK = 64;
 
-  // Node lacks both Worker globals: __VIDEO_SIZES__ and FixedLengthStream.
+  // Node lacks both Worker globals; restored after, as later specs share this process.
+  const WORKER_GLOBALS = ['__VIDEO_SIZES__', 'FixedLengthStream'] as const;
+  const saved = new Map<string, PropertyDescriptor | undefined>();
   test.beforeAll(() => {
+    for (const name of WORKER_GLOBALS) {
+      saved.set(name, Object.getOwnPropertyDescriptor(globalThis, name));
+    }
     Object.assign(globalThis, {
       __VIDEO_SIZES__: { '/videos/fake.mp4': SIZE },
       FixedLengthStream: class {
@@ -118,6 +123,12 @@ test.describe('serveVideo, against an in-memory file', () => {
         }
       },
     });
+  });
+  test.afterAll(() => {
+    for (const [name, descriptor] of saved) {
+      if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+      else Reflect.deleteProperty(globalThis, name);
+    }
   });
 
   const assets = {
@@ -273,11 +284,9 @@ test.describe('video routing', () => {
   });
 
   test('wrangler.jsonc runs the Worker first for the video path', () => {
-    const { config, error } = ts.parseConfigFileTextToJson(
-      'wrangler.jsonc',
-      readFileSync('wrangler.jsonc', 'utf8'),
-    );
-    expect(error, 'wrangler.jsonc does not parse').toBeUndefined();
+    const config = wranglerConfig<{
+      assets?: { run_worker_first?: string[] };
+    }>();
     expect(config.assets?.run_worker_first ?? []).toContain(
       `${VIDEO_PATH_PREFIX}*`,
     );

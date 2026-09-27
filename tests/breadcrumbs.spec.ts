@@ -8,6 +8,7 @@ import {
   builtHtml,
 } from './routes';
 import { NODE } from './tags';
+import { LD_JSON } from './html';
 
 /*
  * The JSON-LD BreadcrumbList (src/lib/structured-data.ts) must be the visible
@@ -44,8 +45,7 @@ const visibleTrail = (html: string): Crumb[] | null => {
 };
 
 const breadcrumbList = (html: string): Crumb[] | null => {
-  const block =
-    /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html);
+  const block = LD_JSON.exec(html);
   const graph = block
     ? (JSON.parse(block[1]!)['@graph'] as Record<string, unknown>[])
     : [];

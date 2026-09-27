@@ -36,9 +36,10 @@ const coverage = base.extend<{ collectCoverage: void }>({
       if (browserName !== 'chromium') return use();
       await page.coverage.startJSCoverage({ resetOnNavigation: false });
       await use();
+      // A closed page rejects stopJSCoverage; it and a page never navigated add nothing.
+      if (page.isClosed()) return;
       const entries = await page.coverage.stopJSCoverage();
-      // A test that closed its own page, or never navigated, has nothing to add.
-      if (Array.isArray(entries) && entries.length > 0) {
+      if (entries.length > 0) {
         await addCoverageReport(entries, testInfo);
       }
     },

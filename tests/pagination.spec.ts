@@ -1,9 +1,14 @@
 import { expect, test } from './test';
-import { pageCount, POSTS_PER_PAGE, postsOnPage } from '../src/lib/pagination';
+import {
+  pageCount,
+  POSTS_PER_PAGE,
+  postsOnPage,
+  readPostsPerPage,
+} from '../src/lib/pagination';
 import { indexPageHref } from '../src/lib/paths';
 import { NODE } from './tags';
 
-/* The /blog pager, which the build does not render until a tenth post. */
+/* The /blog pager's arithmetic; tests/blog-pages.spec.ts renders it. */
 const posts = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
 
 test('counts pages, never fewer than one', NODE, () => {
@@ -38,4 +43,15 @@ test('puts every post on exactly one page, in order', NODE, () => {
 test('links page one to /blog/ and later pages under /blog/page/', NODE, () => {
   expect(indexPageHref(1)).toBe('/blog/');
   expect(indexPageHref(2)).toBe('/blog/page/2/');
+});
+
+test('takes a page size override only as a positive whole number', NODE, () => {
+  expect(readPostsPerPage(undefined)).toBe(POSTS_PER_PAGE);
+  expect(readPostsPerPage('')).toBe(POSTS_PER_PAGE);
+  expect(readPostsPerPage('3')).toBe(3);
+  for (const bad of ['0', '-1', '1.5', '1e1', ' 2', 'nine']) {
+    expect(() => readPostsPerPage(bad), `accepted ${bad}`).toThrow(
+      /POSTS_PER_PAGE/,
+    );
+  }
 });

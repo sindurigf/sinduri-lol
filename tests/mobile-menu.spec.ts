@@ -47,6 +47,26 @@ test.describe('mobile menu at 320px', () => {
     await expect(trigger, 'focus should return to the trigger').toBeFocused();
   });
 
+  test('its Close button closes it, returns focus and unlocks page scroll', async ({
+    page,
+  }) => {
+    await gotoSettled(page, '/');
+    const trigger = page.getByRole('button', { name: /menu/i });
+    await trigger.click();
+    const panel = page.getByRole('dialog');
+    await expect(panel).toBeVisible();
+
+    await panel.getByRole('button', { name: 'Close' }).click();
+
+    await expect(panel, 'Close left the menu open').toBeHidden();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger, 'focus should return to the trigger').toBeFocused();
+    expect(
+      await page.evaluate(() => document.body.style.overflow),
+      'the page stays unscrollable after the menu closed',
+    ).toBe('');
+  });
+
   /*
    * Keyboard only. Tab past the last control reaches the browser UI, where
    * activeElement is body, so the walk ends there instead of failing.

@@ -1,7 +1,8 @@
 import { expect, test, type Page } from './test';
 import { NON_TEXT, PAGE_HELPERS } from './contrast';
 import { gotoSettled } from './settle';
-import { FOCUSABLE_SELECTOR } from './wcag';
+import { FOCUSABLE_SELECTOR, NARROW_WIDTH } from './wcag';
+import { tabWalk } from './tab-walk';
 import { SAMPLED_ROUTES } from './routes';
 
 /**
@@ -10,7 +11,7 @@ import { SAMPLED_ROUTES } from './routes';
  * `scroll-padding-top` on `html`: WebKit ignores `scroll-margin-top` on text inputs.
  */
 const WIDTHS = [
-  { width: 305, height: 720, note: '400% zoom, classic scrollbar' },
+  { width: NARROW_WIDTH, height: 720, note: '400% zoom, classic scrollbar' },
   { width: 1280, height: 900, note: 'desktop' },
 ] as const;
 
@@ -35,34 +36,12 @@ interface Stop {
   probed: number;
   /** What was on top, if anything. */
   by: string | null;
-  /** True when this element has already been focused during this walk. */
-  repeat: boolean;
-  /** `<video controls>` holds one tab stop per native control, all reported as the element. */
-  inMedia: boolean;
   hasRing: boolean;
   outline: string;
   /** The ring measured against what is painted in the offset gap. */
   ratio: number | null;
   behind: string | null;
 }
-
-const FOCUS_VISIT = `
-    /* Identity, not description: two prose links with the same text collide on a string. */
-    const visitFocused = (el) => {
-      const walkState = window.__focusWalk;
-      if (walkState === undefined) {
-        throw new Error(
-          'resetWalk was not called before this walk.',
-        );
-      }
-      const inMedia =
-        el.matches('video[controls], audio[controls]') &&
-        walkState.visited[walkState.visited.length - 1] === el;
-      const repeat = walkState.visited.includes(el);
-      if (!repeat) walkState.visited.push(el);
-      return { inMedia, repeat };
-    };
-`;
 
 const FOCUS_LABEL = `
     /* Not \`describe\`: PAGE_HELPERS declares one, and a duplicate const is a SyntaxError. */
@@ -136,21 +115,14 @@ const FOCUS_RING = `
 `;
 
 /** Read while focused: an outline read after blur is the resting value. */
-const readFocused = (page: Page): Promise<Stop | null> =>
+const readFocused = (page: Page): Promise<Stop> =>
   page.evaluate(`(() => {
     ${PAGE_HELPERS}
-    ${FOCUS_VISIT}
     ${FOCUS_LABEL}
     ${FOCUS_PROBE}
     ${FOCUS_RING}
 
     const el = document.activeElement;
-    if (el === null || el === document.body || el === document.documentElement) {
-      return null;
-    }
-
-    const { inMedia, repeat } = visitFocused(el);
-
     const rect = el.getBoundingClientRect();
     const style = getComputedStyle(el);
 
@@ -164,8 +136,6 @@ const readFocused = (page: Page): Promise<Stop | null> =>
       : { ringRatio: null, ringBehind: null };
 
     return {
-      repeat,
-      inMedia,
       selector: label(el),
       text: (el.textContent ?? '').trim().replace(/\\s+/g, ' ').slice(0, 36),
       covered,
@@ -177,7 +147,7 @@ const readFocused = (page: Page): Promise<Stop | null> =>
       ratio: ringRatio,
       behind: ringBehind,
     };
-  })()`) as Promise<Stop | null>;
+  })()`) as Promise<Stop>;
 
 /**
  * `keyboard.press` resolves before focus scrolling settles, so probing races it
@@ -209,13 +179,6 @@ const settleScroll = (page: Page): Promise<void> =>
     });
   }, SETTLE_FRAMES);
 
-/** Start a fresh identity list. One per walk, never shared between them. */
-const resetWalk = (page: Page): Promise<void> =>
-  page.evaluate(() => {
-    (window as unknown as { __focusWalk: { visited: Element[] } }).__focusWalk =
-      { visited: [] };
-  });
-
 interface Coverage {
   focusable: number;
   visited: number;
@@ -231,9 +194,7 @@ interface Coverage {
  */
 const walkCoverage = (page: Page, selector: string): Promise<Coverage> =>
   page.evaluate((sel) => {
-    const visited =
-      (window as unknown as { __focusWalk?: { visited: Element[] } })
-        .__focusWalk?.visited ?? [];
+    const visited = window.__tabWalk?.visited ?? [];
 
     const describe = (el: Element): string => {
       const id = el.id ? `#${el.id}` : '';
@@ -262,32 +223,13 @@ const walkCoverage = (page: Page, selector: string): Promise<Coverage> =>
     };
   }, selector);
 
-/** Ends when focus returns to an element this walk already visited. */
-const walk = async (page: Page, key: 'Tab' | 'Shift+Tab'): Promise<Stop[]> => {
-  await resetWalk(page);
-  const stops: Stop[] = [];
-
-  for (let i = 0; i < MAX_STOPS; i += 1) {
-    await settleScroll(page);
-    const stop = await readFocused(page);
-
-    /* Still stepping through a media player's own controls. */
-    if (stop?.inMedia) {
-      await page.keyboard.press(key);
-      continue;
-    }
-
-    /* Focus fell out of the document, or came round to somewhere it has been. */
-    if (stop === null || stop.repeat) return stops;
-
-    stops.push(stop);
-    await page.keyboard.press(key);
-  }
-
-  throw new Error(
-    `the ${key} walk hit ${MAX_STOPS} stops without coming round: a focus trap, or raise MAX_STOPS.`,
-  );
-};
+/** Stops until focus returns to an element this walk already visited. */
+const walk = (page: Page, key: 'Tab' | 'Shift+Tab'): Promise<Stop[]> =>
+  tabWalk(page, () => readFocused(page), {
+    key,
+    max: MAX_STOPS,
+    settle: () => settleScroll(page),
+  });
 
 const report = (stops: Stop[]): string =>
   stops

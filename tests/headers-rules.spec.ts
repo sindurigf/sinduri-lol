@@ -37,6 +37,23 @@ const REQUIRED_HEADERS = [
   'strict-transport-security',
   'referrer-policy',
   'x-content-type-options',
+  'x-frame-options',
+  'permissions-policy',
+] as const;
+
+/* Pinned, so weakening one fails: `unsafe-url` would send full URLs off-site. */
+const PINNED_HEADERS = {
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  'x-frame-options': 'DENY',
+} as const;
+
+/** Features the site never uses, each denied to every origin with `()`. */
+const DENIED_FEATURES = [
+  'camera',
+  'microphone',
+  'geolocation',
+  'payment',
+  'usb',
 ] as const;
 
 /** 180 days, pinned exactly: browsers remember HSTS for `max-age`. */
@@ -308,6 +325,24 @@ test.describe('security headers as declared and served', NODE, () => {
     }
 
     expect(headers.get('x-content-type-options')).toBe('nosniff');
+  });
+
+  test('the referrer, framing and feature policies keep their secure values', () => {
+    for (const [name, value] of Object.entries(PINNED_HEADERS)) {
+      expect(headers.get(name), `${name} was weakened or removed`).toBe(value);
+    }
+
+    const allowlists = new Map(
+      (headers.get('permissions-policy') ?? '')
+        .split(',')
+        .map((entry) => entry.trim().split('=') as [string, string]),
+    );
+    for (const feature of DENIED_FEATURES) {
+      expect(
+        allowlists.get(feature),
+        `Permissions-Policy no longer denies ${feature} to every origin`,
+      ).toBe('()');
+    }
   });
 
   /**
