@@ -470,7 +470,8 @@ upgrade-insecure-requests
   `/_astro/`, Umami vendored under `/vendor/`, no embeds, no `data:` URIs, Vue
   runtime-only build.
 - `connect-src` names Umami's collector; `tests/headers-rules.spec.ts` asserts it
-  equals `UMAMI_HOST_URL` in `src/lib/analytics.ts`. See
+  equals `UMAMI_HOST_URL` in `src/lib/analytics.ts`, so a collector host change
+  updates both in `public/_headers` and `analytics.ts` together. See
   [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#umami).
 - `vite.build.assetsInlineLimit: 0` so no script is inlined.
 - `form-action 'self'`, never `'none'`: `'none'` silently blocks the contact

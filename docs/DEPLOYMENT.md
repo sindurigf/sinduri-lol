@@ -88,8 +88,8 @@ the diff. Then, in one commit:
 3. Update `UMAMI_VENDORED_ON`, and `/privacy` if what is sent changed.
 4. Run the suite, then `npm run check:umami` again for exit 0.
 
-A collector host change updates `UMAMI_HOST_URL` and `connect-src` in
-`public/_headers` together; `tests/headers-rules.spec.ts` fails until both match.
+A collector host change also changes the CSP:
+[ARCHITECTURE.md](../ARCHITECTURE.md#the-csp).
 
 ## Hostnames
 
