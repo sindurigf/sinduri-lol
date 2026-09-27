@@ -191,6 +191,17 @@ npm run check:pdf -- public/talks/<deck>.pdf
 
 - Prints the built slideshow to `public/talks/<deck>.pdf`, one slide a page,
   and tags it with `scripts/tag-talk-pdf.py`. Refuses a stale build.
+- `tag-talk-pdf.py` fixes what veraPDF fails in Chromium's tagged print:
+
+  | PDF/UA-1 rule      | Fix                                                                                                 |
+  | ------------------ | --------------------------------------------------------------------------------------------------- |
+  | 7.1-3              | Untagged paths and text become `/Artifact`; untagged text must equal the page's `aria-hidden` count |
+  | 7.1-5              | Role map `Strong` to `Span`                                                                         |
+  | 7.2-20             | `LI` content beside `Lbl` moves into an `LBody`                                                     |
+  | 7.18.1-2, 7.18.5-2 | Link annotations get `/Contents` from the page's link text                                          |
+  | 7.1-8              | XMP title, language and PDF/UA identifier                                                           |
+  | Not a rule         | Bookmarks are retitled from the page: Chromium drops spaces at line breaks                          |
+
 - Update the size and page count wherever the PDF is linked;
   `tests/slides.spec.ts` fails until they match.
 - Reprint after changing a slide; `tests/talk-pdf.spec.ts` fails when
@@ -224,6 +235,11 @@ npm run publish:cv -- ~/Downloads/export.pdf
 - Untags the photo, which stays drawn as an artifact
   ([decorative](../ARCHITECTURE.md#content-notes)), and refuses anything
   tagged inside an artifact.
+- Makes invisible Figures (`/Alt ()`, which veraPDF fails) artifacts.
+- Joins the H1s into one, keeps H2 and turns H3 to H6 into P: only H1 and H2
+  are stable across exports.
+- Removes identifying metadata and the German language tag.
+- Refuses an export that shows a phone number, before writing anything.
 - Writes `public/sinduri-guntupalli-cv.pdf` only if the result renders like
   the export (anti-aliasing aside), extracts the same text, has one H1 and the
   six expected H2s drawing their own labels, and passes PDF/UA-1

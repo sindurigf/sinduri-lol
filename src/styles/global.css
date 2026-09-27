@@ -262,10 +262,7 @@
    */
   --text-footer-name: clamp(2rem, 3vw, 2.5rem);
   --text-footer-name--line-height: 1;
-  /*
-   * Smaller than the h1 or h2 it labels at both ends. pink-text, AAA at any
-   * size.
-   */
+  /* The glyph in a homepage category tile; colours in src/lib/categories.ts. */
   --text-section-number: clamp(1.3125rem, 2.4vw, 1.75rem);
   --text-section-number--line-height: 1;
 
@@ -370,9 +367,8 @@
   --gold-marker-pad: 4px;
 
   /*
-   * Homepage hero padding, gap, sticker inset, and the clearance the stickers
-   * keep above the pause control (2.5rem button + 1.5rem offset + 1rem). Read
-   * only by `.hero` and its parts.
+   * Homepage hero padding, gap and inset. `--hero-pad-block` also spaces a
+   * page's opening slab below the header (layout.css).
    */
   --hero-pad-block: clamp(12px, 3svh, 144px);
   --hero-gap: clamp(10px, 2.2svh, 40px);

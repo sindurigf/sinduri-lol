@@ -40,7 +40,7 @@ const TRAVEL_SLACK = 1;
 type StepResult = 'draw' | 'still' | 'rest';
 
 /** On-screen play time after waking before a cat naps. */
-export const NAP_AFTER_MS = 30_000;
+const NAP_AFTER_MS = 30_000;
 
 /** Distance from each card end the cat's origin keeps. */
 export const TRACK_MARGIN = 40;
@@ -186,7 +186,7 @@ export interface Colony {
 }
 
 /** Whether a move of this extent, played from `x` heading `dir`, keeps the cat within [min, max]. */
-export const fitsTrack = (
+const fitsTrack = (
   x: number,
   [back, forward]: readonly [number, number],
   dir: number,

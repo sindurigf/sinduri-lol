@@ -5,19 +5,7 @@
 
 Needs pikepdf (`apt install python3-pikepdf`) and poppler-utils; no Node
 library rewrites a structure tree without dropping tags. Not run in CI.
-
-Every export repeats Canva's defects, so every export is fixed:
-- Eleven invisible Figures become artifacts (`/Alt ()` fails veraPDF).
-- The photo becomes an artifact: the name H1 beside it says who it shows.
-- H1s join into one, H2 stays, H3 to H6 become P: only H1/H2 are stable.
-- Identifying metadata and the German language tag are removed.
-- An export that shows a phone number is refused before anything is written.
-
-- Artifact-wrapped forms with tagged text are drawn in the page stream, so
-  nothing is tagged inside an artifact and Firefox's viewer reads the structure.
-
-Unmeasured shapes stop the run; public/ is written only after verification,
-render comparison and check:pdf.
+What it fixes and checks: docs/DEVELOPMENT.md, "Publishing the CV".
 """
 
 import json

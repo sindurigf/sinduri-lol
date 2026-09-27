@@ -30,7 +30,7 @@ const BYTES_PER_KB = 1024;
 
 /*
  * Static faces for print only: variable Lexend becomes Type 3 fonts, whose
- * glyph warnings stall offline veraPDF past CI's 10-minute job.
+ * glyph warnings stall offline veraPDF past the CI job's timeout.
  */
 const PRINT_FONT = 'Lexend Print';
 const PRINT_WEIGHTS = [400, 900];

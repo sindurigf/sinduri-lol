@@ -18,11 +18,8 @@
   }
 
   /*
-   * Photo and message share one grid cell, so a message never moves the photo.
-   */
-  /*
-   * An explicit row so the image's `max-h-full` resolves against the figure; an
-   * auto row lets a portrait overflow its box.
+   * Photo and message share one explicit grid cell: a message never moves the
+   * photo, and `max-h-full` resolves (an auto row lets a portrait overflow).
    */
   .photo-viewer-figure {
     @apply m-0 grid min-h-0 place-items-center overflow-hidden;

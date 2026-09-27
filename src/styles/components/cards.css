@@ -10,11 +10,6 @@
   }
 
   /*
-   * Cards in a `.card-block` are one object: no gaps, one pink shadow. Opt-in,
-   * not `:has(.card)`: layout gaps elsewhere feed image `sizes`. Rules live in
-   * @layer utilities to beat `gap-grid`.
-   */
-  /*
    * Solid card: a light third surface where only `background` passes (14.42),
    * so everything inside is `background`. Holds text, never a form. In a
    * `.card-block` the raised-brick rule gives it an edge and shadow.
@@ -235,10 +230,7 @@
     @apply mt-8 max-w-2xl text-standfirst font-normal text-pretty;
   }
 
-  /*
-   * A talk cover's subtitle and speaker as separate blocks
-   * (src/pages/talks/[deck].astro).
-   */
+  /* A talk cover's subtitle and speaker as separate blocks (TalkSlide.astro). */
   .talk-cover > * + * {
     @apply mt-4;
   }

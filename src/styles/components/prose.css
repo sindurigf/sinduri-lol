@@ -41,13 +41,9 @@
   }
 
   /*
-   * A link-only list item, marked by src/plugins/link-list-item.mjs because CSS
-   * cannot tell it from an inline link (SC 2.5.8's inline exception).
-   * `min-height` makes tighter leading fail tests/target-size.spec.ts.
-   */
-  /*
-   * Keeps the bullet on a wrapped link's first line: an inline-block's baseline
-   * is its last line.
+   * Marked by src/plugins/link-list-item.mjs, as CSS cannot tell it from an
+   * inline link (SC 2.5.8, tests/target-size.spec.ts). `top` keeps the bullet
+   * on a wrapped link's first line: an inline-block's baseline is its last.
    */
   .prose li.link-item a {
     display: inline-block;
