@@ -33,6 +33,15 @@ npx wrangler d1 migrations apply sinduri-lol --local
 npm run preview
 ```
 
+A schema change is a new, numbered file in `migrations/`:
+
+```sh
+npx wrangler d1 migrations create sinduri-lol <name>
+```
+
+Apply it locally with the `--local` command above; `test:worker` applies every
+migration before it runs. Production: [DEPLOYMENT.md](DEPLOYMENT.md#d1).
+
 What happens without the `CONTACT_NOTIFY_TO` secret:
 [DEPLOYMENT.md](DEPLOYMENT.md#contact-form-email).
 
