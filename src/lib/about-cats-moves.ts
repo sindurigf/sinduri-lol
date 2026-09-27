@@ -90,11 +90,15 @@ const POSES = {
   /* Curled up: back rounded, chin down on the paws, tail wrapped to the chest. */
   sleep: derive(LOAF, {
     ba: -4,
-    by: 9,
+    by: 11,
     bt: 24,
     sq: 0.86,
+    fN: [12, 11],
+    fF: [9, 11],
+    hN: [-9, 11],
+    hF: [-6, 11],
     hx: 13,
-    hy: 5,
+    hy: -4.5,
     hr: 30,
     eyes: 0,
     ears: 1,
@@ -134,10 +138,11 @@ const POSES = {
   belly: derive(BASE, {
     rot: 180,
     by: 12,
-    fN: [11, 15],
-    fF: [6, 17],
-    hN: [-11, 15],
-    hF: [-6, 17],
+    /* Paws well clear of the belly, so they read as up in the air. */
+    fN: [12, 24],
+    fF: [6, 26],
+    hN: [-12, 24],
+    hF: [-6, 26],
     hx: 8,
     hy: 3,
     hr: 180,
@@ -442,8 +447,29 @@ const along = (
  * the 180° roll would stand the cat on its head halfway.
  */
 const FLOP_HOP = 4;
-const flopTo = (from: PoseName, to: PoseName, x = 0): Step[] => [
-  step(200, from, { x, by: 9, sq: 0.92 }, 'in'),
+/** Body height before the roll; upright poses keep their paws on the ground there. */
+const FLOP_LOW = 9;
+const groundedAt = (name: PoseName, by: number): Partial<Pose> =>
+  POSES[name].rot !== 0
+    ? {}
+    : Object.fromEntries(
+        (['fN', 'fF', 'hN', 'hF'] as const).map((k) => [
+          k,
+          [POSES[name][k][0], by],
+        ]),
+      );
+const flopTo = (
+  from: PoseName,
+  to: PoseName,
+  x = 0,
+  over: Partial<Pose> = {},
+): Step[] => [
+  step(
+    200,
+    from,
+    { x, by: FLOP_LOW, sq: 0.92, ...groundedAt(from, FLOP_LOW), ...over },
+    'in',
+  ),
   step(200, to, { x, sq: 0.92 }, 'snap'),
   step(300, to, { x }, 'out'),
 ];
