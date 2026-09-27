@@ -3,20 +3,9 @@
  * about-cats-moves.ts; AboutCats.vue owns the frame loop. Units are CSS px,
  * y down, the ground at y = 0 under the cat's origin.
  */
-import type { Pose } from './about-cats-moves';
+import type { CatId, Pose, PropKind, PropState } from './about-cats-types';
 
-export type CatId = 'minerva' | 'hela' | 'rudra';
-
-export type PropKind =
-  'toy' | 'cup' | 'post' | 'fly' | 'box' | 'yarn' | 'blanket';
-
-export interface PropState {
-  kind: PropKind;
-  x: number;
-  y: number;
-  r: number;
-  o: number;
-}
+export type { CatId, PropKind, PropState };
 
 const NS = 'http://www.w3.org/2000/svg';
 const D = Math.PI / 180;
@@ -69,7 +58,7 @@ interface Point {
 }
 const pt = (x: number, y: number): Point => ({ x, y });
 const f = (n: number): string => n.toFixed(2);
-const clamp = (v: number, lo: number, hi: number): number =>
+export const clamp = (v: number, lo: number, hi: number): number =>
   Math.max(lo, Math.min(hi, v));
 
 const el = <K extends keyof SVGElementTagNameMap>(
@@ -132,6 +121,9 @@ interface Layer {
 
 export interface CatRig {
   id: CatId;
+  /** Behind the cat, and over it (a box's front). */
+  props: SVGGElement;
+  propsFront: SVGGElement;
   root: SVGGElement;
   hit: SVGRectElement;
   zz: SVGPathElement;
@@ -166,6 +158,8 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
     { rx: HEAD_RX, ry: HEAD_RY },
     el('clipPath', { id: `${key}-h` }, defs),
   );
+  /* Props behind the cat, then the cat, then props in front of it. */
+  const props = el('g', {}, svg);
   const root = el('g', { class: 'cat-hit' }, svg);
   const hit = el(
     'rect',
@@ -298,8 +292,12 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
     root,
   );
 
+  const propsFront = el('g', {}, svg);
+
   return {
     id,
+    props,
+    propsFront,
     root,
     hit,
     zz,

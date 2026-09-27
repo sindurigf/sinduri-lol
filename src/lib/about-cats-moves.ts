@@ -3,41 +3,15 @@
  * modifiers; x runs forward in the direction the cat faces when it starts, and
  * `face: -1` means turned round. about-cats.ts places moves on a track.
  */
-import type { CatId, PropKind, PropState } from './about-cats-rig';
+import type {
+  CatId,
+  Pair,
+  Pose,
+  PropKind,
+  PropState,
+} from './about-cats-types';
 
-type Pair = [number, number];
-
-export interface Pose {
-  x: number;
-  y: number;
-  face: number;
-  /** Body angle in degrees, front up. */
-  ba: number;
-  /** Body centre's height above the ground. */
-  by: number;
-  /** Body thickness. */
-  bt: number;
-  /** Squash (below 1) and stretch (above 1). */
-  sq: number;
-  haunch: number;
-  /** Paw targets from the body centre: near and far front, near and far hind. */
-  fN: Pair;
-  fF: Pair;
-  hN: Pair;
-  hF: Pair;
-  hx: number;
-  hy: number;
-  hr: number;
-  /** Tail base angle, curl per segment, and tip twitch amplitude. */
-  ta: number;
-  tc: number;
-  tw: number;
-  eyes: number;
-  ears: number;
-  rot: number;
-  mouth: number;
-  zz: number;
-}
+export type { Pose };
 
 const BASE: Pose = {
   x: 0,
@@ -105,7 +79,7 @@ const LOAF = derive(BASE, {
   tc: -16,
 });
 
-export const POSES = {
+const POSES = {
   stand: BASE,
   sit: SIT,
   loaf: LOAF,
@@ -237,7 +211,7 @@ export const POSES = {
   }),
 } satisfies Record<string, Pose>;
 
-export type PoseName = keyof typeof POSES;
+type PoseName = keyof typeof POSES;
 
 export const pose = (name: PoseName, over: Partial<Pose> = {}): Pose =>
   derive(POSES[name], over);
@@ -258,7 +232,7 @@ export const mixPose = (a: Pose, b: Pose, k: number): Pose => {
   return out;
 };
 
-export const EASE = {
+const EASE = {
   linear: (k: number) => k,
   inOut: (k: number) => (k < 0.5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2),
   out: (k: number) => 1 - (1 - k) ** 3,
@@ -268,15 +242,15 @@ export const EASE = {
   snap: (k: number) => (k < 0.5 ? 0 : 1),
 } as const;
 
-export type Ease = keyof typeof EASE;
+type Ease = keyof typeof EASE;
 
-export interface Step {
+interface Step {
   ms: number;
   pose: Pose;
   ease: Ease;
 }
 
-export interface Mod {
+interface Mod {
   from: number;
   to: number;
   apply: (p: Pose, elapsed: number, progress: number) => void;
@@ -333,7 +307,7 @@ const wiggle = (from: number, to: number): Mod =>
     p.hN[0] += 1.5 * Math.sin(s / 45);
     p.tw = 6;
   });
-export const blinkAt = (at: number): Mod =>
+const blinkAt = (at: number): Mod =>
   between(at, at + 160, (p) => {
     p.eyes = 0;
   });
@@ -361,7 +335,7 @@ const earFlick = (at: number): Mod =>
   });
 
 /* Arcs in px; with them the tallest move stays under --spacing-cat-band (tests/about-cats.spec.ts). */
-export const JUMP_HEIGHT = 39;
+const JUMP_HEIGHT = 39;
 const POUNCE_HEIGHT = 34;
 const LEAP_HEIGHT = 27;
 const HOP_HEIGHT = 30;
@@ -823,7 +797,7 @@ export const CAT_WEIGHTS: Record<CatId, Partial<Record<MoveName, number>>> = {
 const TURN_RISE_MS = 160;
 const TURN_FLIP_MS = 140;
 const TURN_LAND_MS = 200;
-export const TURN_MS = TURN_RISE_MS + TURN_FLIP_MS + TURN_LAND_MS;
+const TURN_MS = TURN_RISE_MS + TURN_FLIP_MS + TURN_LAND_MS;
 const TURN_HOP = 6;
 
 export const withTurn = (move: Move, from: Pose): Move => {
@@ -892,7 +866,7 @@ const EXTENT_STEP_MS = 1000 / 60;
 
 /** Extent of a move's path, back and forward from its start, for track checks. */
 /** Sampled from the drawn path, so eases and modifiers count, not just the steps. */
-export const extent = (move: Move): [number, number] => {
+const extent = (move: Move): [number, number] => {
   const start = pose('sit');
   const length = duration(move);
   let back = 0;
@@ -905,7 +879,7 @@ export const extent = (move: Move): [number, number] => {
   return [back, forward];
 };
 
-export const sample = (steps: Step[], start: Pose, t: number): Pose => {
+const sample = (steps: Step[], start: Pose, t: number): Pose => {
   let from = start;
   let at = 0;
   for (const s of steps) {

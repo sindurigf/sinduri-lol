@@ -257,24 +257,8 @@ onMounted(async () => {
   for (const cat of props.cats) {
     const svg = svgs.get(cat.id);
     if (!svg) continue;
-    const propLayer = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'g',
-    );
-    svg.append(propLayer);
     const rig = createCatRig(svg, cat.id);
-    const frontLayer = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'g',
-    );
-    svg.append(frontLayer);
-    catSpots.push({
-      id: cat.id,
-      rig,
-      props: propLayer,
-      propsFront: frontLayer,
-      ...PLACES[cat.id],
-    });
+    catSpots.push({ id: cat.id, rig, ...PLACES[cat.id] });
   }
   colony = createColony(catSpots, (id, mood) => {
     moods.value = { ...moods.value, [id]: mood };

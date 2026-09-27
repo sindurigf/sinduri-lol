@@ -20,6 +20,7 @@ import {
   type Pose,
 } from './about-cats-moves';
 import {
+  clamp,
   createProp,
   renderCat,
   settleTail,
@@ -85,9 +86,6 @@ export interface CatInfo {
 export interface CatSpot {
   id: CatRig['id'];
   rig: CatRig;
-  props: SVGGElement;
-  /** Props drawn over the cat, such as a box's front. */
-  propsFront: SVGGElement;
   /** Starting place along the track, 0 to 1. */
   start: number;
   /** Starting direction: 1 faces right. */
@@ -132,8 +130,6 @@ interface CatState extends CatSpot {
 }
 
 const rand = (lo: number, hi: number): number => lo + Math.random() * (hi - lo);
-const clamp = (v: number, lo: number, hi: number): number =>
-  Math.max(lo, Math.min(hi, v));
 
 const pickWeighted = (weights: Partial<Record<MoveName, number>>): MoveName => {
   const entries = Object.entries(weights) as [MoveName, number][];
@@ -272,7 +268,7 @@ export const createColony = (
     from.face = from.face * dir;
     if (from.face < 0) move = withTurn(move, from);
     const prop = move.prop
-      ? createProp(cat.props, cat.propsFront, move.prop)
+      ? createProp(cat.rig.props, cat.rig.propsFront, move.prop)
       : undefined;
     cat.playing = {
       move,
@@ -500,7 +496,7 @@ export const createColony = (
         const first = cat.width === 0;
         cat.width = size.width;
         cat.groundY = size.height;
-        for (const layer of [cat.props, cat.propsFront])
+        for (const layer of [cat.rig.props, cat.rig.propsFront])
           layer.setAttribute('transform', `translate(0 ${size.height})`);
         cat.min = TRACK_MARGIN;
         cat.max = Math.max(cat.min, size.width - TRACK_MARGIN - CONTROL_ROOM);
