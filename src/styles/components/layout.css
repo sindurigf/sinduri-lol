@@ -54,11 +54,15 @@
   }
 
   /*
-   * Carries the 24px gap to the title instead of the teaser, so from `lg` it
-   * starts level with the h1 (whose `mt-6` is the same 24).
+   * Title to teaser when stacked. From `lg` it starts level with the h1, both
+   * 24px below the breadcrumb's `mb-6`.
    */
   .post-slab-aside {
     @apply mt-6;
+
+    @media (width >= 64rem) {
+      @apply mt-0;
+    }
   }
 
   /*
