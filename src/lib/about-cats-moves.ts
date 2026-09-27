@@ -3,41 +3,15 @@
  * modifiers; x runs forward in the direction the cat faces when it starts, and
  * `face: -1` means turned round. about-cats.ts places moves on a track.
  */
-import type { PropKind, PropState } from './about-cats-rig';
+import type {
+  CatId,
+  Pair,
+  Pose,
+  PropKind,
+  PropState,
+} from './about-cats-types';
 
-type Pair = [number, number];
-
-export interface Pose {
-  x: number;
-  y: number;
-  face: number;
-  /** Body angle in degrees, front up. */
-  ba: number;
-  /** Body centre's height above the ground. */
-  by: number;
-  /** Body thickness. */
-  bt: number;
-  /** Squash (below 1) and stretch (above 1). */
-  sq: number;
-  haunch: number;
-  /** Paw targets from the body centre: near and far front, near and far hind. */
-  fN: Pair;
-  fF: Pair;
-  hN: Pair;
-  hF: Pair;
-  hx: number;
-  hy: number;
-  hr: number;
-  /** Tail base angle, curl per segment, and tip twitch amplitude. */
-  ta: number;
-  tc: number;
-  tw: number;
-  eyes: number;
-  ears: number;
-  rot: number;
-  mouth: number;
-  zz: number;
-}
+export type { Pose };
 
 const BASE: Pose = {
   x: 0,
@@ -105,7 +79,7 @@ const LOAF = derive(BASE, {
   tc: -16,
 });
 
-export const POSES = {
+const POSES = {
   stand: BASE,
   sit: SIT,
   loaf: LOAF,
@@ -237,7 +211,7 @@ export const POSES = {
   }),
 } satisfies Record<string, Pose>;
 
-export type PoseName = keyof typeof POSES;
+type PoseName = keyof typeof POSES;
 
 export const pose = (name: PoseName, over: Partial<Pose> = {}): Pose =>
   derive(POSES[name], over);
@@ -258,7 +232,7 @@ export const mixPose = (a: Pose, b: Pose, k: number): Pose => {
   return out;
 };
 
-export const EASE = {
+const EASE = {
   linear: (k: number) => k,
   inOut: (k: number) => (k < 0.5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2),
   out: (k: number) => 1 - (1 - k) ** 3,
@@ -268,15 +242,15 @@ export const EASE = {
   snap: (k: number) => (k < 0.5 ? 0 : 1),
 } as const;
 
-export type Ease = keyof typeof EASE;
+type Ease = keyof typeof EASE;
 
-export interface Step {
+interface Step {
   ms: number;
   pose: Pose;
   ease: Ease;
 }
 
-export interface Mod {
+interface Mod {
   from: number;
   to: number;
   apply: (p: Pose, elapsed: number, progress: number) => void;
@@ -333,7 +307,7 @@ const wiggle = (from: number, to: number): Mod =>
     p.hN[0] += 1.5 * Math.sin(s / 45);
     p.tw = 6;
   });
-export const blinkAt = (at: number): Mod =>
+const blinkAt = (at: number): Mod =>
   between(at, at + 160, (p) => {
     p.eyes = 0;
   });
@@ -361,10 +335,12 @@ const earFlick = (at: number): Mod =>
   });
 
 /* Arcs in px; with them the tallest move stays under --spacing-cat-band (tests/about-cats.spec.ts). */
-export const JUMP_HEIGHT = 39;
+const JUMP_HEIGHT = 39;
 const POUNCE_HEIGHT = 34;
 const LEAP_HEIGHT = 27;
 const HOP_HEIGHT = 30;
+/** The scratching post stands this far ahead of the cat, clear of its chest. */
+const POST_GAP = 34;
 const YARN_BOUND_HEIGHT = 22;
 /* The yarn chase: a trot of 120px in 2.2 s, then a pounce. */
 const YARN_TROT = 120;
@@ -599,8 +575,8 @@ export const MOVES = {
   post: (): Move => ({
     /* A long scratch up a tall post, paws high, then a look at the work. */
     steps: [
-      step(600, 'rear', { fN: [14, -24], fF: [13, -14], hr: 0 }),
-      step(3000, 'rear', { fN: [14, -24], fF: [13, -14], hr: 0 }),
+      step(600, 'rear', { fN: [21, -24], fF: [19, -14], hr: 0 }),
+      step(3000, 'rear', { fN: [21, -24], fF: [19, -14], hr: 0 }),
       step(600, 'sit', { hr: -14 }),
       step(500, 'sit'),
     ],
@@ -612,7 +588,7 @@ export const MOVES = {
     ],
     prop: 'post',
     propAt: (t) => ({
-      ...still('post', 22),
+      ...still('post', POST_GAP),
       o: Math.min(1, t / 300, Math.max(0, (4700 - t) / 300)),
     }),
   }),
@@ -621,20 +597,20 @@ export const MOVES = {
       step(400, 'crouch'),
       step(140, 'crouch', { x: -2, sq: 0.9 }, 'in'),
       step(420, 'air', { x: 60 }, 'linear'),
-      step(200, 'crouch', { x: 66, y: -8 }, 'out'),
-      step(300, 'sit', { x: 66, y: -8 }),
-      step(1300, 'sit', { x: 66, y: -8, hr: -8 }),
-      step(160, 'crouch', { x: 66, y: -6 }, 'in'),
+      step(200, 'crouch', { x: 66, y: -5 }, 'out'),
+      step(400, 'loaf', { x: 66, y: -5 }),
+      step(1800, 'loaf', { x: 66, y: -5, hr: -6 }),
+      step(160, 'crouch', { x: 66, y: -5 }, 'in'),
       step(420, 'air', { x: 130 }, 'linear'),
       step(200, 'crouch', { x: 134, sq: 0.85 }, 'out'),
       step(500, 'sit', { x: 134 }),
     ],
-    mods: [arc(540, 960, 26), arc(2500, 2920, 26)],
+    mods: [arc(540, 960, 26), arc(3520, 3940, 26)],
     prop: 'box',
-    /* Under the sitting cat, whose head and chest show over the rim. */
+    /* A snug box under the resting cat: head and back show over the low rim. */
     propAt: (t) => ({
-      ...still('box', 72),
-      o: Math.min(1, t / 300, Math.max(0, (4040 - t) / 300)),
+      ...still('box', 70),
+      o: Math.min(1, t / 300, Math.max(0, (4640 - t) / 300)),
     }),
   }),
   /*
@@ -705,29 +681,112 @@ export const MOVES = {
 
 export type MoveName = keyof typeof MOVES;
 
-/** Relative weights; play in place outweighs getting about, which is only by leaps. */
-export const WEIGHTS: Partial<Record<MoveName, number>> = {
-  look: 5,
-  lie: 4,
-  stalk: 2,
-  pounce: 5,
-  bigJump: 4,
-  hop: 6,
-  stretch: 5,
-  knead: 5,
-  toy: 6,
-  knock: 3,
-  belly: 4,
-  fly: 6,
-  post: 4,
-  box: 5,
-  yarn: 6,
+/** Small play moves run this much slower than drawn, so each one can be watched. */
+const SLOW_PLAY = 1.5;
+const SLOW_MOVES: ReadonlySet<MoveName> = new Set([
+  'knead',
+  'toy',
+  'peek',
+  'knock',
+  'box',
+  'yarn',
+]);
+
+/** A move at `factor` of its speed, modifiers and prop included. */
+const slower = (move: Move, factor: number): Move => {
+  const propAt = move.propAt;
+  return {
+    ...move,
+    steps: move.steps.map((s) => ({ ...s, ms: s.ms * factor })),
+    mods: move.mods.map((mod) => ({
+      from: mod.from * factor,
+      to: mod.to * factor,
+      apply: (p, s, k) => mod.apply(p, s / factor, k),
+    })),
+    propAt: propAt && ((t) => propAt(t / factor)),
+  };
 };
 
-/** Hela hides behind her card now and then. */
-export const HELA_WEIGHTS: Partial<Record<MoveName, number>> = {
-  ...WEIGHTS,
-  peek: 8,
+/** The move a cat plays: small play moves slowed down. */
+export const moveToPlay = (name: MoveName): Move =>
+  SLOW_MOVES.has(name) ? slower(MOVES[name](), SLOW_PLAY) : MOVES[name]();
+
+/* Move factories are deterministic, so each name's extent is sampled once. */
+const extents = new Map<MoveName, readonly [number, number]>();
+
+/** Every move name, to warm moveExtent's cache before any is needed. */
+export const MOVE_NAMES = Object.keys(MOVES) as MoveName[];
+
+/** The extent of moveToPlay(name), computed on first use and then kept. */
+export const moveExtent = (name: MoveName): readonly [number, number] => {
+  const known = extents.get(name);
+  if (known) return known;
+  const found = extent(moveToPlay(name));
+  extents.set(name, found);
+  return found;
+};
+
+/*
+ * Relative weights per cat, so each reads as herself. Every play move stays
+ * possible for every cat, except peek, which is Hela's own: she hides behind her
+ * card. Sleep and wake come from the nap clock, not from these.
+ */
+export const CAT_WEIGHTS: Record<CatId, Partial<Record<MoveName, number>>> = {
+  /* The queen: watches, rests and grooms the blanket; rarely leaps. */
+  minerva: {
+    look: 12,
+    lie: 8,
+    stretch: 6,
+    knead: 6,
+    post: 5,
+    box: 5,
+    fly: 4,
+    toy: 3,
+    yarn: 3,
+    belly: 3,
+    knock: 3,
+    hop: 2,
+    pounce: 2,
+    bigJump: 2,
+    stalk: 1,
+  },
+  /* The conspirator: peeks, stalks and knocks the cup off. */
+  hela: {
+    peek: 9,
+    knock: 7,
+    stalk: 6,
+    pounce: 5,
+    look: 5,
+    box: 4,
+    fly: 4,
+    toy: 3,
+    yarn: 3,
+    hop: 3,
+    bigJump: 3,
+    post: 3,
+    knead: 3,
+    stretch: 3,
+    lie: 3,
+    belly: 2,
+  },
+  /* The baby: hops and chases every toy. */
+  rudra: {
+    hop: 9,
+    toy: 9,
+    yarn: 8,
+    fly: 7,
+    pounce: 5,
+    belly: 5,
+    bigJump: 4,
+    box: 4,
+    knead: 3,
+    post: 3,
+    stretch: 3,
+    look: 3,
+    lie: 2,
+    knock: 2,
+    stalk: 2,
+  },
 };
 
 /*
@@ -738,7 +797,7 @@ export const HELA_WEIGHTS: Partial<Record<MoveName, number>> = {
 const TURN_RISE_MS = 160;
 const TURN_FLIP_MS = 140;
 const TURN_LAND_MS = 200;
-export const TURN_MS = TURN_RISE_MS + TURN_FLIP_MS + TURN_LAND_MS;
+const TURN_MS = TURN_RISE_MS + TURN_FLIP_MS + TURN_LAND_MS;
 const TURN_HOP = 6;
 
 export const withTurn = (move: Move, from: Pose): Move => {
@@ -768,11 +827,20 @@ export const withTurn = (move: Move, from: Pose): Move => {
 const CREEP_SPEED = 45;
 const CREEP_MIN_MS = 300;
 const CREEP_READY_MS = 250;
+const SETTLE_BACK_MS = 400;
 
 /** Creeps `distance` ahead in a crouch first, so an edge move starts at the track end. */
-export const withApproach = (move: Move, distance: number): Move => {
-  if (distance < 1) return move;
+/*
+ * Also shuffles `settleBack` px back once the move is done, so a cat that crept
+ * past its track's end finishes on it again.
+ */
+export const withApproach = (
+  move: Move,
+  distance: number,
+  settleBack = 0,
+): Move => {
   const creep = Math.max(CREEP_MIN_MS, (distance / CREEP_SPEED) * 1000);
+  const last = move.steps.at(-1)?.pose.x ?? 0;
   const lead = CREEP_READY_MS + creep;
   const propAt = move.propAt;
   return {
@@ -784,6 +852,9 @@ export const withApproach = (move: Move, distance: number): Move => {
         ...s,
         pose: { ...clonePose(s.pose), x: s.pose.x + distance },
       })),
+      ...(settleBack > 0
+        ? [step(SETTLE_BACK_MS, 'sit', { x: distance + last - settleBack })]
+        : []),
     ],
     mods: [
       walking(CREEP_READY_MS, lead, 0.6),
@@ -802,18 +873,24 @@ export const withApproach = (move: Move, distance: number): Move => {
   };
 };
 
-/** Extent of a move's path, back and forward from its start, for track checks. */
-export const extent = (move: Move): [number, number] => {
+/** One 60fps frame, the step of extent's sampling. */
+const EXTENT_STEP_MS = 1000 / 60;
+
+/** A move's path back and forward from its start, for track checks: sampled from the drawn path, so eases and modifiers count. */
+const extent = (move: Move): [number, number] => {
+  const start = pose('sit');
+  const length = duration(move);
   let back = 0;
   let forward = 0;
-  for (const s of move.steps) {
-    back = Math.min(back, s.pose.x);
-    forward = Math.max(forward, s.pose.x);
+  for (let t = 0; t <= length + EXTENT_STEP_MS; t += EXTENT_STEP_MS) {
+    const x = poseAt(move, start, Math.min(t, length)).x;
+    back = Math.min(back, x);
+    forward = Math.max(forward, x);
   }
   return [back, forward];
 };
 
-export const sample = (steps: Step[], start: Pose, t: number): Pose => {
+const sample = (steps: Step[], start: Pose, t: number): Pose => {
   let from = start;
   let at = 0;
   for (const s of steps) {

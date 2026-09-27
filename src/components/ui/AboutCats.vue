@@ -7,7 +7,9 @@ import {
   ref,
   useTemplateRef,
 } from 'vue';
-import { createCatRig, type CatId } from '../../lib/about-cats-rig';
+import { createCatRig } from '../../lib/about-cats-rig';
+import type { CatId } from '../../lib/about-cats-types';
+import { MOVE_NAMES, moveExtent } from '../../lib/about-cats-moves';
 import {
   createColony,
   type CatInfo,
@@ -36,6 +38,25 @@ const PLACES: Record<CatId, { start: number; facing: 1 | -1 }> = {
 };
 
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
+/** Fallback slot between warm-ups where requestIdleCallback is missing (Safari). */
+const WARM_GAP_MS = 50;
+
+let cancelWarm = (): void => {};
+
+/* One move's extent per idle slot, so the first leap never samples on a frame. */
+const warmExtents = (names: readonly (typeof MOVE_NAMES)[number][]): void => {
+  const [name, ...rest] = names;
+  if (!name) return;
+  moveExtent(name);
+  /* The DOM types always declare it, but Safari lacks it. */
+  if (typeof window.requestIdleCallback === 'function') {
+    const id = window.requestIdleCallback(() => warmExtents(rest));
+    cancelWarm = () => window.cancelIdleCallback(id);
+  } else {
+    const id = setTimeout(() => warmExtents(rest), WARM_GAP_MS);
+    cancelWarm = () => clearTimeout(id);
+  }
+};
 
 const mounted = ref(false);
 const reducedMotion = ref(false);
@@ -244,30 +265,15 @@ onMounted(async () => {
   for (const cat of props.cats) {
     const svg = svgs.get(cat.id);
     if (!svg) continue;
-    const propLayer = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'g',
-    );
-    svg.append(propLayer);
     const rig = createCatRig(svg, cat.id);
-    const frontLayer = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'g',
-    );
-    svg.append(frontLayer);
-    catSpots.push({
-      id: cat.id,
-      rig,
-      props: propLayer,
-      propsFront: frontLayer,
-      ...PLACES[cat.id],
-    });
+    catSpots.push({ id: cat.id, rig, ...PLACES[cat.id] });
   }
   colony = createColony(catSpots, (id, mood) => {
     moods.value = { ...moods.value, [id]: mood };
   });
   layout();
   if (reducedMotion.value) colony.still();
+  else warmExtents(MOVE_NAMES);
 
   resizeObserver = new ResizeObserver(layout);
   viewObserver = new IntersectionObserver((entries) => {
@@ -291,6 +297,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   stop();
+  cancelWarm();
   motionQuery?.removeEventListener('change', onPreferenceChange);
   resizeObserver?.disconnect();
   viewObserver?.disconnect();

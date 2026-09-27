@@ -6,11 +6,25 @@ import { NODE } from './tags';
 import { readFileSync } from 'node:fs';
 import {
   MOVES,
+  moveExtent,
+  moveToPlay,
+  withApproach,
+  type MoveName,
   duration,
   poseAt,
   type Move,
 } from '../src/lib/about-cats-moves';
-import { POST_HEIGHT, highestPoint } from '../src/lib/about-cats-rig';
+import {
+  HIT_HALF_WIDTH,
+  POST_HEIGHT,
+  highestPoint,
+} from '../src/lib/about-cats-rig';
+import {
+  CONTROL_ROOM,
+  CUP_EDGE,
+  TRACK_MARGIN,
+  fitsTrack,
+} from '../src/lib/about-cats';
 
 /**
  * The About cats (src/components/ui/AboutCats.vue): each cat opens its photo,
@@ -163,18 +177,83 @@ test('no move lifts any part of a cat above its band', NODE, () => {
   ).toEqual([]);
 });
 
+/** The sleep control's box: `.motion-toggle`, h-10 w-10. */
+const CONTROL_SIZE = 40;
+/** Band widths from the 320px reflow width up. */
+const BAND_WIDTHS = [320, 390, 768, 1280, 1920];
+/** Start positions tried along each track. */
+const TRACK_STEPS = 24;
+
 test(
-  'falling asleep and waking up each settle within 5 seconds (SC 2.2.2)',
+  "no move the track allows takes a cat's hit box under its sleep control (SC 2.2.2)",
   NODE,
   () => {
-    for (const name of ['sleep', 'wake'] as const) {
-      expect(
-        duration(MOVES[name]()),
-        `${name} keeps moving past 5 s, so a stopped or napping cat does not settle`,
-      ).toBeLessThanOrEqual(SC_2_2_2_MS);
+    const under: string[] = [];
+    for (const width of BAND_WIDTHS) {
+      const min = TRACK_MARGIN;
+      const max = width - TRACK_MARGIN - CONTROL_ROOM;
+      for (const name of Object.keys(MOVES) as MoveName[]) {
+        const move = moveToPlay(name);
+        for (let i = 0; i <= TRACK_STEPS; i += 1) {
+          const x = min + ((max - min) * i) / TRACK_STEPS;
+          for (const dir of [1, -1]) {
+            if (!fitsTrack(x, moveExtent(name), dir, min, max)) continue;
+            const start = move.steps[0].pose;
+            for (let t = 0; t <= duration(move); t += FRAME_MS) {
+              const at = x + dir * poseAt(move, start, t).x;
+              if (at + HIT_HALF_WIDTH > width - CONTROL_SIZE) {
+                under.push(`${name} at ${width}px from ${Math.round(x)}`);
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    expect(under, 'a cat reaches under its sleep control').toEqual([]);
+  },
+);
+
+test(
+  'the cup push stays inside the band and ends back on the track, where another move fits',
+  NODE,
+  () => {
+    const move = moveToPlay('knock');
+    const max = BAND_WIDTHS[0] - TRACK_MARGIN - CONTROL_ROOM;
+    for (const gap of [0, 40, 110]) {
+      const pushed = withApproach(move, gap, TRACK_MARGIN - CUP_EDGE);
+      const start = pushed.steps[0].pose;
+      const from = CUP_EDGE + gap;
+      for (let t = 0; t <= duration(pushed); t += FRAME_MS) {
+        expect(
+          from - poseAt(pushed, start, t).x,
+          'the cat leaves the band at its left end',
+        ).toBeGreaterThanOrEqual(0);
+      }
+      const end = from - poseAt(pushed, start, duration(pushed)).x;
+      expect(end, 'the cat ends off its track').toBeGreaterThanOrEqual(
+        TRACK_MARGIN,
+      );
+      const next = (Object.keys(MOVES) as MoveName[]).filter(
+        (name) =>
+          !MOVES[name]().edge &&
+          [1, -1].some((dir) =>
+            fitsTrack(end, moveExtent(name), dir, TRACK_MARGIN, max),
+          ),
+      );
+      expect(next, 'no move fits once the cup is pushed').not.toEqual([]);
     }
   },
 );
+
+test('lying down and getting up each take 5 s or less (SC 2.2.2)', NODE, () => {
+  for (const name of ['sleep', 'wake'] as const) {
+    expect(
+      duration(MOVES[name]()),
+      `${name} keeps moving past 5 s, so a stopped or napping cat does not settle`,
+    ).toBeLessThanOrEqual(SC_2_2_2_MS);
+  }
+});
 
 test.describe('About cats', () => {
   test('each cat is a named button that opens its photo in a dialog, Close first, and returns focus', async ({
@@ -658,6 +737,28 @@ test.describe('About cats', () => {
   });
 
   for (const viewport of [REFLOW_VIEWPORT, PHONE, DESKTOP_VIEWPORT]) {
+    test(`each sleep control is on top at its centre at ${viewport.width}px (SC 2.2.2)`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ viewport });
+      const page = await context.newPage();
+      await gotoSettled(page, ROUTE);
+      for (const id of CATS) {
+        const control = napControl(page, id);
+        await control.scrollIntoViewIfNeeded();
+        const onTop = await control.evaluate((node) => {
+          const box = node.getBoundingClientRect();
+          const hit = document.elementFromPoint(
+            box.left + box.width / 2,
+            box.top + box.height / 2,
+          );
+          return Boolean(hit && node.contains(hit));
+        });
+        expect(onTop, `${NAMES[id]}'s sleep control is covered`).toBe(true);
+      }
+      await context.close();
+    });
+
     test(`no cat band covers text at ${viewport.width}px`, async ({
       browser,
     }) => {
