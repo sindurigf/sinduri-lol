@@ -105,8 +105,13 @@ test.describe('serveVideo, against an in-memory file', () => {
   /* Streamed in pieces, as the ASSETS binding does, so offsets cross chunks. */
   const ASSET_CHUNK = 64;
 
-  // Node lacks both Worker globals: __VIDEO_SIZES__ and FixedLengthStream.
+  // Node lacks both Worker globals; restored after, as later specs share this process.
+  const WORKER_GLOBALS = ['__VIDEO_SIZES__', 'FixedLengthStream'] as const;
+  const saved = new Map<string, PropertyDescriptor | undefined>();
   test.beforeAll(() => {
+    for (const name of WORKER_GLOBALS) {
+      saved.set(name, Object.getOwnPropertyDescriptor(globalThis, name));
+    }
     Object.assign(globalThis, {
       __VIDEO_SIZES__: { '/videos/fake.mp4': SIZE },
       FixedLengthStream: class {
@@ -118,6 +123,12 @@ test.describe('serveVideo, against an in-memory file', () => {
         }
       },
     });
+  });
+  test.afterAll(() => {
+    for (const [name, descriptor] of saved) {
+      if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+      else Reflect.deleteProperty(globalThis, name);
+    }
   });
 
   const assets = {
