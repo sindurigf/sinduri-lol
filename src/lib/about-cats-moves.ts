@@ -827,11 +827,20 @@ export const withTurn = (move: Move, from: Pose): Move => {
 const CREEP_SPEED = 45;
 const CREEP_MIN_MS = 300;
 const CREEP_READY_MS = 250;
+const SETTLE_BACK_MS = 400;
 
 /** Creeps `distance` ahead in a crouch first, so an edge move starts at the track end. */
-export const withApproach = (move: Move, distance: number): Move => {
-  if (distance < 1) return move;
+/*
+ * Also shuffles `settleBack` px back once the move is done, so a cat that crept
+ * past its track's end finishes on it again.
+ */
+export const withApproach = (
+  move: Move,
+  distance: number,
+  settleBack = 0,
+): Move => {
   const creep = Math.max(CREEP_MIN_MS, (distance / CREEP_SPEED) * 1000);
+  const last = move.steps.at(-1)?.pose.x ?? 0;
   const lead = CREEP_READY_MS + creep;
   const propAt = move.propAt;
   return {
@@ -843,6 +852,9 @@ export const withApproach = (move: Move, distance: number): Move => {
         ...s,
         pose: { ...clonePose(s.pose), x: s.pose.x + distance },
       })),
+      ...(settleBack > 0
+        ? [step(SETTLE_BACK_MS, 'sit', { x: distance + last - settleBack })]
+        : []),
     ],
     mods: [
       walking(CREEP_READY_MS, lead, 0.6),

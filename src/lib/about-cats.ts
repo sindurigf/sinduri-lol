@@ -331,8 +331,12 @@ export const createColony = (
        */
       const gap = cat.pose.x - CUP_EDGE;
       if (gap > EDGE_NEAR) return;
-      play(cat, withApproach(move, Math.max(0, gap)), now, -1, () =>
-        next(cat, performance.now()),
+      /* It shuffles back onto its track afterwards, or no move would fit from there. */
+      play(
+        cat,
+        withApproach(move, Math.max(0, gap), TRACK_MARGIN - CUP_EDGE),
+        now,
+        -1,
       );
       return;
     }

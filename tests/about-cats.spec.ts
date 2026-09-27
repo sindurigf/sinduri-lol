@@ -215,36 +215,45 @@ test(
 );
 
 test(
-  'the cup push creeps to the left end and stays inside the band',
+  'the cup push stays inside the band and ends back on the track, where another move fits',
   NODE,
   () => {
     const move = moveToPlay('knock');
+    const max = BAND_WIDTHS[0] - TRACK_MARGIN - CONTROL_ROOM;
     for (const gap of [0, 40, 110]) {
-      const pushed = withApproach(move, gap);
+      const pushed = withApproach(move, gap, TRACK_MARGIN - CUP_EDGE);
       const start = pushed.steps[0].pose;
+      const from = CUP_EDGE + gap;
       for (let t = 0; t <= duration(pushed); t += FRAME_MS) {
-        const at = CUP_EDGE + gap - poseAt(pushed, start, t).x;
         expect(
-          at,
+          from - poseAt(pushed, start, t).x,
           'the cat leaves the band at its left end',
         ).toBeGreaterThanOrEqual(0);
       }
+      const end = from - poseAt(pushed, start, duration(pushed)).x;
+      expect(end, 'the cat ends off its track').toBeGreaterThanOrEqual(
+        TRACK_MARGIN,
+      );
+      const next = (Object.keys(MOVES) as MoveName[]).filter(
+        (name) =>
+          !MOVES[name]().edge &&
+          [1, -1].some((dir) =>
+            fitsTrack(end, moveExtent(name), dir, TRACK_MARGIN, max),
+          ),
+      );
+      expect(next, 'no move fits once the cup is pushed').not.toEqual([]);
     }
   },
 );
 
-test(
-  'falling asleep and waking up each settle within 5 seconds (SC 2.2.2)',
-  NODE,
-  () => {
-    for (const name of ['sleep', 'wake'] as const) {
-      expect(
-        duration(MOVES[name]()),
-        `${name} keeps moving past 5 s, so a stopped or napping cat does not settle`,
-      ).toBeLessThanOrEqual(SC_2_2_2_MS);
-    }
-  },
-);
+test('lying down and getting up each take 5 s or less (SC 2.2.2)', NODE, () => {
+  for (const name of ['sleep', 'wake'] as const) {
+    expect(
+      duration(MOVES[name]()),
+      `${name} keeps moving past 5 s, so a stopped or napping cat does not settle`,
+    ).toBeLessThanOrEqual(SC_2_2_2_MS);
+  }
+});
 
 test.describe('About cats', () => {
   test('each cat is a named button that opens its photo in a dialog, Close first, and returns focus', async ({
