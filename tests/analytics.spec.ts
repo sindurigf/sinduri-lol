@@ -329,18 +329,24 @@ test.describe('analytics', () => {
     await holdNavigation(page, menuLink);
     await page.locator(menuLink).first().click();
     await page.keyboard.press('Escape');
+    await expect(page.locator('#mobile-menu-panel')).toBeHidden();
 
-    await page.locator('a[data-photo]').first().click();
+    const photos = page.locator('a[data-photo="people"]');
+    await photos.first().click();
     const viewer = page.getByRole('dialog', { name: 'Photo' });
     await viewer.getByRole('button', { name: 'Next' }).click();
     await viewer.getByRole('button', { name: 'Close' }).click();
+    await expect(viewer).toBeHidden();
+    /* The viewer's close event, a task after Close, focuses the photo shown; a cat focused before it loses focus to it. */
+    await expect(photos.nth(1)).toBeFocused();
 
-    await page.locator('#cat-spot-minerva .cat-button').focus();
+    const cat = page.locator('#cat-spot-minerva .cat-button');
+    await cat.focus();
+    await expect(cat).toBeFocused();
     await page.keyboard.press('Enter');
-    await page
-      .getByRole('dialog', { name: 'Minerva' })
-      .getByRole('button', { name: 'Close' })
-      .click();
+    const card = page.getByRole('dialog', { name: 'Minerva' });
+    await expect(card).toBeVisible();
+    await card.getByRole('button', { name: 'Close' }).click();
 
     const areaOf = (label: string) =>
       events(sent)
