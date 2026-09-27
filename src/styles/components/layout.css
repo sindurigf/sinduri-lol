@@ -58,11 +58,7 @@
    * 24px below the breadcrumb's `mb-6`.
    */
   .post-slab-aside {
-    @apply mt-6;
-
-    @media (width >= 64rem) {
-      @apply mt-0;
-    }
+    @apply mt-6 lg:mt-0;
   }
 
   /*
