@@ -235,8 +235,8 @@ const placeCard = (): void => {
   x = clamp(x, CARD_MARGIN, width - box.width - CARD_MARGIN);
   y = clamp(y, CARD_MARGIN, height - box.height - CARD_MARGIN);
   /* CSSOM custom properties: the CSP refuses style attributes, not these. */
-  node.style.setProperty('--cat-card-x', `${Math.max(CARD_MARGIN, x)}px`);
-  node.style.setProperty('--cat-card-y', `${Math.max(CARD_MARGIN, y)}px`);
+  node.style.setProperty('--cat-card-x', `${x}px`);
+  node.style.setProperty('--cat-card-y', `${y}px`);
   node.dataset.placed = '';
 };
 
