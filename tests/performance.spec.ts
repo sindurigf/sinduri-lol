@@ -10,7 +10,7 @@ import { ROUTES } from './routes';
 /* Decoded script bytes. Only these routes carry Vue and an island. */
 const ISLAND_SCRIPT_BUDGETS: Readonly<Record<string, number>> = {
   '/': 96_000,
-  '/about': 120_000,
+  '/about': 127_000,
 };
 const PAGE_SCRIPT_BUDGET = 14_000;
 

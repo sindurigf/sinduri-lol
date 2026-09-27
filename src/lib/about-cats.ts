@@ -16,6 +16,8 @@ import {
   withApproach,
   moveToPlay,
   scaleTravel,
+  scaledExtent,
+  TRAVEL_FACTORS,
   TRAVEL_MOVES,
   type Move,
   type MoveName,
@@ -24,26 +26,26 @@ import {
 import {
   clamp,
   createProp,
+  reachOf,
   renderCat,
   settleTail,
   type CatRig,
   type PropRig,
 } from './about-cats-rig';
+import type { PropState } from './about-cats-types';
 
 /** A short still beat after each move, in ms, so play flows but each move reads. */
 const PAUSE_MS = [300, 900] as const;
-/** A travel move shrinks to fit a short track, but not below this share of its length. */
-const MIN_TRAVEL_FACTOR = 0.35;
-/** px a scaled move may overshoot its scaled extent: modifiers add a little x that does not scale. */
-const TRAVEL_SLACK = 1;
 /** What a frame did for a cat: drew it, left it settled, or held it in a pause. */
 type StepResult = 'draw' | 'still' | 'rest';
 
 /** On-screen play time after waking before a cat naps. */
 const NAP_AFTER_MS = 30_000;
 
-/** Distance from each card end the cat's origin keeps. */
-export const TRACK_MARGIN = 40;
+/** Distance from each card end the cat's origin keeps, so its drawing reaches at most MAX_OVERHANG past the end. */
+export const TRACK_MARGIN = 48;
+/** px a drawing may reach past its band's end: the page gutter on phones (`px-4`), so it stays on screen. */
+export const MAX_OVERHANG = 16;
 /** Room at the right end for the sleep control. */
 export const CONTROL_ROOM = 48;
 /** Chance a cat moves along its band, by one leap, instead of playing where it is. */
@@ -54,8 +56,8 @@ const LEAPS: Partial<Record<MoveName, number>> = {
   pounce: 3,
   stalk: 1,
 };
-/** Where a cat stands from the card's edge to push the cup: the cup ends past the edge. */
-export const CUP_EDGE = 32;
+/** Where a cat stands from the card's edge to push the cup, the track's end: CUP_AHEAD plus its push takes the cup past the edge. */
+export const CUP_EDGE = TRACK_MARGIN;
 /** A pointer that has not moved for this long no longer draws a cat's eye. */
 const POINTER_IDLE_MS = 4000;
 const FACE_DEADBAND = 20;
@@ -70,6 +72,8 @@ const FRAME_MS = 1000 / 60;
 const MAX_FRAMES_PER_STEP = 6;
 /** A held cat has settled once no pose value moves more than this per frame. */
 const SETTLED = 0.01;
+/** ms a prop takes to fade when its move is cut short. */
+const PROP_FADE_MS = 250;
 /** Tail segment speed below which the tail counts as at rest. */
 const TAIL_REST = 0.02;
 
@@ -111,6 +115,8 @@ interface Playing {
   origin: number;
   dir: number;
   prop?: PropRig;
+  /** The prop as last drawn, so a dropped move can fade it out from there. */
+  shown?: PropState;
   /** Lying down and getting up play out even while the cat is held. */
   settle: boolean;
   then?: () => void;
@@ -216,27 +222,20 @@ export const planMove = (
   if (!TRAVEL_MOVES.has(name) || forward <= 0) return null;
   const room = (dir: number) => (dir > 0 ? max - x : x - min);
   const dir = room(facing) >= room(-facing) ? facing : -facing;
-  const factor = (room(dir) - TRAVEL_SLACK) / forward;
-  if (factor < MIN_TRAVEL_FACTOR) return null;
-  const scaled: readonly [number, number] = [
-    back * factor - TRAVEL_SLACK,
-    forward * factor + TRAVEL_SLACK,
-  ];
-  if (!fitsTrack(x, scaled, dir, min, max)) return null;
-  return { move: scaleTravel(moveToPlay(name), factor), dir };
+  /* Props keep their distance from the cat when it travels less, so each scale is measured, not assumed. */
+  for (const factor of TRAVEL_FACTORS)
+    if (fitsTrack(x, scaledExtent(name, factor), dir, min, max))
+      return { move: scaleTravel(moveToPlay(name), factor), dir };
+  return null;
 };
 
 /**
  * The cup push from anywhere on the track, heading left: a trot and a creep to
- * the card's edge, past the track, so the cup goes over, then a shuffle back on.
+ * CUP_EDGE, on the track, so the cup goes over the card's edge.
  * Left only: the right end is the sleep control's corner.
  */
 export const cupPush = (x: number): Move =>
-  withApproach(
-    moveToPlay('knock'),
-    Math.max(0, x - CUP_EDGE),
-    TRACK_MARGIN - CUP_EDGE,
-  );
+  withApproach(moveToPlay('knock'), Math.max(0, x - CUP_EDGE));
 
 export const createColony = (
   spots: CatSpot[],
@@ -294,8 +293,18 @@ export const createColony = (
     renderCat(cat.rig, p, now, p.x, cat.groundY);
   };
 
-  const drop = (cat: CatState): void => {
-    cat.playing?.prop?.remove();
+  /** A cut-short move's prop fades out over PROP_FADE_MS instead of vanishing. */
+  const fading: { prop: PropRig; shown: PropState; t0: number }[] = [];
+
+  const drop = (cat: CatState, fade = false): void => {
+    const playing = cat.playing;
+    if (playing?.prop && playing.shown && fade)
+      fading.push({
+        prop: playing.prop,
+        shown: playing.shown,
+        t0: performance.now(),
+      });
+    else playing?.prop?.remove();
     cat.playing = undefined;
     cat.pose.face = Math.sign(cat.pose.face) || 1;
   };
@@ -337,17 +346,20 @@ export const createColony = (
     };
   };
 
+  /** Faces the band's middle first if its head, lying down, would reach past the band's end. */
+  const sleepFacing = (cat: CatState): number => {
+    const facing = Math.sign(cat.pose.face) || 1;
+    const [left, right] = reachOf(pose('sleep', { face: facing }));
+    const past =
+      cat.pose.x + left < -MAX_OVERHANG ||
+      cat.pose.x + right > cat.width + MAX_OVERHANG;
+    return past ? -facing : facing;
+  };
+
   /* Asleep from the first frame, so the control offers to wake it while it lies down. */
   const lieDown = (cat: CatState, now: number): void => {
     setAsleep(cat, true);
-    play(
-      cat,
-      MOVES.sleep(),
-      now,
-      Math.sign(cat.pose.face) || 1,
-      undefined,
-      true,
-    );
+    play(cat, MOVES.sleep(), now, sleepFacing(cat), undefined, true);
   };
 
   const planFor = (cat: CatState, name: MoveName) =>
@@ -454,7 +466,8 @@ export const createColony = (
     cat.pose = p;
     if (playing.prop && playing.move.propAt) {
       const s = playing.move.propAt(t);
-      playing.prop.draw({ ...s, x: playing.origin + playing.dir * s.x }, now);
+      playing.shown = { ...s, x: playing.origin + playing.dir * s.x };
+      playing.prop.draw(playing.shown, now);
     }
     if (t >= playing.length) endMove(cat);
   };
@@ -468,7 +481,7 @@ export const createColony = (
       return 'draw';
     }
     if (cat.asleep) return 'still';
-    if (playing) drop(cat);
+    if (playing) drop(cat, true);
     const napDue = now >= cat.napAt && !cat.holds.has('card');
     if (held && !napDue) return look(cat, now, frames) ? 'draw' : 'still';
     const target = cat.id === watcherId ? pointerFor(cat, now) : undefined;
@@ -485,6 +498,17 @@ export const createColony = (
     const frames = clamp((now - lastFrame) / FRAME_MS, 0, MAX_FRAMES_PER_STEP);
     lastFrame = now;
     let wakeAt = Infinity;
+    for (let i = fading.length - 1; i >= 0; i -= 1) {
+      const { prop, shown, t0 } = fading[i];
+      const k = (now - t0) / PROP_FADE_MS;
+      if (k >= 1) {
+        prop.remove();
+        fading.splice(i, 1);
+        continue;
+      }
+      prop.draw({ ...shown, o: shown.o * (1 - k) }, now);
+      wakeAt = now;
+    }
     for (const cat of cats) {
       if (cat.hiddenAt !== undefined) continue;
       const result = step(cat, now, frames);
@@ -567,7 +591,7 @@ export const createColony = (
       const cat = find(id);
       if (!cat || cat.asleep) return;
       /* Drops any move, getting up included, so it is still within 5 s. */
-      drop(cat);
+      drop(cat, true);
       cat.napAt = -Infinity;
     },
     wake: (id, now) => {
@@ -583,6 +607,7 @@ export const createColony = (
     },
     still: () => {
       const now = performance.now();
+      for (const { prop } of fading.splice(0)) prop.remove();
       for (const cat of cats) {
         drop(cat);
         cat.pose = pose(cat.asleep ? 'sleep' : 'sit', {

@@ -29,6 +29,20 @@ const PHYS_STEP_MS = 1000 / 60;
 const PHYS_MAX_STEPS = 4;
 
 const EARS = 'M-11 -4L-12 -19.5L-2 -10.5ZM2 -10.5L10.5 -19.5L11 -4Z';
+/** Hela's orange front ear, inset from the ear's edge. */
+const FRONT_EAR_PATCH = 'M2.6 -11L10 -18.4L10.4 -5.2Z';
+const EYE_CENTRES: readonly (readonly [number, number])[] = [
+  [-1, -1],
+  [7, -1.5],
+];
+/** Eye radius and pupil radius in px: Minerva's green eyes and Rudra's big amber ones have pupils. */
+const EYES: Record<CatId, { r: number; pupil: number }> = {
+  minerva: { r: 2.1, pupil: 0.9 },
+  hela: { r: 1.8, pupil: 0 },
+  rudra: { r: 3, pupil: 1.3 },
+};
+/** The pupils sit a little forward in the eye, so the cat looks where it faces. */
+const PUPIL_AHEAD = 0.4;
 const WHISKERS = 'M11 3l9 -3M11 4.4l10 0.5M11 5.8l9 3.5';
 /** Where Minerva's back stripes cross the body, as fractions of its length. */
 const STRIPES = [0.3, 0.5, 0.7];
@@ -71,24 +85,31 @@ const el = <K extends keyof SVGElementTagNameMap>(
 };
 
 /** Two-bone inverse kinematics; `sign` picks which way the joint bends. */
-const ik = (a: Point, t: Point, sign: number): [Point, Point] => {
+const ik = (
+  a: Point,
+  t: Point,
+  sign: number,
+  scale: number,
+): [Point, Point] => {
+  const upper = UPPER * scale;
+  const lower = LOWER * scale;
   const dx = t.x - a.x;
   const dy = t.y - a.y;
   const d = Math.hypot(dx, dy) || 0.001;
-  const reach = clamp(d, Math.abs(UPPER - LOWER) + 0.5, UPPER + LOWER - 0.01);
+  const reach = clamp(d, Math.abs(upper - lower) + 0.5, upper + lower - 0.01);
   const ux = dx / d;
   const uy = dy / d;
   const bend =
     Math.acos(
       clamp(
-        (UPPER * UPPER + reach * reach - LOWER * LOWER) / (2 * UPPER * reach),
+        (upper * upper + reach * reach - lower * lower) / (2 * upper * reach),
         -1,
         1,
       ),
     ) * sign;
   const joint = pt(
-    a.x + UPPER * (ux * Math.cos(bend) - uy * Math.sin(bend)),
-    a.y + UPPER * (ux * Math.sin(bend) + uy * Math.cos(bend)),
+    a.x + upper * (ux * Math.cos(bend) - uy * Math.sin(bend)),
+    a.y + upper * (ux * Math.sin(bend) + uy * Math.cos(bend)),
   );
   return [joint, pt(a.x + ux * reach, a.y + uy * reach)];
 };
@@ -135,6 +156,7 @@ export interface CatRig {
   tailMarks: SVGPathElement;
   eyesOpen: SVGGElement;
   eyesShut: SVGPathElement;
+  earPatch: SVGPathElement | null;
   mouth: SVGEllipseElement;
   tailAngle: number[];
   tailSpeed: number[];
@@ -261,18 +283,24 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
   if (id === 'hela')
     el('circle', { cx: 6, cy: -8, r: 7, class: 'cat-solid-mark' }, headMarks);
 
-  const eyeRadius = id === 'rudra' ? 2.3 : 1.8;
+  /* Hela's front ear is orange, as in her photos; it turns with the ears. */
+  const earPatch =
+    id === 'hela'
+      ? el('path', { d: FRONT_EAR_PATCH, class: 'cat-solid-patch' }, top.head)
+      : null;
+  if (earPatch) top.head.insertBefore(earPatch, top.ears.nextSibling);
+
+  const eye = EYES[id];
   const eyesOpen = el('g', {}, top.head);
-  el(
-    'circle',
-    { cx: -1, cy: -1, r: eyeRadius, class: 'cat-solid-eye' },
-    eyesOpen,
-  );
-  el(
-    'circle',
-    { cx: 7, cy: -1.5, r: eyeRadius, class: 'cat-solid-eye' },
-    eyesOpen,
-  );
+  for (const [cx, cy] of EYE_CENTRES) {
+    el('circle', { cx, cy, r: eye.r, class: 'cat-solid-eye' }, eyesOpen);
+    if (eye.pupil > 0)
+      el(
+        'circle',
+        { cx: cx + PUPIL_AHEAD, cy, r: eye.pupil, class: 'cat-solid-pupil' },
+        eyesOpen,
+      );
+  }
   const eyesShut = el(
     'path',
     {
@@ -330,6 +358,7 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
     tailMarks,
     eyesOpen,
     eyesShut,
+    earPatch,
     mouth,
     tailAngle: [],
     tailSpeed: [],
@@ -433,11 +462,37 @@ const rotateAbout = (q: Point, c: Point, degrees: number): Point => {
 const zzAt = (p: Pose, head: Point): Point =>
   pt(p.face * (head.x + ZZ_AHEAD), head.y - ZZ_ABOVE + ZZ_RISE * (1 - p.zz));
 
+type Paw = 'fN' | 'fF' | 'hN' | 'hF';
+
+/** Each leg's hip or shoulder, knee and paw, as drawn: a paw its leg cannot reach stops short. */
+const legBones = (p: Pose): Record<Paw, [Point, Point, Point]> => {
+  const { centre, length, half, at } = skeleton(p);
+  const front = at(length - 3, -half * 0.3);
+  const hind = at(3, -half * 0.3);
+  const bone = (from: Point, k: Paw, sign: number): [Point, Point, Point] => {
+    const target = pt(centre.x + p[k][0], centre.y + p[k][1]);
+    return [from, ...ik(from, target, sign, k[0] === 'f' ? p.fl : p.hl)];
+  };
+  return {
+    fN: bone(front, 'fN', 1),
+    fF: bone(pt(front.x - 3, front.y), 'fF', 1),
+    hN: bone(hind, 'hN', -1),
+    hF: bone(pt(hind.x + 3, hind.y), 'hF', -1),
+  };
+};
+
+/** Past its highest point a pose's drawing reaches this much more, kept as the band's headroom rule. */
+const STROKE_REACH = EDGE + LEG_W / 2;
+/** Half the widest edge stroke, a leg's: how far a drawing reaches past a point sideways. */
+const SIDE_REACH = (LEG_W + EDGE) / 2;
+/** The "z" glyph's width, drawn right from its lower left whichever way the cat faces. */
+const ZZ_WIDTH = 12;
+
 /*
- * Height of a pose's highest drawn point above the ground, edge included.
+ * A pose's outermost drawn points, facing right, before its edge.
  * The tail is taken straight at its targets; the spring only lags behind them.
  */
-export const highestPoint = (p: Pose): number => {
+const outline = (p: Pose): Point[] => {
   const { centre, half, at, length, head } = skeleton(p);
   const headPoint = (q: Point): Point => {
     const turned = rotateAbout(q, pt(0, 0), p.hr);
@@ -450,16 +505,14 @@ export const highestPoint = (p: Pose): number => {
     at(length * 0.5, half * 1.05),
     at(-2, half),
     at(length + 2, half * 0.95),
+    at(-6, 0),
+    at(length + 7, 0),
     headPoint(pt(0, -HEAD_RY)),
+    headPoint(pt(HEAD_RX, 0)),
+    headPoint(pt(-HEAD_RX, 0)),
     ...ears.map(headPoint),
-    ...(['fN', 'fF', 'hN', 'hF'] as const).map((k) =>
-      pt(centre.x + p[k][0], centre.y + p[k][1]),
-    ),
+    ...Object.values(legBones(p)).map(([, , end]) => end),
   ];
-  if (p.zz > 0) {
-    const z = zzAt(p, head);
-    points.push(pt(z.x, z.y - ZZ_HEIGHT));
-  }
   let q = at(-4, 0);
   for (const angle of tailTargets(p, 0)) {
     q = pt(
@@ -468,10 +521,24 @@ export const highestPoint = (p: Pose): number => {
     );
     points.push(q);
   }
-  const top = Math.min(
-    ...points.map((point) => rotateAbout(point, centre, p.rot).y),
-  );
-  return -top + EDGE + LEG_W / 2;
+  return points.map((point) => rotateAbout(point, centre, p.rot));
+};
+
+/** Height of a pose's highest drawn point above the ground, edge included. */
+export const highestPoint = (p: Pose): number => {
+  const tops = outline(p).map((q) => q.y);
+  if (p.zz > 0) tops.push(zzAt(p, skeleton(p).head).y - ZZ_HEIGHT);
+  return -Math.min(...tops) + STROKE_REACH;
+};
+
+/** How far a pose's drawing reaches left and right of its origin, edge included. */
+export const reachOf = (p: Pose): [number, number] => {
+  const xs = outline(p).map((q) => p.face * q.x);
+  if (p.zz > 0) {
+    const z = zzAt(p, skeleton(p).head);
+    xs.push(z.x, z.x + ZZ_WIDTH);
+  }
+  return [Math.min(...xs) - SIDE_REACH, Math.max(...xs) + SIDE_REACH];
 };
 
 export const renderCat = (
@@ -495,24 +562,12 @@ export const renderCat = (
   ]);
   rig.bodyClip.setAttribute('d', body);
 
-  const paw = (k: 'fN' | 'fF' | 'hN' | 'hF'): Point =>
-    pt(centre.x + p[k][0], centre.y + p[k][1]);
-  const leg = (
-    from: Point,
-    k: 'fN' | 'fF' | 'hN' | 'hF',
-    sign: number,
-  ): string => {
-    const [joint, end] = ik(from, paw(k), sign);
+  const bones = legBones(p);
+  const leg = (k: Paw): string => {
+    const [from, joint, end] = bones[k];
     return `M${f(from.x)} ${f(from.y)}L${f(joint.x)} ${f(joint.y)}L${f(end.x)} ${f(end.y)}`;
   };
-  const front = at(length - 3, -half * 0.3);
-  const hind = at(3, -half * 0.3);
-  const legs = {
-    fN: leg(front, 'fN', 1),
-    fF: leg(pt(front.x - 3, front.y), 'fF', 1),
-    hN: leg(hind, 'hN', -1),
-    hF: leg(pt(hind.x + 3, hind.y), 'hF', -1),
-  };
+  const legs = { fN: leg('fN'), fF: leg('fF'), hN: leg('hN'), hF: leg('hF') };
 
   const targets = tailTargets(p, now / 1000);
   stepTail(rig, targets, now);
@@ -557,6 +612,7 @@ export const renderCat = (
     layer.ears.setAttribute('transform', `rotate(${f(-30 * p.ears)} 0 -8)`);
   }
   rig.tailMarks.setAttribute('d', tail);
+  rig.earPatch?.setAttribute('transform', `rotate(${f(-30 * p.ears)} 0 -8)`);
 
   rig.stripes.forEach((stripe, i) => {
     const k = STRIPES[i];
@@ -607,7 +663,8 @@ export const createProp = (
   front: SVGGElement,
   kind: PropKind,
 ): PropRig => {
-  const node = el('g', { class: 'cat-prop' }, parent);
+  /* The yarn ball is held in the paws, so it draws over the cat. */
+  const node = el('g', { class: 'cat-prop' }, kind === 'yarn' ? front : parent);
   const cover = kind === 'box' ? el('g', { class: 'cat-prop' }, front) : null;
   const remove = (): void => {
     node.remove();

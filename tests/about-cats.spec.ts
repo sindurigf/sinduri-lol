@@ -13,16 +13,20 @@ import {
   MOVES,
   type MoveName,
   duration,
+  pose,
   poseAt,
+  withTurn,
   type Move,
 } from '../src/lib/about-cats-moves';
 import {
   HIT_HALF_WIDTH,
   POST_HEIGHT,
   highestPoint,
+  reachOf,
 } from '../src/lib/about-cats-rig';
 import {
   CONTROL_ROOM,
+  MAX_OVERHANG,
   TRACK_MARGIN,
   cupPush,
   planMove,
@@ -206,6 +210,8 @@ const CONTROL_SIZE = 40;
 const CUP_WIDTHS = [320, 390, 1280];
 /** Band widths from the 320px reflow width up. */
 const BAND_WIDTHS = [320, 390, 768, 1280, 1920];
+/** Tall enough to lay the page out as a phone or desktop would; the checks read every band, on screen or not. */
+const GUARD_HEIGHT = 900;
 /** Start positions tried along each track. */
 const TRACK_STEPS = 24;
 
@@ -240,6 +246,48 @@ test(
       }
     }
     expect(under, 'a cat reaches under its sleep control').toEqual([]);
+  },
+);
+
+test(
+  'no drawing reaches more than MAX_OVERHANG past its band, from anywhere on the track, turns included',
+  NODE,
+  () => {
+    const over: string[] = [];
+    for (const width of BAND_WIDTHS) {
+      const min = TRACK_MARGIN;
+      const max = width - TRACK_MARGIN - CONTROL_ROOM;
+      for (const name of Object.keys(MOVES) as MoveName[]) {
+        for (let i = 0; i <= TRACK_STEPS; i += 1) {
+          const x = min + ((max - min) * i) / TRACK_STEPS;
+          for (const facing of [1, -1]) {
+            const plan = MOVES[name]().edge
+              ? { move: cupPush(x), dir: -1 }
+              : planMove(name, x, facing, min, max);
+            if (!plan) continue;
+            /* As the colony plays it: a cat facing away turns first. */
+            const from = { ...pose('sit'), face: facing * plan.dir };
+            const move = from.face < 0 ? withTurn(plan.move, from) : plan.move;
+            const start = { ...from, face: 1 };
+            for (let t = 0; t <= duration(move); t += FRAME_MS) {
+              const p = poseAt(move, start, t);
+              const [back, ahead] = reachOf(p);
+              const at = x + plan.dir * p.x;
+              const left = plan.dir > 0 ? at + back : at - ahead;
+              const right = plan.dir > 0 ? at + ahead : at - back;
+              if (left < -MAX_OVERHANG || right > width + MAX_OVERHANG) {
+                over.push(`${name} at ${width}px from ${Math.round(x)}`);
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    expect(
+      over,
+      'a cat reaches past its band by more than MAX_OVERHANG',
+    ).toEqual([]);
   },
 );
 
@@ -280,14 +328,19 @@ test(
   },
 );
 
-test('lying down and getting up each take 5 s or less (SC 2.2.2)', NODE, () => {
-  for (const name of ['sleep', 'wake'] as const) {
-    expect(
-      duration(MOVES[name]()),
-      `${name} keeps moving past 5 s, so a stopped or napping cat does not settle`,
-    ).toBeLessThanOrEqual(SC_2_2_2_MS);
-  }
-});
+test(
+  'lying down and getting up each take 5 s or less, a turn to face the band included (SC 2.2.2)',
+  NODE,
+  () => {
+    for (const name of ['sleep', 'wake'] as const) {
+      const turned = withTurn(MOVES[name](), { ...pose('sit'), face: -1 });
+      expect(
+        duration(turned),
+        `${name} keeps moving past 5 s, so a stopped or napping cat does not settle`,
+      ).toBeLessThanOrEqual(SC_2_2_2_MS);
+    }
+  },
+);
 
 test.describe('About cats', () => {
   test('each cat is a named button that opens its photo in a dialog, Close first, and returns focus', async ({
@@ -937,20 +990,46 @@ test.describe('About cats', () => {
       }
       await context.close();
     });
+  }
 
-    test(`no cat band covers text at ${viewport.width}px`, async ({
+  for (const width of BAND_WIDTHS) {
+    test(`no cat band, widened by MAX_OVERHANG, covers text or a control, and the page does not scroll sideways, at ${width}px`, async ({
       browser,
     }) => {
-      const context = await browser.newContext({ viewport });
+      const context = await browser.newContext({
+        viewport: { width, height: GUARD_HEIGHT },
+      });
       const page = await context.newPage();
       await gotoSettled(page, ROUTE);
-      const overlaps = await page.evaluate(() => {
-        const spots = [...document.querySelectorAll<HTMLElement>('.cat-spot')];
+      const found = await page.evaluate((overhang) => {
+        const bands = [
+          ...document.querySelectorAll<HTMLElement>('.cat-spot'),
+        ].map((spot) => {
+          const box = spot.getBoundingClientRect();
+          return {
+            id: spot.id,
+            left: box.left - overhang,
+            right: box.right + overhang,
+            top: box.top,
+            bottom: box.bottom,
+          };
+        });
+        const hits: string[] = [];
+        const check = (rect: DOMRect, what: string) => {
+          for (const band of bands)
+            if (
+              rect.width > 0 &&
+              rect.right > band.left &&
+              rect.left < band.right &&
+              rect.bottom > band.top &&
+              rect.top < band.bottom
+            )
+              hits.push(`${band.id}: ${what}`);
+        };
         const walker = document.createTreeWalker(
           document.body,
           NodeFilter.SHOW_TEXT,
         );
-        const hits: string[] = [];
         for (let node = walker.nextNode(); node; node = walker.nextNode()) {
           const text = node.textContent?.trim();
           const parent = node.parentElement;
@@ -962,23 +1041,28 @@ test.describe('About cats', () => {
             continue;
           const range = document.createRange();
           range.selectNodeContents(node);
-          for (const rect of range.getClientRects()) {
-            for (const spot of spots) {
-              const band = spot.getBoundingClientRect();
-              if (
-                rect.right > band.left &&
-                rect.left < band.right &&
-                rect.bottom > band.top &&
-                rect.top < band.bottom
-              ) {
-                hits.push(`${spot.id}: "${text.slice(0, 40)}"`);
-              }
-            }
-          }
+          for (const rect of range.getClientRects())
+            check(rect, `"${text.slice(0, 40)}"`);
         }
-        return hits;
-      });
-      expect(overlaps, 'a cat band overlaps text').toEqual([]);
+        for (const el of document.querySelectorAll<HTMLElement>(
+          'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        )) {
+          /* Not the cats' own buttons, nor a container the bands sit in. */
+          if (
+            el.closest('.cat-spot, dialog, [hidden]') ||
+            el.querySelector('.cat-spot')
+          )
+            continue;
+          check(el.getBoundingClientRect(), el.outerHTML.slice(0, 60));
+        }
+        const root = document.documentElement;
+        return { hits, scrolls: root.scrollWidth > root.clientWidth };
+      }, MAX_OVERHANG);
+      expect(
+        found.hits,
+        'a cat band, overhang included, overlaps text or a control',
+      ).toEqual([]);
+      expect(found.scrolls, 'the page scrolls sideways').toBe(false);
       await context.close();
     });
   }
