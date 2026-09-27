@@ -121,13 +121,13 @@ view (development server only, never published), and forks.
   on a 422, `aria-disabled` on the button and a `role="status"` message while
   sending, with no `aria-busy` to hold that message back. Details
   in gap 1.
-- **CV PDF.** `npm run publish:cv` tags it: the photo and shapes as
-  artifacts, the name as H1 and six section titles as H2. The photo is
-  decorative ([why](ARCHITECTURE.md#content-notes)). Firefox's PDF viewer
-  exposes that structure, and `npm run check:pdf` passes it with nothing
-  tagged inside an artifact. Job and course titles are tagged as body text on
-  purpose, because Canva exports give them inconsistent levels
-  ([MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §13.4 flags this).
+- **CV PDF.** The photo and shapes are artifacts, the name is the H1 and the
+  six section titles are H2s. The photo is decorative
+  ([why](ARCHITECTURE.md#content-notes)). Firefox's PDF viewer exposes that
+  structure, and `npm run check:pdf` passes it. Job and course titles are
+  body text on purpose, because Canva exports give them inconsistent levels
+  ([MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §13.4 flags this). How it is
+  made: [DEVELOPMENT.md](docs/DEVELOPMENT.md#publishing-the-cv).
 - **Talk PDF.** Passes PDF/UA-1 in `npm run check:pdf`. See gap 6.
 
 Passing axe is not conformance.

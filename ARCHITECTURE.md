@@ -599,9 +599,9 @@ evidence.
   wording may differ; dates, roles and employers must agree.
 - **CV PDF** (`public/sinduri-guntupalli-cv.pdf`): always publish through
   `npm run publish:cv`
-  ([docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#publishing-the-cv)), which scrubs
-  Canva metadata and `/Lang`, fixes tags and keeps the structure tree
-  (pikepdf, not Ghostscript). `tests/cv.spec.ts` asserts it.
+  ([docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#publishing-the-cv)). It uses
+  pikepdf, not Ghostscript, to keep the structure tree. `tests/cv.spec.ts`
+  asserts the published file.
 - The CV portrait is decorative, with no alt text: the name H1 beside it
   carries the same information.
 - The published CV shows the contact email, "Vienna, Austria" and the GitHub
