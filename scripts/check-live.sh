@@ -4,7 +4,7 @@
 #   1. a header public/_headers sets or detaches (`! Name`) that differs live
 #   2. `cdn-cgi` anywhere in the body, escaped or not
 #   3. `__cf_email__` or `email-protection` in the body
-#   4. a fetching element pointing at another origin
+#   4. a fetching element pointing at another origin, each srcset candidate too
 #   5. an inline <script>/<style> whose sha256 is not in the CSP (not JSON-LD)
 #   6. an unexpected status
 #   7. CSS or JS under /_astro/ or /vendor/, a favicon or a feed, without
@@ -114,8 +114,23 @@ BEGIN {
   OFS = "\t"
   split("script link img iframe video audio source embed object track", t, " ")
   for (k in t) FETCHING[t[k]] = 1
-  NATTRS = split("src href data poster", ATTRS, " ")
+  NATTRS = split("src href data poster srcset imagesrcset", ATTRS, " ")
+  SRCSETS["srcset"] = SRCSETS["imagesrcset"] = 1
   ABSENT = "\001"
+}
+# One `ref` per candidate URL, as the HTML srcset parser splits them: a URL may
+# hold commas, and only a trailing one ends its candidate.
+function candidates(v, name, key,    u, c) {
+  for (;;) {
+    sub(/^[ \t\n\r,]+/, "", v)
+    if (v == "") return
+    match(v, /^[^ \t\n\r]+/)
+    u = substr(v, 1, RLENGTH)
+    v = substr(v, RLENGTH + 1)
+    if (u ~ /,$/) sub(/,+$/, "", u)
+    else { c = index(v, ","); v = c ? substr(v, c + 1) : "" }
+    print "ref", name, key, u
+  }
 }
 function attr(a, name,    la, v, q) {
   la = tolower(a)
@@ -155,7 +170,9 @@ END {
       for (k = 1; k <= NATTRS; k++) {
         if (name == "script" && ATTRS[k] != "src") continue
         v = attr(attrs, ATTRS[k])
-        if (v != ABSENT) print "ref", name, ATTRS[k], v
+        if (v == ABSENT) continue
+        if (ATTRS[k] in SRCSETS) candidates(v, name, ATTRS[k])
+        else print "ref", name, ATTRS[k], v
       }
     }
 
