@@ -342,10 +342,9 @@ const HOP_HEIGHT = 30;
 /** The scratching post stands this far ahead of the cat, clear of its chest. */
 const POST_GAP = 34;
 const YARN_BOUND_HEIGHT = 22;
-/* The yarn chase: a trot of 120px in 2.2 s, then a pounce. */
-const YARN_TROT = 120;
-const YARN_TROT_MS = 2200;
-const YARN_CATCH = YARN_TROT + 42;
+const FLY_HOP_HEIGHT = 24;
+/** The fly zigzags ahead of the cat this long, then gets away. */
+const FLY_CHASE_MS = 3500;
 
 /*
  * Rolling onto the back: low, then over all at once with a small flop. Easing
@@ -381,24 +380,28 @@ export const MOVES = {
     steps: [step(700, 'loaf'), step(2200, 'loaf', { hr: 4 }), step(600, 'sit')],
     mods: [blinkAt(1600)],
   }),
+  /* A long crouched creep with a freeze halfway, then the pounce. */
   stalk: (): Move => ({
     steps: [
       step(400, 'crouch'),
-      step(2000, 'crouch', { x: 80 }, 'linear'),
-      step(700, 'crouch', { x: 80 }),
-      step(140, 'crouch', { x: 78, sq: 0.9 }, 'in'),
-      step(400, 'air', { x: 128 }, 'linear'),
-      step(150, 'crouch', { x: 134, sq: 0.84 }, 'out'),
-      step(280, 'crouch', { x: 134 }, 'back'),
-      step(500, 'sit', { x: 134 }),
+      step(2200, 'crouch', { x: 90 }, 'linear'),
+      step(800, 'crouch', { x: 90 }),
+      step(1400, 'crouch', { x: 160 }, 'linear'),
+      step(700, 'crouch', { x: 160 }),
+      step(140, 'crouch', { x: 158, sq: 0.9 }, 'in'),
+      step(400, 'air', { x: 210 }, 'linear'),
+      step(150, 'crouch', { x: 216, sq: 0.84 }, 'out'),
+      step(280, 'crouch', { x: 216 }, 'back'),
+      step(500, 'sit', { x: 216 }),
     ],
     mods: [
-      walking(400, 2400, 0.6),
-      between(400, 3100, (p) => {
+      walking(400, 2600, 0.6),
+      walking(3400, 4800, 0.6),
+      between(400, 5500, (p) => {
         p.tw = 4;
       }),
-      wiggle(2400, 3100),
-      arc(3240, 3640, 16),
+      wiggle(4800, 5500),
+      arc(5640, 6040, POUNCE_HEIGHT),
     ],
   }),
   pounce: (): Move => ({
@@ -530,31 +533,43 @@ export const MOVES = {
     ],
   }),
   /* Watches the fly, crouches, leaps straight up for it, and the fly gets away. */
+  /* Follows a zigzagging fly along the band in hops, then leaps for it; it gets away. */
   fly: (): Move => ({
     steps: [
-      step(1400, 'sit'),
-      step(300, 'crouch', { x: 4 }),
-      step(500, 'crouch', { x: 4 }),
-      step(160, 'crouch', { x: 4, sq: 0.86 }, 'in'),
-      step(260, 'leap', { x: 12 }, 'out'),
-      step(260, 'leap', { x: 16 }, 'in'),
-      step(150, 'crouch', { x: 18, sq: 0.84 }, 'out'),
-      step(500, 'sit', { x: 18 }),
+      step(800, 'sit'),
+      step(300, 'crouch'),
+      step(120, 'crouch', { sq: 0.88 }, 'in'),
+      step(350, 'air', { x: 50 }, 'linear'),
+      step(150, 'crouch', { x: 60, sq: 0.86 }, 'out'),
+      step(400, 'crouch', { x: 60, hr: -18 }),
+      step(120, 'crouch', { x: 60, sq: 0.88 }, 'in'),
+      step(350, 'air', { x: 110 }, 'linear'),
+      step(150, 'crouch', { x: 120, sq: 0.86 }, 'out'),
+      step(350, 'crouch', { x: 120, hr: -18 }),
+      step(160, 'crouch', { x: 120, sq: 0.86 }, 'in'),
+      step(260, 'leap', { x: 150 }, 'out'),
+      step(260, 'leap', { x: 160 }, 'in'),
+      step(150, 'crouch', { x: 170, sq: 0.84 }, 'out'),
+      step(500, 'sit', { x: 170 }),
     ],
     mods: [
-      between(0, 1700, (p, s) => {
+      between(0, 800, (p, s) => {
         p.hr = -18 + 14 * Math.sin(s / 260);
       }),
-      wiggle(1700, 2200),
-      arc(2360, 2880, LEAP_HEIGHT),
+      wiggle(800, 1100),
+      arc(1220, 1570, FLY_HOP_HEIGHT),
+      arc(2240, 2590, FLY_HOP_HEIGHT),
+      wiggle(2740, 3090),
+      arc(3250, 3770, LEAP_HEIGHT),
     ],
     prop: 'fly',
     propAt: (t) => {
-      const away = Math.min(1, Math.max(0, (t - 2620) / 600));
+      const ahead = Math.min(1, t / FLY_CHASE_MS);
+      const away = Math.min(1, Math.max(0, (t - FLY_CHASE_MS) / 700));
       return {
         kind: 'fly',
-        x: 26 + 16 * Math.sin(t / 260) + away * 50,
-        y: -62 + 10 * Math.sin(t / 170) - away * 30,
+        x: 36 + ahead * 150 + 16 * Math.sin(t / 260) + away * 60,
+        y: -60 + 12 * Math.sin(t / 170) - away * 30,
         r: 0,
         o: 1 - away,
       };
@@ -613,44 +628,53 @@ export const MOVES = {
       o: Math.min(1, t / 300, Math.max(0, (4640 - t) / 300)),
     }),
   }),
-  /*
-   * Bats the ball and follows it at a steady, stride-locked trot as it slows,
-   * then crouches and pounces onto it and kicks it: one long, even chase.
-   */
+  /* Bats the ball, trots after it as it rolls, pounces, bats it on, and catches it. */
   yarn: (): Move => ({
     steps: [
       step(300, 'sit', { fN: [20, 14] }, 'out'),
       step(400, 'sit'),
       step(300, 'stand'),
-      step(YARN_TROT_MS, 'stand', { x: YARN_TROT }, 'inOut'),
-      step(300, 'crouch', { x: YARN_TROT }),
-      step(140, 'crouch', { x: YARN_TROT, sq: 0.88 }, 'in'),
-      step(300, 'air', { x: YARN_TROT + 30 }, 'linear'),
-      step(180, 'crouch', { x: YARN_CATCH, sq: 0.84 }, 'out'),
-      ...flopTo('crouch', 'belly', YARN_CATCH),
-      step(1500, 'belly', { x: YARN_CATCH }),
-      ...flopTo('belly', 'loaf', YARN_CATCH),
-      step(500, 'sit', { x: YARN_CATCH }),
+      step(2400, 'stand', { x: 150 }, 'inOut'),
+      step(300, 'crouch', { x: 150 }),
+      step(140, 'crouch', { x: 150, sq: 0.88 }, 'in'),
+      step(300, 'air', { x: 185 }, 'linear'),
+      step(180, 'crouch', { x: 205, sq: 0.84 }, 'out'),
+      step(300, 'sit', { x: 205, fN: [20, 14] }, 'out'),
+      step(250, 'stand', { x: 205 }),
+      step(1500, 'stand', { x: 265 }, 'inOut'),
+      step(250, 'crouch', { x: 265 }),
+      step(140, 'crouch', { x: 265, sq: 0.88 }, 'in'),
+      step(280, 'air', { x: 290 }, 'linear'),
+      step(180, 'crouch', { x: 300, sq: 0.84 }, 'out'),
+      ...flopTo('crouch', 'belly', 300),
+      step(1500, 'belly', { x: 300 }),
+      ...flopTo('belly', 'loaf', 300),
+      step(500, 'sit', { x: 300 }),
     ],
     mods: [
-      walking(1000, 1000 + YARN_TROT_MS),
-      wiggle(1000 + YARN_TROT_MS, 1300 + YARN_TROT_MS),
-      arc(1440 + YARN_TROT_MS, 1740 + YARN_TROT_MS, YARN_BOUND_HEIGHT),
-      between(2620 + YARN_TROT_MS, 4120 + YARN_TROT_MS, (p, s) => {
+      walking(1000, 3400),
+      wiggle(3400, 3700),
+      arc(3840, 4140, YARN_BOUND_HEIGHT),
+      walking(4870, 6370),
+      wiggle(6370, 6620),
+      arc(6760, 7040, YARN_BOUND_HEIGHT),
+      between(7920, 9420, (p, s) => {
         p.hN[0] += 6 * Math.sin(s / 60);
         p.hF[0] -= 6 * Math.sin(s / 60);
       }),
     ],
     prop: 'yarn',
-    /* The ball rolls on ahead, slowing, and stops where the pounce lands. */
+    /* Rolls ahead and slows; batted again, it rolls on to where the last pounce lands. */
     propAt: (t) => {
-      const k = Math.min(1, Math.max(0, (t - 150) / (YARN_TROT_MS + 600)));
+      const first = Math.min(1, Math.max(0, (t - 150) / 3700));
+      const second = Math.min(1, Math.max(0, (t - 4470) / 2300));
+      const ease = (k: number) => 1 - (1 - k) ** 2;
       return {
         kind: 'yarn',
-        x: 22 + (1 - (1 - k) ** 2) * (YARN_CATCH + 10 - 22),
+        x: 22 + ease(first) * 208 + ease(second) * 95,
         y: -6,
-        r: k * 900,
-        o: Math.min(1, t / 200, Math.max(0, (5320 + YARN_TROT_MS - t) / 300)),
+        r: first * 900 + second * 500,
+        o: Math.min(1, t / 200, Math.max(0, (10620 - t) / 300)),
       };
     },
   }),
@@ -689,7 +713,6 @@ const SLOW_MOVES: ReadonlySet<MoveName> = new Set([
   'peek',
   'knock',
   'box',
-  'yarn',
 ]);
 
 /** A move at `factor` of its speed, modifiers and prop included. */
@@ -710,6 +733,31 @@ const slower = (move: Move, factor: number): Move => {
 /** The move a cat plays: small play moves slowed down. */
 export const moveToPlay = (name: MoveName): Move =>
   SLOW_MOVES.has(name) ? slower(MOVES[name](), SLOW_PLAY) : MOVES[name]();
+
+/** Moves that carry the cat along its track; on a short track they are scaled to fit. */
+export const TRAVEL_MOVES: ReadonlySet<MoveName> = new Set([
+  'stalk',
+  'fly',
+  'yarn',
+]);
+
+/** A move with its sideways distances, the cat's and its prop's, scaled by `factor`. */
+export const scaleTravel = (move: Move, factor: number): Move => {
+  const propAt = move.propAt;
+  return {
+    ...move,
+    steps: move.steps.map((s) => ({
+      ...s,
+      pose: { ...clonePose(s.pose), x: s.pose.x * factor },
+    })),
+    propAt:
+      propAt &&
+      ((t) => {
+        const s = propAt(t);
+        return { ...s, x: s.x * factor };
+      }),
+  };
+};
 
 /* Move factories are deterministic, so each name's extent is sampled once. */
 const extents = new Map<MoveName, readonly [number, number]>();
@@ -732,60 +780,60 @@ export const moveExtent = (name: MoveName): readonly [number, number] => {
  * card. Sleep and wake come from the nap clock, not from these.
  */
 export const CAT_WEIGHTS: Record<CatId, Partial<Record<MoveName, number>>> = {
-  /* The queen: watches, rests and grooms the blanket; rarely leaps. */
+  /* The queen: the calmest, but she chases too; watching is one move among many. */
   minerva: {
-    look: 12,
-    lie: 8,
-    stretch: 6,
-    knead: 6,
-    post: 5,
-    box: 5,
-    fly: 4,
+    look: 6,
+    yarn: 5,
+    fly: 5,
+    stretch: 5,
+    knead: 5,
+    lie: 4,
+    post: 4,
+    box: 4,
+    stalk: 3,
     toy: 3,
-    yarn: 3,
     belly: 3,
-    knock: 3,
+    knock: 4,
     hop: 2,
     pounce: 2,
     bigJump: 2,
-    stalk: 1,
   },
-  /* The conspirator: peeks, stalks and knocks the cup off. */
+  /* The conspirator: stalks, peeks and knocks the cup off, and chases yarn. */
   hela: {
-    peek: 9,
-    knock: 7,
-    stalk: 6,
-    pounce: 5,
-    look: 5,
-    box: 4,
-    fly: 4,
-    toy: 3,
-    yarn: 3,
-    hop: 3,
-    bigJump: 3,
-    post: 3,
-    knead: 3,
-    stretch: 3,
-    lie: 3,
-    belly: 2,
-  },
-  /* The baby: hops and chases every toy. */
-  rudra: {
-    hop: 9,
-    toy: 9,
-    yarn: 8,
-    fly: 7,
-    pounce: 5,
-    belly: 5,
-    bigJump: 4,
-    box: 4,
-    knead: 3,
-    post: 3,
-    stretch: 3,
+    stalk: 9,
+    peek: 7,
+    yarn: 7,
+    knock: 9,
+    fly: 6,
+    pounce: 4,
     look: 3,
-    lie: 2,
-    knock: 2,
-    stalk: 2,
+    box: 3,
+    toy: 3,
+    hop: 2,
+    bigJump: 2,
+    post: 2,
+    knead: 2,
+    stretch: 2,
+    belly: 2,
+    lie: 1,
+  },
+  /* The baby: chases everything, yarn and flies most. */
+  rudra: {
+    yarn: 11,
+    fly: 10,
+    toy: 7,
+    hop: 6,
+    stalk: 5,
+    pounce: 4,
+    belly: 4,
+    bigJump: 3,
+    box: 3,
+    knead: 2,
+    post: 2,
+    stretch: 2,
+    look: 2,
+    knock: 3,
+    lie: 1,
   },
 };
 
@@ -828,8 +876,13 @@ const CREEP_SPEED = 45;
 const CREEP_MIN_MS = 300;
 const CREEP_READY_MS = 250;
 const SETTLE_BACK_MS = 400;
+/** Farther than this, a cat trots to the spot first and creeps only the last of it. */
+const CREEP_REACH = 60;
+/** px per second of a purposeful trot, twice the creep. */
+const TROT_SPEED = 110;
+const TROT_READY_MS = 250;
 
-/** Creeps `distance` ahead in a crouch first, so an edge move starts at the track end. */
+/** Trots, then creeps, `distance` ahead first, so an edge move starts at the track end from anywhere on it. */
 /*
  * Also shuffles `settleBack` px back once the move is done, so a cat that crept
  * past its track's end finishes on it again.
@@ -839,14 +892,26 @@ export const withApproach = (
   distance: number,
   settleBack = 0,
 ): Move => {
-  const creep = Math.max(CREEP_MIN_MS, (distance / CREEP_SPEED) * 1000);
+  const trot = Math.max(0, distance - CREEP_REACH);
+  const trotMs = trot > 0 ? (trot / TROT_SPEED) * 1000 : 0;
+  const trotLead = trot > 0 ? TROT_READY_MS + trotMs : 0;
+  const creep = Math.max(
+    CREEP_MIN_MS,
+    ((distance - trot) / CREEP_SPEED) * 1000,
+  );
   const last = move.steps.at(-1)?.pose.x ?? 0;
-  const lead = CREEP_READY_MS + creep;
+  const lead = trotLead + CREEP_READY_MS + creep;
   const propAt = move.propAt;
   return {
     ...move,
     steps: [
-      step(CREEP_READY_MS, 'crouch'),
+      ...(trot > 0
+        ? [
+            step(TROT_READY_MS, 'stand'),
+            step(trotMs, 'stand', { x: trot }, 'inOut'),
+          ]
+        : []),
+      step(CREEP_READY_MS, 'crouch', { x: trot }),
       step(creep, 'crouch', { x: distance }),
       ...move.steps.map((s) => ({
         ...s,
@@ -857,7 +922,8 @@ export const withApproach = (
         : []),
     ],
     mods: [
-      walking(CREEP_READY_MS, lead, 0.6),
+      ...(trot > 0 ? [walking(TROT_READY_MS, trotLead)] : []),
+      walking(trotLead + CREEP_READY_MS, lead, 0.6),
       ...move.mods.map((mod) => ({
         ...mod,
         from: mod.from + lead,

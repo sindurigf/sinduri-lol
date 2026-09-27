@@ -6,9 +6,6 @@ import { NODE } from './tags';
 import { readFileSync } from 'node:fs';
 import {
   MOVES,
-  moveExtent,
-  moveToPlay,
-  withApproach,
   type MoveName,
   duration,
   poseAt,
@@ -23,7 +20,8 @@ import {
   CONTROL_ROOM,
   CUP_EDGE,
   TRACK_MARGIN,
-  fitsTrack,
+  cupPush,
+  planMove,
 } from '../src/lib/about-cats';
 
 /**
@@ -179,6 +177,8 @@ test('no move lifts any part of a cat above its band', NODE, () => {
 
 /** The sleep control's box: `.motion-toggle`, h-10 w-10. */
 const CONTROL_SIZE = 40;
+/** Band widths the cup push is proved at: phone, small phone and desktop. */
+const CUP_WIDTHS = [320, 390, 1280];
 /** Band widths from the 320px reflow width up. */
 const BAND_WIDTHS = [320, 390, 768, 1280, 1920];
 /** Start positions tried along each track. */
@@ -193,15 +193,16 @@ test(
       const min = TRACK_MARGIN;
       const max = width - TRACK_MARGIN - CONTROL_ROOM;
       for (const name of Object.keys(MOVES) as MoveName[]) {
-        const move = moveToPlay(name);
+        if (MOVES[name]().edge) continue;
         for (let i = 0; i <= TRACK_STEPS; i += 1) {
           const x = min + ((max - min) * i) / TRACK_STEPS;
-          for (const dir of [1, -1]) {
-            if (!fitsTrack(x, moveExtent(name), dir, min, max)) continue;
-            const start = move.steps[0].pose;
-            for (let t = 0; t <= duration(move); t += FRAME_MS) {
-              const at = x + dir * poseAt(move, start, t).x;
-              if (at + HIT_HALF_WIDTH > width - CONTROL_SIZE) {
+          for (const facing of [1, -1]) {
+            const plan = planMove(name, x, facing, min, max);
+            if (!plan) continue;
+            const start = plan.move.steps[0].pose;
+            for (let t = 0; t <= duration(plan.move); t += FRAME_MS) {
+              const at = x + plan.dir * poseAt(plan.move, start, t).x;
+              if (at + HIT_HALF_WIDTH > width - CONTROL_SIZE || at < min - 1) {
                 under.push(`${name} at ${width}px from ${Math.round(x)}`);
                 break;
               }
@@ -215,33 +216,42 @@ test(
 );
 
 test(
-  'the cup push stays inside the band and ends back on the track, where another move fits',
+  'the cup push from anywhere on the track reaches the edge, stays in the band and ends back on the track',
   NODE,
   () => {
-    const move = moveToPlay('knock');
-    const max = BAND_WIDTHS[0] - TRACK_MARGIN - CONTROL_ROOM;
-    for (const gap of [0, 40, 110]) {
-      const pushed = withApproach(move, gap, TRACK_MARGIN - CUP_EDGE);
-      const start = pushed.steps[0].pose;
-      const from = CUP_EDGE + gap;
-      for (let t = 0; t <= duration(pushed); t += FRAME_MS) {
+    for (const width of CUP_WIDTHS) {
+      const min = TRACK_MARGIN;
+      const max = width - TRACK_MARGIN - CONTROL_ROOM;
+      for (let i = 0; i <= TRACK_STEPS; i += 1) {
+        const x = min + ((max - min) * i) / TRACK_STEPS;
+        const push = cupPush(x);
+        const start = push.steps[0].pose;
+        let nearest = x;
+        let farthest = x;
+        for (let t = 0; t <= duration(push); t += FRAME_MS) {
+          const at = x - poseAt(push, start, t).x;
+          nearest = Math.min(nearest, at);
+          farthest = Math.max(farthest, at);
+        }
         expect(
-          from - poseAt(pushed, start, t).x,
+          nearest,
           'the cat leaves the band at its left end',
         ).toBeGreaterThanOrEqual(0);
+        expect(
+          nearest,
+          'the cat never reaches the cup at the edge',
+        ).toBeLessThanOrEqual(CUP_EDGE + 1);
+        expect(
+          farthest + HIT_HALF_WIDTH,
+          'the cat reaches under its sleep control',
+        ).toBeLessThanOrEqual(width - CONTROL_SIZE);
+        const end = x - poseAt(push, start, duration(push)).x;
+        expect(end, 'the cat ends off its track').toBeGreaterThanOrEqual(min);
+        const next = (Object.keys(MOVES) as MoveName[]).filter(
+          (name) => !MOVES[name]().edge && planMove(name, end, 1, min, max),
+        );
+        expect(next, 'no move fits once the cup is pushed').not.toEqual([]);
       }
-      const end = from - poseAt(pushed, start, duration(pushed)).x;
-      expect(end, 'the cat ends off its track').toBeGreaterThanOrEqual(
-        TRACK_MARGIN,
-      );
-      const next = (Object.keys(MOVES) as MoveName[]).filter(
-        (name) =>
-          !MOVES[name]().edge &&
-          [1, -1].some((dir) =>
-            fitsTrack(end, moveExtent(name), dir, TRACK_MARGIN, max),
-          ),
-      );
-      expect(next, 'no move fits once the cup is pushed').not.toEqual([]);
     }
   },
 );
