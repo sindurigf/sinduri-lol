@@ -3,8 +3,8 @@
 ## Requirements
 
 - Node.js from [`.nvmrc`](../.nvmrc) (`nvm use`) and its bundled npm. CI and
-  Workers Builds read the same file, and `engines.node` matches it: no older
-  Node is tested.
+  Workers Builds read the same file, and `engines.node` matches it: CI tests
+  no older Node. Local `test:webkit` can run an older minor ([WebKit](#webkit)).
 - Docker for `test:webkit` and `check:pdf`.
 - No Cloudflare account or secrets for `dev`, `build`, `check` or any test
   suite. Only `check:live`'s D1 count needs `npx wrangler login` or
@@ -66,8 +66,11 @@ WebKit cannot run on Ubuntu newer than 24.04 (see `projects` in
 `playwright.config.ts`), so the script runs the suite in
 `mcr.microsoft.com/playwright`, pinned by digest in `scripts/test-webkit.sh`
 (`check:pins` enforces it). The script refuses to run when the image's tag is
-not the installed `@playwright/test` version; bump both together. Arguments
-pass through to `playwright test`:
+not the installed `@playwright/test` version; bump both together. It also
+refuses an image whose Node major differs from `.nvmrc`. An older minor is
+allowed, because Playwright's image ships the Node current at its release.
+That Node also stamps `dist/`, so run `npm run build` on the host before
+`npm run check` or `publish:talk`. Arguments pass through to `playwright test`:
 
 ```sh
 npm run test:webkit
@@ -114,11 +117,15 @@ npm run test:webkit -- tests/reflow.spec.ts
 | `CLOUDFLARE_API_TOKEN`          | unset                  | Lets `check:live` count unsent notifications in D1       |
 | `CHECK_LIVE_SKIP_D1`            | unset                  | `1` skips that D1 count                                  |
 
-Each checkout gets its own pair. Set them to run two suites in one checkout:
+Each checkout gets its own pair. Set them when another process holds one:
 
 ```sh
 TEST_PORT=4331 TEST_WORKER_PORT=4332 npm run test:a11y
 ```
+
+Run one suite at a time per checkout: every suite's build rewrites `dist/`,
+and `test:worker` adds a fixture to `public/videos/` during its build. Run
+suites in parallel from separate worktrees.
 
 ## Project layout
 

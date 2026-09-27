@@ -8,6 +8,9 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Longer than GitHub's 3-day default: time for a registry to pull a bad release.
+    cooldown:
+      default-days: 7
     groups:
       minor-and-patch:
         update-types: [minor, patch]
@@ -25,3 +28,5 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7

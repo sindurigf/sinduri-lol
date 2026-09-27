@@ -13,13 +13,11 @@ const DIST = join(ROOT, 'dist/client');
 const SRC = join(ROOT, 'src');
 const SOURCE_EXTENSIONS = ['.astro', '.vue', '.ts', '.md', '.mjs'];
 
-/* Classes that exist only for a test or script to select. */
-const HOOKS = new Map([
-  [
-    'page-hero',
-    'test hook: tests/page-hero.spec.ts selects it to find the hero.',
-  ],
-]);
+/*
+ * Classes that exist only for a test or script to select. An entry that no
+ * longer matches fails.
+ */
+const HOOKS = new Map();
 
 /* Skips node_modules, including a stale one under src/content/talks/. */
 const walk = (dir, extensions) =>
@@ -107,8 +105,19 @@ const main = async () => {
   const missing = [...used.keys()]
     .filter((token) => !defined.has(token) && !HOOKS.has(token))
     .sort();
+  const staleHooks = [...HOOKS.keys()].filter(
+    (hook) => !used.has(hook) || defined.has(hook),
+  );
+
+  for (const hook of staleHooks) {
+    console.error(
+      `Classes: hook "${hook}" no longer matches, as the built HTML does not ` +
+        'use it or it has CSS; remove it from HOOKS.',
+    );
+  }
 
   if (missing.length === 0) {
+    if (staleHooks.length > 0) process.exit(1);
     console.log(
       `Classes: all ${used.size} classes in the built HTML have CSS or are listed hooks.`,
     );

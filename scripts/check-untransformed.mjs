@@ -14,7 +14,10 @@ const DIST = join(ROOT, 'dist/client');
 const ASSETS = join(ROOT, 'src/assets');
 const TALKS = join(ROOT, 'src/content/talks');
 
-/* Each entry names what reads the original. */
+/*
+ * Each entry names what reads the original. An entry that no longer matches
+ * fails.
+ */
 const SERVED_AS_IS = new Map([
   [
     'bunny-dark.png',
@@ -76,9 +79,22 @@ const run = async () => {
     if (source !== undefined) shipped.push({ source, file });
   }
 
+  const shippedNames = new Set(
+    shipped.map(({ source }) => relative(ASSETS, source)),
+  );
   const unexpected = shipped.filter(
     ({ source }) => !SERVED_AS_IS.has(relative(ASSETS, source)),
   );
+  const stale = [...SERVED_AS_IS.keys()].filter(
+    (name) => !shippedNames.has(name),
+  );
+
+  for (const name of stale) {
+    console.error(
+      `Untransformed: SERVED_AS_IS entry "${name}" no longer matches, as the ` +
+        'build does not ship it byte for byte; remove it from SERVED_AS_IS.',
+    );
+  }
 
   if (unexpected.length > 0) {
     console.error(
@@ -98,6 +114,7 @@ const run = async () => {
     );
     process.exit(1);
   }
+  if (stale.length > 0) process.exit(1);
 
   const kept = [...SERVED_AS_IS.keys()].join(', ');
   console.log(
