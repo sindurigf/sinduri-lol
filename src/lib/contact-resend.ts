@@ -37,12 +37,21 @@ interface UnsentRow {
 /**
  * Emails unsent notifications, fewest failed attempts first, then oldest.
  * Logs counts every run, zero included, so a stalled resend differs from an idle one.
+ * Throws before reading any message when the mailer or recipient is missing,
+ * so a config fault does not count against MAX_RESEND_ATTEMPTS.
  */
 export const resendUnsentNotifications = async (
   database: D1Database,
   bindings: ContactEnv,
   now: number,
 ): Promise<number> => {
+  if (!bindings.CONTACT_MAILER) {
+    throw new Error('CONTACT_MAILER binding missing');
+  }
+  if (!bindings.CONTACT_NOTIFY_TO) {
+    throw new Error('CONTACT_NOTIFY_TO secret missing');
+  }
+
   const { results } = await database
     .prepare(
       'SELECT id, name, email, body, created_at FROM messages ' +

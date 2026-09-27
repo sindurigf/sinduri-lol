@@ -147,6 +147,30 @@ test.describe('the notification resend', NODE, () => {
     ).toEqual(['notification resend: sent 0 of 0 unsent notifications']);
   });
 
+  for (const missing of ['CONTACT_MAILER', 'CONTACT_NOTIFY_TO'] as const) {
+    test(`fails the run without counting attempts when ${missing} is missing`, async () => {
+      const { database, sent } = databaseWith([ROW]);
+      const { bindings } = mailer(true);
+      delete bindings[missing];
+
+      const { logged } = await captureConsole(['error', 'log'], () =>
+        expect(
+          resendUnsentNotifications(database, bindings, NOW),
+        ).rejects.toThrow(missing),
+      );
+
+      expect(
+        sent,
+        'a missing binding or secret touched the database, so a config fault ' +
+          "spends every message's resend attempts.",
+      ).toEqual([]);
+      expect(
+        logged.error,
+        'the resend logged per message; the cron handler logs the throw once.',
+      ).toEqual([]);
+    });
+  }
+
   test("a mailer error that quotes the sender's address is logged without it", async () => {
     const { database } = databaseWith([ROW]);
     const bindings: ContactEnv = {
