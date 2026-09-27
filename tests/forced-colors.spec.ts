@@ -3,6 +3,7 @@ import { gotoSettled } from './settle';
 import { SAMPLED_ROUTES } from './routes';
 import { GLOBAL_CSS, cssColorToken } from './source';
 import { REFLOW_VIEWPORT } from './wcag';
+import { tabWalk } from './tab-walk';
 
 /**
  * `forced-colors: active` drops box-shadow, so a control bounded only by `shadow-hard-*`
@@ -39,7 +40,7 @@ const parseRgb = (value: string): Rgb | null => {
     : null;
 };
 
-/* Bounds the walk below, far above /'s stop count; a trap ends it on a repeat. */
+/* Far above /'s stop count; reaching it fails the walk as a focus trap. */
 const MAX_FOCUS_STOPS = 200;
 /* / has the header, the hero's controls and the footer; well under its count. */
 const MIN_FOCUS_STOPS = 10;
@@ -246,24 +247,21 @@ test.describe('forced colours', () => {
     await gotoSettled(page, '/');
     await forceColours(page, '/');
 
-    const stops: { name: string; width: number; style: string }[] = [];
-    for (let i = 0; i < MAX_FOCUS_STOPS; i += 1) {
-      await page.keyboard.press('Tab');
-      const stop = await page.evaluate(() => {
-        const element = document.activeElement as HTMLElement | null;
-        if (!element || element === document.body) return null;
-        if (element.dataset.forcedWalk === 'seen') return 'repeat';
-        element.dataset.forcedWalk = 'seen';
-        const style = getComputedStyle(element);
-        return {
-          name: `${element.tagName.toLowerCase()} ${(element.textContent ?? '').trim().slice(0, 40)}`,
-          width: parseFloat(style.outlineWidth),
-          style: style.outlineStyle,
-        };
-      });
-      if (stop === 'repeat' || stop === null) break;
-      stops.push(stop);
-    }
+    await page.keyboard.press('Tab');
+    const stops = await tabWalk(
+      page,
+      () =>
+        page.evaluate(() => {
+          const element = document.activeElement!;
+          const style = getComputedStyle(element);
+          return {
+            name: `${element.tagName.toLowerCase()} ${(element.textContent ?? '').trim().slice(0, 40)}`,
+            width: parseFloat(style.outlineWidth),
+            style: style.outlineStyle,
+          };
+        }),
+      { max: MAX_FOCUS_STOPS },
+    );
 
     expect(
       stops.length,

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { DESKTOP_VIEWPORT, PHONE_VIEWPORT } from './wcag';
+import { tabWalk } from './tab-walk';
 
 /**
  * Below 30rem of viewport height (a landscape phone, or 960px at 200% zoom) the
@@ -93,38 +94,32 @@ for (const view of VIEWS) {
         await gotoSettled(page, WALK_ROUTE);
         await page.locator('body').press('Tab');
         await nextFrames(page);
-        const under: string[] = [];
-        const seen = new Set<string>();
-        for (let i = 0; i < MAX_TAB_STOPS; i += 1) {
-          const stop = await page.evaluate(() => {
-            const el = document.activeElement;
-            if (!el || el === document.body) return null;
-            const key =
-              (el as HTMLElement).dataset.walk ?? String(Math.random());
-            (el as HTMLElement).dataset.walk = key;
-            const header = document.querySelector('header.page-gutter')!;
-            const box = el.getBoundingClientRect();
-            const edge = header.getBoundingClientRect().bottom;
-            const drawnAbove = getComputedStyle(el).position !== 'static';
-            return {
-              key,
-              under:
-                !header.contains(el) &&
-                !drawnAbove &&
-                edge > 0 &&
-                box.top < edge &&
-                box.bottom > 0,
-              text: (el.textContent ?? '').trim().slice(0, 30),
-            };
-          });
-          if (!stop || seen.has(stop.key)) break;
-          seen.add(stop.key);
-          if (stop.under) under.push(stop.text);
-          await page.keyboard.press('Tab');
-          await nextFrames(page);
-        }
-        expect(seen.size, 'the walk reached nothing').toBeGreaterThan(1);
-        expect(under, 'focused while partly under the header').toEqual([]);
+        const stops = await tabWalk(
+          page,
+          () =>
+            page.evaluate(() => {
+              const el = document.activeElement!;
+              const header = document.querySelector('header.page-gutter')!;
+              const box = el.getBoundingClientRect();
+              const edge = header.getBoundingClientRect().bottom;
+              const drawnAbove = getComputedStyle(el).position !== 'static';
+              return {
+                under:
+                  !header.contains(el) &&
+                  !drawnAbove &&
+                  edge > 0 &&
+                  box.top < edge &&
+                  box.bottom > 0,
+                text: (el.textContent ?? '').trim().slice(0, 30),
+              };
+            }),
+          { max: MAX_TAB_STOPS, settle: () => nextFrames(page) },
+        );
+        expect(stops.length, 'the walk reached nothing').toBeGreaterThan(1);
+        expect(
+          stops.filter((stop) => stop.under).map((stop) => stop.text),
+          'focused while partly under the header',
+        ).toEqual([]);
       });
     }
   });
