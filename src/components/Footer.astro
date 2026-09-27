@@ -1,5 +1,5 @@
 ---
-import { CONTACT_EMAIL } from '../lib/contact';
+import { CONTACT_MAILTO } from '../lib/contact';
 import { NAV_LINKS } from '../lib/nav';
 import { SOCIAL_PROFILES } from '../lib/profiles';
 import { SITE_NAME } from '../lib/site';
@@ -11,7 +11,7 @@ import socialIcons from '../assets/social-icons.svg?url';
 /* Email is appended here, not in profiles.ts, which also feeds JSON-LD `sameAs`. */
 const SOCIAL_LINKS = [
   ...SOCIAL_PROFILES,
-  { href: `mailto:${CONTACT_EMAIL}`, label: 'Email' },
+  { href: CONTACT_MAILTO, label: 'Email' },
 ] as const;
 
 const POLICY_LINKS = [

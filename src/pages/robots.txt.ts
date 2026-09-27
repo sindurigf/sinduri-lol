@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { requireSite } from '../lib/site';
 import { SITEMAP_PATH } from '../lib/paths';
 
 /*
@@ -16,12 +17,11 @@ const AI_TRAINING_CRAWLERS = [
   'Applebot-Extended',
 ] as const;
 
-export const GET: APIRoute = ({ site }) => {
-  if (!site) {
-    throw new Error(
-      'robots.txt needs `site` in astro.config.mjs for an absolute Sitemap URL.',
-    );
-  }
+export const GET: APIRoute = ({ site: configuredSite }) => {
+  const site = requireSite(
+    configuredSite,
+    'robots.txt needs an absolute Sitemap URL.',
+  );
 
   const body = [
     ...AI_TRAINING_CRAWLERS.flatMap((agent) => [

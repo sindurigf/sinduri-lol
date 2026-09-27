@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ContactForm from '../components/ContactForm.astro';
 import PageHero from '../components/PageHero.astro';
 import Section from '../components/Section.astro';
-import { CONTACT_EMAIL } from '../lib/contact';
+import { CONTACT_EMAIL, CONTACT_MAILTO } from '../lib/contact';
 import { SOCIAL_PROFILES } from '../lib/profiles';
 
 /*
@@ -26,7 +26,7 @@ const CONTACT_METHODS = [
   {
     label: 'Email',
     value: CONTACT_EMAIL,
-    href: `mailto:${CONTACT_EMAIL}`,
+    href: CONTACT_MAILTO,
   },
   {
     label: 'LinkedIn',

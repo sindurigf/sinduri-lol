@@ -1,4 +1,4 @@
-import { CONTACT_EMAIL } from './contact';
+import { CONTACT_MAILTO } from './contact';
 import { SITE_LANGUAGE } from './site-language';
 import { PERSON_NAME, SOCIAL_PROFILES } from './profiles';
 import type { Trail } from './breadcrumbs';
@@ -101,7 +101,7 @@ const structuredData = ({
         name: PERSON_NAME,
         url: home,
         ...(personImage ? { image: personImage.href } : {}),
-        email: `mailto:${CONTACT_EMAIL}`,
+        email: CONTACT_MAILTO,
         sameAs: SOCIAL_PROFILES.map((profile) => profile.href),
       },
       {
