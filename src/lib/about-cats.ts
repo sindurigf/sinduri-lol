@@ -81,6 +81,7 @@ export interface CatInfo {
   photo: {
     src: string;
     srcset: string;
+    sizes: string;
     width: number;
     height: number;
     alt: string;
