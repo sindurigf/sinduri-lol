@@ -346,7 +346,6 @@ export const createColony = (
     };
   };
 
-  /* Asleep from the first frame, so the control offers to wake it while it lies down. */
   /** Faces the band's middle first if its head, lying down, would reach past the band's end. */
   const sleepFacing = (cat: CatState): number => {
     const facing = Math.sign(cat.pose.face) || 1;
@@ -357,6 +356,7 @@ export const createColony = (
     return past ? -facing : facing;
   };
 
+  /* Asleep from the first frame, so the control offers to wake it while it lies down. */
   const lieDown = (cat: CatState, now: number): void => {
     setAsleep(cat, true);
     play(cat, MOVES.sleep(), now, sleepFacing(cat), undefined, true);
