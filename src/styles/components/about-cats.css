@@ -195,7 +195,16 @@
   }
 
   .cat-prop-blanket {
-    fill: var(--color-border);
+    fill: var(--color-cat-hela-orange);
+  }
+
+  .cat-prop-fold {
+    fill: var(--color-cat-cardboard);
+  }
+
+  .cat-prop-stripe {
+    fill: none;
+    stroke: var(--color-cat-hela);
   }
 
   .cat-prop-card {

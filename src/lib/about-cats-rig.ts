@@ -735,12 +735,32 @@ export const createProp = (
       node,
     );
   } else if (kind === 'blanket') {
+    /* A soft, rumpled blanket with a folded corner and two stripes: wide and low, not a toy. */
     el(
       'path',
       {
-        d: 'M-26 0V-4q4.3-3 8.7 0t8.7 0t8.7 0t8.7 0t8.7 0t8.7 0V0Z',
+        d: 'M-40 0C-41 -5 -36 -9 -28 -8C-18 -11 -8 -7 2 -9C12 -11 22 -7 30 -9C36 -10 40 -5 38 0Z',
         ...edge,
         class: 'cat-prop-solid cat-prop-blanket',
+      },
+      node,
+    );
+    el(
+      'path',
+      {
+        d: 'M-30 -4C-18 -6 -6 -3 6 -5C16 -7 26 -4 34 -5M-34 -1C-20 -3 -4 0 10 -2C20 -3 28 -1 36 -2',
+        class: 'cat-prop-stripe',
+        'stroke-width': 1.6,
+        'stroke-linecap': 'round',
+      },
+      node,
+    );
+    el(
+      'path',
+      {
+        d: 'M30 -9L38 0L28 -2Z',
+        ...edge,
+        class: 'cat-prop-solid cat-prop-fold',
       },
       node,
     );

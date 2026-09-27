@@ -343,8 +343,43 @@ const HOP_HEIGHT = 30;
 const POST_GAP = 34;
 const YARN_BOUND_HEIGHT = 22;
 const FLY_HOP_HEIGHT = 24;
-/** The fly zigzags ahead of the cat this long, then gets away. */
-const FLY_CHASE_MS = 3500;
+/* The fly's route, [ms, x, y] ahead of the cat: it lands, is missed, circles, and escapes. */
+const FLY_PATH: readonly (readonly [number, number, number])[] = [
+  [0, 40, -60],
+  [1800, 75, -58],
+  [2500, 130, -4],
+  [4600, 130, -4],
+  [5100, 140, -70],
+  [6700, 140, -66],
+  [7700, 175, -55],
+  [8500, 220, -60],
+  [9300, 290, -95],
+];
+const FLY_LANDS = 2500;
+const FLY_TAKES_OFF = 4600;
+const FLY_ESCAPES = 8600;
+/** Knead rhythm (ms per radian) and how high each paw lifts, in px. */
+const KNEAD_BEAT = 260;
+const KNEAD_LIFT = 7;
+/** The blanket lies under the front paws and ahead, so most of it shows. */
+const BLANKET_AHEAD = 38;
+
+/** A point along a timed route, straight between its points. */
+const along = (
+  route: readonly (readonly [number, number, number])[],
+  t: number,
+): [number, number] => {
+  for (let i = 1; i < route.length; i += 1) {
+    const [t1, x1, y1] = route[i];
+    const [t0, x0, y0] = route[i - 1];
+    if (t <= t1) {
+      const k = (t - t0) / (t1 - t0 || 1);
+      return [x0 + (x1 - x0) * k, y0 + (y1 - y0) * k];
+    }
+  }
+  const [, x, y] = route[route.length - 1];
+  return [x, y];
+};
 
 /*
  * Rolling onto the back: low, then over all at once with a small flop. Easing
@@ -441,24 +476,33 @@ export const MOVES = {
     ],
     mods: [],
   }),
+  /* Kneads the blanket: paws pressing in turn, head bobbing, eyes shut, tail sweeping slowly. */
   knead: (): Move => ({
     steps: [
       step(500, 'knead'),
-      step(2600, 'knead'),
+      step(4200, 'knead'),
       step(500, 'loaf'),
       step(500, 'sit'),
     ],
     prop: 'blanket',
-    propAt: (t) => ({ ...still('blanket', 12), o: Math.min(1, t / 300) }),
+    propAt: (t) => ({
+      ...still('blanket', BLANKET_AHEAD),
+      o: Math.min(1, t / 300, Math.max(0, (5700 - t) / 300)),
+    }),
     mods: [
-      between(500, 3100, (p, s) => {
-        const w = Math.sin(s / 170);
-        p.fN[1] -= 4 * Math.max(0, w);
-        p.fF[1] -= 4 * Math.max(0, -w);
-        p.hy += 0.4 * w;
+      between(500, 4700, (p, s) => {
+        const w = Math.sin(s / KNEAD_BEAT);
+        p.fN[1] -= KNEAD_LIFT * Math.max(0, w);
+        p.fF[1] -= KNEAD_LIFT * Math.max(0, -w);
+        p.fN[0] += 2 * Math.max(0, w);
+        p.fF[0] += 2 * Math.max(0, -w);
+        p.hy += 1.2 * w;
+        p.ba += 1.5 * w;
+        p.tw = 3;
       }),
     ],
   }),
+  /* Bats at the feather toy on its string: swats, a rear, a double swipe, and a last swat. */
   toy: (): Move => {
     const hit = (t: number, at: number): number =>
       t > at ? 30 * Math.exp(-(t - at) / 600) * Math.sin((t - at) / 120) : 0;
@@ -467,10 +511,14 @@ export const MOVES = {
         step(700, 'sit', { hr: -15 }),
         step(160, 'sit', { hr: -18, fN: [20, -18] }, 'out'),
         step(500, 'sit', { hr: -15 }),
+        step(160, 'sit', { hr: -20, fN: [20, -20] }, 'out'),
+        step(600, 'sit', { hr: -12 }),
         step(400, 'rear'),
         step(160, 'rear', { fN: [18, -22], fF: [16, -18] }, 'out'),
         step(260, 'rear'),
         step(160, 'rear', { fN: [18, -22], fF: [16, -18] }, 'out'),
+        step(500, 'sit', { hr: -15 }),
+        step(160, 'sit', { hr: -18, fN: [20, -18] }, 'out'),
         step(500, 'sit'),
         step(600, 'sit'),
       ],
@@ -480,8 +528,13 @@ export const MOVES = {
         kind: 'toy',
         x: 28,
         y: -32 + 4 * Math.sin(t / 700),
-        r: hit(t, 860) + hit(t, 1900) + hit(t, 2320),
-        o: Math.min(1, t / 300, Math.max(0, (3440 - t) / 400)),
+        r:
+          hit(t, 860) +
+          hit(t, 1520) +
+          hit(t, 2780) +
+          hit(t, 3200) +
+          hit(t, 3860),
+        o: Math.min(1, t / 300, Math.max(0, (4860 - t) / 400)),
       }),
     };
   },
@@ -533,43 +586,66 @@ export const MOVES = {
     ],
   }),
   /* Watches the fly, crouches, leaps straight up for it, and the fly gets away. */
-  /* Follows a zigzagging fly along the band in hops, then leaps for it; it gets away. */
+  /*
+   * The fly lands; the cat stalks it and pounces, misses, swats at it overhead,
+   * follows it along the band in hops, leaps for it, and it gets away.
+   */
   fly: (): Move => ({
     steps: [
-      step(800, 'sit'),
+      step(1200, 'sit'),
       step(300, 'crouch'),
       step(120, 'crouch', { sq: 0.88 }, 'in'),
       step(350, 'air', { x: 50 }, 'linear'),
       step(150, 'crouch', { x: 60, sq: 0.86 }, 'out'),
-      step(400, 'crouch', { x: 60, hr: -18 }),
-      step(120, 'crouch', { x: 60, sq: 0.88 }, 'in'),
-      step(350, 'air', { x: 110 }, 'linear'),
-      step(150, 'crouch', { x: 120, sq: 0.86 }, 'out'),
-      step(350, 'crouch', { x: 120, hr: -18 }),
-      step(160, 'crouch', { x: 120, sq: 0.86 }, 'in'),
-      step(260, 'leap', { x: 150 }, 'out'),
-      step(260, 'leap', { x: 160 }, 'in'),
-      step(150, 'crouch', { x: 170, sq: 0.84 }, 'out'),
-      step(500, 'sit', { x: 170 }),
+      step(700, 'crouch', { x: 60, hr: 6 }),
+      step(1000, 'crouch', { x: 72 }, 'linear'),
+      step(600, 'crouch', { x: 72 }),
+      step(140, 'crouch', { x: 72, sq: 0.9 }, 'in'),
+      step(350, 'air', { x: 100 }, 'linear'),
+      step(150, 'crouch', { x: 108, sq: 0.84 }, 'out'),
+      step(600, 'sit', { x: 108, hr: -22 }),
+      step(400, 'rear', { x: 108 }),
+      step(160, 'rear', { x: 108, fN: [18, -22], fF: [16, -18] }, 'out'),
+      step(260, 'rear', { x: 108 }),
+      step(160, 'rear', { x: 108, fN: [18, -22], fF: [16, -18] }, 'out'),
+      step(300, 'crouch', { x: 108 }),
+      step(120, 'crouch', { x: 108, sq: 0.88 }, 'in'),
+      step(350, 'air', { x: 150 }, 'linear'),
+      step(150, 'crouch', { x: 160, sq: 0.86 }, 'out'),
+      step(350, 'crouch', { x: 160, hr: -18 }),
+      step(160, 'crouch', { x: 160, sq: 0.86 }, 'in'),
+      step(260, 'leap', { x: 190 }, 'out'),
+      step(260, 'leap', { x: 200 }, 'in'),
+      step(150, 'crouch', { x: 210, sq: 0.84 }, 'out'),
+      step(500, 'sit', { x: 210, hr: -20 }),
+      step(600, 'sit', { x: 210 }),
     ],
     mods: [
-      between(0, 800, (p, s) => {
+      between(0, 1200, (p, s) => {
         p.hr = -18 + 14 * Math.sin(s / 260);
       }),
-      wiggle(800, 1100),
-      arc(1220, 1570, FLY_HOP_HEIGHT),
-      arc(2240, 2590, FLY_HOP_HEIGHT),
-      wiggle(2740, 3090),
-      arc(3250, 3770, LEAP_HEIGHT),
+      wiggle(1200, 1500),
+      arc(1620, 1970, FLY_HOP_HEIGHT),
+      walking(2820, 3820, 0.6),
+      between(2820, 4420, (p) => {
+        p.tw = 5;
+      }),
+      wiggle(3820, 4420),
+      arc(4560, 4910, POUNCE_HEIGHT),
+      wiggle(6640, 6940),
+      arc(7060, 7410, FLY_HOP_HEIGHT),
+      wiggle(7560, 7910),
+      arc(8070, 8590, LEAP_HEIGHT),
     ],
     prop: 'fly',
     propAt: (t) => {
-      const ahead = Math.min(1, t / FLY_CHASE_MS);
-      const away = Math.min(1, Math.max(0, (t - FLY_CHASE_MS) / 700));
+      const [x, y] = along(FLY_PATH, t);
+      const buzz = t < FLY_LANDS || t > FLY_TAKES_OFF ? 1 : 0;
+      const away = Math.min(1, Math.max(0, (t - FLY_ESCAPES) / 700));
       return {
         kind: 'fly',
-        x: 36 + ahead * 150 + 16 * Math.sin(t / 260) + away * 60,
-        y: -60 + 12 * Math.sin(t / 170) - away * 30,
+        x: x + buzz * 10 * Math.sin(t / 260),
+        y: y + buzz * 8 * Math.sin(t / 170),
         r: 0,
         o: 1 - away,
       };
