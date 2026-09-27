@@ -9,7 +9,7 @@ import {
   WEIGHTS,
   clonePose,
   duration,
-  extent,
+  moveExtent,
   mixPose,
   pose,
   poseAt,
@@ -175,15 +175,14 @@ export interface Colony {
   watching: () => boolean;
 }
 
-/** Whether a move played from `x` heading `dir` keeps the cat within [min, max]. */
+/** Whether a move of this extent, played from `x` heading `dir`, keeps the cat within [min, max]. */
 export const fitsTrack = (
   x: number,
-  move: Move,
+  [back, forward]: readonly [number, number],
   dir: number,
   min: number,
   max: number,
 ): boolean => {
-  const [back, forward] = extent(move);
   const a = x + dir * back;
   const b = x + dir * forward;
   return Math.min(a, b) >= min && Math.max(a, b) <= max;
@@ -293,20 +292,20 @@ export const createColony = (
     );
   };
 
-  const fits = (cat: CatState, move: Move, dir: number): boolean =>
-    fitsTrack(cat.pose.x, move, dir, cat.min, cat.max);
+  const fits = (cat: CatState, name: MoveName, dir: number): boolean =>
+    fitsTrack(cat.pose.x, moveExtent(name), dir, cat.min, cat.max);
 
   /** One leap along the band, ahead if it fits, else back; false if neither fits. */
   const leap = (cat: CatState, now: number): boolean => {
-    const move = MOVES[pickWeighted(LEAPS)]();
+    const name = pickWeighted(LEAPS);
     const facing = Math.sign(cat.pose.face) || 1;
-    const dir = fits(cat, move, facing)
+    const dir = fits(cat, name, facing)
       ? facing
-      : fits(cat, move, -facing)
+      : fits(cat, name, -facing)
         ? -facing
         : 0;
     if (dir === 0) return false;
-    play(cat, move, now, dir, () => next(cat, performance.now()));
+    play(cat, moveToPlay(name), now, dir, () => next(cat, performance.now()));
     return true;
   };
 
@@ -333,9 +332,9 @@ export const createColony = (
       );
       return;
     }
-    const dir = fits(cat, move, facing)
+    const dir = fits(cat, name, facing)
       ? facing
-      : fits(cat, move, -facing)
+      : fits(cat, name, -facing)
         ? -facing
         : 0;
     if (dir === 0) {

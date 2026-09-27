@@ -6,6 +6,7 @@ import { NODE } from './tags';
 import { readFileSync } from 'node:fs';
 import {
   MOVES,
+  moveExtent,
   moveToPlay,
   withApproach,
   type MoveName,
@@ -196,7 +197,7 @@ test(
         for (let i = 0; i <= TRACK_STEPS; i += 1) {
           const x = min + ((max - min) * i) / TRACK_STEPS;
           for (const dir of [1, -1]) {
-            if (!fitsTrack(x, move, dir, min, max)) continue;
+            if (!fitsTrack(x, moveExtent(name), dir, min, max)) continue;
             const start = move.steps[0].pose;
             for (let t = 0; t <= duration(move); t += FRAME_MS) {
               const at = x + dir * poseAt(move, start, t).x;

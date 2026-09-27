@@ -8,6 +8,7 @@ import {
   useTemplateRef,
 } from 'vue';
 import { createCatRig, type CatId } from '../../lib/about-cats-rig';
+import { MOVE_NAMES, moveExtent } from '../../lib/about-cats-moves';
 import {
   createColony,
   type CatInfo,
@@ -36,6 +37,18 @@ const PLACES: Record<CatId, { start: number; facing: 1 | -1 }> = {
 };
 
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
+/** Fallback slot between warm-ups where requestIdleCallback is missing (Safari). */
+const WARM_GAP_MS = 50;
+
+/* One move's extent per idle slot, so the first leap never samples on a frame. */
+const warmExtents = (names: readonly (typeof MOVE_NAMES)[number][]): void => {
+  const [name, ...rest] = names;
+  if (!name || !mounted.value) return;
+  moveExtent(name);
+  if ('requestIdleCallback' in window)
+    window.requestIdleCallback(() => warmExtents(rest));
+  else window.setTimeout(() => warmExtents(rest), WARM_GAP_MS);
+};
 
 const mounted = ref(false);
 const reducedMotion = ref(false);
@@ -268,6 +281,7 @@ onMounted(async () => {
   });
   layout();
   if (reducedMotion.value) colony.still();
+  else warmExtents(MOVE_NAMES);
 
   resizeObserver = new ResizeObserver(layout);
   viewObserver = new IntersectionObserver((entries) => {

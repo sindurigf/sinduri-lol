@@ -737,6 +737,21 @@ const slower = (move: Move, factor: number): Move => {
 export const moveToPlay = (name: MoveName): Move =>
   SLOW_MOVES.has(name) ? slower(MOVES[name](), SLOW_PLAY) : MOVES[name]();
 
+/* Move factories are deterministic, so each name's extent is sampled once. */
+const extents = new Map<MoveName, readonly [number, number]>();
+
+/** Every move name, to warm moveExtent's cache before any is needed. */
+export const MOVE_NAMES = Object.keys(MOVES) as MoveName[];
+
+/** The extent of moveToPlay(name), computed on first use and then kept. */
+export const moveExtent = (name: MoveName): readonly [number, number] => {
+  const known = extents.get(name);
+  if (known) return known;
+  const found = extent(moveToPlay(name));
+  extents.set(name, found);
+  return found;
+};
+
 /** Relative weights; play in place outweighs getting about, which is only by leaps. */
 export const WEIGHTS: Partial<Record<MoveName, number>> = {
   look: 5,
