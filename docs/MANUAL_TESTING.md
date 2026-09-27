@@ -512,7 +512,7 @@ header or nav layout change.
       route. → SC 1.4.10
 - [ ] Header nav links are at least 24px tall (expected 40.8px: 16.8px line,
       `py-2`, `border-4`) and equal height, current or not.
-- [ ] Mobile menu button 48x48.
+- [ ] Mobile menu button 48x48, 40x40 below 21rem (336px).
 - [ ] Footer profile tiles 56x56, 48x48 on a phone.
 - [ ] Mobile menu links at 320px at least 24px tall.
 - [ ] Breadcrumb links above a post `h1` are 32.8px tall (`py-2 -my-2`): the
