@@ -462,11 +462,18 @@ const rotateAbout = (q: Point, c: Point, degrees: number): Point => {
 const zzAt = (p: Pose, head: Point): Point =>
   pt(p.face * (head.x + ZZ_AHEAD), head.y - ZZ_ABOVE + ZZ_RISE * (1 - p.zz));
 
+/** Past its highest point a pose's drawing reaches this much more, kept as the band's headroom rule. */
+const STROKE_REACH = EDGE + LEG_W / 2;
+/** Half the widest edge stroke, a leg's: how far a drawing reaches past a point sideways. */
+const SIDE_REACH = (LEG_W + EDGE) / 2;
+/** The "z" glyph's width, drawn right from its lower left whichever way the cat faces. */
+const ZZ_WIDTH = 12;
+
 /*
- * Height of a pose's highest drawn point above the ground, edge included.
+ * A pose's outermost drawn points, facing right, before its edge.
  * The tail is taken straight at its targets; the spring only lags behind them.
  */
-export const highestPoint = (p: Pose): number => {
+const outline = (p: Pose): Point[] => {
   const { centre, half, at, length, head } = skeleton(p);
   const headPoint = (q: Point): Point => {
     const turned = rotateAbout(q, pt(0, 0), p.hr);
@@ -479,16 +486,16 @@ export const highestPoint = (p: Pose): number => {
     at(length * 0.5, half * 1.05),
     at(-2, half),
     at(length + 2, half * 0.95),
+    at(-6, 0),
+    at(length + 7, 0),
     headPoint(pt(0, -HEAD_RY)),
+    headPoint(pt(HEAD_RX, 0)),
+    headPoint(pt(-HEAD_RX, 0)),
     ...ears.map(headPoint),
     ...(['fN', 'fF', 'hN', 'hF'] as const).map((k) =>
       pt(centre.x + p[k][0], centre.y + p[k][1]),
     ),
   ];
-  if (p.zz > 0) {
-    const z = zzAt(p, head);
-    points.push(pt(z.x, z.y - ZZ_HEIGHT));
-  }
   let q = at(-4, 0);
   for (const angle of tailTargets(p, 0)) {
     q = pt(
@@ -497,10 +504,24 @@ export const highestPoint = (p: Pose): number => {
     );
     points.push(q);
   }
-  const top = Math.min(
-    ...points.map((point) => rotateAbout(point, centre, p.rot).y),
-  );
-  return -top + EDGE + LEG_W / 2;
+  return points.map((point) => rotateAbout(point, centre, p.rot));
+};
+
+/** Height of a pose's highest drawn point above the ground, edge included. */
+export const highestPoint = (p: Pose): number => {
+  const tops = outline(p).map((q) => q.y);
+  if (p.zz > 0) tops.push(zzAt(p, skeleton(p).head).y - ZZ_HEIGHT);
+  return -Math.min(...tops) + STROKE_REACH;
+};
+
+/** How far a pose's drawing reaches left and right of its origin, edge included. */
+export const reachOf = (p: Pose): [number, number] => {
+  const xs = outline(p).map((q) => p.face * q.x);
+  if (p.zz > 0) {
+    const z = zzAt(p, skeleton(p).head);
+    xs.push(z.x, z.x + ZZ_WIDTH);
+  }
+  return [Math.min(...xs) - SIDE_REACH, Math.max(...xs) + SIDE_REACH];
 };
 
 export const renderCat = (

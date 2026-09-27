@@ -41,8 +41,10 @@ type StepResult = 'draw' | 'still' | 'rest';
 /** On-screen play time after waking before a cat naps. */
 const NAP_AFTER_MS = 30_000;
 
-/** Distance from each card end the cat's origin keeps. */
-export const TRACK_MARGIN = 40;
+/** Distance from each card end the cat's origin keeps, so its drawing reaches at most MAX_OVERHANG past the end. */
+export const TRACK_MARGIN = 48;
+/** px a drawing may reach past its band's end: the page gutter on phones (`px-4`), so it stays on screen. */
+export const MAX_OVERHANG = 16;
 /** Room at the right end for the sleep control. */
 export const CONTROL_ROOM = 48;
 /** Chance a cat moves along its band, by one leap, instead of playing where it is. */
@@ -53,8 +55,8 @@ const LEAPS: Partial<Record<MoveName, number>> = {
   pounce: 3,
   stalk: 1,
 };
-/** Where a cat stands from the card's edge to push the cup: CUP_AHEAD plus its push takes the cup past the edge. */
-export const CUP_EDGE = 44;
+/** Where a cat stands from the card's edge to push the cup, the track's end: CUP_AHEAD plus its push takes the cup past the edge. */
+export const CUP_EDGE = TRACK_MARGIN;
 /** A pointer that has not moved for this long no longer draws a cat's eye. */
 const POINTER_IDLE_MS = 4000;
 const FACE_DEADBAND = 20;
