@@ -58,8 +58,11 @@ const setUpMenu = (root: HTMLElement): void => {
   panel.addEventListener('close', () => {
     trigger.setAttribute('aria-expanded', 'false');
     lockScroll(false);
-    /* Widened past 48rem while open, the trigger is hidden: focus the nav. */
-    if (!trigger.checkVisibility()) {
+    /*
+     * Widened past 48rem while open, the trigger is hidden: focus the nav.
+     * Not checkVisibility(): Safari lacks it before 17.4, inside the CSS target.
+     */
+    if (trigger.getClientRects().length === 0) {
       document
         .querySelector<HTMLAnchorElement>('header nav[aria-label="Primary"] a')
         ?.focus();

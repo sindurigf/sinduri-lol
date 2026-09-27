@@ -6,6 +6,7 @@ import {
   getCategoriesWithPosts,
   type BlogPost,
 } from '../lib/blog';
+import { ariaCurrent } from '../lib/nav';
 import { BLOG_PATH, categoryHref, indexPageHref } from '../lib/paths';
 import BlogCard from './BlogCard.astro';
 
@@ -57,6 +58,9 @@ const activeHref =
       ? categoryHref(filter.category)
       : null;
 
+/* `true` past page 1: the pagination link, not the filter, is the page. */
+const currentPath = Astro.url.pathname;
+
 /* Only `/blog` can be empty: category and tag pages exist only with posts. */
 const EMPTY_BLOG = {
   sentence: 'Nothing has been published here yet.',
@@ -72,7 +76,9 @@ const EMPTY_BLOG = {
         <li>
           <a
             href={option.href}
-            aria-current={isActive ? 'page' : undefined}
+            aria-current={
+              isActive ? ariaCurrent(currentPath, option.href) : undefined
+            }
             class="chip"
           >
             {isActive ? (
