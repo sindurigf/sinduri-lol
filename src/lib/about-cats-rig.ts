@@ -46,8 +46,8 @@ const PUPIL_AHEAD = 0.4;
 const WHISKERS = 'M11 3l9 -3M11 4.4l10 0.5M11 5.8l9 3.5';
 /** Where Minerva's back stripes cross the body, as fractions of its length. */
 const STRIPES = [0.3, 0.5, 0.7];
-/** The feather wand hangs from here, above the cat's band. */
-const STRING_TOP = -100;
+/** The feather's string hangs from just under the band's top: --spacing-cat-band (140px) must stay above it. */
+const STRING_TOP = -136;
 /** The scratching post's height in px, cap aside; with it, it stays under the band. */
 export const POST_HEIGHT = 92;
 /** A small, snug box: a resting cat's head and back show over its rim. */
