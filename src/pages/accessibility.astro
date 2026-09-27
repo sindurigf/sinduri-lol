@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import { accessibilityFacts } from '../lib/accessibility-facts';
-import { CONTACT_EMAIL } from '../lib/contact';
+import { CONTACT_EMAIL, CONTACT_MAILTO } from '../lib/contact';
 
 /* A summary of ACCESSIBILITY.md; the volatile facts are derived from it at build time. */
 const { targetStandard, conformanceStatus, lastReviewed, publicReporting } =
@@ -145,7 +145,7 @@ const AUTOMATED = [
 
         <ul class="actions mt-head">
           <li>
-            <a href={`mailto:${CONTACT_EMAIL}`} class="btn-secondary">
+            <a href={CONTACT_MAILTO} class="btn-secondary">
               Email {CONTACT_EMAIL}
             </a>
           </li>

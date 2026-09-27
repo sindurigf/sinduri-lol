@@ -1,5 +1,5 @@
 ---
-import { CONTACT_EMAIL } from '../lib/contact';
+import { CONTACT_EMAIL, CONTACT_MAILTO } from '../lib/contact';
 import {
   FIELDS,
   LIMITS,
@@ -57,7 +57,7 @@ const BODY = idsFor('body');
       {notSent === 'limited'
         ? 'That is a lot of messages in a short time. Wait a few minutes and try again, or email '
         : 'Your message could not be saved, so it has not been received. Email '}
-      <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+      <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>
       {notSent === 'limited'
         ? ' instead. What you wrote is still in the form.'
         : ' instead: what you wrote is still in the form, so you can copy it.'}

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { CONTACT_EMAIL } from '../../lib/contact';
+import { CONTACT_MAILTO } from '../../lib/contact';
 import { RETENTION_DAYS } from '../../lib/contact-form';
 
 /*
@@ -40,7 +40,7 @@ export const GET: APIRoute = ({ site }) => {
     '# The surface worth testing is the contact endpoint, the response headers',
     '# and the published documents.',
     '',
-    `Contact: mailto:${CONTACT_EMAIL}`,
+    `Contact: ${CONTACT_MAILTO}`,
     `Expires: ${EXPIRES}`,
     'Preferred-Languages: en',
     `Canonical: ${canonical}`,
