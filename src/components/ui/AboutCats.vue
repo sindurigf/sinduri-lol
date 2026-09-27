@@ -438,7 +438,7 @@ onBeforeUnmount(() => {
       <form method="dialog" class="flex justify-end">
         <button class="btn-secondary cat-close">Close</button>
       </form>
-      <div v-if="open" class="cat-dialog-body">
+      <div v-if="open" :key="open.id" class="cat-dialog-body">
         <div class="cat-photo">
           <div class="aspect-frame aspect-square w-full border-4 border-border">
             <img
