@@ -7,11 +7,7 @@ import {
   ref,
   useTemplateRef,
 } from 'vue';
-import {
-  IDLE,
-  NEXT_FRAME,
-  useMotionLoop,
-} from '../../composables/use-motion-loop';
+import { IDLE, useMotionLoop } from '../../composables/use-motion-loop';
 import { createCatRig } from '../../lib/about-cats-rig';
 import type { CatId } from '../../lib/about-cats-types';
 import { MOVE_NAMES, moveExtent } from '../../lib/about-cats-moves';
@@ -108,7 +104,7 @@ const feedPointer = (): void => {
 const tick = (now: number): number => {
   if (!colony) return IDLE;
   feedPointer();
-  return colony.frame(now) ? NEXT_FRAME : IDLE;
+  return colony.frame(now);
 };
 
 const hold = (id: CatId, reason: Hold, on: boolean): void => {

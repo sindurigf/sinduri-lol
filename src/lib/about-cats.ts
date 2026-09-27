@@ -156,7 +156,8 @@ export interface Colony {
   layout: (
     sizes: Map<CatSpot['id'], { width: number; height: number }>,
   ) => void;
-  frame: (now: number) => boolean;
+  /** Draws a frame; returns when the next is needed: `now` or earlier, a rest's end, or Infinity. */
+  frame: (now: number) => number;
   /** Starts a cat's play clock the first time its band is on screen, and stops it while off. */
   visible: (id: CatSpot['id'], on: boolean, now: number) => void;
   /** Its sleep control: lies down now, then sleeps until woken. */
@@ -450,26 +451,27 @@ export const createColony = (
     return 'draw';
   };
 
-  const frame = (now: number): boolean => {
+  const frame = (now: number): number => {
     const frames = clamp((now - lastFrame) / FRAME_MS, 0, MAX_FRAMES_PER_STEP);
     lastFrame = now;
-    let busy = false;
+    let wakeAt = Infinity;
     for (const cat of cats) {
       if (cat.hiddenAt !== undefined) continue;
       const result = step(cat, now, frames);
       const tailMoving = cat.rig.tailSpeed.some((v) => Math.abs(v) > TAIL_REST);
-      /* A paused cat keeps the loop alive, to end its pause, but is not redrawn. */
-      if (result === 'rest') busy = true;
+      /* A paused cat needs no frame until its pause ends, or its nap is due. */
+      if (result === 'rest')
+        wakeAt = Math.min(wakeAt, cat.restUntil, cat.napAt);
       /* A settled, paused or sleeping cat keeps its last drawing. */
       if (result !== 'draw' && !tailMoving) continue;
-      busy = true;
+      wakeAt = now;
       if (!cat.asleep && now > cat.nextBlink) {
         cat.blinkUntil = now + BLINK_MS;
         cat.nextBlink = now + rand(...BLINK_EVERY_MS);
       }
       draw(cat, now);
     }
-    return busy;
+    return wakeAt;
   };
 
   const wakeCat = (cat: CatState, now: number): void => {
