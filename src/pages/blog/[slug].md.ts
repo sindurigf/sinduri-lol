@@ -1,4 +1,5 @@
 import type { APIRoute, GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import { requireSite } from '../../lib/site';
 import { getSortedPosts } from '../../lib/blog';
 import { markdownSource } from '../../lib/markdown-source';
 
@@ -10,11 +11,10 @@ export const getStaticPaths = (async () =>
 
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
-export const GET: APIRoute<Props> = async ({ props, site }) => {
-  if (!site) {
-    throw new Error(
-      'A Markdown source needs `site` in astro.config.mjs for absolute links.',
-    );
-  }
+export const GET: APIRoute<Props> = async ({ props, site: configuredSite }) => {
+  const site = requireSite(
+    configuredSite,
+    'a Markdown source needs absolute links.',
+  );
   return new Response(await markdownSource(props.post, site));
 };

@@ -17,7 +17,7 @@ import { DEFAULT_OG_IMAGE, type OgImage } from '../lib/og-image';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE_FEED_PATH, SITEMAP_PATH } from '../lib/paths';
-import { SITE_NAME, SITE_SHORT_NAME } from '../lib/site';
+import { requireSite, SITE_NAME, SITE_SHORT_NAME } from '../lib/site';
 
 interface Props {
   /** The page's own name; the site name is appended unless `titleSuffix` is false. */
@@ -55,12 +55,10 @@ const {
 
 const documentTitle = titleSuffix ? `${title} | ${SITE_NAME}` : title;
 
-if (!Astro.site) {
-  throw new Error(
-    'BaseLayout needs `site` in astro.config.mjs for absolute URLs.',
-  );
-}
-const site = Astro.site;
+const site = requireSite(
+  Astro.site,
+  'canonical, Open Graph and JSON-LD URLs must be absolute.',
+);
 const canonical = new URL(Astro.url.pathname, site);
 /* Only the production host is counted; localhost and previews send nothing. */
 const analyticsDomain = site.hostname;

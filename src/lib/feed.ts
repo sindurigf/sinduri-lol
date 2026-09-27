@@ -2,7 +2,7 @@ import rss from '@astrojs/rss';
 import { publishedPosts, tagLabel, type BlogPost } from './blog';
 import { postHref } from './paths';
 import { PERSON_NAME } from './profiles';
-import { SITE_NAME } from './site';
+import { requireSite, SITE_NAME } from './site';
 import { FEED_LANGUAGE } from './site-language';
 
 /*
@@ -32,13 +32,12 @@ const NAMESPACES = {
 
 export const feedResponse = async (
   feed: Feed,
-  site: URL | undefined,
+  configuredSite: URL | undefined,
 ): Promise<Response> => {
-  if (!site) {
-    throw new Error(
-      'A feed needs `site` in astro.config.mjs: every link in it must be absolute.',
-    );
-  }
+  const site = requireSite(
+    configuredSite,
+    'every link in a feed must be absolute.',
+  );
   const posts = publishedPosts(feed.posts);
   const newest = posts[0]?.data.date;
   const self = new URL(feed.selfPath, site).href;

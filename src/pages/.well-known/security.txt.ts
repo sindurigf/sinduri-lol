@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { requireSite } from '../../lib/site';
 import { CONTACT_MAILTO } from '../../lib/contact';
 import { RETENTION_DAYS } from '../../lib/contact-form';
 
@@ -13,13 +14,11 @@ import { RETENTION_DAYS } from '../../lib/contact-form';
  */
 const EXPIRES = '2027-09-09T00:00:00.000Z';
 
-export const GET: APIRoute = ({ site }) => {
-  if (!site) {
-    throw new Error(
-      'security.txt needs `site` in astro.config.mjs to write an absolute ' +
-        'Canonical URL. RFC 9116 requires it to be absolute.',
-    );
-  }
+export const GET: APIRoute = ({ site: configuredSite }) => {
+  const site = requireSite(
+    configuredSite,
+    'security.txt needs an absolute Canonical URL (RFC 9116).',
+  );
 
   const canonical = new URL('.well-known/security.txt', site).href;
 
