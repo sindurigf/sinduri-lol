@@ -317,7 +317,7 @@ test.describe('analytics', () => {
   test('only the mobile menu reports area menu; the photo viewer and cat card report main', async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 320, height: 720 });
+    await page.setViewportSize(REFLOW_VIEWPORT);
     const sent = await openAsProduction(page, '/about/');
 
     await page.getByRole('button', { name: /menu/i }).click();
