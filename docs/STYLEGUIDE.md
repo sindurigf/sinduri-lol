@@ -988,8 +988,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   "Pause the hero animation"), no `aria-pressed`.
 - `HeroField` loads `client:load`.
 - The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
-  first on screen, play mostly in place, get about only by leaps, and sit
-  still under reduced motion. Each cat's button ("Meet Minerva") opens its
+  first on screen, play along it (games like the yarn and the fly carry them,
+  leaps move them on), and sit still under reduced motion. Each cat's button ("Meet Minerva") opens its
   card and changes nothing else.
 - Each cat's SC 2.2.2 control sits in its band's corner: Zz ("Put Minerva to
   sleep") while it plays, a paw ("Wake Minerva") while it sleeps.
@@ -1000,6 +1000,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 - Pointing at a cat, or keyboard focus on it, holds it in place, so a target
   being aimed at never moves: a focused target that never moves suits keyboard
   and magnifier users.
+- A drawing may reach `MAX_OVERHANG` (the phone gutter) past its band's end,
+  never over text or a control (`src/lib/about-cats.ts`).
 - Each cat lives in a `.cat-perch` band above its card, sized by
   `--spacing-cat-band`, which no move may rise above
   (`tests/about-cats.spec.ts`).
