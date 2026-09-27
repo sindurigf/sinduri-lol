@@ -22,6 +22,16 @@ case "$IMAGE" in
   exit 1
   ;;
 esac
+
+# Only the major must match: see docs/DEVELOPMENT.md > WebKit.
+WANT_NODE=$(cat .nvmrc)
+WANT_NODE=${WANT_NODE#v}
+IMAGE_NODE=$(docker run --rm "$IMAGE" node --version)
+if [ "${IMAGE_NODE%%.*}" != "v${WANT_NODE%%.*}" ]; then
+  echo "test:webkit: IMAGE runs Node ${IMAGE_NODE}, but .nvmrc is ${WANT_NODE}; use an image with Node ${WANT_NODE%%.*}." >&2
+  exit 1
+fi
+
 GIT_COMMON_DIR=$(git rev-parse --path-format=absolute --git-common-dir)
 
 exec docker run --rm --ipc=host \
