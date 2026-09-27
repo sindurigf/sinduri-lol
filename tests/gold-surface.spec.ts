@@ -3,6 +3,7 @@ import { gotoSettled } from './settle';
 import { AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { goldRoutesFromBuild, ROUTES } from './routes';
 import { cssColorToken } from './source';
+import { NARROW_WIDTH } from './wcag';
 
 /*
  * No dark-surface text token passes on gold, so text and controls on it are
@@ -182,7 +183,7 @@ test.describe('the gold surface exception', () => {
   test(`the ${GOLD_ROUTE} gold button keeps its inner ring at 305px`, async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 305, height: 900 });
+    await page.setViewportSize({ width: NARROW_WIDTH, height: 900 });
     await gotoSettled(page, GOLD_ROUTE);
 
     const controls = (await page.evaluate(

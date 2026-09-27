@@ -2,6 +2,7 @@ import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { SAMPLED_ROUTES } from './routes';
 import { GLOBAL_CSS, cssColorToken } from './source';
+import { REFLOW_VIEWPORT } from './wcag';
 
 /**
  * `forced-colors: active` drops box-shadow, so a control bounded only by `shadow-hard-*`
@@ -279,7 +280,7 @@ test.describe('forced colours', () => {
   test('the mobile menu holds up in forced colours at 320px', async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 320, height: 720 });
+    await page.setViewportSize(REFLOW_VIEWPORT);
     await gotoSettled(page, '/');
     await forceColours(page, '/ (menu open)');
 

@@ -1,10 +1,14 @@
 import { expect, test } from './test';
 import { gotoSettled } from './settle';
+import { DESKTOP_VIEWPORT } from './wcag';
 
 /** PhotoViewer.astro and src/scripts/photo-viewer.ts. */
 
 const ROUTE = '/about';
 const STRIP = '#people-photos';
+
+/** Sub-pixel layout rounding, in CSS px. */
+const ROUNDING_PX = 1;
 
 test.describe('the photo viewer', () => {
   test('a photo opens the viewer on itself, and the arrows move through its group', async ({
@@ -190,7 +194,8 @@ test.describe('the photo strip', () => {
           box.right + ring - view.right,
         );
       });
-      if (overshoot > 1) clipped.push(`photo ${i + 1}: ${overshoot}px`);
+      if (overshoot > ROUNDING_PX)
+        clipped.push(`photo ${i + 1}: ${overshoot}px`);
     }
     expect(clipped, 'focus rings cut off by the strip edge').toEqual([]);
   });
@@ -436,10 +441,7 @@ test.describe('the photo viewer while a photo loads', () => {
 });
 
 /* On desktop the box is shorter than most portraits; `max-h-full` needs the figure's one-track grid. */
-const VIEWER_SIZES = [
-  { width: 1280, height: 800 },
-  { width: 1440, height: 900 },
-] as const;
+const VIEWER_SIZES = [DESKTOP_VIEWPORT, { width: 1440, height: 900 }] as const;
 
 /** How far the drawn shape may drift from the file's, in ratio. */
 const SHAPE_TOLERANCE = 0.01;
@@ -474,7 +476,7 @@ for (const viewport of VIEWER_SIZES) {
         );
       }, href);
 
-      const found = await page.evaluate(() => {
+      const found = await page.evaluate((rounding) => {
         const img = document.querySelector<HTMLImageElement>(
           '.photo-viewer-figure img',
         )!;
@@ -483,12 +485,14 @@ for (const viewport of VIEWER_SIZES) {
           .getBoundingClientRect();
         const r = img.getBoundingClientRect();
         return {
-          fits: r.width <= box.width + 1 && r.height <= box.height + 1,
+          fits:
+            r.width <= box.width + rounding &&
+            r.height <= box.height + rounding,
           drawn: r.width / r.height,
           file: img.naturalWidth / img.naturalHeight,
           size: `${Math.round(r.width)}x${Math.round(r.height)} in ${Math.round(box.width)}x${Math.round(box.height)}`,
         };
-      });
+      }, ROUNDING_PX);
       if (!found.fits) problems.push(`${href}: drawn ${found.size}`);
       if (Math.abs(found.drawn / found.file - 1) > SHAPE_TOLERANCE) {
         problems.push(`${href}: drawn at a different shape from the file`);

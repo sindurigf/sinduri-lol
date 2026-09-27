@@ -1,7 +1,7 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { SAMPLED_ROUTES } from './routes';
-import { FOCUSABLE_SELECTOR, MIN_TARGET } from './wcag';
+import { FOCUSABLE_SELECTOR, MIN_TARGET, NARROW_WIDTH } from './wcag';
 
 /**
  * SC 2.5.8 Target Size (Minimum) on every interactive element on every route.
@@ -10,7 +10,7 @@ import { FOCUSABLE_SELECTOR, MIN_TARGET } from './wcag';
  */
 
 const VIEWPORTS = [
-  { width: 305, height: 900, note: '400% zoom, classic scrollbar' },
+  { width: NARROW_WIDTH, height: 900, note: '400% zoom, classic scrollbar' },
   { width: 1280, height: 900, note: 'desktop' },
 ] as const;
 

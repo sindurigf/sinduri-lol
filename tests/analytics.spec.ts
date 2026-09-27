@@ -13,6 +13,7 @@ import { builtPages, DIST_DIR } from './routes';
 import { waitForHydration } from './settle';
 import { configuredSite } from './source';
 import { fakeCollector, type UmamiSend } from './umami';
+import { REFLOW_VIEWPORT } from './wcag';
 
 /**
  * Umami, held to what /privacy discloses (PAYLOAD_DISCLOSED, EVENT_DATA_DISCLOSED).
@@ -269,7 +270,7 @@ test.describe('analytics', () => {
   test('outbound, download, email and button clicks are counted', async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 320, height: 720 });
+    await page.setViewportSize(REFLOW_VIEWPORT);
     const sent = await openAsProduction(page, '/career/');
 
     const outbound = 'footer a[href^="https://github.com/"]';

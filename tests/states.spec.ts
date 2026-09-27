@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from './test';
 import { gotoSettled } from './settle';
 import { AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
+import { DESKTOP_VIEWPORT, PHONE_VIEWPORT } from './wcag';
 
 type Look = { paint: string; text: number | null };
 
@@ -92,7 +93,7 @@ for (const scheme of ['dark', 'light'] as const) {
 
 // The dialog stays dark in light mode, so one scheme covers it.
 test('hover is drawn and readable on a mobile menu link', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize(PHONE_VIEWPORT);
   await gotoSettled(page, '/');
   await page.getByRole('button', { name: 'Menu' }).click();
   const link = page
@@ -104,7 +105,7 @@ test('hover is drawn and readable on a mobile menu link', async ({ page }) => {
 test('the current page stands apart from its siblings and reads', async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.setViewportSize(DESKTOP_VIEWPORT);
   await gotoSettled(page, '/about/');
   const found = (await page.evaluate(`(() => {
     ${PAGE_HELPERS}
@@ -149,7 +150,7 @@ test('the current page stands apart from its siblings and reads', async ({
 test('a focused chip ring stays clear of the chips beside it', async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.setViewportSize(DESKTOP_VIEWPORT);
   await gotoSettled(page, '/blog/open-source/');
   const { count, overlaps } = await page.evaluate(() => {
     const chips = [...document.querySelectorAll<HTMLElement>('main a.chip')];

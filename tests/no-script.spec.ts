@@ -2,6 +2,7 @@ import { expect, test } from './test';
 import { builtHtml, POST_ROUTES, TALK_ROUTES } from './routes';
 import { CTA, NAV_LINKS } from '../src/lib/nav';
 import { NODE } from './tags';
+import { DESKTOP_VIEWPORT, NARROW_WIDTH, PHONE_VIEWPORT } from './wcag';
 
 /**
  * A <dialog> is display:none until showModal() runs, so below `md` with
@@ -10,13 +11,13 @@ import { NODE } from './tags';
  */
 
 /** Narrowest viewport measured, where the primary nav is hidden. */
-const MOBILE = { width: 305, height: 800 };
+const MOBILE = { width: NARROW_WIDTH, height: 800 };
 
 /** A width where the primary nav is visible, so the fallback can collide with it. */
-const DESKTOP = { width: 1280, height: 800 };
+const DESKTOP = DESKTOP_VIEWPORT;
 
 /** Below `md`: narrowest, a common phone, and the last pixel before `md`. */
-const FALLBACK_WIDTHS = [305, 390, 767] as const;
+const FALLBACK_WIDTHS = [NARROW_WIDTH, PHONE_VIEWPORT.width, 767] as const;
 
 /*
  * One route per layout the fallback renders in: the home page, the error page,

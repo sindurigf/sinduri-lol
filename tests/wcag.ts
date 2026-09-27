@@ -33,6 +33,9 @@ export const NARROW_WIDTH = 305;
 
 export const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
 
+/** A common phone in portrait. */
+export const PHONE_VIEWPORT = { width: 390, height: 844 };
+
 /** The override from WCAG SC 1.4.12, applied verbatim. */
 export const TEXT_SPACING_OVERRIDE = `
   * {

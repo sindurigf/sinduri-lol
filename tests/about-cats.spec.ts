@@ -1,6 +1,11 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
-import { MIN_TARGET, REFLOW_VIEWPORT, DESKTOP_VIEWPORT } from './wcag';
+import {
+  MIN_TARGET,
+  REFLOW_VIEWPORT,
+  DESKTOP_VIEWPORT,
+  PHONE_VIEWPORT,
+} from './wcag';
 import { AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { NODE } from './tags';
 import { readFileSync } from 'node:fs';
@@ -35,8 +40,6 @@ const NAMES = { minerva: 'Minerva', hela: 'Hela', rudra: 'Rudra' } as const;
 /** Long enough for several frames of any move; a still cat changes nothing in it. */
 const STILL_WINDOW_MS = 800;
 
-const PHONE = { width: 390, height: 844 };
-
 /** 1280x1024 at 400%: the SC 1.4.10 reflow case, short as well as narrow. */
 const ZOOMED = { width: 320, height: 256 };
 
@@ -63,7 +66,7 @@ const NAP_TIMEOUT_MS = 10_000;
 /** Where the card placement is checked: small phone, phone, tablet, desktop. */
 const CARD_VIEWPORTS = [
   { width: 320, height: 640 },
-  { width: 390, height: 844 },
+  PHONE_VIEWPORT,
   { width: 768, height: 1024 },
   { width: 1280, height: 900 },
 ];
@@ -147,6 +150,9 @@ const SC_2_2_2_MS = 5000;
 /** The post's cap and half its edge stroke above POST_HEIGHT. */
 const POST_CAP = 6;
 
+/** Sub-pixel rounding in a cat's place along the track, in px. */
+const ROUNDING_PX = 1;
+
 /** A frame at 60fps: fine enough to catch the top of every arc. */
 const FRAME_MS = 1000 / 60;
 
@@ -221,7 +227,10 @@ test(
             const start = plan.move.steps[0].pose;
             for (let t = 0; t <= duration(plan.move); t += FRAME_MS) {
               const at = x + plan.dir * poseAt(plan.move, start, t).x;
-              if (at + HIT_HALF_WIDTH > width - CONTROL_SIZE || at < min - 1) {
+              if (
+                at + HIT_HALF_WIDTH > width - CONTROL_SIZE ||
+                at < min - ROUNDING_PX
+              ) {
                 under.push(`${name} at ${width}px from ${Math.round(x)}`);
                 break;
               }
@@ -906,7 +915,7 @@ test.describe('About cats', () => {
     await context.close();
   });
 
-  for (const viewport of [REFLOW_VIEWPORT, PHONE, DESKTOP_VIEWPORT]) {
+  for (const viewport of [REFLOW_VIEWPORT, PHONE_VIEWPORT, DESKTOP_VIEWPORT]) {
     test(`each sleep control is on top at its centre at ${viewport.width}px (SC 2.2.2)`, async ({
       browser,
     }) => {

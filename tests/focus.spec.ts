@@ -1,7 +1,7 @@
 import { expect, test, type Page } from './test';
 import { NON_TEXT, PAGE_HELPERS } from './contrast';
 import { gotoSettled } from './settle';
-import { FOCUSABLE_SELECTOR } from './wcag';
+import { FOCUSABLE_SELECTOR, NARROW_WIDTH } from './wcag';
 import { SAMPLED_ROUTES } from './routes';
 
 /**
@@ -10,7 +10,7 @@ import { SAMPLED_ROUTES } from './routes';
  * `scroll-padding-top` on `html`: WebKit ignores `scroll-margin-top` on text inputs.
  */
 const WIDTHS = [
-  { width: 305, height: 720, note: '400% zoom, classic scrollbar' },
+  { width: NARROW_WIDTH, height: 720, note: '400% zoom, classic scrollbar' },
   { width: 1280, height: 900, note: 'desktop' },
 ] as const;
 
