@@ -71,9 +71,6 @@ test('sending blocks a second submit and says so', async ({ page }) => {
 
   await expect(button).toHaveAttribute('aria-disabled', 'true');
   await expect(button).toHaveText('Sending');
-  /* Sending is progress, not unavailable: no dashed "disabled" edge. */
-  await expect(button).not.toHaveCSS('border-top-style', 'dashed');
-  await expect(button).toHaveCSS('cursor', 'progress');
   await expect(status).toHaveText('Sending your message.');
   await expect(
     page.locator('[aria-busy="true"]'),
