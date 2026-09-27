@@ -2,13 +2,14 @@ import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { goldRoutesFromBuild, ROUTES } from './routes';
+import { cssColorToken } from './source';
 
 /*
  * No dark-surface text token passes on gold, so text and controls on it are
  * measured in the rendered page. The token ratios on gold are in the generated
  * table (scripts/contrast-table.mjs, tests/contrast-table.spec.ts).
  */
-const GOLD = '#FFC000';
+const GOLD = cssColorToken('--color-gold');
 
 /** A control whose opaque fill, or its only boundary, its border, matches the ground behind it. */
 type InvisibleControl = { selector: string; detail: string; label: string };

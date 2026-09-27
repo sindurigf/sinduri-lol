@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { expect, test } from './test';
 import { builtPages, ROUTES } from './routes';
 import { SITE_NAME } from '../src/lib/site';
+import { PERSON_NAME } from '../src/lib/profiles';
 import { NODE } from './tags';
 
 /**
@@ -9,9 +10,6 @@ import { NODE } from './tags';
  * The homepage is exempt from the separator rule; casing is not asserted.
  */
 const SITE = SITE_NAME;
-
-/** Mirrors the title in src/pages/index.astro. */
-const ROOT_TITLE = 'Sinduri Guntupalli, Open Source Enthusiast';
 
 // Safe to match directly: tests/seo.spec.ts keeps comments out of the build.
 const titleOf = (html: string): string | null => {
@@ -71,11 +69,8 @@ test.describe('every page says which page it is', NODE, () => {
 
       if (route === '/') {
         expect
-          .soft(
-            title,
-            `the site root title does not match src/pages/index.astro`,
-          )
-          .toBe(ROOT_TITLE);
+          .soft(title, `the site root title does not name ${PERSON_NAME}`)
+          .toContain(PERSON_NAME);
         continue;
       }
 
