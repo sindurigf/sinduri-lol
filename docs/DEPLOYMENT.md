@@ -19,9 +19,9 @@ npm run build && npx wrangler deploy --dry-run
   dashboard change. The console check stubs Umami, so it counts no visits.
 - After a deploy that changes the hero or what a page loads, run Lighthouse
   (mobile) on `https://sinduri.lol/` and the changed page; record the
-  performance score and Total Blocking Time. `tests/performance.spec.ts`
-  covers script bytes and layout shift; load time depends on the runner, so CI
-  does not test it.
+  performance score and Total Blocking Time in a comment on the change's pull
+  request. `tests/performance.spec.ts` covers script bytes and layout shift;
+  load time depends on the runner, so CI does not test it.
 - Custom domains belong in `wrangler.jsonc`: a deploy replaces the Worker's
   routes, removing dashboard-only domains.
 - Preview deployments run on workers.dev, outside the zone, so zone features
