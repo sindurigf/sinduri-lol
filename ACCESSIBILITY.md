@@ -14,7 +14,7 @@ barrier. The public summary is [/accessibility](https://sinduri.lol/accessibilit
 | Private reporting   | <lol@sinduri.lol>                                          |
 | Target standard     | WCAG 2.2 Level AA, with AAA text contrast where achievable |
 | Conformance status  | **Target only. No conformance claim.**                     |
-| Last reviewed       | 2026-09-19                                                 |
+| Last reviewed       | 2026-09-27                                                 |
 
 `src/lib/accessibility-facts.ts` reads the Target standard, Conformance status,
 Last reviewed and both reporting rows into `/accessibility` at build time and
@@ -27,8 +27,8 @@ status is still "Target only. No conformance claim."
 - Both colour modes are measured: dark by default, light on request.
 - Keyboard first: every control is reachable, visible when focused, and never
   hidden under the sticky header.
-- No motion traps: the one animation can be paused, and nothing moves under
-  `prefers-reduced-motion: reduce`.
+- No motion traps: the homepage hero field and each About cat can be paused,
+  and nothing moves under `prefers-reduced-motion: reduce`.
 - Native HTML before ARIA.
 - Every colour is measured against every ground it is used on.
 - Automated checks run in CI and a violation blocks the merge.
@@ -40,7 +40,7 @@ status is still "Target only. No conformance claim."
 | Criterion                         | What we do                                                                                                                                                                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 1.4.6 Contrast (Enhanced)         | Every text token at rest clears 7:1 on every ground it is used on, dark, light and gold. Exception: light-mode hover `cyan` is AA only. `pink` is never text; `pink-text` is. Ratios: [contrast table](docs/STYLEGUIDE.md#contrast). |
-| 2.3.3 Animation from Interactions | Under `prefers-reduced-motion: reduce` a pressed control does not move into its shadow and the hero field is drawn once and held (`tests/motion.spec.ts`).                                                                           |
+| 2.3.3 Animation from Interactions | Under `prefers-reduced-motion: reduce` a pressed control does not move into its shadow, the hero field is drawn once and held, and the About cats sit still (`tests/motion.spec.ts`, `tests/about-cats.spec.ts`).                    |
 
 Out of scope: SC 2.4.13 Focus Appearance and SC 2.5.5 Target Size (Enhanced,
 44px). axe's `wcag2aaa` rules are not run.
@@ -110,9 +110,9 @@ view (development server only, never published), and forks.
 - **Alt text.** Every image in the build is named or decorative on purpose;
   a failed photo shows its alt text on its frame without doubling it for a
   screen reader.
-- **Motion.** The hero field on `/` has a pause control (SC 2.2.2) and is
-  still under reduced motion; nothing else animates
-  ([STYLEGUIDE Motion](docs/STYLEGUIDE.md#motion)).
+- **Motion.** The hero field on `/` has a pause control and each cat on
+  `/about` a sleep control (SC 2.2.2). Both are still under reduced motion;
+  nothing else animates ([STYLEGUIDE Motion](docs/STYLEGUIDE.md#motion)).
 - **Forced colours.** Every non-link control keeps a painted border or opaque
   background, links are distinct from body text, and the focus ring keeps its
   width.

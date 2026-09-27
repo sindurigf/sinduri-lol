@@ -975,7 +975,7 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 
 - Every animation respects `prefers-reduced-motion: reduce`.
 - Anything moving automatically for over five seconds needs a pause control
-  (SC 2.2.2): the homepage hero field.
+  (SC 2.2.2): the homepage hero field and each About cat.
 - Nothing flashes more than three times per second (SC 2.3.1).
 - Controls press into their shadow at 0ms; no movement under reduced motion.
 - No marquee.
