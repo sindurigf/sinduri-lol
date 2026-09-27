@@ -6,11 +6,24 @@ import { NODE } from './tags';
 import { readFileSync } from 'node:fs';
 import {
   MOVES,
+  moveToPlay,
+  withApproach,
+  type MoveName,
   duration,
   poseAt,
   type Move,
 } from '../src/lib/about-cats-moves';
-import { POST_HEIGHT, highestPoint } from '../src/lib/about-cats-rig';
+import {
+  HIT_HALF_WIDTH,
+  POST_HEIGHT,
+  highestPoint,
+} from '../src/lib/about-cats-rig';
+import {
+  CONTROL_ROOM,
+  CUP_EDGE,
+  TRACK_MARGIN,
+  fitsTrack,
+} from '../src/lib/about-cats';
 
 /**
  * The About cats (src/components/ui/AboutCats.vue): each cat opens its photo,
@@ -40,10 +53,6 @@ const SETTLE_MS = 3000;
 
 /** Lying down plays out before the name changes; the longest move is well under this. */
 const NAP_TIMEOUT_MS = 10_000;
-
-/** Checks of each sleep control's centre while the cats play, about 3 s. */
-const CONTROL_SAMPLES = 20;
-const CONTROL_SAMPLE_MS = 150;
 
 /** Past the card's 4px border, on its padding. */
 const CARD_PADDING_HIT = 12;
@@ -166,6 +175,62 @@ test('no move lifts any part of a cat above its band', NODE, () => {
     'a move rises above --spacing-cat-band into the text above',
   ).toEqual([]);
 });
+
+/** The sleep control's box: `.motion-toggle`, h-10 w-10. */
+const CONTROL_SIZE = 40;
+/** Band widths from the 320px reflow width up. */
+const BAND_WIDTHS = [320, 390, 768, 1280, 1920];
+/** Start positions tried along each track. */
+const TRACK_STEPS = 24;
+
+test(
+  "no move the track allows takes a cat's hit box under its sleep control (SC 2.2.2)",
+  NODE,
+  () => {
+    const under: string[] = [];
+    for (const width of BAND_WIDTHS) {
+      const min = TRACK_MARGIN;
+      const max = width - TRACK_MARGIN - CONTROL_ROOM;
+      for (const name of Object.keys(MOVES) as MoveName[]) {
+        const move = moveToPlay(name);
+        for (let i = 0; i <= TRACK_STEPS; i += 1) {
+          const x = min + ((max - min) * i) / TRACK_STEPS;
+          for (const dir of [1, -1]) {
+            if (!fitsTrack(x, move, dir, min, max)) continue;
+            const start = move.steps[0].pose;
+            for (let t = 0; t <= duration(move); t += FRAME_MS) {
+              const at = x + dir * poseAt(move, start, t).x;
+              if (at + HIT_HALF_WIDTH > width - CONTROL_SIZE) {
+                under.push(`${name} at ${width}px from ${Math.round(x)}`);
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    expect(under, 'a cat reaches under its sleep control').toEqual([]);
+  },
+);
+
+test(
+  'the cup push creeps to the left end and stays inside the band',
+  NODE,
+  () => {
+    const move = moveToPlay('knock');
+    for (const gap of [0, 40, 110]) {
+      const pushed = withApproach(move, gap);
+      const start = pushed.steps[0].pose;
+      for (let t = 0; t <= duration(pushed); t += FRAME_MS) {
+        const at = CUP_EDGE + gap - poseAt(pushed, start, t).x;
+        expect(
+          at,
+          'the cat leaves the band at its left end',
+        ).toBeGreaterThanOrEqual(0);
+      }
+    }
+  },
+);
 
 test(
   'falling asleep and waking up each settle within 5 seconds (SC 2.2.2)',
@@ -662,37 +727,25 @@ test.describe('About cats', () => {
   });
 
   for (const viewport of [REFLOW_VIEWPORT, PHONE, DESKTOP_VIEWPORT]) {
-    test(`no cat ever covers its sleep control at ${viewport.width}px (SC 2.2.2)`, async ({
+    test(`each sleep control is on top at its centre at ${viewport.width}px (SC 2.2.2)`, async ({
       browser,
     }) => {
       const context = await browser.newContext({ viewport });
       const page = await context.newPage();
       await gotoSettled(page, ROUTE);
-      const misses: string[] = [];
       for (const id of CATS) {
-        await napControl(page, id).scrollIntoViewIfNeeded();
-        const found = await page.evaluate(
-          async ({ id, samples, gap }) => {
-            const control = document.querySelector(`#cat-spot-${id} .cat-nap`);
-            if (!control) return ['no control'];
-            const out: string[] = [];
-            for (let i = 0; i < samples; i += 1) {
-              const box = control.getBoundingClientRect();
-              const hit = document.elementFromPoint(
-                box.left + box.width / 2,
-                box.top + box.height / 2,
-              );
-              if (!hit || !control.contains(hit))
-                out.push(hit?.getAttribute('class') ?? 'nothing');
-              await new Promise((resolve) => setTimeout(resolve, gap));
-            }
-            return out;
-          },
-          { id, samples: CONTROL_SAMPLES, gap: CONTROL_SAMPLE_MS },
-        );
-        misses.push(...found.map((what) => `${NAMES[id]}: ${what}`));
+        const control = napControl(page, id);
+        await control.scrollIntoViewIfNeeded();
+        const onTop = await control.evaluate((node) => {
+          const box = node.getBoundingClientRect();
+          const hit = document.elementFromPoint(
+            box.left + box.width / 2,
+            box.top + box.height / 2,
+          );
+          return Boolean(hit && node.contains(hit));
+        });
+        expect(onTop, `${NAMES[id]}'s sleep control is covered`).toBe(true);
       }
-      expect(misses, 'something covered a sleep control').toEqual([]);
       await context.close();
     });
 

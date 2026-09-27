@@ -834,13 +834,20 @@ export const withApproach = (move: Move, distance: number): Move => {
   };
 };
 
+/** One 60fps frame, the step of extent's sampling. */
+const EXTENT_STEP_MS = 1000 / 60;
+
 /** Extent of a move's path, back and forward from its start, for track checks. */
+/** Sampled from the drawn path, so eases and modifiers count, not just the steps. */
 export const extent = (move: Move): [number, number] => {
+  const start = pose('sit');
+  const length = duration(move);
   let back = 0;
   let forward = 0;
-  for (const s of move.steps) {
-    back = Math.min(back, s.pose.x);
-    forward = Math.max(forward, s.pose.x);
+  for (let t = 0; t <= length + EXTENT_STEP_MS; t += EXTENT_STEP_MS) {
+    const x = poseAt(move, start, Math.min(t, length)).x;
+    back = Math.min(back, x);
+    forward = Math.max(forward, x);
   }
   return [back, forward];
 };

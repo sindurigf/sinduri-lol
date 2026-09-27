@@ -32,9 +32,9 @@ import {
 export const NAP_AFTER_MS = 20_000;
 
 /** Distance from each card end the cat's origin keeps. */
-const TRACK_MARGIN = 40;
+export const TRACK_MARGIN = 40;
 /** Room at the right end for the sleep control. */
-const CONTROL_ROOM = 48;
+export const CONTROL_ROOM = 48;
 /** Chance a cat moves along its band, by one leap, instead of playing where it is. */
 const LEAP_CHANCE = 0.15;
 /* Ways to get about, one at a time and weighted; there is no walking. */
@@ -46,7 +46,7 @@ const LEAPS: Partial<Record<MoveName, number>> = {
 /** Near enough to the band's left end to knock a cup off it, counted to where it stands to push. */
 const EDGE_NEAR = 110;
 /** Where a cat stands from the card's edge to push the cup: the cup ends past the edge. */
-const CUP_EDGE = 32;
+export const CUP_EDGE = 32;
 /** A pointer that has not moved for this long no longer draws a cat's eye. */
 const POINTER_IDLE_MS = 4000;
 const FACE_DEADBAND = 20;
@@ -175,6 +175,20 @@ export interface Colony {
   watching: () => boolean;
 }
 
+/** Whether a move played from `x` heading `dir` keeps the cat within [min, max]. */
+export const fitsTrack = (
+  x: number,
+  move: Move,
+  dir: number,
+  min: number,
+  max: number,
+): boolean => {
+  const [back, forward] = extent(move);
+  const a = x + dir * back;
+  const b = x + dir * forward;
+  return Math.min(a, b) >= min && Math.max(a, b) <= max;
+};
+
 export const createColony = (
   spots: CatSpot[],
   onMoodChange: (id: CatSpot['id'], mood: CatMood) => void,
@@ -279,12 +293,8 @@ export const createColony = (
     );
   };
 
-  const fits = (cat: CatState, move: Move, dir: number): boolean => {
-    const [back, forward] = extent(move);
-    const a = cat.pose.x + dir * back;
-    const b = cat.pose.x + dir * forward;
-    return Math.min(a, b) >= cat.min && Math.max(a, b) <= cat.max;
-  };
+  const fits = (cat: CatState, move: Move, dir: number): boolean =>
+    fitsTrack(cat.pose.x, move, dir, cat.min, cat.max);
 
   /** One leap along the band, ahead if it fits, else back; false if neither fits. */
   const leap = (cat: CatState, now: number): boolean => {
