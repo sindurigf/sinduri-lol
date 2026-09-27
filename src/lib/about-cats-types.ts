@@ -24,6 +24,9 @@ export interface Pose {
   fF: Pair;
   hN: Pair;
   hF: Pair;
+  /** Front and hind leg length, as a share of the drawn length: a sitting cat's front legs are long and straight. */
+  fl: number;
+  hl: number;
   hx: number;
   hy: number;
   hr: number;

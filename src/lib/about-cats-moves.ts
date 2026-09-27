@@ -26,6 +26,9 @@ const BASE: Pose = {
   fF: [8, 26],
   hN: [-12, 26],
   hF: [-8, 26],
+  /* Standing, the hip and shoulder sit 23px up: legs of 19px would leave the paws short. */
+  fl: 1.22,
+  hl: 1.22,
   hx: 6,
   hy: -12,
   hr: 0,
@@ -60,6 +63,7 @@ const SIT = derive(BASE, {
   fF: [6, 25],
   hN: [-1, 25],
   hF: [1, 25],
+  fl: 1.82,
   hx: 4,
   hy: -13,
   ta: 165,

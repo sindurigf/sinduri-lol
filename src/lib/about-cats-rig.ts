@@ -71,24 +71,31 @@ const el = <K extends keyof SVGElementTagNameMap>(
 };
 
 /** Two-bone inverse kinematics; `sign` picks which way the joint bends. */
-const ik = (a: Point, t: Point, sign: number): [Point, Point] => {
+const ik = (
+  a: Point,
+  t: Point,
+  sign: number,
+  scale: number,
+): [Point, Point] => {
+  const upper = UPPER * scale;
+  const lower = LOWER * scale;
   const dx = t.x - a.x;
   const dy = t.y - a.y;
   const d = Math.hypot(dx, dy) || 0.001;
-  const reach = clamp(d, Math.abs(UPPER - LOWER) + 0.5, UPPER + LOWER - 0.01);
+  const reach = clamp(d, Math.abs(upper - lower) + 0.5, upper + lower - 0.01);
   const ux = dx / d;
   const uy = dy / d;
   const bend =
     Math.acos(
       clamp(
-        (UPPER * UPPER + reach * reach - LOWER * LOWER) / (2 * UPPER * reach),
+        (upper * upper + reach * reach - lower * lower) / (2 * upper * reach),
         -1,
         1,
       ),
     ) * sign;
   const joint = pt(
-    a.x + UPPER * (ux * Math.cos(bend) - uy * Math.sin(bend)),
-    a.y + UPPER * (ux * Math.sin(bend) + uy * Math.cos(bend)),
+    a.x + upper * (ux * Math.cos(bend) - uy * Math.sin(bend)),
+    a.y + upper * (ux * Math.sin(bend) + uy * Math.cos(bend)),
   );
   return [joint, pt(a.x + ux * reach, a.y + uy * reach)];
 };
@@ -502,7 +509,7 @@ export const renderCat = (
     k: 'fN' | 'fF' | 'hN' | 'hF',
     sign: number,
   ): string => {
-    const [joint, end] = ik(from, paw(k), sign);
+    const [joint, end] = ik(from, paw(k), sign, k[0] === 'f' ? p.fl : p.hl);
     return `M${f(from.x)} ${f(from.y)}L${f(joint.x)} ${f(joint.y)}L${f(end.x)} ${f(end.y)}`;
   };
   const front = at(length - 3, -half * 0.3);
