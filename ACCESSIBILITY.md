@@ -290,7 +290,9 @@ links. Not automated:
    original deck. Carried in text: slide 14's
    screenshot, slide 26's pairs (as a table), the pillar and topic groupings.
    Left off: the four Lord of the Rings images with their captions and
-   credits, and the labels above 27 slide titles that restate them.
+   credits (the GIFs need a pause control, the captions do not stand alone,
+   and licensing is unverified), and the labels above 27 slide titles that
+   restate them.
 
 ## 8. Reporting a barrier
 

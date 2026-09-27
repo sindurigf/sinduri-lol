@@ -219,8 +219,8 @@ presenter view and a PDF. Authoring rules:
 - **Loader.** `src/lib/talk-loader.ts`, one entry per slide
   (`<deck>/<number>`). `src/lib/slides.ts` splits the file first (following
   Slidev's `packages/parser/src/core.ts`), then `renderMarkdown` runs the
-  visitors above. Strict schema; anything the slideshow cannot render fails the
-  build with file, slide and line.
+  visitors above, with a strict schema
+  ([what fails the build](docs/DEVELOPMENT.md#writing-a-talk)).
 - **Slideshow.** Every slide is a `.card` in `<section id="slide-N">`, all in
   the HTML. `src/scripts/slideshow.ts` adds controls, keys and a polite live
   region. Hidden slides use `data-current`, not `hidden`: Tailwind's
@@ -237,10 +237,10 @@ presenter view and a PDF. Authoring rules:
   Lexend 400/900 from `@fontsource/lexend` (dev only): the variable font
   becomes Type 3 and stalls veraPDF past CI's timeout. The PDF stores a
   SHA-256 of the deck; `tests/talk-pdf.spec.ts` fails on drift.
-- **Images** live in `<deck>/images/`; reused site images are relative
-  symlinks into `src/assets/`, covered by `scripts/check-untransformed.mjs`.
-- The deck's four Lord of the Rings images are omitted: GIFs need a pause
-  control, the captions do not stand alone, and licensing is unverified.
+- **Images.** `scripts/check-untransformed.mjs` covers deck images, symlinked
+  site images included ([where images go](docs/DEVELOPMENT.md#writing-a-talk)).
+  Images left out of the deck: [ACCESSIBILITY.md](ACCESSIBILITY.md#7-known-gaps)
+  gap 6.
 
 ## Conventions
 

@@ -170,7 +170,7 @@ validates frontmatter against `src/content.config.ts` and fails on a mismatch.
 One deck per talk: `src/content/talks/<deck>/slides.md`, in Slidev's Markdown
 format, shown at `/talks/<deck>/`. Example:
 `open-source-is-not-just-code/slides.md`. The build fails on anything the
-slideshow cannot render, naming slide and line (`src/lib/slides.ts`).
+slideshow cannot render, naming file, slide and line (`src/lib/slides.ts`).
 
 - Opening frontmatter is slide 1: `layout: cover` and `info:` (the meta
   description).
@@ -188,7 +188,8 @@ slideshow cannot render, naming slide and line (`src/lib/slides.ts`).
   by relative symlink into `src/assets/` (needs `core.symlinks` on Windows).
 - No `v-click`, Vue components, `::right::` slots or `src:` imports.
 - A slide's last HTML comment is its speaker note, never published
-  (`tests/talk.spec.ts`). Any other comment fails the build.
+  ([presenter view](../ARCHITECTURE.md#talks)). Any other comment fails the
+  build.
 - Add a new deck's route to `TALK_ROUTES` in `tests/routes.ts`.
 
 ### Publishing the PDF
@@ -228,8 +229,8 @@ npm run dev
   press Full screen.
 - The windows stay in sync; arrow keys and Page Up/Down (clickers) work in
   both.
-- Shows the slide, notes, next title and a timer. Dev server only, so notes
-  never reach the build. Edited notes show on reload.
+- Shows the slide, notes, next title and a timer. Dev server only. Edited
+  notes show on reload.
 
 ## Publishing the CV
 
