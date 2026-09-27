@@ -26,12 +26,14 @@ run the commands in [AGENTS.md](AGENTS.md#done-means).
   and how to report a barrier
 - [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md): by-hand accessibility checks
 - [AGENTS.md](AGENTS.md): working rules
+- [SECURITY.md](SECURITY.md): reporting a vulnerability
 - [AI_DISCLOSURE.md](AI_DISCLOSURE.md): AI tooling used; none at runtime
 
 ## Contributing
 
 Issues are welcome, including accessibility barriers
-([how to report one](ACCESSIBILITY.md)). Pull requests use
+([how to report one](ACCESSIBILITY.md)). Report a security vulnerability
+privately instead: [SECURITY.md](SECURITY.md). Pull requests use
 [the template](.github/PULL_REQUEST_TEMPLATE.md) and the rules in
 [AGENTS.md](AGENTS.md).
 
