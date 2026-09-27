@@ -52,6 +52,14 @@ const LEG_HEIGHT = 0.15;
 /** A cat that lies down settles its tail within this. */
 const SETTLE_MS = 3000;
 
+/* Several moves, each followed by a pause of 1 to 3 s (PAUSE_MS in about-cats.ts). */
+const PAUSES_WINDOW_MS = 8000;
+/*
+ * A pause ends in at most three empty frames: the one that finds nothing to draw, one timestamped
+ * just before the pause ends, and a new move's unchanged first pose. Running through a pause is 20 or more.
+ */
+const MAX_EMPTY_FRAMES_IN_A_ROW = 6;
+
 /** Lying down plays out before the name changes; the longest move is well under this. */
 const NAP_TIMEOUT_MS = 10_000;
 
@@ -753,6 +761,57 @@ test.describe('About cats', () => {
       STILL_WINDOW_MS,
     );
     expect(writes, 'the cats kept drawing while off screen').toBe(0);
+  });
+
+  /* Counted in a row, not in total: a loaded machine runs fewer frames, never longer empty runs. */
+  test('a cat pausing between moves runs no empty animation frames', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ viewport: MINERVA_AND_HELA });
+    const page = await context.newPage();
+    await gotoSettled(page, ROUTE);
+    for (const id of ['minerva', 'hela'] as const) {
+      await napControl(page, id).click();
+      await expectMood(page, id, 'asleep', `${NAMES[id]} did not fall asleep`);
+    }
+    await catButton(page, 'rudra').scrollIntoViewIfNeeded();
+    await expectMood(page, 'rudra', 'playing', 'Rudra is not playing');
+    const { emptyInARow, drawn } = await page.evaluate(
+      (ms) =>
+        new Promise<{ emptyInARow: number; drawn: number }>((resolve) => {
+          const counts = { emptyInARow: 0, drawn: 0 };
+          let run = 0;
+          const observer = new MutationObserver(() => {});
+          for (const spot of document.querySelectorAll('.cat-spot'))
+            observer.observe(spot, { attributes: true, subtree: true });
+          const request = window.requestAnimationFrame.bind(window);
+          window.requestAnimationFrame = (callback) =>
+            request((now) => {
+              callback(now);
+              if (observer.takeRecords().length > 0) {
+                counts.drawn += 1;
+                run = 0;
+              } else {
+                run += 1;
+                counts.emptyInARow = Math.max(counts.emptyInARow, run);
+              }
+            });
+          setTimeout(() => {
+            observer.disconnect();
+            resolve(counts);
+          }, ms);
+        }),
+      PAUSES_WINDOW_MS,
+    );
+    expect(
+      drawn,
+      'Rudra drew nothing, so no pause was measured',
+    ).toBeGreaterThan(0);
+    expect(
+      emptyInARow,
+      'the loop kept running animation frames through a pause with nothing to draw',
+    ).toBeLessThanOrEqual(MAX_EMPTY_FRAMES_IN_A_ROW);
+    await context.close();
   });
 
   for (const viewport of [REFLOW_VIEWPORT, PHONE, DESKTOP_VIEWPORT]) {
