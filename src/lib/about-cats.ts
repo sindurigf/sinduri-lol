@@ -28,6 +28,11 @@ import {
   type PropRig,
 } from './about-cats-rig';
 
+/** A still pause after each move, in ms: cats alternate bursts and stillness. */
+const PAUSE_MS = [1000, 3000] as const;
+/** What a frame did for a cat: drew it, left it settled, or held it in a pause. */
+type StepResult = 'draw' | 'still' | 'rest';
+
 /** On-screen play time after waking before a cat naps. */
 export const NAP_AFTER_MS = 20_000;
 
@@ -123,6 +128,8 @@ interface CatState extends CatSpot {
   hiddenAt?: number;
   nextBlink: number;
   blinkUntil: number;
+  /** No new move before this; a nap still starts at once. */
+  restUntil: number;
 }
 
 const rand = (lo: number, hi: number): number => lo + Math.random() * (hi - lo);
@@ -206,6 +213,7 @@ export const createColony = (
     hiddenAt: 0,
     nextBlink: 0,
     blinkUntil: 0,
+    restUntil: 0,
   }));
   const watcherId = cats[Math.floor(Math.random() * cats.length)]?.id ?? '';
   const pointerAt = new Map<CatSpot['id'], { x: number; y: number }>();
@@ -247,6 +255,7 @@ export const createColony = (
     const playing = cat.playing;
     if (!playing) return;
     drop(cat);
+    if (!playing.settle) cat.restUntil = performance.now() + rand(...PAUSE_MS);
     playing.then?.();
   };
 
@@ -315,7 +324,7 @@ export const createColony = (
       lieDown(cat, now);
       return;
     }
-    if (cat.holds.size > 0) return;
+    if (cat.holds.size > 0 || now < cat.restUntil) return;
     if (Math.random() < LEAP_CHANCE && leap(cat, now)) return;
     const name = pickWeighted(cat.id === 'hela' ? HELA_WEIGHTS : WEIGHTS);
     const move = moveToPlay(name);
@@ -421,24 +430,25 @@ export const createColony = (
   };
 
   /** Moves one cat a frame on; true while it still has something to show. */
-  const step = (cat: CatState, now: number, frames: number): boolean => {
+  const step = (cat: CatState, now: number, frames: number): StepResult => {
     const held = cat.holds.size > 0;
     const playing = cat.playing;
     if (playing && (playing.settle || !held)) {
       advance(cat, playing, now);
-      return true;
+      return 'draw';
     }
-    if (cat.asleep) return false;
+    if (cat.asleep) return 'still';
     if (playing) drop(cat);
     const napDue = now >= cat.napAt && !cat.holds.has('card');
-    if (held && !napDue) return look(cat, now, frames);
+    if (held && !napDue) return look(cat, now, frames) ? 'draw' : 'still';
     const target = cat.id === watcherId ? pointerFor(cat, now) : undefined;
     if (!napDue && target) {
       watch(cat, target, frames);
-      return true;
+      return 'draw';
     }
+    if (!napDue && now < cat.restUntil) return 'rest';
     next(cat, now);
-    return true;
+    return 'draw';
   };
 
   const frame = (now: number): boolean => {
@@ -447,10 +457,12 @@ export const createColony = (
     let busy = false;
     for (const cat of cats) {
       if (cat.hiddenAt !== undefined) continue;
-      const stepped = step(cat, now, frames);
+      const result = step(cat, now, frames);
       const tailMoving = cat.rig.tailSpeed.some((v) => Math.abs(v) > TAIL_REST);
-      /* A settled or sleeping cat keeps its last drawing. */
-      if (!stepped && !tailMoving) continue;
+      /* A paused cat keeps the loop alive, to end its pause, but is not redrawn. */
+      if (result === 'rest') busy = true;
+      /* A settled, paused or sleeping cat keeps its last drawing. */
+      if (result !== 'draw' && !tailMoving) continue;
       busy = true;
       if (!cat.asleep && now > cat.nextBlink) {
         cat.blinkUntil = now + BLINK_MS;
