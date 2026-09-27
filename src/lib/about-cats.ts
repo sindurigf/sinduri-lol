@@ -54,8 +54,8 @@ const LEAPS: Partial<Record<MoveName, number>> = {
   pounce: 3,
   stalk: 1,
 };
-/** Where a cat stands from the card's edge to push the cup: the cup ends past the edge. */
-export const CUP_EDGE = 32;
+/** Where a cat stands from the card's edge to push the cup: CUP_AHEAD plus its push takes the cup past the edge. */
+export const CUP_EDGE = 44;
 /** A pointer that has not moved for this long no longer draws a cat's eye. */
 const POINTER_IDLE_MS = 4000;
 const FACE_DEADBAND = 20;
@@ -228,15 +228,11 @@ export const planMove = (
 
 /**
  * The cup push from anywhere on the track, heading left: a trot and a creep to
- * the card's edge, past the track, so the cup goes over, then a shuffle back on.
+ * CUP_EDGE, on the track, so the cup goes over the card's edge.
  * Left only: the right end is the sleep control's corner.
  */
 export const cupPush = (x: number): Move =>
-  withApproach(
-    moveToPlay('knock'),
-    Math.max(0, x - CUP_EDGE),
-    TRACK_MARGIN - CUP_EDGE,
-  );
+  withApproach(moveToPlay('knock'), Math.max(0, x - CUP_EDGE));
 
 export const createColony = (
   spots: CatSpot[],

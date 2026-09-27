@@ -208,8 +208,8 @@ const POSES = {
     ba: 62,
     by: 24,
     haunch: 6,
-    fN: [15, -14],
-    fF: [13, -11],
+    fN: [24, -20],
+    fF: [21, -15],
     hN: [0, 24],
     hF: [2, 26],
     hx: 4,
@@ -406,19 +406,38 @@ const YARN_BOUND_HEIGHT = 22;
 const FLY_HOP_HEIGHT = 24;
 /* The fly's route, [ms, x, y] ahead of the cat: it lands, is missed, circles, and escapes. */
 const FLY_PATH: readonly (readonly [number, number, number])[] = [
-  [0, 40, -60],
-  [1800, 75, -58],
-  [2500, 130, -4],
-  [4600, 130, -4],
-  [5100, 140, -70],
-  [6700, 140, -66],
-  [7700, 175, -55],
-  [8500, 220, -60],
-  [9300, 290, -95],
+  [0, 60, -82],
+  [600, 95, -88],
+  [1200, 70, -78],
+  [1800, 125, -50],
+  [2500, 150, -4],
+  [4600, 150, -4],
+  [4950, 168, -50],
+  [5400, 150, -88],
+  [6600, 142, -90],
+  [7000, 185, -80],
+  [7600, 220, -72],
+  [8100, 238, -90],
+  [8700, 262, -92],
+  [9300, 330, -94],
 ];
 const FLY_LANDS = 2500;
+const FLY_ARRIVES_MS = 300;
 const FLY_TAKES_OFF = 4600;
 const FLY_ESCAPES = 8600;
+/** The feather hangs this far ahead, clear of the chest, where a long swat reaches it. */
+const TOY_AHEAD = 36;
+/** Degrees the feather may swing back towards the cat. */
+const TOY_BACKSWING = -8;
+/** The cup stands clear of the head and chest; the first tap moves it this much. */
+export const CUP_AHEAD = 36;
+const CUP_NUDGE = 4;
+/** Where each yarn pounce lands: the front paws reach the ball's near side. */
+const YARN_LAND_1 = 218;
+const YARN_LAND_2 = 308;
+/** The ball hugged on the back, between the hind paws, from the cat's place. */
+const YARN_HUG = 9;
+const YARN_HUG_Y = -34;
 /** Knead rhythm (ms per radian) and how high each paw lifts, in px. */
 const KNEAD_BEAT = 260;
 const KNEAD_LIFT = 7;
@@ -591,16 +610,16 @@ export const MOVES = {
       t > at ? 30 * Math.exp(-(t - at) / 600) * Math.sin((t - at) / 120) : 0;
     const steps = [
       step(700, 'sit', { hr: -15 }),
-      step(160, 'sit', { hr: -18, fN: [20, -18] }, 'out'),
+      step(160, 'sit', { hr: -18, fN: [34, -3] }, 'out'),
       step(500, 'sit', { hr: -15 }),
-      step(160, 'sit', { hr: -20, fN: [20, -20] }, 'out'),
+      step(160, 'sit', { hr: -20, fN: [34, -5] }, 'out'),
       step(600, 'sit', { hr: -12 }),
-      step(400, 'rear'),
-      step(160, 'rear', { fN: [18, -22], fF: [16, -18] }, 'out'),
-      step(260, 'rear'),
-      step(160, 'rear', { fN: [18, -22], fF: [16, -18] }, 'out'),
+      step(400, 'rear', { fl: 1.5 }),
+      step(160, 'rear', { fl: 1.5, fN: [32, -3], fF: [28, 0] }, 'out'),
+      step(260, 'rear', { fl: 1.5 }),
+      step(160, 'rear', { fl: 1.5, fN: [32, -3], fF: [28, 0] }, 'out'),
       step(500, 'sit', { hr: -15 }),
-      step(160, 'sit', { hr: -18, fN: [20, -18] }, 'out'),
+      step(160, 'sit', { hr: -18, fN: [34, -3] }, 'out'),
       step(500, 'sit'),
       step(600, 'sit'),
     ];
@@ -611,14 +630,17 @@ export const MOVES = {
       prop: 'toy',
       propAt: (t) => ({
         kind: 'toy',
-        x: 28,
-        y: -32 + 4 * Math.sin(t / 700),
-        r:
+        x: TOY_AHEAD,
+        y: -30 + 4 * Math.sin(t / 700),
+        /* Batted away, it swings back only a little: never into the chest. */
+        r: Math.max(
+          TOY_BACKSWING,
           hit(t, 860) +
-          hit(t, 1520) +
-          hit(t, 2780) +
-          hit(t, 3200) +
-          hit(t, 3860),
+            hit(t, 1520) +
+            hit(t, 2680) +
+            hit(t, 3100) +
+            hit(t, 3760),
+        ),
         o: Math.min(1, t / 300, Math.max(0, (end - t) / 400)),
       }),
     };
@@ -626,10 +648,10 @@ export const MOVES = {
   knock: (): Move => ({
     steps: [
       step(600, 'sit', { hr: 12 }),
-      step(300, 'sit', { fN: [21, 14] }, 'out'),
+      step(300, 'sit', { fN: [30, 14] }, 'out'),
       step(300, 'sit'),
       step(900, 'sit', { hr: -8 }),
-      step(250, 'sit', { fN: [24, 13] }, 'out'),
+      step(250, 'sit', { fN: [34, 13] }, 'out'),
       step(900, 'sit', { hr: 25 }),
       step(400, 'sit'),
     ],
@@ -637,13 +659,13 @@ export const MOVES = {
     prop: 'cup',
     edge: true,
     propAt: (t) => {
-      let x = 23;
+      let x = CUP_AHEAD;
       let y = 0;
       let r = 0;
-      if (t > 750) x = 27;
+      if (t > 750) x = CUP_AHEAD + CUP_NUDGE;
       if (t > 2250) {
         const k = Math.min(1, (t - 2250) / 700);
-        x = 27 + 22 * Math.min(1, k * 3);
+        x = CUP_AHEAD + CUP_NUDGE + 22 * Math.min(1, k * 3);
         y = k > 0.33 ? ((k - 0.33) * 3) ** 2 * 40 : 0;
         r = k * 140;
       }
@@ -689,9 +711,9 @@ export const MOVES = {
       step(150, 'crouch', { x: 108, sq: 0.84 }, 'out'),
       step(600, 'sit', { x: 108, hr: -22 }),
       step(400, 'rear', { x: 108 }),
-      step(160, 'rear', { x: 108, fN: [18, -22], fF: [16, -18] }, 'out'),
+      step(160, 'rear', { x: 108, fN: [26, -24], fF: [23, -19] }, 'out'),
       step(260, 'rear', { x: 108 }),
-      step(160, 'rear', { x: 108, fN: [18, -22], fF: [16, -18] }, 'out'),
+      step(160, 'rear', { x: 108, fN: [26, -24], fF: [23, -19] }, 'out'),
       step(300, 'crouch', { x: 108 }),
       step(120, 'crouch', { x: 108, sq: 0.88 }, 'in'),
       step(350, 'air', { x: 150 }, 'linear'),
@@ -731,7 +753,7 @@ export const MOVES = {
         x: x + buzz * 10 * Math.sin(t / 260),
         y: y + buzz * 8 * Math.sin(t / 170),
         r: 0,
-        o: 1 - away,
+        o: Math.min(t / FLY_ARRIVES_MS, 1 - away),
       };
     },
   }),
@@ -788,28 +810,28 @@ export const MOVES = {
       o: Math.min(1, t / 300, Math.max(0, (4640 - t) / 300)),
     }),
   }),
-  /* Bats the ball, trots after it as it rolls, pounces, bats it on, and catches it. */
+  /* Bats the ball, trots after it, pounces with its paws on it, bats it on, then rolls over hugging it. */
   yarn: (): Move => ({
     steps: [
-      step(300, 'sit', { fN: [20, 14] }, 'out'),
+      step(300, 'sit', { fN: [30, 14] }, 'out'),
       step(400, 'sit'),
       step(300, 'stand'),
       step(2400, 'stand', { x: 150 }, 'inOut'),
       step(300, 'crouch', { x: 150 }),
       step(140, 'crouch', { x: 150, sq: 0.88 }, 'in'),
-      step(300, 'air', { x: 185 }, 'linear'),
-      step(180, 'crouch', { x: 205, sq: 0.84 }, 'out'),
-      step(300, 'sit', { x: 205, fN: [20, 14] }, 'out'),
-      step(250, 'stand', { x: 205 }),
-      step(1500, 'stand', { x: 265 }, 'inOut'),
-      step(250, 'crouch', { x: 265 }),
-      step(140, 'crouch', { x: 265, sq: 0.88 }, 'in'),
-      step(280, 'air', { x: 290 }, 'linear'),
-      step(180, 'crouch', { x: 300, sq: 0.84 }, 'out'),
-      ...flopTo('crouch', 'belly', 300),
-      step(1500, 'belly', { x: 300 }),
-      ...flopTo('belly', 'loaf', 300),
-      step(500, 'sit', { x: 300 }),
+      step(300, 'air', { x: 198 }, 'linear'),
+      step(180, 'crouch', { x: YARN_LAND_1, sq: 0.84, hy: -9 }, 'out'),
+      step(300, 'sit', { x: YARN_LAND_1, fN: [30, 14] }, 'out'),
+      step(250, 'sit', { x: YARN_LAND_1 }),
+      step(1500, 'stand', { x: 280 }, 'inOut'),
+      step(250, 'crouch', { x: 280 }),
+      step(140, 'crouch', { x: 280, sq: 0.88 }, 'in'),
+      step(280, 'air', { x: 298 }, 'linear'),
+      step(180, 'crouch', { x: YARN_LAND_2, sq: 0.84, hy: -9 }, 'out'),
+      ...flopTo('crouch', 'belly', YARN_LAND_2, { hy: -17 }),
+      step(1500, 'belly', { x: YARN_LAND_2 }),
+      ...flopTo('belly', 'loaf', YARN_LAND_2),
+      step(500, 'sit', { x: YARN_LAND_2 }),
     ],
     mods: [
       walking(1000, 3400),
@@ -824,16 +846,30 @@ export const MOVES = {
       }),
     ],
     prop: 'yarn',
-    /* Rolls ahead and slows; batted again, it rolls on to where the last pounce lands. */
+    /* Rolls ahead; a pounce lands paws first and squirts it on; batted again; then hugged in the hind paws. */
     propAt: (t) => {
-      const first = Math.min(1, Math.max(0, (t - 150) / 3700));
-      const second = Math.min(1, Math.max(0, (t - 4470) / 2300));
       const ease = (k: number) => 1 - (1 - k) ** 2;
+      const span = (a: number, b: number) =>
+        Math.min(1, Math.max(0, (t - a) / (b - a)));
+      const roll =
+        28 +
+        ease(span(150, 3850)) * 212 +
+        ease(span(4200, 4450)) * 14 +
+        ease(span(4500, 6900)) * 76 +
+        ease(span(7100, 7350)) * 10 +
+        ease(span(9420, 9820)) * 12;
+      /* Up over the rolled body first, then back to the hind paws; the reverse on letting go. */
+      const lift = span(7520, 7620) - span(9470, 9620);
+      const draw = span(7620, 7720) - span(9420, 9470);
+      const kick = t > 7920 && t < 9420 ? Math.sin((t - 7920) / 60) : 0;
       return {
         kind: 'yarn',
-        x: 22 + ease(first) * 208 + ease(second) * 95,
-        y: -6,
-        r: first * 900 + second * 500,
+        x: roll + draw * (YARN_LAND_2 + YARN_HUG - roll) + 3 * kick,
+        y: -6 + lift * (YARN_HUG_Y + 6) + 2 * kick,
+        r:
+          span(150, 3850) * 900 +
+          span(4200, 4450) * 80 +
+          span(4500, 6900) * 500,
         o: Math.min(1, t / 200, Math.max(0, (10620 - t) / 300)),
       };
     },
