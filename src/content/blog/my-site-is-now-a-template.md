@@ -8,6 +8,8 @@ teaser: 'I turned the code behind this site into a free template anyone can use.
 readingTime: 4
 seoTitle: 'astro-cat-portfolio: an accessible Astro template'
 seoDescription: 'astro-cat-portfolio is a free, MIT-licensed Astro template for a portfolio and blog, tested against WCAG 2.2 AA in three browsers.'
+cover: '../../assets/blog/my-site-is-now-a-template/cover.jpg'
+coverAlt: 'A tabby cat lying on a white duvet, looking at the camera.'
 ---
 
 I built this site to be accessible, fast and honest about what it does. Now the code behind it is a template that anyone can use for their own portfolio and blog. It is called [astro-cat-portfolio](https://github.com/sindurigf/astro-cat-portfolio), and it is free under the MIT licence.
