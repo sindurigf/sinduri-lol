@@ -332,6 +332,36 @@ test.describe('the failed-photo script', () => {
     expect(hero, 'the eager hero photo failed early and was missed').toBe(true);
   });
 
+  test('marks the About cat card photo, rendered after load', async ({
+    browser,
+  }) => {
+    const { page } = await open(browser, 1280, 1);
+    await page.route(
+      (url) =>
+        IMAGE_REQUEST.test(url.pathname) && url.pathname.includes('minerva'),
+      (request) => request.abort(),
+    );
+    await gotoSettled(page, '/about');
+    await page.locator('#cat-spot-minerva .cat-button').focus();
+    await page.keyboard.press('Enter');
+
+    const frame = page
+      .getByRole('dialog', { name: 'Minerva' })
+      .locator('.aspect-frame');
+    await expect(
+      frame,
+      'the cat card photo failed and was never marked',
+    ).toHaveAttribute('data-failed', '');
+    const alt = (await frame.locator('img').getAttribute('alt')) ?? '';
+    expect(alt, 'the cat card photo has no alt text').not.toBe('');
+    const copy = frame.locator('.aspect-frame-alt');
+    await expect(copy, 'alt text not shown').toHaveText(alt);
+    await expect(copy, 'the copy is announced twice').toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+  });
+
   for (const route of FRAME_ROUTES) {
     test(`${route} never marks a photo that loaded`, async ({ browser }) => {
       const { page } = await open(browser, 1280, 1);

@@ -1065,9 +1065,11 @@ size-full object-cover`). Never put `aspect-ratio` on the image: WebKit
 | Size     | `text-body`, inset 16px; `text-label` inset 12px below 20rem | 13.51 at both sizes |
 | Overflow | clamped to the whole lines the frame holds, then an ellipsis |                     |
 
-- `src/scripts/failed-images.ts` sets `data-failed` on the frame. It checks
-  each image on arrival (`complete` with no `naturalWidth`), on `error`, and
-  again on `load`.
+- `markFailed` in `src/scripts/failed-frame.ts` sets `data-failed` on the
+  frame. `src/scripts/failed-images.ts` calls it for the page's HTML on
+  arrival (`complete` with no `naturalWidth`), on `error`, and again on
+  `load`; a photo rendered later, like the About cat card's, calls it on
+  `error`.
 - It sets `--alt-lines` to the whole lines that fit between the insets and
   recounts on resize. Inset, not padding: `overflow` clips at the padding edge.
 - A decorative photo (`alt=""`) is marked and shows the empty fill.
