@@ -10,21 +10,9 @@ Astro, Vue islands, Tailwind CSS and TypeScript on Cloudflare Workers:
 
 ## Quick start
 
-Needs [nvm](https://github.com/nvm-sh/nvm) or Node.js at the `.nvmrc`
-version. No Cloudflare account or secrets: dev, build and every test suite run
-locally.
-
-```sh
-nvm use
-npm ci
-npx playwright install --with-deps chromium firefox
-npm test      # builds, then runs the Playwright and Worker suites
-npm run dev   # http://localhost:4340
-```
-
-Before calling a change done, run the commands in [AGENTS.md](AGENTS.md).
-WebKit runs locally through Docker:
-[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#webkit).
+Setup, commands and the local WebKit run:
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#setup). Before calling a change done,
+run the commands in [AGENTS.md](AGENTS.md#done-means).
 
 ## Documentation
 

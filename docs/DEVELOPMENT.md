@@ -15,6 +15,7 @@
 ## Setup
 
 ```sh
+nvm use
 npm ci
 npx playwright install --with-deps chromium firefox
 git config core.hooksPath .githooks
@@ -40,6 +41,7 @@ the log says so.
 | Command                      | Does                                                             |
 | ---------------------------- | ---------------------------------------------------------------- |
 | `npm run dev`                | Dev server at `http://localhost:4340`                            |
+| `npm test`                   | `test:a11y`, then `test:worker`; each builds first               |
 | `npm run build`              | Build to `dist/client` (assets) and `dist/server` (Worker)       |
 | `npm run preview`            | Serve the build through the Worker runtime                       |
 | `npm run typecheck`          | `astro check`, then `vue-tsc` on `.vue` files                    |
