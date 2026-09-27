@@ -70,6 +70,8 @@ Dark is the default. Colours and rules:
 - Without JavaScript the page is dark and the switch hidden.
 - `HeroField.vue` reads its palette from its own element and rebuilds when a
   `MutationObserver` sees `data-theme` change. Its ground is `hero-ground`.
+- `AboutCats.vue` needs neither: its SVG parts carry classes, and
+  `about-cats.css` maps them to tokens, so the cats follow the theme in CSS.
 - `playwright.config.ts` sets `colorScheme: 'dark'`; specs that measure light
   set `colorScheme: 'light'` themselves (`light-mode.spec.ts`, `focus.spec.ts`,
   the talk scan in `a11y.spec.ts`).
@@ -477,7 +479,8 @@ upgrade-insecure-requests
 
 Hashed inline blocks:
 
-- On `/` only (the `HeroField.vue` island): the `client:load` loader, the
+- On `/` and `/about/` (the `HeroField.vue` and `AboutCats.vue` islands, both
+  `client:load` so they share one loader hash): the `client:load` loader, the
   `<astro-island>` hydration script, and the
   `astro-island,astro-slot,astro-static-slot{display:contents}` style.
 - On every page: the theme script in `BaseLayout.astro`'s `<head>`.
@@ -572,6 +575,11 @@ evidence.
 - **Emulate touch in the browser projects:** the menu, photo strip and
   slideshow use native buttons and links, which fire the same events for
   touch; pointer and keyboard runs already cover them.
+- **Draw the About cat's focus ring round the cat, not its band:** the ring on
+  the band passes SC 2.4.11 (sides and top stay visible), and the cat moves
+  while the band does not.
+- **Let an About cat keep playing while it has keyboard focus:** the hold is a
+  rule, with its reason, in [STYLEGUIDE.md](docs/STYLEGUIDE.md#motion).
 
 ## Content notes
 

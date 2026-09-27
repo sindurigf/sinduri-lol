@@ -1,0 +1,775 @@
+import { expect, test, type Page } from './test';
+import { gotoSettled } from './settle';
+import { MIN_TARGET, REFLOW_VIEWPORT, DESKTOP_VIEWPORT } from './wcag';
+import { AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
+import { NODE } from './tags';
+import { readFileSync } from 'node:fs';
+import {
+  MOVES,
+  duration,
+  poseAt,
+  type Move,
+} from '../src/lib/about-cats-moves';
+import { POST_HEIGHT, highestPoint } from '../src/lib/about-cats-rig';
+
+/**
+ * The About cats (src/components/ui/AboutCats.vue): each cat opens its photo,
+ * its sleep control stops it (SC 2.2.2), stillness under reduced motion, and
+ * never covering text. Their drawing and motion are decoration and not tested.
+ */
+const ROUTE = '/about/';
+const CATS = ['minerva', 'hela', 'rudra'] as const;
+const NAMES = { minerva: 'Minerva', hela: 'Hela', rudra: 'Rudra' } as const;
+
+/** Long enough for several frames of any move; a still cat changes nothing in it. */
+const STILL_WINDOW_MS = 800;
+
+const PHONE = { width: 390, height: 844 };
+
+/** 1280x1024 at 400%: the SC 1.4.10 reflow case, short as well as narrow. */
+const ZOOMED = { width: 320, height: 256 };
+
+/** Tall enough that all three bands are on screen at once. */
+const ALL_BANDS = { width: 1350, height: 4000 };
+
+/** Leg height from the bottom of the click box; a raised card covers the last few px. */
+const LEG_HEIGHT = 0.15;
+
+/** A cat that lies down settles its tail within this. */
+const SETTLE_MS = 3000;
+
+/** Lying down plays out before the name changes; the longest move is well under this. */
+const NAP_TIMEOUT_MS = 10_000;
+
+/** Past the card's 4px border, on its padding. */
+const CARD_PADDING_HIT = 12;
+
+const napControl = (page: Page, id: (typeof CATS)[number]) =>
+  page.locator(`#cat-spot-${id} .cat-nap`);
+
+/** The top-left corner of the viewport, outside the centred card. */
+const BACKDROP_POINT = { x: 4, y: 4 };
+
+const catButton = (page: Page, id: (typeof CATS)[number]) =>
+  page.locator(`#cat-spot-${id} .cat-button`);
+
+/** Where the cat stands, not how it is posed: a held cat still blinks. */
+const place = (page: Page, id: (typeof CATS)[number]) =>
+  page.locator(`#cat-spot-${id} .cat-hit`).getAttribute('transform');
+
+/** Every drawn attribute of one cat but its blinks, so any movement changes the string. */
+const drawing = (page: Page, id: (typeof CATS)[number]) =>
+  page
+    .locator(`#cat-spot-${id} .cat-hit`)
+    .evaluate((node) =>
+      node.outerHTML.replace(/ (?:x|y|width|height|visibility)="[^"]*"/g, ''),
+    );
+
+/** Checks of a held cat's place, each a still window apart. */
+const HELD_CHECKS = 3;
+
+/** The colony's own state for a cat, set on the button when it changes. */
+const expectMood = (
+  page: Page,
+  id: (typeof CATS)[number],
+  mood: 'playing' | 'holding' | 'asleep' | RegExp,
+  why: string,
+) =>
+  expect(catButton(page, id), why).toHaveAttribute('data-cat-state', mood, {
+    timeout: NAP_TIMEOUT_MS,
+  });
+
+/** Points at a cat and waits for it to stop, as a person aiming at it would. */
+const pointAt = async (page: Page, id: (typeof CATS)[number]) => {
+  const area = page.locator(`#cat-spot-${id} .cat-hit-area`);
+  await area.scrollIntoViewIfNeeded();
+  await area.hover({ force: true });
+  await expectMood(
+    page,
+    id,
+    /^(holding|asleep)$/,
+    `${NAMES[id]} kept playing under the pointer`,
+  );
+  await expect(async () => {
+    const before = await place(page, id);
+    await page.waitForTimeout(STILL_WINDOW_MS);
+    expect(await place(page, id)).toBe(before);
+  }, `${NAMES[id]} kept moving under the pointer`).toPass({
+    timeout: NAP_TIMEOUT_MS,
+  });
+  return area;
+};
+
+const expectStill = async (
+  page: Page,
+  id: (typeof CATS)[number],
+  why: string,
+) => {
+  const before = await drawing(page, id);
+  await page.waitForTimeout(STILL_WINDOW_MS);
+  expect(await drawing(page, id), why).toBe(before);
+};
+
+/** Motion that stops within this needs no pause control. */
+const SC_2_2_2_MS = 5000;
+
+/** The post's cap and half its edge stroke above POST_HEIGHT. */
+const POST_CAP = 6;
+
+/** A frame at 60fps: fine enough to catch the top of every arc. */
+const FRAME_MS = 1000 / 60;
+
+const catBand = (): number => {
+  const css = readFileSync('src/styles/global.css', 'utf8');
+  const match = /^\s*--spacing-cat-band:\s*(\d+)px;/m.exec(css);
+  if (!match) throw new Error('global.css defines no --spacing-cat-band in px');
+  return Number(match[1]);
+};
+
+test('no move lifts any part of a cat above its band', NODE, () => {
+  const band = catBand();
+  const moves: [string, Move][] = [
+    ...Object.entries(MOVES).map(
+      ([name, make]) => [name, make()] as [string, Move],
+    ),
+  ];
+  const tooHigh: string[] = [];
+  for (const [name, move] of moves) {
+    const start = move.steps[0].pose;
+    for (let t = 0; t <= duration(move); t += FRAME_MS) {
+      const p = poseAt(move, start, t);
+      const height = highestPoint(p);
+      if (height > band) {
+        tooHigh.push(`${name} at ${Math.round(t)}ms: ${Math.round(height)}px`);
+        break;
+      }
+    }
+    if (move.propAt) {
+      for (let t = 0; t <= duration(move); t += FRAME_MS) {
+        const prop = move.propAt(t);
+        /* The post stands up from its point; its cap and edge add a few px. */
+        const top =
+          -prop.y + (prop.kind === 'post' ? POST_HEIGHT + POST_CAP : 0);
+        if (prop.o > 0 && top > band) {
+          tooHigh.push(`${name}'s ${prop.kind} at ${Math.round(t)}ms`);
+          break;
+        }
+      }
+    }
+  }
+  expect(
+    tooHigh,
+    'a move rises above --spacing-cat-band into the text above',
+  ).toEqual([]);
+});
+
+test(
+  'falling asleep and waking up each settle within 5 seconds (SC 2.2.2)',
+  NODE,
+  () => {
+    for (const name of ['sleep', 'wake'] as const) {
+      expect(
+        duration(MOVES[name]()),
+        `${name} keeps moving past 5 s, so a stopped or napping cat does not settle`,
+      ).toBeLessThanOrEqual(SC_2_2_2_MS);
+    }
+  },
+);
+
+test.describe('About cats', () => {
+  test('each cat is a named button that opens its photo in a dialog, Close first, and returns focus', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    for (const id of CATS) {
+      const button = catButton(page, id);
+      await expect(button).toHaveAccessibleName(`Meet ${NAMES[id]}`);
+      await expect(button).toHaveAttribute('aria-haspopup', 'dialog');
+      await button.focus();
+      await page.keyboard.press('Enter');
+      const dialog = page.getByRole('dialog', { name: NAMES[id] });
+      await expect(
+        dialog,
+        `${NAMES[id]}'s dialog did not open from the keyboard`,
+      ).toBeVisible();
+      const close = dialog.getByRole('button', { name: 'Close' });
+      await expect(close, 'Close is not first in the card').toBeFocused();
+      const size = await close.boundingBox();
+      expect(
+        size?.height,
+        'Close target height (SC 2.5.8)',
+      ).toBeGreaterThanOrEqual(MIN_TARGET);
+      expect(
+        size?.width,
+        'Close target width (SC 2.5.8)',
+      ).toBeGreaterThanOrEqual(MIN_TARGET);
+      await expect(
+        dialog.getByRole('heading', { level: 2, name: NAMES[id] }),
+        'the name sticker is not the dialog heading',
+      ).toBeVisible();
+      await expect(
+        dialog.getByRole('img'),
+        `${NAMES[id]}'s dialog shows no photo with alt text`,
+      ).toHaveAttribute('alt', new RegExp(NAMES[id]));
+      await page.keyboard.press('Escape');
+      await expect(
+        dialog,
+        `${NAMES[id]}'s dialog did not close on Escape`,
+      ).toBeHidden();
+      await expect(
+        button,
+        `focus did not return to ${NAMES[id]} after the dialog closed`,
+      ).toBeFocused();
+    }
+  });
+
+  test('a pointer click anywhere on a drawn cat, even between its legs, opens its dialog', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    for (const id of CATS) {
+      const area = await pointAt(page, id);
+      const box = await area.boundingBox();
+      expect(box, `${NAMES[id]} is not drawn`).not.toBeNull();
+      if (!box) return;
+      await page.mouse.click(
+        box.x + box.width / 2,
+        box.y + box.height * (1 - LEG_HEIGHT),
+      );
+      const dialog = page.getByRole('dialog', { name: NAMES[id] });
+      await expect(
+        dialog,
+        `a click at ${NAMES[id]}'s feet missed`,
+      ).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(dialog).toBeHidden();
+    }
+  });
+
+  test('pointing at a playing cat stops it where it is', async ({ page }) => {
+    await gotoSettled(page, ROUTE);
+    for (const id of CATS) {
+      await pointAt(page, id);
+      const held = await place(page, id);
+      for (let i = 0; i < HELD_CHECKS; i += 1) {
+        await page.waitForTimeout(STILL_WINDOW_MS);
+        expect(
+          await place(page, id),
+          `${NAMES[id]} moved off while pointed at`,
+        ).toBe(held);
+      }
+    }
+  });
+
+  for (const colorScheme of ['dark', 'light'] as const) {
+    test(`the card's name sticker and thank-you reach 4.5:1, the link underlined, in ${colorScheme} mode (SC 1.4.3, 1.4.1)`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ colorScheme });
+      const page = await context.newPage();
+      await gotoSettled(page, ROUTE);
+      await catButton(page, 'minerva').focus();
+      await page.keyboard.press('Enter');
+      const dialog = page.getByRole('dialog', { name: NAMES.minerva });
+      await expect(dialog).toContainText(
+        'Thank you for the inspiration, Arthur.',
+      );
+      const link = dialog.getByRole('link', { name: 'Arthur' });
+      await expect(link).toHaveAttribute('href', 'https://utor.io/');
+      const found = await page.evaluate(`(() => {
+        const link = document.querySelector('.cat-dialog a');
+        ${PAGE_HELPERS}
+        return [link.parentElement, link, document.querySelector('.cat-name')].map((node) => {
+          const style = getComputedStyle(node);
+          const fg = parse(style.color);
+          const bg = effectiveBackground(node);
+          return {
+            ratio: fg && bg ? ratio(fg, bg) : 0,
+            underline: style.textDecorationLine.includes('underline'),
+          };
+        });
+      })()`);
+      const [line, anchor, sticker] = found as {
+        ratio: number;
+        underline: boolean;
+      }[];
+      expect(
+        sticker.ratio,
+        'the gold name sticker is under 4.5:1',
+      ).toBeGreaterThanOrEqual(AA_TEXT);
+      expect(
+        line.ratio,
+        'the thank-you line is under 4.5:1',
+      ).toBeGreaterThanOrEqual(AA_TEXT);
+      expect(
+        anchor.ratio,
+        'the Arthur link is under 4.5:1',
+      ).toBeGreaterThanOrEqual(AA_TEXT);
+      expect(
+        anchor.underline,
+        'the Arthur link is told apart by colour alone',
+      ).toBe(true);
+      await context.close();
+    });
+  }
+
+  test('at 400% zoom the card scrolls, so its name and Close are reachable (SC 1.4.10)', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ viewport: ZOOMED });
+    const page = await context.newPage();
+    await gotoSettled(page, ROUTE);
+    await catButton(page, 'minerva').focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: NAMES.minerva });
+    await expect(dialog).toBeVisible();
+    const name = dialog.getByRole('heading', { name: NAMES.minerva });
+    await name.scrollIntoViewIfNeeded();
+    await expect(
+      name,
+      'the cat name cannot be scrolled into view',
+    ).toBeInViewport();
+    const close = dialog.getByRole('button', { name: 'Close' });
+    await close.scrollIntoViewIfNeeded();
+    await expect(close, 'Close cannot be scrolled into view').toBeInViewport();
+    await close.click();
+    await expect(dialog).toBeHidden();
+    await context.close();
+  });
+
+  test('a sleeping cat is not redrawn while another cat plays on screen', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ viewport: ALL_BANDS });
+    const page = await context.newPage();
+    await gotoSettled(page, ROUTE);
+    await napControl(page, 'minerva').click();
+    await expectMood(page, 'minerva', 'asleep', 'Minerva did not fall asleep');
+    await expectMood(page, 'hela', 'playing', 'Hela is not playing beside her');
+    await expect(async () => {
+      const writes = await page.evaluate(
+        (ms) =>
+          new Promise<number>((resolve) => {
+            let count = 0;
+            const observer = new MutationObserver((records) => {
+              count += records.length;
+            });
+            const spot = document.getElementById('cat-spot-minerva');
+            if (spot)
+              observer.observe(spot, { attributes: true, subtree: true });
+            setTimeout(() => {
+              observer.disconnect();
+              resolve(count);
+            }, ms);
+          }),
+        STILL_WINDOW_MS,
+      );
+      expect(writes, 'the sleeping cat kept being redrawn').toBe(0);
+    }).toPass({ timeout: SC_2_2_2_MS + SETTLE_MS });
+    await context.close();
+  });
+
+  test('opening and closing the card leaves a cat asleep or playing as it was', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    await napControl(page, 'minerva').click();
+    await expectMood(page, 'minerva', 'asleep', 'Minerva did not fall asleep');
+    for (const [id, mood] of [
+      ['minerva', 'asleep'],
+      ['hela', /^(playing|holding)$/],
+    ] as const) {
+      await catButton(page, id).focus();
+      await page.keyboard.press('Enter');
+      const dialog = page.getByRole('dialog', { name: NAMES[id] });
+      await expect(dialog).toBeVisible();
+      await dialog.getByRole('button', { name: 'Close' }).click();
+      await expect(dialog).toBeHidden();
+      await expectMood(page, id, mood, `closing the card changed ${NAMES[id]}`);
+    }
+  });
+
+  test('a click on the backdrop closes the card; Enter on the thank-you link does not', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    await catButton(page, 'hela').focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: NAMES.hela });
+    await expect(dialog).toBeVisible();
+    const link = dialog.getByRole('link', { name: 'Arthur' });
+    await link.evaluate((node) =>
+      node.addEventListener('click', (event) => event.preventDefault()),
+    );
+    await link.focus();
+    await page.keyboard.press('Enter');
+    await expect(dialog, 'Enter on the link closed the card').toBeVisible();
+    await page.mouse.click(BACKDROP_POINT.x, BACKDROP_POINT.y);
+    await expect(dialog, 'a backdrop click left the card open').toBeHidden();
+  });
+
+  test('a sleeping cat scrolled away and back is still asleep', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    await napControl(page, 'minerva').click();
+    await expectMood(page, 'minerva', 'asleep', 'Minerva did not fall asleep');
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(STILL_WINDOW_MS);
+    await catButton(page, 'minerva').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(STILL_WINDOW_MS);
+    await expectMood(page, 'minerva', 'asleep', 'Minerva woke off screen');
+  });
+
+  test('a click on the card itself, padding included, leaves it open', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    const button = catButton(page, 'hela');
+    await button.focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: NAMES.hela });
+    await expect(dialog).toBeVisible();
+    const card = await page.locator('.cat-card').boundingBox();
+    expect(card, 'the card is not drawn').not.toBeNull();
+    if (!card) return;
+    await page.mouse.click(card.x + CARD_PADDING_HIT, card.y + card.height / 2);
+    await expect(dialog, 'a click on the card padding closed it').toBeVisible();
+  });
+
+  test('keyboard focus holds a cat still, and Tab goes from the cat to its sleep control', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    const id = 'minerva';
+    // Holds follow keyboard use, so a key comes first, as it would for a keyboard user.
+    await page.keyboard.press('Shift');
+    await catButton(page, id).focus();
+    await expectMood(
+      page,
+      id,
+      'holding',
+      `${NAMES[id]} kept moving while focused`,
+    );
+    await page.keyboard.press('Tab');
+    await expect(
+      napControl(page, id),
+      `Tab from ${NAMES[id]} did not reach her sleep control`,
+    ).toBeFocused();
+    await expectMood(
+      page,
+      id,
+      'playing',
+      `${NAMES[id]} stayed held once focus left`,
+    );
+  });
+
+  test('the sleep control stops its cat within 5 s and wakes it again (SC 2.2.2)', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    for (const id of CATS) {
+      const control = napControl(page, id);
+      await control.scrollIntoViewIfNeeded();
+      await expect(control).toHaveAccessibleName(`Put ${NAMES[id]} to sleep`);
+      const lastChange = await page.evaluate(
+        ({ id, watch }) =>
+          new Promise<number>((resolve) => {
+            const spot = document.getElementById(`cat-spot-${id}`);
+            const control = spot?.querySelector<HTMLElement>('.cat-nap');
+            if (!spot || !control) return resolve(Infinity);
+            const cat = spot.querySelector('.cat-hit') ?? spot;
+            let last = 0;
+            const observer = new MutationObserver(() => {
+              last = performance.now();
+            });
+            observer.observe(cat, { attributes: true, subtree: true });
+            const clicked = performance.now();
+            control.click();
+            setTimeout(() => {
+              observer.disconnect();
+              resolve(last === 0 ? 0 : last - clicked);
+            }, watch);
+          }),
+        { id, watch: SC_2_2_2_MS + STILL_WINDOW_MS * 2 },
+      );
+      expect(
+        lastChange,
+        `${NAMES[id]} was still moving 5 s after the control`,
+      ).toBeLessThanOrEqual(SC_2_2_2_MS);
+      await expect(
+        control,
+        'the control does not offer to wake the cat once it is asleep',
+      ).toHaveAccessibleName(`Wake ${NAMES[id]}`);
+      await expect(
+        page.locator(`#cat-spot-${id} .cat-prop`),
+        `a toy or box stayed out after ${NAMES[id]} fell asleep`,
+      ).toHaveCount(0);
+      await control.click();
+      await expectMood(
+        page,
+        id,
+        /^(playing|holding)$/,
+        `${NAMES[id]} did not wake`,
+      );
+      await expect(control).toHaveAccessibleName(`Put ${NAMES[id]} to sleep`);
+    }
+  });
+
+  for (const colorScheme of ['dark', 'light'] as const) {
+    test(`the sleep control is a 24px target whose icon and edge reach 3:1 in ${colorScheme} mode (SC 2.5.8, 1.4.11)`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ colorScheme });
+      const page = await context.newPage();
+      await gotoSettled(page, ROUTE);
+      for (const id of CATS) {
+        const box = await napControl(page, id).boundingBox();
+        expect(
+          box?.width,
+          `${NAMES[id]}'s sleep control width`,
+        ).toBeGreaterThanOrEqual(MIN_TARGET);
+        expect(
+          box?.height,
+          `${NAMES[id]}'s sleep control height`,
+        ).toBeGreaterThanOrEqual(MIN_TARGET);
+      }
+      const ratios = await page.evaluate(`(() => {
+        ${PAGE_HELPERS}
+        return [...document.querySelectorAll('.cat-nap')].map((button) => {
+          const style = getComputedStyle(button);
+          const own = effectiveBackground(button);
+          const ground = effectiveBackground(button.parentElement);
+          const icon = parse(style.color);
+          const edge = parse(style.borderTopColor);
+          return {
+            icon: icon && own ? ratio(icon, own) : 0,
+            edge: edge && ground ? ratio(edge, ground) : 0,
+          };
+        });
+      })()`);
+      for (const value of ratios as { icon: number; edge: number }[]) {
+        expect(
+          value.icon,
+          'the sleep icon is under 3:1',
+        ).toBeGreaterThanOrEqual(NON_TEXT);
+        expect(
+          value.edge,
+          'the sleep control edge is under 3:1',
+        ).toBeGreaterThanOrEqual(NON_TEXT);
+      }
+      await context.close();
+    });
+  }
+
+  for (const colorScheme of ['dark', 'light'] as const) {
+    test(`the sleep control keeps 3:1 when hovered and focused in ${colorScheme} mode (SC 1.4.11)`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ colorScheme });
+      const page = await context.newPage();
+      await gotoSettled(page, ROUTE);
+      const control = napControl(page, 'minerva');
+      const measure = () =>
+        page.evaluate(`(() => {
+          const button = document.querySelector('#cat-spot-minerva .cat-nap');
+          ${PAGE_HELPERS}
+          const style = getComputedStyle(button);
+          const own = effectiveBackground(button);
+          const icon = parse(style.color);
+          const ring = parse(style.outlineColor);
+          const ground = effectiveBackground(button.parentElement);
+          return {
+            icon: icon && own ? ratio(icon, own) : 0,
+            ring: ring && ground ? ratio(ring, ground) : 0,
+          };
+        })()`) as Promise<{ icon: number; ring: number }>;
+      await control.hover();
+      expect(
+        (await measure()).icon,
+        'the hovered sleep icon is under 3:1',
+      ).toBeGreaterThanOrEqual(NON_TEXT);
+      await page.mouse.move(0, 0);
+      await page.keyboard.press('Shift');
+      await control.focus();
+      const focused = await measure();
+      expect(
+        focused.icon,
+        'the focused sleep icon is under 3:1',
+      ).toBeGreaterThanOrEqual(NON_TEXT);
+      expect(
+        focused.ring,
+        'the focus ring is under 3:1',
+      ).toBeGreaterThanOrEqual(NON_TEXT);
+      await context.close();
+    });
+  }
+
+  test('under reduced motion the cats sit still with no sleep control', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ reducedMotion: 'reduce' });
+    const page = await context.newPage();
+    await gotoSettled(page, ROUTE);
+    await expect(page.getByRole('button', { name: /^Meet / })).toHaveCount(
+      CATS.length,
+    );
+    await expect(
+      page.locator('.cat-nap'),
+      'a sleep control shows while nothing moves',
+    ).toHaveCount(0);
+    for (const id of CATS) {
+      await page.locator(`#cat-spot-${id}`).scrollIntoViewIfNeeded();
+      await expectStill(page, id, `${NAMES[id]} moved under reduced motion`);
+      const button = catButton(page, id);
+      await button.focus();
+      await page.keyboard.press('Enter');
+      await expect(page.getByRole('dialog', { name: NAMES[id] })).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(
+        button,
+        'under reduced motion a cat is only met',
+      ).toHaveAccessibleName(`Meet ${NAMES[id]}`);
+    }
+    await context.close();
+  });
+
+  test('the cats stop drawing once they are off screen', async ({ page }) => {
+    await gotoSettled(page, ROUTE);
+    await page.locator('#cat-spot-rudra').scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const writes = await page.evaluate(
+      (ms) =>
+        new Promise<number>((resolve) => {
+          let count = 0;
+          const observer = new MutationObserver((records) => {
+            count += records.length;
+          });
+          for (const spot of document.querySelectorAll('.cat-spot'))
+            observer.observe(spot, { attributes: true, subtree: true });
+          setTimeout(() => {
+            observer.disconnect();
+            resolve(count);
+          }, ms);
+        }),
+      STILL_WINDOW_MS,
+    );
+    expect(writes, 'the cats kept drawing while off screen').toBe(0);
+  });
+
+  for (const viewport of [REFLOW_VIEWPORT, PHONE, DESKTOP_VIEWPORT]) {
+    test(`no cat band covers text at ${viewport.width}px`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ viewport });
+      const page = await context.newPage();
+      await gotoSettled(page, ROUTE);
+      const overlaps = await page.evaluate(() => {
+        const spots = [...document.querySelectorAll<HTMLElement>('.cat-spot')];
+        const walker = document.createTreeWalker(
+          document.body,
+          NodeFilter.SHOW_TEXT,
+        );
+        const hits: string[] = [];
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          const text = node.textContent?.trim();
+          const parent = node.parentElement;
+          if (
+            !text ||
+            !parent ||
+            parent.closest('.cat-spot, dialog, .sr-only, [hidden]')
+          )
+            continue;
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          for (const rect of range.getClientRects()) {
+            for (const spot of spots) {
+              const band = spot.getBoundingClientRect();
+              if (
+                rect.right > band.left &&
+                rect.left < band.right &&
+                rect.bottom > band.top &&
+                rect.top < band.bottom
+              ) {
+                hits.push(`${spot.id}: "${text.slice(0, 40)}"`);
+              }
+            }
+          }
+        }
+        return hits;
+      });
+      expect(overlaps, 'a cat band overlaps text').toEqual([]);
+      await context.close();
+    });
+  }
+
+  test('a drawn cat is at least 24 by 24px (SC 2.5.8)', async ({ page }) => {
+    await gotoSettled(page, ROUTE);
+    for (const id of CATS) {
+      const box = await page
+        .locator(`#cat-spot-${id} .cat-hit-area`)
+        .boundingBox();
+      expect(box?.width, `${NAMES[id]}'s target width`).toBeGreaterThanOrEqual(
+        MIN_TARGET,
+      );
+      expect(
+        box?.height,
+        `${NAMES[id]}'s target height`,
+      ).toBeGreaterThanOrEqual(MIN_TARGET);
+    }
+  });
+
+  for (const colorScheme of ['dark', 'light'] as const) {
+    test(`the sticker edge is at least 3:1 against the page in ${colorScheme} mode (SC 1.4.11)`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ colorScheme });
+      const page = await context.newPage();
+      await gotoSettled(page, ROUTE);
+      const ratios = await page.evaluate(`(() => {
+        ${PAGE_HELPERS}
+        return [...document.querySelectorAll('.cat-spot')].map((spot) => {
+          const edge = spot.querySelector('.cat-edge');
+          const fill = edge ? parse(getComputedStyle(edge).fill) : null;
+          const ground = effectiveBackground(spot);
+          return fill && ground ? ratio(fill, ground) : 0;
+        });
+      })()`);
+      for (const value of ratios as number[]) {
+        expect(
+          value,
+          'the cat edge fails SC 1.4.11 against its ground',
+        ).toBeGreaterThanOrEqual(NON_TEXT);
+      }
+      await context.close();
+    });
+  }
+
+  test('the drawings are hidden from assistive technology and the AI label is on the page', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    for (const id of CATS) {
+      const drawings = page.locator(`#cat-spot-${id} svg`);
+      await expect(drawings, 'the cat and its sleep icon').toHaveCount(2);
+      for (const svg of await drawings.all())
+        await expect(svg).toHaveAttribute('aria-hidden', 'true');
+    }
+    await expect(
+      page.getByText('The moving cats are drawn with AI.'),
+    ).toBeVisible();
+  });
+
+  test('without JavaScript there are no cats and the AI label stays', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto(ROUTE);
+    await expect(page.locator('.cat-button')).toHaveCount(0);
+    await expect(
+      page.getByText('The moving cats are drawn with AI.'),
+    ).toBeVisible();
+    await context.close();
+  });
+});

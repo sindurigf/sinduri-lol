@@ -125,7 +125,7 @@ TEST_PORT=4331 TEST_WORKER_PORT=4332 npm run test:a11y
 ```text
 src/
   assets/           Images, processed by the build
-  components/       Astro components; ui/ holds the Vue island
+  components/       Astro components; ui/ holds the Vue islands
   content/blog/     Blog posts as Markdown
   content/talks/    One Slidev Markdown deck per talk
   content.config.ts Content collection schema
