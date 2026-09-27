@@ -937,6 +937,9 @@ export const TRAVEL_MOVES: ReadonlySet<MoveName> = new Set([
   'yarn',
 ]);
 
+/** Scales a travel move may shrink to on a short track, largest first. */
+export const TRAVEL_FACTORS = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4] as const;
+
 /** A move with its sideways distances, the cat's and its prop's, scaled by `factor`. */
 export const scaleTravel = (move: Move, factor: number): Move => {
   const propAt = move.propAt;
@@ -950,10 +953,18 @@ export const scaleTravel = (move: Move, factor: number): Move => {
       propAt &&
       ((t) => {
         const s = propAt(t);
-        return { ...s, x: s.x * factor };
+        const cat = sample(move.steps, SCALE_FROM, t).x;
+        const ahead = s.x - cat;
+        const kept = Math.min(Math.abs(ahead), PROP_KEEP);
+        const scaled = Math.max(Math.abs(ahead) * factor, kept);
+        return { ...s, x: cat * factor + Math.sign(ahead) * scaled };
       }),
   };
 };
+/** A scaled travel move brings its prop no nearer the cat than this, in px: clear of the head. */
+const PROP_KEEP = 45;
+/* A travel move's steps set x absolutely, so the start pose only matters in its first step. */
+const SCALE_FROM = BASE;
 
 /* Move factories are deterministic, so each name's extent is sampled once. */
 const extents = new Map<MoveName, readonly [number, number]>();
@@ -967,6 +978,21 @@ export const moveExtent = (name: MoveName): readonly [number, number] => {
   if (known) return known;
   const found = extent(moveToPlay(name));
   extents.set(name, found);
+  return found;
+};
+
+const scaledExtents = new Map<string, readonly [number, number]>();
+
+/** The extent of a travel move scaled by `factor`, kept per name and factor. */
+export const scaledExtent = (
+  name: MoveName,
+  factor: number,
+): readonly [number, number] => {
+  const key = `${name}@${factor}`;
+  const known = scaledExtents.get(key);
+  if (known) return known;
+  const found = extent(scaleTravel(moveToPlay(name), factor));
+  scaledExtents.set(key, found);
   return found;
 };
 
@@ -1138,16 +1164,26 @@ export const withApproach = (
 /** One 60fps frame, the step of extent's sampling. */
 const EXTENT_STEP_MS = 1000 / 60;
 
-/** A move's path back and forward from its start, for track checks: sampled from the drawn path, so eases and modifiers count. */
+/** A prop's half-width past its centre, and the opacity below which it no longer counts. */
+const PROP_REACH = 10;
+const PROP_SEEN = 0.05;
+
+/** A move's path back and forward from its start, its prop's included, for track checks: sampled from the drawn path, so eases and modifiers count. */
 const extent = (move: Move): [number, number] => {
   const start = pose('sit');
   const length = duration(move);
   let back = 0;
   let forward = 0;
   for (let t = 0; t <= length + EXTENT_STEP_MS; t += EXTENT_STEP_MS) {
-    const x = poseAt(move, start, Math.min(t, length)).x;
+    const at = Math.min(t, length);
+    const x = poseAt(move, start, at).x;
     back = Math.min(back, x);
     forward = Math.max(forward, x);
+    const prop = move.propAt?.(at);
+    if (prop && prop.o > PROP_SEEN) {
+      back = Math.min(back, prop.x - PROP_REACH);
+      forward = Math.max(forward, prop.x + PROP_REACH);
+    }
   }
   return [back, forward];
 };
@@ -1178,3 +1214,11 @@ const stepsDuration = (steps: Step[]): number =>
   steps.reduce((sum, s) => sum + s.ms, 0);
 
 export const duration = (move: Move): number => stepsDuration(move.steps);
+
+/** Every extent a colony may ask for, one call each, to warm in idle time before the first move needs them. */
+export const EXTENT_WARMUPS: readonly (() => unknown)[] = [
+  ...MOVE_NAMES.map((name) => () => moveExtent(name)),
+  ...[...TRAVEL_MOVES].flatMap((name) =>
+    TRAVEL_FACTORS.map((factor) => () => scaledExtent(name, factor)),
+  ),
+];

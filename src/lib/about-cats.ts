@@ -16,6 +16,8 @@ import {
   withApproach,
   moveToPlay,
   scaleTravel,
+  scaledExtent,
+  TRAVEL_FACTORS,
   TRAVEL_MOVES,
   type Move,
   type MoveName,
@@ -32,10 +34,6 @@ import {
 
 /** A short still beat after each move, in ms, so play flows but each move reads. */
 const PAUSE_MS = [300, 900] as const;
-/** A travel move shrinks to fit a short track, but not below this share of its length. */
-const MIN_TRAVEL_FACTOR = 0.35;
-/** px a scaled move may overshoot its scaled extent: modifiers add a little x that does not scale. */
-const TRAVEL_SLACK = 1;
 /** What a frame did for a cat: drew it, left it settled, or held it in a pause. */
 type StepResult = 'draw' | 'still' | 'rest';
 
@@ -216,14 +214,11 @@ export const planMove = (
   if (!TRAVEL_MOVES.has(name) || forward <= 0) return null;
   const room = (dir: number) => (dir > 0 ? max - x : x - min);
   const dir = room(facing) >= room(-facing) ? facing : -facing;
-  const factor = (room(dir) - TRAVEL_SLACK) / forward;
-  if (factor < MIN_TRAVEL_FACTOR) return null;
-  const scaled: readonly [number, number] = [
-    back * factor - TRAVEL_SLACK,
-    forward * factor + TRAVEL_SLACK,
-  ];
-  if (!fitsTrack(x, scaled, dir, min, max)) return null;
-  return { move: scaleTravel(moveToPlay(name), factor), dir };
+  /* Props keep their distance from the cat when it travels less, so each scale is measured, not assumed. */
+  for (const factor of TRAVEL_FACTORS)
+    if (fitsTrack(x, scaledExtent(name, factor), dir, min, max))
+      return { move: scaleTravel(moveToPlay(name), factor), dir };
+  return null;
 };
 
 /**

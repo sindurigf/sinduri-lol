@@ -11,7 +11,7 @@ import { IDLE, useMotionLoop } from '../../composables/use-motion-loop';
 import { markFailed } from '../../scripts/failed-frame';
 import { clamp, createCatRig } from '../../lib/about-cats-rig';
 import type { CatId } from '../../lib/about-cats-types';
-import { MOVE_NAMES, moveExtent } from '../../lib/about-cats-moves';
+import { EXTENT_WARMUPS } from '../../lib/about-cats-moves';
 import {
   createColony,
   type CatInfo,
@@ -44,11 +44,11 @@ const WARM_GAP_MS = 50;
 
 let cancelWarm = (): void => {};
 
-/* One move's extent per idle slot, so the first leap never samples on a frame. */
-const warmExtents = (names: readonly (typeof MOVE_NAMES)[number][]): void => {
-  const [name, ...rest] = names;
-  if (!name) return;
-  moveExtent(name);
+/* One extent per idle slot, so the first move never samples on a frame. */
+const warmExtents = (jobs: readonly (() => unknown)[]): void => {
+  const [job, ...rest] = jobs;
+  if (!job) return;
+  job();
   /* The DOM types always declare it, but Safari lacks it. */
   if (typeof window.requestIdleCallback === 'function') {
     const id = window.requestIdleCallback(() => warmExtents(rest));
@@ -337,7 +337,7 @@ onMounted(async () => {
   });
   layout();
   if (reducedMotion.value) colony.still();
-  else warmExtents(MOVE_NAMES);
+  else warmExtents(EXTENT_WARMUPS);
 
   resizeObserver = new ResizeObserver(layout);
   for (const node of spots()) resizeObserver.observe(node);
