@@ -103,6 +103,7 @@ Setup: `gsettings set org.gnome.desktop.interface enable-animations false`.
 - [ ] Nothing else moves, fades or slides. → SC 2.3.3
 - [ ] `/`: the hero field is drawn once, reads as a picture, and has no pause
       control. → SC 2.3.3, 2.2.2
+- [ ] `/about`: the cats sit still and have no sleep controls. → SC 2.3.3, 2.2.2
 - [ ] Turn it back on: the button moves and the field animates. → SC 2.3.3
 
 ## 5. Focus indicator visibility
@@ -433,6 +434,26 @@ Setup: Firefox at 320px on `/`. Open the menu, widen past 768px, press Escape.
 - [ ] Focus is on a header nav link. → SC 2.4.3
 - [ ] `Orca+Return` describes that link, not the document. → SC 2.4.3
 - [ ] `Alt+Shift+M`: one navigation "Primary", no dialog. → SC 1.3.1
+
+Heard: `________________________`
+
+#### 6.12.6 The About cats
+
+Setup: `/about` at 1280px, the cats' band on screen. Each cat is a "Meet"
+button with a sleep control beside it; one `<dialog>` holds the card. The
+drawings are `aria-hidden`.
+
+- [ ] Tab reaches each cat, then its sleep control; a focused cat holds
+      still. → SC 2.4.3, 2.2.2
+- [ ] Each cat is a button named "Meet Minerva", "Meet Hela" or "Meet Rudra". → SC 4.1.2
+- [ ] Enter opens the card: focus is on Close, and the dialog is named after
+      the cat. → SC 2.4.3, 4.1.2
+- [ ] Tab reaches Close and the thank-you link, never the page behind. → SC 2.1.2
+- [ ] Escape closes the card and focus returns to the same cat. → SC 2.4.3
+- [ ] The sleep control reads "Put Minerva to sleep"; Enter stops the cat
+      within 5 s and the control then reads "Wake Minerva". → SC 2.2.2, 4.1.2
+- [ ] The drawings announce nothing; "The moving cats are drawn with AI" is
+      read. → SC 1.1.1
 
 Heard: `________________________`
 

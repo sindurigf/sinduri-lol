@@ -2,12 +2,12 @@
 
 How AI tooling was used to build this repository.
 
-| Item   | Detail                                                                                                                               |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Model  | Claude (Anthropic)                                                                                                                   |
-| Tool   | Claude Code, as a VS Code extension                                                                                                  |
-| Design | Stitch (Google) for design, Claude Design (Anthropic) for refinement, as on `/credits`                                               |
-| Scope  | Scaffolding, components, design tokens, functional microcopy, `/accessibility` and `/privacy` disclosure, docs, a11y fixes and tests |
+| Item   | Detail                                                                                                                                                       |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Model  | Claude (Anthropic)                                                                                                                                           |
+| Tool   | Claude Code, as a VS Code extension                                                                                                                          |
+| Design | Stitch (Google) for design, Claude Design (Anthropic) for refinement, as on `/credits`                                                                       |
+| Scope  | Scaffolding, components, design tokens, functional microcopy, `/accessibility` and `/privacy` disclosure, the About cat drawings, docs, a11y fixes and tests |
 
 ## Review
 

@@ -80,19 +80,21 @@ blur, uppercase headings, tilted marks.
 
 ## Colour tokens
 
-| Token        | Hex       | Job                                |
-| ------------ | --------- | ---------------------------------- |
-| `background` | `#131313` | Page ground; header, footer, bands |
-| `surface`    | `#1A1A1A` | Cards, inputs                      |
-| `border`     | `#5A87A8` | Every boundary                     |
-| `text`       | `#E5E2E1` | Words                              |
-| `subtle`     | `#9BB4C6` | Captions, meta, helper text        |
-| `gold`       | `#FFC000` | The accent, per the register       |
-| `cyan`       | `#00DCFD` | Hover and focus only               |
-| `pink`       | `#FF007A` | Depth and error; never text        |
-| `pink-text`  | `#FF79B6` | Every pink glyph; never non-text   |
-| `bunny`      | `#FF007A` | Bunny marks; same in both modes    |
-| `tile-edge`  | `#5A87A8` | Logo tile copies' edge; both modes |
+| Token        | Hex       | Job                                                        |
+| ------------ | --------- | ---------------------------------------------------------- |
+| `background` | `#131313` | Page ground; header, footer, bands                         |
+| `surface`    | `#1A1A1A` | Cards, inputs                                              |
+| `border`     | `#5A87A8` | Every boundary                                             |
+| `text`       | `#E5E2E1` | Words                                                      |
+| `subtle`     | `#9BB4C6` | Captions, meta, helper text                                |
+| `gold`       | `#FFC000` | The accent, per the register                               |
+| `cyan`       | `#00DCFD` | Hover and focus only                                       |
+| `pink`       | `#FF007A` | Depth and error; never text                                |
+| `pink-text`  | `#FF79B6` | Every pink glyph; never non-text                           |
+| `bunny`      | `#FF007A` | Bunny marks; same in both modes                            |
+| `tile-edge`  | `#5A87A8` | Logo tile copies' edge; both modes                         |
+| `cat-*`      | 13 fills  | About cat drawings and props; decoration, never a boundary |
+| `hero-*`     | 5 values  | Homepage canvas ground, veil and floor; decoration         |
 
 The gold-ground set is in [Gold surface](#gold-surface), light values in
 [Light mode](#light-mode).
@@ -975,7 +977,7 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 
 - Every animation respects `prefers-reduced-motion: reduce`.
 - Anything moving automatically for over five seconds needs a pause control
-  (SC 2.2.2): the homepage hero field.
+  (SC 2.2.2): the homepage hero field and each About cat.
 - Nothing flashes more than three times per second (SC 2.3.1).
 - Controls press into their shadow at 0ms; no movement under reduced motion.
 - No marquee.
