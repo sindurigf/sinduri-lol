@@ -575,8 +575,8 @@ evidence.
   hand after a deploy ([DEPLOYMENT.md](docs/DEPLOYMENT.md)).
 - **Add ESLint, or `checkJs` for the `.mjs` scripts:** the strictest tsconfig,
   `astro check` at hint level, `vue-tsc`, Prettier and the `check:*` scripts
-  cover what a linter would. A `checkJs` run gave 156 errors, 147 of them
-  implicit `any` or untyped `catch` variables, and no bug.
+  cover what a linter would. `checkJs` reports untyped code (implicit `any`,
+  untyped `catch`, loose DOM and Node types), not bugs.
 - **Fetch external links in CI:** the result depends on other sites' uptime,
   so the gate would fail for reasons outside the repository.
   `tests/internal-links.spec.ts` covers every same-origin link.
