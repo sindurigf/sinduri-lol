@@ -6,15 +6,7 @@
 Run by `npm run publish:talk`. `page.json` holds `links`, `hidden`,
 `headings` and `digest` (stored as /SlidesSHA256 for tests/talk-pdf.spec.ts).
 Needs pikepdf: `apt install python3-pikepdf`.
-
-Fixes Chromium's tagged print for veraPDF PDF/UA-1:
-- 7.1-3: untagged paths and text become /Artifact; untagged text must equal
-  the page's aria-hidden count, or content would be lost.
-- 7.1-5: role map `Strong` to `Span`.
-- 7.2-20: LI content beside `Lbl` moves into an `LBody`.
-- 7.18.1-2, 7.18.5-2: link annotations get /Contents from the page's link text.
-- 7.1-8: XMP title, language and PDF/UA identifier.
-Bookmarks are retitled from the page: Chromium drops spaces at line breaks.
+What it fixes: docs/DEVELOPMENT.md, "Publishing the PDF".
 """
 
 import json
