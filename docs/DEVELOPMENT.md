@@ -258,6 +258,7 @@ npm run publish:cv -- ~/Downloads/export.pdf
   Otherwise it prints why and leaves `public/` alone.
 - A section added, removed or renamed: update `SECTIONS` at the top of
   `scripts/publish-cv.py`.
-- Any other refusal is an unknown layout; the message says what.
+- Unmeasured shapes stop the run: a structure type, font or form layout that
+  no measured export had is refused, and the message says what.
 - Read the result in a PDF reader before committing: the checks cover
   structure, not readability.
