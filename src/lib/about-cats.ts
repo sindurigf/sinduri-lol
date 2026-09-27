@@ -31,6 +31,7 @@ import {
   type CatRig,
   type PropRig,
 } from './about-cats-rig';
+import type { PropState } from './about-cats-types';
 
 /** A short still beat after each move, in ms, so play flows but each move reads. */
 const PAUSE_MS = [300, 900] as const;
@@ -68,6 +69,8 @@ const FRAME_MS = 1000 / 60;
 const MAX_FRAMES_PER_STEP = 6;
 /** A held cat has settled once no pose value moves more than this per frame. */
 const SETTLED = 0.01;
+/** ms a prop takes to fade when its move is cut short. */
+const PROP_FADE_MS = 250;
 /** Tail segment speed below which the tail counts as at rest. */
 const TAIL_REST = 0.02;
 
@@ -109,6 +112,8 @@ interface Playing {
   origin: number;
   dir: number;
   prop?: PropRig;
+  /** The prop as last drawn, so a dropped move can fade it out from there. */
+  shown?: PropState;
   /** Lying down and getting up play out even while the cat is held. */
   settle: boolean;
   then?: () => void;
@@ -285,8 +290,18 @@ export const createColony = (
     renderCat(cat.rig, p, now, p.x, cat.groundY);
   };
 
-  const drop = (cat: CatState): void => {
-    cat.playing?.prop?.remove();
+  /** A cut-short move's prop fades out over PROP_FADE_MS instead of vanishing. */
+  const fading: { prop: PropRig; shown: PropState; t0: number }[] = [];
+
+  const drop = (cat: CatState, fade = false): void => {
+    const playing = cat.playing;
+    if (playing?.prop && playing.shown && fade)
+      fading.push({
+        prop: playing.prop,
+        shown: playing.shown,
+        t0: performance.now(),
+      });
+    else playing?.prop?.remove();
     cat.playing = undefined;
     cat.pose.face = Math.sign(cat.pose.face) || 1;
   };
@@ -445,7 +460,8 @@ export const createColony = (
     cat.pose = p;
     if (playing.prop && playing.move.propAt) {
       const s = playing.move.propAt(t);
-      playing.prop.draw({ ...s, x: playing.origin + playing.dir * s.x }, now);
+      playing.shown = { ...s, x: playing.origin + playing.dir * s.x };
+      playing.prop.draw(playing.shown, now);
     }
     if (t >= playing.length) endMove(cat);
   };
@@ -459,7 +475,7 @@ export const createColony = (
       return 'draw';
     }
     if (cat.asleep) return 'still';
-    if (playing) drop(cat);
+    if (playing) drop(cat, true);
     const napDue = now >= cat.napAt && !cat.holds.has('card');
     if (held && !napDue) return look(cat, now, frames) ? 'draw' : 'still';
     const target = cat.id === watcherId ? pointerFor(cat, now) : undefined;
@@ -476,6 +492,17 @@ export const createColony = (
     const frames = clamp((now - lastFrame) / FRAME_MS, 0, MAX_FRAMES_PER_STEP);
     lastFrame = now;
     let wakeAt = Infinity;
+    for (let i = fading.length - 1; i >= 0; i -= 1) {
+      const { prop, shown, t0 } = fading[i];
+      const k = (now - t0) / PROP_FADE_MS;
+      if (k >= 1) {
+        prop.remove();
+        fading.splice(i, 1);
+        continue;
+      }
+      prop.draw({ ...shown, o: shown.o * (1 - k) }, now);
+      wakeAt = now;
+    }
     for (const cat of cats) {
       if (cat.hiddenAt !== undefined) continue;
       const result = step(cat, now, frames);
@@ -558,7 +585,7 @@ export const createColony = (
       const cat = find(id);
       if (!cat || cat.asleep) return;
       /* Drops any move, getting up included, so it is still within 5 s. */
-      drop(cat);
+      drop(cat, true);
       cat.napAt = -Infinity;
     },
     wake: (id, now) => {
@@ -574,6 +601,7 @@ export const createColony = (
     },
     still: () => {
       const now = performance.now();
+      for (const { prop } of fading.splice(0)) prop.remove();
       for (const cat of cats) {
         drop(cat);
         cat.pose = pose(cat.asleep ? 'sleep' : 'sit', {
