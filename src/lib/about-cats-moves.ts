@@ -357,24 +357,33 @@ const walking = (from: number, to: number, strength = 1): Mod =>
     ),
   );
 /** Hind paws tread in turn, lifting, while the rump sways over them. */
-const TREAD_LIFT = 2;
+const TREAD_LIFT = 3;
+/** px the rump sways side to side before a pounce. */
+const WIGGLE_SWAY = 1.2;
 const wiggle = (from: number, to: number): Mod =>
   between(from, to, (p, s) => {
     const w = Math.sin(s / 45);
-    p.x += 0.6 * w;
-    for (const k of ['fN', 'fF', 'hN', 'hF'] as const) p[k][0] -= 0.6 * w;
+    p.x += WIGGLE_SWAY * w;
+    for (const k of ['fN', 'fF', 'hN', 'hF'] as const)
+      p[k][0] -= WIGGLE_SWAY * w;
     p.hN[1] -= TREAD_LIFT * Math.max(0, w);
     p.hF[1] -= TREAD_LIFT * Math.max(0, -w);
-    p.tw = 6;
+    p.by -= 1;
+    p.tw = 9;
   });
 const blinkAt = (at: number): Mod =>
   between(at, at + 160, (p) => {
     p.eyes = 0;
   });
+/** Degrees the head lags a jump by, up as it takes off and down as it lands, and the tail streams behind. */
+const HEAD_LAG = 14;
+const TAIL_STREAM = 18;
 /** A jump's rise and fall; it ends with its landing step, so the paws touch down as the arc does. */
 const arc = (from: number, to: number, height: number): Mod =>
   between(from, to, (p, _s, k) => {
     p.y += Math.sin(Math.PI * k) * height;
+    p.hr -= HEAD_LAG * Math.cos(Math.PI * k);
+    p.ta += TAIL_STREAM * Math.sin(Math.PI * k);
   });
 /* Three slow breaths, ending on an exhale so the pose rests where it started. */
 const BREATH_MS = 1000;
@@ -397,13 +406,14 @@ const earFlick = (at: number): Mod =>
 
 /* Arcs in px; with them the tallest move stays under --spacing-cat-band (tests/about-cats.spec.ts). */
 const JUMP_HEIGHT = 39;
-const POUNCE_HEIGHT = 34;
-const LEAP_HEIGHT = 27;
-const HOP_HEIGHT = 30;
+const POUNCE_HEIGHT = 42;
+const LEAP_HEIGHT = 28;
+const HOP_HEIGHT = 38;
+const BOX_HOP_HEIGHT = 32;
 /** The scratching post stands this far ahead of the cat, clear of its chest. */
 const POST_GAP = 34;
-const YARN_BOUND_HEIGHT = 22;
-const FLY_HOP_HEIGHT = 24;
+const YARN_BOUND_HEIGHT = 28;
+const FLY_HOP_HEIGHT = 30;
 /* The fly's route, [ms, x, y] ahead of the cat: it lands, is missed, circles, and escapes. */
 const FLY_PATH: readonly (readonly [number, number, number])[] = [
   [0, 60, -82],
@@ -506,8 +516,8 @@ const still = (kind: PropKind, x: number, y = 0): PropState => ({
 export const MOVES = {
   look: (): Move => ({
     steps: [
-      step(900, 'sit', { hr: -10 }),
-      step(1100, 'sit', { hr: 9 }),
+      step(900, 'sit', { hr: -22 }),
+      step(1100, 'sit', { hr: 18 }),
       step(800, 'sit'),
     ],
     mods: [blinkAt(600), earFlick(1500), blinkAt(2500)],
@@ -545,10 +555,10 @@ export const MOVES = {
       step(400, 'crouch'),
       step(900, 'crouch'),
       step(140, 'crouch', { x: -2, sq: 0.9 }, 'in'),
-      step(400, 'air', { x: 55 }, 'linear'),
-      step(150, 'crouch', { x: 62, sq: 0.84 }, 'out'),
-      step(280, 'crouch', { x: 62 }, 'back'),
-      step(600, 'sit', { x: 62 }),
+      step(400, 'air', { x: 76 }, 'linear'),
+      step(150, 'crouch', { x: 84, sq: 0.84 }, 'out'),
+      step(280, 'crouch', { x: 84 }, 'back'),
+      step(600, 'sit', { x: 84 }),
     ],
     mods: [wiggle(400, 1300), arc(1440, 1990, POUNCE_HEIGHT)],
   }),
@@ -762,10 +772,10 @@ export const MOVES = {
     steps: [
       step(300, 'crouch'),
       step(140, 'crouch', { sq: 0.88 }, 'in'),
-      step(220, 'air', { x: 8 }, 'out'),
-      step(220, 'air', { x: 14 }, 'in'),
-      step(140, 'crouch', { x: 16, sq: 0.86 }, 'out'),
-      step(400, 'sit', { x: 16 }),
+      step(220, 'air', { x: 14 }, 'out'),
+      step(220, 'air', { x: 26 }, 'in'),
+      step(140, 'crouch', { x: 30, sq: 0.86 }, 'out'),
+      step(400, 'sit', { x: 30 }),
     ],
     mods: [arc(440, 1020, HOP_HEIGHT)],
   }),
@@ -802,7 +812,7 @@ export const MOVES = {
       step(200, 'crouch', { x: 134, sq: 0.85 }, 'out'),
       step(500, 'sit', { x: 134 }),
     ],
-    mods: [arc(540, 1160, 26), arc(3520, 4140, 26)],
+    mods: [arc(540, 1160, BOX_HOP_HEIGHT), arc(3520, 4140, BOX_HOP_HEIGHT)],
     prop: 'box',
     /* A snug box under the resting cat: head and back show over the low rim. */
     propAt: (t) => ({
@@ -820,14 +830,14 @@ export const MOVES = {
       step(300, 'crouch', { x: 150 }),
       step(140, 'crouch', { x: 150, sq: 0.88 }, 'in'),
       step(300, 'air', { x: 198 }, 'linear'),
-      step(180, 'crouch', { x: YARN_LAND_1, sq: 0.84, hy: -9 }, 'out'),
+      step(180, 'crouch', { x: YARN_LAND_1, sq: 0.84, hy: -12 }, 'out'),
       step(300, 'sit', { x: YARN_LAND_1, fN: [30, 14] }, 'out'),
       step(250, 'sit', { x: YARN_LAND_1 }),
       step(1500, 'stand', { x: 280 }, 'inOut'),
       step(250, 'crouch', { x: 280 }),
       step(140, 'crouch', { x: 280, sq: 0.88 }, 'in'),
       step(280, 'air', { x: 298 }, 'linear'),
-      step(180, 'crouch', { x: YARN_LAND_2, sq: 0.84, hy: -9 }, 'out'),
+      step(180, 'crouch', { x: YARN_LAND_2, sq: 0.84, hy: -12 }, 'out'),
       ...flopTo('crouch', 'belly', YARN_LAND_2, { hy: -17 }),
       step(1500, 'belly', { x: YARN_LAND_2 }),
       ...flopTo('belly', 'loaf', YARN_LAND_2),
@@ -926,9 +936,28 @@ const slower = (move: Move, factor: number): Move => {
   };
 };
 
-/** The move a cat plays: small play moves slowed down. */
+/** Squash and stretch, exaggerated: a squash goes this much deeper, a stretch this much longer. */
+const SQUASH_GAIN = 1.8;
+const STRETCH_GAIN = 2;
+const bolder = (move: Move): Move => ({
+  ...move,
+  steps: move.steps.map((s) => ({
+    ...s,
+    pose: {
+      ...clonePose(s.pose),
+      sq:
+        s.pose.sq < 1
+          ? 1 - (1 - s.pose.sq) * SQUASH_GAIN
+          : 1 + (s.pose.sq - 1) * STRETCH_GAIN,
+    },
+  })),
+});
+
+/** The move a cat plays: small play moves slowed down, and squash and stretch exaggerated. */
 export const moveToPlay = (name: MoveName): Move =>
-  SLOW_MOVES.has(name) ? slower(MOVES[name](), SLOW_PLAY) : MOVES[name]();
+  bolder(
+    SLOW_MOVES.has(name) ? slower(MOVES[name](), SLOW_PLAY) : MOVES[name](),
+  );
 
 /** Moves that carry the cat along its track; on a short track they are scaled to fit. */
 export const TRAVEL_MOVES: ReadonlySet<MoveName> = new Set([
@@ -1068,7 +1097,7 @@ const TURN_RISE_MS = 160;
 const TURN_FLIP_MS = 140;
 const TURN_LAND_MS = 200;
 const TURN_MS = TURN_RISE_MS + TURN_FLIP_MS + TURN_LAND_MS;
-const TURN_HOP = 6;
+const TURN_HOP = 10;
 
 export const withTurn = (move: Move, from: Pose): Move => {
   const propAt = move.propAt;
