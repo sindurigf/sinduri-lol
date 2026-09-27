@@ -197,7 +197,7 @@ const afterClose = (): void => {
   if (id) hold(id, 'card', false);
 };
 
-/* The card beside its cat: easier to close than one in the middle of the page. */
+/** Space between the card and its cat, or the band on narrow screens. */
 const CARD_GAP = 16;
 /** The page's side gutter, kept round the card. */
 const CARD_MARGIN = 16;

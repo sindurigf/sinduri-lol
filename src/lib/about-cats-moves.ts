@@ -585,7 +585,6 @@ export const MOVES = {
       }),
     ],
   }),
-  /* Watches the fly, crouches, leaps straight up for it, and the fly gets away. */
   /*
    * The fly lands; the cat stalks it and pounces, misses, swats at it overhead,
    * follows it along the band in hops, leaps for it, and it gets away.
