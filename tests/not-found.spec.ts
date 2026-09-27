@@ -1,10 +1,10 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from './test';
-import ts from 'typescript';
 import { DIST_DIR } from './routes';
 import { gotoSettled } from './settle';
 import { NODE } from './tags';
+import { wranglerConfig } from './source';
 
 /**
  * Workers serves `404.html` with a 404 only when the file exists and
@@ -13,27 +13,11 @@ import { NODE } from './tags';
  */
 
 const NOT_FOUND_HEADING = /these are not the droids you are looking for/i;
-const WRANGLER_CONFIG = 'wrangler.jsonc';
 const WORKERS_NOT_FOUND_HANDLING = '404-page';
 
 interface WranglerConfig {
   assets?: { not_found_handling?: string };
 }
-
-/** JSONC: `JSON.parse` rejects its comments and trailing commas; TypeScript's reader does not. */
-const readWranglerConfig = (): WranglerConfig => {
-  const { config, error } = ts.parseConfigFileTextToJson(
-    WRANGLER_CONFIG,
-    readFileSync(WRANGLER_CONFIG, 'utf8'),
-  );
-  if (error) {
-    throw new Error(
-      `${WRANGLER_CONFIG} does not parse: ` +
-        ts.flattenDiagnosticMessageText(error.messageText, '\n'),
-    );
-  }
-  return config as WranglerConfig;
-};
 
 /** Random, so no future page can accidentally start answering on this path. */
 const unknownPaths = (): string[] => [
@@ -53,8 +37,8 @@ test.describe('unknown paths return 404', () => {
 
   test('wrangler.jsonc tells Workers to serve 404.html', NODE, () => {
     expect(
-      readWranglerConfig().assets?.not_found_handling,
-      `${WRANGLER_CONFIG} must set assets.not_found_handling to "${WORKERS_NOT_FOUND_HANDLING}".`,
+      wranglerConfig<WranglerConfig>().assets?.not_found_handling,
+      `wrangler.jsonc must set assets.not_found_handling to "${WORKERS_NOT_FOUND_HANDLING}".`,
     ).toBe(WORKERS_NOT_FOUND_HANDLING);
   });
 

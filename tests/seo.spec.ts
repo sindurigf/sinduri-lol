@@ -2,9 +2,10 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SOCIAL_PROFILES } from '../src/lib/profiles';
 import { expect, test } from './test';
-import { configuredSite } from './source';
+import { configuredSite, pngSize } from './source';
 import {
   BLOG_CONTENT_DIR,
+  frontmatterField,
   postFrontmatter,
   builtHtml as builtHtmlByRoute,
   DIST_DIR,
@@ -108,12 +109,6 @@ const TWITTER_COPIES = [
   'twitter:image',
 ] as const;
 
-/** A meta tag's content by `property` or `name`; null when the tag is absent. */
-
-const PNG_SIGNATURE = '89504e470d0a1a0a';
-const PNG_WIDTH_OFFSET = 16;
-const PNG_HEIGHT_OFFSET = 20;
-
 /* JPEG: a start-of-image marker, then segments until a start-of-frame one. */
 const JPEG_SIGNATURE = 'ffd8';
 const JPEG_FIRST_SEGMENT = 2;
@@ -127,9 +122,8 @@ const JPEG_SEGMENT_LENGTH_OFFSET = 2;
 
 /** An image file's pixel size as `WxH`, for PNG and JPEG; null for others. */
 const imageSize = (bytes: Buffer): string | null => {
-  if (bytes.subarray(0, 8).toString('hex') === PNG_SIGNATURE) {
-    return `${bytes.readUInt32BE(PNG_WIDTH_OFFSET)}x${bytes.readUInt32BE(PNG_HEIGHT_OFFSET)}`;
-  }
+  const png = pngSize(bytes);
+  if (png) return `${png.width}x${png.height}`;
   if (bytes.subarray(0, 2).toString('hex') !== JPEG_SIGNATURE) return null;
 
   let offset = JPEG_FIRST_SEGMENT;
@@ -161,9 +155,7 @@ const postCovers = (): {
     .map((name) => {
       const frontmatter = postFrontmatter(name);
       const field = (key: string): string | null =>
-        new RegExp(`^${key}:\\s*['"]?(.+?)['"]?\\s*$`, 'm').exec(
-          frontmatter,
-        )?.[1] ?? null;
+        frontmatterField(frontmatter, key) ?? null;
       return {
         route: `/blog/${name.replace(/\.md$/, '')}`,
         cover: field('cover'),

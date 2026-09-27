@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from './test';
 import {
+  frontmatterDay,
   postFrontmatter,
   builtHtml,
   builtPages,
@@ -188,10 +189,8 @@ test.describe('robots.txt and the sitemap', NODE, () => {
 
 // Posts carry `updated` or `date`; other pages record no date, so get none.
 test.describe('the sitemap dates what it can', NODE, () => {
-  const frontmatterDay = (slug: string, field: string): string | undefined =>
-    new RegExp(`^${field}:\\s*['"]?(\\d{4}-\\d{2}-\\d{2})`, 'm').exec(
-      postFrontmatter(slug),
-    )?.[1];
+  const postDay = (slug: string, field: string): string | undefined =>
+    frontmatterDay(postFrontmatter(slug), field);
 
   const entries = (): Map<string, string | undefined> => {
     const xml = readFileSync(join(DIST_DIR, 'sitemap-0.xml'), 'utf8');
@@ -210,8 +209,7 @@ test.describe('the sitemap dates what it can', NODE, () => {
 
     for (const route of POST_ROUTES) {
       const slug = route.split('/').pop()!;
-      const expected =
-        frontmatterDay(slug, 'updated') ?? frontmatterDay(slug, 'date');
+      const expected = postDay(slug, 'updated') ?? postDay(slug, 'date');
       const lastmod = found.get(route);
 
       if (lastmod === undefined) {
@@ -235,7 +233,7 @@ test.describe('the sitemap dates what it can', NODE, () => {
     const wrong: string[] = [];
 
     for (const route of POST_ROUTES) {
-      const published = frontmatterDay(route.split('/').pop()!, 'date');
+      const published = postDay(route.split('/').pop()!, 'date');
       const lastmod = found.get(route);
 
       if (published === undefined) {

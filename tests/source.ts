@@ -1,5 +1,6 @@
 import { globSync, readFileSync } from 'node:fs';
 import { expect } from '@playwright/test';
+import ts from 'typescript';
 import {
   cssColorToken as readCssColorToken,
   GLOBAL_CSS,
@@ -8,6 +9,7 @@ import {
 /** Values read from the repository, not copied, so a stale copy cannot pass. */
 const ASTRO_CONFIG = 'astro.config.mjs';
 const CONTENT_CONFIG = 'src/content.config.ts';
+const WRANGLER_CONFIG = 'wrangler.jsonc';
 
 export { GLOBAL_CSS };
 
@@ -49,3 +51,33 @@ export const blogCategories = (): string[] => {
 
   return [...list!.matchAll(/'([a-z-]+)'/g)].map((match) => match[1]!);
 };
+
+/** wrangler.jsonc: `JSON.parse` rejects its comments and trailing commas; TypeScript's reader does not. */
+export const wranglerConfig = <T>(): T => {
+  const { config, error } = ts.parseConfigFileTextToJson(
+    WRANGLER_CONFIG,
+    readFileSync(WRANGLER_CONFIG, 'utf8'),
+  );
+  if (error) {
+    throw new Error(
+      `${WRANGLER_CONFIG} does not parse: ` +
+        ts.flattenDiagnosticMessageText(error.messageText, '\n'),
+    );
+  }
+  return config as T;
+};
+
+const PNG_SIGNATURE = '89504e470d0a1a0a';
+const PNG_WIDTH_OFFSET = 16;
+const PNG_HEIGHT_OFFSET = 20;
+
+/** A PNG's pixel size from its IHDR; null when the bytes are not a PNG. */
+export const pngSize = (
+  bytes: Buffer,
+): { width: number; height: number } | null =>
+  bytes.subarray(0, 8).toString('hex') === PNG_SIGNATURE
+    ? {
+        width: bytes.readUInt32BE(PNG_WIDTH_OFFSET),
+        height: bytes.readUInt32BE(PNG_HEIGHT_OFFSET),
+      }
+    : null;

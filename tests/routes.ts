@@ -86,6 +86,22 @@ export const frontmatterOf = (source: string, label: string): string => {
   return block;
 };
 
+/** One single-line frontmatter field, unquoted; undefined when absent. */
+export const frontmatterField = (
+  frontmatter: string,
+  key: string,
+): string | undefined =>
+  new RegExp(`^${key}:\\s*(.+?)\\s*$`, 'm')
+    .exec(frontmatter)?.[1]
+    ?.replace(/^(['"])(.*)\1$/, '$2');
+
+/** A date field's `YYYY-MM-DD`, time dropped; undefined when absent. */
+export const frontmatterDay = (
+  frontmatter: string,
+  key: string,
+): string | undefined =>
+  /^\d{4}-\d{2}-\d{2}/.exec(frontmatterField(frontmatter, key) ?? '')?.[0];
+
 /** The inline `tags: [a, b]` list of one post's frontmatter. */
 export const frontmatterTags = (frontmatter: string): string[] =>
   (/^tags:\s*\[([^\]]*)\]/m.exec(frontmatter)?.[1] ?? '')
@@ -126,8 +142,10 @@ export const postCountByCategory = (
   const counts = new Map<string, number>();
   for (const name of readdirSync(contentDir)) {
     if (!name.endsWith('.md')) continue;
-    const frontmatter = postFrontmatter(name, contentDir);
-    const category = /^category:\s*'?([a-z-]+)'?\s*$/m.exec(frontmatter)?.[1];
+    const category = frontmatterField(
+      postFrontmatter(name, contentDir),
+      'category',
+    );
     if (!category) {
       throw new Error(`${name} has no category in its frontmatter.`);
     }
@@ -147,7 +165,7 @@ export const listingPosts = (
     if (!name.endsWith('.md')) continue;
     const slug = name.replace(/\.md$/, '');
     const frontmatter = postFrontmatter(name, contentDir);
-    const category = /^category:\s*'?([a-z-]+)'?\s*$/m.exec(frontmatter)?.[1];
+    const category = frontmatterField(frontmatter, 'category');
     const tags = frontmatterTags(frontmatter);
     for (const route of [
       `/blog/${category}`,
@@ -248,6 +266,18 @@ export const islandRoutesFromBuild = (
 };
 
 let goldRoutes: string[] | undefined;
+
+/**
+ * Built pages, the error page aside, with no link to `route`. The link itself,
+ * not the path: a page's own canonical carries its path.
+ */
+export const pagesNotLinking = (route: string): string[] =>
+  builtPages()
+    .filter((page) => page.route !== '/404')
+    .filter(
+      ({ file }) => !readFileSync(file, 'utf8').includes(`href="${route}/"`),
+    )
+    .map((page) => page.route);
 
 /** Routes whose built HTML has a `.surface-gold` section, read once. Call inside a test body. */
 export const goldRoutesFromBuild = (): string[] =>

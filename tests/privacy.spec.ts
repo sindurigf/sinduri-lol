@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from './test';
-import { builtPages, DIST_DIR } from './routes';
+import { builtPages, DIST_DIR, pagesNotLinking } from './routes';
 import { configuredSite } from './source';
 import { RETENTION_DAYS } from '../src/lib/contact-form';
 import { UMAMI_HOST_URL, UMAMI_SCRIPT_PATH } from '../src/lib/analytics';
@@ -154,14 +154,7 @@ test.describe('the privacy policy is true', NODE, () => {
     const privacy = pages.find((page) => page.route === PRIVACY_PAGE);
     expect(privacy, '/privacy was not built').toBeDefined();
 
-    // The link, not the path: /privacy's own canonical carries the path.
-    const missing = pages
-      .filter(({ route }) => route !== '/404')
-      .filter(
-        ({ file }) =>
-          !readFileSync(file, 'utf8').includes(`href="${PRIVACY_PAGE}/"`),
-      )
-      .map(({ route }) => route);
+    const missing = pagesNotLinking(PRIVACY_PAGE);
 
     expect(
       missing,
