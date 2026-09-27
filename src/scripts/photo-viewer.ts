@@ -159,8 +159,12 @@ const setUpStrips = (): void => {
       direction < 0
         ? strip.scrollLeft <= 0
         : strip.scrollLeft >= strip.scrollWidth - strip.clientWidth - 1;
-    const update = (): void =>
-      button.setAttribute('aria-disabled', String(atEdge()));
+    const update = (): void => {
+      const disabled = String(atEdge());
+      if (button.getAttribute('aria-disabled') !== disabled) {
+        button.setAttribute('aria-disabled', disabled);
+      }
+    };
     button.hidden = false;
     update();
     strip.addEventListener('scroll', update, { passive: true });
