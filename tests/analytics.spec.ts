@@ -15,26 +15,34 @@ import { configuredSite } from './source';
 import { fakeCollector, type UmamiSend } from './umami';
 
 /**
- * Umami, held to what /privacy discloses (PAYLOAD_KEYS, EVENT_DATA_KEYS). The
- * tracker sends only from the production host, so the build is served as `site`.
+ * Umami, held to what /privacy discloses (PAYLOAD_DISCLOSED, EVENT_DATA_DISCLOSED).
+ * The tracker sends only from the production host, so the build is served as `site`.
  */
 
 const SITE = configuredSite().replace(/\/$/, '');
 
-const PAYLOAD_KEYS = [
-  'website',
-  'screen',
-  'language',
-  'title',
-  'hostname',
-  'url',
-  'referrer',
-  'tag',
-  'id',
-  'name',
-  'data',
-];
-const EVENT_DATA_KEYS = ['label', 'area', 'target'];
+/** Each field the tracker may send, and the words /privacy discloses it in; null is not about the visitor. */
+const PAYLOAD_DISCLOSED: Record<string, string | null> = {
+  website: null,
+  screen: 'your screen size',
+  language: "your browser's language",
+  title: "the page's address and title",
+  hostname: "the page's address",
+  url: "the page's address",
+  referrer: 'the address of the page that linked you here',
+  /* Set only by `data-tag` and `umami.identify()`, neither used here. */
+  tag: null,
+  id: null,
+  name: 'what kind of control it was',
+  data: 'its label',
+};
+const EVENT_DATA_DISCLOSED: Record<string, string> = {
+  label: 'its label',
+  area: 'which part of the page it is in',
+  target: 'where it goes',
+};
+const PAYLOAD_KEYS = Object.keys(PAYLOAD_DISCLOSED);
+const EVENT_DATA_KEYS = Object.keys(EVENT_DATA_DISCLOSED);
 
 const SEND_TIMEOUT_MS = 10_000;
 
@@ -152,6 +160,23 @@ test.describe('analytics', () => {
       built.equals(vendored),
       `${UMAMI_SCRIPT_PATH} in the build differs from public/.`,
     ).toBe(true);
+  });
+
+  test('every field the tracker may send is disclosed in the /privacy text', () => {
+    const privacy = readFileSync(
+      join(DIST_DIR, 'privacy', 'index.html'),
+      'utf8',
+    )
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ');
+    const phrases = [
+      ...Object.values(PAYLOAD_DISCLOSED),
+      ...Object.values(EVENT_DATA_DISCLOSED),
+    ].filter((phrase) => phrase !== null);
+    expect(
+      phrases.filter((phrase) => !privacy.includes(phrase)),
+      '/privacy no longer says it sends these',
+    ).toEqual([]);
   });
 
   test('nothing is sent from any host but production', async ({ page }) => {
