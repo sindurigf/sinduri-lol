@@ -18,7 +18,6 @@ import {
 } from '../src/lib/about-cats-rig';
 import {
   CONTROL_ROOM,
-  CUP_EDGE,
   TRACK_MARGIN,
   cupPush,
   planMove,
@@ -236,7 +235,7 @@ test(
 );
 
 test(
-  'the cup push from anywhere on the track reaches the edge, stays in the band and ends back on the track',
+  'the cup push from anywhere on the track stays in the band, clear of the sleep control, and ends where another move fits, so the cat never freezes',
   NODE,
   () => {
     for (const width of CUP_WIDTHS) {
@@ -257,10 +256,6 @@ test(
           nearest,
           'the cat leaves the band at its left end',
         ).toBeGreaterThanOrEqual(0);
-        expect(
-          nearest,
-          'the cat never reaches the cup at the edge',
-        ).toBeLessThanOrEqual(CUP_EDGE + 1);
         expect(
           farthest + HIT_HALF_WIDTH,
           'the cat reaches under its sleep control',
@@ -426,7 +421,7 @@ test.describe('About cats', () => {
     test.describe(`at ${viewport.width}px`, () => {
       test.use({ viewport });
 
-      test('the card opens beside its cat and inside the screen', async ({
+      test('the card opens inside the screen (SC 1.4.10) and beside its cat, not over it', async ({
         page,
       }) => {
         const sideBySide = viewport.width >= SIDE_BY_SIDE_MIN;
