@@ -45,4 +45,4 @@ Accessibility should be the default, not an extra step at the end. I hope a temp
 
 If you use it, I would love to hear from you, and I would absolutely love to see your cats.
 
-_I drafted this post with AI and edited it myself. The cat drawings in the template are made with AI. The photos are real, and so are the cats._
+_I drafted this post with AI. The cat drawings in the template are made with AI. The photos are real, and so are the cats._

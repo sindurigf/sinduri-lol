@@ -36,7 +36,7 @@ How AI tooling was used to build this repository.
 
 - The site is a static build; no model runs, in the browser or on the server.
 - No visitor data is sent to a model.
-- One AI-drafted post, edited by the owner, is served:
+- One AI-drafted post, pending the owner's edit, is served:
   `/blog/my-site-is-now-a-template/`, labelled at its end. No other editorial
   copy is AI-written. Functional microcopy and the
   `/accessibility` and `/privacy` disclosure are agent-written by design
