@@ -477,51 +477,54 @@ export const MOVES = {
     mods: [],
   }),
   /* Kneads the blanket: paws pressing in turn, head bobbing, eyes shut, tail sweeping slowly. */
-  knead: (): Move => ({
-    steps: [
-      step(500, 'knead'),
-      step(4200, 'knead'),
-      step(500, 'loaf'),
-      step(500, 'sit'),
-    ],
-    prop: 'blanket',
-    propAt: (t) => ({
-      ...still('blanket', BLANKET_AHEAD),
-      o: Math.min(1, t / 300, Math.max(0, (5700 - t) / 300)),
-    }),
-    mods: [
-      between(500, 4700, (p, s) => {
-        const w = Math.sin(s / KNEAD_BEAT);
-        p.fN[1] -= KNEAD_LIFT * Math.max(0, w);
-        p.fF[1] -= KNEAD_LIFT * Math.max(0, -w);
-        p.fN[0] += 2 * Math.max(0, w);
-        p.fF[0] += 2 * Math.max(0, -w);
-        p.hy += 1.2 * w;
-        p.ba += 1.5 * w;
-        p.tw = 3;
+  knead: (): Move => {
+    const settle = step(500, 'knead');
+    const kneading = step(4200, 'knead');
+    const steps = [settle, kneading, step(500, 'loaf'), step(500, 'sit')];
+    const end = stepsDuration(steps);
+    return {
+      steps,
+      prop: 'blanket',
+      propAt: (t) => ({
+        ...still('blanket', BLANKET_AHEAD),
+        o: Math.min(1, t / 300, Math.max(0, (end - t) / 300)),
       }),
-    ],
-  }),
+      mods: [
+        between(settle.ms, settle.ms + kneading.ms, (p, s) => {
+          const w = Math.sin(s / KNEAD_BEAT);
+          p.fN[1] -= KNEAD_LIFT * Math.max(0, w);
+          p.fF[1] -= KNEAD_LIFT * Math.max(0, -w);
+          p.fN[0] += 2 * Math.max(0, w);
+          p.fF[0] += 2 * Math.max(0, -w);
+          p.hy += 1.2 * w;
+          p.ba += 1.5 * w;
+          p.tw = 3;
+        }),
+      ],
+    };
+  },
   /* Bats at the feather toy on its string: swats, a rear, a double swipe, and a last swat. */
   toy: (): Move => {
     const hit = (t: number, at: number): number =>
       t > at ? 30 * Math.exp(-(t - at) / 600) * Math.sin((t - at) / 120) : 0;
+    const steps = [
+      step(700, 'sit', { hr: -15 }),
+      step(160, 'sit', { hr: -18, fN: [20, -18] }, 'out'),
+      step(500, 'sit', { hr: -15 }),
+      step(160, 'sit', { hr: -20, fN: [20, -20] }, 'out'),
+      step(600, 'sit', { hr: -12 }),
+      step(400, 'rear'),
+      step(160, 'rear', { fN: [18, -22], fF: [16, -18] }, 'out'),
+      step(260, 'rear'),
+      step(160, 'rear', { fN: [18, -22], fF: [16, -18] }, 'out'),
+      step(500, 'sit', { hr: -15 }),
+      step(160, 'sit', { hr: -18, fN: [20, -18] }, 'out'),
+      step(500, 'sit'),
+      step(600, 'sit'),
+    ];
+    const end = stepsDuration(steps);
     return {
-      steps: [
-        step(700, 'sit', { hr: -15 }),
-        step(160, 'sit', { hr: -18, fN: [20, -18] }, 'out'),
-        step(500, 'sit', { hr: -15 }),
-        step(160, 'sit', { hr: -20, fN: [20, -20] }, 'out'),
-        step(600, 'sit', { hr: -12 }),
-        step(400, 'rear'),
-        step(160, 'rear', { fN: [18, -22], fF: [16, -18] }, 'out'),
-        step(260, 'rear'),
-        step(160, 'rear', { fN: [18, -22], fF: [16, -18] }, 'out'),
-        step(500, 'sit', { hr: -15 }),
-        step(160, 'sit', { hr: -18, fN: [20, -18] }, 'out'),
-        step(500, 'sit'),
-        step(600, 'sit'),
-      ],
+      steps,
       mods: [],
       prop: 'toy',
       propAt: (t) => ({
@@ -534,7 +537,7 @@ export const MOVES = {
           hit(t, 2780) +
           hit(t, 3200) +
           hit(t, 3860),
-        o: Math.min(1, t / 300, Math.max(0, (4860 - t) / 400)),
+        o: Math.min(1, t / 300, Math.max(0, (end - t) / 400)),
       }),
     };
   },
@@ -1053,5 +1056,7 @@ export const poseAt = (move: Move, start: Pose, t: number): Pose => {
   return p;
 };
 
-export const duration = (move: Move): number =>
-  move.steps.reduce((sum, s) => sum + s.ms, 0);
+const stepsDuration = (steps: Step[]): number =>
+  steps.reduce((sum, s) => sum + s.ms, 0);
+
+export const duration = (move: Move): number => stepsDuration(move.steps);
