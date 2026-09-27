@@ -8,13 +8,14 @@
 - Docker for `test:webkit` and `check:pdf`.
 - No Cloudflare account or secrets for `dev`, `build`, `check` or any test
   suite. Only `check:live`'s D1 count needs `npx wrangler login` or
-  `CLOUDFLARE_API_TOKEN`.
+  `CLOUDFLARE_API_TOKEN` with `CLOUDFLARE_ACCOUNT_ID`.
 - Python 3 with pikepdf for `publish:cv` and `publish:talk`, plus
   poppler-utils for `publish:cv`: `apt install python3-pikepdf poppler-utils`.
 
 ## Setup
 
 ```sh
+nvm use
 npm ci
 npx playwright install --with-deps chromium firefox
 git config core.hooksPath .githooks
@@ -32,14 +33,24 @@ npx wrangler d1 migrations apply sinduri-lol --local
 npm run preview
 ```
 
-Without the `CONTACT_NOTIFY_TO` secret a message is stored and no email is sent;
-the log says so.
+A schema change is a new, numbered file in `migrations/`:
+
+```sh
+npx wrangler d1 migrations create sinduri-lol <name>
+```
+
+Apply it locally with the `--local` command above; `test:worker` applies every
+migration before it runs. Production: [DEPLOYMENT.md](DEPLOYMENT.md#d1).
+
+What happens without the `CONTACT_NOTIFY_TO` secret:
+[DEPLOYMENT.md](DEPLOYMENT.md#contact-form-email).
 
 ## Commands
 
 | Command                      | Does                                                             |
 | ---------------------------- | ---------------------------------------------------------------- |
 | `npm run dev`                | Dev server at `http://localhost:4340`                            |
+| `npm test`                   | `test:a11y`, then `test:worker`; each builds first               |
 | `npm run build`              | Build to `dist/client` (assets) and `dist/server` (Worker)       |
 | `npm run preview`            | Serve the build through the Worker runtime                       |
 | `npm run typecheck`          | `astro check`, then `vue-tsc` on `.vue` files                    |
@@ -115,6 +126,7 @@ npm run test:webkit -- tests/reflow.spec.ts
 | `TEST_PORT`, `TEST_WORKER_PORT` | from the checkout path | Ports for `test:a11y`, `test:worker`; must be 1024-65535 |
 | `WEBKIT`                        | unset                  | `1` adds the WebKit project outside CI                   |
 | `CLOUDFLARE_API_TOKEN`          | unset                  | Lets `check:live` count unsent notifications in D1       |
+| `CLOUDFLARE_ACCOUNT_ID`         | unset                  | Needed with the token: a D1-only token cannot look it up |
 | `CHECK_LIVE_SKIP_D1`            | unset                  | `1` skips that D1 count                                  |
 
 Each checkout gets its own pair. Set them when another process holds one:
@@ -133,6 +145,7 @@ suites in parallel from separate worktrees.
 src/
   assets/           Images, processed by the build
   components/       Astro components; ui/ holds the Vue islands
+  composables/      Vue composables shared by the islands
   content/blog/     Blog posts as Markdown
   content/talks/    One Slidev Markdown deck per talk
   content.config.ts Content collection schema
@@ -167,7 +180,7 @@ validates frontmatter against `src/content.config.ts` and fails on a mismatch.
 One deck per talk: `src/content/talks/<deck>/slides.md`, in Slidev's Markdown
 format, shown at `/talks/<deck>/`. Example:
 `open-source-is-not-just-code/slides.md`. The build fails on anything the
-slideshow cannot render, naming slide and line (`src/lib/slides.ts`).
+slideshow cannot render, naming file, slide and line (`src/lib/slides.ts`).
 
 - Opening frontmatter is slide 1: `layout: cover` and `info:` (the meta
   description).
@@ -185,7 +198,8 @@ slideshow cannot render, naming slide and line (`src/lib/slides.ts`).
   by relative symlink into `src/assets/` (needs `core.symlinks` on Windows).
 - No `v-click`, Vue components, `::right::` slots or `src:` imports.
 - A slide's last HTML comment is its speaker note, never published
-  (`tests/talk.spec.ts`). Any other comment fails the build.
+  ([presenter view](../ARCHITECTURE.md#talks)). Any other comment fails the
+  build.
 - Add a new deck's route to `TALK_ROUTES` in `tests/routes.ts`.
 
 ### Publishing the PDF
@@ -225,8 +239,8 @@ npm run dev
   press Full screen.
 - The windows stay in sync; arrow keys and Page Up/Down (clickers) work in
   both.
-- Shows the slide, notes, next title and a timer. Dev server only, so notes
-  never reach the build. Edited notes show on reload.
+- Shows the slide, notes, next title and a timer. Dev server only. Edited
+  notes show on reload.
 
 ## Publishing the CV
 
@@ -254,6 +268,7 @@ npm run publish:cv -- ~/Downloads/export.pdf
   Otherwise it prints why and leaves `public/` alone.
 - A section added, removed or renamed: update `SECTIONS` at the top of
   `scripts/publish-cv.py`.
-- Any other refusal is an unknown layout; the message says what.
+- Unmeasured shapes stop the run: a structure type, font or form layout that
+  no measured export had is refused, and the message says what.
 - Read the result in a PDF reader before committing: the checks cover
   structure, not readability.

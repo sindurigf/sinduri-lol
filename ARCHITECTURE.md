@@ -6,14 +6,18 @@ sinduri.lol. Design rules and values are in
 
 ## Stack
 
-| Concern     | Choice                                      |
-| ----------- | ------------------------------------------- |
-| Framework   | Astro 7, static output                      |
-| Interactive | Vue 3 via `@astrojs/vue`, islands only      |
-| Styling     | Tailwind CSS 4 via `@tailwindcss/vite`      |
-| Language    | TypeScript, `astro/tsconfigs/strictest`     |
-| Content     | Astro Content Collections, Markdown in repo |
-| Hosting     | Cloudflare Workers static assets            |
+| Concern     | Choice                                                                                  |
+| ----------- | --------------------------------------------------------------------------------------- |
+| Framework   | Astro 7, static output; `/contact/send/` renders on demand in the Worker                |
+| Interactive | Vue 3 via `@astrojs/vue`, islands only (the homepage canvas hero and the About cats)    |
+| Scripts     | Plain modules for everything that is not an island                                      |
+| Styling     | Tailwind CSS 4 via `@tailwindcss/vite`                                                  |
+| Language    | TypeScript, `astro/tsconfigs/strictest`, checked with `astro check` and `vue-tsc`       |
+| Content     | Astro Content Collections, Markdown in repo, rendered by Sätteri                        |
+| Font        | Lexend, self-hosted through Fontsource                                                  |
+| Hosting     | Cloudflare Workers static assets, D1 (EU), Rate Limiting, Email Routing, Workers Builds |
+| Tests       | Playwright in Chromium, Firefox and WebKit, with axe-core for WCAG 2.2 AA               |
+| Runtime     | Node.js from `.nvmrc`                                                                   |
 
 - Vue runs with `features: { optionsAPI: false }`; every component uses
   `<script setup>`.
@@ -217,8 +221,8 @@ presenter view and a PDF. Authoring rules:
 - **Loader.** `src/lib/talk-loader.ts`, one entry per slide
   (`<deck>/<number>`). `src/lib/slides.ts` splits the file first (following
   Slidev's `packages/parser/src/core.ts`), then `renderMarkdown` runs the
-  visitors above. Strict schema; anything the slideshow cannot render fails the
-  build with file, slide and line.
+  visitors above, with a strict schema
+  ([what fails the build](docs/DEVELOPMENT.md#writing-a-talk)).
 - **Slideshow.** Every slide is a `.card` in `<section id="slide-N">`, all in
   the HTML. `src/scripts/slideshow.ts` adds controls, keys and a polite live
   region. Hidden slides use `data-current`, not `hidden`: Tailwind's
@@ -235,10 +239,10 @@ presenter view and a PDF. Authoring rules:
   Lexend 400/900 from `@fontsource/lexend` (dev only): the variable font
   becomes Type 3 and stalls veraPDF past CI's timeout. The PDF stores a
   SHA-256 of the deck; `tests/talk-pdf.spec.ts` fails on drift.
-- **Images** live in `<deck>/images/`; reused site images are relative
-  symlinks into `src/assets/`, covered by `scripts/check-untransformed.mjs`.
-- The deck's four Lord of the Rings images are omitted: GIFs need a pause
-  control, the captions do not stand alone, and licensing is unverified.
+- **Images.** `scripts/check-untransformed.mjs` covers deck images, symlinked
+  site images included ([where images go](docs/DEVELOPMENT.md#writing-a-talk)).
+  Images left out of the deck: [ACCESSIBILITY.md](ACCESSIBILITY.md#7-known-gaps)
+  gap 6.
 
 ## Conventions
 
@@ -468,7 +472,8 @@ upgrade-insecure-requests
   `/_astro/`, Umami vendored under `/vendor/`, no embeds, no `data:` URIs, Vue
   runtime-only build.
 - `connect-src` names Umami's collector; `tests/headers-rules.spec.ts` asserts it
-  equals `UMAMI_HOST_URL` in `src/lib/analytics.ts`. See
+  equals `UMAMI_HOST_URL` in `src/lib/analytics.ts`, so a collector host change
+  updates both in `public/_headers` and `analytics.ts` together. See
   [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#umami).
 - `vite.build.assetsInlineLimit: 0` so no script is inlined.
 - `form-action 'self'`, never `'none'`: `'none'` silently blocks the contact
@@ -572,8 +577,8 @@ evidence.
   hand after a deploy ([DEPLOYMENT.md](docs/DEPLOYMENT.md)).
 - **Add ESLint, or `checkJs` for the `.mjs` scripts:** the strictest tsconfig,
   `astro check` at hint level, `vue-tsc`, Prettier and the `check:*` scripts
-  cover what a linter would. A `checkJs` run gave 156 errors, 147 of them
-  implicit `any` or untyped `catch` variables, and no bug.
+  cover what a linter would. `checkJs` reports untyped code (implicit `any`,
+  untyped `catch`, loose DOM and Node types), not bugs.
 - **Fetch external links in CI:** the result depends on other sites' uptime,
   so the gate would fail for reasons outside the repository.
   `tests/internal-links.spec.ts` covers every same-origin link.
@@ -600,9 +605,9 @@ evidence.
   wording may differ; dates, roles and employers must agree.
 - **CV PDF** (`public/sinduri-guntupalli-cv.pdf`): always publish through
   `npm run publish:cv`
-  ([docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#publishing-the-cv)), which scrubs
-  Canva metadata and `/Lang`, fixes tags and keeps the structure tree
-  (pikepdf, not Ghostscript). `tests/cv.spec.ts` asserts it.
+  ([docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#publishing-the-cv)). It uses
+  pikepdf, not Ghostscript, to keep the structure tree. `tests/cv.spec.ts`
+  asserts the published file.
 - The CV portrait is decorative, with no alt text: the name H1 beside it
   carries the same information.
 - The published CV shows the contact email, "Vienna, Austria" and the GitHub

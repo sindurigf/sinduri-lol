@@ -1,8 +1,11 @@
 # Manual accessibility testing
 
 The checks a machine cannot decide, for every route in `tests/routes.ts`.
-Automated coverage is in [ACCESSIBILITY.md](../ACCESSIBILITY.md) §6. Record
-results in its §7.
+Automated coverage is in [ACCESSIBILITY.md](../ACCESSIBILITY.md) §6.
+
+Results: filled blanks stay in this file. A passed check goes in
+ACCESSIBILITY.md [§6 Manual](../ACCESSIBILITY.md#manual); a failed or
+unreached check goes in its [§7 Known gaps](../ACCESSIBILITY.md#7-known-gaps).
 
 ## Setup
 
@@ -364,7 +367,7 @@ Not run: needs Windows and Apple hardware. Open in ACCESSIBILITY.md §7 gap 2.
 | ----------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Every filled blank      | This file                                                                                                   |
 | The 6.4 answers         | STYLEGUIDE.md [Uppercase](STYLEGUIDE.md#uppercase), ACCESSIBILITY.md §6 and §7 gap 2                        |
-| Everything else, passed | Narrow ACCESSIBILITY.md §7 gap 2, naming browser and versions                                               |
+| Everything else, passed | ACCESSIBILITY.md §6 Manual; narrow §7 gap 2, naming browser and versions                                    |
 | A failed check          | Fix it, add a test if machine-detectable, otherwise a new gap in ACCESSIBILITY.md §7 quoting what was heard |
 | A check not reached     | Leave the blank empty and say so in ACCESSIBILITY.md §7                                                     |
 
@@ -512,7 +515,7 @@ header or nav layout change.
       route. → SC 1.4.10
 - [ ] Header nav links are at least 24px tall (expected 40.8px: 16.8px line,
       `py-2`, `border-4`) and equal height, current or not.
-- [ ] Mobile menu button 48x48.
+- [ ] Mobile menu button 48x48, 40x40 below 21rem (336px).
 - [ ] Footer profile tiles 56x56, 48x48 on a phone.
 - [ ] Mobile menu links at 320px at least 24px tall.
 - [ ] Breadcrumb links above a post `h1` are 32.8px tall (`py-2 -my-2`): the
@@ -561,11 +564,11 @@ From the Accessible Astro checklist and
 
 `public/sinduri-guntupalli-cv.pdf` (from `/career`) and
 `public/talks/open-source-is-not-just-code.pdf` (from
-`/blog/open-source-is-not-just-code`). Record results in ACCESSIBILITY.md §7.
+`/blog/open-source-is-not-just-code`).
 
-1. Run `npm run check:pdf` (or `npm run check:pdf -- <path>`) first: veraPDF,
-   PDF/UA-1, in Docker. Exit 0 pass, 1 fail, 2 could not run. Fix what it
-   reports before listening.
+1. Run `npm run check:pdf` first
+   ([DEVELOPMENT.md](DEVELOPMENT.md#published-pdfs)). Fix what it reports
+   before listening.
 2. Viewer: Firefox's built-in PDF viewer with Orca, set up as in §6.1.
 3. `pdftotext` shows content-stream order, not reading order: do not use it
    for §13.2.

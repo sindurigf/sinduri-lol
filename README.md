@@ -5,37 +5,14 @@ Guntupalli, Open Source Enthusiast.
 
 ## Stack
 
-- [Astro](https://astro.build) 7, static output; `/contact/send/` renders on
-  demand in the Worker
-- [Vue](https://vuejs.org) 3 for two islands (the homepage canvas hero and the
-  About cats); plain modules for other scripts
-- [Tailwind CSS](https://tailwindcss.com) 4, tokens in `src/styles/global.css`
-- TypeScript, strict, checked with `astro check` and `vue-tsc`
-- Markdown content collections, rendered by Sätteri
-- Lexend, self-hosted through Fontsource
-- Cloudflare: Workers static assets, D1 (EU), Rate Limiting, Email Routing,
-  Workers Builds
-- [Playwright](https://playwright.dev) in Chromium, Firefox and WebKit with
-  [axe-core](https://github.com/dequelabs/axe-core) for WCAG 2.2 AA
-- Node.js from `.nvmrc`
+Astro, Vue islands, Tailwind CSS and TypeScript on Cloudflare Workers:
+[ARCHITECTURE.md](ARCHITECTURE.md#stack).
 
 ## Quick start
 
-Needs [nvm](https://github.com/nvm-sh/nvm) or Node.js at the `.nvmrc`
-version. No Cloudflare account or secrets: dev, build and every test suite run
-locally.
-
-```sh
-nvm use
-npm ci
-npx playwright install --with-deps chromium firefox
-npm test      # builds, then runs the Playwright and Worker suites
-npm run dev   # http://localhost:4340
-```
-
-Before calling a change done, run the commands in [AGENTS.md](AGENTS.md).
-WebKit runs locally through Docker:
-[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#webkit).
+Setup, commands and the local WebKit run:
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#setup). Before calling a change done,
+run the commands in [AGENTS.md](AGENTS.md#done-means).
 
 ## Documentation
 
@@ -49,12 +26,14 @@ WebKit runs locally through Docker:
   and how to report a barrier
 - [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md): by-hand accessibility checks
 - [AGENTS.md](AGENTS.md): working rules
+- [SECURITY.md](SECURITY.md): reporting a vulnerability
 - [AI_DISCLOSURE.md](AI_DISCLOSURE.md): AI tooling used; none at runtime
 
 ## Contributing
 
 Issues are welcome, including accessibility barriers
-([how to report one](ACCESSIBILITY.md)). Pull requests use
+([how to report one](ACCESSIBILITY.md)). Report a security vulnerability
+privately instead: [SECURITY.md](SECURITY.md). Pull requests use
 [the template](.github/PULL_REQUEST_TEMPLATE.md) and the rules in
 [AGENTS.md](AGENTS.md).
 
