@@ -84,6 +84,59 @@ const LOAF = derive(BASE, {
 });
 
 const POSES = {
+  /* Minerva's sofa sit: upright on her rump, belly out, hind legs straight out in front, front paws on the belly. */
+  slouch: derive(BASE, {
+    ba: 78,
+    by: 21,
+    bt: 23,
+    haunch: 14,
+    fN: [14, 4],
+    fF: [11, 6],
+    hN: [30, 21],
+    hF: [26, 21],
+    hl: 1.8,
+    hx: 3,
+    hy: -13,
+    hr: 6,
+    ta: 185,
+    tc: -1,
+  }),
+  /* Flat out on her side: every leg stretched long, head down, tail straight. */
+  sprawl: derive(BASE, {
+    ba: 0,
+    by: 11,
+    bt: 20,
+    sq: 1.05,
+    fN: [38, 8],
+    fF: [33, 10],
+    hN: [-30, 8],
+    hF: [-26, 10],
+    fl: 1.6,
+    hl: 1.6,
+    hx: 6,
+    hy: -5,
+    hr: 18,
+    eyes: 0,
+    ta: 180,
+    tc: 0,
+  }),
+  /* Up tall on the hind legs after something overhead. */
+  tall: derive(BASE, {
+    ba: 84,
+    by: 31,
+    haunch: 6,
+    fN: [22, -30],
+    fF: [18, -24],
+    hN: [0, 31],
+    hF: [3, 31],
+    hl: 1.6,
+    fl: 1.5,
+    hx: 3,
+    hy: -14,
+    hr: -24,
+    ta: 150,
+    tc: -6,
+  }),
   stand: BASE,
   sit: SIT,
   loaf: LOAF,
@@ -448,6 +501,16 @@ const YARN_LAND_2 = 308;
 /** The ball hugged on the back, between the hind paws, from the cat's place. */
 const YARN_HUG = 9;
 const YARN_HUG_Y = -34;
+/** The wand's feather hangs high on the cat tree, just out of a sitting cat's reach. */
+const WAND_HIGH = -84;
+const WAND_AHEAD = 34;
+const WAND_LEAP_HEIGHT = 27;
+/** Caught at the top of the leap, the feather comes down ahead of the face and is pinned under a paw. */
+const WAND_PULL: readonly (readonly [number, number, number])[] = [
+  [2880, WAND_AHEAD, WAND_HIGH],
+  [3100, 52, -50],
+  [3380, 40, -5],
+];
 /** Knead rhythm (ms per radian) and how high each paw lifts, in px. */
 const KNEAD_BEAT = 260;
 const KNEAD_LIFT = 7;
@@ -884,6 +947,110 @@ export const MOVES = {
       };
     },
   }),
+  /* Minerva's sofa sit, from her photos: settles back onto her rump, slow blinks, pats her belly, sits up again. */
+  slouch: (): Move => ({
+    steps: [
+      step(500, 'sit'),
+      step(900, 'slouch'),
+      step(1200, 'slouch', { hr: -6 }),
+      step(300, 'slouch', { fN: [13, -2], hr: 10 }, 'out'),
+      step(300, 'slouch'),
+      step(1200, 'slouch', { hr: 4 }),
+      step(800, 'sit'),
+    ],
+    mods: [
+      blinkAt(1700),
+      blinkAt(3600),
+      between(1400, 4400, (p, s) => {
+        p.bt += 1.2 * Math.sin(s / 500);
+      }),
+    ],
+  }),
+  /* Flat out on the floor like her photo, then one long luxurious stretch of every leg. */
+  sprawl: (): Move => ({
+    steps: [
+      step(500, 'loaf'),
+      step(700, 'sprawl'),
+      step(900, 'sprawl'),
+      step(900, 'sprawl', {
+        fN: [42, 7],
+        fF: [37, 9],
+        hN: [-35, 7],
+        hF: [-31, 9],
+        sq: 1.1,
+      }),
+      step(1300, 'sprawl'),
+      step(600, 'loaf'),
+      step(500, 'sit'),
+    ],
+    mods: [earFlick(2200)],
+  }),
+  /* Hela moves in: jumps into the box, turns round inside it, sinks until only her ears show, then pops up. */
+  boxnap: (): Move => ({
+    steps: [
+      step(400, 'crouch'),
+      step(140, 'crouch', { x: -2, sq: 0.9 }, 'in'),
+      step(420, 'air', { x: 60 }, 'linear'),
+      step(200, 'crouch', { x: 66, y: -5 }, 'out'),
+      step(160, 'crouch', { x: 66, y: -5, sq: 0.94 }, 'out'),
+      step(140, 'crouch', { x: 66, y: -5, face: -1 }, 'snap'),
+      step(300, 'loaf', { x: 66, y: -5, face: -1 }),
+      step(700, 'loaf', { x: 66, y: -14, face: -1, hr: 10 }),
+      step(1600, 'loaf', { x: 66, y: -14, face: -1, hr: 10, eyes: 0 }),
+      step(250, 'loaf', { x: 66, y: -3, face: -1, ears: 0.2 }, 'out'),
+      step(900, 'loaf', { x: 66, y: -3, face: -1, hr: -12 }),
+      step(300, 'crouch', { x: 66, y: -5, face: -1 }),
+      step(160, 'crouch', { x: 66, y: -5, face: -1, sq: 0.9 }, 'in'),
+      step(420, 'air', { x: 4, face: -1 }, 'linear'),
+      step(200, 'crouch', { x: 0, face: -1, sq: 0.86 }, 'out'),
+      step(500, 'sit', { x: 0, face: -1 }),
+    ],
+    mods: [arc(540, 1160, 26), arc(1300, 1440, 5), arc(5650, 6270, 26)],
+    prop: 'box',
+    propAt: (t) => ({
+      ...still('box', 70),
+      o: Math.min(1, t / 300, Math.max(0, (6700 - t) / 300)),
+    }),
+  }),
+  /* Rudra and the wand on the cat tree, from his photo: up tall, swats, and one big leap that brings it down. */
+  wand: (): Move => ({
+    steps: [
+      step(700, 'sit', { hr: -26 }),
+      step(500, 'tall'),
+      step(180, 'tall', { fN: [30, -44], hr: -30 }, 'out'),
+      step(260, 'tall'),
+      step(180, 'tall', { fF: [27, -42], hr: -30 }, 'out'),
+      step(300, 'tall'),
+      step(300, 'crouch', { hr: -20 }),
+      step(160, 'crouch', { sq: 0.86, hr: -24 }, 'in'),
+      /* Tail out low behind: raised, it would reach the sleep control at the track's end. */
+      step(
+        300,
+        'leap',
+        { fN: [34, -34], fF: [30, -30], ta: 185, tc: 0 },
+        'out',
+      ),
+      step(300, 'leap', { fN: [18, -8], fF: [15, -6], ta: 185, tc: 0 }, 'in'),
+      step(200, 'crouch', { sq: 0.84 }, 'out'),
+      step(900, 'crouch', { fN: [32, 16], hr: 6 }),
+      step(600, 'sit'),
+    ],
+    mods: [arc(2580, 3380, WAND_LEAP_HEIGHT)],
+    prop: 'toy',
+    propAt: (t) => {
+      const swat = (at: number) =>
+        t > at ? 24 * Math.exp(-(t - at) / 500) * Math.sin((t - at) / 110) : 0;
+      const pulled = t > WAND_PULL[0][0];
+      const [px, py] = along(WAND_PULL, t);
+      return {
+        kind: 'toy',
+        x: pulled ? px : WAND_AHEAD,
+        y: pulled ? py : WAND_HIGH + 3 * Math.sin(t / 600),
+        r: Math.max(-8, swat(1380) + swat(1820)),
+        o: Math.min(1, t / 300, Math.max(0, (5280 - t) / 400)),
+      };
+    },
+  }),
   peek: (): Move => ({
     steps: [
       step(900, 'sit'),
@@ -914,6 +1081,7 @@ export type MoveName = keyof typeof MOVES;
 /** Small play moves run this much slower than drawn, so each one can be watched. */
 const SLOW_PLAY = 1.5;
 const SLOW_MOVES: ReadonlySet<MoveName> = new Set([
+  'boxnap',
   'knead',
   'toy',
   'peek',
@@ -1026,13 +1194,15 @@ export const scaledExtent = (
 };
 
 /*
- * Relative weights per cat, so each reads as herself. Every play move stays
- * possible for every cat, except peek, which is Hela's own: she hides behind her
- * card. Sleep and wake come from the nap clock, not from these.
+ * Relative weights per cat, so each reads as herself. Shared moves stay possible
+ * for every cat; each also has her own, from her photos: Minerva's slouch and
+ * sprawl, Hela's peek and boxnap, Rudra's wand. Sleep and wake come from the nap clock.
  */
 export const CAT_WEIGHTS: Record<CatId, Partial<Record<MoveName, number>>> = {
   /* The queen: the calmest, but she chases too; watching is one move among many. */
   minerva: {
+    slouch: 7,
+    sprawl: 6,
     look: 6,
     yarn: 5,
     fly: 5,
@@ -1051,6 +1221,7 @@ export const CAT_WEIGHTS: Record<CatId, Partial<Record<MoveName, number>>> = {
   },
   /* The conspirator: stalks, peeks and knocks the cup off, and chases yarn. */
   hela: {
+    boxnap: 8,
     stalk: 9,
     peek: 7,
     yarn: 7,
@@ -1070,6 +1241,7 @@ export const CAT_WEIGHTS: Record<CatId, Partial<Record<MoveName, number>>> = {
   },
   /* The baby: chases everything, yarn and flies most. */
   rudra: {
+    wand: 10,
     yarn: 11,
     fly: 10,
     toy: 7,
