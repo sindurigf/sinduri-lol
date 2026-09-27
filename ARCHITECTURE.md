@@ -537,6 +537,9 @@ evidence.
   client scripts sharing this program. Env-only output needs
   `@cloudflare/workers-types`. The hand-written types stay narrow, so tests
   fake bindings without casts.
+- **Place the cat card with CSS anchor positioning, not JS:** the anchor is an
+  SVG `<rect>` in a transformed group, and `anchor-name` needs an element with
+  a CSS box.
 - **Swap the cover's `<p>` for `<div>` in a rehype plugin, not a regex in
   `TalkSlide.astro`:** the input is the site's own cover, which the loader
   holds to text only; a plugin for one tag swap costs more than it saves.

@@ -15,6 +15,8 @@ import {
   withTurn,
   withApproach,
   moveToPlay,
+  scaleTravel,
+  TRAVEL_MOVES,
   type Move,
   type MoveName,
   type Pose,
@@ -28,13 +30,17 @@ import {
   type PropRig,
 } from './about-cats-rig';
 
-/** A still pause after each move, in ms: cats alternate bursts and stillness. */
-const PAUSE_MS = [1000, 3000] as const;
+/** A short still beat after each move, in ms, so play flows but each move reads. */
+const PAUSE_MS = [300, 900] as const;
+/** A travel move shrinks to fit a short track, but not below this share of its length. */
+const MIN_TRAVEL_FACTOR = 0.35;
+/** px a scaled move may overshoot its scaled extent: modifiers add a little x that does not scale. */
+const TRAVEL_SLACK = 1;
 /** What a frame did for a cat: drew it, left it settled, or held it in a pause. */
 type StepResult = 'draw' | 'still' | 'rest';
 
 /** On-screen play time after waking before a cat naps. */
-export const NAP_AFTER_MS = 20_000;
+export const NAP_AFTER_MS = 30_000;
 
 /** Distance from each card end the cat's origin keeps. */
 export const TRACK_MARGIN = 40;
@@ -48,8 +54,6 @@ const LEAPS: Partial<Record<MoveName, number>> = {
   pounce: 3,
   stalk: 1,
 };
-/** Near enough to the band's left end to knock a cup off it, counted to where it stands to push. */
-const EDGE_NEAR = 110;
 /** Where a cat stands from the card's edge to push the cup: the cup ends past the edge. */
 export const CUP_EDGE = 32;
 /** A pointer that has not moved for this long no longer draws a cat's eye. */
@@ -77,6 +81,7 @@ export interface CatInfo {
   photo: {
     src: string;
     srcset: string;
+    sizes: string;
     width: number;
     height: number;
     alt: string;
@@ -193,6 +198,46 @@ export const fitsTrack = (
   return Math.min(a, b) >= min && Math.max(a, b) <= max;
 };
 
+/**
+ * How a cat at `x` facing `facing` plays `name` on [min, max]: ahead if it fits,
+ * else back; a travel move scales to the room on the roomier side. Null if not.
+ */
+export const planMove = (
+  name: MoveName,
+  x: number,
+  facing: number,
+  min: number,
+  max: number,
+): { move: Move; dir: number } | null => {
+  const [back, forward] = moveExtent(name);
+  for (const dir of [facing, -facing])
+    if (fitsTrack(x, [back, forward], dir, min, max))
+      return { move: moveToPlay(name), dir };
+  if (!TRAVEL_MOVES.has(name) || forward <= 0) return null;
+  const room = (dir: number) => (dir > 0 ? max - x : x - min);
+  const dir = room(facing) >= room(-facing) ? facing : -facing;
+  const factor = (room(dir) - TRAVEL_SLACK) / forward;
+  if (factor < MIN_TRAVEL_FACTOR) return null;
+  const scaled: readonly [number, number] = [
+    back * factor - TRAVEL_SLACK,
+    forward * factor + TRAVEL_SLACK,
+  ];
+  if (!fitsTrack(x, scaled, dir, min, max)) return null;
+  return { move: scaleTravel(moveToPlay(name), factor), dir };
+};
+
+/**
+ * The cup push from anywhere on the track, heading left: a trot and a creep to
+ * the card's edge, past the track, so the cup goes over, then a shuffle back on.
+ * Left only: the right end is the sleep control's corner.
+ */
+export const cupPush = (x: number): Move =>
+  withApproach(
+    moveToPlay('knock'),
+    Math.max(0, x - CUP_EDGE),
+    TRACK_MARGIN - CUP_EDGE,
+  );
+
 export const createColony = (
   spots: CatSpot[],
   onMoodChange: (id: CatSpot['id'], mood: CatMood, asleep: boolean) => void,
@@ -305,20 +350,14 @@ export const createColony = (
     );
   };
 
-  const fits = (cat: CatState, name: MoveName, dir: number): boolean =>
-    fitsTrack(cat.pose.x, moveExtent(name), dir, cat.min, cat.max);
+  const planFor = (cat: CatState, name: MoveName) =>
+    planMove(name, cat.pose.x, Math.sign(cat.pose.face) || 1, cat.min, cat.max);
 
   /** One leap along the band, ahead if it fits, else back; false if neither fits. */
   const leap = (cat: CatState, now: number): boolean => {
-    const name = pickWeighted(LEAPS);
-    const facing = Math.sign(cat.pose.face) || 1;
-    const dir = fits(cat, name, facing)
-      ? facing
-      : fits(cat, name, -facing)
-        ? -facing
-        : 0;
-    if (dir === 0) return false;
-    play(cat, moveToPlay(name), now, dir);
+    const plan = planFor(cat, pickWeighted(LEAPS));
+    if (!plan) return false;
+    play(cat, plan.move, now, plan.dir);
     return true;
   };
 
@@ -332,33 +371,16 @@ export const createColony = (
     if (Math.random() < LEAP_CHANCE && leap(cat, now)) return;
     const name = pickWeighted(CAT_WEIGHTS[cat.id]);
     const move = moveToPlay(name);
-    const facing = Math.sign(cat.pose.face) || 1;
     if (move.edge) {
-      /*
-       * Left end only, near it: it creeps to the card's edge, past its own track,
-       * so the cup goes over. The right end is the sleep control's corner.
-       */
-      const gap = cat.pose.x - CUP_EDGE;
-      if (gap > EDGE_NEAR) return;
-      /* It shuffles back onto its track afterwards, or no move would fit from there. */
-      play(
-        cat,
-        withApproach(move, Math.max(0, gap), TRACK_MARGIN - CUP_EDGE),
-        now,
-        -1,
-      );
+      play(cat, cupPush(cat.pose.x), now, -1);
       return;
     }
-    const dir = fits(cat, name, facing)
-      ? facing
-      : fits(cat, name, -facing)
-        ? -facing
-        : 0;
-    if (dir === 0) {
+    const plan = planFor(cat, name);
+    if (!plan) {
       leap(cat, now);
       return;
     }
-    play(cat, move, now, dir);
+    play(cat, plan.move, now, plan.dir);
   };
 
   /** Where the pointer is from this cat, while it is still moving. */
@@ -494,7 +516,11 @@ export const createColony = (
       MOVES.wake(),
       now,
       facing,
-      () => play(cat, moveToPlay('stretch'), performance.now(), facing),
+      () =>
+        /* Straight into play after the stretch: endMove's pause is cleared. */
+        play(cat, moveToPlay('stretch'), performance.now(), facing, () => {
+          cat.restUntil = 0;
+        }),
       true,
     );
   };

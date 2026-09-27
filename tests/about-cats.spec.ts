@@ -6,9 +6,6 @@ import { NODE } from './tags';
 import { readFileSync } from 'node:fs';
 import {
   MOVES,
-  moveExtent,
-  moveToPlay,
-  withApproach,
   type MoveName,
   duration,
   poseAt,
@@ -23,7 +20,8 @@ import {
   CONTROL_ROOM,
   CUP_EDGE,
   TRACK_MARGIN,
-  fitsTrack,
+  cupPush,
+  planMove,
 } from '../src/lib/about-cats';
 
 /**
@@ -62,6 +60,18 @@ const MAX_EMPTY_FRAMES_IN_A_ROW = 6;
 
 /** Lying down plays out before the name changes; the longest move is well under this. */
 const NAP_TIMEOUT_MS = 10_000;
+
+/** Where the card placement is checked: small phone, phone, tablet, desktop. */
+const CARD_VIEWPORTS = [
+  { width: 320, height: 640 },
+  { width: 390, height: 844 },
+  { width: 768, height: 1024 },
+  { width: 1280, height: 900 },
+];
+/** AboutCats.vue's SIDE_BY_SIDE, 40rem: from here the card sits beside the cat. */
+const SIDE_BY_SIDE_MIN = 640;
+/** The 16px gap AboutCats.vue keeps, plus rounding. */
+const CARD_NEAR = 24;
 
 /** Past the card's 4px border, on its padding. */
 const CARD_PADDING_HIT = 12;
@@ -187,6 +197,8 @@ test('no move lifts any part of a cat above its band', NODE, () => {
 
 /** The sleep control's box: `.motion-toggle`, h-10 w-10. */
 const CONTROL_SIZE = 40;
+/** Band widths the cup push is proved at: phone, small phone and desktop. */
+const CUP_WIDTHS = [320, 390, 1280];
 /** Band widths from the 320px reflow width up. */
 const BAND_WIDTHS = [320, 390, 768, 1280, 1920];
 /** Start positions tried along each track. */
@@ -201,15 +213,16 @@ test(
       const min = TRACK_MARGIN;
       const max = width - TRACK_MARGIN - CONTROL_ROOM;
       for (const name of Object.keys(MOVES) as MoveName[]) {
-        const move = moveToPlay(name);
+        if (MOVES[name]().edge) continue;
         for (let i = 0; i <= TRACK_STEPS; i += 1) {
           const x = min + ((max - min) * i) / TRACK_STEPS;
-          for (const dir of [1, -1]) {
-            if (!fitsTrack(x, moveExtent(name), dir, min, max)) continue;
-            const start = move.steps[0].pose;
-            for (let t = 0; t <= duration(move); t += FRAME_MS) {
-              const at = x + dir * poseAt(move, start, t).x;
-              if (at + HIT_HALF_WIDTH > width - CONTROL_SIZE) {
+          for (const facing of [1, -1]) {
+            const plan = planMove(name, x, facing, min, max);
+            if (!plan) continue;
+            const start = plan.move.steps[0].pose;
+            for (let t = 0; t <= duration(plan.move); t += FRAME_MS) {
+              const at = x + plan.dir * poseAt(plan.move, start, t).x;
+              if (at + HIT_HALF_WIDTH > width - CONTROL_SIZE || at < min - 1) {
                 under.push(`${name} at ${width}px from ${Math.round(x)}`);
                 break;
               }
@@ -223,33 +236,42 @@ test(
 );
 
 test(
-  'the cup push stays inside the band and ends back on the track, where another move fits',
+  'the cup push from anywhere on the track reaches the edge, stays in the band and ends back on the track',
   NODE,
   () => {
-    const move = moveToPlay('knock');
-    const max = BAND_WIDTHS[0] - TRACK_MARGIN - CONTROL_ROOM;
-    for (const gap of [0, 40, 110]) {
-      const pushed = withApproach(move, gap, TRACK_MARGIN - CUP_EDGE);
-      const start = pushed.steps[0].pose;
-      const from = CUP_EDGE + gap;
-      for (let t = 0; t <= duration(pushed); t += FRAME_MS) {
+    for (const width of CUP_WIDTHS) {
+      const min = TRACK_MARGIN;
+      const max = width - TRACK_MARGIN - CONTROL_ROOM;
+      for (let i = 0; i <= TRACK_STEPS; i += 1) {
+        const x = min + ((max - min) * i) / TRACK_STEPS;
+        const push = cupPush(x);
+        const start = push.steps[0].pose;
+        let nearest = x;
+        let farthest = x;
+        for (let t = 0; t <= duration(push); t += FRAME_MS) {
+          const at = x - poseAt(push, start, t).x;
+          nearest = Math.min(nearest, at);
+          farthest = Math.max(farthest, at);
+        }
         expect(
-          from - poseAt(pushed, start, t).x,
+          nearest,
           'the cat leaves the band at its left end',
         ).toBeGreaterThanOrEqual(0);
+        expect(
+          nearest,
+          'the cat never reaches the cup at the edge',
+        ).toBeLessThanOrEqual(CUP_EDGE + 1);
+        expect(
+          farthest + HIT_HALF_WIDTH,
+          'the cat reaches under its sleep control',
+        ).toBeLessThanOrEqual(width - CONTROL_SIZE);
+        const end = x - poseAt(push, start, duration(push)).x;
+        expect(end, 'the cat ends off its track').toBeGreaterThanOrEqual(min);
+        const next = (Object.keys(MOVES) as MoveName[]).filter(
+          (name) => !MOVES[name]().edge && planMove(name, end, 1, min, max),
+        );
+        expect(next, 'no move fits once the cup is pushed').not.toEqual([]);
       }
-      const end = from - poseAt(pushed, start, duration(pushed)).x;
-      expect(end, 'the cat ends off its track').toBeGreaterThanOrEqual(
-        TRACK_MARGIN,
-      );
-      const next = (Object.keys(MOVES) as MoveName[]).filter(
-        (name) =>
-          !MOVES[name]().edge &&
-          [1, -1].some((dir) =>
-            fitsTrack(end, moveExtent(name), dir, TRACK_MARGIN, max),
-          ),
-      );
-      expect(next, 'no move fits once the cup is pushed').not.toEqual([]);
     }
   },
 );
@@ -397,6 +419,74 @@ test.describe('About cats', () => {
         'the Arthur link is told apart by colour alone',
       ).toBe(true);
       await context.close();
+    });
+  }
+
+  for (const viewport of CARD_VIEWPORTS) {
+    test.describe(`at ${viewport.width}px`, () => {
+      test.use({ viewport });
+
+      test('the card opens beside its cat and inside the screen', async ({
+        page,
+      }) => {
+        const sideBySide = viewport.width >= SIDE_BY_SIDE_MIN;
+        await gotoSettled(page, ROUTE);
+        for (const id of CATS) {
+          const button = catButton(page, id);
+          await page
+            .locator(`#cat-spot-${id}`)
+            .evaluate((node) => node.scrollIntoView({ block: 'center' }));
+          await button.focus();
+          await page.keyboard.press('Enter');
+          const dialog = page.getByRole('dialog', { name: NAMES[id] });
+          await expect(dialog).toBeVisible();
+          const found = await page.evaluate((catId) => {
+            const box = document
+              .querySelector('.cat-dialog')!
+              .getBoundingClientRect();
+            const spot = document.getElementById(`cat-spot-${catId}`)!;
+            const cat = spot
+              .querySelector('.cat-hit-area')!
+              .getBoundingClientRect();
+            const band = spot.getBoundingClientRect();
+            const inside =
+              box.left >= 0 &&
+              box.top >= 0 &&
+              box.right <= document.documentElement.clientWidth &&
+              box.bottom <= window.innerHeight;
+            const overlaps =
+              box.left < cat.right &&
+              cat.left < box.right &&
+              box.top < cat.bottom &&
+              cat.top < box.bottom;
+            /* Distance between the two boxes; 0 where they overlap. */
+            const beside = Math.max(
+              0,
+              box.left - cat.right,
+              cat.left - box.right,
+            );
+            const aboveOrBelow = Math.max(
+              0,
+              box.top - band.bottom,
+              band.top - box.bottom,
+            );
+            return { inside, overlaps, beside, aboveOrBelow };
+          }, id);
+          expect(found.inside, `${NAMES[id]}'s card runs off the screen`).toBe(
+            true,
+          );
+          if (sideBySide)
+            expect(found.overlaps, `${NAMES[id]}'s card covers her`).toBe(
+              false,
+            );
+          expect(
+            sideBySide ? found.beside : found.aboveOrBelow,
+            `${NAMES[id]}'s card opens away from her`,
+          ).toBeLessThanOrEqual(CARD_NEAR);
+          await page.keyboard.press('Escape');
+          await expect(dialog).toBeHidden();
+        }
+      });
     });
   }
 

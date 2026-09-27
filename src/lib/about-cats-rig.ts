@@ -129,6 +129,9 @@ export interface CatRig {
   layers: Layer[];
   bodyClip: SVGPathElement;
   marks: SVGGElement;
+  /** Minerva's tabby stripes and Hela's patch; none for Rudra. */
+  stripes: SVGPathElement[];
+  patch: SVGEllipseElement | null;
   tailMarks: SVGPathElement;
   eyesOpen: SVGGElement;
   eyesShut: SVGPathElement;
@@ -212,6 +215,25 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
 
   const marks = el('g', { 'clip-path': `url(#${key}-b)` }, top.group);
   top.group.insertBefore(marks, top.haunch);
+  /* Made once and moved each frame; building them per frame was most of a draw. */
+  const stripes =
+    id === 'minerva'
+      ? STRIPES.map(() =>
+          el(
+            'path',
+            {
+              class: 'cat-line-mark',
+              'stroke-width': 2.4,
+              'stroke-linecap': 'round',
+            },
+            marks,
+          ),
+        )
+      : [];
+  const patch =
+    id === 'hela'
+      ? el('ellipse', { rx: 9, ry: 6.5, class: 'cat-solid-patch' }, marks)
+      : null;
   const tailMarks = el(
     'path',
     {
@@ -303,6 +325,8 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
     layers,
     bodyClip,
     marks,
+    stripes,
+    patch,
     tailMarks,
     eyesOpen,
     eyesShut,
@@ -534,29 +558,16 @@ export const renderCat = (
   }
   rig.tailMarks.setAttribute('d', tail);
 
-  rig.marks.replaceChildren();
-  if (rig.id === 'minerva') {
-    for (const k of STRIPES) {
-      const a = at(length * k, -half - 2);
-      const z = at(length * k - 1, -half + 8);
-      el(
-        'path',
-        {
-          d: `M${f(a.x)} ${f(a.y)}L${f(z.x)} ${f(z.y)}`,
-          class: 'cat-line-mark',
-          'stroke-width': 2.4,
-          'stroke-linecap': 'round',
-        },
-        rig.marks,
-      );
-    }
-  } else if (rig.id === 'hela') {
+  rig.stripes.forEach((stripe, i) => {
+    const k = STRIPES[i];
+    const a = at(length * k, -half - 2);
+    const z = at(length * k - 1, -half + 8);
+    stripe.setAttribute('d', `M${f(a.x)} ${f(a.y)}L${f(z.x)} ${f(z.y)}`);
+  });
+  if (rig.patch) {
     const o = at(length * 0.35, -half * 0.35);
-    el(
-      'ellipse',
-      { cx: f(o.x), cy: f(o.y), rx: 9, ry: 6.5, class: 'cat-solid-patch' },
-      rig.marks,
-    );
+    rig.patch.setAttribute('cx', f(o.x));
+    rig.patch.setAttribute('cy', f(o.y));
   }
 
   const open = p.eyes > 0.5;
@@ -724,12 +735,32 @@ export const createProp = (
       node,
     );
   } else if (kind === 'blanket') {
+    /* A soft, rumpled blanket with a folded corner and two stripes: wide and low, not a toy. */
     el(
       'path',
       {
-        d: 'M-26 0V-4q4.3-3 8.7 0t8.7 0t8.7 0t8.7 0t8.7 0t8.7 0V0Z',
+        d: 'M-40 0C-41 -5 -36 -9 -28 -8C-18 -11 -8 -7 2 -9C12 -11 22 -7 30 -9C36 -10 40 -5 38 0Z',
         ...edge,
         class: 'cat-prop-solid cat-prop-blanket',
+      },
+      node,
+    );
+    el(
+      'path',
+      {
+        d: 'M-30 -4C-18 -6 -6 -3 6 -5C16 -7 26 -4 34 -5M-34 -1C-20 -3 -4 0 10 -2C20 -3 28 -1 36 -2',
+        class: 'cat-prop-stripe',
+        'stroke-width': 1.6,
+        'stroke-linecap': 'round',
+      },
+      node,
+    );
+    el(
+      'path',
+      {
+        d: 'M30 -9L38 0L28 -2Z',
+        ...edge,
+        class: 'cat-prop-solid cat-prop-fold',
       },
       node,
     );

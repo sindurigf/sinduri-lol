@@ -8,7 +8,7 @@ import {
   useTemplateRef,
 } from 'vue';
 import { IDLE, useMotionLoop } from '../../composables/use-motion-loop';
-import { createCatRig } from '../../lib/about-cats-rig';
+import { clamp, createCatRig } from '../../lib/about-cats-rig';
 import type { CatId } from '../../lib/about-cats-types';
 import { MOVE_NAMES, moveExtent } from '../../lib/about-cats-moves';
 import {
@@ -197,12 +197,87 @@ const afterClose = (): void => {
   if (id) hold(id, 'card', false);
 };
 
+/** Space between the card and its cat, or the band on narrow screens. */
+const CARD_GAP = 16;
+/** The page's side gutter, kept round the card. */
+const CARD_MARGIN = 16;
+/** From here the card sits beside the cat; below it, above or below the band. */
+const SIDE_BY_SIDE = '(min-width: 40rem)';
+let placeFrame = 0;
+let cardObserver: ResizeObserver | null = null;
+
+const placeCard = (): void => {
+  placeFrame = 0;
+  const node = dialog.value;
+  const spot = openId.value
+    ? document.getElementById(`cat-spot-${openId.value}`)
+    : null;
+  const cat = spot?.querySelector('.cat-hit-area')?.getBoundingClientRect();
+  if (!node?.open || !spot || !cat) return;
+  const band = spot.getBoundingClientRect();
+  const box = node.getBoundingClientRect();
+  const width = document.documentElement.clientWidth;
+  const height = window.innerHeight;
+  let x: number;
+  let y: number;
+  if (window.matchMedia(SIDE_BY_SIDE).matches) {
+    const toRight = cat.left + cat.width / 2 < width / 2;
+    x = toRight ? cat.right + CARD_GAP : cat.left - CARD_GAP - box.width;
+    y = cat.top + cat.height / 2 - box.height / 2;
+  } else {
+    x = (width - box.width) / 2;
+    const below = band.bottom + CARD_GAP;
+    y =
+      below + box.height <= height - CARD_MARGIN
+        ? below
+        : band.top - CARD_GAP - box.height;
+  }
+  x = clamp(x, CARD_MARGIN, width - box.width - CARD_MARGIN);
+  y = clamp(y, CARD_MARGIN, height - box.height - CARD_MARGIN);
+  /* CSSOM custom properties: the CSP refuses style attributes, not these. */
+  node.style.setProperty('--cat-card-x', `${x}px`);
+  node.style.setProperty('--cat-card-y', `${y}px`);
+  node.dataset.placed = '';
+};
+
+const schedulePlace = (): void => {
+  if (!placeFrame) placeFrame = requestAnimationFrame(placeCard);
+};
+
+const followCat = (on: boolean): void => {
+  if (on) {
+    window.addEventListener('resize', schedulePlace);
+    window.addEventListener('scroll', schedulePlace, {
+      capture: true,
+      passive: true,
+    });
+  } else {
+    window.removeEventListener('resize', schedulePlace);
+    window.removeEventListener('scroll', schedulePlace, { capture: true });
+  }
+  cardObserver?.disconnect();
+  cardObserver = null;
+  if (on && card.value) {
+    cardObserver = new ResizeObserver(schedulePlace);
+    cardObserver.observe(card.value);
+  }
+  if (!on) {
+    cancelAnimationFrame(placeFrame);
+    placeFrame = 0;
+    delete dialog.value?.dataset.placed;
+  }
+};
+
 const openCat = (id: CatId): void => {
   if (shownFor && !dialog.value?.open) afterClose();
   shownFor = id;
   openId.value = id;
   void nextTick(() => {
-    if (dialog.value && !dialog.value.open) dialog.value.showModal();
+    if (!dialog.value || dialog.value.open) return;
+    dialog.value.showModal();
+    /* Placed in the frame it opens, so it never jumps from the centre. */
+    placeCard();
+    followCat(true);
   });
 };
 
@@ -213,6 +288,7 @@ const onCatClick = (id: CatId): void => {
 
 const onDialogClose = (): void => {
   if (dialog.value?.open) return;
+  followCat(false);
   openId.value = '';
   afterClose();
 };
@@ -273,6 +349,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  followCat(false);
   cancelWarm();
   resizeObserver?.disconnect();
   document.removeEventListener('pointermove', onPointer);
@@ -361,6 +438,7 @@ onBeforeUnmount(() => {
             <img
               :src="open.photo.src"
               :srcset="open.photo.srcset"
+              :sizes="open.photo.sizes"
               :width="open.photo.width"
               :height="open.photo.height"
               :alt="open.photo.alt"

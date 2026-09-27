@@ -195,7 +195,16 @@
   }
 
   .cat-prop-blanket {
-    fill: var(--color-border);
+    fill: var(--color-cat-hela-orange);
+  }
+
+  .cat-prop-fold {
+    fill: var(--color-cat-cardboard);
+  }
+
+  .cat-prop-stripe {
+    fill: none;
+    stroke: var(--color-cat-hela);
   }
 
   .cat-prop-card {
@@ -244,11 +253,20 @@
       shadow-hard-bunny-4;
   }
 
+  /* AboutCats.vue sets these beside the cat; until then the dialog centres itself. */
+  .cat-dialog[data-placed] {
+    @apply m-0;
+
+    inset: auto;
+    left: var(--cat-card-x);
+    top: var(--cat-card-y);
+  }
+
   .cat-dialog::backdrop {
     @apply bg-background/60;
   }
 
   .cat-dialog-body {
-    @apply w-48 max-w-full;
+    @apply w-48 max-w-full md:w-72;
   }
 }
