@@ -41,6 +41,10 @@ const SETTLE_MS = 3000;
 /** Lying down plays out before the name changes; the longest move is well under this. */
 const NAP_TIMEOUT_MS = 10_000;
 
+/** Checks of each sleep control's centre while the cats play, about 3 s. */
+const CONTROL_SAMPLES = 20;
+const CONTROL_SAMPLE_MS = 150;
+
 /** Past the card's 4px border, on its padding. */
 const CARD_PADDING_HIT = 12;
 
@@ -658,6 +662,40 @@ test.describe('About cats', () => {
   });
 
   for (const viewport of [REFLOW_VIEWPORT, PHONE, DESKTOP_VIEWPORT]) {
+    test(`no cat ever covers its sleep control at ${viewport.width}px (SC 2.2.2)`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ viewport });
+      const page = await context.newPage();
+      await gotoSettled(page, ROUTE);
+      const misses: string[] = [];
+      for (const id of CATS) {
+        await napControl(page, id).scrollIntoViewIfNeeded();
+        const found = await page.evaluate(
+          async ({ id, samples, gap }) => {
+            const control = document.querySelector(`#cat-spot-${id} .cat-nap`);
+            if (!control) return ['no control'];
+            const out: string[] = [];
+            for (let i = 0; i < samples; i += 1) {
+              const box = control.getBoundingClientRect();
+              const hit = document.elementFromPoint(
+                box.left + box.width / 2,
+                box.top + box.height / 2,
+              );
+              if (!hit || !control.contains(hit))
+                out.push(hit?.getAttribute('class') ?? 'nothing');
+              await new Promise((resolve) => setTimeout(resolve, gap));
+            }
+            return out;
+          },
+          { id, samples: CONTROL_SAMPLES, gap: CONTROL_SAMPLE_MS },
+        );
+        misses.push(...found.map((what) => `${NAMES[id]}: ${what}`));
+      }
+      expect(misses, 'something covered a sleep control').toEqual([]);
+      await context.close();
+    });
+
     test(`no cat band covers text at ${viewport.width}px`, async ({
       browser,
     }) => {

@@ -43,7 +43,7 @@ const LEAPS: Partial<Record<MoveName, number>> = {
   pounce: 3,
   stalk: 1,
 };
-/** Near enough to a band end to knock a cup off it, counted to where it stands to push. */
+/** Near enough to the band's left end to knock a cup off it, counted to where it stands to push. */
 const EDGE_NEAR = 110;
 /** Where a cat stands from the card's edge to push the cup: the cup ends past the edge. */
 const CUP_EDGE = 32;
@@ -313,19 +313,13 @@ export const createColony = (
     const facing = Math.sign(cat.pose.face) || 1;
     if (move.edge) {
       /*
-       * From near an end only: it creeps to the card's edge, past its own track,
-       * so the cup it pushes goes over. It never crosses the band for it.
+       * Left end only, near it: it creeps to the card's edge, past its own track,
+       * so the cup goes over. The right end is the sleep control's corner.
        */
-      const left = cat.pose.x - CUP_EDGE;
-      const right = cat.width - CUP_EDGE - cat.pose.x;
-      const gap = Math.min(left, right);
+      const gap = cat.pose.x - CUP_EDGE;
       if (gap > EDGE_NEAR) return;
-      play(
-        cat,
-        withApproach(move, Math.max(0, gap)),
-        now,
-        left < right ? -1 : 1,
-        () => next(cat, performance.now()),
+      play(cat, withApproach(move, Math.max(0, gap)), now, -1, () =>
+        next(cat, performance.now()),
       );
       return;
     }
