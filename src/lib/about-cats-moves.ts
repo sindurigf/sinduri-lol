@@ -458,15 +458,15 @@ const earFlick = (at: number): Mod =>
   });
 
 /* Arcs in px; with them the tallest move stays under --spacing-cat-band (tests/about-cats.spec.ts). */
-const JUMP_HEIGHT = 39;
-const POUNCE_HEIGHT = 42;
-const LEAP_HEIGHT = 28;
-const HOP_HEIGHT = 38;
-const BOX_HOP_HEIGHT = 32;
+const JUMP_HEIGHT = 58;
+const POUNCE_HEIGHT = 56;
+const LEAP_HEIGHT = 40;
+const HOP_HEIGHT = 50;
+const BOX_HOP_HEIGHT = 42;
 /** The scratching post stands this far ahead of the cat, clear of its chest. */
 const POST_GAP = 34;
-const YARN_BOUND_HEIGHT = 28;
-const FLY_HOP_HEIGHT = 30;
+const YARN_BOUND_HEIGHT = 38;
+const FLY_HOP_HEIGHT = 40;
 /* The fly's route, [ms, x, y] ahead of the cat: it lands, is missed, circles, and escapes. */
 const FLY_PATH: readonly (readonly [number, number, number])[] = [
   [0, 60, -82],
@@ -502,9 +502,9 @@ const YARN_LAND_2 = 308;
 const YARN_HUG = 9;
 const YARN_HUG_Y = -34;
 /** The wand's feather hangs high on the cat tree, just out of a sitting cat's reach. */
-const WAND_HIGH = -84;
+const WAND_HIGH = -108;
 const WAND_AHEAD = 34;
-const WAND_LEAP_HEIGHT = 27;
+const WAND_LEAP_HEIGHT = 44;
 /** Caught at the top of the leap, the feather comes down ahead of the face and is pinned under a paw. */
 const WAND_PULL: readonly (readonly [number, number, number])[] = [
   [2880, WAND_AHEAD, WAND_HIGH],
