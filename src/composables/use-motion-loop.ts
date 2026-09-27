@@ -78,7 +78,7 @@ export const useMotionLoop = (options: MotionLoopOptions): MotionLoop => {
   const tick = (now: number): void => {
     frame = 0;
     if (!running()) return;
-    if (now - lastFrame < minGapMs) {
+    if (minGapMs > 0 && now - lastFrame < minGapMs) {
       frame = requestAnimationFrame(tick);
       return;
     }
@@ -117,7 +117,8 @@ export const useMotionLoop = (options: MotionLoopOptions): MotionLoop => {
     targets,
     { onEntries, rootMargin, assumeOnScreen = false } = {},
   ) => {
-    if (assumeOnScreen) visible = new Set(targets);
+    viewObserver?.disconnect();
+    visible = assumeOnScreen ? new Set(targets) : new Set();
     viewObserver = new IntersectionObserver(
       (entries) => {
         const next = new Set(visible);
