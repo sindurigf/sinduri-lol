@@ -43,8 +43,8 @@ const PHONE = { width: 390, height: 844 };
 /** 1280x1024 at 400%: the SC 1.4.10 reflow case, short as well as narrow. */
 const ZOOMED = { width: 320, height: 256 };
 
-/** Tall enough that all three bands are on screen at once. */
-const ALL_BANDS = { width: 1350, height: 4000 };
+/** Tall enough that Minerva's and Hela's bands are on screen at once; Rudra's is below. */
+const MINERVA_AND_HELA = { width: 1350, height: 4000 };
 
 /** Leg height from the bottom of the click box; a raised card covers the last few px. */
 const LEG_HEIGHT = 0.15;
@@ -82,11 +82,11 @@ const drawing = (page: Page, id: (typeof CATS)[number]) =>
 /** Checks of a held cat's place, each a still window apart. */
 const HELD_CHECKS = 3;
 
-/** The colony's own state for a cat, set on the button when it changes. */
+/** data-cat-state, set by the colony when it changes: hidden (not stepped), playing, holding or asleep. */
 const expectMood = (
   page: Page,
   id: (typeof CATS)[number],
-  mood: 'playing' | 'holding' | 'asleep' | RegExp,
+  mood: 'hidden' | 'playing' | 'holding' | 'asleep' | RegExp,
   why: string,
 ) =>
   expect(catButton(page, id), why).toHaveAttribute('data-cat-state', mood, {
@@ -419,7 +419,7 @@ test.describe('About cats', () => {
   test('a sleeping cat is not redrawn while another cat plays on screen', async ({
     browser,
   }) => {
-    const context = await browser.newContext({ viewport: ALL_BANDS });
+    const context = await browser.newContext({ viewport: MINERVA_AND_HELA });
     const page = await context.newPage();
     await gotoSettled(page, ROUTE);
     await napControl(page, 'minerva').click();
@@ -711,6 +711,25 @@ test.describe('About cats', () => {
       ).toHaveAccessibleName(`Meet ${NAMES[id]}`);
     }
     await context.close();
+  });
+
+  test('a cat reports hidden until its band is on screen, then its own state', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    await expectMood(
+      page,
+      'rudra',
+      'hidden',
+      'Rudra claims a state off screen',
+    );
+    await page.locator('#cat-spot-rudra').scrollIntoViewIfNeeded();
+    await expectMood(
+      page,
+      'rudra',
+      /^(playing|holding|asleep)$/,
+      'Rudra stayed hidden on screen',
+    );
   });
 
   test('the cats stop drawing once they are off screen', async ({ page }) => {
