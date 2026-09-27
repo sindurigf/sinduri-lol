@@ -46,6 +46,20 @@ test.describe('the photo viewer', () => {
     await expect(first).toBeFocused();
   });
 
+  test('its Close button closes it and focus returns to the photo that opened it', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    const first = page.locator(`${STRIP} a[data-photo]`).first();
+    await first.click();
+    const viewer = page.locator('#photo-viewer');
+    await expect(viewer).toBeVisible();
+
+    await viewer.getByRole('button', { name: 'Close' }).click();
+    await expect(viewer, 'Close left the viewer open').toBeHidden();
+    await expect(first).toBeFocused();
+  });
+
   // SC 2.4.3: after stepping, the reader is at the photo shown, not the opener.
   test('closing after a step returns focus to the photo on screen', async ({
     page,
