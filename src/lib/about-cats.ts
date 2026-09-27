@@ -5,8 +5,7 @@
  */
 import {
   MOVES,
-  HELA_WEIGHTS,
-  WEIGHTS,
+  CAT_WEIGHTS,
   clonePose,
   duration,
   moveExtent,
@@ -326,7 +325,7 @@ export const createColony = (
     }
     if (cat.holds.size > 0 || now < cat.restUntil) return;
     if (Math.random() < LEAP_CHANCE && leap(cat, now)) return;
-    const name = pickWeighted(cat.id === 'hela' ? HELA_WEIGHTS : WEIGHTS);
+    const name = pickWeighted(CAT_WEIGHTS[cat.id]);
     const move = moveToPlay(name);
     const facing = Math.sign(cat.pose.face) || 1;
     if (move.edge) {

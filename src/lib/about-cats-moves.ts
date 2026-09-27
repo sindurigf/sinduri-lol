@@ -3,7 +3,7 @@
  * modifiers; x runs forward in the direction the cat faces when it starts, and
  * `face: -1` means turned round. about-cats.ts places moves on a track.
  */
-import type { PropKind, PropState } from './about-cats-rig';
+import type { CatId, PropKind, PropState } from './about-cats-rig';
 
 type Pair = [number, number];
 
@@ -752,29 +752,67 @@ export const moveExtent = (name: MoveName): readonly [number, number] => {
   return found;
 };
 
-/** Relative weights; play in place outweighs getting about, which is only by leaps. */
-export const WEIGHTS: Partial<Record<MoveName, number>> = {
-  look: 5,
-  lie: 4,
-  stalk: 2,
-  pounce: 5,
-  bigJump: 4,
-  hop: 6,
-  stretch: 5,
-  knead: 5,
-  toy: 6,
-  knock: 3,
-  belly: 4,
-  fly: 6,
-  post: 4,
-  box: 5,
-  yarn: 6,
-};
-
-/** Hela hides behind her card now and then. */
-export const HELA_WEIGHTS: Partial<Record<MoveName, number>> = {
-  ...WEIGHTS,
-  peek: 8,
+/*
+ * Relative weights per cat, so each reads as herself. Every play move stays
+ * possible for every cat, except peek, which is Hela's own: she hides behind her
+ * card. Sleep and wake come from the nap clock, not from these.
+ */
+export const CAT_WEIGHTS: Record<CatId, Partial<Record<MoveName, number>>> = {
+  /* The queen: watches, rests and grooms the blanket; rarely leaps. */
+  minerva: {
+    look: 12,
+    lie: 8,
+    stretch: 6,
+    knead: 6,
+    post: 5,
+    box: 5,
+    fly: 4,
+    toy: 3,
+    yarn: 3,
+    belly: 3,
+    knock: 3,
+    hop: 2,
+    pounce: 2,
+    bigJump: 2,
+    stalk: 1,
+  },
+  /* The conspirator: peeks, stalks and knocks the cup off. */
+  hela: {
+    peek: 9,
+    knock: 7,
+    stalk: 6,
+    pounce: 5,
+    look: 5,
+    box: 4,
+    fly: 4,
+    toy: 3,
+    yarn: 3,
+    hop: 3,
+    bigJump: 3,
+    post: 3,
+    knead: 3,
+    stretch: 3,
+    lie: 3,
+    belly: 2,
+  },
+  /* The baby: hops and chases every toy. */
+  rudra: {
+    hop: 9,
+    toy: 9,
+    yarn: 8,
+    fly: 7,
+    pounce: 5,
+    belly: 5,
+    bigJump: 4,
+    box: 4,
+    knead: 3,
+    post: 3,
+    stretch: 3,
+    look: 3,
+    lie: 2,
+    knock: 2,
+    stalk: 2,
+  },
 };
 
 /*
