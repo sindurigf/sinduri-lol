@@ -1,5 +1,5 @@
 import type { ImageMetadata } from 'astro';
-import { isoDate } from './post-date';
+import { isoDate } from './time';
 import { getImage } from 'astro:assets';
 import type { BlogPost } from './blog';
 import { postHref } from './paths';

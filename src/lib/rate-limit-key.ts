@@ -1,5 +1,5 @@
 import { errorMessage } from './errors';
-import { isoDate } from './post-date';
+import { isoDate } from './time';
 
 /*
  * IPv6 is keyed on the /64: one host usually owns all of it. Wider would group
