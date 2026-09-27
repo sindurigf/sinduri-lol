@@ -423,64 +423,70 @@ test.describe('About cats', () => {
   }
 
   for (const viewport of CARD_VIEWPORTS) {
-    test(`the card opens beside its cat and inside the screen at ${viewport.width}px`, async ({
-      browser,
-    }) => {
-      const context = await browser.newContext({ viewport });
-      const page = await context.newPage();
-      await gotoSettled(page, ROUTE);
-      for (const id of CATS) {
-        const button = catButton(page, id);
-        await page
-          .locator(`#cat-spot-${id}`)
-          .evaluate((node) => node.scrollIntoView({ block: 'center' }));
-        await button.focus();
-        await page.keyboard.press('Enter');
-        const dialog = page.getByRole('dialog', { name: NAMES[id] });
-        await expect(dialog).toBeVisible();
-        const found = await page.evaluate((catId) => {
-          const box = document
-            .querySelector('.cat-dialog')!
-            .getBoundingClientRect();
-          const spot = document.getElementById(`cat-spot-${catId}`)!;
-          const cat = spot
-            .querySelector('.cat-hit-area')!
-            .getBoundingClientRect();
-          const band = spot.getBoundingClientRect();
-          const width = document.documentElement.clientWidth;
-          const inside =
-            box.left >= 0 &&
-            box.top >= 0 &&
-            box.right <= width &&
-            box.bottom <= window.innerHeight;
-          /* Distance between the two boxes; 0 where they overlap. */
-          const beside = Math.max(
-            0,
-            box.left - cat.right,
-            cat.left - box.right,
+    test.describe(`at ${viewport.width}px`, () => {
+      test.use({ viewport });
+
+      test('the card opens beside its cat and inside the screen', async ({
+        page,
+      }) => {
+        const sideBySide = viewport.width >= SIDE_BY_SIDE_MIN;
+        await gotoSettled(page, ROUTE);
+        for (const id of CATS) {
+          const button = catButton(page, id);
+          await page
+            .locator(`#cat-spot-${id}`)
+            .evaluate((node) => node.scrollIntoView({ block: 'center' }));
+          await button.focus();
+          await page.keyboard.press('Enter');
+          const dialog = page.getByRole('dialog', { name: NAMES[id] });
+          await expect(dialog).toBeVisible();
+          const found = await page.evaluate((catId) => {
+            const box = document
+              .querySelector('.cat-dialog')!
+              .getBoundingClientRect();
+            const spot = document.getElementById(`cat-spot-${catId}`)!;
+            const cat = spot
+              .querySelector('.cat-hit-area')!
+              .getBoundingClientRect();
+            const band = spot.getBoundingClientRect();
+            const inside =
+              box.left >= 0 &&
+              box.top >= 0 &&
+              box.right <= document.documentElement.clientWidth &&
+              box.bottom <= window.innerHeight;
+            const overlaps =
+              box.left < cat.right &&
+              cat.left < box.right &&
+              box.top < cat.bottom &&
+              cat.top < box.bottom;
+            /* Distance between the two boxes; 0 where they overlap. */
+            const beside = Math.max(
+              0,
+              box.left - cat.right,
+              cat.left - box.right,
+            );
+            const aboveOrBelow = Math.max(
+              0,
+              box.top - band.bottom,
+              band.top - box.bottom,
+            );
+            return { inside, overlaps, beside, aboveOrBelow };
+          }, id);
+          expect(found.inside, `${NAMES[id]}'s card runs off the screen`).toBe(
+            true,
           );
-          const aboveOrBelow = Math.max(
-            0,
-            box.top - band.bottom,
-            band.top - box.bottom,
-          );
-          return { inside, beside, aboveOrBelow, width };
-        }, id);
-        expect(found.inside, `${NAMES[id]}'s card runs off the screen`).toBe(
-          true,
-        );
-        const gap =
-          viewport.width >= SIDE_BY_SIDE_MIN
-            ? found.beside
-            : found.aboveOrBelow;
-        expect(
-          gap,
-          `${NAMES[id]}'s card opens away from her`,
-        ).toBeLessThanOrEqual(CARD_NEAR);
-        await page.keyboard.press('Escape');
-        await expect(dialog).toBeHidden();
-      }
-      await context.close();
+          if (sideBySide)
+            expect(found.overlaps, `${NAMES[id]}'s card covers her`).toBe(
+              false,
+            );
+          expect(
+            sideBySide ? found.beside : found.aboveOrBelow,
+            `${NAMES[id]}'s card opens away from her`,
+          ).toBeLessThanOrEqual(CARD_NEAR);
+          await page.keyboard.press('Escape');
+          await expect(dialog).toBeHidden();
+        }
+      });
     });
   }
 
