@@ -5,19 +5,8 @@ Guntupalli, Open Source Enthusiast.
 
 ## Stack
 
-- [Astro](https://astro.build) 7, static output; `/contact/send/` renders on
-  demand in the Worker
-- [Vue](https://vuejs.org) 3 for two islands (the homepage canvas hero and the
-  About cats); plain modules for other scripts
-- [Tailwind CSS](https://tailwindcss.com) 4, tokens in `src/styles/global.css`
-- TypeScript, strict, checked with `astro check` and `vue-tsc`
-- Markdown content collections, rendered by Sätteri
-- Lexend, self-hosted through Fontsource
-- Cloudflare: Workers static assets, D1 (EU), Rate Limiting, Email Routing,
-  Workers Builds
-- [Playwright](https://playwright.dev) in Chromium, Firefox and WebKit with
-  [axe-core](https://github.com/dequelabs/axe-core) for WCAG 2.2 AA
-- Node.js from `.nvmrc`
+Astro, Vue islands, Tailwind CSS and TypeScript on Cloudflare Workers:
+[ARCHITECTURE.md](ARCHITECTURE.md#stack).
 
 ## Quick start
 
