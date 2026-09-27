@@ -1001,7 +1001,10 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   being aimed at never moves: a focused target that never moves suits keyboard
   and magnifier users.
 - A drawing may reach `MAX_OVERHANG` (the phone gutter) past its band's end,
-  never over text or a control (`src/lib/about-cats.ts`).
+  never over text or a control (`src/lib/about-cats.ts`). A cat about to lie
+  down near an end turns to face the band first.
+- Games too long for a band are skipped: at a 320px viewport the yarn and fly
+  games do not fit, and the cats play the others.
 - Each cat lives in a `.cat-perch` band above its card, sized by
   `--spacing-cat-band`, which no move may rise above
   (`tests/about-cats.spec.ts`).
