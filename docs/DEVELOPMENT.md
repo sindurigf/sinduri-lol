@@ -114,11 +114,15 @@ npm run test:webkit -- tests/reflow.spec.ts
 | `CLOUDFLARE_API_TOKEN`          | unset                  | Lets `check:live` count unsent notifications in D1       |
 | `CHECK_LIVE_SKIP_D1`            | unset                  | `1` skips that D1 count                                  |
 
-Each checkout gets its own pair. Set them to run two suites in one checkout:
+Each checkout gets its own pair. Set them when another process holds one:
 
 ```sh
 TEST_PORT=4331 TEST_WORKER_PORT=4332 npm run test:a11y
 ```
+
+Run one suite at a time per checkout: every suite's build rewrites `dist/`,
+and `test:worker` adds a fixture to `public/videos/` during its build. Run
+suites in parallel from separate worktrees.
 
 ## Project layout
 

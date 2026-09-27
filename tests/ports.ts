@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url';
 /*
  * Ports derived from the checkout path, so parallel worktrees never reach each
  * other's servers and one checkout gets the same pair every run.
- * `TEST_PORT` and `TEST_WORKER_PORT` override for two runs in one checkout.
+ * `TEST_PORT` and `TEST_WORKER_PORT` override a port something else holds.
+ * They do not make two suites safe in one checkout: both builds share dist/.
  */
 
 const PORT_MIN = 1024;
