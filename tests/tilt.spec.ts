@@ -1,5 +1,5 @@
 import { expect, test } from './test';
-import { gotoSettled, sweepTimeout } from './settle';
+import { gotoSettled } from './settle';
 import { ROUTES } from './routes';
 
 /*
@@ -10,10 +10,10 @@ import { ROUTES } from './routes';
 /* Every page tilts something (the footer's tiles); zero means the walk found nothing. */
 const MIN_TILTED_PER_ROUTE = 1;
 
-test('no tilted element is drawn as its own layer', async ({ page }) => {
-  test.setTimeout(sweepTimeout(ROUTES.length));
-
-  for (const route of ROUTES) {
+for (const route of ROUTES) {
+  test(`${route}: no tilted element is drawn as its own layer`, async ({
+    page,
+  }) => {
     await gotoSettled(page, route);
 
     const tilted = await page.evaluate(() =>
@@ -46,8 +46,8 @@ test('no tilted element is drawn as its own layer', async ({ page }) => {
         'visible',
       );
     }
-  }
-});
+  });
+}
 
 /*
  * Tilted text is capped at a sticker's one to three words: tilted sentences
@@ -55,10 +55,8 @@ test('no tilted element is drawn as its own layer', async ({ page }) => {
  */
 const MAX_TILTED_WORDS = 3;
 
-test('tilted text is a short label', async ({ page }) => {
-  test.setTimeout(sweepTimeout(ROUTES.length));
-
-  for (const route of ROUTES) {
+for (const route of ROUTES) {
+  test(`${route}: tilted text is a short label`, async ({ page }) => {
     await gotoSettled(page, route);
 
     const long = await page.evaluate((max) => {
@@ -91,5 +89,5 @@ test('tilted text is a short label', async ({ page }) => {
       long,
       `${route}: text longer than ${MAX_TILTED_WORDS} words is tilted`,
     ).toEqual([]);
-  }
-});
+  });
+}

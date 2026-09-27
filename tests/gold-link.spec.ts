@@ -126,26 +126,25 @@ test('a hovered gold link changes, reads, and keeps a visible underline', async 
       const where = `${route} ${state.selector} "${state.label}"`;
       marked += 1;
 
-      expect(
-        state.paint,
-        `${where} does not change under the pointer`,
-      ).not.toBe(rest.paint);
-      expect(state.onBehind, `${where} is unmeasurable`).not.toBeNull();
-      expect(
-        state.onBehind!,
-        `${where} is unreadable on its own fill`,
-      ).toBeGreaterThanOrEqual(AA_TEXT);
-      expect(state.underlined, `${where} loses its underline on hover`).toBe(
-        true,
-      );
-      expect(
-        state.underlineContrast,
-        `${where}: underline unmeasurable`,
-      ).not.toBeNull();
-      expect(
-        state.underlineContrast!,
-        `${where}: the underline against what lies under it`,
-      ).toBeGreaterThanOrEqual(NON_TEXT);
+      expect
+        .soft(state.paint, `${where} does not change under the pointer`)
+        .not.toBe(rest.paint);
+      expect.soft(state.onBehind, `${where} is unmeasurable`).not.toBeNull();
+      expect
+        .soft(state.onBehind!, `${where} is unreadable on its own fill`)
+        .toBeGreaterThanOrEqual(AA_TEXT);
+      expect
+        .soft(state.underlined, `${where} loses its underline on hover`)
+        .toBe(true);
+      expect
+        .soft(state.underlineContrast, `${where}: underline unmeasurable`)
+        .not.toBeNull();
+      expect
+        .soft(
+          state.underlineContrast!,
+          `${where}: the underline against what lies under it`,
+        )
+        .toBeGreaterThanOrEqual(NON_TEXT);
     }
   }
 
