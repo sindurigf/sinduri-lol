@@ -25,7 +25,6 @@ const SITEMAP_PATH = '/sitemap-index.xml';
 
 /* `/404` is dropped by the integration; the rest by src/lib/sitemap-filter.ts. */
 const EXCLUDED_ROUTES: string[] = ['/404', '/contact/sent', ...TAG_ROUTES];
-const EXCLUDED_ROUTE = EXCLUDED_ROUTES[0]!;
 
 /** Every `<loc>` in the built sitemap, as pathnames, sorted. */
 const sitemapPaths = (origin: string): string[] => {
@@ -183,19 +182,6 @@ test.describe('robots.txt and the sitemap', NODE, () => {
         )?.[1],
         `${route} is kept out of the sitemap but does not say noindex.`,
       ).toBe('noindex, follow');
-    }
-  });
-
-  test('the error page is not advertised', () => {
-    const origin = configuredSite();
-    const listed = sitemapPaths(origin);
-
-    // Guards @astrojs/sitemap's own status-code-page exclusion across upgrades.
-    for (const path of listed) {
-      expect(
-        path.replace(/\/$/, ''),
-        `the sitemap advertises ${path}; @astrojs/sitemap stopped dropping it.`,
-      ).not.toBe(EXCLUDED_ROUTE);
     }
   });
 });
