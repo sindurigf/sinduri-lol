@@ -592,9 +592,8 @@ test.describe('About cats', () => {
     await napControl(page, 'minerva').click();
     await expectMood(page, 'minerva', 'asleep', 'Minerva did not fall asleep');
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(STILL_WINDOW_MS);
+    await expectMood(page, 'minerva', 'hidden', 'Minerva is still on screen');
     await catButton(page, 'minerva').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(STILL_WINDOW_MS);
     await expectMood(page, 'minerva', 'asleep', 'Minerva woke off screen');
   });
 
@@ -833,7 +832,15 @@ test.describe('About cats', () => {
   test('the cats stop drawing once they are off screen', async ({ page }) => {
     await gotoSettled(page, ROUTE);
     await page.locator('#cat-spot-rudra').scrollIntoViewIfNeeded();
+    await expectMood(
+      page,
+      'rudra',
+      /^(playing|holding|asleep)$/,
+      'Rudra never came on screen',
+    );
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    for (const id of CATS)
+      await expectMood(page, id, 'hidden', `${NAMES[id]} is still on screen`);
     const writes = await page.evaluate(
       (ms) =>
         new Promise<number>((resolve) => {
