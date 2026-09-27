@@ -328,14 +328,19 @@ test(
   },
 );
 
-test('lying down and getting up each take 5 s or less (SC 2.2.2)', NODE, () => {
-  for (const name of ['sleep', 'wake'] as const) {
-    expect(
-      duration(MOVES[name]()),
-      `${name} keeps moving past 5 s, so a stopped or napping cat does not settle`,
-    ).toBeLessThanOrEqual(SC_2_2_2_MS);
-  }
-});
+test(
+  'lying down and getting up each take 5 s or less, a turn to face the band included (SC 2.2.2)',
+  NODE,
+  () => {
+    for (const name of ['sleep', 'wake'] as const) {
+      const turned = withTurn(MOVES[name](), { ...pose('sit'), face: -1 });
+      expect(
+        duration(turned),
+        `${name} keeps moving past 5 s, so a stopped or napping cat does not settle`,
+      ).toBeLessThanOrEqual(SC_2_2_2_MS);
+    }
+  },
+);
 
 test.describe('About cats', () => {
   test('each cat is a named button that opens its photo in a dialog, Close first, and returns focus', async ({

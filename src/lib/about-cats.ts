@@ -26,6 +26,7 @@ import {
 import {
   clamp,
   createProp,
+  reachOf,
   renderCat,
   settleTail,
   type CatRig,
@@ -346,16 +347,19 @@ export const createColony = (
   };
 
   /* Asleep from the first frame, so the control offers to wake it while it lies down. */
+  /** Faces the band's middle first if its head, lying down, would reach past the band's end. */
+  const sleepFacing = (cat: CatState): number => {
+    const facing = Math.sign(cat.pose.face) || 1;
+    const [left, right] = reachOf(pose('sleep', { face: facing }));
+    const past =
+      cat.pose.x + left < -MAX_OVERHANG ||
+      cat.pose.x + right > cat.width + MAX_OVERHANG;
+    return past ? -facing : facing;
+  };
+
   const lieDown = (cat: CatState, now: number): void => {
     setAsleep(cat, true);
-    play(
-      cat,
-      MOVES.sleep(),
-      now,
-      Math.sign(cat.pose.face) || 1,
-      undefined,
-      true,
-    );
+    play(cat, MOVES.sleep(), now, sleepFacing(cat), undefined, true);
   };
 
   const planFor = (cat: CatState, name: MoveName) =>
