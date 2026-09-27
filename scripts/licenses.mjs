@@ -1,7 +1,7 @@
 /*
  * Writes /licenses.txt from what the build ships; bundling strips MIT notices.
  * Reads chunks, client/prerender assets, CSS `/*!` banners, the island script,
- * public/vendor/ via src/licenses/. Vite's `build.license` emits nothing under Astro 7.3.2.
+ * public/vendor/ via src/licenses/. Vite's `build.license` emits nothing under Astro 7.
  */
 import {
   existsSync,
