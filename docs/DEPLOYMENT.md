@@ -43,7 +43,8 @@ npx wrangler d1 migrations apply sinduri-lol --remote
   `migrations/`: the Worker reads the new schema as soon as it is live.
 - A daily cron deletes messages older than the retention `/privacy` states,
   then resends any notification email that failed. `npm run check:live` counts
-  messages still waiting (needs `npx wrangler login`).
+  messages still waiting (needs `npx wrangler login`, or the
+  [token and account ID](DEVELOPMENT.md#other-notes)).
 
 ## Contact form email
 

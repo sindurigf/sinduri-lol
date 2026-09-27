@@ -8,7 +8,7 @@
 - Docker for `test:webkit` and `check:pdf`.
 - No Cloudflare account or secrets for `dev`, `build`, `check` or any test
   suite. Only `check:live`'s D1 count needs `npx wrangler login` or
-  `CLOUDFLARE_API_TOKEN`.
+  `CLOUDFLARE_API_TOKEN` with `CLOUDFLARE_ACCOUNT_ID`.
 - Python 3 with pikepdf for `publish:cv` and `publish:talk`, plus
   poppler-utils for `publish:cv`: `apt install python3-pikepdf poppler-utils`.
 
@@ -115,6 +115,7 @@ npm run test:webkit -- tests/reflow.spec.ts
 | `TEST_PORT`, `TEST_WORKER_PORT` | from the checkout path | Ports for `test:a11y`, `test:worker`; must be 1024-65535 |
 | `WEBKIT`                        | unset                  | `1` adds the WebKit project outside CI                   |
 | `CLOUDFLARE_API_TOKEN`          | unset                  | Lets `check:live` count unsent notifications in D1       |
+| `CLOUDFLARE_ACCOUNT_ID`         | unset                  | Needed with the token: a D1-only token cannot look it up |
 | `CHECK_LIVE_SKIP_D1`            | unset                  | `1` skips that D1 count                                  |
 
 Each checkout gets its own pair. Set them when another process holds one:
