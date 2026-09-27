@@ -22,8 +22,7 @@ export const getSortedPosts = async (): Promise<BlogPost[]> =>
 export const getFeaturedPosts = async (limit: number): Promise<BlogPost[]> =>
   (await getSortedPosts()).filter((post) => post.data.featured).slice(0, limit);
 
-/** A category without a published post has no page and no link. */
-/** In `BLOG_CATEGORIES` order. */
+/** Categories with a published post, in `BLOG_CATEGORIES` order; others have no page or link. */
 export const getCategoriesWithPosts = async (): Promise<BlogCategory[]> => {
   const used = new Set(
     (await getSortedPosts()).map((post) => post.data.category),
