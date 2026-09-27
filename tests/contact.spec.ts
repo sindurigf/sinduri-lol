@@ -279,8 +279,8 @@ test.describe('the contact endpoint', () => {
     ).toContain('problems with this form');
     expect(
       html,
-      'the page title does not say there is an error (SC 3.3.1)',
-    ).toMatch(/<title>Error: /);
+      'the page title does not say there is an error to fix (SC 3.3.1)',
+    ).toMatch(/<title>Error: Check your message /);
 
     expectTypedValuesKept(html, typed);
 
@@ -368,12 +368,19 @@ test.describe('the contact endpoint', () => {
   });
 
   /* A not-sent answer uses the autofocused error summary, which is what announces it. */
-  const expectNotSentSummary = (html: string) => {
+  const expectNotSentPage = (html: string) => {
     expect(
       html,
       'no focused error summary saying the message was not sent',
     ).toMatch(
       /<div class="error-summary"[^>]*autofocus[^>]*>\s*<h2[^>]*>\s*Your message was not sent\s*<\/h2>/,
+    );
+    expect(
+      html,
+      'the page title does not say the message was not sent (SC 2.4.2)',
+    ).toMatch(/<title>Error: Your message was not sent /);
+    expect(html, 'the h1 does not say the message was not sent').toMatch(
+      /<h1[^>]*>\s*Your message was not sent\s*<\/h1>/,
     );
   };
 
@@ -409,7 +416,7 @@ test.describe('the contact endpoint', () => {
       `no 429 after ${RATE_LIMIT_ATTEMPTS} submissions from one address.`,
     ).toBeDefined();
     expectTypedValuesKept(html!, typed);
-    expectNotSentSummary(html!);
+    expectNotSentPage(html!);
   });
 
   /* D1 failure induced by moving the table aside for one request. */
@@ -440,7 +447,7 @@ test.describe('the contact endpoint', () => {
       const html = await response.text();
       expect(html).toContain('Your message could not be saved');
       expectTypedValuesKept(html, typed);
-      expectNotSentSummary(html);
+      expectNotSentPage(html);
     } finally {
       localD1(`ALTER TABLE ${MESSAGES_ASIDE} RENAME TO messages`);
     }
