@@ -1,8 +1,11 @@
 # Manual accessibility testing
 
 The checks a machine cannot decide, for every route in `tests/routes.ts`.
-Automated coverage is in [ACCESSIBILITY.md](../ACCESSIBILITY.md) §6. Record
-results in its §7.
+Automated coverage is in [ACCESSIBILITY.md](../ACCESSIBILITY.md) §6.
+
+Results: filled blanks stay in this file. A passed check goes in
+ACCESSIBILITY.md [§6 Manual](../ACCESSIBILITY.md#manual); a failed or
+unreached check goes in its [§7 Known gaps](../ACCESSIBILITY.md#7-known-gaps).
 
 ## Setup
 
@@ -364,7 +367,7 @@ Not run: needs Windows and Apple hardware. Open in ACCESSIBILITY.md §7 gap 2.
 | ----------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Every filled blank      | This file                                                                                                   |
 | The 6.4 answers         | STYLEGUIDE.md [Uppercase](STYLEGUIDE.md#uppercase), ACCESSIBILITY.md §6 and §7 gap 2                        |
-| Everything else, passed | Narrow ACCESSIBILITY.md §7 gap 2, naming browser and versions                                               |
+| Everything else, passed | ACCESSIBILITY.md §6 Manual; narrow §7 gap 2, naming browser and versions                                    |
 | A failed check          | Fix it, add a test if machine-detectable, otherwise a new gap in ACCESSIBILITY.md §7 quoting what was heard |
 | A check not reached     | Leave the blank empty and say so in ACCESSIBILITY.md §7                                                     |
 
@@ -561,7 +564,7 @@ From the Accessible Astro checklist and
 
 `public/sinduri-guntupalli-cv.pdf` (from `/career`) and
 `public/talks/open-source-is-not-just-code.pdf` (from
-`/blog/open-source-is-not-just-code`). Record results in ACCESSIBILITY.md §7.
+`/blog/open-source-is-not-just-code`).
 
 1. Run `npm run check:pdf` (or `npm run check:pdf -- <path>`) first: veraPDF,
    PDF/UA-1, in Docker. Exit 0 pass, 1 fail, 2 could not run. Fix what it
