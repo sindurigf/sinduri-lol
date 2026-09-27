@@ -60,6 +60,7 @@ const warmExtents = (names: readonly (typeof MOVE_NAMES)[number][]): void => {
 
 const mounted = ref(false);
 const moods = ref<Partial<Record<CatId, CatMood>>>({});
+const sleeping = ref<Partial<Record<CatId, boolean>>>({});
 const openId = ref<CatId | ''>('');
 const dialog = useTemplateRef<HTMLDialogElement>('dialog');
 const card = useTemplateRef<HTMLDivElement>('card');
@@ -80,7 +81,7 @@ const spots = (): HTMLElement[] =>
     .map((cat) => document.getElementById(`cat-spot-${cat.id}`))
     .filter((node): node is HTMLElement => node !== null);
 
-const asleep = (id: CatId): boolean => moods.value[id] === 'asleep';
+const asleep = (id: CatId): boolean => sleeping.value[id] === true;
 
 const napLabel = (cat: CatInfo): string =>
   asleep(cat.id) ? `Wake ${cat.name}` : `Put ${cat.name} to sleep`;
@@ -248,8 +249,9 @@ onMounted(async () => {
     const rig = createCatRig(svg, cat.id);
     catSpots.push({ id: cat.id, rig, ...PLACES[cat.id] });
   }
-  colony = createColony(catSpots, (id, mood) => {
+  colony = createColony(catSpots, (id, mood, isAsleep) => {
     moods.value = { ...moods.value, [id]: mood };
+    sleeping.value = { ...sleeping.value, [id]: isAsleep };
   });
   layout();
   if (reducedMotion.value) colony.still();
@@ -288,7 +290,7 @@ onBeforeUnmount(() => {
         type="button"
         class="cat-button"
         :data-cat="cat.id"
-        :data-cat-state="moods[cat.id] ?? 'playing'"
+        :data-cat-state="moods[cat.id] ?? 'hidden'"
         aria-haspopup="dialog"
         @click="onCatClick(cat.id)"
         @focus="onFocus(cat.id)"

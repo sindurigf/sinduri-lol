@@ -95,7 +95,8 @@ export interface CatSpot {
 /** Why a cat holds still: pointed at, keyboard-focused, or its dialog is open. */
 export type Hold = 'pointer' | 'focus' | 'card';
 
-export type CatMood = 'playing' | 'holding' | 'asleep';
+/** 'hidden' while the colony does not step the cat: off screen, not yet seen, or reduced motion. */
+export type CatMood = 'hidden' | 'playing' | 'holding' | 'asleep';
 
 interface Playing {
   move: Move;
@@ -121,6 +122,7 @@ interface CatState extends CatSpot {
   napAt: number;
   holds: Set<Hold>;
   mood: CatMood;
+  reportedAsleep: boolean;
   /** When its band left the screen; it is not stepped and its play clock stops meanwhile. */
   hiddenAt?: number;
   nextBlink: number;
@@ -193,7 +195,7 @@ export const fitsTrack = (
 
 export const createColony = (
   spots: CatSpot[],
-  onMoodChange: (id: CatSpot['id'], mood: CatMood) => void,
+  onMoodChange: (id: CatSpot['id'], mood: CatMood, asleep: boolean) => void,
 ): Colony => {
   const cats: CatState[] = spots.map((spot) => ({
     ...spot,
@@ -205,7 +207,8 @@ export const createColony = (
     asleep: false,
     napAt: Infinity,
     holds: new Set<Hold>(),
-    mood: 'playing' as CatMood,
+    mood: 'hidden' as CatMood,
+    reportedAsleep: false,
     hiddenAt: 0,
     nextBlink: 0,
     blinkUntil: 0,
@@ -219,15 +222,20 @@ export const createColony = (
   const find = (id: CatSpot['id']): CatState | undefined =>
     cats.find((cat) => cat.id === id);
 
+  /* Asleep is reported on its own too: a hidden cat can be asleep, and its control says so. */
   const updateMood = (cat: CatState): void => {
-    const mood: CatMood = cat.asleep
-      ? 'asleep'
-      : cat.holds.size > 0
-        ? 'holding'
-        : 'playing';
-    if (mood === cat.mood) return;
+    const mood: CatMood =
+      cat.hiddenAt !== undefined
+        ? 'hidden'
+        : cat.asleep
+          ? 'asleep'
+          : cat.holds.size > 0
+            ? 'holding'
+            : 'playing';
+    if (mood === cat.mood && cat.asleep === cat.reportedAsleep) return;
     cat.mood = mood;
-    onMoodChange(cat.id, mood);
+    cat.reportedAsleep = cat.asleep;
+    onMoodChange(cat.id, mood, cat.asleep);
   };
 
   const setAsleep = (cat: CatState, asleep: boolean): void => {
@@ -515,11 +523,13 @@ export const createColony = (
       if (!cat) return;
       if (!on) {
         cat.hiddenAt ??= now;
+        updateMood(cat);
         return;
       }
       const hiddenAt = cat.hiddenAt;
       if (hiddenAt === undefined) return;
       cat.hiddenAt = undefined;
+      updateMood(cat);
       if (cat.napAt === Infinity) {
         wakeCat(cat, now);
         return;
@@ -554,6 +564,7 @@ export const createColony = (
           face: Math.sign(cat.pose.face) || cat.facing,
         });
         cat.hiddenAt ??= now;
+        updateMood(cat);
         settleTail(cat.rig);
         draw(cat, now);
       }
