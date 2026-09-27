@@ -145,6 +145,7 @@ suites in parallel from separate worktrees.
 src/
   assets/           Images, processed by the build
   components/       Astro components; ui/ holds the Vue islands
+  composables/      Vue composables shared by the islands
   content/blog/     Blog posts as Markdown
   content/talks/    One Slidev Markdown deck per talk
   content.config.ts Content collection schema
