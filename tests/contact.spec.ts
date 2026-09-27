@@ -344,8 +344,11 @@ test.describe('the contact endpoint', () => {
     request,
     baseURL,
   }) => {
-    /* Cloudflare sets CF-Connecting-IP at the edge; locally it is honoured as sent. */
-    const address = `203.0.113.${Math.floor(Math.random() * 254) + 1}`;
+    /*
+     * Cloudflare sets CF-Connecting-IP at the edge; locally it is honoured as
+     * sent. 198.18.0.0/15 stays clear of the browser tests' TEST-NET-3 address.
+     */
+    const address = `198.18.0.${Math.floor(Math.random() * 254) + 1}`;
     const headers = { ...sameOrigin(baseURL!), 'CF-Connecting-IP': address };
 
     const statuses: number[] = [];
@@ -817,6 +820,11 @@ test.describe('the contact error pages in a browser', () => {
       email: 'not-an-address',
       message: 'too short',
     });
+    await expect(
+      page.getByText(/problems? with this form/),
+      'the submission was not rejected as invalid, so the 422 page was never scanned',
+    ).toBeVisible();
+    await expect(page).toHaveTitle(/^Error: Check your message /);
     await expectSummaryFocusedAndClean(page, 'rejected-submission');
     await expectEveryImageLoaded(page, 'rejected-submission');
   });
