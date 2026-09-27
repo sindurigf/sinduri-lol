@@ -54,8 +54,8 @@ const SETTLE_MS = 3000;
 
 /* Several moves, each followed by a pause of 1 to 3 s (PAUSE_MS in about-cats.ts). */
 const PAUSES_WINDOW_MS = 8000;
-/* About one per pause: the frame that finds nothing to draw and puts the loop to sleep. */
-const MAX_EMPTY_FRAMES = 8;
+/* At least one per pause, with room for CI load; running through pauses costs 55 to 110. */
+const MAX_EMPTY_FRAMES = 16;
 
 /** Lying down plays out before the name changes; the longest move is well under this. */
 const NAP_TIMEOUT_MS = 10_000;
