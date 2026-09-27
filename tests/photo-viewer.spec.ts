@@ -80,7 +80,7 @@ test.describe('the photo viewer', () => {
   });
 
   // SC 4.1.3: stepping announces the caption, not only "4 of 12".
-  test('the caption is announced when the photo changes', async ({ page }) => {
+  test('the caption is a polite live region', async ({ page }) => {
     await gotoSettled(page, ROUTE);
     await page.locator(`${STRIP} a[data-photo]`).first().click();
     await expect(
