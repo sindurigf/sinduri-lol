@@ -462,6 +462,25 @@ const rotateAbout = (q: Point, c: Point, degrees: number): Point => {
 const zzAt = (p: Pose, head: Point): Point =>
   pt(p.face * (head.x + ZZ_AHEAD), head.y - ZZ_ABOVE + ZZ_RISE * (1 - p.zz));
 
+type Paw = 'fN' | 'fF' | 'hN' | 'hF';
+
+/** Each leg's hip or shoulder, knee and paw, as drawn: a paw its leg cannot reach stops short. */
+const legBones = (p: Pose): Record<Paw, [Point, Point, Point]> => {
+  const { centre, length, half, at } = skeleton(p);
+  const front = at(length - 3, -half * 0.3);
+  const hind = at(3, -half * 0.3);
+  const bone = (from: Point, k: Paw, sign: number): [Point, Point, Point] => {
+    const target = pt(centre.x + p[k][0], centre.y + p[k][1]);
+    return [from, ...ik(from, target, sign, k[0] === 'f' ? p.fl : p.hl)];
+  };
+  return {
+    fN: bone(front, 'fN', 1),
+    fF: bone(pt(front.x - 3, front.y), 'fF', 1),
+    hN: bone(hind, 'hN', -1),
+    hF: bone(pt(hind.x + 3, hind.y), 'hF', -1),
+  };
+};
+
 /** Past its highest point a pose's drawing reaches this much more, kept as the band's headroom rule. */
 const STROKE_REACH = EDGE + LEG_W / 2;
 /** Half the widest edge stroke, a leg's: how far a drawing reaches past a point sideways. */
@@ -492,9 +511,7 @@ const outline = (p: Pose): Point[] => {
     headPoint(pt(HEAD_RX, 0)),
     headPoint(pt(-HEAD_RX, 0)),
     ...ears.map(headPoint),
-    ...(['fN', 'fF', 'hN', 'hF'] as const).map((k) =>
-      pt(centre.x + p[k][0], centre.y + p[k][1]),
-    ),
+    ...Object.values(legBones(p)).map(([, , end]) => end),
   ];
   let q = at(-4, 0);
   for (const angle of tailTargets(p, 0)) {
@@ -545,24 +562,12 @@ export const renderCat = (
   ]);
   rig.bodyClip.setAttribute('d', body);
 
-  const paw = (k: 'fN' | 'fF' | 'hN' | 'hF'): Point =>
-    pt(centre.x + p[k][0], centre.y + p[k][1]);
-  const leg = (
-    from: Point,
-    k: 'fN' | 'fF' | 'hN' | 'hF',
-    sign: number,
-  ): string => {
-    const [joint, end] = ik(from, paw(k), sign, k[0] === 'f' ? p.fl : p.hl);
+  const bones = legBones(p);
+  const leg = (k: Paw): string => {
+    const [from, joint, end] = bones[k];
     return `M${f(from.x)} ${f(from.y)}L${f(joint.x)} ${f(joint.y)}L${f(end.x)} ${f(end.y)}`;
   };
-  const front = at(length - 3, -half * 0.3);
-  const hind = at(3, -half * 0.3);
-  const legs = {
-    fN: leg(front, 'fN', 1),
-    fF: leg(pt(front.x - 3, front.y), 'fF', 1),
-    hN: leg(hind, 'hN', -1),
-    hF: leg(pt(hind.x + 3, hind.y), 'hF', -1),
-  };
+  const legs = { fN: leg('fN'), fF: leg('fF'), hN: leg('hN'), hF: leg('hF') };
 
   const targets = tailTargets(p, now / 1000);
   stepTail(rig, targets, now);
