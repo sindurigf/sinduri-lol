@@ -315,6 +315,7 @@ const blinkAt = (at: number): Mod =>
   between(at, at + 160, (p) => {
     p.eyes = 0;
   });
+/** A jump's rise and fall; it ends with its landing step, so the paws touch down as the arc does. */
 const arc = (from: number, to: number, height: number): Mod =>
   between(from, to, (p, _s, k) => {
     p.y += Math.sin(Math.PI * k) * height;
@@ -440,7 +441,7 @@ export const MOVES = {
         p.tw = 4;
       }),
       wiggle(4800, 5500),
-      arc(5640, 6040, POUNCE_HEIGHT),
+      arc(5640, 6190, POUNCE_HEIGHT),
     ],
   }),
   pounce: (): Move => ({
@@ -453,7 +454,7 @@ export const MOVES = {
       step(280, 'crouch', { x: 62 }, 'back'),
       step(600, 'sit', { x: 62 }),
     ],
-    mods: [wiggle(400, 1300), arc(1440, 1840, POUNCE_HEIGHT)],
+    mods: [wiggle(400, 1300), arc(1440, 1990, POUNCE_HEIGHT)],
   }),
   bigJump: (): Move => ({
     steps: [
@@ -631,17 +632,17 @@ export const MOVES = {
         p.hr = -18 + 14 * Math.sin(s / 260);
       }),
       wiggle(1200, 1500),
-      arc(1620, 1970, FLY_HOP_HEIGHT),
+      arc(1620, 2120, FLY_HOP_HEIGHT),
       walking(2820, 3820, 0.6),
       between(2820, 4420, (p) => {
         p.tw = 5;
       }),
       wiggle(3820, 4420),
-      arc(4560, 4910, POUNCE_HEIGHT),
+      arc(4560, 5060, POUNCE_HEIGHT),
       wiggle(6640, 6940),
-      arc(7060, 7410, FLY_HOP_HEIGHT),
+      arc(7060, 7560, FLY_HOP_HEIGHT),
       wiggle(7560, 7910),
-      arc(8070, 8590, LEAP_HEIGHT),
+      arc(8070, 8740, LEAP_HEIGHT),
     ],
     prop: 'fly',
     propAt: (t) => {
@@ -667,7 +668,7 @@ export const MOVES = {
       step(140, 'crouch', { x: 16, sq: 0.86 }, 'out'),
       step(400, 'sit', { x: 16 }),
     ],
-    mods: [arc(440, 880, HOP_HEIGHT)],
+    mods: [arc(440, 1020, HOP_HEIGHT)],
   }),
   post: (): Move => ({
     /* A long scratch up a tall post, paws high, then a look at the work. */
@@ -702,7 +703,7 @@ export const MOVES = {
       step(200, 'crouch', { x: 134, sq: 0.85 }, 'out'),
       step(500, 'sit', { x: 134 }),
     ],
-    mods: [arc(540, 960, 26), arc(3520, 3940, 26)],
+    mods: [arc(540, 1160, 26), arc(3520, 4140, 26)],
     prop: 'box',
     /* A snug box under the resting cat: head and back show over the low rim. */
     propAt: (t) => ({
@@ -736,10 +737,10 @@ export const MOVES = {
     mods: [
       walking(1000, 3400),
       wiggle(3400, 3700),
-      arc(3840, 4140, YARN_BOUND_HEIGHT),
+      arc(3840, 4320, YARN_BOUND_HEIGHT),
       walking(4870, 6370),
       wiggle(6370, 6620),
-      arc(6760, 7040, YARN_BOUND_HEIGHT),
+      arc(6760, 7220, YARN_BOUND_HEIGHT),
       between(7920, 9420, (p, s) => {
         p.hN[0] += 6 * Math.sin(s / 60);
         p.hF[0] -= 6 * Math.sin(s / 60);
