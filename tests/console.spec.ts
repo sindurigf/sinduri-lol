@@ -17,8 +17,12 @@ const LIVE_ORIGIN = process.env.LIVE_ORIGIN?.replace(/\/$/, '');
 test.use({ navigationTimeout: 15_000 });
 
 test.describe('the browser console', () => {
-  const policy = usePolicyServer();
-  const originOf = (): string => LIVE_ORIGIN ?? policy().origin;
+  /* A live run has no build, so no _headers for the policy server to read. */
+  const originOf = ((): (() => string) => {
+    if (LIVE_ORIGIN) return () => LIVE_ORIGIN;
+    const policy = usePolicyServer();
+    return () => policy().origin;
+  })();
 
   for (const route of ROUTES) {
     test(`${route} loads without errors`, async ({ page }) => {
