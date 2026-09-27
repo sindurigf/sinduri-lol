@@ -157,6 +157,51 @@ test.describe('the talk slideshow', () => {
     await expect(visible(page)).toHaveId('slide-3');
   });
 
+  test('Page Up scrolls a slide taller than the screen back to its start before it turns', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 305, height: 400 });
+    await open(page, '#slide-2');
+    await page.evaluate(() =>
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'instant',
+      }),
+    );
+    /* Hidden above the screen or under the sticky header, which scroll-padding-top clears. */
+    const startHidden = () =>
+      page.evaluate(
+        () =>
+          document
+            .querySelector('.slide[data-current]')!
+            .getBoundingClientRect().top <
+          (parseFloat(
+            getComputedStyle(document.documentElement).scrollPaddingTop,
+          ) || 0),
+      );
+    expect(
+      await startHidden(),
+      'the start of slide 2 is in view, so this measures nothing',
+    ).toBe(true);
+    for (
+      let press = 0;
+      press < MAX_PAGE_PRESSES && (await startHidden());
+      press++
+    ) {
+      await page.keyboard.press('PageUp');
+      await expect(
+        visible(page),
+        'turned before its start was in view',
+      ).toHaveId('slide-2');
+    }
+    expect(
+      await startHidden(),
+      'Page Up never reached the start of slide 2',
+    ).toBe(false);
+    await page.keyboard.press('PageUp');
+    await expect(visible(page)).toHaveId('slide-1');
+  });
+
   test('a link to one slide opens on it', async ({ page }) => {
     await open(page, '#slide-11');
     await expect(visible(page)).toHaveId('slide-11');
