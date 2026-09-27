@@ -49,6 +49,9 @@ const STRIPES = [0.3, 0.5, 0.7];
 const STRING_TOP = -100;
 /** The scratching post's height in px, cap aside; with it, it stays under the band. */
 export const POST_HEIGHT = 92;
+/** A small, snug box: a resting cat's head and back show over its rim. */
+const BOX_HALF = 22;
+const BOX_HEIGHT = 15;
 /** A small and a larger "z", drawn from the lower left of the small one. */
 const ZZ = 'M0 0h4l-4 5h4M6 -9h6l-6 7h6';
 const ZZ_HEIGHT = 14;
@@ -738,7 +741,7 @@ export const createProp = (
     el(
       'path',
       {
-        d: 'M-30 -22l-8 -9M30 -22l8 -9',
+        d: `M${-BOX_HALF} ${-BOX_HEIGHT}l-7 -7M${BOX_HALF} ${-BOX_HEIGHT}l7 -7`,
         class: 'cat-prop-string',
         'stroke-width': 3,
         'stroke-linecap': 'round',
@@ -748,10 +751,10 @@ export const createProp = (
     el(
       'rect',
       {
-        x: -30,
-        y: -22,
-        width: 60,
-        height: 22,
+        x: -BOX_HALF,
+        y: -BOX_HEIGHT,
+        width: 2 * BOX_HALF,
+        height: BOX_HEIGHT,
         ...edge,
         class: 'cat-prop-solid cat-prop-card',
       },

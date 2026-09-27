@@ -365,6 +365,8 @@ export const JUMP_HEIGHT = 39;
 const POUNCE_HEIGHT = 34;
 const LEAP_HEIGHT = 27;
 const HOP_HEIGHT = 30;
+/** The scratching post stands this far ahead of the cat, clear of its chest. */
+const POST_GAP = 34;
 const YARN_BOUND_HEIGHT = 22;
 /* The yarn chase: a trot of 120px in 2.2 s, then a pounce. */
 const YARN_TROT = 120;
@@ -599,8 +601,8 @@ export const MOVES = {
   post: (): Move => ({
     /* A long scratch up a tall post, paws high, then a look at the work. */
     steps: [
-      step(600, 'rear', { fN: [14, -24], fF: [13, -14], hr: 0 }),
-      step(3000, 'rear', { fN: [14, -24], fF: [13, -14], hr: 0 }),
+      step(600, 'rear', { fN: [21, -24], fF: [19, -14], hr: 0 }),
+      step(3000, 'rear', { fN: [21, -24], fF: [19, -14], hr: 0 }),
       step(600, 'sit', { hr: -14 }),
       step(500, 'sit'),
     ],
@@ -612,7 +614,7 @@ export const MOVES = {
     ],
     prop: 'post',
     propAt: (t) => ({
-      ...still('post', 22),
+      ...still('post', POST_GAP),
       o: Math.min(1, t / 300, Math.max(0, (4700 - t) / 300)),
     }),
   }),
@@ -621,20 +623,20 @@ export const MOVES = {
       step(400, 'crouch'),
       step(140, 'crouch', { x: -2, sq: 0.9 }, 'in'),
       step(420, 'air', { x: 60 }, 'linear'),
-      step(200, 'crouch', { x: 66, y: -8 }, 'out'),
-      step(300, 'sit', { x: 66, y: -8 }),
-      step(1300, 'sit', { x: 66, y: -8, hr: -8 }),
-      step(160, 'crouch', { x: 66, y: -6 }, 'in'),
+      step(200, 'crouch', { x: 66, y: -5 }, 'out'),
+      step(400, 'loaf', { x: 66, y: -5 }),
+      step(1800, 'loaf', { x: 66, y: -5, hr: -6 }),
+      step(160, 'crouch', { x: 66, y: -5 }, 'in'),
       step(420, 'air', { x: 130 }, 'linear'),
       step(200, 'crouch', { x: 134, sq: 0.85 }, 'out'),
       step(500, 'sit', { x: 134 }),
     ],
-    mods: [arc(540, 960, 26), arc(2500, 2920, 26)],
+    mods: [arc(540, 960, 26), arc(3520, 3940, 26)],
     prop: 'box',
-    /* Under the sitting cat, whose head and chest show over the rim. */
+    /* A snug box under the resting cat: head and back show over the low rim. */
     propAt: (t) => ({
-      ...still('box', 72),
-      o: Math.min(1, t / 300, Math.max(0, (4040 - t) / 300)),
+      ...still('box', 70),
+      o: Math.min(1, t / 300, Math.max(0, (4640 - t) / 300)),
     }),
   }),
   /*
@@ -704,6 +706,36 @@ export const MOVES = {
 } satisfies Record<string, () => Move>;
 
 export type MoveName = keyof typeof MOVES;
+
+/** Small play moves run this much slower than drawn, so each one can be watched. */
+const SLOW_PLAY = 1.5;
+const SLOW_MOVES: ReadonlySet<MoveName> = new Set([
+  'knead',
+  'toy',
+  'peek',
+  'knock',
+  'box',
+  'yarn',
+]);
+
+/** A move at `factor` of its speed, modifiers and prop included. */
+const slower = (move: Move, factor: number): Move => {
+  const propAt = move.propAt;
+  return {
+    ...move,
+    steps: move.steps.map((s) => ({ ...s, ms: s.ms * factor })),
+    mods: move.mods.map((mod) => ({
+      from: mod.from * factor,
+      to: mod.to * factor,
+      apply: (p, s, k) => mod.apply(p, s / factor, k),
+    })),
+    propAt: propAt && ((t) => propAt(t / factor)),
+  };
+};
+
+/** The move a cat plays: small play moves slowed down. */
+export const moveToPlay = (name: MoveName): Move =>
+  SLOW_MOVES.has(name) ? slower(MOVES[name](), SLOW_PLAY) : MOVES[name]();
 
 /** Relative weights; play in place outweighs getting about, which is only by leaps. */
 export const WEIGHTS: Partial<Record<MoveName, number>> = {
