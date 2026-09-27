@@ -122,6 +122,24 @@ test.describe('the photo strip', () => {
       .toBeGreaterThan(start);
   });
 
+  test('under reduced motion an arrow moves the strip at once, not smoothly', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await gotoSettled(page, ROUTE);
+    const moved = await page
+      .getByRole('button', { name: 'Scroll photos right' })
+      .evaluate((button) => {
+        const strip = document.getElementById(
+          button.getAttribute('aria-controls') ?? '',
+        )!;
+        const start = strip.scrollLeft;
+        (button as HTMLButtonElement).click();
+        return strip.scrollLeft - start;
+      });
+    expect(moved, 'the strip animates under reduced motion').toBeGreaterThan(0);
+  });
+
   test('an arrow that cannot scroll further says it is unavailable', async ({
     page,
   }) => {
