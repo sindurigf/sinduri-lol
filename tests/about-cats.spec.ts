@@ -10,7 +10,7 @@ import {
   poseAt,
   type Move,
 } from '../src/lib/about-cats-moves';
-import { highestPoint } from '../src/lib/about-cats-rig';
+import { POST_HEIGHT, highestPoint } from '../src/lib/about-cats-rig';
 
 /**
  * The About cats (src/components/ui/AboutCats.vue): each cat opens its photo,
@@ -94,7 +94,7 @@ const pointAt = async (page: Page, id: (typeof CATS)[number]) => {
     const before = await place(page, id);
     await page.waitForTimeout(STILL_WINDOW_MS);
     expect(await place(page, id)).toBe(before);
-  }, `${NAMES[id]} kept walking under the pointer`).toPass({
+  }, `${NAMES[id]} kept moving under the pointer`).toPass({
     timeout: NAP_TIMEOUT_MS,
   });
   return area;
@@ -112,6 +112,9 @@ const expectStill = async (
 
 /** Motion that stops within this needs no pause control. */
 const SC_2_2_2_MS = 5000;
+
+/** The post's cap and half its edge stroke above POST_HEIGHT. */
+const POST_CAP = 6;
 
 /** A frame at 60fps: fine enough to catch the top of every arc. */
 const FRAME_MS = 1000 / 60;
@@ -144,7 +147,10 @@ test('no move lifts any part of a cat above its band', NODE, () => {
     if (move.propAt) {
       for (let t = 0; t <= duration(move); t += FRAME_MS) {
         const prop = move.propAt(t);
-        if (prop.o > 0 && -prop.y > band) {
+        /* The post stands up from its point; its cap and edge add a few px. */
+        const top =
+          -prop.y + (prop.kind === 'post' ? POST_HEIGHT + POST_CAP : 0);
+        if (prop.o > 0 && top > band) {
           tooHigh.push(`${name}'s ${prop.kind} at ${Math.round(t)}ms`);
           break;
         }
@@ -495,6 +501,10 @@ test.describe('About cats', () => {
         control,
         'the control does not offer to wake the cat once it is asleep',
       ).toHaveAccessibleName(`Wake ${NAMES[id]}`);
+      await expect(
+        page.locator(`#cat-spot-${id} .cat-prop`),
+        `a toy or box stayed out after ${NAMES[id]} fell asleep`,
+      ).toHaveCount(0);
       await control.click();
       await expectMood(
         page,

@@ -52,7 +52,7 @@
     @apply pointer-events-auto cursor-pointer;
   }
 
-  /* Each cat's SC 2.2.2 control, in the band's corner the cat never walks to. */
+  /* Each cat's SC 2.2.2 control, in the band's corner, which the cat's track stops short of. */
   .cat-nap {
     @apply pointer-events-auto top-0 right-0;
   }

@@ -14,6 +14,7 @@ import {
   pose,
   poseAt,
   withTurn,
+  withApproach,
   type Move,
   type MoveName,
   type Pose,
@@ -33,26 +34,25 @@ export const NAP_AFTER_MS = 20_000;
 const TRACK_MARGIN = 40;
 /** Room at the right end for the sleep control. */
 const CONTROL_ROOM = 48;
-/** Chance a cat leaps across its band instead of playing where it is. */
-const LEAP_CHANCE = 0.25;
-/** Closer than this, a cat is already there. */
-const NEAR = 40;
-/* Ways to get about, longest first; there is no walking. */
-const LEAPS = [
-  'bigJump',
-  'stalk',
-  'pounce',
-] as const satisfies readonly MoveName[];
+/** Chance a cat moves along its band, by one leap, instead of playing where it is. */
+const LEAP_CHANCE = 0.15;
+/* Ways to get about, one at a time and weighted; there is no walking. */
+const LEAPS: Partial<Record<MoveName, number>> = {
+  bigJump: 3,
+  pounce: 3,
+  stalk: 1,
+};
+/** Near enough to a band end to knock a cup off it. */
+const EDGE_NEAR = 60;
 /** A pointer that has not moved for this long no longer draws a cat's eye. */
 const POINTER_IDLE_MS = 4000;
 const FACE_DEADBAND = 20;
 const WATCH_EASE = 0.12;
 const TILT_GAIN = 20;
 const MAX_TILT = 25;
-const TURN_EASE = 0.15;
 const BLINK_EVERY_MS = [2500, 5000] as const;
 const BLINK_MS = 160;
-/** The eases and the watcher's walk are per 60fps frame; other rates scale to it. */
+/** The eases are per 60fps frame; other rates scale to it. */
 const FRAME_MS = 1000 / 60;
 /** Longest gap one frame may cover, so a stalled tab does not jump the watcher. */
 const MAX_FRAMES_PER_STEP = 6;
@@ -283,28 +283,18 @@ export const createColony = (
     return Math.min(a, b) >= cat.min && Math.max(a, b) <= cat.max;
   };
 
-  /** Leaps to `to` by the longest leap that fits, then again until near; no walking. */
-  const travel = (
-    cat: CatState,
-    to: number,
-    now: number,
-    then: () => void,
-  ): void => {
-    const distance = clamp(to, cat.min, cat.max) - cat.pose.x;
-    if (Math.abs(distance) < NEAR) {
-      then();
-      return;
-    }
-    const dir = Math.sign(distance);
-    const leap =
-      LEAPS.map((name) => MOVES[name]()).find(
-        (move) => extent(move)[1] <= Math.abs(distance) && fits(cat, move, dir),
-      ) ?? MOVES.pounce();
-    if (!fits(cat, leap, dir)) {
-      then();
-      return;
-    }
-    play(cat, leap, now, dir, () => travel(cat, to, performance.now(), then));
+  /** One leap along the band, ahead if it fits, else back; false if neither fits. */
+  const leap = (cat: CatState, now: number): boolean => {
+    const move = MOVES[pickWeighted(LEAPS)]();
+    const facing = Math.sign(cat.pose.face) || 1;
+    const dir = fits(cat, move, facing)
+      ? facing
+      : fits(cat, move, -facing)
+        ? -facing
+        : 0;
+    if (dir === 0) return false;
+    play(cat, move, now, dir, () => next(cat, performance.now()));
+    return true;
   };
 
   const next = (cat: CatState, now: number): void => {
@@ -314,25 +304,18 @@ export const createColony = (
       return;
     }
     if (cat.holds.size > 0) return;
-    if (Math.random() < LEAP_CHANCE) {
-      /* Across to the far side of the band, where there is more room. */
-      const far =
-        cat.pose.x - cat.min > cat.max - cat.pose.x
-          ? cat.min + NEAR
-          : cat.max - NEAR;
-      travel(cat, far, now, () => next(cat, performance.now()));
-      return;
-    }
+    if (Math.random() < LEAP_CHANCE && leap(cat, now)) return;
     const name = pickWeighted(cat.id === 'hela' ? HELA_WEIGHTS : WEIGHTS);
     const move = MOVES[name]();
     const facing = Math.sign(cat.pose.face) || 1;
     if (move.edge) {
-      const end =
-        cat.pose.x - cat.min < cat.max - cat.pose.x ? cat.min : cat.max;
-      travel(cat, end, now, () =>
-        play(cat, move, performance.now(), end === cat.min ? -1 : 1, () =>
-          next(cat, performance.now()),
-        ),
+      /* Only near an end: it creeps the last bit, never crosses the band for it. */
+      const toMin = cat.pose.x - cat.min;
+      const toMax = cat.max - cat.pose.x;
+      const gap = Math.min(toMin, toMax);
+      if (gap > EDGE_NEAR) return;
+      play(cat, withApproach(move, gap), now, toMin < toMax ? -1 : 1, () =>
+        next(cat, performance.now()),
       );
       return;
     }
@@ -342,9 +325,7 @@ export const createColony = (
         ? -facing
         : 0;
     if (dir === 0) {
-      travel(cat, (cat.min + cat.max) / 2, now, () =>
-        next(cat, performance.now()),
-      );
+      leap(cat, now);
       return;
     }
     play(cat, move, now, dir, () => next(cat, performance.now()));
@@ -385,8 +366,8 @@ export const createColony = (
       eased(WATCH_EASE, frames),
     );
     settled.x = cat.pose.x;
-    settled.face =
-      cat.pose.face + (want - cat.pose.face) * eased(TURN_EASE, frames);
+    /* A flat sticker flips; easing the width through zero shows a sliver. */
+    settled.face = want;
     const moving = poseGap(cat.pose, settled) > SETTLED;
     cat.pose = settled;
     return moving;
@@ -409,8 +390,7 @@ export const createColony = (
       eased(WATCH_EASE, frames),
     );
     calm.x = cat.pose.x;
-    calm.face =
-      cat.pose.face + (want - cat.pose.face) * eased(TURN_EASE, frames);
+    calm.face = want;
     cat.pose = calm;
   };
 

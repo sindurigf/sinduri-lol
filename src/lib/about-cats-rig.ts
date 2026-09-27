@@ -47,6 +47,8 @@ const WHISKERS = 'M11 3l9 -3M11 4.4l10 0.5M11 5.8l9 3.5';
 const STRIPES = [0.3, 0.5, 0.7];
 /** The feather wand hangs from here, above the cat's band. */
 const STRING_TOP = -100;
+/** The scratching post's height in px, cap aside; with it, it stays under the band. */
+export const POST_HEIGHT = 92;
 /** A small and a larger "z", drawn from the lower left of the small one. */
 const ZZ = 'M0 0h4l-4 5h4M6 -9h6l-6 7h6';
 const ZZ_HEIGHT = 14;
@@ -693,9 +695,9 @@ export const createProp = (
       'rect',
       {
         x: -5,
-        y: -58,
+        y: -POST_HEIGHT,
         width: 10,
-        height: 58,
+        height: POST_HEIGHT,
         ...edge,
         class: 'cat-prop-solid cat-prop-card',
       },
@@ -704,7 +706,7 @@ export const createProp = (
     el(
       'path',
       {
-        d: 'M-5 -50l10 3M-5 -42l10 3M-5 -34l10 3M-5 -26l10 3M-5 -18l10 3M-5 -10l10 3',
+        d: 'M-5 -86l10 3M-5 -78l10 3M-5 -70l10 3M-5 -62l10 3M-5 -54l10 3M-5 -46l10 3M-5 -38l10 3M-5 -30l10 3M-5 -22l10 3M-5 -14l10 3',
         class: 'cat-prop-rope',
         'stroke-width': 1.3,
       },
@@ -714,7 +716,7 @@ export const createProp = (
       'rect',
       {
         x: -10,
-        y: -62,
+        y: -POST_HEIGHT - 4,
         width: 20,
         height: 5,
         ...edge,

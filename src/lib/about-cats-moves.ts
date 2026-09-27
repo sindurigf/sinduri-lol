@@ -264,6 +264,8 @@ export const EASE = {
   out: (k: number) => 1 - (1 - k) ** 3,
   in: (k: number) => k ** 3,
   back: (k: number) => 1 + 2.4 * (k - 1) ** 3 + 1.4 * (k - 1) ** 2,
+  /* All at once halfway: a flat sticker cannot turn, so it flips mid-hop. */
+  snap: (k: number) => (k < 0.5 ? 0 : 1),
 } as const;
 
 export type Ease = keyof typeof EASE;
@@ -286,7 +288,7 @@ export interface Move {
   prop?: PropKind;
   /** Prop position relative to the cat's starting point, forward positive. */
   propAt?: (t: number) => PropState;
-  /** Needs the cat at a track end, facing out: the cup goes over the edge. */
+  /** Plays at a track end, facing out, so the cup goes over the edge; see withApproach. */
   edge?: boolean;
 }
 
@@ -364,10 +366,23 @@ const POUNCE_HEIGHT = 34;
 const LEAP_HEIGHT = 27;
 const HOP_HEIGHT = 30;
 const YARN_BOUND_HEIGHT = 22;
-/* The yarn chase: a trot of 120px in 2.2 s, about the old walking pace, then a pounce. */
+/* The yarn chase: a trot of 120px in 2.2 s, then a pounce. */
 const YARN_TROT = 120;
 const YARN_TROT_MS = 2200;
 const YARN_CATCH = YARN_TROT + 42;
+
+/*
+ * Rolling onto the back: low, then over all at once with a small flop. Easing
+ * the 180° roll would stand the cat on its head halfway.
+ */
+const FLOP_HOP = 4;
+const flopTo = (from: PoseName, to: PoseName, x = 0): Step[] => [
+  step(200, from, { x, by: 9, sq: 0.92 }, 'in'),
+  step(200, to, { x, sq: 0.92 }, 'snap'),
+  step(300, to, { x }, 'out'),
+];
+const flopOver = flopTo('loaf', 'belly');
+const flopBack = flopTo('belly', 'loaf');
 
 const still = (kind: PropKind, x: number, y = 0): PropState => ({
   kind,
@@ -521,12 +536,15 @@ export const MOVES = {
   belly: (): Move => ({
     steps: [
       step(500, 'loaf'),
-      step(700, 'belly'),
+      ...flopOver,
       step(1600, 'belly'),
-      step(700, 'loaf'),
+      ...flopBack,
+      step(400, 'loaf'),
       step(500, 'sit'),
     ],
     mods: [
+      arc(700, 900, FLOP_HOP),
+      arc(3000, 3200, FLOP_HOP),
       between(1200, 2800, (p, s) => {
         p.fN[0] += 4 * Math.sin(s / 90);
         p.fF[0] -= 4 * Math.sin(s / 90 + 1);
@@ -579,22 +597,23 @@ export const MOVES = {
     mods: [arc(440, 880, HOP_HEIGHT)],
   }),
   post: (): Move => ({
+    /* A long scratch up a tall post, paws high, then a look at the work. */
     steps: [
-      step(500, 'rear', { fN: [14, -16], fF: [13, -8], hr: 0 }),
-      step(1800, 'rear', { fN: [14, -16], fF: [13, -8], hr: 0 }),
+      step(600, 'rear', { fN: [14, -24], fF: [13, -14], hr: 0 }),
+      step(3000, 'rear', { fN: [14, -24], fF: [13, -14], hr: 0 }),
+      step(600, 'sit', { hr: -14 }),
       step(500, 'sit'),
-      step(400, 'sit'),
     ],
     mods: [
-      between(500, 2300, (p, s) => {
-        p.fN[1] += 5 * Math.sin(s / 80);
-        p.fF[1] -= 5 * Math.sin(s / 80);
+      between(600, 3600, (p, s) => {
+        p.fN[1] += 6 * Math.sin(s / 90);
+        p.fF[1] -= 6 * Math.sin(s / 90);
       }),
     ],
     prop: 'post',
     propAt: (t) => ({
       ...still('post', 22),
-      o: Math.min(1, t / 300, Math.max(0, (3200 - t) / 300)),
+      o: Math.min(1, t / 300, Math.max(0, (4700 - t) / 300)),
     }),
   }),
   box: (): Move => ({
@@ -602,8 +621,9 @@ export const MOVES = {
       step(400, 'crouch'),
       step(140, 'crouch', { x: -2, sq: 0.9 }, 'in'),
       step(420, 'air', { x: 60 }, 'linear'),
-      step(200, 'loaf', { x: 66, y: -10 }, 'out'),
-      step(1600, 'loaf', { x: 66, y: -10, hr: -6 }),
+      step(200, 'crouch', { x: 66, y: -8 }, 'out'),
+      step(300, 'sit', { x: 66, y: -8 }),
+      step(1300, 'sit', { x: 66, y: -8, hr: -8 }),
       step(160, 'crouch', { x: 66, y: -6 }, 'in'),
       step(420, 'air', { x: 130 }, 'linear'),
       step(200, 'crouch', { x: 134, sq: 0.85 }, 'out'),
@@ -611,7 +631,7 @@ export const MOVES = {
     ],
     mods: [arc(540, 960, 26), arc(2500, 2920, 26)],
     prop: 'box',
-    /* Centred under the loaf's body, so only the head shows over the rim. */
+    /* Under the sitting cat, whose head and chest show over the rim. */
     propAt: (t) => ({
       ...still('box', 72),
       o: Math.min(1, t / 300, Math.max(0, (4040 - t) / 300)),
@@ -631,16 +651,16 @@ export const MOVES = {
       step(140, 'crouch', { x: YARN_TROT, sq: 0.88 }, 'in'),
       step(300, 'air', { x: YARN_TROT + 30 }, 'linear'),
       step(180, 'crouch', { x: YARN_CATCH, sq: 0.84 }, 'out'),
-      step(500, 'belly', { x: YARN_CATCH }),
+      ...flopTo('crouch', 'belly', YARN_CATCH),
       step(1500, 'belly', { x: YARN_CATCH }),
-      step(600, 'loaf', { x: YARN_CATCH }),
+      ...flopTo('belly', 'loaf', YARN_CATCH),
       step(500, 'sit', { x: YARN_CATCH }),
     ],
     mods: [
       walking(1000, 1000 + YARN_TROT_MS),
       wiggle(1000 + YARN_TROT_MS, 1300 + YARN_TROT_MS),
       arc(1440 + YARN_TROT_MS, 1740 + YARN_TROT_MS, YARN_BOUND_HEIGHT),
-      between(2420 + YARN_TROT_MS, 3920 + YARN_TROT_MS, (p, s) => {
+      between(2620 + YARN_TROT_MS, 4120 + YARN_TROT_MS, (p, s) => {
         p.hN[0] += 6 * Math.sin(s / 60);
         p.hF[0] -= 6 * Math.sin(s / 60);
       }),
@@ -654,7 +674,7 @@ export const MOVES = {
         x: 22 + (1 - (1 - k) ** 2) * (YARN_CATCH + 10 - 22),
         y: -6,
         r: k * 900,
-        o: Math.min(1, t / 200, Math.max(0, (5020 + YARN_TROT_MS - t) / 300)),
+        o: Math.min(1, t / 200, Math.max(0, (5320 + YARN_TROT_MS - t) / 300)),
       };
     },
   }),
@@ -710,23 +730,75 @@ export const HELA_WEIGHTS: Partial<Record<MoveName, number>> = {
   peek: 8,
 };
 
-/** A turn on the spot before a move that heads the other way: eased, never a flip. */
-export const TURN_MS = 550;
+/*
+ * A turn on the spot before a move that heads the other way: a small hop that
+ * flips at its top, as a flat sticker cannot rotate. Squeezing the width
+ * through zero reads as a thin sliver, not a cat.
+ */
+const TURN_RISE_MS = 160;
+const TURN_FLIP_MS = 140;
+const TURN_LAND_MS = 200;
+export const TURN_MS = TURN_RISE_MS + TURN_FLIP_MS + TURN_LAND_MS;
+const TURN_HOP = 6;
 
 export const withTurn = (move: Move, from: Pose): Move => {
+  const propAt = move.propAt;
+  const gather = { ...clonePose(from), sq: 0.94 };
+  return {
+    ...move,
+    steps: [
+      { ms: TURN_RISE_MS, pose: gather, ease: 'out' },
+      { ms: TURN_FLIP_MS, pose: { ...gather, face: 1 }, ease: 'snap' },
+      { ms: TURN_LAND_MS, pose: { ...clonePose(from), face: 1 }, ease: 'out' },
+      ...move.steps,
+    ],
+    mods: [
+      arc(TURN_RISE_MS - 60, TURN_RISE_MS + TURN_FLIP_MS + 60, TURN_HOP),
+      ...move.mods.map((mod) => ({
+        ...mod,
+        from: mod.from + TURN_MS,
+        to: mod.to + TURN_MS,
+      })),
+    ],
+    propAt: propAt && ((t) => propAt(Math.max(0, t - TURN_MS))),
+  };
+};
+
+/** px per second of a crouched creep, slower than a trot. */
+const CREEP_SPEED = 45;
+const CREEP_MIN_MS = 300;
+const CREEP_READY_MS = 250;
+
+/** Creeps `distance` ahead in a crouch first, so an edge move starts at the track end. */
+export const withApproach = (move: Move, distance: number): Move => {
+  if (distance < 1) return move;
+  const creep = Math.max(CREEP_MIN_MS, (distance / CREEP_SPEED) * 1000);
+  const lead = CREEP_READY_MS + creep;
   const propAt = move.propAt;
   return {
     ...move,
     steps: [
-      { ms: TURN_MS, pose: { ...clonePose(from), face: 1 }, ease: 'inOut' },
-      ...move.steps,
+      step(CREEP_READY_MS, 'crouch'),
+      step(creep, 'crouch', { x: distance }),
+      ...move.steps.map((s) => ({
+        ...s,
+        pose: { ...clonePose(s.pose), x: s.pose.x + distance },
+      })),
     ],
-    mods: move.mods.map((mod) => ({
-      ...mod,
-      from: mod.from + TURN_MS,
-      to: mod.to + TURN_MS,
-    })),
-    propAt: propAt && ((t) => propAt(Math.max(0, t - TURN_MS))),
+    mods: [
+      walking(CREEP_READY_MS, lead, 0.6),
+      ...move.mods.map((mod) => ({
+        ...mod,
+        from: mod.from + lead,
+        to: mod.to + lead,
+      })),
+    ],
+    propAt:
+      propAt &&
+      ((t) => {
+        const s = propAt(Math.max(0, t - lead));
+        return { ...s, x: s.x + distance, o: t < lead ? 0 : s.o };
+      }),
   };
 };
 
