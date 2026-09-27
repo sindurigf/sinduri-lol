@@ -566,9 +566,9 @@ From the Accessible Astro checklist and
 `public/talks/open-source-is-not-just-code.pdf` (from
 `/blog/open-source-is-not-just-code`).
 
-1. Run `npm run check:pdf` (or `npm run check:pdf -- <path>`) first: veraPDF,
-   PDF/UA-1, in Docker. Exit 0 pass, 1 fail, 2 could not run. Fix what it
-   reports before listening.
+1. Run `npm run check:pdf` first
+   ([DEVELOPMENT.md](DEVELOPMENT.md#published-pdfs)). Fix what it reports
+   before listening.
 2. Viewer: Firefox's built-in PDF viewer with Orca, set up as in §6.1.
 3. `pdftotext` shows content-stream order, not reading order: do not use it
    for §13.2.
