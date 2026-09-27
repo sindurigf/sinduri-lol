@@ -64,11 +64,11 @@ const STATUS: Record<Exclude<SubmissionKind, 'sent'>, number> = {
 };
 Astro.response.status = STATUS[outcome.kind];
 
-/* A limited or failed message was valid, so nothing in it needs checking. */
+/* Names the cause; the error summary below says the message was not sent. */
 const HEADING: Record<Exclude<SubmissionKind, 'sent'>, string> = {
   invalid: 'Check your message',
-  limited: 'Your message was not sent',
-  failed: 'Your message was not sent',
+  limited: 'Too many messages',
+  failed: 'Message not saved',
 };
 const heading = HEADING[outcome.kind];
 ---

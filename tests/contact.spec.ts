@@ -111,6 +111,16 @@ const validFields = (): Record<string, string> => ({
   message: 'x'.repeat(LIMITS.bodyMin + 20),
 });
 
+/** The title starts with "Error: " (SC 3.3.1) and, like the h1, names the cause (SC 2.4.2). */
+const expectTitledAndHeaded = (html: string, heading: string) => {
+  expect(html, `the page title is not "Error: ${heading}"`).toContain(
+    `<title>Error: ${heading} `,
+  );
+  expect(html, `the h1 is not "${heading}"`).toMatch(
+    new RegExp(`<h1[^>]*>\\s*${heading}\\s*</h1>`),
+  );
+};
+
 const expectTypedValuesKept = (
   html: string,
   typed: Record<'name' | 'email' | 'message', string>,
@@ -277,10 +287,7 @@ test.describe('the contact endpoint', () => {
       html,
       'the rejected submission should render an error summary.',
     ).toContain('problems with this form');
-    expect(
-      html,
-      'the page title does not say there is an error to fix (SC 3.3.1)',
-    ).toMatch(/<title>Error: Check your message /);
+    expectTitledAndHeaded(html, 'Check your message');
 
     expectTypedValuesKept(html, typed);
 
@@ -368,19 +375,12 @@ test.describe('the contact endpoint', () => {
   });
 
   /* A not-sent answer uses the autofocused error summary, which is what announces it. */
-  const expectNotSentPage = (html: string) => {
+  const expectNotSentSummary = (html: string) => {
     expect(
       html,
       'no focused error summary saying the message was not sent',
     ).toMatch(
       /<div class="error-summary"[^>]*autofocus[^>]*>\s*<h2[^>]*>\s*Your message was not sent\s*<\/h2>/,
-    );
-    expect(
-      html,
-      'the page title does not say the message was not sent (SC 2.4.2)',
-    ).toMatch(/<title>Error: Your message was not sent /);
-    expect(html, 'the h1 does not say the message was not sent').toMatch(
-      /<h1[^>]*>\s*Your message was not sent\s*<\/h1>/,
     );
   };
 
@@ -416,7 +416,8 @@ test.describe('the contact endpoint', () => {
       `no 429 after ${RATE_LIMIT_ATTEMPTS} submissions from one address.`,
     ).toBeDefined();
     expectTypedValuesKept(html!, typed);
-    expectNotSentPage(html!);
+    expectNotSentSummary(html!);
+    expectTitledAndHeaded(html!, 'Too many messages');
   });
 
   /* D1 failure induced by moving the table aside for one request. */
@@ -447,7 +448,8 @@ test.describe('the contact endpoint', () => {
       const html = await response.text();
       expect(html).toContain('Your message could not be saved');
       expectTypedValuesKept(html, typed);
-      expectNotSentPage(html);
+      expectNotSentSummary(html);
+      expectTitledAndHeaded(html, 'Message not saved');
     } finally {
       localD1(`ALTER TABLE ${MESSAGES_ASIDE} RENAME TO messages`);
     }
