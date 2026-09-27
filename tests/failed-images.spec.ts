@@ -6,7 +6,7 @@ import {
   type Page,
 } from './test';
 import { AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
-import { builtHtml } from './routes';
+import { builtHtml, PHOTO_POST_ROUTES } from './routes';
 import { gotoSettled } from './settle';
 import { NODE } from './tags';
 import { IMAGE_REQUEST } from './html';
@@ -23,7 +23,7 @@ const FRAME_ROUTES = [
   '/',
   '/about',
   '/blog',
-  '/blog/five-years-in-drupal',
+  ...PHOTO_POST_ROUTES,
   '/talks/open-source-is-not-just-code',
 ];
 
