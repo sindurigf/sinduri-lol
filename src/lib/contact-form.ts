@@ -8,7 +8,7 @@ export const FIELDS = {
   honeypot: 'website',
 } as const;
 
-/** In characters. */
+/** In code points, after line breaks are normalised to `\n`. */
 export const LIMITS = {
   nameMin: 1,
   nameMax: 100,
@@ -61,10 +61,14 @@ const EMAIL_SHAPE = new RegExp(
   'u',
 );
 
+/* Form submission sends every textarea line break as CRLF. */
 const readField = (form: FormData, key: string): string => {
   const raw = form.get(key);
-  return typeof raw === 'string' ? raw.trim() : '';
+  return typeof raw === 'string' ? raw.replaceAll('\r\n', '\n').trim() : '';
 };
+
+/* Code points: `length` counts most emoji as two. */
+const characters = (value: string): number => [...value].length;
 
 /* Each is read alone by a screen reader after the error summary. */
 const MESSAGES = {
@@ -89,28 +93,31 @@ export const readSubmission = (form: FormData): ContactSubmission => ({
 export const validateSubmission = (form: FormData): ValidationResult => {
   const submitted = readSubmission(form);
   const { name, email, body } = submitted;
+  const nameLength = characters(name);
+  const emailLength = characters(email);
+  const bodyLength = characters(body);
 
   const errors: FieldError[] = [];
 
-  if (name.length < LIMITS.nameMin) {
+  if (nameLength < LIMITS.nameMin) {
     errors.push({ field: 'name', message: MESSAGES.nameMissing });
-  } else if (name.length > LIMITS.nameMax) {
+  } else if (nameLength > LIMITS.nameMax) {
     errors.push({ field: 'name', message: MESSAGES.nameLong });
   }
 
-  if (email.length === 0) {
+  if (emailLength === 0) {
     errors.push({ field: 'email', message: MESSAGES.emailMissing });
-  } else if (email.length > LIMITS.emailMax) {
+  } else if (emailLength > LIMITS.emailMax) {
     errors.push({ field: 'email', message: MESSAGES.emailLong });
   } else if (!EMAIL_SHAPE.test(email)) {
     errors.push({ field: 'email', message: MESSAGES.emailShape });
   }
 
-  if (body.length === 0) {
+  if (bodyLength === 0) {
     errors.push({ field: 'body', message: MESSAGES.bodyMissing });
-  } else if (body.length < LIMITS.bodyMin) {
+  } else if (bodyLength < LIMITS.bodyMin) {
     errors.push({ field: 'body', message: MESSAGES.bodyShort });
-  } else if (body.length > LIMITS.bodyMax) {
+  } else if (bodyLength > LIMITS.bodyMax) {
     errors.push({ field: 'body', message: MESSAGES.bodyLong });
   }
 

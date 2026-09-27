@@ -98,3 +98,29 @@ test('reports every failing field at once, each with a message', NODE, () => {
   for (const error of result.errors) expect(error.message.trim()).not.toBe('');
   expect(new Set(result.errors.map((error) => error.message)).size).toBe(3);
 });
+
+test(
+  'counts a CRLF line break as one character and stores it as LF',
+  NODE,
+  () => {
+    const paragraph = 'p'.repeat(49);
+    const body = Array(LIMITS.bodyMax / 50)
+      .fill(paragraph)
+      .join('\r\n');
+    const result = validateSubmission(form({ ...VALID, body }));
+
+    expect(
+      result.ok,
+      'a message under the limit was refused because each line break counted as two.',
+    ).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.body).not.toContain('\r');
+  },
+);
+
+test('counts an emoji as one character', NODE, () => {
+  expect(failing({ ...VALID, body: '🐈'.repeat(LIMITS.bodyMax) })).toEqual([]);
+  expect(failing({ ...VALID, body: '🐈'.repeat(LIMITS.bodyMax + 1) })).toEqual([
+    'body',
+  ]);
+});
