@@ -167,3 +167,33 @@ test('a page restored from the back-forward cache can send again', async ({
     'a form restored from the back-forward cache stayed on Sending',
   );
 });
+
+test('Esc during a send, which stops the post, lets the form send again', async ({
+  page,
+}) => {
+  const sent = await sendOnce(page);
+
+  await page.keyboard.press('Escape');
+
+  await expectReadyToResend(page, sent, 'the form stayed on Sending after Esc');
+});
+
+test('a stopped post reported by the Navigation API lets the form send again', async ({
+  page,
+}) => {
+  test.skip(
+    !(await page.evaluate(() => 'navigation' in window)),
+    'no Navigation API in this engine',
+  );
+  const sent = await sendOnce(page);
+
+  await page.evaluate(() =>
+    window.navigation.dispatchEvent(new ErrorEvent('navigateerror')),
+  );
+
+  await expectReadyToResend(
+    page,
+    sent,
+    'the form stayed on Sending after the Stop button',
+  );
+});
