@@ -764,7 +764,7 @@ test.describe('About cats', () => {
   test('a cat pausing between moves runs no empty animation frames', async ({
     browser,
   }) => {
-    const context = await browser.newContext({ viewport: ALL_BANDS });
+    const context = await browser.newContext({ viewport: MINERVA_AND_HELA });
     const page = await context.newPage();
     await gotoSettled(page, ROUTE);
     for (const id of ['minerva', 'hela'] as const) {
