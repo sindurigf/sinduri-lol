@@ -29,6 +29,20 @@ const PHYS_STEP_MS = 1000 / 60;
 const PHYS_MAX_STEPS = 4;
 
 const EARS = 'M-11 -4L-12 -19.5L-2 -10.5ZM2 -10.5L10.5 -19.5L11 -4Z';
+/** Hela's orange front ear, inset from the ear's edge. */
+const FRONT_EAR_PATCH = 'M2.6 -11L10 -18.4L10.4 -5.2Z';
+const EYE_CENTRES: readonly (readonly [number, number])[] = [
+  [-1, -1],
+  [7, -1.5],
+];
+/** Eye radius and pupil radius in px: Minerva's green eyes and Rudra's big amber ones have pupils. */
+const EYES: Record<CatId, { r: number; pupil: number }> = {
+  minerva: { r: 2.1, pupil: 0.9 },
+  hela: { r: 1.8, pupil: 0 },
+  rudra: { r: 3, pupil: 1.3 },
+};
+/** The pupils sit a little forward in the eye, so the cat looks where it faces. */
+const PUPIL_AHEAD = 0.4;
 const WHISKERS = 'M11 3l9 -3M11 4.4l10 0.5M11 5.8l9 3.5';
 /** Where Minerva's back stripes cross the body, as fractions of its length. */
 const STRIPES = [0.3, 0.5, 0.7];
@@ -142,6 +156,7 @@ export interface CatRig {
   tailMarks: SVGPathElement;
   eyesOpen: SVGGElement;
   eyesShut: SVGPathElement;
+  earPatch: SVGPathElement | null;
   mouth: SVGEllipseElement;
   tailAngle: number[];
   tailSpeed: number[];
@@ -268,18 +283,24 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
   if (id === 'hela')
     el('circle', { cx: 6, cy: -8, r: 7, class: 'cat-solid-mark' }, headMarks);
 
-  const eyeRadius = id === 'rudra' ? 2.3 : 1.8;
+  /* Hela's front ear is orange, as in her photos; it turns with the ears. */
+  const earPatch =
+    id === 'hela'
+      ? el('path', { d: FRONT_EAR_PATCH, class: 'cat-solid-patch' }, top.head)
+      : null;
+  if (earPatch) top.head.insertBefore(earPatch, top.ears.nextSibling);
+
+  const eye = EYES[id];
   const eyesOpen = el('g', {}, top.head);
-  el(
-    'circle',
-    { cx: -1, cy: -1, r: eyeRadius, class: 'cat-solid-eye' },
-    eyesOpen,
-  );
-  el(
-    'circle',
-    { cx: 7, cy: -1.5, r: eyeRadius, class: 'cat-solid-eye' },
-    eyesOpen,
-  );
+  for (const [cx, cy] of EYE_CENTRES) {
+    el('circle', { cx, cy, r: eye.r, class: 'cat-solid-eye' }, eyesOpen);
+    if (eye.pupil > 0)
+      el(
+        'circle',
+        { cx: cx + PUPIL_AHEAD, cy, r: eye.pupil, class: 'cat-solid-pupil' },
+        eyesOpen,
+      );
+  }
   const eyesShut = el(
     'path',
     {
@@ -337,6 +358,7 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
     tailMarks,
     eyesOpen,
     eyesShut,
+    earPatch,
     mouth,
     tailAngle: [],
     tailSpeed: [],
@@ -564,6 +586,7 @@ export const renderCat = (
     layer.ears.setAttribute('transform', `rotate(${f(-30 * p.ears)} 0 -8)`);
   }
   rig.tailMarks.setAttribute('d', tail);
+  rig.earPatch?.setAttribute('transform', `rotate(${f(-30 * p.ears)} 0 -8)`);
 
   rig.stripes.forEach((stripe, i) => {
     const k = STRIPES[i];

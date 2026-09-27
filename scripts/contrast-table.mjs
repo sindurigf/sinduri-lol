@@ -71,6 +71,12 @@ const PAIRS = [
     'decoration',
     'About cat fill; the `text` edge is the boundary',
   ],
+  [
+    'cat-minerva-eye',
+    'cat-minerva',
+    'decoration',
+    'Minerva’s green eyes; the pupil carries the look',
+  ],
   ['text', 'surface', 'non-text', 'About cat sticker edge on a card'],
   ['pink', 'gold', 'decoration', 'Shadows on gold'],
   ['text', 'gold', 'never', 'Dark-surface text is never used on gold'],

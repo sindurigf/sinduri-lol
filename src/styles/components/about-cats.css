@@ -83,7 +83,7 @@
     --cat-far: var(--color-cat-minerva-far);
     --cat-mark: var(--color-cat-minerva-stripe);
     --cat-patch: var(--color-cat-minerva);
-    --cat-eye: var(--color-gold-text);
+    --cat-eye: var(--color-cat-minerva-eye);
     --cat-lid: var(--color-gold-text);
   }
 
@@ -158,6 +158,11 @@
 
   .cat-solid-eye {
     fill: var(--cat-eye);
+  }
+
+  /* The same near-black in dark and light mode. */
+  .cat-solid-pupil {
+    fill: var(--color-gold-text);
   }
 
   .cat-line-lid {
