@@ -3,20 +3,7 @@
  * about-cats-moves.ts; AboutCats.vue owns the frame loop. Units are CSS px,
  * y down, the ground at y = 0 under the cat's origin.
  */
-import type { Pose } from './about-cats-moves';
-
-export type CatId = 'minerva' | 'hela' | 'rudra';
-
-export type PropKind =
-  'toy' | 'cup' | 'post' | 'fly' | 'box' | 'yarn' | 'blanket';
-
-export interface PropState {
-  kind: PropKind;
-  x: number;
-  y: number;
-  r: number;
-  o: number;
-}
+import type { CatId, Pose, PropKind, PropState } from './about-cats-types';
 
 const NS = 'http://www.w3.org/2000/svg';
 const D = Math.PI / 180;
@@ -49,6 +36,9 @@ const STRIPES = [0.3, 0.5, 0.7];
 const STRING_TOP = -100;
 /** The scratching post's height in px, cap aside; with it, it stays under the band. */
 export const POST_HEIGHT = 92;
+/** A small, snug box: a resting cat's head and back show over its rim. */
+const BOX_HALF = 22;
+const BOX_HEIGHT = 15;
 /** A small and a larger "z", drawn from the lower left of the small one. */
 const ZZ = 'M0 0h4l-4 5h4M6 -9h6l-6 7h6';
 const ZZ_HEIGHT = 14;
@@ -57,7 +47,7 @@ const ZZ_AHEAD = 14;
 const ZZ_ABOVE = 24;
 const ZZ_RISE = 10;
 /** Half the click box's width: the whole cat either way it faces, over 24px (SC 2.5.8). */
-const HIT_HALF_WIDTH = 48;
+export const HIT_HALF_WIDTH = 48;
 const WING_BEAT_MS = 16;
 
 interface Point {
@@ -66,7 +56,7 @@ interface Point {
 }
 const pt = (x: number, y: number): Point => ({ x, y });
 const f = (n: number): string => n.toFixed(2);
-const clamp = (v: number, lo: number, hi: number): number =>
+export const clamp = (v: number, lo: number, hi: number): number =>
   Math.max(lo, Math.min(hi, v));
 
 const el = <K extends keyof SVGElementTagNameMap>(
@@ -129,6 +119,9 @@ interface Layer {
 
 export interface CatRig {
   id: CatId;
+  /** Behind the cat, and over it (a box's front). */
+  props: SVGGElement;
+  propsFront: SVGGElement;
   root: SVGGElement;
   hit: SVGRectElement;
   zz: SVGPathElement;
@@ -163,6 +156,8 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
     { rx: HEAD_RX, ry: HEAD_RY },
     el('clipPath', { id: `${key}-h` }, defs),
   );
+  /* Props behind the cat, then the cat, then props in front of it. */
+  const props = el('g', {}, svg);
   const root = el('g', { class: 'cat-hit' }, svg);
   const hit = el(
     'rect',
@@ -295,8 +290,12 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
     root,
   );
 
+  const propsFront = el('g', {}, svg);
+
   return {
     id,
+    props,
+    propsFront,
     root,
     hit,
     zz,
@@ -738,7 +737,7 @@ export const createProp = (
     el(
       'path',
       {
-        d: 'M-30 -22l-8 -9M30 -22l8 -9',
+        d: `M${-BOX_HALF} ${-BOX_HEIGHT}l-7 -7M${BOX_HALF} ${-BOX_HEIGHT}l7 -7`,
         class: 'cat-prop-string',
         'stroke-width': 3,
         'stroke-linecap': 'round',
@@ -748,10 +747,10 @@ export const createProp = (
     el(
       'rect',
       {
-        x: -30,
-        y: -22,
-        width: 60,
-        height: 22,
+        x: -BOX_HALF,
+        y: -BOX_HEIGHT,
+        width: 2 * BOX_HALF,
+        height: BOX_HEIGHT,
         ...edge,
         class: 'cat-prop-solid cat-prop-card',
       },

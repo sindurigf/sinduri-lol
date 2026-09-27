@@ -5,21 +5,22 @@
  */
 import {
   MOVES,
-  HELA_WEIGHTS,
-  WEIGHTS,
+  CAT_WEIGHTS,
   clonePose,
   duration,
-  extent,
+  moveExtent,
   mixPose,
   pose,
   poseAt,
   withTurn,
   withApproach,
+  moveToPlay,
   type Move,
   type MoveName,
   type Pose,
 } from './about-cats-moves';
 import {
+  clamp,
   createProp,
   renderCat,
   settleTail,
@@ -27,13 +28,18 @@ import {
   type PropRig,
 } from './about-cats-rig';
 
+/** A still pause after each move, in ms: cats alternate bursts and stillness. */
+const PAUSE_MS = [1000, 3000] as const;
+/** What a frame did for a cat: drew it, left it settled, or held it in a pause. */
+type StepResult = 'draw' | 'still' | 'rest';
+
 /** On-screen play time after waking before a cat naps. */
 export const NAP_AFTER_MS = 20_000;
 
 /** Distance from each card end the cat's origin keeps. */
-const TRACK_MARGIN = 40;
+export const TRACK_MARGIN = 40;
 /** Room at the right end for the sleep control. */
-const CONTROL_ROOM = 48;
+export const CONTROL_ROOM = 48;
 /** Chance a cat moves along its band, by one leap, instead of playing where it is. */
 const LEAP_CHANCE = 0.15;
 /* Ways to get about, one at a time and weighted; there is no walking. */
@@ -42,8 +48,10 @@ const LEAPS: Partial<Record<MoveName, number>> = {
   pounce: 3,
   stalk: 1,
 };
-/** Near enough to a band end to knock a cup off it. */
-const EDGE_NEAR = 60;
+/** Near enough to the band's left end to knock a cup off it, counted to where it stands to push. */
+const EDGE_NEAR = 110;
+/** Where a cat stands from the card's edge to push the cup: the cup ends past the edge. */
+export const CUP_EDGE = 32;
 /** A pointer that has not moved for this long no longer draws a cat's eye. */
 const POINTER_IDLE_MS = 4000;
 const FACE_DEADBAND = 20;
@@ -78,9 +86,6 @@ export interface CatInfo {
 export interface CatSpot {
   id: CatRig['id'];
   rig: CatRig;
-  props: SVGGElement;
-  /** Props drawn over the cat, such as a box's front. */
-  propsFront: SVGGElement;
   /** Starting place along the track, 0 to 1. */
   start: number;
   /** Starting direction: 1 faces right. */
@@ -120,11 +125,11 @@ interface CatState extends CatSpot {
   hiddenAt?: number;
   nextBlink: number;
   blinkUntil: number;
+  /** No new move before this; a nap still starts at once. */
+  restUntil: number;
 }
 
 const rand = (lo: number, hi: number): number => lo + Math.random() * (hi - lo);
-const clamp = (v: number, lo: number, hi: number): number =>
-  Math.max(lo, Math.min(hi, v));
 
 const pickWeighted = (weights: Partial<Record<MoveName, number>>): MoveName => {
   const entries = Object.entries(weights) as [MoveName, number][];
@@ -172,6 +177,19 @@ export interface Colony {
   watching: () => boolean;
 }
 
+/** Whether a move of this extent, played from `x` heading `dir`, keeps the cat within [min, max]. */
+export const fitsTrack = (
+  x: number,
+  [back, forward]: readonly [number, number],
+  dir: number,
+  min: number,
+  max: number,
+): boolean => {
+  const a = x + dir * back;
+  const b = x + dir * forward;
+  return Math.min(a, b) >= min && Math.max(a, b) <= max;
+};
+
 export const createColony = (
   spots: CatSpot[],
   onMoodChange: (id: CatSpot['id'], mood: CatMood) => void,
@@ -190,6 +208,7 @@ export const createColony = (
     hiddenAt: 0,
     nextBlink: 0,
     blinkUntil: 0,
+    restUntil: 0,
   }));
   const watcherId = cats[Math.floor(Math.random() * cats.length)]?.id ?? '';
   const pointerAt = new Map<CatSpot['id'], { x: number; y: number }>();
@@ -231,6 +250,7 @@ export const createColony = (
     const playing = cat.playing;
     if (!playing) return;
     drop(cat);
+    if (!playing.settle) cat.restUntil = performance.now() + rand(...PAUSE_MS);
     playing.then?.();
   };
 
@@ -248,7 +268,7 @@ export const createColony = (
     from.face = from.face * dir;
     if (from.face < 0) move = withTurn(move, from);
     const prop = move.prop
-      ? createProp(cat.props, cat.propsFront, move.prop)
+      ? createProp(cat.rig.props, cat.rig.propsFront, move.prop)
       : undefined;
     cat.playing = {
       move,
@@ -276,24 +296,20 @@ export const createColony = (
     );
   };
 
-  const fits = (cat: CatState, move: Move, dir: number): boolean => {
-    const [back, forward] = extent(move);
-    const a = cat.pose.x + dir * back;
-    const b = cat.pose.x + dir * forward;
-    return Math.min(a, b) >= cat.min && Math.max(a, b) <= cat.max;
-  };
+  const fits = (cat: CatState, name: MoveName, dir: number): boolean =>
+    fitsTrack(cat.pose.x, moveExtent(name), dir, cat.min, cat.max);
 
   /** One leap along the band, ahead if it fits, else back; false if neither fits. */
   const leap = (cat: CatState, now: number): boolean => {
-    const move = MOVES[pickWeighted(LEAPS)]();
+    const name = pickWeighted(LEAPS);
     const facing = Math.sign(cat.pose.face) || 1;
-    const dir = fits(cat, move, facing)
+    const dir = fits(cat, name, facing)
       ? facing
-      : fits(cat, move, -facing)
+      : fits(cat, name, -facing)
         ? -facing
         : 0;
     if (dir === 0) return false;
-    play(cat, move, now, dir, () => next(cat, performance.now()));
+    play(cat, moveToPlay(name), now, dir);
     return true;
   };
 
@@ -303,32 +319,37 @@ export const createColony = (
       lieDown(cat, now);
       return;
     }
-    if (cat.holds.size > 0) return;
+    if (cat.holds.size > 0 || now < cat.restUntil) return;
     if (Math.random() < LEAP_CHANCE && leap(cat, now)) return;
-    const name = pickWeighted(cat.id === 'hela' ? HELA_WEIGHTS : WEIGHTS);
-    const move = MOVES[name]();
+    const name = pickWeighted(CAT_WEIGHTS[cat.id]);
+    const move = moveToPlay(name);
     const facing = Math.sign(cat.pose.face) || 1;
     if (move.edge) {
-      /* Only near an end: it creeps the last bit, never crosses the band for it. */
-      const toMin = cat.pose.x - cat.min;
-      const toMax = cat.max - cat.pose.x;
-      const gap = Math.min(toMin, toMax);
+      /*
+       * Left end only, near it: it creeps to the card's edge, past its own track,
+       * so the cup goes over. The right end is the sleep control's corner.
+       */
+      const gap = cat.pose.x - CUP_EDGE;
       if (gap > EDGE_NEAR) return;
-      play(cat, withApproach(move, gap), now, toMin < toMax ? -1 : 1, () =>
-        next(cat, performance.now()),
+      /* It shuffles back onto its track afterwards, or no move would fit from there. */
+      play(
+        cat,
+        withApproach(move, Math.max(0, gap), TRACK_MARGIN - CUP_EDGE),
+        now,
+        -1,
       );
       return;
     }
-    const dir = fits(cat, move, facing)
+    const dir = fits(cat, name, facing)
       ? facing
-      : fits(cat, move, -facing)
+      : fits(cat, name, -facing)
         ? -facing
         : 0;
     if (dir === 0) {
       leap(cat, now);
       return;
     }
-    play(cat, move, now, dir, () => next(cat, performance.now()));
+    play(cat, move, now, dir);
   };
 
   /** Where the pointer is from this cat, while it is still moving. */
@@ -407,25 +428,26 @@ export const createColony = (
     if (t >= playing.length) endMove(cat);
   };
 
-  /** Moves one cat a frame on; true while it still has something to show. */
-  const step = (cat: CatState, now: number, frames: number): boolean => {
+  /** Moves one cat a frame on: drawn, left as it is, or held in a pause. */
+  const step = (cat: CatState, now: number, frames: number): StepResult => {
     const held = cat.holds.size > 0;
     const playing = cat.playing;
     if (playing && (playing.settle || !held)) {
       advance(cat, playing, now);
-      return true;
+      return 'draw';
     }
-    if (cat.asleep) return false;
+    if (cat.asleep) return 'still';
     if (playing) drop(cat);
     const napDue = now >= cat.napAt && !cat.holds.has('card');
-    if (held && !napDue) return look(cat, now, frames);
+    if (held && !napDue) return look(cat, now, frames) ? 'draw' : 'still';
     const target = cat.id === watcherId ? pointerFor(cat, now) : undefined;
     if (!napDue && target) {
       watch(cat, target, frames);
-      return true;
+      return 'draw';
     }
+    if (!napDue && now < cat.restUntil) return 'rest';
     next(cat, now);
-    return true;
+    return 'draw';
   };
 
   const frame = (now: number): boolean => {
@@ -434,10 +456,12 @@ export const createColony = (
     let busy = false;
     for (const cat of cats) {
       if (cat.hiddenAt !== undefined) continue;
-      const stepped = step(cat, now, frames);
+      const result = step(cat, now, frames);
       const tailMoving = cat.rig.tailSpeed.some((v) => Math.abs(v) > TAIL_REST);
-      /* A settled or sleeping cat keeps its last drawing. */
-      if (!stepped && !tailMoving) continue;
+      /* A paused cat keeps the loop alive, to end its pause, but is not redrawn. */
+      if (result === 'rest') busy = true;
+      /* A settled, paused or sleeping cat keeps its last drawing. */
+      if (result !== 'draw' && !tailMoving) continue;
       busy = true;
       if (!cat.asleep && now > cat.nextBlink) {
         cat.blinkUntil = now + BLINK_MS;
@@ -453,12 +477,14 @@ export const createColony = (
     cat.nextBlink = now + rand(...BLINK_EVERY_MS);
     if (!cat.asleep) return;
     setAsleep(cat, false);
+    /* Getting up, then a stretch and a yawn in place, as a cat does on waking. */
+    const facing = Math.sign(cat.pose.face) || 1;
     play(
       cat,
       MOVES.wake(),
       now,
-      Math.sign(cat.pose.face) || 1,
-      undefined,
+      facing,
+      () => play(cat, moveToPlay('stretch'), performance.now(), facing),
       true,
     );
   };
@@ -471,7 +497,7 @@ export const createColony = (
         const first = cat.width === 0;
         cat.width = size.width;
         cat.groundY = size.height;
-        for (const layer of [cat.props, cat.propsFront])
+        for (const layer of [cat.rig.props, cat.rig.propsFront])
           layer.setAttribute('transform', `translate(0 ${size.height})`);
         cat.min = TRACK_MARGIN;
         cat.max = Math.max(cat.min, size.width - TRACK_MARGIN - CONTROL_ROOM);
