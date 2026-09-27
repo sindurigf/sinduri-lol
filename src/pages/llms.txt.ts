@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { requireSite } from '../lib/site';
 import { getCollection } from 'astro:content';
 import { sortByNewest, type BlogPost } from '../lib/blog';
 import { CONTACT_EMAIL } from '../lib/contact';
@@ -77,12 +78,8 @@ const noteLines = (
     : []),
 ];
 
-export const GET: APIRoute = async ({ site }) => {
-  if (!site) {
-    throw new Error(
-      'llms.txt needs `site` in astro.config.mjs to write absolute URLs.',
-    );
-  }
+export const GET: APIRoute = async ({ site: configuredSite }) => {
+  const site = requireSite(configuredSite, 'llms.txt writes absolute URLs.');
 
   const absolute: Absolute = (path) => new URL(path, site).href;
   /* Not getSortedPosts: it drops placeholders, which this file must list. */

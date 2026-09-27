@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import CloseRow from '../../components/CloseRow.astro';
 import PageHero from '../../components/PageHero.astro';
-import { CONTACT_EMAIL } from '../../lib/contact';
+import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../lib/contact';
 import { RETENTION_DAYS } from '../../lib/contact-form';
 import { JOURNEY_POST_HREF } from '../../lib/paths';
 
@@ -33,7 +33,7 @@ import { JOURNEY_POST_HREF } from '../../lib/paths';
           days, and you were not added to any list. The{' '}
           <a href="/privacy/">privacy page</a> says what else is recorded when
           you send the form. If you need to add something, write to{' '}
-          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+          <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>.
         </p>
       </div>
     </div>

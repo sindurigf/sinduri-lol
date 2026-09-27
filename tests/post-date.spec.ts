@@ -1,5 +1,6 @@
 import { expect, test } from './test';
-import { formatPostDate, isoDate } from '../src/lib/post-date';
+import { formatPostDate } from '../src/lib/post-date';
+import { isoDate } from '../src/lib/time';
 import { NODE } from './tags';
 
 /** Frontmatter dates are midnight UTC, the previous day west of Greenwich; builds run at or east of UTC, so this sets TZ. */

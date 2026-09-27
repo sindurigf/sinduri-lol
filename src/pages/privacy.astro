@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
-import { CONTACT_EMAIL } from '../lib/contact';
+import { CONTACT_EMAIL, CONTACT_MAILTO } from '../lib/contact';
 import { RETENTION_DAYS } from '../lib/contact-form';
 import { UMAMI_HOST_URL } from '../lib/analytics';
 import { SITE_NAME } from '../lib/site';
@@ -202,23 +202,22 @@ const UMAMI_HOST = new URL(UMAMI_HOST_URL).host;
           restored for {D1_RESTORE_WINDOW_DAYS} days after it is deleted. The
           emailed copy is kept like any other email, for as long as it is needed
           to reply. To have both removed sooner, write to{' '}
-          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> and say so;
-          you do not need to give a reason.
+          <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a> and say so; you do not
+          need to give a reason.
         </p>
 
         <h2>Email</h2>
 
         <p>
-          If you write to{' '}
-          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>, that message
-          is kept in order to reply to it. It is not added to any list and it is
-          not passed on.
+          If you write to <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>, that
+          message is kept in order to reply to it. It is not added to any list
+          and it is not passed on.
         </p>
 
         <h2>Questions</h2>
 
         <p>
-          Ask at <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+          Ask at <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>.
         </p>
       </div>
     </div>

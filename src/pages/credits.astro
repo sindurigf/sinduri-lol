@@ -2,7 +2,7 @@
 import CloseRow from '../components/CloseRow.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
-import { CONTACT_EMAIL } from '../lib/contact';
+import { CONTACT_EMAIL, CONTACT_MAILTO } from '../lib/contact';
 import { NAME_INSPIRATION, PHOTOGRAPHERS, THANKS } from '../lib/credits';
 
 /* Keep in step with package.json, wrangler.jsonc, src/assets/social-icons.svg and AI_DISCLOSURE.md. */
@@ -89,9 +89,8 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
         </p>
         <p class="mt-6 max-w-prose text-body text-text text-pretty">
           I loved it so much that I used the same pattern for this site and even
-          my email address,{' '}
-          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. Thank you,
-          Norman!
+          my email address, <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>. Thank
+          you, Norman!
         </p>
         <p class="mt-8">
           <a href="/about/#lepus-ridet" class="chip">
