@@ -222,13 +222,37 @@ export const pose = (name: PoseName, over: Partial<Pose> = {}): Pose =>
 
 const lerp = (a: number, b: number, k: number): number => a + (b - a) * k;
 
+/** A paw moving along the ground between two poses lifts this much per px it travels, so it steps rather than slides. */
+const SHIFT_LIFT = 0.5;
+const SHIFT_LIFT_MAX = 4;
+const onGround = (p: Pose, paw: Pair): boolean =>
+  p.rot === 0 && Math.abs(paw[1] - p.by) < 0.5;
+const pairDown = (a: Pose, b: Pose, front: boolean): boolean =>
+  (front ? (['fN', 'fF'] as const) : (['hN', 'hF'] as const)).every(
+    (k) => onGround(a, a[k]) && onGround(b, b[k]),
+  );
+
 export const mixPose = (a: Pose, b: Pose, k: number): Pose => {
   const out = clonePose(b);
+  const frontDown = pairDown(a, b, true);
+  const hindDown = pairDown(a, b, false);
   for (const key of Object.keys(b) as (keyof Pose)[]) {
     const va = a[key];
     const vb = b[key];
     if (Array.isArray(va) && Array.isArray(vb)) {
       (out[key] as Pair) = [lerp(va[0], vb[0], k), lerp(va[1], vb[1], k)];
+      const otherDown = key[0] === 'f' ? hindDown : frontDown;
+      if (onGround(a, va) && onGround(b, vb) && otherDown) {
+        /* Front paws step in the first half, hind paws in the second: two stay down. */
+        const half = Math.min(
+          1,
+          Math.max(0, key[0] === 'f' ? 2 * k : 2 * k - 1),
+        );
+        (out[key] as Pair)[0] = lerp(va[0], vb[0], half);
+        (out[key] as Pair)[1] -=
+          Math.sin(Math.PI * half) *
+          Math.min(SHIFT_LIFT_MAX, SHIFT_LIFT * Math.abs(vb[0] - va[0]));
+      }
     } else if (typeof va === 'number' && typeof vb === 'number') {
       (out[key] as number) = lerp(va, vb, k);
     }
@@ -283,32 +307,59 @@ const between = (from: number, to: number, apply: Mod['apply']): Mod => ({
   apply,
 });
 
-/** Stride in px per half cycle; the legs lock to distance, so paws never slide. */
-const STRIDE = 13;
+/** Travel in px per full stride; a paw on the ground moves back exactly as fast as the body goes forward. */
+const STRIDE = 26;
+const STEP_LIFT = 4;
+/** ms over which a walk's steps start and stop, so the paws never jump to place. */
+const GAIT_BLEND_MS = 180;
 
-const gait = (p: Pose, distance: number, strength = 1): void => {
-  const phase = (distance / STRIDE) * Math.PI;
+const gait = (
+  p: Pose,
+  distance: number,
+  strength: number,
+  weight: number,
+): void => {
+  const stride = STRIDE * strength;
+  const reach = stride / 4;
+  const cycle = distance / stride;
   const legs: [keyof Pick<Pose, 'fN' | 'fF' | 'hN' | 'hF'>, number][] = [
     ['fN', 0],
-    ['hF', 0.5],
-    ['fF', 1],
-    ['hN', 1.5],
+    ['hF', 0.25],
+    ['fF', 0.5],
+    ['hN', 0.75],
   ];
   for (const [leg, offset] of legs) {
-    const s = phase + offset * Math.PI;
-    p[leg][0] += Math.sin(s) * 6 * strength;
-    p[leg][1] -= Math.max(0, Math.cos(s)) * 4 * strength;
+    const u = (((cycle + offset) % 1) + 1) % 1;
+    if (u < 0.5) {
+      p[leg][0] += weight * reach * (1 - 4 * u);
+    } else {
+      const k = (u - 0.5) * 2;
+      const e = k * k * (3 - 2 * k);
+      p[leg][0] += weight * reach * (-1 + 2 * e);
+      p[leg][1] -= weight * Math.sin(Math.PI * k) * STEP_LIFT * strength;
+    }
   }
-  p.y += Math.abs(Math.sin(phase)) * 0.8;
-  p.hy += Math.sin(phase * 2) * 0.4;
+  p.hy += weight * Math.sin(cycle * 4 * Math.PI) * 0.4;
 };
 
 const walking = (from: number, to: number, strength = 1): Mod =>
-  between(from, to, (p) => gait(p, p.x, strength));
+  between(from, to, (p, s) =>
+    gait(
+      p,
+      p.x * Math.sign(p.face),
+      strength,
+      Math.min(1, s / GAIT_BLEND_MS, (to - from - s) / GAIT_BLEND_MS),
+    ),
+  );
+/** Hind paws tread in turn, lifting, while the rump sways over them. */
+const TREAD_LIFT = 2;
 const wiggle = (from: number, to: number): Mod =>
   between(from, to, (p, s) => {
-    p.x += 0.6 * Math.sin(s / 45);
-    p.hN[0] += 1.5 * Math.sin(s / 45);
+    const w = Math.sin(s / 45);
+    p.x += 0.6 * w;
+    for (const k of ['fN', 'fF', 'hN', 'hF'] as const) p[k][0] -= 0.6 * w;
+    p.hN[1] -= TREAD_LIFT * Math.max(0, w);
+    p.hF[1] -= TREAD_LIFT * Math.max(0, -w);
     p.tw = 6;
   });
 const blinkAt = (at: number): Mod =>
