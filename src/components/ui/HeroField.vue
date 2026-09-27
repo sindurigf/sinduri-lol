@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
+import { NEXT_FRAME, useMotionLoop } from '../../composables/use-motion-loop';
 import { createHeroField } from '../../lib/hero-field';
 import { MAX_PIXEL_RATIO } from '../../lib/image-densities';
 import type { HeroField, HeroPalette } from '../../lib/hero-field-scene';
@@ -15,18 +16,15 @@ const STILL_SECONDS = 3.4;
 
 /*
  * Each frame repaints three canvases, so 60fps would double main-thread cost
- * for motion this slow. The slack lets a jittery 60Hz frame through.
+ * for motion this slow.
  */
 const MAX_FRAME_RATE = 30;
-const FRAME_INTERVAL_MS = 1000 / MAX_FRAME_RATE;
-const FRAME_SLACK_MS = 4;
 
 /** Caps a stalled tab's step; must exceed one frame interval or the field runs slow. */
 const MAX_DELTA = 2 / MAX_FRAME_RATE;
 
 const RESIZE_DEBOUNCE = 150;
-
-const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
+const VIEW_MARGIN = '120px';
 
 const host = useTemplateRef<HTMLDivElement>('host');
 const backCanvas = useTemplateRef<HTMLCanvasElement>('back');
@@ -34,22 +32,17 @@ const midCanvas = useTemplateRef<HTMLCanvasElement>('mid');
 const nearCanvas = useTemplateRef<HTMLCanvasElement>('near');
 
 const mounted = ref(false);
-const reducedMotion = ref(false);
 const paused = ref(false);
 
 let field: HeroField | null = null;
-let frame = 0;
 let elapsed = 0;
-let lastFrame = 0;
+let lastStep = 0;
 let ratio = 1;
-let onScreen = true;
 let resizeTimer = 0;
 let boxWidth = 0;
 let boxHeight = 0;
 
-let motionQuery: MediaQueryList | null = null;
 let resizeObserver: ResizeObserver | null = null;
-let viewObserver: IntersectionObserver | null = null;
 /* Watches data-theme itself, so the hero imports nothing from the switch's module. */
 let themeObserver: MutationObserver | null = null;
 
@@ -116,33 +109,33 @@ const draw = (seconds: number): void => {
   field.near(near, seconds);
 };
 
-const tick = (now: number): void => {
-  frame = 0;
-  if (!field) return;
-  if (now - lastFrame >= FRAME_INTERVAL_MS - FRAME_SLACK_MS) {
-    const delta = Math.min(MAX_DELTA, Math.max(0, (now - lastFrame) / 1000));
-    lastFrame = now;
+const tick = (now: number): number => {
+  if (field) {
+    const delta = Math.min(MAX_DELTA, Math.max(0, (now - lastStep) / 1000));
+    lastStep = now;
     elapsed += delta;
     field.step(elapsed, delta);
     draw(elapsed);
   }
-  if (running()) frame = requestAnimationFrame(tick);
+  return NEXT_FRAME;
 };
 
-const running = (): boolean =>
-  mounted.value && !reducedMotion.value && !paused.value && onScreen;
-
-const start = (): void => {
-  if (frame || !running()) return;
-  lastFrame = performance.now();
-  frame = requestAnimationFrame(tick);
+const onReducedMotion = (reduced: boolean): void => {
+  if (!reduced) return;
+  elapsed = STILL_SECONDS;
+  relayout();
 };
 
-const stop = (): void => {
-  if (!frame) return;
-  cancelAnimationFrame(frame);
-  frame = 0;
-};
+const loop = useMotionLoop({
+  frame: tick,
+  resume: (now) => {
+    lastStep = now;
+  },
+  canRun: () => mounted.value && !paused.value && field !== null,
+  maxFrameRate: MAX_FRAME_RATE,
+  onReducedMotion,
+});
+const reducedMotion = loop.reducedMotion;
 
 const relayout = (): void => {
   if (!field || !host.value) return;
@@ -192,22 +185,6 @@ const onResize = (): void => {
   resizeTimer = window.setTimeout(relayout, RESIZE_DEBOUNCE);
 };
 
-const onPreferenceChange = (event: MediaQueryListEvent): void => {
-  reducedMotion.value = event.matches;
-  if (reducedMotion.value) {
-    stop();
-    elapsed = STILL_SECONDS;
-    relayout();
-  } else {
-    start();
-  }
-};
-
-const onVisibility = (): void => {
-  if (document.hidden) stop();
-  else start();
-};
-
 /* Stems are built in their colours, so a new palette needs a new field. */
 const onThemeChange = (): void => {
   const palette = readPalette();
@@ -218,8 +195,8 @@ const onThemeChange = (): void => {
 
 const toggle = (): void => {
   paused.value = !paused.value;
-  if (paused.value) stop();
-  else start();
+  if (paused.value) loop.stop();
+  else loop.start();
 };
 
 onMounted(() => {
@@ -228,10 +205,6 @@ onMounted(() => {
 
   field = createHeroField(palette);
 
-  motionQuery = window.matchMedia(REDUCED_MOTION);
-  reducedMotion.value = motionQuery.matches;
-  motionQuery.addEventListener('change', onPreferenceChange);
-
   mounted.value = true;
   elapsed = reducedMotion.value ? STILL_SECONDS : 0;
   relayout();
@@ -239,33 +212,23 @@ onMounted(() => {
   if (host.value) {
     resizeObserver = new ResizeObserver(onResize);
     resizeObserver.observe(host.value);
-    viewObserver = new IntersectionObserver(
-      (entries) => {
-        onScreen = entries.some((entry) => entry.isIntersecting);
-        if (onScreen) start();
-        else stop();
-      },
-      { rootMargin: '120px' },
-    );
-    viewObserver.observe(host.value);
+    loop.observe([host.value], {
+      rootMargin: VIEW_MARGIN,
+      assumeOnScreen: true,
+    });
   }
 
-  document.addEventListener('visibilitychange', onVisibility);
   themeObserver = new MutationObserver(onThemeChange);
   themeObserver.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ['data-theme'],
   });
-  start();
+  loop.start();
 });
 
 onBeforeUnmount(() => {
-  stop();
   window.clearTimeout(resizeTimer);
-  motionQuery?.removeEventListener('change', onPreferenceChange);
   resizeObserver?.disconnect();
-  viewObserver?.disconnect();
-  document.removeEventListener('visibilitychange', onVisibility);
   themeObserver?.disconnect();
 });
 </script>
