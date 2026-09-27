@@ -7,6 +7,7 @@ import {
   ref,
   useTemplateRef,
 } from 'vue';
+import { IDLE, useMotionLoop } from '../../composables/use-motion-loop';
 import { clamp, createCatRig } from '../../lib/about-cats-rig';
 import type { CatId } from '../../lib/about-cats-types';
 import { MOVE_NAMES, moveExtent } from '../../lib/about-cats-moves';
@@ -37,7 +38,6 @@ const PLACES: Record<CatId, { start: number; facing: 1 | -1 }> = {
   rudra: { start: 0.8, facing: -1 },
 };
 
-const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
 /** Fallback slot between warm-ups where requestIdleCallback is missing (Safari). */
 const WARM_GAP_MS = 50;
 
@@ -59,7 +59,6 @@ const warmExtents = (names: readonly (typeof MOVE_NAMES)[number][]): void => {
 };
 
 const mounted = ref(false);
-const reducedMotion = ref(false);
 const moods = ref<Partial<Record<CatId, CatMood>>>({});
 const sleeping = ref<Partial<Record<CatId, boolean>>>({});
 const openId = ref<CatId | ''>('');
@@ -70,12 +69,8 @@ const open = computed(() => props.cats.find((cat) => cat.id === openId.value));
 
 const svgs = new Map<CatId, SVGSVGElement>();
 let colony: Colony | null = null;
-let frame = 0;
-let onScreen = false;
 let pointerAt: { x: number; y: number; time: number } | null = null;
-let motionQuery: MediaQueryList | null = null;
 let resizeObserver: ResizeObserver | null = null;
-let viewObserver: IntersectionObserver | null = null;
 
 const setSvg = (id: CatId, node: unknown): void => {
   if (node instanceof SVGSVGElement) svgs.set(id, node);
@@ -85,9 +80,6 @@ const spots = (): HTMLElement[] =>
   props.cats
     .map((cat) => document.getElementById(`cat-spot-${cat.id}`))
     .filter((node): node is HTMLElement => node !== null);
-
-const running = (): boolean =>
-  mounted.value && !reducedMotion.value && onScreen && !document.hidden;
 
 const asleep = (id: CatId): boolean => sleeping.value[id] === true;
 
@@ -110,23 +102,10 @@ const feedPointer = (): void => {
   pointerAt = null;
 };
 
-const tick = (now: number): void => {
-  frame = 0;
-  if (!colony || !running()) return;
+const tick = (now: number): number => {
+  if (!colony) return IDLE;
   feedPointer();
-  if (colony.frame(now)) frame = requestAnimationFrame(tick);
-};
-
-const start = (): void => {
-  if (frame || !running()) return;
-  colony?.resume(performance.now());
-  frame = requestAnimationFrame(tick);
-};
-
-const stop = (): void => {
-  if (!frame) return;
-  cancelAnimationFrame(frame);
-  frame = 0;
+  return colony.frame(now);
 };
 
 const hold = (id: CatId, reason: Hold, on: boolean): void => {
@@ -184,26 +163,30 @@ const onPointer = (event: PointerEvent): void => {
 const onVisibility = (): void => {
   for (const node of spots())
     showSpot(node, !document.hidden && node.hasAttribute('data-cat-visible'));
-  if (document.hidden) stop();
-  else start();
 };
 
-const onPreferenceChange = (event: MediaQueryListEvent): void => {
-  reducedMotion.value = event.matches;
+const onReducedMotion = (reduced: boolean): void => {
   if (!colony) return;
-  if (reducedMotion.value) {
+  if (reduced) {
     /* The sleep control goes; focus on it moves to its cat rather than the page. */
     const focused = document.activeElement;
     if (focused instanceof HTMLElement && focused.matches('.cat-nap'))
       focused.parentElement?.querySelector<HTMLElement>('.cat-button')?.focus();
-    stop();
     colony.still();
   } else {
     for (const node of spots())
       showSpot(node, node.hasAttribute('data-cat-visible'));
-    start();
   }
 };
+
+const loop = useMotionLoop({
+  frame: tick,
+  resume: (now) => colony?.resume(now),
+  canRun: () => mounted.value,
+  onReducedMotion,
+  onVisibility,
+});
+const { reducedMotion, running, start } = loop;
 
 /* `close` fires a task later, so a quick second cat can open before it lands. */
 let shownFor: CatId | '' = '';
@@ -332,9 +315,6 @@ const onDialogClick = (event: MouseEvent): void => {
 };
 
 onMounted(async () => {
-  motionQuery = window.matchMedia(REDUCED_MOTION);
-  reducedMotion.value = motionQuery.matches;
-  motionQuery.addEventListener('change', onPreferenceChange);
   mounted.value = true;
   await nextTick();
 
@@ -354,33 +334,24 @@ onMounted(async () => {
   else warmExtents(MOVE_NAMES);
 
   resizeObserver = new ResizeObserver(layout);
-  viewObserver = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      entry.target.toggleAttribute('data-cat-visible', entry.isIntersecting);
-      showSpot(entry.target, entry.isIntersecting);
-    }
-    onScreen = spots().some((node) => node.hasAttribute('data-cat-visible'));
-    if (onScreen) start();
-    else stop();
+  for (const node of spots()) resizeObserver.observe(node);
+  loop.observe(spots(), {
+    onEntries: (entries) => {
+      for (const entry of entries) {
+        entry.target.toggleAttribute('data-cat-visible', entry.isIntersecting);
+        showSpot(entry.target, entry.isIntersecting);
+      }
+    },
   });
-  for (const node of spots()) {
-    resizeObserver.observe(node);
-    viewObserver.observe(node);
-  }
-  document.addEventListener('visibilitychange', onVisibility);
   document.addEventListener('pointermove', onPointer, { passive: true });
   document.addEventListener('keydown', onKeyDown, { capture: true });
   document.addEventListener('pointerdown', onPointerDown, { capture: true });
 });
 
 onBeforeUnmount(() => {
-  stop();
   followCat(false);
   cancelWarm();
-  motionQuery?.removeEventListener('change', onPreferenceChange);
   resizeObserver?.disconnect();
-  viewObserver?.disconnect();
-  document.removeEventListener('visibilitychange', onVisibility);
   document.removeEventListener('pointermove', onPointer);
   document.removeEventListener('keydown', onKeyDown, { capture: true });
   document.removeEventListener('pointerdown', onPointerDown, {
