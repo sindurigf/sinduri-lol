@@ -876,8 +876,7 @@ export const withApproach = (
 /** One 60fps frame, the step of extent's sampling. */
 const EXTENT_STEP_MS = 1000 / 60;
 
-/** Extent of a move's path, back and forward from its start, for track checks. */
-/** Sampled from the drawn path, so eases and modifiers count, not just the steps. */
+/** A move's path back and forward from its start, for track checks: sampled from the drawn path, so eases and modifiers count. */
 const extent = (move: Move): [number, number] => {
   const start = pose('sit');
   const length = duration(move);

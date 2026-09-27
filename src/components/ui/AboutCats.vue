@@ -7,7 +7,8 @@ import {
   ref,
   useTemplateRef,
 } from 'vue';
-import { createCatRig, type CatId } from '../../lib/about-cats-rig';
+import { createCatRig } from '../../lib/about-cats-rig';
+import type { CatId } from '../../lib/about-cats-types';
 import { MOVE_NAMES, moveExtent } from '../../lib/about-cats-moves';
 import {
   createColony,
@@ -40,15 +41,21 @@ const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
 /** Fallback slot between warm-ups where requestIdleCallback is missing (Safari). */
 const WARM_GAP_MS = 50;
 
+let cancelWarm = (): void => {};
+
 /* One move's extent per idle slot, so the first leap never samples on a frame. */
 const warmExtents = (names: readonly (typeof MOVE_NAMES)[number][]): void => {
   const [name, ...rest] = names;
-  if (!name || !mounted.value) return;
+  if (!name) return;
   moveExtent(name);
   /* The DOM types always declare it, but Safari lacks it. */
-  if (typeof window.requestIdleCallback === 'function')
-    window.requestIdleCallback(() => warmExtents(rest));
-  else setTimeout(() => warmExtents(rest), WARM_GAP_MS);
+  if (typeof window.requestIdleCallback === 'function') {
+    const id = window.requestIdleCallback(() => warmExtents(rest));
+    cancelWarm = () => window.cancelIdleCallback(id);
+  } else {
+    const id = setTimeout(() => warmExtents(rest), WARM_GAP_MS);
+    cancelWarm = () => clearTimeout(id);
+  }
 };
 
 const mounted = ref(false);
@@ -290,6 +297,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   stop();
+  cancelWarm();
   motionQuery?.removeEventListener('change', onPreferenceChange);
   resizeObserver?.disconnect();
   viewObserver?.disconnect();

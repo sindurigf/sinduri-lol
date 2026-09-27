@@ -5,8 +5,6 @@
  */
 import type { CatId, Pose, PropKind, PropState } from './about-cats-types';
 
-export type { CatId, PropKind, PropState };
-
 const NS = 'http://www.w3.org/2000/svg';
 const D = Math.PI / 180;
 

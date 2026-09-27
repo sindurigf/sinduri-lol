@@ -309,7 +309,7 @@ export const createColony = (
         ? -facing
         : 0;
     if (dir === 0) return false;
-    play(cat, moveToPlay(name), now, dir, () => next(cat, performance.now()));
+    play(cat, moveToPlay(name), now, dir);
     return true;
   };
 
@@ -349,7 +349,7 @@ export const createColony = (
       leap(cat, now);
       return;
     }
-    play(cat, move, now, dir, () => next(cat, performance.now()));
+    play(cat, move, now, dir);
   };
 
   /** Where the pointer is from this cat, while it is still moving. */
@@ -428,7 +428,7 @@ export const createColony = (
     if (t >= playing.length) endMove(cat);
   };
 
-  /** Moves one cat a frame on; true while it still has something to show. */
+  /** Moves one cat a frame on: drawn, left as it is, or held in a pause. */
   const step = (cat: CatState, now: number, frames: number): StepResult => {
     const held = cat.holds.size > 0;
     const playing = cat.playing;
@@ -484,10 +484,7 @@ export const createColony = (
       MOVES.wake(),
       now,
       facing,
-      () =>
-        play(cat, moveToPlay('stretch'), performance.now(), facing, () =>
-          next(cat, performance.now()),
-        ),
+      () => play(cat, moveToPlay('stretch'), performance.now(), facing),
       true,
     );
   };
