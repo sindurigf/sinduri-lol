@@ -1,6 +1,6 @@
 /*
- * Card groups: in utilities because `gap-grid` is a utility and a later layer
- * beats specificity. See `.card-block` in components.
+ * Card groups: in utilities because `gap-grid` is one and a later layer beats
+ * specificity.
  */
 @layer utilities {
   /*
@@ -17,6 +17,10 @@
     }
   }
 
+  /*
+   * Cards in a `.card-block` are one object: no gaps, one pink shadow. Opt-in,
+   * not `:has(.card)`: layout gaps elsewhere feed image `sizes`.
+   */
   .card-block {
     gap: 0;
 
