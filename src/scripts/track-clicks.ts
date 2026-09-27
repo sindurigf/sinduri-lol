@@ -22,7 +22,7 @@ const CLICKABLE =
 
 /* `closest` finds the nearest: a menu link reports `menu`, not `header`. */
 const AREAS: Readonly<Record<string, string>> = {
-  dialog: 'menu',
+  '#mobile-menu-panel': 'menu',
   header: 'header',
   footer: 'footer',
   main: 'main',
@@ -40,8 +40,9 @@ const labelOf = (element: Element): string => {
 };
 
 const areaOf = (element: Element): string => {
-  const tag = element.closest(AREA_SELECTOR)?.localName;
-  return (tag && AREAS[tag]) ?? NO_AREA;
+  const area = element.closest(AREA_SELECTOR);
+  const selector = Object.keys(AREAS).find((key) => area?.matches(key));
+  return (selector && AREAS[selector]) ?? NO_AREA;
 };
 
 const isDownload = (url: URL): boolean =>
