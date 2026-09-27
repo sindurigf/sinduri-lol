@@ -175,6 +175,9 @@ Add a Markdown file to `src/content/blog/`; the filename is the slug. The build
 validates frontmatter against `src/content.config.ts` and fails on a mismatch.
 `open-source-is-not-just-code.md` is a complete example.
 
+- The newest published post needs `cover` and `coverAlt`: `/blog` features it.
+- Tests read the new post's routes, category and tags from its frontmatter.
+
 ## Writing a talk
 
 One deck per talk: `src/content/talks/<deck>/slides.md`, in Slidev's Markdown
