@@ -235,10 +235,7 @@
     @apply mt-8 max-w-2xl text-standfirst font-normal text-pretty;
   }
 
-  /*
-   * A talk cover's subtitle and speaker as separate blocks
-   * (src/pages/talks/[deck].astro).
-   */
+  /* A talk cover's subtitle and speaker as separate blocks (TalkSlide.astro). */
   .talk-cover > * + * {
     @apply mt-4;
   }

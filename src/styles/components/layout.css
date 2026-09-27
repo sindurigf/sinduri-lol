@@ -267,8 +267,8 @@
   }
   /*
    * Front canvas sits between the hare and the type; the large h1 holds SC
-   * 1.4.3 at worst over the field. No `z-index`: a stacking context sends pause-button
-   * clicks to `.hero-stack` (tests/motion.spec.ts).
+   * 1.4.3 at worst over the field. No `z-index`: a stacking context would cap
+   * the pause control's `z-30` (tests/motion.spec.ts).
    */
   .hero-field {
     @apply pointer-events-none absolute inset-0;
