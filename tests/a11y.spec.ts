@@ -156,6 +156,11 @@ test.describe('axe: WCAG 2.2 AA with the mobile menu open at 320px', () => {
         results.violations,
         formatViolations(`${route} (mobile menu open)`, results.violations),
       ).toEqual([]);
+      await expectIncompleteDecided(
+        page,
+        `${route} (mobile menu open)`,
+        results,
+      );
     });
   }
 });
@@ -225,6 +230,7 @@ for (const colorScheme of ['dark', 'light'] as const) {
           results.violations,
           formatViolations(label, results.violations),
         ).toEqual([]);
+        await expectIncompleteDecided(page, label, results);
       });
     }
   });
