@@ -127,7 +127,7 @@ test.describe('/brand', () => {
           };
           return items.map((item) => {
             const token = item.querySelector('code')!.textContent!;
-            const facts = item.querySelectorAll('p');
+            const facts = item.querySelectorAll('dd');
             const stated = facts[facts.length - 1]!.textContent!;
             const dark = /Dark (#[0-9A-F]{6})/.exec(stated)?.[1];
             const light = /light (#[0-9A-F]{6})/.exec(stated)?.[1] ?? dark;

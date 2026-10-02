@@ -105,6 +105,8 @@ const ROW = 'flex flex-wrap items-center gap-6 py-6';
 const ROWS = 'divide-y-4 divide-border';
 const NAME = 'text-body font-black text-text';
 const META = 'text-body text-subtle';
+/* `min-h-target`: the SC 2.5.8 inline exception does not cover a bare link. */
+const RULES_LINK = 'link inline-flex min-h-target items-center';
 const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
 ---
 
@@ -170,22 +172,24 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
             ) : (
               <span class:list={[SWATCH_BOX, swatch]} aria-hidden="true" />
             )}
-            <div class="min-w-0">
-              <p class={NAME}>
+            <dl class="min-w-0">
+              <dt class={NAME}>
                 <code>{token}</code>
-              </p>
-              <p class={META}>{job}</p>
-              <p class={META}>
+              </dt>
+              <dd class={META}>{job}</dd>
+              <dd class={META}>
                 Dark {dark}
                 {light !== dark && <>, light {light}</>}
-              </p>
-            </div>
+              </dd>
+            </dl>
           </li>
         );
       })}
     </ul>
     <p class="mt-head text-body text-text">
-      <a href={`${STYLEGUIDE_URL}#colour-tokens`}>Colour rules</a>
+      <a class={RULES_LINK} href={`${STYLEGUIDE_URL}#colour-tokens`}>
+        Colour rules
+      </a>
     </p>
   </Section>
 
@@ -233,7 +237,9 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
       </table>
     </div>
     <p class="mt-head text-body text-text">
-      <a href={`${STYLEGUIDE_URL}#contrast`}>Contrast rules</a>
+      <a class={RULES_LINK} href={`${STYLEGUIDE_URL}#contrast`}>
+        Contrast rules
+      </a>
     </p>
   </Section>
 
@@ -245,7 +251,8 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
     <ul class:list={['card', ROWS]}>
       {type.map(({ token, min, max, weight, use }) => (
         <li class="py-6">
-          <p
+          {/* A specimen at its step's size, not a heading or a paragraph. */}
+          <div
             class:list={[
               TYPE_CLASS[token],
               WEIGHT_CLASS[weight] ?? 'font-normal',
@@ -253,7 +260,7 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
             ]}
           >
             {use}
-          </p>
+          </div>
           <p class:list={[META, 'mt-2']}>
             <code>{token}</code>, {min} to {max}px, weight {weight}
           </p>
@@ -261,7 +268,9 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
       ))}
     </ul>
     <p class="mt-head text-body text-text">
-      <a href={`${STYLEGUIDE_URL}#type-scale`}>Every type step</a>
+      <a class={RULES_LINK} href={`${STYLEGUIDE_URL}#type-scale`}>
+        Every type step
+      </a>
     </p>
   </Section>
 
@@ -277,17 +286,21 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
             class:list={['block h-4 bg-text', SPACING_CLASS[token]]}
             aria-hidden="true"
           />
-          <p class:list={[NAME, 'mt-3']}>
-            <code>{token}</code>
-          </p>
-          <p class={META}>
-            {use}: {phone}px on a phone, {wide}px from 1200px
-          </p>
+          <dl class="mt-3">
+            <dt class={NAME}>
+              <code>{token}</code>
+            </dt>
+            <dd class={META}>
+              {use}: {phone}px on a phone, {wide}px from 1200px
+            </dd>
+          </dl>
         </li>
       ))}
     </ul>
     <p class="mt-head text-body text-text">
-      <a href={`${STYLEGUIDE_URL}#spacing-scale`}>Spacing rules</a>
+      <a class={RULES_LINK} href={`${STYLEGUIDE_URL}#spacing-scale`}>
+        Spacing rules
+      </a>
     </p>
   </Section>
 
@@ -314,17 +327,20 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
               aria-hidden="true"
             />
           )}
-          <div class="min-w-0">
-            <p class={NAME}>
+          <dl class="min-w-0">
+            <dt class={NAME}>
               <code>{utility}</code>
-            </p>
-            <p class={META}>{casts}</p>
-          </div>
+            </dt>
+            <dd class={META}>{casts}</dd>
+          </dl>
         </li>
       ))}
     </ul>
     <p class="mt-head text-body text-text">
-      <a href={`${STYLEGUIDE_URL}#borders-shadows-and-radius`}>
+      <a
+        class={RULES_LINK}
+        href={`${STYLEGUIDE_URL}#borders-shadows-and-radius`}
+      >
         Border, shadow and radius rules
       </a>
     </p>
@@ -399,7 +415,9 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
         <li>Nothing flashes more than three times a second.</li>
       </ul>
       <p class="mt-head text-body text-text">
-        <a href={`${STYLEGUIDE_URL}#motion`}>Motion rules</a>
+        <a class={RULES_LINK} href={`${STYLEGUIDE_URL}#motion`}>
+          Motion rules
+        </a>
       </p>
     </div>
   </Section>
