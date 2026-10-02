@@ -11,7 +11,7 @@ import type { HeroField, HeroPalette } from '../../lib/hero-field-scene';
  * Reduced motion draws one fixed frame and renders no button.
  */
 
-/** Any fixed time; this one sits mid-hop. */
+/** Any fixed time; this one falls in the hare's first rest. */
 const STILL_SECONDS = 3.4;
 
 /*
