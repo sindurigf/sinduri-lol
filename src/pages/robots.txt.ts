@@ -8,8 +8,8 @@ import { SITEMAP_PATH } from '../lib/paths';
  * BaseLayout agree.
  */
 
-/** Training-only user agents; search crawlers stay allowed. */
-const AI_TRAINING_CRAWLERS = [
+/** Crawlers that collect pages for AI training; Google-Extended also covers Gemini app grounding. */
+const BLOCKED_AI_CRAWLERS = [
   'GPTBot',
   'ClaudeBot',
   'CCBot',
@@ -27,7 +27,7 @@ export const GET: APIRoute = ({ site: configuredSite }) => {
   );
 
   const body = [
-    ...AI_TRAINING_CRAWLERS.flatMap((agent) => [
+    ...BLOCKED_AI_CRAWLERS.flatMap((agent) => [
       `User-agent: ${agent}`,
       'Disallow: /',
       '',
