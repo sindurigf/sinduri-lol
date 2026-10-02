@@ -1,0 +1,446 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
+import { accessibilityFacts } from '../lib/accessibility-facts';
+import { colours, contrast, shadows, spacing, type } from '../lib/brand';
+
+const TEMPLATE_URL = 'https://github.com/sindurigf/astro-cat-portfolio';
+const USE_TEMPLATE_URL =
+  'https://github.com/new?template_name=astro-cat-portfolio&template_owner=sindurigf';
+/* The template's live demo; the link renders once this is set. */
+const DEMO_URL: string | null = null;
+const STYLEGUIDE_URL =
+  'https://github.com/sindurigf/sinduri-lol/blob/main/docs/STYLEGUIDE.md';
+const ACCESSIBILITY_MD_URL =
+  'https://github.com/sindurigf/sinduri-lol/blob/main/ACCESSIBILITY.md';
+
+const SECTIONS = [
+  { id: 'colour', title: 'Colour' },
+  { id: 'contrast', title: 'Contrast' },
+  { id: 'type', title: 'Type' },
+  { id: 'spacing', title: 'Spacing' },
+  { id: 'shadows', title: 'Borders and shadows' },
+  { id: 'controls', title: 'Controls' },
+  { id: 'motion', title: 'Motion' },
+  { id: 'accessibility', title: 'Accessibility' },
+  { id: 'use', title: 'The template' },
+] as const;
+const section = (id: (typeof SECTIONS)[number]['id']) =>
+  SECTIONS.find((s) => s.id === id)!;
+
+/*
+ * Each colour shown doing its own job. Class names are literal so Tailwind
+ * builds them; a token in the Colour tokens table with no entry fails the build.
+ */
+const SWATCH: Record<string, string | null> = {
+  background: 'bg-background border-4 border-border',
+  surface: 'bg-surface border-4 border-border',
+  border: 'border-8 border-border',
+  text: 'text-text',
+  subtle: 'text-subtle',
+  /* A fill: light mode turns gold text to ink, but keeps gold fills. */
+  gold: 'bg-gold border-4 border-border',
+  /* Never at rest: it shows in Controls under the pointer and the keyboard. */
+  cyan: null,
+  pink: 'border-4 border-border shadow-hard-pink-8',
+  'pink-text': 'text-pink-text',
+  bunny: 'border-4 border-border shadow-hard-bunny-8',
+  'tile-edge': 'border-8 border-tile-edge',
+};
+const GLYPH = /^text-/;
+for (const { token } of colours) {
+  if (!(token in SWATCH)) {
+    throw new Error(
+      `/brand: ${token} is in the Colour tokens table but has no swatch in src/pages/brand.astro`,
+    );
+  }
+}
+
+const TYPE_CLASS: Record<string, string> = {
+  'text-h1': 'text-h1 tracking-heading',
+  'text-h2': 'text-h2 tracking-heading',
+  'text-h3': 'text-h3',
+  'text-standfirst': 'text-standfirst',
+  'text-body': 'text-body',
+  'text-label': 'text-label uppercase tracking-label',
+};
+const WEIGHT_CLASS: Record<string, string> = {
+  '400': 'font-normal',
+  '900': 'font-black',
+};
+
+const SPACING_CLASS: Record<string, string> = {
+  '--spacing-section': 'w-section',
+  '--spacing-head': 'w-head',
+  '--spacing-grid': 'w-grid',
+};
+
+/* Cyan is never at rest, so its shadow shows only on a hovered card. */
+const SHADOW_CLASS: Record<string, string | null> = {
+  'shadow-hard-pink-4': 'shadow-hard-pink-4',
+  'shadow-hard-pink-8': 'shadow-hard-pink-8',
+  'shadow-hard-cyan-8': null,
+  'shadow-hard-gold-border-8': 'shadow-hard-gold-border-8',
+  'shadow-hard-bunny-4': 'shadow-hard-bunny-4',
+  'shadow-hard-bunny-8': 'shadow-hard-bunny-8',
+  'shadow-hard-bunny-12': 'shadow-hard-bunny-12',
+};
+
+for (const [map, keys, what] of [
+  [TYPE_CLASS, type.map((t) => t.token), 'type step'],
+  [SPACING_CLASS, spacing.map((s) => s.token), 'spacing token'],
+  [SHADOW_CLASS, shadows.map((s) => s.utility), 'shadow'],
+] as const) {
+  for (const key of keys) {
+    if (!(key in map)) {
+      throw new Error(
+        `/brand: the ${what} ${key} has no class in src/pages/brand.astro`,
+      );
+    }
+  }
+}
+
+const ROW = 'flex flex-wrap items-center gap-6 py-6';
+const ROWS = 'divide-y-4 divide-border';
+const NAME = 'text-body font-black text-text';
+const META = 'text-body text-subtle';
+const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
+---
+
+<BaseLayout
+  title="Brand"
+  description="The design system behind sinduri.lol: colour, contrast, type, spacing, shadows, controls and motion, drawn from the site's own CSS, with a template to use it."
+>
+  <PageHero title="Brand">
+    <p class="standfirst">
+      The design system behind this site, drawn from its own CSS.
+    </p>
+    <p class="mt-8 flex flex-wrap gap-6">
+      <a href={USE_TEMPLATE_URL} class="btn-gold-primary">
+        Use this design
+      </a>
+      <a href={TEMPLATE_URL} class="btn-gold-secondary">
+        View the template
+      </a>
+      {DEMO_URL && (
+        <a href={DEMO_URL} class="btn-gold-secondary">
+          See the demo
+        </a>
+      )}
+    </p>
+    <nav aria-label="On this page" class="mt-8">
+      <ul class="flex flex-wrap gap-6">
+        {SECTIONS.map((s) => (
+          <li>
+            <a href={`#${s.id}`} class="chip">
+              {s.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </PageHero>
+
+  <Section
+    id="colour"
+    title={section('colour').title}
+    lead="Each colour has one job. Light mode swaps the grounds, the ink and the edges."
+  >
+    <ul class:list={['card', ROWS]}>
+      {colours.map(({ token, job, dark, light }) => {
+        const swatch = SWATCH[token];
+        return (
+          <li class={ROW}>
+            {swatch === null ? (
+              <span
+                class:list={[
+                  SWATCH_BOX,
+                  'border-4 border-dashed border-border',
+                ]}
+                aria-hidden="true"
+              />
+            ) : GLYPH.test(swatch) ? (
+              <span
+                class:list={[SWATCH_BOX, 'text-h3 font-black', swatch]}
+                aria-hidden="true"
+              >
+                Aa
+              </span>
+            ) : (
+              <span class:list={[SWATCH_BOX, swatch]} aria-hidden="true" />
+            )}
+            <div class="min-w-0">
+              <p class={NAME}>
+                <code>{token}</code>
+              </p>
+              <p class={META}>{job}</p>
+              <p class={META}>
+                Dark {dark}
+                {light !== dark && <>, light {light}</>}
+              </p>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+    <p class="mt-head text-body text-text">
+      <a href={`${STYLEGUIDE_URL}#colour-tokens`}>Colour rules</a>
+    </p>
+  </Section>
+
+  <Section
+    id="contrast"
+    title={section('contrast').title}
+    lead="Every pairing the site uses, measured from the tokens. Text needs 4.5, edges and icons 3."
+  >
+    <div class="prose max-w-none">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col" class="w-1/2">
+              Pair and use
+            </th>
+            <th scope="col" class="w-1/4">
+              Ratio
+            </th>
+            <th scope="col" class="w-1/4">
+              Result
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {contrast.map((row) => (
+            <tr>
+              <td>
+                <code>{row.fg}</code> on <code>{row.bg}</code>
+                <br />
+                <span class="text-subtle">{row.use}</span>
+              </td>
+              <td>{row.ratio}</td>
+              <td>
+                {row.result}
+                {row.needs !== 'n/a' && (
+                  <>
+                    <br />
+                    <span class="text-subtle">needs {row.needs}</span>
+                  </>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="mt-head text-body text-text">
+      <a href={`${STYLEGUIDE_URL}#contrast`}>Contrast rules</a>
+    </p>
+  </Section>
+
+  <Section
+    id="type"
+    title={section('type').title}
+    lead="Lexend, at two weights: 400 for reading, 900 for headings, labels and buttons."
+  >
+    <ul class:list={['card', ROWS]}>
+      {type.map(({ token, min, max, weight, use }) => (
+        <li class="py-6">
+          <p
+            class:list={[
+              TYPE_CLASS[token],
+              WEIGHT_CLASS[weight] ?? 'font-normal',
+              'text-text wrap-anywhere',
+            ]}
+          >
+            {use}
+          </p>
+          <p class:list={[META, 'mt-2']}>
+            <code>{token}</code>, {min} to {max}px, weight {weight}
+          </p>
+        </li>
+      ))}
+    </ul>
+    <p class="mt-head text-body text-text">
+      <a href={`${STYLEGUIDE_URL}#type-scale`}>Every type step</a>
+    </p>
+  </Section>
+
+  <Section
+    id="spacing"
+    title={section('spacing').title}
+    lead="A 4px base. Each bar below is drawn at its token's width on this screen."
+  >
+    <ul class:list={['card', ROWS]}>
+      {spacing.map(({ token, use, phone, wide }) => (
+        <li class="py-6">
+          <span
+            class:list={['block h-4 bg-text', SPACING_CLASS[token]]}
+            aria-hidden="true"
+          />
+          <p class:list={[NAME, 'mt-3']}>
+            <code>{token}</code>
+          </p>
+          <p class={META}>
+            {use}: {phone}px on a phone, {wide}px from 1200px
+          </p>
+        </li>
+      ))}
+    </ul>
+    <p class="mt-head text-body text-text">
+      <a href={`${STYLEGUIDE_URL}#spacing-scale`}>Spacing rules</a>
+    </p>
+  </Section>
+
+  <Section
+    id="shadows"
+    title={section('shadows').title}
+    lead="Borders are 4 or 8px. Shadows are hard offsets with no blur. Corners are square."
+  >
+    <ul class:list={['card', ROWS]}>
+      {shadows.map(({ utility, casts }) => (
+        <li class={ROW}>
+          {SHADOW_CLASS[utility] === null ? (
+            <span
+              class:list={[SWATCH_BOX, 'border-4 border-dashed border-border']}
+              aria-hidden="true"
+            />
+          ) : (
+            <span
+              class:list={[
+                SWATCH_BOX,
+                'border-4 border-border bg-surface',
+                SHADOW_CLASS[utility],
+              ]}
+              aria-hidden="true"
+            />
+          )}
+          <div class="min-w-0">
+            <p class={NAME}>
+              <code>{utility}</code>
+            </p>
+            <p class={META}>{casts}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+    <p class="mt-head text-body text-text">
+      <a href={`${STYLEGUIDE_URL}#borders-shadows-and-radius`}>
+        Border, shadow and radius rules
+      </a>
+    </p>
+  </Section>
+
+  <Section
+    id="controls"
+    title={section('controls').title}
+    lead="Hover, focus or press each control to see its states."
+  >
+    <ul class:list={['card', ROWS]}>
+      <li class={ROW}>
+        <a href={STYLEGUIDE_URL} class="btn-primary">
+          Read the rules
+        </a>
+        <p class={META}>
+          Primary button: cyan fill on hover, pressed into its shadow.
+        </p>
+      </li>
+      <li class={ROW}>
+        <a href="/accessibility/" class="btn-secondary">
+          Accessibility
+        </a>
+        <p class={META}>Secondary button.</p>
+      </li>
+      <li class={ROW}>
+        <button type="button" class="btn-secondary" aria-disabled="true">
+          Unavailable
+        </button>
+        <p class={META}>
+          Unavailable: dashed edge and no shadow, still reachable by keyboard.
+        </p>
+      </li>
+      <li class={ROW}>
+        <a href="/brand/" class="chip" aria-current="page">
+          Brand
+        </a>
+        <a href="/credits/" class="chip">
+          Credits
+        </a>
+        <p class={META}>Chips: the current page is a flat block.</p>
+      </li>
+      <li class="py-6">
+        <p class="text-body text-text">
+          Links in text are underlined and turn cyan on hover, like this one to
+          the <a href={`${STYLEGUIDE_URL}#focus`}>focus rules</a>. A visited
+          link looks the same.
+        </p>
+      </li>
+      <li class="py-6">
+        <p class="text-body text-text">
+          Every control takes the same 4px cyan ring on keyboard focus.
+        </p>
+      </li>
+      <li class="py-6">
+        <p class="text-body text-text">
+          On gold, as in the title area above, buttons are dark with a light
+          label and the ring is dark. See the{' '}
+          <a href={`${STYLEGUIDE_URL}#gold-surface`}>gold surface rules</a>.
+        </p>
+      </li>
+    </ul>
+  </Section>
+
+  <Section id="motion" title={section('motion').title}>
+    <div class="card">
+      <ul class="bullet-list text-body text-text">
+        <li>
+          Anything that moves for more than 5 seconds has a pause control.
+        </li>
+        <li>Under reduced motion, nothing moves.</li>
+        <li>Nothing flashes more than three times a second.</li>
+      </ul>
+      <p class="mt-head text-body text-text">
+        <a href={`${STYLEGUIDE_URL}#motion`}>Motion rules</a>
+      </p>
+    </div>
+  </Section>
+
+  <Section id="accessibility" title={section('accessibility').title}>
+    <div class="card">
+      <p class="text-body text-text">
+        The floor for every page is {accessibilityFacts.targetStandard}. The
+        site is tested for it in three browser engines.
+      </p>
+      <p class="mt-6 text-body text-text">
+        <a href="/accessibility/">Accessibility statement</a> and{' '}
+        <a href={ACCESSIBILITY_MD_URL}>ACCESSIBILITY.md</a>
+      </p>
+    </div>
+  </Section>
+
+  <Section id="use" title={section('use').title}>
+    <div class="card">
+      <p class="text-body text-text">
+        The template carries this design system, its tests and its contact form.
+      </p>
+      <ul class="bullet-list mt-6 text-body text-text">
+        <li>Source code and docs: MIT</li>
+        <li>Photographs: CC BY 4.0, credited in its LICENSE-photos</li>
+        <li>Brand icons: Simple Icons, CC0 1.0</li>
+        <li>Lexend: SIL Open Font License 1.1</li>
+      </ul>
+      <p class="mt-head flex flex-wrap gap-6">
+        <a href={USE_TEMPLATE_URL} class="btn-primary">
+          Use this design
+        </a>
+        <a href={TEMPLATE_URL} class="btn-secondary">
+          View the template
+        </a>
+        {DEMO_URL && (
+          <a href={DEMO_URL} class="btn-secondary">
+            See the demo
+          </a>
+        )}
+      </p>
+    </div>
+  </Section>
+</BaseLayout>
