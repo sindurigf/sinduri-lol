@@ -346,7 +346,7 @@ test(
 );
 
 test(
-  'lying down and getting up each take 5 s or less, a turn to face the band included (SC 2.2.2)',
+  'lying down and getting up end within 5 s with two slow frames to spare, a turn to face the band included (SC 2.2.2)',
   NODE,
   () => {
     const facingAway = { ...pose('sit'), face: -1 };
@@ -358,8 +358,8 @@ test(
     for (const [name, move] of moves) {
       expect(
         duration(move),
-        `${name} keeps moving past 5 s, so a stopped or napping cat does not settle`,
-      ).toBeLessThanOrEqual(SC_2_2_2_MS);
+        `${name} leaves no room within 5 s for a slow device's last frames`,
+      ).toBeLessThanOrEqual(SC_2_2_2_MS - SLOW_FRAMES_SPARE * SLOW_FRAME_MS);
     }
     expect(
       duration(withTurn(MOVES.sleep(true), facingAway)),
@@ -370,6 +370,8 @@ test(
 
 /** Frames this far apart, as a loaded device drew them in CI; the tail must still settle in time. */
 const SLOW_FRAME_MS = 530;
+/** Frames a slow device may still draw after a move ends: the move's last, and the tail's. */
+const SLOW_FRAMES_SPARE = 2;
 /** A tail swung this far, in degrees per segment, then left to settle. */
 const TAIL_SWING = 40;
 const TAIL_SEGMENTS = 8;

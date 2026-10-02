@@ -436,9 +436,9 @@ const arc = (from: number, to: number, height: number): Mod =>
     p.hr -= HEAD_LAG * Math.cos(Math.PI * k);
     p.ta += TAIL_STREAM * Math.sin(Math.PI * k);
   });
-/* Three slow breaths, ending on an exhale so the pose rests where it started. */
+/* Slow breaths, ending on an exhale so the pose rests where it started; two leave room for a slow device's frames within 5 s. */
 const BREATH_MS = 1000;
-const BREATHS = 3;
+const BREATHS = 2;
 /** Body thickness in px the chest gains at the top of a breath. */
 const BREATH_DEPTH = 1.4;
 const breathing = (from: number, breaths: number): Mod =>
