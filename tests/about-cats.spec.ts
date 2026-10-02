@@ -887,13 +887,29 @@ test.describe('About cats', () => {
     page,
   }) => {
     await gotoSettled(page, ROUTE);
+    const spot = page.locator('#cat-spot-rudra');
+    await expect(
+      spot,
+      'Rudra starts on screen, so this proves nothing',
+    ).not.toBeInViewport();
+    /* "hidden" is also the state before any report: wait for an observer made after the page's to report, so the page's has too. */
+    await spot.evaluate(
+      (node) =>
+        new Promise<void>((resolve) => {
+          const seen = new IntersectionObserver(() => {
+            seen.disconnect();
+            requestAnimationFrame(() => resolve());
+          });
+          seen.observe(node);
+        }),
+    );
     await expectMood(
       page,
       'rudra',
       'hidden',
       'Rudra claims a state off screen',
     );
-    await page.locator('#cat-spot-rudra').scrollIntoViewIfNeeded();
+    await spot.scrollIntoViewIfNeeded();
     await expectMood(
       page,
       'rudra',
