@@ -17,6 +17,7 @@ import {
   moveToPlay,
   scaleTravel,
   scaledExtent,
+  EDGE_MOVES,
   TRAVEL_FACTORS,
   TRAVEL_MOVES,
   type Move,
@@ -382,8 +383,7 @@ export const createColony = (
     if (cat.holds.size > 0 || now < cat.restUntil) return;
     if (Math.random() < LEAP_CHANCE && leap(cat, now)) return;
     const name = pickWeighted(CAT_WEIGHTS[cat.id]);
-    const move = moveToPlay(name);
-    if (move.edge) {
+    if (EDGE_MOVES.has(name)) {
       play(cat, cupPush(cat.pose.x), now, -1);
       return;
     }

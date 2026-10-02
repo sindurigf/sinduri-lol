@@ -348,8 +348,6 @@ export interface Move {
   prop?: PropKind;
   /** Prop position relative to the cat's starting point, forward positive. */
   propAt?: (t: number) => PropState;
-  /** Plays at a track end, facing out, so the cup goes over the edge; see withApproach. */
-  edge?: boolean;
 }
 
 const step = (
@@ -730,7 +728,6 @@ export const MOVES = {
     ],
     mods: [],
     prop: 'cup',
-    edge: true,
     propAt: (t) => {
       let x = CUP_AHEAD;
       let y = 0;
@@ -1133,6 +1130,9 @@ export const TRAVEL_MOVES: ReadonlySet<MoveName> = new Set([
   'fly',
   'yarn',
 ]);
+
+/** Moves played at a track end, facing out, so the cup goes over the edge; see withApproach. */
+export const EDGE_MOVES: ReadonlySet<MoveName> = new Set(['knock']);
 
 /** Scales a travel move may shrink to on a short track, largest first. */
 export const TRAVEL_FACTORS = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4] as const;

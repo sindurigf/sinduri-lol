@@ -10,6 +10,7 @@ import { AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { NODE } from './tags';
 import { readFileSync } from 'node:fs';
 import {
+  EDGE_MOVES,
   MOVES,
   type MoveName,
   duration,
@@ -238,7 +239,7 @@ test(
       const min = TRACK_MARGIN;
       const max = width - TRACK_MARGIN - CONTROL_ROOM;
       for (const name of Object.keys(MOVES) as MoveName[]) {
-        if (MOVES[name]().edge) continue;
+        if (EDGE_MOVES.has(name)) continue;
         for (let i = 0; i <= TRACK_STEPS; i += 1) {
           const x = min + ((max - min) * i) / TRACK_STEPS;
           for (const facing of [1, -1]) {
@@ -275,7 +276,7 @@ test(
         for (let i = 0; i <= TRACK_STEPS; i += 1) {
           const x = min + ((max - min) * i) / TRACK_STEPS;
           for (const facing of [1, -1]) {
-            const plan = MOVES[name]().edge
+            const plan = EDGE_MOVES.has(name)
               ? { move: cupPush(x), dir: -1 }
               : planMove(name, x, facing, min, max);
             if (!plan) continue;
@@ -334,7 +335,7 @@ test(
         const end = x - poseAt(push, start, duration(push)).x;
         expect(end, 'the cat ends off its track').toBeGreaterThanOrEqual(min);
         const next = (Object.keys(MOVES) as MoveName[]).filter(
-          (name) => !MOVES[name]().edge && planMove(name, end, 1, min, max),
+          (name) => !EDGE_MOVES.has(name) && planMove(name, end, 1, min, max),
         );
         expect(next, 'no move fits once the cup is pushed').not.toEqual([]);
       }
