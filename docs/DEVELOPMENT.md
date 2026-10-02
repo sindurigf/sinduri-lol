@@ -176,6 +176,7 @@ validates frontmatter against `src/content.config.ts` and fails on a mismatch.
 `open-source-is-not-just-code.md` is a complete example.
 
 - The newest published post needs `cover` and `coverAlt`: `/blog` features it.
+  `src/content.config.ts` fails the build on a cover of another ratio.
 - Tests read the new post's routes, category and tags from its frontmatter.
 
 ## Writing a talk
