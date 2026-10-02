@@ -42,7 +42,7 @@ if (!cover || description === undefined) {
     </div>
   </div>
   {post && (
-    <p class="mx-auto max-w-page pb-section text-body text-text">
+    <p class="mx-auto max-w-page pb-section text-body text-text print:hidden">
       This talk is also a post:{' '}
       <a href={postHref(post.id)}>{post.data.title}</a>.
     </p>
