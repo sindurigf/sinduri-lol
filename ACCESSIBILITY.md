@@ -201,6 +201,7 @@ merge.
 | `tests/no-script.spec.ts`          | 2.1.1, 1.3.1                               | Navigation with scripting off                                                       |
 | `tests/forced-colors.spec.ts`      | 1.4.11, 2.4.7                              | Forced colours, listings sampled; every focus stop on /; not WebKit                 |
 | `tests/motion.spec.ts`             | 2.2.2, 2.3.3                               | Hero field pauses; nothing moves under reduced motion                               |
+| `tests/press.spec.ts`              | 2.3.3                                      | A press is drawn; under reduced motion it drops the shadow without moving           |
 | `tests/about-cats.spec.ts`         | 1.4.1, 1.4.3, 1.4.10, 1.4.11, 2.2.2, 2.5.8 | Cat buttons, card dialog, focus return, sleep controls, reduced motion              |
 | `tests/headings.spec.ts`           | 1.3.1, 2.4.6                               | One `h1`, no skipped level, no heading under 19px                                   |
 | `tests/titles.spec.ts`             | 2.4.2                                      | Titles distinct and descriptive                                                     |
