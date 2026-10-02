@@ -3,7 +3,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import Section from '../components/Section.astro';
 import { accessibilityFacts } from '../lib/accessibility-facts';
-import { colours, contrast, shadows, spacing, type } from '../lib/brand';
+import ContrastTable from '../components/ContrastTable.astro';
+import {
+  colours,
+  contrast,
+  lightContrast,
+  shadows,
+  spacing,
+  type,
+} from '../lib/brand';
 
 const TEMPLATE_URL = 'https://github.com/sindurigf/astro-cat-portfolio';
 const USE_TEMPLATE_URL =
@@ -26,6 +34,19 @@ const SECTIONS = [
   { id: 'accessibility', title: 'Accessibility' },
   { id: 'use', title: 'The template' },
 ] as const;
+/* The pairings every page is read in, shown before the full list. */
+const READING = {
+  fg: ['text', 'subtle'],
+  bg: ['background', 'surface'],
+  needs: '4.5',
+};
+const readingPairs = contrast.filter(
+  (row) =>
+    READING.fg.includes(row.fg) &&
+    READING.bg.includes(row.bg) &&
+    row.needs === READING.needs,
+);
+
 const section = (id: (typeof SECTIONS)[number]['id']) =>
   SECTIONS.find((s) => s.id === id)!;
 
@@ -197,45 +218,25 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
   <Section
     id="contrast"
     title={section('contrast').title}
-    lead="Every pairing the site uses, measured from the tokens. Text needs 4.5, edges and icons 3."
+    lead="Measured from the tokens, for the mode you are viewing; switch it in the header to see the other. Text needs 4.5, edges and icons 3."
   >
-    <div class="prose max-w-none">
-      <table>
-        <thead>
-          <tr>
-            <th scope="col" class="w-1/2">
-              Pair and use
-            </th>
-            <th scope="col" class="w-1/4">
-              Ratio
-            </th>
-            <th scope="col" class="w-1/4">
-              Result
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {contrast.map((row) => (
-            <tr>
-              <td>
-                <code>{row.fg}</code> on <code>{row.bg}</code>
-                <br />
-                <span class="text-subtle">{row.use}</span>
-              </td>
-              <td>{row.ratio}</td>
-              <td>
-                {row.result}
-                {row.needs !== 'n/a' && (
-                  <>
-                    <br />
-                    <span class="text-subtle">needs {row.needs}</span>
-                  </>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div class="contrast-dark">
+      <ContrastTable rows={readingPairs} />
+      <details class="mt-head">
+        <summary class="post-contents-summary">
+          <span>Show all {contrast.length} pairings</span>
+          <span class="post-contents-marker" aria-hidden="true" />
+        </summary>
+        <div class="mt-6">
+          <ContrastTable rows={contrast} />
+        </div>
+      </details>
+    </div>
+    <div class="contrast-light">
+      <ContrastTable rows={lightContrast} />
+      <p class="mt-6 text-body text-text">
+        Gold text turns to ink on white, with a gold square before the word.
+      </p>
     </div>
     <p class="mt-head text-body text-text">
       <a class={RULES_LINK} href={`${STYLEGUIDE_URL}#contrast`}>

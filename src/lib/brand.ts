@@ -89,6 +89,38 @@ export const contrast = contrastRows(tokens).map((row) => ({
   result: row.result.replace(/\*\*/g, ''),
 }));
 
+/*
+ * Light mode's pairings on its ground: the tokens STYLEGUIDE "Light mode"
+ * tabulates, measured through light-mode.css. Gold text turns ink by a class,
+ * not a token, so that row has no pair here.
+ */
+const LIGHT_GROUND = 'background';
+const lightTable = tableAfter('Light mode').flatMap(([names, , stated]) =>
+  [...names.matchAll(/`([a-z-]+)`/g)].map(([, token]) => ({ token, stated })),
+);
+const lightTokens = Object.fromEntries(
+  Object.keys(tokens).map((token) => [token, lightOf(token)]),
+);
+export const lightContrast = contrastRows(lightTokens)
+  .filter(
+    (row) =>
+      row.bg === LIGHT_GROUND &&
+      row.result === 'pass' &&
+      lightTable.some(({ token }) => token === row.fg),
+  )
+  .map((row) => {
+    const stated = lightTable.find(({ token }) => token === row.fg)!.stated;
+    if (stated !== row.ratio) {
+      fail(
+        `${STYLEGUIDE} "Light mode" gives ${row.fg} ${stated} but ${LIGHT_CSS} measures ${row.ratio}`,
+      );
+    }
+    return { ...row, use: plain(row.use) };
+  });
+if (lightContrast.length === 0) {
+  fail(`${STYLEGUIDE} "Light mode" gives no pairing on ${LIGHT_GROUND}`);
+}
+
 /** The type steps a page uses, by token; posts, slides and one-off sizes are in STYLEGUIDE. */
 const TYPE_STEPS = [
   'text-h1',

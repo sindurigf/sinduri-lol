@@ -39,12 +39,12 @@ const resolveTokens = (page: Page, tokens: string[]) =>
   }, tokens);
 
 test.describe('/brand', () => {
-  test('the contrast table lists every pairing the site measures, in order', async ({
+  test('the full contrast table lists every pairing the site measures, in order', async ({
     page,
   }) => {
     await gotoSettled(page, ROUTE);
     const pairs = await page
-      .locator('#contrast tbody tr td:first-child')
+      .locator('#contrast .contrast-dark details tbody tr td:first-child')
       .evaluateAll((cells) =>
         cells.map((cell) =>
           [...cell.querySelectorAll('code')]
@@ -62,41 +62,88 @@ test.describe('/brand', () => {
     );
   });
 
-  test('every stated ratio equals the ratio of the colours the page ships (SC 1.4.3, 1.4.11)', async ({
-    page,
-  }) => {
-    await gotoSettled(page, ROUTE);
-    const rows = await page.locator('#contrast tbody tr').evaluateAll((trs) =>
-      trs.map((tr) => {
-        const [pair, ratio] = tr.querySelectorAll('td');
-        const [fg, bg] = [...pair!.querySelectorAll('code')].map(
-          (c) => c.textContent!,
-        );
-        return { fg: fg!, bg: bg!, stated: ratio!.textContent!.trim() };
-      }),
-    );
-    const tokens = [...new Set(rows.flatMap((row) => [row.fg, row.bg]))];
-    const hex = await resolveTokens(page, tokens);
-    const measured = (await page.evaluate(`(() => {
-      ${PAGE_HELPERS}
-      const rows = ${JSON.stringify(rows)};
-      const hex = ${JSON.stringify(hex)};
-      const rgb = (h) => ({ r: parseInt(h.slice(1, 3), 16), g: parseInt(h.slice(3, 5), 16), b: parseInt(h.slice(5, 7), 16), a: 1 });
-      return rows.map((row) => hex[row.fg] && hex[row.bg]
-        ? ratio(rgb(hex[row.fg]), rgb(hex[row.bg])).toFixed(${RATIO_DIGITS})
-        : 'unresolved');
-    })()`)) as string[];
-    const wrong = rows
-      .map((row, i) => ({ ...row, measured: measured[i] }))
-      .filter((row) => row.measured !== row.stated)
-      .map(
-        (row) =>
-          `${row.fg} on ${row.bg}: states ${row.stated}, measures ${row.measured}`,
+  for (const theme of ['dark', 'light'] as const) {
+    test(`in ${theme} mode every stated ratio and sample matches the colours the page ships (SC 1.4.3, 1.4.11)`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext();
+      await context.addInitScript(
+        (value) => localStorage.setItem('theme', value),
+        theme,
       );
-    expect(wrong, 'a stated ratio differs from the shipped colours').toEqual(
-      [],
-    );
-  });
+      const page = await context.newPage();
+      await gotoSettled(page, ROUTE);
+      const shown = page.locator(`#contrast .contrast-${theme}`);
+      const other = page.locator(
+        `#contrast .contrast-${theme === 'dark' ? 'light' : 'dark'}`,
+      );
+      await expect(shown, `${theme} mode hides its own pairings`).toBeVisible();
+      await expect(
+        other,
+        `${theme} mode shows the other mode's pairings`,
+      ).toBeHidden();
+
+      const rows = await shown.locator('tbody tr').evaluateAll((trs) =>
+        trs.map((tr) => {
+          const [pair, , ratio] = tr.querySelectorAll('td');
+          const [fg, bg] = [...pair!.querySelectorAll('code')].map(
+            (c) => c.textContent!,
+          );
+          const sample = pair!.querySelector<HTMLElement>(
+            '[aria-hidden="true"]',
+          );
+          const style = sample && getComputedStyle(sample);
+          return {
+            fg: fg!,
+            bg: bg!,
+            stated: /^\d+\.\d+/.exec(ratio!.textContent!.trim())?.[0] ?? '',
+            sample: style && {
+              fg:
+                tr.dataset.sample === 'text'
+                  ? style.color
+                  : style.borderTopColor,
+              bg: style.backgroundColor,
+            },
+          };
+        }),
+      );
+      expect(rows.length, `${theme} mode lists no pairing`).toBeGreaterThan(0);
+      const tokens = [...new Set(rows.flatMap((row) => [row.fg, row.bg]))];
+      const hex = await resolveTokens(page, tokens);
+      const measured = (await page.evaluate(`(() => {
+        ${PAGE_HELPERS}
+        const rows = ${JSON.stringify(rows)};
+        const hex = ${JSON.stringify(hex)};
+        const rgb = (h) => ({ r: parseInt(h.slice(1, 3), 16), g: parseInt(h.slice(3, 5), 16), b: parseInt(h.slice(5, 7), 16), a: 1 });
+        const fixed = (value) => value.toFixed(${RATIO_DIGITS});
+        return rows.map((row) => ({
+          tokens: hex[row.fg] && hex[row.bg] ? fixed(ratio(rgb(hex[row.fg]), rgb(hex[row.bg]))) : 'unresolved',
+          sample: row.sample ? fixed(ratio(parse(row.sample.fg), parse(row.sample.bg))) : null,
+        }));
+      })()`)) as { tokens: string; sample: string | null }[];
+      const wrong = rows.flatMap((row, i) => {
+        const { tokens: fromTokens, sample } = measured[i]!;
+        const name = `${row.fg} on ${row.bg}`;
+        return [
+          ...(fromTokens === row.stated
+            ? []
+            : [`${name}: states ${row.stated}, tokens measure ${fromTokens}`]),
+          ...(sample === null || sample === row.stated
+            ? []
+            : [`${name}: states ${row.stated}, its sample paints ${sample}`]),
+        ];
+      });
+      expect(
+        wrong,
+        `a ${theme} ratio differs from the shipped colours`,
+      ).toEqual([]);
+      expect(
+        rows.filter((row) => row.sample).length,
+        `${theme} mode shows no sample`,
+      ).toBeGreaterThan(0);
+      await context.close();
+    });
+  }
 
   for (const theme of ['dark', 'light'] as const) {
     test(`each colour swatch shows the hex its row states in ${theme} mode`, async ({
