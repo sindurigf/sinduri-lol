@@ -211,6 +211,126 @@ test.describe('/brand', () => {
     });
   }
 
+  test('every component row has a name, what it is for, its rule and a live example', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    const rows = await page.locator('[data-component]').evaluateAll((items) =>
+      items.map((item) => {
+        const [use, rule] = [...item.querySelectorAll(':scope > p')].map(
+          (p) => p.textContent?.trim() ?? '',
+        );
+        return {
+          id: item.getAttribute('data-component'),
+          name: item.querySelector(':scope > h3')?.textContent?.trim() ?? '',
+          use: use ?? '',
+          rule: rule ?? '',
+          example:
+            item.querySelector(':scope > [data-example]')?.children.length ?? 0,
+        };
+      }),
+    );
+    expect(rows.length, '/brand shows no component').toBeGreaterThan(0);
+    const incomplete = rows
+      .filter(
+        (row) =>
+          !row.name ||
+          !row.use.startsWith('Use it for ') ||
+          !row.rule ||
+          row.example === 0,
+      )
+      .map((row) => row.id);
+    expect(incomplete, 'a component row lacks a part').toEqual([]);
+  });
+
+  test('ids and landmark names are unique, with the examples on the page', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    const { ids, landmarks, mains, h1s } = await page.evaluate(() => {
+      const repeated = (values: string[]) =>
+        values.filter((value, i) => values.indexOf(value) !== i);
+      return {
+        ids: repeated(
+          [...document.querySelectorAll('[id]')].map((el) => el.id),
+        ),
+        landmarks: repeated(
+          [...document.querySelectorAll('nav, aside, form[aria-label]')]
+            /* Unrendered landmarks, like the closed mobile menu's, are out of the tree. */
+            .filter((el) => el.checkVisibility())
+            .map(
+              (el) =>
+                `${el.tagName.toLowerCase()} ${el.getAttribute('aria-label') ?? document.getElementById(el.getAttribute('aria-labelledby') ?? '')?.textContent?.trim() ?? ''}`,
+            ),
+        ),
+        mains: document.querySelectorAll('main').length,
+        h1s: document.querySelectorAll('h1').length,
+      };
+    });
+    expect(ids, 'an id is repeated').toEqual([]);
+    expect(landmarks, 'two landmarks share a name').toEqual([]);
+    expect(mains, 'an example adds a main').toBe(1);
+    expect(h1s, 'an example adds an h1').toBe(1);
+  });
+
+  test('the example form sends nothing and stays on the page', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    const form = page.locator('#form ~ [data-example] form');
+    const requests: string[] = [];
+    page.on('request', (request) => {
+      if (request.method() !== 'GET') requests.push(request.url());
+    });
+    await form.getByLabel(/^Name/).fill('A name');
+    await form.getByRole('button', { name: 'Send message' }).click();
+    await form.getByLabel(/^Name/).press('Enter');
+    await expect(page, 'the example form left the page').toHaveURL(
+      new RegExp(`${ROUTE}$`),
+    );
+    expect(requests, 'the example form sent a request').toEqual([]);
+  });
+
+  test('both theme switches change the one theme and always agree', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    const switches = page.locator('.theme-switch');
+    await expect(switches).toHaveCount(2);
+    const state = () =>
+      page.evaluate(() => ({
+        theme: document.documentElement.dataset.theme,
+        pressed: [...document.querySelectorAll('.theme-switch')].map((b) =>
+          b.getAttribute('aria-pressed'),
+        ),
+      }));
+    for (const which of [1, 0]) {
+      const before = await state();
+      await switches.nth(which).click();
+      const after = await state();
+      expect(after.theme, 'a switch did not change the theme').not.toBe(
+        before.theme,
+      );
+      expect(new Set(after.pressed).size, 'the two switches disagree').toBe(1);
+      expect(after.pressed[0]).toBe(String(after.theme === 'light'));
+    }
+  });
+
+  test('each motion example changes only its own name', async ({ page }) => {
+    await gotoSettled(page, ROUTE);
+    const toggles = page.locator('button[data-example-toggle]');
+    expect(await toggles.count()).toBeGreaterThan(1);
+    const names = () =>
+      toggles.evaluateAll((all) => all.map((b) => b.textContent?.trim()));
+    const before = await names();
+    await toggles.first().click();
+    const after = await names();
+    expect(after[0], 'the toggle kept its name').not.toBe(before[0]);
+    expect(after.slice(1), 'one toggle changed another').toEqual(
+      before.slice(1),
+    );
+  });
+
   test('the calls to action open the template, and the demo link waits for the demo', async ({
     page,
   }) => {
