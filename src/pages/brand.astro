@@ -34,8 +34,9 @@ const section = (id: (typeof SECTIONS)[number]['id']) =>
  * builds them; a token in the Colour tokens table with no entry fails the build.
  */
 const SWATCH: Record<string, string | null> = {
-  background: 'bg-background border-4 border-border',
-  surface: 'bg-surface border-4 border-border',
+  /* Framed in `text`: a ground's fill alone is lost against the card. */
+  background: 'bg-background border-8 border-text',
+  surface: 'bg-surface border-8 border-text',
   border: 'border-8 border-border',
   text: 'text-text',
   subtle: 'text-subtle',
