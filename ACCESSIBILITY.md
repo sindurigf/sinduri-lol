@@ -8,17 +8,17 @@ The statement is voluntary for a personal site and follows the
 
 ## 1. Project information
 
-| Field               | Value                                                      |
-| ------------------- | ---------------------------------------------------------- |
-| Project             | sinduri.lol                                                |
-| Project type        | Static personal website (Astro, two Vue islands, Tailwind) |
-| Accessibility owner | Sinduri Guntupalli                                         |
-| Public reporting    | <https://github.com/sindurigf/sinduri-lol/issues>          |
-| Private reporting   | <lol@sinduri.lol>                                          |
-| Target standard     | WCAG 2.2 Level AA, with AAA text contrast where achievable |
-| Conformance status  | **Target only. No conformance claim.**                     |
-| Last reviewed       | 2026-10-02                                                 |
-| Response time       | 7 days                                                     |
+| Field               | Value                                                                                                                                                 |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Project             | sinduri.lol                                                                                                                                           |
+| Project type        | Static personal website (Astro, two Vue islands, Tailwind)                                                                                            |
+| Accessibility owner | Sinduri Guntupalli                                                                                                                                    |
+| Public reporting    | <https://github.com/sindurigf/sinduri-lol/issues>                                                                                                     |
+| Private reporting   | <lol@sinduri.lol>                                                                                                                                     |
+| Target standard     | Web Content Accessibility Guidelines (WCAG) 2.2 Level AA, the middle of three levels, with Level AAA, the highest, for text contrast where achievable |
+| Conformance status  | **Target only. No conformance claim.**                                                                                                                |
+| Last reviewed       | 2026-10-02                                                                                                                                            |
+| Response time       | 7 days                                                                                                                                                |
 
 `src/lib/accessibility-facts.ts` reads the Target standard, Conformance status,
 Last reviewed, Response time and both reporting rows into `/accessibility` at
@@ -46,6 +46,7 @@ status is still "Target only. No conformance claim."
 | 1.4.6 Contrast (Enhanced)         | Every text token at rest clears 7:1 on every ground it is used on, dark, light and gold. Exception: light-mode hover `cyan` is AA only. `pink` is never text; `pink-text` is. Ratios: [contrast table](docs/STYLEGUIDE.md#contrast). |
 | 2.3.3 Animation from Interactions | See Motion in [section 4](#4-what-the-site-supports).                                                                                                                                                                                |
 | 2.4.9 Link Purpose (Link Only)    | Within a page, one link name leads to one place. Hidden text completes short names: "Posts tagged Drupal", "Sinduri on GitHub". Exception: link text in posts, listed in `tests/link-purpose.spec.ts`.                               |
+| 3.1.4 Abbreviations               | On functional pages (statement, privacy, credits, brand, reading time) each abbreviation is spelled out or defined in the sentence where it first appears. Posts, About and Career are the owner's copy and are not yet.             |
 
 Out of scope: SC 2.4.13 Focus Appearance and SC 2.5.5 Target Size (Enhanced,
 44px). axe's `wcag2aaa` rules are not run.
@@ -195,6 +196,7 @@ merge.
 | `tests/states.spec.ts`             | 1.4.1, 1.4.11                              | Hover drawn; current page is a shape; chip rings clear neighbours                   |
 | `tests/nav-current.spec.ts`        | 1.3.1, 4.1.2                               | `aria-current` in all three navs                                                    |
 | `tests/link-purpose.spec.ts`       | 2.4.9                                      | One link name, one destination, on every route                                      |
+| `tests/abbreviations.spec.ts`      | 3.1.4                                      | First use of each listed abbreviation expanded in its sentence; no "min read"       |
 | `tests/target-size.spec.ts`        | 2.5.8                                      | Every target on its own box at 305px and 1280px                                     |
 | `tests/reflow.spec.ts`             | 1.4.10, 1.4.12                             | No sideways scroll; content box; heading word fit                                   |
 | `tests/hero-fit.spec.ts`           | 1.4.10, 1.4.12, 2.2.2                      | Hero name unclipped and uncovered; pause control on the first screen                |
