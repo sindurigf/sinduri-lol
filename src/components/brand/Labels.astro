@@ -4,12 +4,8 @@ import { getSortedPosts, tagLabel } from '../../lib/blog';
 import { tagHref } from '../../lib/paths';
 
 const [post] = await getSortedPosts();
+/* A site may have no tagged post yet; the tag chip row waits for one. */
 const tag = post?.data.tags?.[0];
-if (!tag) {
-  throw new Error(
-    '/brand: no published post with a tag to show as a tag chip.',
-  );
-}
 const META = 'text-body text-subtle';
 ---
 
@@ -34,20 +30,22 @@ const META = 'text-body text-subtle';
     </ul>
   </ComponentRow>
 
-  <ComponentRow
-    id="tag-chips"
-    name="Tag chips"
-    use="a post's tags, under the post."
-    rule="Pink-text labels, tilted alternately; each leads to the tag's page."
-  >
-    <ul class="flex flex-wrap gap-6">
-      <li>
-        <a href={tagHref(tag)} class="chip chip-sticker -rotate-3">
-          {tagLabel(tag)}
-        </a>
-      </li>
-    </ul>
-  </ComponentRow>
+  {tag && (
+    <ComponentRow
+      id="tag-chips"
+      name="Tag chips"
+      use="a post's tags, under the post."
+      rule="Pink-text labels, tilted alternately; each leads to the tag's page."
+    >
+      <ul class="flex flex-wrap gap-6">
+        <li>
+          <a href={tagHref(tag)} class="chip chip-sticker -rotate-3">
+            {tagLabel(tag)}
+          </a>
+        </li>
+      </ul>
+    </ComponentRow>
+  )}
 
   <ComponentRow
     id="badges"
