@@ -60,6 +60,10 @@ Record rejected findings beside the code so they are not raised again;
   [the template](.github/PULL_REQUEST_TEMPLATE.md). Never `--fill`.
 - CI must pass. The owner reviews and merges.
 - One commit per logical change.
+- Port every fix, upgrade, test, tooling or CI change to
+  [astro-cat-portfolio](https://github.com/sindurigf/astro-cat-portfolio) as a
+  pull request there, or say in one line under "Template port" why it does
+  not apply.
 - Do not rename the `Required checks` job
   ([why](docs/DEPLOYMENT.md#repository-settings)).
 
