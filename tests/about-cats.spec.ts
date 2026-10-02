@@ -117,6 +117,20 @@ const expectMood = (
     timeout: NAP_TIMEOUT_MS,
   });
 
+/**
+ * Brings a cat's band on screen and waits for the colony to report it: until then
+ * data-cat-state reads "hidden" whatever the cat is doing, so a test reads only its own state.
+ */
+const showCat = async (page: Page, id: (typeof CATS)[number]) => {
+  await page.locator(`#cat-spot-${id}`).scrollIntoViewIfNeeded();
+  await expectMood(
+    page,
+    id,
+    /^(playing|holding|asleep)$/,
+    `${NAMES[id]} stayed hidden on screen`,
+  );
+};
+
 /** Points at a cat and waits for it to stop, as a person aiming at it would. */
 const pointAt = async (page: Page, id: (typeof CATS)[number]) => {
   const area = page.locator(`#cat-spot-${id} .cat-hit-area`);
@@ -613,6 +627,7 @@ test.describe('About cats', () => {
       ['minerva', 'asleep'],
       ['hela', /^(playing|holding)$/],
     ] as const) {
+      await showCat(page, id);
       await catButton(page, id).focus();
       await page.keyboard.press('Enter');
       const dialog = page.getByRole('dialog', { name: NAMES[id] });
