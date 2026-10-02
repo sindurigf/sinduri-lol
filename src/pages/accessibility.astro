@@ -5,8 +5,13 @@ import { accessibilityFacts } from '../lib/accessibility-facts';
 import { CONTACT_EMAIL, CONTACT_MAILTO } from '../lib/contact';
 
 /* A summary of ACCESSIBILITY.md; the volatile facts are derived from it at build time. */
-const { targetStandard, conformanceStatus, lastReviewed, publicReporting } =
-  accessibilityFacts;
+const {
+  targetStandard,
+  conformanceStatus,
+  lastReviewed,
+  responseTime,
+  publicReporting,
+} = accessibilityFacts;
 
 const FULL_RECORD =
   'https://github.com/sindurigf/sinduri-lol/blob/main/ACCESSIBILITY.md';
@@ -141,6 +146,8 @@ const AUTOMATED = [
             to do are useful, and nothing is required. Anything that stops you
             completing a task is fixed first.
           </p>
+
+          <p>I aim to reply within {responseTime}.</p>
         </div>
 
         <ul class="actions mt-head">

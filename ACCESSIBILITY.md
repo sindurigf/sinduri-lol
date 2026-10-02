@@ -15,10 +15,11 @@ barrier. The public summary is [/accessibility](https://sinduri.lol/accessibilit
 | Target standard     | WCAG 2.2 Level AA, with AAA text contrast where achievable |
 | Conformance status  | **Target only. No conformance claim.**                     |
 | Last reviewed       | 2026-09-27                                                 |
+| Response time       | 7 days                                                     |
 
 `src/lib/accessibility-facts.ts` reads the Target standard, Conformance status,
-Last reviewed and both reporting rows into `/accessibility` at build time and
-throws if a row is missing. `tests/accessibility-page.spec.ts` asserts the
+Last reviewed, Response time and both reporting rows into `/accessibility` at
+build time and throws if a row is missing. `tests/accessibility-page.spec.ts` asserts the
 status is still "Target only. No conformance claim."
 
 ## 2. Commitment
@@ -306,6 +307,8 @@ WCAG criterion or say anything about yourself.
 
 Useful, never required: the page, what you tried and what happened, your
 browser, operating system and assistive technology, a screenshot.
+
+Replies aim to arrive within the Response time in [section 1](#1-project-information).
 
 | Severity | Meaning                                                  | Priority                 |
 | -------- | -------------------------------------------------------- | ------------------------ |
