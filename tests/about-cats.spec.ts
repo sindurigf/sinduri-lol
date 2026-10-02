@@ -831,8 +831,9 @@ test.describe('About cats', () => {
           return {
             icon: icon && own ? ratio(icon, own) : 0,
             ring: ring && ground ? ratio(ring, ground) : 0,
+            drawn: style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0,
           };
-        })()`) as Promise<{ icon: number; ring: number }>;
+        })()`) as Promise<{ icon: number; ring: number; drawn: boolean }>;
       await control.hover();
       expect(
         (await measure()).icon,
@@ -846,6 +847,10 @@ test.describe('About cats', () => {
         focused.icon,
         'the focused sleep icon is under 3:1',
       ).toBeGreaterThanOrEqual(NON_TEXT);
+      /* The outline colour reads as the text colour even with no ring drawn. */
+      expect(focused.drawn, 'the focused sleep control draws no ring').toBe(
+        true,
+      );
       expect(
         focused.ring,
         'the focus ring is under 3:1',
