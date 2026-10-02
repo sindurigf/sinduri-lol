@@ -31,6 +31,7 @@ export const accessibilityFacts = {
   conformanceStatus: tableValue('Conformance status'),
   /** ISO date. */
   lastReviewed: tableValue('Last reviewed'),
+  responseTime: tableValue('Response time'),
   publicReporting: tableValue('Public reporting'),
   privateReporting: tableValue('Private reporting'),
 } as const;

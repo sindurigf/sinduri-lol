@@ -65,6 +65,15 @@ test.describe('the accessibility statement', NODE, () => {
     }
   });
 
+  test('the page states the response time from the record', () => {
+    const responseTime = tableValue('Response time');
+
+    expect(
+      pageText(),
+      `/accessibility does not promise a reply within "${responseTime}" from ${RECORD}.`,
+    ).toContain(`reply within ${responseTime}`);
+  });
+
   test('the status is still the honest one', () => {
     // A real change needs HONEST_STATUS updated with the manual testing that justifies it.
     expect(

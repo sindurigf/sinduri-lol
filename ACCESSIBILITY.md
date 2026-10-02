@@ -3,6 +3,9 @@
 What sinduri.lol aims for, what is tested, what is not, and how to report a
 barrier. The public summary is [/accessibility](https://sinduri.lol/accessibility).
 
+The statement is voluntary for a personal site and follows the
+[W3C model for accessibility statements](https://www.w3.org/WAI/planning/statements/).
+
 ## 1. Project information
 
 | Field               | Value                                                      |
@@ -14,11 +17,12 @@ barrier. The public summary is [/accessibility](https://sinduri.lol/accessibilit
 | Private reporting   | <lol@sinduri.lol>                                          |
 | Target standard     | WCAG 2.2 Level AA, with AAA text contrast where achievable |
 | Conformance status  | **Target only. No conformance claim.**                     |
-| Last reviewed       | 2026-09-27                                                 |
+| Last reviewed       | 2026-10-02                                                 |
+| Response time       | 7 days                                                     |
 
 `src/lib/accessibility-facts.ts` reads the Target standard, Conformance status,
-Last reviewed and both reporting rows into `/accessibility` at build time and
-throws if a row is missing. `tests/accessibility-page.spec.ts` asserts the
+Last reviewed, Response time and both reporting rows into `/accessibility` at
+build time and throws if a row is missing. `tests/accessibility-page.spec.ts` asserts the
 status is still "Target only. No conformance claim."
 
 ## 2. Commitment
@@ -306,6 +310,11 @@ WCAG criterion or say anything about yourself.
 
 Useful, never required: the page, what you tried and what happened, your
 browser, operating system and assistive technology, a screenshot.
+
+Replies aim to arrive within the Response time in [section 1](#1-project-information).
+
+Content that does not work for someone is sent another way on request, for
+example as plain text.
 
 | Severity | Meaning                                                  | Priority                 |
 | -------- | -------------------------------------------------------- | ------------------------ |
