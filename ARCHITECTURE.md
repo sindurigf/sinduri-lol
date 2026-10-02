@@ -600,10 +600,6 @@ evidence.
   rule, with its reason, in [STYLEGUIDE.md](docs/STYLEGUIDE.md#motion).
 - **Reset the contact form on a timer after Stop:** invites a double send; Esc
   and `navigateerror` cover it, Firefox's Stop button does not.
-- **Add `wrap-anywhere` to `.btn-primary` and `.btn-secondary`:** the longest
-  label, "Email `lol@sinduri.lol`" on `/accessibility`, breaks after "Email" and
-  the address fits the button at 305px, with and without the SC 1.4.12
-  override.
 
 ## Content notes
 
