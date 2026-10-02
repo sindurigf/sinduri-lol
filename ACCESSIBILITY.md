@@ -267,18 +267,19 @@ links. Not automated:
    with §6.4 in Chrome for the uppercase question. An Orca pass narrows this
    gap; it does not close it.
 3. **The gold surface has been measured, not looked at.**
-   `tests/gold-surface.spec.ts` measures the `/contact` band at 305px:
+   `tests/gold-surface.spec.ts` measures every route at 1280px, and one
+   button at 305px:
 
-   | Measured on `/contact`          | Result                                       |
-   | ------------------------------- | -------------------------------------------- |
-   | `.btn-gold-primary`             | its fill delimits it on gold                 |
-   | its focus ring                  | inner `#FFFFFF` ring, 18.58 against the fill |
-   | every string on the gold ground | nothing below 4.5:1                          |
+   | Measured                                             | Result                                               |
+   | ---------------------------------------------------- | ---------------------------------------------------- |
+   | every string on a gold ground                        | nothing below 4.5:1                                  |
+   | every control in `.surface-gold`                     | its fill differs from gold, or its border clears 3:1 |
+   | `/contact`'s `.btn-gold-primary` focus ring at 305px | inner `#FFFFFF` ring at 3:1 or more against its fill |
 
-   `.btn-gold-secondary` (on `/` and `/career`) is measured by its border edge
-   on gold, in the same spec.
-   Nobody has tabbed, zoomed or listened to a gold band.
-   [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §5 closes this.
+   The inner ring is 18.58 against the `#131313` fill by the tokens; the test
+   asserts 3:1. Nobody has tabbed, zoomed or listened to a gold band.
+   [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §5 checks the ring on gold by
+   eye only, so it does not close this gap.
 
 4. **Fixture and in-situ gold tests cover different mistakes.** Fixtures can be
    broken on purpose; only the in-situ test catches a mistake in a shipped
