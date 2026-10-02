@@ -9,8 +9,9 @@
 
 ## Docs and pages
 
-Sweep what the change makes stale: `src/lib/credits.ts` (/credits), README,
-ARCHITECTURE, ACCESSIBILITY, AI_DISCLOSURE, SECURITY, `docs/*`,
+Sweep what the change makes stale: credits (`src/lib/credits.ts`,
+`src/pages/credits.astro`), README, ARCHITECTURE, ACCESSIBILITY,
+AI_DISCLOSURE, SECURITY, `docs/*`,
 `.claude/skills/sinduri-design-system/SKILL.md`, /accessibility, /privacy,
 /brand, `llms.txt` and `robots.txt`.
 
