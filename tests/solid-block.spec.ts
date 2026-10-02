@@ -22,6 +22,8 @@ const SOLID_ROUTES: Record<string, number> = {
   '/blog': 1,
   /* The first featured post, the same card as on /blog. */
   '/': 1,
+  /* The design-system examples: text only. */
+  '/brand': 0,
 };
 
 /** Routes whose built HTML carries a `.card-solid`, read from `dist/`. */

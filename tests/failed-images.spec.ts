@@ -23,6 +23,7 @@ const FRAME_ROUTES = [
   '/',
   '/about',
   '/blog',
+  '/brand',
   ...PHOTO_POST_ROUTES,
   '/talks/open-source-is-not-just-code',
 ];
