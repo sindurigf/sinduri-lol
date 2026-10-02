@@ -188,7 +188,7 @@ So do not try to move all six pillars at once. Pick the one that hurts most righ
 
 This article is based on my talk, _Open Source Is Not Just Code: Designing Communities That Actually Scale_, given at the [WeAreDevelopers World Congress](https://www.wearedevelopers.com/world-congress/agenda/sessions/open-source-is-not-just-code-designing-communities-that-actually-scale-1142282) on Friday 10 July 2026, 09:40 to 10:10, on Stage 3 (powered by AWS).
 
-[View the slides](/talks/open-source-is-not-just-code/), or [download them](/talks/open-source-is-not-just-code.pdf) (PDF, 698 KB, 31 pages).
+[View the slides](/talks/open-source-is-not-just-code/), or [download them](/talks/open-source-is-not-just-code.pdf) (PDF, 499 KB, 31 pages).
 
 ---
 
