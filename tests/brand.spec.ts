@@ -331,6 +331,47 @@ test.describe('/brand', () => {
     );
   });
 
+  for (const width of [1280, 390] as const) {
+    test(`no roundel covers a control at ${width}px, with every States closed or open`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await gotoSettled(page, ROUTE);
+      for (const open of [false, true]) {
+        const covered = await page.evaluate((openAll) => {
+          for (const details of document.querySelectorAll('main details')) {
+            (details as HTMLDetailsElement).open = openAll;
+          }
+          const boxes = (selector: string) =>
+            [...document.querySelectorAll<HTMLElement>(selector)]
+              .filter((el) => el.checkVisibility())
+              .map((el) => ({ el, box: el.getBoundingClientRect() }));
+          const roundels = boxes('main .hero-roundel');
+          const controls = boxes(
+            'main :is(summary, a[href], button, input, select, textarea, [tabindex])',
+          );
+          const overlap = (a: DOMRect, b: DOMRect) =>
+            a.left < b.right &&
+            b.left < a.right &&
+            a.top < b.bottom &&
+            b.top < a.bottom;
+          return roundels.flatMap((roundel) =>
+            controls
+              .filter(({ box }) => overlap(roundel.box, box))
+              .map(
+                ({ el }) =>
+                  `${el.tagName.toLowerCase()} "${(el.textContent ?? '').trim().slice(0, 30)}"`,
+              ),
+          );
+        }, open);
+        expect(
+          covered,
+          `a roundel covers a control with every States ${open ? 'open' : 'closed'}`,
+        ).toEqual([]);
+      }
+    });
+  }
+
   test('the calls to action open the template, and the demo link waits for the demo', async ({
     page,
   }) => {
