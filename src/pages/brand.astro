@@ -4,6 +4,16 @@ import PageHero from '../components/PageHero.astro';
 import Section from '../components/Section.astro';
 import { accessibilityFacts } from '../lib/accessibility-facts';
 import ContrastTable from '../components/ContrastTable.astro';
+import Grounds from '../components/brand/Grounds.astro';
+import Actions from '../components/brand/Actions.astro';
+import Labels from '../components/brand/Labels.astro';
+import Navigation from '../components/brand/Navigation.astro';
+import Heroes from '../components/brand/Heroes.astro';
+import Cards from '../components/brand/Cards.astro';
+import Forms from '../components/brand/Forms.astro';
+import Photos from '../components/brand/Photos.astro';
+import Text from '../components/brand/Text.astro';
+import Controls from '../components/brand/Controls.astro';
 import {
   colours,
   contrast,
@@ -18,17 +28,24 @@ const USE_TEMPLATE_URL =
   'https://github.com/new?template_name=astro-cat-portfolio&template_owner=sindurigf';
 /* The template's live demo; the link renders once this is set. */
 const DEMO_URL: string | null = null;
-const STYLEGUIDE_URL =
-  'https://github.com/sindurigf/sinduri-lol/blob/main/docs/STYLEGUIDE.md';
 const ACCESSIBILITY_MD_URL =
   'https://github.com/sindurigf/sinduri-lol/blob/main/ACCESSIBILITY.md';
 
 const SECTIONS = [
+  { id: 'grounds', title: 'Grounds' },
   { id: 'colour', title: 'Colour' },
   { id: 'contrast', title: 'Contrast' },
   { id: 'type', title: 'Type' },
   { id: 'spacing', title: 'Spacing' },
   { id: 'shadows', title: 'Borders and shadows' },
+  { id: 'actions', title: 'Buttons and links' },
+  { id: 'labels', title: 'Chips and labels' },
+  { id: 'navigation', title: 'Navigation' },
+  { id: 'heroes', title: 'Heroes' },
+  { id: 'cards', title: 'Cards' },
+  { id: 'forms', title: 'Forms' },
+  { id: 'photos', title: 'Photos' },
+  { id: 'text', title: 'Text' },
   { id: 'controls', title: 'Controls' },
   { id: 'motion', title: 'Motion' },
   { id: 'accessibility', title: 'Accessibility' },
@@ -127,8 +144,6 @@ const ROW = 'flex flex-wrap items-center gap-6 py-6';
 const ROWS = 'divide-y-4 divide-border';
 const NAME = 'text-body font-black text-text';
 const META = 'text-body text-subtle';
-/* `min-h-target`: the SC 2.5.8 inline exception does not cover a bare link. */
-const RULES_LINK = 'link inline-flex min-h-target items-center';
 const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
 ---
 
@@ -165,6 +180,14 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
       </ul>
     </nav>
   </PageHero>
+
+  <Section
+    id="grounds"
+    title={section('grounds').title}
+    lead="Four grounds carry everything on the site. Each sets which colours may sit on it."
+  >
+    <Grounds />
+  </Section>
 
   <Section
     id="colour"
@@ -208,11 +231,6 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
         );
       })}
     </ul>
-    <p class="mt-head text-body text-text">
-      <a class={RULES_LINK} href={`${STYLEGUIDE_URL}#colour-tokens`}>
-        Colour rules
-      </a>
-    </p>
   </Section>
 
   <Section
@@ -238,11 +256,6 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
         Gold text turns to ink on white, with a gold square before the word.
       </p>
     </div>
-    <p class="mt-head text-body text-text">
-      <a class={RULES_LINK} href={`${STYLEGUIDE_URL}#contrast`}>
-        Contrast rules
-      </a>
-    </p>
   </Section>
 
   <Section
@@ -269,11 +282,6 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
         </li>
       ))}
     </ul>
-    <p class="mt-head text-body text-text">
-      <a class={RULES_LINK} href={`${STYLEGUIDE_URL}#type-scale`}>
-        Every type step
-      </a>
-    </p>
   </Section>
 
   <Section
@@ -299,11 +307,6 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
         </li>
       ))}
     </ul>
-    <p class="mt-head text-body text-text">
-      <a class={RULES_LINK} href={`${STYLEGUIDE_URL}#spacing-scale`}>
-        Spacing rules
-      </a>
-    </p>
   </Section>
 
   <Section
@@ -338,73 +341,42 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
         </li>
       ))}
     </ul>
-    <p class="mt-head text-body text-text">
-      <a
-        class={RULES_LINK}
-        href={`${STYLEGUIDE_URL}#borders-shadows-and-radius`}
-      >
-        Border, shadow and radius rules
-      </a>
-    </p>
   </Section>
 
-  <Section
-    id="controls"
-    title={section('controls').title}
-    lead="Hover, focus or press each control to see its states."
-  >
-    <ul class:list={['card', ROWS]}>
-      <li class={ROW}>
-        <a href={STYLEGUIDE_URL} class="btn-primary">
-          Read the rules
-        </a>
-        <p class={META}>
-          Primary button: cyan fill on hover, pressed into its shadow.
-        </p>
-      </li>
-      <li class={ROW}>
-        <a href="/accessibility/" class="btn-secondary">
-          Accessibility
-        </a>
-        <p class={META}>Secondary button.</p>
-      </li>
-      <li class={ROW}>
-        <button type="button" class="btn-secondary" aria-disabled="true">
-          Unavailable
-        </button>
-        <p class={META}>
-          Unavailable: dashed edge and no shadow, still reachable by keyboard.
-        </p>
-      </li>
-      <li class={ROW}>
-        <a href="/brand/" class="chip" aria-current="page">
-          Brand
-        </a>
-        <a href="/credits/" class="chip">
-          Credits
-        </a>
-        <p class={META}>Chips: the current page is a flat block.</p>
-      </li>
-      <li class="py-6">
-        <p class="text-body text-text">
-          Links in text are underlined and turn cyan on hover, like this one to
-          the <a href={`${STYLEGUIDE_URL}#focus`}>focus rules</a>. A visited
-          link looks the same.
-        </p>
-      </li>
-      <li class="py-6">
-        <p class="text-body text-text">
-          Every control takes the same 4px cyan ring on keyboard focus.
-        </p>
-      </li>
-      <li class="py-6">
-        <p class="text-body text-text">
-          On gold, as in the title area above, buttons are dark with a light
-          label and the ring is dark. See the{' '}
-          <a href={`${STYLEGUIDE_URL}#gold-surface`}>gold surface rules</a>.
-        </p>
-      </li>
-    </ul>
+  <Section id="actions" title={section('actions').title}>
+    <Actions />
+  </Section>
+
+  <Section id="labels" title={section('labels').title}>
+    <Labels />
+  </Section>
+
+  <Section id="navigation" title={section('navigation').title}>
+    <Navigation />
+  </Section>
+
+  <Section id="heroes" title={section('heroes').title}>
+    <Heroes />
+  </Section>
+
+  <Section id="cards" title={section('cards').title}>
+    <Cards />
+  </Section>
+
+  <Section id="forms" title={section('forms').title}>
+    <Forms />
+  </Section>
+
+  <Section id="photos" title={section('photos').title}>
+    <Photos />
+  </Section>
+
+  <Section id="text" title={section('text').title}>
+    <Text />
+  </Section>
+
+  <Section id="controls" title={section('controls').title}>
+    <Controls />
   </Section>
 
   <Section id="motion" title={section('motion').title}>
@@ -416,11 +388,6 @@ const SWATCH_BOX = 'grid size-16 shrink-0 place-items-center';
         <li>Under reduced motion, nothing moves.</li>
         <li>Nothing flashes more than three times a second.</li>
       </ul>
-      <p class="mt-head text-body text-text">
-        <a class={RULES_LINK} href={`${STYLEGUIDE_URL}#motion`}>
-          Motion rules
-        </a>
-      </p>
     </div>
   </Section>
 

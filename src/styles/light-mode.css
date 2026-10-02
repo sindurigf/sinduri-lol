@@ -66,4 +66,9 @@
   :root:not([data-theme='light']) main .contrast-light {
     display: none;
   }
+
+  /* A gold fill on white takes an ink edge, as buttons and tiles do. */
+  :root[data-theme='light'] main .theme-switch {
+    @apply border-4 border-text;
+  }
 }
