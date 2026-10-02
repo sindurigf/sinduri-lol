@@ -493,7 +493,7 @@ const TOY_AHEAD = 36;
 /** Degrees the feather may swing back towards the cat. */
 const TOY_BACKSWING = -8;
 /** The cup stands clear of the head and chest; the first tap moves it this much. */
-export const CUP_AHEAD = 36;
+const CUP_AHEAD = 36;
 const CUP_NUDGE = 4;
 /** Where each yarn pounce lands: the front paws reach the ball's near side. */
 const YARN_LAND_1 = 218;
@@ -1167,7 +1167,7 @@ const SCALE_FROM = BASE;
 const extents = new Map<MoveName, readonly [number, number]>();
 
 /** Every move name, to warm moveExtent's cache before any is needed. */
-export const MOVE_NAMES = Object.keys(MOVES) as MoveName[];
+const MOVE_NAMES = Object.keys(MOVES) as MoveName[];
 
 /** The extent of moveToPlay(name), computed on first use and then kept. */
 export const moveExtent = (name: MoveName): readonly [number, number] => {
