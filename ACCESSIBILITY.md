@@ -208,7 +208,7 @@ merge.
 | `tests/alt-text.spec.ts`           | 1.1.1                                      | Every image named or decorative on purpose                                          |
 | `tests/failed-images.spec.ts`      | 1.1.1                                      | A failed photo shows its alt text                                                   |
 | `tests/contact.spec.ts`            | 3.3.1, 3.3.2, 3.3.3                        | 422 keeps input, `aria-invalid`, summary links, honeypot, rate limit                |
-| `tests/contact-sending.spec.ts`    | 4.1.3                                      | Status text, no busy ancestor, no second submit                                     |
+| `tests/contact-sending.spec.ts`    | 4.1.3                                      | Status text, no busy ancestor, no second submit, back-forward cache reset           |
 | `tests/slideshow.spec.ts`          | 2.1.1, 4.1.3                               | Buttons, keys, live region, focus, full screen, no JS                               |
 | `tests/word-spacing.spec.ts`       | 1.3.1                                      | No word glued to an inline element                                                  |
 | `tests/wave-alerts.spec.ts`        |                                            | WAVE's possible-heading, redundant-link and noscript alerts                         |
@@ -253,15 +253,15 @@ links. Not automated:
    HTTP: labels, a 422 keeping typed values, `aria-invalid`, summary links,
    "(required)" in each label, honeypot, rate limit. Asserted in the browser:
    `aria-disabled` and "Sending" on the button, the status text, no busy
-   ancestor, no second submit. Asserted in Chromium only, through the Worker:
-   on the 422 and 503 pages focus lands on the summary
-   (`tabindex="-1" autofocus`, no `role="alert"`, to avoid a double read) and
-   axe finds no WCAG 2.2 A or AA violation. In markup only: `novalidate`,
-   `aria-describedby` on a failing field, the inset pink error ring, and the
-   back-forward cache reset. `/contact/send/` is outside `tests/routes.ts`, so
-   the route suites never render the error state and Firefox and WebKit never
-   see it. Nobody has judged whether the messages help (SC 3.3.1,
-   3.3.3) or heard them with a screen reader. SC 3.3.7 and 3.3.8 do not apply.
+   ancestor, no second submit, and the back-forward cache reset. Asserted in
+   Chromium only, through the Worker: on the 422 and 503 pages focus lands on
+   the summary (`tabindex="-1" autofocus`, no `role="alert"`, to avoid a double
+   read) and axe finds no WCAG 2.2 A or AA violation. In markup only:
+   `novalidate`, `aria-describedby` on a failing field and the inset pink error
+   ring. `/contact/send/` is outside `tests/routes.ts`, so the route suites
+   never render the error state and Firefox and WebKit never see it. Nobody has
+   judged whether the messages help (SC 3.3.1, 3.3.3) or heard them with a
+   screen reader. SC 3.3.7 and 3.3.8 do not apply.
 2. **No screen reader testing.** No NVDA, JAWS, VoiceOver or Orca run.
    [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §6 is an Orca pass in Firefox,
    with §6.4 in Chrome for the uppercase question. An Orca pass narrows this
