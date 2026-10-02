@@ -349,13 +349,22 @@ test(
   'lying down and getting up each take 5 s or less, a turn to face the band included (SC 2.2.2)',
   NODE,
   () => {
-    for (const name of ['sleep', 'wake'] as const) {
-      const turned = withTurn(MOVES[name](), { ...pose('sit'), face: -1 });
+    const facingAway = { ...pose('sit'), face: -1 };
+    const moves: [string, Move][] = [
+      ['sleep', MOVES.sleep()],
+      ['sleep after a turn', withTurn(MOVES.sleep(true), facingAway)],
+      ['wake', withTurn(MOVES.wake(), facingAway)],
+    ];
+    for (const [name, move] of moves) {
       expect(
-        duration(turned),
+        duration(move),
         `${name} keeps moving past 5 s, so a stopped or napping cat does not settle`,
       ).toBeLessThanOrEqual(SC_2_2_2_MS);
     }
+    expect(
+      duration(withTurn(MOVES.sleep(true), facingAway)),
+      'turning before lying down takes longer than lying down',
+    ).toBeLessThanOrEqual(duration(MOVES.sleep()));
   },
 );
 

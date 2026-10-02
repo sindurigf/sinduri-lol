@@ -360,7 +360,9 @@ export const createColony = (
   /* Asleep from the first frame, so the control offers to wake it while it lies down. */
   const lieDown = (cat: CatState, now: number): void => {
     setAsleep(cat, true);
-    play(cat, MOVES.sleep(), now, sleepFacing(cat), undefined, true);
+    const dir = sleepFacing(cat);
+    const turning = dir !== (Math.sign(cat.pose.face) || 1);
+    play(cat, MOVES.sleep(turning), now, dir, undefined, true);
   };
 
   const planFor = (cat: CatState, name: MoveName) =>

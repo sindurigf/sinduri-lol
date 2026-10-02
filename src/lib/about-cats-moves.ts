@@ -441,14 +441,14 @@ const BREATH_MS = 1000;
 const BREATHS = 3;
 /** Body thickness in px the chest gains at the top of a breath. */
 const BREATH_DEPTH = 1.4;
-const breathing = (from: number): Mod =>
-  between(from, from + BREATH_MS * BREATHS, (p, s) => {
+const breathing = (from: number, breaths: number): Mod =>
+  between(from, from + BREATH_MS * breaths, (p, s) => {
     p.bt += BREATH_DEPTH * Math.sin((2 * Math.PI * s) / BREATH_MS);
   });
 /** The "z" rises once per breath, then rests above the head, not back at the start. */
-const dozing = (from: number): Mod =>
-  between(from, from + BREATH_MS * BREATHS, (p, s) => {
-    p.zz = s >= BREATH_MS * BREATHS ? 1 : (s % BREATH_MS) / BREATH_MS;
+const dozing = (from: number, breaths: number): Mod =>
+  between(from, from + BREATH_MS * breaths, (p, s) => {
+    p.zz = s >= BREATH_MS * breaths ? 1 : (s % BREATH_MS) / BREATH_MS;
   });
 const earFlick = (at: number): Mod =>
   between(at, at + 280, (p, _s, k) => {
@@ -1059,14 +1059,18 @@ export const MOVES = {
     ],
     mods: [],
   }),
-  sleep: (): Move => ({
-    steps: [
-      step(600, 'loaf'),
-      step(800, 'sleep'),
-      step(BREATH_MS * BREATHS, 'sleep'),
-    ],
-    mods: [breathing(1400), dozing(1400)],
-  }),
+  /* A cat that turns first takes a breath fewer, so turning and lying down stay well within 5 s. */
+  sleep: (turning = false): Move => {
+    const breaths = turning ? BREATHS - 1 : BREATHS;
+    return {
+      steps: [
+        step(600, 'loaf'),
+        step(800, 'sleep'),
+        step(BREATH_MS * breaths, 'sleep'),
+      ],
+      mods: [breathing(1400, breaths), dozing(1400, breaths)],
+    };
+  },
   wake: (): Move => ({
     steps: [step(500, 'loaf', { hr: -12 }), step(500, 'sit')],
     mods: [],
