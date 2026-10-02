@@ -15,7 +15,7 @@ The statement is voluntary for a personal site and follows the
 | Accessibility owner | Sinduri Guntupalli                                         |
 | Public reporting    | <https://github.com/sindurigf/sinduri-lol/issues>          |
 | Private reporting   | <lol@sinduri.lol>                                          |
-| Target standard     | WCAG 2.2 Level AA, with AAA text contrast where achievable |
+| Target standard     | WCAG 2.2 Level AA, with AAA text contrast                  |
 | Conformance status  | **Target only. No conformance claim.**                     |
 | Last reviewed       | 2026-10-02                                                 |
 | Response time       | 7 days                                                     |
@@ -41,10 +41,10 @@ status is still "Target only. No conformance claim."
 
 ### AAA criteria in scope
 
-| Criterion                         | What we do                                                                                                                                                                                                                           |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1.4.6 Contrast (Enhanced)         | Every text token at rest clears 7:1 on every ground it is used on, dark, light and gold. Exception: light-mode hover `cyan` is AA only. `pink` is never text; `pink-text` is. Ratios: [contrast table](docs/STYLEGUIDE.md#contrast). |
-| 2.3.3 Animation from Interactions | See Motion in [section 4](#4-what-the-site-supports).                                                                                                                                                                                |
+| Criterion                         | What we do                                                                                                                                                                            |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.4.6 Contrast (Enhanced)         | Every text token at rest clears 7:1 on every ground it is used on, dark, light and gold. `pink` is never text; `pink-text` is. Ratios: [contrast table](docs/STYLEGUIDE.md#contrast). |
+| 2.3.3 Animation from Interactions | See Motion in [section 4](#4-what-the-site-supports).                                                                                                                                 |
 
 Out of scope: SC 2.4.13 Focus Appearance and SC 2.5.5 Target Size (Enhanced,
 44px). axe's `wcag2aaa` rules are not run.
