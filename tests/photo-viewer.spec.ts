@@ -226,8 +226,38 @@ test.describe('the photo viewer while a photo loads', () => {
   /* A full-size photo can take over 5s in Firefox under load, past the default timeout. */
   const ARRIVAL_MS = 15_000;
 
+  /*
+   * Routed before the page loads: Chromium applies a route added to a loaded
+   * page a few ms late, and a photo requested in that gap is never held.
+   */
+  const gatePhotos = async (page: import('@playwright/test').Page) => {
+    let mode: 'pass' | 'hold' | 'fail' = 'pass';
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let requested = () => {};
+    const arrived = new Promise<void>((resolve) => {
+      requested = resolve;
+    });
+    await page.route(PHOTO, async (route) => {
+      if (mode === 'pass') return route.continue();
+      requested();
+      if (mode === 'fail') return route.abort();
+      await held;
+      await route.continue();
+    });
+    return {
+      hold: () => void (mode = 'hold'),
+      fail: () => void (mode = 'fail'),
+      release,
+      arrived,
+    };
+  };
+
   /* Waits for the opening photo to be painted: a key pressed while it decodes makes the viewer drop it. */
   const openFirst = async (page: import('@playwright/test').Page) => {
+    const photos = await gatePhotos(page);
     await gotoSettled(page, ROUTE);
     const viewer = page.locator('#photo-viewer');
     await page.locator(`${STRIP} a[data-photo]`).first().click();
@@ -240,14 +270,14 @@ test.describe('the photo viewer while a photo loads', () => {
     await expect(viewer.locator('[data-viewer-count]')).not.toHaveText(
       /loading|^$/i,
     );
-    return viewer;
+    return { viewer, photos };
   };
 
   /* The next photo's request is held on a promise, so its arrival is under the test's control. */
   test('the count never names a photo that is not on screen yet', async ({
     page,
   }) => {
-    const viewer = await openFirst(page);
+    const { viewer, photos } = await openFirst(page);
     const count = viewer.locator('[data-viewer-count]');
     const caption = viewer.locator('[data-viewer-caption]');
     const shownSrc = () =>
@@ -279,19 +309,7 @@ test.describe('the photo viewer while a photo loads', () => {
       };
     });
 
-    let release = () => {};
-    const held = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    let requested = () => {};
-    const arrived = new Promise<void>((resolve) => {
-      requested = resolve;
-    });
-    await page.route(next.href, async (route) => {
-      requested();
-      await held;
-      await route.continue();
-    });
+    photos.hold();
 
     /* Records every text the live region is given: an overwritten one is still announced. */
     await page.evaluate(() => {
@@ -308,7 +326,7 @@ test.describe('the photo viewer while a photo loads', () => {
 
     try {
       await page.keyboard.press('ArrowRight');
-      await arrived;
+      await photos.arrived;
 
       /* "Loading" also proves the hold outlasted LOADING_DELAY_MS. */
       await expect(count).toHaveText(/loading/i);
@@ -325,7 +343,7 @@ test.describe('the photo viewer while a photo loads', () => {
         'the caption moved to the next description before its photo arrived',
       ).toBe(before.caption);
     } finally {
-      release();
+      photos.release();
     }
 
     // Released, everything moves together: the photo, its position, its words.
@@ -338,21 +356,14 @@ test.describe('the photo viewer while a photo loads', () => {
   test('a slow photo says it is loading rather than going quiet', async ({
     page,
   }) => {
-    const viewer = await openFirst(page);
+    const { viewer, photos } = await openFirst(page);
     const caption = viewer.locator('[data-viewer-caption]');
     const count = viewer.locator('[data-viewer-count]');
     const opening = await caption.textContent();
     expect(opening, 'the opening photo has no caption to keep').toBeTruthy();
 
     /* Held, not delayed by a timer: a timer lets the polls pass once the photo arrives. */
-    let release = () => {};
-    const held = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    await page.route(PHOTO, async (route) => {
-      await held;
-      await route.continue();
-    });
+    photos.hold();
 
     try {
       await page.keyboard.press('ArrowRight');
@@ -370,7 +381,7 @@ test.describe('the photo viewer while a photo loads', () => {
         "the opening photo's caption went while the next photo was held",
       ).toBe(opening);
     } finally {
-      release();
+      photos.release();
     }
 
     // And it stops saying so once the photo is there.
@@ -409,7 +420,7 @@ test.describe('the photo viewer while a photo loads', () => {
   test('a photo that never arrives says so, and keeps its description', async ({
     page,
   }) => {
-    const viewer = await openFirst(page);
+    const { viewer, photos } = await openFirst(page);
 
     /* From the group the script walks: the strip is in a different order. */
     const alt = await page.evaluate(() => {
@@ -425,7 +436,7 @@ test.describe('the photo viewer while a photo loads', () => {
       return next.querySelector('img')?.alt ?? '';
     });
 
-    await page.route(PHOTO, (route) => route.abort());
+    photos.fail();
     await page.keyboard.press('ArrowRight');
 
     await expect(viewer.locator('[data-viewer-figure]')).toHaveAttribute(
