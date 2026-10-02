@@ -461,7 +461,7 @@
    */
   --spacing-cat-band: 140px;
 
-  /* SC 2.5.8 floor. Keep equal to MIN_TARGET in tests/target-size.spec.ts. */
+  /* SC 2.5.8 floor. Keep equal to MIN_TARGET in tests/wcag.ts. */
   --spacing-target: 24px;
 
   /*
