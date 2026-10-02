@@ -62,8 +62,8 @@ In scope:
 
 - Every route in `tests/routes.ts`, and the layouts, components, tokens and
   Markdown they are built from.
-- `/contact/send/`, the one on-demand route, tested over HTTP only
-  (`tests/contact.spec.ts`).
+- `/contact/send/`, the one on-demand route, tested over HTTP and, for its
+  error pages, in Chromium (`tests/contact.spec.ts`).
 - The two PDFs: `public/sinduri-guntupalli-cv.pdf` and
   `public/talks/open-source-is-not-just-code.pdf`.
 
@@ -128,8 +128,8 @@ view (development server only, never published), and forks.
   control does not move into its shadow (SC 2.3.3); nothing else animates
   ([STYLEGUIDE Motion](docs/STYLEGUIDE.md#motion)).
 - **Forced colours.** Every non-link control keeps a painted border or opaque
-  background, links are distinct from body text, and the focus ring keeps its
-  width.
+  background, links are distinct from body text, and every focus stop on `/`
+  keeps an outline.
 - **Contact form.** Labels with "(required)" in words, `autocomplete` on name
   and email (SC 1.3.5), a focused error summary on failure, typed values kept
   on a 422, `aria-disabled` on the button and a `role="status"` message while
@@ -212,6 +212,7 @@ merge.
 | `tests/no-script.spec.ts`          | 2.1.1, 1.3.1                               | Navigation with scripting off                                                                             |
 | `tests/forced-colors.spec.ts`      | 1.4.11, 2.4.7                              | Forced colours, listings sampled; every focus stop on /; not WebKit                                       |
 | `tests/motion.spec.ts`             | 2.2.2, 2.3.3                               | Hero field pauses; nothing moves under reduced motion                                                     |
+| `tests/press.spec.ts`              | 2.3.3                                      | A press is drawn; under reduced motion it drops the shadow without moving                                 |
 | `tests/about-cats.spec.ts`         | 1.4.1, 1.4.3, 1.4.10, 1.4.11, 2.2.2, 2.5.8 | Cat buttons, card dialog, focus return, sleep controls, reduced motion                                    |
 | `tests/headings.spec.ts`           | 1.3.1, 2.4.6                               | One `h1`, no skipped level, no heading under 19px                                                         |
 | `tests/titles.spec.ts`             | 2.4.2                                      | Titles distinct and descriptive                                                                           |
@@ -219,7 +220,7 @@ merge.
 | `tests/alt-text.spec.ts`           | 1.1.1                                      | Every image named or decorative on purpose                                                                |
 | `tests/failed-images.spec.ts`      | 1.1.1                                      | A failed photo shows its alt text                                                                         |
 | `tests/contact.spec.ts`            | 3.3.1, 3.3.2, 3.3.3, 3.3.5, 3.3.6, 2.4.12  | 422 and 503 in a browser: input kept, hints beside errors, no focus covered; honeypot, rate limit         |
-| `tests/contact-sending.spec.ts`    | 4.1.3                                      | Status text, no busy ancestor, no second submit                                                           |
+| `tests/contact-sending.spec.ts`    | 4.1.3                                      | Status text, no busy ancestor, no second submit, back-forward cache reset                                 |
 | `tests/slideshow.spec.ts`          | 2.1.1, 4.1.3                               | Buttons, keys, live region, focus, full screen, no JS                                                     |
 | `tests/word-spacing.spec.ts`       | 1.3.1                                      | No word glued to an inline element                                                                        |
 | `tests/wave-alerts.spec.ts`        |                                            | WAVE's possible-heading, redundant-link and noscript alerts                                               |
@@ -267,31 +268,34 @@ links. Not automated:
    HTTP: labels, a 422 keeping typed values, `aria-invalid`, summary links,
    "(required)" in each label, honeypot, rate limit. Asserted in the browser:
    `aria-disabled` and "Sending" on the button, the status text, no busy
-   ancestor, no second submit; on the 422 and 503 pages, focus on the summary,
-   typed values kept, each hint and error tied to its field, and no focused
-   control covered at 320px and 1280px in Chromium. In markup only:
-   `novalidate`, no `role="alert"` on the summary (to avoid a double read),
-   the inset pink error ring, and the back-forward cache reset.
-   `/contact/send/` is outside `tests/routes.ts`, so only
-   `tests/contact.spec.ts` renders the error state. Nobody has judged whether
-   the messages help (SC 3.3.1, 3.3.3) or heard them with a screen reader. SC 3.3.7 and 3.3.8 do not apply.
+   ancestor, no second submit, and the back-forward cache reset. Asserted in
+   Chromium only, through the Worker: on the 422 and 503 pages focus lands on
+   the summary (`tabindex="-1" autofocus`, no `role="alert"`, to avoid a double
+   read), axe finds no WCAG 2.2 A or AA violation, typed values stay, each hint
+   and error stays tied to its field, and no focused control is covered at
+   320px and 1280px. In markup only: `novalidate` and the inset pink error
+   ring. `/contact/send/` is outside `tests/routes.ts`, so the route suites
+   never render the error state and Firefox and WebKit never see it. Nobody has
+   judged whether the messages help (SC 3.3.1, 3.3.3) or heard them with a
+   screen reader. SC 3.3.7 and 3.3.8 do not apply.
 2. **No screen reader testing.** No NVDA, JAWS, VoiceOver or Orca run.
    [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §6 is an Orca pass in Firefox,
    with §6.4 in Chrome for the uppercase question. An Orca pass narrows this
    gap; it does not close it.
 3. **The gold surface has been measured, not looked at.**
-   `tests/gold-surface.spec.ts` measures the `/contact` band at 305px:
+   `tests/gold-surface.spec.ts` measures every route at 1280px, and one
+   button at 305px:
 
-   | Measured on `/contact`          | Result                                       |
-   | ------------------------------- | -------------------------------------------- |
-   | `.btn-gold-primary`             | its fill delimits it on gold                 |
-   | its focus ring                  | inner `#FFFFFF` ring, 18.58 against the fill |
-   | every string on the gold ground | nothing below 4.5:1                          |
+   | Measured                                             | Result                                               |
+   | ---------------------------------------------------- | ---------------------------------------------------- |
+   | every string on a gold ground                        | nothing below 4.5:1                                  |
+   | every control in `.surface-gold`                     | its fill differs from gold, or its border clears 3:1 |
+   | `/contact`'s `.btn-gold-primary` focus ring at 305px | inner `#FFFFFF` ring at 3:1 or more against its fill |
 
-   `.btn-gold-secondary` (on `/` and `/career`) is measured by its border edge
-   on gold, in the same spec.
-   Nobody has tabbed, zoomed or listened to a gold band.
-   [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §5 closes this.
+   The inner ring is 18.58 against the `#131313` fill by the tokens; the test
+   asserts 3:1. Nobody has tabbed, zoomed or listened to a gold band.
+   [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §5 checks the ring on gold by
+   eye only, so it does not close this gap.
 
 4. **Fixture and in-situ gold tests cover different mistakes.** Fixtures can be
    broken on purpose; only the in-situ test catches a mistake in a shipped
