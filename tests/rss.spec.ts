@@ -1,16 +1,8 @@
 import { test, expect, type Page } from './test';
 import { configuredSite } from './source';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import {
-  BLOG_CONTENT_DIR,
-  DIST_DIR,
-  frontmatterField,
-  frontmatterTags,
-  postFrontmatter,
-  TAG_ROUTES,
-  builtHtml,
-} from './routes';
+import { DIST_DIR, POSTS, TAG_ROUTES, builtHtml } from './routes';
 import { NODE } from './tags';
 
 /*
@@ -23,29 +15,12 @@ const SITE_FEED = '/rss.xml';
 const RFC_822 =
   /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), \d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4} \d{2}:\d{2}:\d{2} (GMT|[+-]\d{4})$/;
 
-interface PublishedPost {
-  slug: string;
-  date: string;
-  tags: string[];
-}
-
-/** Non-placeholder posts from the Markdown, one frontmatter field per line. */
-const publishedPosts = (): PublishedPost[] =>
-  readdirSync(BLOG_CONTENT_DIR)
-    .filter((name) => name.endsWith('.md'))
-    .map((name) => {
-      const frontmatter = postFrontmatter(name);
-      const field = (key: string): string =>
-        frontmatterField(frontmatter, key) ?? '';
-      return {
-        slug: name.replace(/\.md$/, ''),
-        placeholder: field('placeholder'),
-        date: field('date'),
-        tags: frontmatterTags(frontmatter),
-      };
-    })
-    .filter((post) => post.placeholder !== 'true')
-    .sort((a, b) => b.date.localeCompare(a.date));
+/** Published posts, newest first, as `sortByNewest` orders them (tests/routes.ts). */
+const publishedPosts = () =>
+  POSTS.filter((post) => post.published).map((post) => ({
+    slug: post.route.replace(/^\/blog\//, ''),
+    tags: post.tags,
+  }));
 
 interface ParsedFeed {
   error: string | null;
