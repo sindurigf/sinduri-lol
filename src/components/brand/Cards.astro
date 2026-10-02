@@ -4,8 +4,8 @@ import ComponentRow from './ComponentRow.astro';
 import { cardProps, getSortedPosts } from '../../lib/blog';
 import { accessibilityFacts } from '../../lib/accessibility-facts';
 
+/* A site may have no posts yet; the post card row waits for one. */
 const [post] = await getSortedPosts();
-if (!post) throw new Error('/brand: no published post to show as a post card.');
 const { targetStandard, conformanceStatus } = accessibilityFacts;
 ---
 
@@ -54,14 +54,16 @@ const { targetStandard, conformanceStatus } = accessibilityFacts;
     </div>
   </ComponentRow>
 
-  <ComponentRow
-    id="post-card"
-    name="Post card"
-    use="a post in a list: category, title, teaser and date."
-    rule="Only the title is a link, so the card has one tab stop and its text stays selectable."
-  >
-    <BlogCard {...cardProps(post)} headingLevel={4} />
-  </ComponentRow>
+  {post && (
+    <ComponentRow
+      id="post-card"
+      name="Post card"
+      use="a post in a list: category, title, teaser and date."
+      rule="Only the title is a link, so the card has one tab stop and its text stays selectable."
+    >
+      <BlogCard {...cardProps(post)} headingLevel={4} />
+    </ComponentRow>
+  )}
 
   <ComponentRow
     id="fact-strip"
