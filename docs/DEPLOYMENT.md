@@ -20,8 +20,10 @@ npm run build && npx wrangler deploy --dry-run
 - After a deploy that changes the hero or what a page loads, run Lighthouse
   (mobile) on `https://sinduri.lol/` and the changed page; record the
   performance score and Total Blocking Time in a comment on the change's pull
-  request. `tests/performance.spec.ts` covers script bytes and layout shift;
-  load time depends on the runner, so CI does not test it.
+  request. CI does not run Lighthouse: timing scores vary on shared runners.
+  `tests/performance.spec.ts` covers script bytes and layout shift,
+  `tests/image-priority.spec.ts` image formats and priority, and
+  `tests/head.spec.ts` the font preload.
 - Custom domains belong in `wrangler.jsonc`: a deploy replaces the Worker's
   routes, removing dashboard-only domains.
 - Preview deployments run on workers.dev, outside the zone, so zone features
@@ -126,6 +128,8 @@ Dashboard settings that change what ships without a file change.
   which passes only when every job passes. The `main` ruleset requires it by
   the job's `name`: rename it in both at once, or no pull request can merge.
 - Turn on Dependabot alerts and automated security fixes.
+- Turn on private vulnerability reporting: [SECURITY.md](../SECURITY.md) relies
+  on it.
 - Optional Actions secret `CLOUDFLARE_API_TOKEN` and variable
   `CLOUDFLARE_ACCOUNT_ID`: let the weekly `check:live` count unsent
   notifications in production D1. Scope the token to D1 Read on this account;

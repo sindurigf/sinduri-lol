@@ -149,7 +149,7 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 - Accent, glyph and teaser per category: `CATEGORIES` in
   `src/lib/categories.ts`, read by every surface. Gold: `open-source`,
   `professional-journey`. Text: `skincare`, `travel`. Pink:
-  `personal-thoughts`. Never cyan. `tests/blog.spec.ts` compares surfaces.
+  `personal-thoughts`. Never cyan.
 - Tags are kebab-case URL segments (`/blog/tag/<tag>/`). Proper-noun labels in
   `TAG_LABELS`. Tag `<h1>` is `text-h2`, since a tag cannot take a soft hyphen.
 - A category page is built only once it has a published post. Tag listings
@@ -331,6 +331,8 @@ in `wrangler.jsonc`).
   from `src/lib/image-densities.ts`. `WIDTHS` steps at most 1.5x; `sizes` is
   the real drawn width. `tests/image-size.spec.ts` fails on stretching,
   more than 1.5x oversize, or `sizes` over 1.1x.
+- Exception: the `/about` cat card photo has two drawn widths, so
+  `about.astro` gives it its own widths and `sizes` (`CAT_PHOTO_WIDTHS`).
 - `/about` photo boxes match their file's ratio (hence CSS-column masonry). No
   text over photos.
 - Markdown images: `post-figure.mjs` sets `layout: 'full-width'` so
@@ -575,10 +577,9 @@ evidence.
 - **Cap stored contact messages across all senders:** the per-address limit
   cannot stop a flood spread over many addresses, but the worst case is a
   temporary 503 when D1's writes run out; nothing stored is lost or exposed.
-- **Run Lighthouse in CI:** timing scores vary on shared runners.
-  `tests/performance.spec.ts` gates script bytes and layout shift, the image
-  and head specs gate formats, priority and font preload; Lighthouse runs by
-  hand after a deploy ([DEPLOYMENT.md](docs/DEPLOYMENT.md)).
+- **Run Lighthouse in CI:** timing scores vary on shared runners; what CI
+  gates instead, and when Lighthouse runs, is in
+  [DEPLOYMENT.md](docs/DEPLOYMENT.md).
 - **Add ESLint, or `checkJs` for the `.mjs` scripts:** the strictest tsconfig,
   `astro check` at hint level, `vue-tsc`, Prettier and the `check:*` scripts
   cover what a linter would. `checkJs` reports untyped code (implicit `any`,

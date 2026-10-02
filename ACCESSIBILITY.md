@@ -27,8 +27,8 @@ status is still "Target only. No conformance claim."
 - Both colour modes are measured: dark by default, light on request.
 - Keyboard first: every control is reachable, visible when focused, and never
   hidden under the sticky header.
-- No motion traps: the homepage hero field and each About cat can be paused,
-  and nothing moves under `prefers-reduced-motion: reduce`.
+- No motion traps: what moves and how it stops is under Motion in
+  [section 4](#4-what-the-site-supports).
 - Native HTML before ARIA.
 - Every colour is measured against every ground it is used on.
 - Automated checks run in CI and a violation blocks the merge.
@@ -40,7 +40,7 @@ status is still "Target only. No conformance claim."
 | Criterion                         | What we do                                                                                                                                                                                                                           |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 1.4.6 Contrast (Enhanced)         | Every text token at rest clears 7:1 on every ground it is used on, dark, light and gold. Exception: light-mode hover `cyan` is AA only. `pink` is never text; `pink-text` is. Ratios: [contrast table](docs/STYLEGUIDE.md#contrast). |
-| 2.3.3 Animation from Interactions | Under `prefers-reduced-motion: reduce` a pressed control does not move into its shadow, the hero field is drawn once and held, and the About cats sit still (`tests/motion.spec.ts`, `tests/about-cats.spec.ts`).                    |
+| 2.3.3 Animation from Interactions | See Motion in [section 4](#4-what-the-site-supports).                                                                                                                                                                                |
 
 Out of scope: SC 2.4.13 Focus Appearance and SC 2.5.5 Target Size (Enhanced,
 44px). axe's `wcag2aaa` rules are not run.
@@ -111,8 +111,10 @@ view (development server only, never published), and forks.
   a failed photo shows its alt text on its frame without doubling it for a
   screen reader.
 - **Motion.** The hero field on `/` has a pause control and each cat on
-  `/about` a sleep control (SC 2.2.2). Both are still under reduced motion;
-  nothing else animates ([STYLEGUIDE Motion](docs/STYLEGUIDE.md#motion)).
+  `/about` a sleep control (SC 2.2.2). Under `prefers-reduced-motion: reduce`
+  the hero field is drawn once and held, the cats sit still, and a pressed
+  control does not move into its shadow (SC 2.3.3); nothing else animates
+  ([STYLEGUIDE Motion](docs/STYLEGUIDE.md#motion)).
 - **Forced colours.** Every non-link control keeps a painted border or opaque
   background, links are distinct from body text, and the focus ring keeps its
   width.
