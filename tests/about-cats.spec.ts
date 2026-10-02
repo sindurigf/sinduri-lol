@@ -24,10 +24,12 @@ import {
   POST_HEIGHT,
   highestPoint,
   reachOf,
+  stepTail,
 } from '../src/lib/about-cats-rig';
 import {
   CONTROL_ROOM,
   MAX_OVERHANG,
+  TAIL_REST,
   TRACK_MARGIN,
   cupPush,
   planMove,
@@ -354,6 +356,38 @@ test(
         `${name} keeps moving past 5 s, so a stopped or napping cat does not settle`,
       ).toBeLessThanOrEqual(SC_2_2_2_MS);
     }
+  },
+);
+
+/** Frames this far apart, as a loaded device drew them in CI; the tail must still settle in time. */
+const SLOW_FRAME_MS = 530;
+/** A tail swung this far, in degrees per segment, then left to settle. */
+const TAIL_SWING = 40;
+const TAIL_SEGMENTS = 8;
+
+test(
+  'a tail settles in real time even at two frames a second, so a sleeping cat is still within 5 s (SC 2.2.2)',
+  NODE,
+  () => {
+    const tail = {
+      tailAngle: [] as number[],
+      tailSpeed: [] as number[],
+      physAt: 0,
+    };
+    stepTail(tail, Array(TAIL_SEGMENTS).fill(0), 0);
+    const swung = Array(TAIL_SEGMENTS).fill(TAIL_SWING);
+    let now = 0;
+    do {
+      now += SLOW_FRAME_MS;
+      stepTail(tail, swung, now);
+    } while (
+      now < SC_2_2_2_MS &&
+      tail.tailSpeed.some((v) => Math.abs(v) > TAIL_REST)
+    );
+    expect(
+      now,
+      'the tail was still swinging 5 s after it was left to settle',
+    ).toBeLessThan(SC_2_2_2_MS);
   },
 );
 

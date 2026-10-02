@@ -76,7 +76,7 @@ const SETTLED = 0.01;
 /** ms a prop takes to fade when its move is cut short. */
 const PROP_FADE_MS = 250;
 /** Tail segment speed below which the tail counts as at rest. */
-const TAIL_REST = 0.02;
+export const TAIL_REST = 0.02;
 
 /** One cat as the page passes it in: names, roles and the dialog photo. */
 export interface CatInfo {

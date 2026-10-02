@@ -26,7 +26,8 @@ const DETAIL = 0.9;
 const TAIL_STIFFNESS = 0.12;
 const TAIL_DAMPING = 0.62;
 const PHYS_STEP_MS = 1000 / 60;
-const PHYS_MAX_STEPS = 4;
+/* Catches up to half a second per frame, so the tail keeps real time on a slow device; a longer stall resets it. */
+const PHYS_MAX_STEPS = 30;
 
 const EARS = 'M-11 -4L-12 -19.5L-2 -10.5ZM2 -10.5L10.5 -19.5L11 -4Z';
 /** Hela's orange front ear, inset from the ear's edge. */
@@ -367,7 +368,11 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
   };
 };
 
-const stepTail = (rig: CatRig, targets: number[], now: number): void => {
+export const stepTail = (
+  rig: Pick<CatRig, 'tailAngle' | 'tailSpeed' | 'physAt'>,
+  targets: number[],
+  now: number,
+): void => {
   if (rig.tailAngle.length === 0) {
     rig.tailAngle = [...targets];
     rig.tailSpeed = targets.map(() => 0);
