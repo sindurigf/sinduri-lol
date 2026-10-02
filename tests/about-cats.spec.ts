@@ -690,6 +690,7 @@ test.describe('About cats', () => {
   }) => {
     await gotoSettled(page, ROUTE);
     const id = 'minerva';
+    await showCat(page, id);
     // Holds follow keyboard use, so a key comes first, as it would for a keyboard user.
     await page.keyboard.press('Shift');
     await catButton(page, id).focus();
