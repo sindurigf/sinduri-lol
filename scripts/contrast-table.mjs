@@ -168,7 +168,10 @@ export const documentedTable = (doc = readFileSync(DOC, 'utf8')) => {
   return start === -1 || end === -1 ? null : doc.slice(start, end + END.length);
 };
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
   const table = renderTable();
   if (process.argv.includes('--write')) {
     const doc = readFileSync(DOC, 'utf8');
