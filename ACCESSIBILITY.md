@@ -55,8 +55,8 @@ In scope:
 
 - Every route in `tests/routes.ts`, and the layouts, components, tokens and
   Markdown they are built from.
-- `/contact/send/`, the one on-demand route, tested over HTTP only
-  (`tests/contact.spec.ts`).
+- `/contact/send/`, the one on-demand route, tested over HTTP and, for its
+  error pages, in Chromium (`tests/contact.spec.ts`).
 - The two PDFs: `public/sinduri-guntupalli-cv.pdf` and
   `public/talks/open-source-is-not-just-code.pdf`.
 
@@ -253,12 +253,14 @@ links. Not automated:
    HTTP: labels, a 422 keeping typed values, `aria-invalid`, summary links,
    "(required)" in each label, honeypot, rate limit. Asserted in the browser:
    `aria-disabled` and "Sending" on the button, the status text, no busy
-   ancestor, no second submit. In markup only: `novalidate`, the summary's
-   `tabindex="-1" autofocus` (no `role="alert"`, to avoid a double read),
+   ancestor, no second submit. Asserted in Chromium only, through the Worker:
+   on the 422 and 503 pages focus lands on the summary
+   (`tabindex="-1" autofocus`, no `role="alert"`, to avoid a double read) and
+   axe finds no WCAG 2.2 A or AA violation. In markup only: `novalidate`,
    `aria-describedby` on a failing field, the inset pink error ring, and the
    back-forward cache reset. `/contact/send/` is outside `tests/routes.ts`, so
-   no route-level suite renders the error state and nothing checks focus lands
-   on the summary. Nobody has judged whether the messages help (SC 3.3.1,
+   the route suites never render the error state and Firefox and WebKit never
+   see it. Nobody has judged whether the messages help (SC 3.3.1,
    3.3.3) or heard them with a screen reader. SC 3.3.7 and 3.3.8 do not apply.
 2. **No screen reader testing.** No NVDA, JAWS, VoiceOver or Orca run.
    [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §6 is an Orca pass in Firefox,
