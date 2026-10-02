@@ -126,6 +126,8 @@ Dashboard settings that change what ships without a file change.
   which passes only when every job passes. The `main` ruleset requires it by
   the job's `name`: rename it in both at once, or no pull request can merge.
 - Turn on Dependabot alerts and automated security fixes.
+- Turn on private vulnerability reporting: [SECURITY.md](../SECURITY.md) relies
+  on it.
 - Optional Actions secret `CLOUDFLARE_API_TOKEN` and variable
   `CLOUDFLARE_ACCOUNT_ID`: let the weekly `check:live` count unsent
   notifications in production D1. Scope the token to D1 Read on this account;
