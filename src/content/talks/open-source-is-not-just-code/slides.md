@@ -15,7 +15,7 @@ Sinduri Guntupalli
 part: Introduction
 ```
 
-# About Me
+# About me
 
 ![Sinduri smiling in a studio portrait, standing against a dark wall beside a teal block.](./images/sinduri-studio.jpg)
 
@@ -28,7 +28,7 @@ Sinduri Guntupalli, Sr Developer Programs Engineer, OSPO team at Dynatrace
 
 ---
 
-# Open Source Runs Everything
+# Open source runs everything
 
 - **Linux**: most servers, the cloud, and every Android phone.
 - **Git**: version control behind nearly all software.
@@ -43,16 +43,16 @@ Most of the open source projects are maintained by small teams, often unpaid vol
 
 ```yaml
 layout: section
-part: 'Part 1: The Burden'
+part: 'Part 1: The burden'
 ```
 
-# The Burden
+# The burden
 
 Most projects don't fail on code. They fail under invisible weight.
 
 ---
 
-# The Comfortable Myth
+# The comfortable myth
 
 - The myth: success comes from code quality
 - Just ship better code, and the rest follows
@@ -60,7 +60,7 @@ Most projects don't fail on code. They fail under invisible weight.
 
 ---
 
-# What Actually Kills Projects
+# What actually kills projects
 
 - Unclear contribution paths
 - Expectations never written down
@@ -69,7 +69,7 @@ Most projects don't fail on code. They fail under invisible weight.
 
 ---
 
-# A Socio-Technical System
+# A socio-technical system
 
 - A socio-technical system
 - Code and community are one system
@@ -77,13 +77,13 @@ Most projects don't fail on code. They fail under invisible weight.
 
 ---
 
-# The Maintainer Trap
+# The maintainer trap
 
 - Work piles onto a few people
 - The hero maintainer burns out
 - A single point of failure is a design flaw
 
-**A Good Model: [Rust](https://www.rust-lang.org/governance)**
+**A good model: [Rust](https://www.rust-lang.org/governance)**
 
 Topic-focused teams (compiler, language, libraries, tooling, infrastructure) each own their area independently. A leadership council coordinates across teams. Ownership is spread by design, so no single person carries the whole project.
 
@@ -91,16 +91,16 @@ Topic-focused teams (compiler, language, libraries, tooling, infrastructure) eac
 
 ```yaml
 layout: section
-part: 'Part 2: The Fellowship'
+part: 'Part 2: The fellowship'
 ```
 
-# The Fellowship
+# The fellowship
 
 The work is too much for one person. It has to be shared.
 
 ---
 
-# Six Pillars That Decide Whether a Project Lasts
+# Six pillars that decide whether a project lasts
 
 - **Governance**: who decides, and how. Make decision-making explicit before you need it.
 - **Contributor Experience**: how easy and rewarding it is to help. Lower the cost of showing up.
@@ -124,7 +124,7 @@ label: 'Pillar 1'
 - Pick a model: BDFL, council, or foundation. Big projects layer several
 - Single-company control is the opposite: one owner, not a neutral body
 
-**A Good Model: [Apache Software Foundation](https://www.apache.org/theapacheway/)**
+**A good model: [Apache Software Foundation](https://www.apache.org/theapacheway/)**
 
 The PMC elects committers on merit. Individuals represent themselves, not employers. Decisions happen in the open: if it wasn't recorded, it didn't happen.
 
@@ -134,13 +134,13 @@ The PMC elects committers on merit. Individuals represent themselves, not employ
 label: 'Pillar 1'
 ```
 
-# A Code of Conduct
+# A code of conduct
 
 - Explicit rules, not vague good vibes
 - Name what is not acceptable: harassment, discrimination, personal attacks, sustained disruption
 - Rules only matter if they are enforced
 
-**A Good Model: [Contributor Covenant](https://www.contributor-covenant.org/)**
+**A good model: [Contributor Covenant](https://www.contributor-covenant.org/)**
 
 A widely adopted code of conduct. Clear expected behavior, clear unacceptable behavior, and a path to report and enforce.
 
@@ -150,14 +150,14 @@ A widely adopted code of conduct. Clear expected behavior, clear unacceptable be
 label: 'Pillar 2'
 ```
 
-# Contributor Experience
+# Contributor experience
 
 - Lower the cost of a first contribution
 - Give newcomers a clear place to start
 - Visible path to trusted contributor
 - If it is confusing, they quietly leave
 
-**A Good Model: [Kubernetes](https://github.com/kubernetes/community/blob/master/community-membership.md)**
+**A good model: [Kubernetes](https://github.com/kubernetes/community/blob/master/community-membership.md)**
 
 Published contributor ladder: from member to approver, with clear expectations at each step. Good first issues, mentoring cohorts, and a graceful way to step back.
 
@@ -167,7 +167,7 @@ Published contributor ladder: from member to approver, with clear expectations a
 label: 'Pillar 2 · From experience'
 ```
 
-# My First Contribution
+# My first contribution
 
 - 2021, during Covid, new to the community
 - 45 min just to open the issue, scared of being judged
@@ -189,7 +189,7 @@ label: 'Pillar 3'
 - Invisible work gets undervalued
 - Record who did the work, sponsors included
 
-**A Good Model: [Drupal Contribution Credit System](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues)**
+**A good model: [Drupal contribution credit system](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues)**
 
 A public record of who did what, across code and the invisible work. Contribution becomes visible instead of assumed.
 
@@ -199,7 +199,7 @@ A public record of who did what, across code and the invisible work. Contributio
 label: 'Pillar 3'
 ```
 
-# Why Recognition Changes Behavior
+# Why recognition changes behavior
 
 - Tie recognition to real work
 - Companies get visible standing for what they fund
@@ -213,7 +213,7 @@ When a company treats contribution as part of the actual work, with real time an
 label: 'Pillar 4'
 ```
 
-# Local Community
+# Local community
 
 **Why it matters**
 
@@ -227,7 +227,7 @@ label: 'Pillar 4'
 - Contribution rooms to work together
 - Student workshops: Drupal in a Day
 
-**A Good Model: [Drupal](https://events.drupal.org/)**
+**A good model: [Drupal](https://events.drupal.org/)**
 
 DrupalCon globally, local volunteer-run camps, small and accessible by design. That's where new people get pulled in and where most new organizers learn the ropes.
 
@@ -250,20 +250,20 @@ label: 'Pillar 5'
 label: 'Pillar 6'
 ```
 
-# Funding and Sponsorship
+# Funding and sponsorship
 
 - Time is not free. Someone pays, in money or unpaid hours
 - Sustainable funding keeps maintainers from burning out
 - Fund the boring, critical work, not just features
 - Not a prerequisite. It matters once others depend on you
 
-**A Good Model: [Django](https://www.djangoproject.com/fundraising/)**
+**A good model: [Django](https://www.djangoproject.com/fundraising/)**
 
 The Django Software Foundation pays Fellows to do the unglamorous maintenance: triage, reviews, releases, and security. Routes to fund this: Open Collective, GitHub Sponsors, Patreon, Tidelift, and the Sovereign Tech Fund.
 
 ---
 
-# Signals of a Healthy Community
+# Signals of a healthy community
 
 - Bus factor: how many can leave before it stalls
 - Time to first response on issues and pull requests
@@ -276,16 +276,16 @@ These tell you if the pillars are working, or just look good on paper.
 
 ```yaml
 layout: section
-part: 'Part 3: The Road Ahead'
+part: 'Part 3: The road ahead'
 ```
 
-# The Road Ahead
+# The road ahead
 
 What to prioritize, what AI changes, and what you can actually do.
 
 ---
 
-# What to Do Now vs Later
+# What to do now vs later
 
 **Optimize early**
 
@@ -305,7 +305,7 @@ Heavy process on a tiny project can strangle it before it grows.
 
 ---
 
-# Good Advice Needs the Right Partner
+# Good advice needs the right partner
 
 - **"Be welcoming to everyone"** works when paired with triage, so maintainers can keep up.
 - **"Move fast"** works when paired with transparency, so contributors can follow the changes and not get blindsided.
@@ -319,7 +319,7 @@ Context decides whether a practice helps. The practices aren't the problem; the 
 label: 'The AI question'
 ```
 
-# Help and Hazard
+# Help and hazard
 
 **Where AI helps**
 
@@ -341,7 +341,7 @@ AI doesn't replace community design. It raises the stakes. Share the cost and sk
 label: 'The AI question'
 ```
 
-# When AI Becomes Slop
+# When AI becomes slop
 
 - Low-effort AI output lands as real work for maintainers
 - Bogus AI security reports flood small volunteer teams
@@ -354,7 +354,7 @@ curl was flooded with AI-generated security reports. By 2025 about 1 in 5 submis
 
 ---
 
-# Thrive vs Decay
+# Thrive vs decay
 
 | Thriving projects     | Decaying projects            |
 | --------------------- | ---------------------------- |
@@ -369,7 +369,7 @@ The drift is slow and quiet. That's exactly why it's easy to miss.
 
 ---
 
-# What You Can Realistically Influence
+# What you can realistically influence
 
 You don't need to be a maintainer, or even a contributor. If you care about open source, any of these help.
 
@@ -415,7 +415,7 @@ part: Closing
 
 ---
 
-# Sources & Further Reading
+# Sources & further reading
 
 **Primary reading**
 
@@ -439,7 +439,7 @@ part: Closing
 
 ---
 
-# Thank You
+# Thank you
 
 Q&A
 
