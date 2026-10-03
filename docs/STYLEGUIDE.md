@@ -243,14 +243,14 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
 
 The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
 
-| Token                                               | Light     | on `#ffffff` |
-| --------------------------------------------------- | --------- | ------------ |
-| `background`, `surface`, `hero-ground`              | `#ffffff` | ground       |
-| `text`, `border`, `pink`, `gold-border`, `gold-bud` | `#131313` | 18.58        |
-| gold as text, `.text-gold`                          | `#131313` | 18.58        |
-| `subtle`                                            | `#3f4650` | 9.53         |
-| `pink-text`                                         | `#b00054` | 7.06         |
-| `cyan` (focus ring, hover fill under white)         | `#008194` | 4.60         |
+| Token                                                | Light     | on `#ffffff` |
+| ---------------------------------------------------- | --------- | ------------ |
+| `background`, `surface`, `hero-ground`               | `#ffffff` | ground       |
+| `text`, `border`, `pink`, `gold-border`, `gold-bud`  | `#131313` | 18.58        |
+| gold as text, `.text-gold`                           | `#131313` | 18.58        |
+| `subtle`                                             | `#3f4650` | 9.53         |
+| `pink-text`                                          | `#b00054` | 7.06         |
+| `cyan` (focus ring, hover text and fill under white) | `#00606b` | 7.28         |
 
 - Every hard shadow and edge turns `#131313`.
 - `.surface-gold` and `.v-column` go white. Buttons, tiles and stickers keep
@@ -1016,6 +1016,9 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 - Each cat lives in a `.cat-perch` band above its card, sized by
   `--spacing-cat-band`, which no move may rise above
   (`tests/about-cats.spec.ts`).
+- A band is never a scroll anchor (`overflow-anchor: none` on `.cat-spot`):
+  WebKit would scroll the page with a moving cat and carry a focused control
+  out of view (SC 2.4.11).
 
 ## Focus
 
