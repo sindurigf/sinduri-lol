@@ -201,6 +201,7 @@ const catInfo: CatInfo[] = await Promise.all(
               ) : (
                 section.title
               )}
+              <span class="sr-only">&nbsp;section</span>
             </a>
           </li>
         ))}
@@ -474,7 +475,7 @@ const catInfo: CatInfo[] = await Promise.all(
     readHref={JOURNEY_POST_HREF}
     readLabel="Five years in Drupal"
     actionHref="/career/"
-    actionLabel="Career and CV"
+    actionLabel="Career and curriculum vitae (CV)"
   />
 
   <PhotoViewer />
