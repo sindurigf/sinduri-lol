@@ -41,17 +41,17 @@ status is still "Target only. No conformance claim."
 
 ### AAA criteria in scope
 
-| Criterion                            | What we do                                                                                                                                                                                                                                                                                                                   |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.4.6 Contrast (Enhanced)            | Every text token at rest clears 7:1 on every ground it is used on, dark, light and gold. Exception: the category glyph on `/`, `background` on `pink`, is 4.90:1 and passes as large text only. `pink` is never text; `pink-text` is. Ratios: [contrast table](docs/STYLEGUIDE.md#contrast).                                 |
-| 2.2.4 Interruptions                  | Nothing interrupts: no alerts, assertive live regions or automatic refresh.                                                                                                                                                                                                                                                  |
-| 2.3.3 Animation from Interactions    | See Motion in [section 4](#4-what-the-site-supports).                                                                                                                                                                                                                                                                        |
-| 2.4.9 Link Purpose (Link Only)       | Within a page, one link name leads to one place. Hidden text completes short names: "Drupal tag", "Sinduri on GitHub". Exception: link text in posts, listed in `tests/link-purpose.spec.ts`.                                                                                                                                |
-| 2.4.12 Focus Not Obscured (Enhanced) | **Not met.** Met inside the open cat card, photo viewer and mobile menu. Fails on pages. On `/about`, Tab to each cat button: its sleep control covers part of it, and at desktop width a card covers part of one. In Firefox at 305px wide, Shift+Tab up `/contact` to the message field: the sticky header covers its top. |
-| 2.4.13 Focus Appearance              | One solid ring, `--focus-width` wide. At every page focus stop it covers at least a 2px perimeter of the control and reaches 3:1 against the ground it paints over.                                                                                                                                                          |
-| 2.5.6 Concurrent Input Mechanisms    | No input is turned off because another one was detected.                                                                                                                                                                                                                                                                     |
-| 3.1.4 Abbreviations                  | On functional pages (statement, privacy, credits, brand), the Career link on `/` and reading time, each abbreviation is spelled out or defined in the sentence where it first appears. Posts, About and Career are the owner's copy and are not yet.                                                                         |
-| 3.2.5 Change on Request              | No new windows, automatic refresh or navigation by script.                                                                                                                                                                                                                                                                   |
+| Criterion                            | What we do                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.4.6 Contrast (Enhanced)            | Every text token at rest clears 7:1 on every ground it is used on, dark, light and gold. Exception: the category glyph on `/`, `background` on `pink`, is 4.90:1 and passes as large text only. `pink` is never text; `pink-text` is. Ratios: [contrast table](docs/STYLEGUIDE.md#contrast).                                   |
+| 2.2.4 Interruptions                  | Nothing interrupts: no alerts, assertive live regions or automatic refresh.                                                                                                                                                                                                                                                    |
+| 2.3.3 Animation from Interactions    | See Motion in [section 4](#4-what-the-site-supports).                                                                                                                                                                                                                                                                          |
+| 2.4.9 Link Purpose (Link Only)       | Within a page, one link name leads to one place. Hidden text completes short names: "Drupal tag", "Sinduri on GitHub". Exception: link text in posts, listed in `tests/link-purpose.spec.ts`.                                                                                                                                  |
+| 2.4.12 Focus Not Obscured (Enhanced) | **Not met.** Met inside the open cat card, photo viewer and mobile menu. Fails on pages. On `/about`, Tab to each cat button: its sleep control covers part of it, and at 1280px wide a card covers part of Rudra's. In Firefox at 305px wide, Shift+Tab up `/contact` to the message field: the sticky header covers its top. |
+| 2.4.13 Focus Appearance              | One solid ring, `--focus-width` wide. At every page focus stop it covers at least a 2px perimeter of the control and reaches 3:1 against the ground it paints over.                                                                                                                                                            |
+| 2.5.6 Concurrent Input Mechanisms    | No input is turned off because another one was detected.                                                                                                                                                                                                                                                                       |
+| 3.1.4 Abbreviations                  | On functional pages (statement, privacy, credits, brand), the Career link on `/` and reading time, each abbreviation is spelled out or defined in the sentence where it first appears. Posts, About and Career are the owner's copy and are not checked.                                                                       |
+| 3.2.5 Change on Request              | No new windows, automatic refresh or navigation by script.                                                                                                                                                                                                                                                                     |
 
 Out of scope: SC 2.5.5 Target Size (Enhanced, 44px). axe's `wcag2aaa` rules
 are not run.
@@ -277,12 +277,13 @@ links. Not automated:
    the summary (`tabindex="-1" autofocus`, no `role="alert"`, to avoid a double
    read), axe finds no WCAG 2.2 A or AA violation, typed values stay, each hint
    and error stays tied to its field, and no focused control is covered at
-   320px and 1280px, Tab and Shift+Tab from the summary. In markup only:
-   `novalidate` and the inset pink error ring. `/contact/send/` is outside
-   `tests/routes.ts`, so the route suites never render the error state and
-   Firefox and WebKit never see it, though Firefox leaves `/contact` controls
-   partly under the sticky header (SC 2.4.12 above). Nobody has judged whether
-   the messages help (SC 3.3.1, 3.3.3) or heard them with a screen reader. SC 3.3.7 and 3.3.8 do not apply.
+   320px and 1280px, walking Tab from the summary and Shift+Tab from the last
+   footer link. In markup only: `novalidate` and the inset pink error ring.
+   `/contact/send/` is outside `tests/routes.ts`, so the route suites never
+   render the error state and Firefox and WebKit never see it, though Firefox
+   leaves `/contact` controls partly under the sticky header (SC 2.4.12 above).
+   Nobody has judged whether the messages help (SC 3.3.1, 3.3.3) or heard them
+   with a screen reader. SC 3.3.7 and 3.3.8 do not apply.
 2. **No screen reader testing.** No NVDA, JAWS, VoiceOver or Orca run.
    [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §6 is an Orca pass in Firefox,
    with §6.4 in Chrome for the uppercase question. An Orca pass narrows this
