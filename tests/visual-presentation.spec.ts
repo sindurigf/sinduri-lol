@@ -18,6 +18,16 @@ const MIN_SENTENCES = 2;
 const NEW_LINE_SHARE = 0.5;
 const WIDTHS = [390, 1280, 1920] as const;
 const VIEWPORT_HEIGHT = 900;
+/* Routes with no block of two sentences and no paragraph pair, and why. */
+const NOTHING_TO_MEASURE: Readonly<Record<string, string>> = {
+  '/blog/open-source': 'one post card; its teaser is one sentence',
+  '/blog/tag/governance': 'one post card; its teaser is one sentence',
+  '/blog/tag/maintainers': 'one post card; its teaser is one sentence',
+  '/blog/tag/sustainability': 'one post card; its teaser is one sentence',
+  '/blog/tag/talks': 'one post card; its teaser is one sentence',
+  '/talks/open-source-is-not-just-code':
+    'slides of headings and one-sentence bullets',
+};
 
 interface Block {
   name: string;
@@ -34,7 +44,6 @@ interface Pair {
 interface Measured {
   blocks: Block[];
   pairs: Pair[];
-  candidates: number;
 }
 
 /* NaN (an unresolved `normal`) fails too. */
@@ -53,7 +62,7 @@ for (const width of WIDTHS) {
         const measured: Measured = await page.evaluate(
           ({ minSentences, newLineShare }) => {
             const sentences = (text: string) =>
-              (text.match(/[.!?](\s|$)/g) ?? []).length;
+              (text.match(/[.!?]["'”’)\]]*(\s|$)/g) ?? []).length;
             const visible = (el: Element) =>
               el.checkVisibility() && !el.closest('.sr-only');
             const label = (el: Element) =>
@@ -152,19 +161,18 @@ for (const width of WIDTHS) {
                 ];
               });
 
-            return {
-              blocks,
-              pairs,
-              candidates: textBlocks.filter((el) => el.closest('main')).length,
-            };
+            return { blocks, pairs };
           },
           { minSentences: MIN_SENTENCES, newLineShare: NEW_LINE_SHARE },
         );
 
+        const exemption = NOTHING_TO_MEASURE[route];
         expect(
-          measured.candidates,
-          `${route} at ${width}px has no visible paragraph, list item or description in main to measure.`,
-        ).toBeGreaterThan(0);
+          measured.blocks.length + measured.pairs.length > 0,
+          exemption
+            ? `${route} at ${width}px now has text to measure, so its NOTHING_TO_MEASURE entry (${exemption}) is stale.`
+            : `${route} at ${width}px has no block of two sentences and no paragraph pair to measure.`,
+        ).toBe(exemption === undefined);
 
         const problems = [
           ...measured.blocks.flatMap((block) => [
