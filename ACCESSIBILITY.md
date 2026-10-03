@@ -277,11 +277,12 @@ links. Not automated:
    the summary (`tabindex="-1" autofocus`, no `role="alert"`, to avoid a double
    read), axe finds no WCAG 2.2 A or AA violation, typed values stay, each hint
    and error stays tied to its field, and no focused control is covered at
-   320px and 1280px. In markup only: `novalidate` and the inset pink error
-   ring. `/contact/send/` is outside `tests/routes.ts`, so the route suites
-   never render the error state and Firefox and WebKit never see it. Nobody has
-   judged whether the messages help (SC 3.3.1, 3.3.3) or heard them with a
-   screen reader. SC 3.3.7 and 3.3.8 do not apply.
+   320px and 1280px, Tab and Shift+Tab from the summary. In markup only:
+   `novalidate` and the inset pink error ring. `/contact/send/` is outside
+   `tests/routes.ts`, so the route suites never render the error state and
+   Firefox and WebKit never see it, though Firefox leaves `/contact` controls
+   partly under the sticky header (SC 2.4.12 above). Nobody has judged whether
+   the messages help (SC 3.3.1, 3.3.3) or heard them with a screen reader. SC 3.3.7 and 3.3.8 do not apply.
 2. **No screen reader testing.** No NVDA, JAWS, VoiceOver or Orca run.
    [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §6 is an Orca pass in Firefox,
    with §6.4 in Chrome for the uppercase question. An Orca pass narrows this
