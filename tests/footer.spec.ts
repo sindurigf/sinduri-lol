@@ -1,5 +1,9 @@
 import { expect, test } from './test';
-import { SOCIAL_PROFILES } from '../src/lib/profiles';
+import {
+  EMAIL_LINK_NAME,
+  SOCIAL_PROFILES,
+  profileLinkName,
+} from '../src/lib/profiles';
 import { NON_TEXT, PAGE_HELPERS } from './contrast';
 import { gotoSettled } from './settle';
 
@@ -15,10 +19,10 @@ const PHONE_WIDTH = 390;
 
 const EXPECTED_PROFILES = [
   ...SOCIAL_PROFILES.map((profile) => ({
-    name: profile.label as string,
+    name: profileLinkName(profile.label),
     href: profile.href as string,
   })),
-  { name: 'Email', href: 'mailto:' },
+  { name: EMAIL_LINK_NAME, href: 'mailto:' },
 ];
 
 test.describe('the footer', () => {
