@@ -17,3 +17,11 @@ export const SOCIAL_PROFILES = [
 
 /** The homepage <h1> spells it in two spans: tests/structured-data.spec.ts. */
 export const PERSON_NAME = 'Sinduri Guntupalli';
+
+const OWNER_GIVEN_NAME = 'Sinduri';
+
+/** SC 2.4.9: the service name alone does not say whose profile it is. */
+export const profileLinkName = (service: string): string =>
+  `${OWNER_GIVEN_NAME} on ${service}`;
+
+export const EMAIL_LINK_NAME = `Email ${OWNER_GIVEN_NAME}`;
