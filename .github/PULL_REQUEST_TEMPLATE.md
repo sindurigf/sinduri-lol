@@ -7,6 +7,16 @@
 - Commands and specs run, with totals:
 - Manual checks (docs/MANUAL_TESTING.md):
 
+## Docs and pages
+
+Sweep what the change makes stale: credits (`src/lib/credits.ts`,
+`src/pages/credits.astro`), README, ARCHITECTURE, ACCESSIBILITY,
+AI_DISCLOSURE, SECURITY, `docs/*`,
+`.claude/skills/sinduri-design-system/SKILL.md`, /accessibility, /privacy,
+/brand, `llms.txt` and `robots.txt`.
+
+- Updated: <files>, or checked: <files>, nothing stale.
+
 ## Template port
 
 - astro-cat-portfolio pull request, or why it does not apply:
