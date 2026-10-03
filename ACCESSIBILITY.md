@@ -48,7 +48,7 @@ status is still "Target only. No conformance claim."
 | 2.2.4 Interruptions                  | Nothing interrupts: no alerts, assertive live regions or automatic refresh.                                                                                                                                                                                                                                                                                                                                                                                                            |
 | 2.3.3 Animation from Interactions    | See Motion in [section 4](#4-what-the-site-supports).                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | 2.4.9 Link Purpose (Link Only)       | Within a page, one link name leads to one place. Hidden text completes short names: "Drupal tag", "Sinduri on GitHub". Exception: link text in posts, listed in `tests/link-purpose.spec.ts`.                                                                                                                                                                                                                                                                                          |
-| 2.4.12 Focus Not Obscured (Enhanced) | **Not met.** Met inside the open cat card, photo viewer and mobile menu. Fails on pages. On `/about`, Tab to each cat button: its sleep control covers part of it, and at 1280px wide a card covers part of Rudra's. In Firefox at 305px wide, Shift+Tab up `/contact` to the message field: the sticky header covers its top.                                                                                                                                                         |
+| 2.4.12 Focus Not Obscured (Enhanced) | **Not met.** Met inside the open cat card, photo viewer and mobile menu. Fails on pages. On `/about`, Tab to each cat button: its sleep control covers part of it, and at 1280px wide a card covers part of Rudra's. No focused control is even partly under the sticky header, in either Tab direction.                                                                                                                                                                               |
 | 2.4.13 Focus Appearance              | One solid ring, `--focus-width` wide. At every page focus stop it covers at least a 2px perimeter of the control and reaches 3:1 against the ground it paints over.                                                                                                                                                                                                                                                                                                                    |
 | 2.5.6 Concurrent Input Mechanisms    | No input is turned off because another one was detected.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | 3.1.4 Abbreviations                  | On functional pages (statement, privacy, credits, brand), the Career link on `/` and reading time, each abbreviation is spelled out or defined in the sentence where it first appears. Posts, About and Career are the owner's copy and are not checked.                                                                                                                                                                                                                               |
@@ -106,9 +106,10 @@ view (development server only, never published), and forks.
 - **Keyboard.** The tab order is walked in both directions on every page at
   two widths; category and tag listings, one template differing only by label,
   are walked once per group that shows the same posts. Each stop is hit-tested
-  against the sticky header (SC 2.4.11) and its ring measured against the
-  ground it lands on (SC 1.4.11) and for area (SC 2.4.13). Inside the open
-  cat card, photo viewer and menu, no stop is even partly covered (SC 2.4.12).
+  against the sticky header, with no part under it (SC 2.4.11, 2.4.12), and
+  its ring measured against the ground it lands on (SC 1.4.11) and for area
+  (SC 2.4.13). Inside the open cat card, photo viewer and menu, no stop is even
+  partly covered (SC 2.4.12).
 - **Sticky header.** Below 30rem of viewport height the header scrolls away
   instead of covering the page.
 - **Focus ring.** One global ring, offset past the element's shadow, measured
@@ -202,7 +203,7 @@ merge.
 | `tests/gold-link.spec.ts`           | 1.4.1, 1.4.3                                       | Links on gold at rest and under the pointer                                                                                      |
 | `tests/solid-block.spec.ts`         | 1.4.3, 1.4.11                                      | Every state inside `.card-solid`                                                                                                 |
 | `tests/contrast-table.spec.ts`      |                                                    | STYLEGUIDE.md contrast table matches the tokens                                                                                  |
-| `tests/focus.spec.ts`               | 2.4.7, 2.4.11, 2.4.13, 1.4.11                      | Tab and Shift+Tab on every page at two widths, listings sampled; ring contrast and area                                          |
+| `tests/focus.spec.ts`               | 2.4.7, 2.4.11, 2.4.12, 2.4.13, 1.4.11              | Tab and Shift+Tab on every page at two widths, listings sampled; no stop under the header; ring contrast and area                |
 | `tests/focus-obscured.spec.ts`      | 2.4.12                                             | Every stop in the open cat card, photo viewer and menu wholly uncovered                                                          |
 | `tests/sticky-header.spec.ts`       | 2.4.11                                             | Header static under 30rem; no focused control under it                                                                           |
 | `tests/states.spec.ts`              | 1.4.1, 1.4.11                                      | Hover drawn; current page is a shape; chip rings clear neighbours                                                                |
@@ -282,8 +283,7 @@ links. Not automated:
    320px and 1280px, walking Tab from the summary and Shift+Tab from the last
    footer link. In markup only: `novalidate` and the inset pink error ring.
    `/contact/send/` is outside `tests/routes.ts`, so the route suites never
-   render the error state and Firefox and WebKit never see it, though Firefox
-   leaves `/contact` controls partly under the sticky header (SC 2.4.12 above).
+   render the error state and Firefox and WebKit never see it.
    Nobody has judged whether the messages help (SC 3.3.1, 3.3.3) or heard them
    with a screen reader. SC 3.3.7 and 3.3.8 do not apply.
 2. **No screen reader testing.** No NVDA, JAWS, VoiceOver or Orca run.
