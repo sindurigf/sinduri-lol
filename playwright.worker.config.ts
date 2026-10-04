@@ -12,18 +12,18 @@ const PORT = TEST_WORKER_PORT;
 assertPortFree(PORT, 'TEST_WORKER_PORT');
 
 /* playwright.config.ts ignores exactly these. */
-/*
- * The web server runs a cold `npm run build`, which generates every photo's
- * widths and formats: about 2 minutes on a CI runner, over the 120s default.
- */
-export const BUILD_AND_SERVE_TIMEOUT_MS = 300_000;
-
 export const WORKER_SPECS = [
   'contact.spec.ts',
   'video-range.spec.ts',
   'served-types.spec.ts',
   'blog-pages.spec.ts',
 ] as const;
+
+/*
+ * The web server runs a cold `npm run build`, which generates every photo's
+ * widths and formats: about 2 minutes on a CI runner, over the 120s default.
+ */
+export const BUILD_AND_SERVE_TIMEOUT_MS = 300_000;
 
 /* Small enough that today's posts span pages, so tests/blog-pages.spec.ts sees the pager. */
 export const WORKER_POSTS_PER_PAGE = 1;
