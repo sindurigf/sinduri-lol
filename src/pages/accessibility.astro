@@ -39,7 +39,8 @@ const SUPPORTED = [
 const AUTOMATED = [
   'axe on every route, for WCAG 2.2 A and AA in dark and light mode, including the rules axe marks experimental, and for best practice in dark mode',
   'colour contrast measured against the composited background, including every result axe leaves undecided',
-  'the keyboard tab order walked in both directions on every page, with every focus ring measured where it lands; category and tag listings that show the same posts share one walk',
+  'the keyboard tab order walked in both directions on every page, with every focus ring measured where it lands',
+  'one keyboard walk for category and tag listings that show the same posts',
   'target sizes, reflow, Windows High Contrast Mode, reduced motion, and navigation with JavaScript off',
   'line length, line spacing and paragraph spacing on every page at three widths',
 ];
@@ -118,11 +119,12 @@ const AUTOMATED = [
           <p>
             No screen reader has been used on this site yet, so how it sounds is
             unknown, including how the uppercase headings and labels are read.
-            Nobody has tested the contact form's error messages by hand. The
-            writing has not been checked for plain language, and the gold
-            sections have only been measured by machine. The published Portable
-            Document Format (PDF) files pass an automated check but have not
-            been read with a screen reader.
+            Nobody has tested the contact form's error messages by hand. Some
+            functional pages have been edited for shorter sentences, but no
+            reader has checked them for plain language. The gold sections have
+            only been measured by machine. The published Portable Document
+            Format (PDF) files pass an automated check but have not been read
+            with a screen reader.
           </p>
 
           <p>
