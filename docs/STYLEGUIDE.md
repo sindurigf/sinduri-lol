@@ -768,12 +768,12 @@ Enforced by `tests/post-page.spec.ts`.
 - Source order: the `<header>` in the slab (breadcrumb, `h1`, teaser, date and
   reading time, then the cover when the post has one), contents list,
   `.prose`, tags.
-- A cover takes [Media](#media) in PageHero's photo layout at `aspect-photo`
-  (4:3): text in the left half, the photo in columns 8 to 12 crossing the
-  slab's bottom edge, no roundel. `tests/post-page.spec.ts`.
-- A cover file keeps its full frame, any ratio. The build crops it per slot
-  (`src/lib/photo-crop.ts`, and `src/lib/og-image.ts` for `og:image`); never
-  crop the source file.
+- A cover takes [Media](#media) in PageHero's photo layout, in its own ratio
+  (`.aspect-sizer`): text in the left half, the photo in columns 8 to 12
+  crossing the slab's bottom edge, no roundel. `tests/post-page.spec.ts`.
+- A cover is never cropped: the file keeps its full frame, and the hero and
+  the `/blog` feature card show it in its own ratio. Only `og:image` is cropped,
+  to the platforms' 1.91:1 (`src/lib/og-image.ts`).
 - Below `xl` they stack at `--spacing-head`; from `xl` the contents list sits
   right of the text, capped at `--container-rail`.
 - Outline: one `h1`; `h2` per section; `h3` only under an `h2`. The contents
@@ -1077,7 +1077,7 @@ shows no alt text. Enforced by `tests/replaced-elements.spec.ts` and
 size-full object-cover`). Never put `aspect-ratio` on the image: WebKit
   drops it, and the ratio from `width` and `height`, when the image fails.
 - A designed ratio is a class on the frame: `aspect-portrait` (4:5, hero),
-  `aspect-photo` (4:3, blog cover), `aspect-square`, `aspect-video` (16:9,
+  `aspect-photo` (4:3, the placeholder box), `aspect-square`, `aspect-video` (16:9,
   `lg:aspect-2/1` for the About panorama).
 - A file's own ratio is an `.aspect-sizer`: an empty `aria-hidden` SVG whose
   viewBox is the file's width and height. PhotoTile reads it from image

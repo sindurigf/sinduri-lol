@@ -39,7 +39,7 @@ const blog = defineCollection({
         readingTime: z.number().optional(),
         seoTitle: z.string().optional(),
         seoDescription: z.string().optional(),
-        /* Any ratio, full frame: the build crops it per slot (src/lib/photo-crop.ts). Relative to the post. */
+        /* Any ratio, shown uncropped in its own ratio; only og:image is cropped. Relative to the post. */
         cover: image().optional(),
         coverAlt: z.string().optional(),
         /* Alt for the 1.91:1 og:image crop, when the crop drops something coverAlt names. */

@@ -129,6 +129,9 @@ test.describe('the contents list', () => {
   });
 });
 
+/* A frame within 1% of the photo's own ratio shows it uncropped; the border rounds. */
+const COVER_RATIO_TOLERANCE = 0.01;
+
 /* The cover is the opening's photo and the page's largest paint, so it loads first. */
 test.describe('the cover as the post hero', () => {
   for (const post of POSTS) {
@@ -172,6 +175,19 @@ test.describe('the cover as the post hero', () => {
       expect(reserved, 'the cover reserves no space before it loads').toBe(
         true,
       );
+
+      const ratios = await first.evaluate(async (img: HTMLImageElement) => {
+        await img.decode();
+        const frame = img.closest('.aspect-frame')!.getBoundingClientRect();
+        return {
+          box: frame.width / frame.height,
+          source: img.naturalWidth / img.naturalHeight,
+        };
+      });
+      expect(
+        Math.abs(ratios.box / ratios.source - 1),
+        'the cover is cropped: its frame differs from the photo',
+      ).toBeLessThanOrEqual(COVER_RATIO_TOLERANCE);
     });
   }
 });
