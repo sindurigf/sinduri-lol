@@ -11,6 +11,7 @@ const ROUTE = '/brand/';
 const TEMPLATE_URL = 'https://github.com/sindurigf/astro-cat-portfolio';
 const USE_TEMPLATE_URL =
   'https://github.com/new?template_name=astro-cat-portfolio&template_owner=sindurigf';
+const DEMO_URL = 'https://template.sinduri.lol';
 const RATIO_DIGITS = 2;
 
 /** Each `--color-*` token resolved in <main>, where light mode swaps them, as `#rrggbb`. */
@@ -372,13 +373,14 @@ test.describe('/brand', () => {
     });
   }
 
-  test('the calls to action open the template, and the demo link waits for the demo', async ({
+  test('the calls to action open the template and its demo', async ({
     page,
   }) => {
     await gotoSettled(page, ROUTE);
     for (const [name, href] of [
       ['Use this design', USE_TEMPLATE_URL],
       ['View the template', TEMPLATE_URL],
+      ['See the demo', DEMO_URL],
     ] as const) {
       const links = page.getByRole('link', { name, exact: true });
       expect(await links.count(), `no "${name}" link`).toBeGreaterThan(0);
@@ -387,8 +389,5 @@ test.describe('/brand', () => {
       ))
         expect(href_, `"${name}" points elsewhere`).toBe(href);
     }
-    await expect(page.getByRole('link', { name: 'See the demo' })).toHaveCount(
-      0,
-    );
   });
 });
