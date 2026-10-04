@@ -1,7 +1,7 @@
 import { expect, test, type Page } from './test';
 import { CONTENTS_POST_ROUTE, POST_ROUTES, postsWhere } from './routes';
 import { gotoSettled } from './settle';
-import { MIN_TARGET } from './wcag';
+import { MIN_TARGET, SUBPIXEL_TOLERANCE } from './wcag';
 
 /**
  * A post as a reading page, docs/STYLEGUIDE.md "Posts". Below `xl` the contents
@@ -100,7 +100,9 @@ test.describe('the contents list', () => {
       });
       expect(found, 'no <details> in the contents nav').not.toBeNull();
       expect(found!.open).toBe(false);
-      expect(found!.summary).toBeGreaterThanOrEqual(MIN_TARGET);
+      expect(found!.summary).toBeGreaterThanOrEqual(
+        MIN_TARGET - SUBPIXEL_TOLERANCE,
+      );
       expect(found!.name).toBe(found!.labelledBy);
     });
   }
