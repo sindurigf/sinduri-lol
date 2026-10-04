@@ -8,8 +8,9 @@ teaser: 'The best code in the world does not save a project if nobody can figure
 featured: true
 readingTime: 14
 seoTitle: 'Open Source Is Not Just Code'
-cover: '../../assets/blog/open-source-is-not-just-code/cover.jpg'
-coverAlt: 'Sinduri laughing with friends around a red-lit table at Drupal Mountain Camp, one of them holding up a toy frog on a fork.'
+cover: '../../assets/blog/open-source-is-not-just-code/mentoring-table.jpg'
+coverAlt: 'Sinduri writing on sticky notes at the Drupal mentoring table at DrupalCon Rotterdam, beside a sign that reads Many tiny drops make an ocean.'
+coverCredit: 'Bram Driesen'
 seoDescription: 'Six pillars that decide whether an open source project lasts: governance, contributor experience, recognition, local community, communication and funding.'
 ---
 
@@ -61,8 +62,6 @@ Governance feels boring right up until the day you desperately need it.
 
 Contributor experience is about lowering the cost of a first contribution. Give people a clear place to start. Label good first issues. Make the path from first patch to trusted contributor visible, so people can see a future in the project.
 
-![Sinduri writing on sticky notes at the Drupal mentoring table at DrupalCon Rotterdam, beside a sign that reads Many tiny drops make an ocean.](../../assets/blog/open-source-is-not-just-code/mentoring-table.jpg 'Photo: Bram Driesen')
-
 [Kubernetes](https://github.com/kubernetes/community/blob/master/community-membership.md) does this well, with a published ladder running from member to reviewer to approver, mentoring cohorts, and a graceful way to step back when life gets busy.
 
 When the path is confusing, people do not complain. They leave, and you never learn why.
@@ -82,8 +81,6 @@ Put those together and recognition stops being a favor you ask for. It becomes s
 ### 4. Local community
 
 People do not form belonging at a 2,000-person conference. They form it in small rooms, over shared problems, working together. So pair the big global event with small local ones, where the barrier drops.
-
-![Sinduri in a pink beanie with a group of Drupal Mountain Camp attendees on a sunny terrace, snowy mountains behind them.](../../assets/blog/open-source-is-not-just-code/mountain-camp-group.jpg 'Photo: Josef Kruckenberg')
 
 Drupal is the community I know best. [DrupalCon](https://events.drupal.org/) is the flagship, but the real engine is the local camps, run by volunteers and kept deliberately small. That is where new people get pulled in, and where most organizers, including me, learned how any of this works.
 

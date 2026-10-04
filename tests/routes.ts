@@ -94,6 +94,7 @@ interface PostSummary {
   tags: string[];
   hasCover: boolean;
   coverAlt: string | undefined;
+  coverCredit: string | undefined;
 }
 
 /** Every post in src/content/blog/, newest first. Source exists at collection; "route coverage" holds it to dist/. */
@@ -114,6 +115,7 @@ export const POSTS: readonly PostSummary[] = readdirSync(BLOG_CONTENT_DIR)
       tags: frontmatterTags(frontmatter),
       hasCover: frontmatterField(frontmatter, 'cover') !== undefined,
       coverAlt: frontmatterField(frontmatter, 'coverAlt'),
+      coverCredit: frontmatterField(frontmatter, 'coverCredit'),
     };
   })
   .sort((a, b) => b.time - a.time || a.route.localeCompare(b.route));

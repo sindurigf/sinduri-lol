@@ -34,6 +34,9 @@ import withFriend from '../assets/photos/pride-with-friend.jpg';
 import dosa from '../assets/photos/sinduri-dosa.jpg';
 import lectureHall from '../assets/photos/drupal-lecture-hall.jpg';
 import mountainCampBeanie from '../assets/photos/mountain-camp-beanie.jpg';
+import mountainCampTable from '../assets/photos/mountain-camp-table.jpg';
+import mountainCampGroup from '../assets/photos/mountain-camp-group.jpg';
+import { photoSize } from '../lib/photo-size';
 import mountainCampDinner from '../assets/photos/mountain-camp-dinner.jpg';
 import mountainCampTalk from '../assets/photos/mountain-camp-talk.jpg';
 import mountainCampAudience from '../assets/photos/mountain-camp-audience.jpg';
@@ -133,6 +136,10 @@ const PLACES = [
 
 const DRUPAL_EVENTS = [
   {
+    src: mountainCampGroup,
+    alt: 'Sinduri in a pink beanie with a group of Drupal Mountain Camp attendees on a sunny terrace, snowy mountains behind them.',
+  },
+  {
     src: rotterdamAward,
     alt: 'Sinduri on stage at DrupalCon Rotterdam with the Women in Drupal Award winners, two of them holding trophies.',
   },
@@ -189,6 +196,9 @@ const CAT_PHOTO_SIZES = '(min-width: 48rem) 288px, 192px';
 /* Thanked in each cat's card for the idea; the link comes from the Credits list. */
 const catInspiration = THANKS.find((person) => person.name === 'Arthur Lorenz');
 if (!catInspiration) throw new Error('No THANKS entry for "Arthur Lorenz".');
+
+/* Shown whole, in its own ratio, so nobody at the table is cut off. */
+const tableSize = await photoSize(mountainCampTable);
 
 const catInfo: CatInfo[] = await Promise.all(
   CATS.map(async (cat) => {
@@ -419,6 +429,33 @@ const catInfo: CatInfo[] = await Promise.all(
     </p>
 
     <div class="card">
+      <figure class="mb-8">
+        <div class:list={['aspect-frame', PHOTO]}>
+          <svg
+            class="aspect-sizer"
+            viewBox={`0 0 ${tableSize.width} ${tableSize.height}`}
+            aria-hidden="true"
+            focusable="false"
+          />
+          <Picture
+            {...PHOTO_FORMATS}
+            src={mountainCampTable}
+            alt="Sinduri laughing with friends around a red-lit table at Drupal Mountain Camp, one of them holding up a toy frog on a fork."
+            width={tableSize.width}
+            height={tableSize.height}
+            widths={WIDTHS}
+            sizes={SIZES.panorama}
+          />
+        </div>
+        <figcaption class="mt-4 text-body text-text">
+          <span class="block font-black">Drupal Mountain Camp</span>
+          Photo:{' '}
+          <a href={photographerHref(MOUNTAIN_CAMP_PHOTOGRAPHER)}>
+            {MOUNTAIN_CAMP_PHOTOGRAPHER}
+          </a>
+        </figcaption>
+      </figure>
+
       <div class="flex flex-col gap-8 sm:flex-row">
         <div class="min-w-0 sm:flex-1">
           <span class="label block text-gold">Before</span>
