@@ -33,6 +33,13 @@ import kannurSea from '../assets/photos/kannur-sea.jpg';
 import withFriend from '../assets/photos/pride-with-friend.jpg';
 import dosa from '../assets/photos/sinduri-dosa.jpg';
 import lectureHall from '../assets/photos/drupal-lecture-hall.jpg';
+import mountainCampBeanie from '../assets/photos/mountain-camp-beanie.jpg';
+import mountainCampDinner from '../assets/photos/mountain-camp-dinner.jpg';
+import mountainCampTalk from '../assets/photos/mountain-camp-talk.jpg';
+import mountainCampAudience from '../assets/photos/mountain-camp-audience.jpg';
+import mountainCampFriend from '../assets/photos/mountain-camp-friend.jpg';
+import mountainCampHallway from '../assets/photos/mountain-camp-hallway.jpg';
+import rotterdamAward from '../assets/photos/drupalcon-rotterdam-award.jpg';
 import PhotoStrip from '../components/PhotoStrip.astro';
 import { photographerHref, type Photographer } from '../lib/credits';
 import { DENSITIES, WIDTHS } from '../lib/image-densities';
@@ -62,6 +69,8 @@ const MARK_HEIGHT = 64;
 
 const LECTURE_HALL_PHOTOGRAPHER: Photographer = 'Andrey Pshenichny';
 const MENTOR: Photographer = 'Klaus Purer';
+const MOUNTAIN_CAMP_PHOTOGRAPHER: Photographer = 'Josef Kruckenberg';
+const ROTTERDAM_PHOTOGRAPHER: Photographer = 'Karl Hepworth';
 
 const SECTIONS = [
   { id: 'lepus-ridet', title: 'Why Lepus Ridet' },
@@ -115,6 +124,37 @@ const PLACES = [
   {
     src: withFriend,
     alt: 'Sinduri leaning on a friend’s shoulder, both smiling into the camera.',
+  },
+  {
+    src: mountainCampBeanie,
+    alt: 'Sinduri in a pink beanie, laughing, with snowy mountains behind her.',
+  },
+] as const;
+
+const DRUPAL_EVENTS = [
+  {
+    src: rotterdamAward,
+    alt: 'Sinduri on stage at DrupalCon Rotterdam with the Women in Drupal Award winners, two of them holding trophies.',
+  },
+  {
+    src: mountainCampHallway,
+    alt: 'Sinduri holding a bottle among Drupal Mountain Camp attendees, in front of the event banner.',
+  },
+  {
+    src: mountainCampAudience,
+    alt: 'Sinduri in profile, listening to a talk at Drupal Mountain Camp.',
+  },
+  {
+    src: mountainCampTalk,
+    alt: 'Two speakers at the front of the Drupal Mountain Camp room, one reading from a sheet of paper, beside the Drupal and sponsor posters.',
+  },
+  {
+    src: mountainCampDinner,
+    alt: 'Sinduri smiling at a dinner table in a wooden restaurant at Drupal Mountain Camp, beside a friend serving salad.',
+  },
+  {
+    src: mountainCampFriend,
+    alt: 'Sinduri smiling at a friend across a dinner table at Drupal Mountain Camp.',
   },
 ] as const;
 
@@ -432,6 +472,25 @@ const catInfo: CatInfo[] = await Promise.all(
           </PhotoTile>
         </div>
       </div>
+
+      <PhotoStrip
+        id="drupal-photos"
+        label="Drupal events"
+        noun="Drupal photos"
+        group="drupal"
+        photos={DRUPAL_EVENTS}
+      />
+      <p class="mt-4 text-body text-subtle">
+        Photos:{' '}
+        <a href={photographerHref(ROTTERDAM_PHOTOGRAPHER)}>
+          {ROTTERDAM_PHOTOGRAPHER}
+        </a>{' '}
+        at DrupalCon Rotterdam,{' '}
+        <a href={photographerHref(MOUNTAIN_CAMP_PHOTOGRAPHER)}>
+          {MOUNTAIN_CAMP_PHOTOGRAPHER}
+        </a>{' '}
+        at Drupal Mountain Camp.
+      </p>
     </div>
   </Section>
 

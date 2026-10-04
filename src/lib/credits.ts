@@ -10,6 +10,7 @@ export const PHOTOGRAPHERS = {
   'Daniel Lemon': 'https://danlemon.com/',
   'Joris Vercammen': 'https://www.drupal.org/u/borisson_',
   'Josef Kruckenberg': 'https://www.dasjo.at/',
+  'Karl Hepworth': 'https://www.drupal.org/u/fubarhouse',
   'Klaus Purer': 'https://klau.si/',
   'Paul Johnson': 'https://www.drupal.org/u/pdjohnson',
   'Tdm Dilip': 'https://www.instagram.com/tdmdilip/',
