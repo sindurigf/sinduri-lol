@@ -771,6 +771,9 @@ Enforced by `tests/post-page.spec.ts`.
 - A cover takes [Media](#media) in PageHero's photo layout at `aspect-photo`
   (4:3): text in the left half, the photo in columns 8 to 12 crossing the
   slab's bottom edge, no roundel. `tests/post-page.spec.ts`.
+- A cover file keeps its full frame, any ratio. The build crops it per slot
+  (`src/lib/photo-crop.ts`, and `src/lib/og-image.ts` for `og:image`); never
+  crop the source file.
 - Below `xl` they stack at `--spacing-head`; from `xl` the contents list sits
   right of the text, capped at `--container-rail`.
 - Outline: one `h1`; `h2` per section; `h3` only under an `h2`. The contents

@@ -160,7 +160,7 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 - Non-placeholder posts get `og:type` `article`,
   `article:published_time` and a `BlogPosting` JSON-LD node. Other pages are
   `website`.
-- `cover` is relative to the post and shown as the post's hero photo, on the
+- `cover` is relative to the post, full frame at any ratio, and shown as the post's hero photo, on the
   `/blog` feature card and as the `og:image`; the schema requires `coverAlt`
   with it. `coverCardAlt` replaces `coverAlt` on
   the 1.91:1 `og:image` crop when the crop drops something `coverAlt` names.

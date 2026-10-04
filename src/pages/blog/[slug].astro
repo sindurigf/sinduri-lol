@@ -8,7 +8,8 @@ import { markdownSourcePath, tagHref } from '../../lib/paths';
 import { coverOgImage } from '../../lib/og-image';
 import { Picture } from 'astro:assets';
 import { PHOTO_FORMATS } from '../../lib/photo-formats';
-import { HERO_PHOTO_SIZES, WIDTHS } from '../../lib/image-densities';
+import { HERO_PHOTO_SIZES } from '../../lib/image-densities';
+import { cropTo, PHOTO_RATIO } from '../../lib/photo-crop';
 import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -52,6 +53,7 @@ const ogImage =
   cover && coverAlt
     ? await coverOgImage(cover, coverCardAlt ?? coverAlt)
     : undefined;
+const coverCrop = cover ? await cropTo(cover, PHOTO_RATIO) : null;
 const machineDate = isoDate(date);
 const trail = postTrail(category, title);
 
@@ -119,14 +121,17 @@ const article = placeholder
             </p>
           </div>
         </div>
-        {cover && (
+        {cover && coverCrop && (
           <figure class="hero-photo mt-12 max-w-sm lg:col-span-5 lg:col-start-8 lg:row-start-2 lg:mt-0 lg:max-w-none lg:self-end">
             <div class="aspect-frame aspect-photo border-4 border-gold-text shadow-hard-pink-8">
               <Picture
                 {...PHOTO_FORMATS}
                 src={cover}
                 alt={coverAlt ?? ''}
-                widths={WIDTHS}
+                width={coverCrop.width}
+                height={coverCrop.height}
+                fit="cover"
+                widths={coverCrop.widths}
                 sizes={HERO_PHOTO_SIZES}
                 priority
                 class="text-body text-text"
