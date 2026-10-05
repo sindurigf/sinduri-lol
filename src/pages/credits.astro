@@ -231,7 +231,8 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
         <ul class="bullet-list mt-4">
           {Object.values(LICENSED_PHOTOS).map((photo) => (
             <li>
-              <a href={photo.source}>{photo.title}</a>, by {photo.photographer},{' '}
+              <a href={photo.source}>{photo.title}</a>, by {photo.photographer},
+              on {photo.sourceName},{' '}
               <a href={photo.licenceHref}>{photo.licence}</a>, {photo.changes}
             </li>
           ))}

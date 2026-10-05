@@ -37,6 +37,20 @@ export const SCREENSHOT_SOURCES = {
 
 export const SCREENSHOT_CREDIT_PREFIX = 'Screenshot: ';
 
+export interface LicensedPhoto {
+  photographer: Photographer;
+  /** The photo's title where it is published. */
+  title: string;
+  source: string;
+  /** Where `source` is, e.g. Flickr or Wikimedia Commons. */
+  sourceName: string;
+  /** Spelled out, e.g. "Creative Commons Attribution 4.0" (SC 3.1.4). */
+  licence: string;
+  licenceHref: string;
+  /** What was changed, as the licence asks, e.g. "resized". */
+  changes: string;
+}
+
 /**
  * Photos used under a Creative Commons licence, keyed by file name without its
  * extension: the caption and /credits link the source and licence and say what changed.
@@ -46,6 +60,7 @@ export const LICENSED_PHOTOS = {
     photographer: 'Andrey Pshenichny',
     title: 'DrupalDevDays 2023 Vienna',
     source: 'https://www.flickr.com/photos/beta-robot/53065586392/',
+    sourceName: 'Flickr',
     licence: 'Creative Commons Attribution 2.0',
     licenceHref: 'https://creativecommons.org/licenses/by/2.0/',
     changes: 'resized',
@@ -54,23 +69,12 @@ export const LICENSED_PHOTOS = {
     photographer: 'Karl Hepworth',
     title: 'Women in Drupal Award Ceremony - DrupalCon Rotterdam 2026',
     source: 'https://www.flickr.com/photos/200855369@N08/55559653507/',
+    sourceName: 'Flickr',
     licence: 'Creative Commons Attribution-ShareAlike 4.0',
     licenceHref: 'https://creativecommons.org/licenses/by-sa/4.0/',
     changes: 'resized',
   },
-} as const satisfies Readonly<
-  Record<
-    string,
-    {
-      photographer: Photographer;
-      title: string;
-      source: string;
-      licence: string;
-      licenceHref: string;
-      changes: string;
-    }
-  >
->;
+} as const satisfies Readonly<Record<string, LicensedPhoto>>;
 
 /** The site's name and email address are borrowed from norman.lol. */
 export const NAME_INSPIRATION = {
