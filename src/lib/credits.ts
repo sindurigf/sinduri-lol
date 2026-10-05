@@ -48,7 +48,7 @@ export const LICENSED_PHOTOS = {
     source: 'https://www.flickr.com/photos/beta-robot/53065586392/',
     licence: 'Creative Commons Attribution 2.0',
     licenceHref: 'https://creativecommons.org/licenses/by/2.0/',
-    changes: 'cropped and resized',
+    changes: 'resized',
   },
   'drupalcon-rotterdam-award': {
     photographer: 'Karl Hepworth',
