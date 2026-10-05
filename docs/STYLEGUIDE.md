@@ -539,7 +539,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
   closing band.
 - **A name with a line saying what it did** (`/credits`): each entry on an
   inset `bg-background` tile inside the card. No rule between entries.
-- **Photo captions:** none on People and places; the alt text names who is in
+- **Photo captions:** none on People and Places; the alt text names who is in
   each photo. Where a photo carries a caption, it sits on an inset tile.
 - **Form fields:** an 8px edge. A failing field adds a 4px pink inset ring
   inside the pink 8px edge.

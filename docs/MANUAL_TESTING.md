@@ -284,11 +284,11 @@ build after any change to `/about`.
 
 - [ ] `Alt+Shift+M` lists 13 landmarks: banner, navigation "Primary", main,
       navigation "On this page", five regions (Why Lepus Ridet, Positivity
-      advocate, People and places, The important things, Engineer to Drupal),
+      Advocate, People and Places, The Important Things, Engineer to Drupal),
       contentinfo, navigation "Site", "About this site", "Social". None
       unnamed or duplicated. Judge whether the list is useful or crowded. → SC 1.3.1
 - [ ] `M` from the top steps through them in that order. → SC 1.3.1
-- [ ] `Alt+Shift+H` lists six headings: `h1` "About me", then one `h2` per
+- [ ] `Alt+Shift+H` lists six headings: `h1` "About Me", then one `h2` per
       spread. The "On this page" nav lists all five spreads. → SC 1.3.1, 2.4.6
 - [ ] `G` skips the header bunny mark; the home link is "sinduri.lol". → SC 1.1.1
 - [ ] `G` finds no footer hare. → SC 1.1.1
