@@ -46,7 +46,7 @@ At drunomics I worked on mossbo, our cloud CMS, and the projects that tie into i
 
 In 2023 Klausi asked me to volunteer at Drupal Dev Days Vienna. I enjoyed working with the community so much that I started saying yes to every organising committee that asked for help. Soon I was helping organise Drupal Mountain Camp, Drupal Dev Days and DrupalCamp Berlin, all in the same year.
 
-![Drupal Mountain Camp attendees gathered together in the snow, with a mountain behind them.](../../assets/blog/five-years-in-drupal/drupal-mountain-camp.jpg)
+![Drupal Mountain Camp attendees gathered together in the snow, with a mountain behind them.](../../assets/blog/five-years-in-drupal/drupal-mountain-camp.jpg 'Photo: Patrick Itten')
 
 The Swiss community adopted me and taught me so much about events. The Austrian community welcomed me so warmly that it feels like home. I was elected to the Drupal Austria board as marketing manager, and in 2026 I am deputy marketing manager. My work continues through my commitment to Drupal Switzerland and Drupal Austria.
 

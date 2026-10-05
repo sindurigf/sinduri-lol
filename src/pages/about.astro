@@ -77,6 +77,7 @@ const MARK_HEIGHT = 64;
 
 const MENTOR: Photographer = 'Klaus Purer';
 const MOUNTAIN_CAMP_PHOTOGRAPHER: Photographer = 'Josef Kruckenberg';
+const EVENT_PHOTOGRAPHER: Photographer = 'Patrick Itten';
 const ROTTERDAM_AWARD = LICENSED_PHOTOS['drupalcon-rotterdam-award'];
 const ROTTERDAM_PHOTOGRAPHER: Photographer = ROTTERDAM_AWARD.photographer;
 
@@ -508,6 +509,10 @@ const catInfo: CatInfo[] = await Promise.all(
             aspect="video"
           >
             <span class="block font-black text-text">Drupal Mountain Camp</span>
+            Photo:{' '}
+            <a href={photographerHref(EVENT_PHOTOGRAPHER)}>
+              {EVENT_PHOTOGRAPHER}
+            </a>
           </PhotoTile>
         </div>
       </div>

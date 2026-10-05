@@ -1,6 +1,11 @@
 ---
 import type { ImageMetadata } from 'astro';
-import { LICENSED_PHOTOS } from '../../lib/credits';
+import {
+  LICENSED_PHOTOS,
+  PHOTO_CREDIT_PREFIX,
+  photographerHref,
+  type Photographer,
+} from '../../lib/credits';
 import LicensedPhotoCredit from '../LicensedPhotoCredit.astro';
 import PhotoTile from '../PhotoTile.astro';
 import PhotoViewer from '../PhotoViewer.astro';
@@ -14,18 +19,20 @@ const STRIP_INSET = '7.5rem';
 interface Photo {
   src: ImageMetadata;
   alt: string;
-  licence?: keyof typeof LICENSED_PHOTOS;
+  credit:
+    { licensed: keyof typeof LICENSED_PHOTOS } | { photographer: Photographer };
 }
 
 const PHOTOS: readonly Photo[] = [
   {
     src: lectureHall,
     alt: 'Sinduri standing and clapping in a lecture hall full of Drupal event attendees.',
-    licence: 'drupal-lecture-hall',
+    credit: { licensed: 'drupal-lecture-hall' },
   },
   {
     src: mountainCamp,
     alt: 'Drupal Mountain Camp attendees gathered together in the snow.',
+    credit: { photographer: 'Patrick Itten' },
   },
 ];
 
@@ -79,13 +86,18 @@ const tileProps = ({ src, alt }: Photo) => ({
       >
         {PHOTOS.map((photo) => (
           <li>
-            {photo.licence ? (
-              <PhotoTile {...tileProps(photo)}>
-                <LicensedPhotoCredit photo={photo.licence} />
-              </PhotoTile>
-            ) : (
-              <PhotoTile {...tileProps(photo)} />
-            )}
+            <PhotoTile {...tileProps(photo)}>
+              {'licensed' in photo.credit ? (
+                <LicensedPhotoCredit photo={photo.credit.licensed} />
+              ) : (
+                <Fragment>
+                  {PHOTO_CREDIT_PREFIX}
+                  <a href={photographerHref(photo.credit.photographer)}>
+                    {photo.credit.photographer}
+                  </a>
+                </Fragment>
+              )}
+            </PhotoTile>
           </li>
         ))}
       </ul>
