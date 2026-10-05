@@ -3,7 +3,13 @@ import CloseRow from '../components/CloseRow.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import { CONTACT_EMAIL, CONTACT_MAILTO } from '../lib/contact';
-import { NAME_INSPIRATION, PHOTOGRAPHERS, THANKS } from '../lib/credits';
+import {
+  LICENSED_PHOTOS,
+  NAME_INSPIRATION,
+  PHOTOGRAPHERS,
+  SCREENSHOT_SOURCES,
+  THANKS,
+} from '../lib/credits';
 
 /* Keep in step with package.json, wrangler.jsonc, src/assets/social-icons.svg and AI_DISCLOSURE.md. */
 const BUILT_WITH = [
@@ -204,6 +210,32 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
         </ul>
 
         <p class="mt-4 text-body text-text text-pretty">And more.</p>
+
+        <p class="mt-6 text-body text-text text-pretty">
+          Screenshots in posts are from:
+        </p>
+        <ul class="bullet-list mt-4">
+          {Object.entries(SCREENSHOT_SOURCES).map(([name, href]) => (
+            <li>
+              <a href={href} class={LINK_ITEM}>
+                {name}
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <p class="mt-6 text-body text-text text-pretty">
+          Used under Creative Commons Attribution or Attribution-ShareAlike
+          licences:
+        </p>
+        <ul class="bullet-list mt-4">
+          {Object.values(LICENSED_PHOTOS).map((photo) => (
+            <li>
+              <a href={photo.source}>{photo.title}</a>, by {photo.photographer},{' '}
+              <a href={photo.licenceHref}>{photo.licence}</a>, {photo.changes}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   </section>

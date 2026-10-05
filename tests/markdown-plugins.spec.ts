@@ -1,5 +1,7 @@
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { resolve } from 'node:path';
 import { expect, test } from './test';
 import { linkListItem } from '../src/plugins/link-list-item.mjs';
 import { postFigure } from '../src/plugins/post-figure.mjs';
@@ -75,10 +77,20 @@ test.describe('link-list-item', NODE, () => {
 const POST_URL = pathToFileURL(
   resolve('src/content/blog/five-years-in-drupal.md'),
 );
+/* A post opens on its cover, if it has one; the priority tests need both kinds. */
+const postFile = (frontmatter: string): URL => {
+  const file = join(mkdtempSync(join(tmpdir(), 'post-figure-')), 'post.md');
+  writeFileSync(file, `---\n${frontmatter}\n---\n\nBody.\n`);
+  return pathToFileURL(file);
+};
+const UNCOVERED_POST_URL = postFile("title: 'No cover'");
+const COVERED_POST_URL = postFile("title: 'Cover'\ncover: './cover.jpg'");
 const TALK_URL = pathToFileURL(
   resolve('src/content/talks/open-source-is-not-just-code/slides.md'),
 );
 const PHOTO = '../../assets/blog/five-years-in-drupal/cover.jpg';
+const PORTRAIT_PHOTO =
+  '../../assets/blog/open-source-is-not-just-code/mentoring-table.jpg';
 
 test.describe('post-figure', NODE, () => {
   test('a captioned photo alone in its paragraph becomes a figure with a credit', async () => {
@@ -94,6 +106,41 @@ test.describe('post-figure', NODE, () => {
     expect(figure.tagName).toBe('figure');
     const caption = figure.children!.find((c) => c.tagName === 'figcaption');
     expect(caption, 'the title became no caption').toBeDefined();
+  });
+
+  test('an uncaptioned photo alone in a post paragraph still becomes a figure', async () => {
+    const img = el('img', [], { src: PHOTO, alt: 'Two friends' });
+    const root = el('root', [el('p', [img])]);
+    await postFigure().element.visit(img, contextFor(root, POST_URL));
+    const figure = root.children![0]!;
+    expect(figure.tagName).toBe('figure');
+    expect(
+      figure.children!.some((c) => c.tagName === 'figcaption'),
+      'an empty caption was added',
+    ).toBe(false);
+  });
+
+  test('a portrait figure is marked and sized to the measure, a landscape to the page', async () => {
+    const figureFor = async (src: string) => {
+      const img = el('img', [], { src, alt: 'x', title: 'Photo: Someone' });
+      const root = el('root', [el('p', [img])]);
+      await postFigure().element.visit(img, contextFor(root, POST_URL));
+      return root.children![0]!;
+    };
+    const sizesOf = (figure: Awaited<ReturnType<typeof figureFor>>) =>
+      String(figure.children![0]!.children![1]!.properties?.sizes);
+    const portrait = await figureFor(PORTRAIT_PHOTO);
+    const landscape = await figureFor(PHOTO);
+    expect(portrait.properties?.className).toEqual(['figure-portrait']);
+    expect(landscape.properties?.className).toBeUndefined();
+    expect(sizesOf(portrait), 'a portrait slot passes the measure').toContain(
+      '36rem)',
+    );
+    expect(sizesOf(portrait)).not.toContain('80rem');
+    expect(
+      sizesOf(landscape),
+      'a landscape slot stops at the measure',
+    ).toContain('80rem');
   });
 
   test('an image inside a sentence keeps its paragraph and its title', async () => {
@@ -118,20 +165,31 @@ test.describe('post-figure', NODE, () => {
     expect(talk).toContain('55vh');
   });
 
-  test("a post's first image loads with priority, and no other image does", async () => {
-    const plugin = postFigure({ fileURL: POST_URL });
+  const priorities = async (url: URL): Promise<boolean[]> => {
+    const plugin = postFigure({ fileURL: url });
     const images = [1, 2].map(() => el('img', [], { src: PHOTO, alt: 'x' }));
     const root = el(
       'root',
       images.map((img) => el('p', [text('in '), img])),
     );
     for (const img of images) {
-      await plugin.element.visit(img, contextFor(root, POST_URL));
+      await plugin.element.visit(img, contextFor(root, url));
     }
+    return images.map((img) => img.properties?.priority === true);
+  };
+
+  test("a post's first image loads with priority, and no other image does", async () => {
     expect(
-      images.map((img) => img.properties?.priority === true),
+      await priorities(UNCOVERED_POST_URL),
       'only the first image of a post should be fetched eagerly and first.',
     ).toEqual([true, false]);
+  });
+
+  test('a post with a cover gives none of its body images priority', async () => {
+    expect(
+      await priorities(COVERED_POST_URL),
+      'the cover is the first image; a body image would compete with it.',
+    ).toEqual([false, false]);
   });
 
   test('a talk slide image never takes priority', async () => {

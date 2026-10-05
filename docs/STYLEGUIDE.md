@@ -585,7 +585,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
   its card as a focusable region), a tilted mark's corners and any hard shadow
   (up to 12px past the column).
 - **Reflow:** every type is one column below 640px, on the 288px content box
-  at 320px. At 200% zoom a 1280px window is 640 CSS px. Only the photo strip
+  at 320px. At 200% zoom a 1280px window is 640 CSS px. Only photo strips
   and wide tables scroll sideways, each in its own region.
 
 ### Page compositions
@@ -693,7 +693,7 @@ tier and takes its padding.
 roundel.**
 
 - `PageHero` renders the roundel whenever it has no `image`. There is no prop.
-- About is the one hero with a photo, so the one without a roundel.
+- About and every post with a `cover` have a photo, so no roundel.
 - The homepage is not a PageHero and has no roundel on its window.
 - `variant="hero"`: a gold disc of `--spacing-roundel` with a `gold-text` ring
   (4px, 8px from `lg`), pink 8px shadow, 3deg tilt.
@@ -707,7 +707,8 @@ roundel.**
   is thin at the top only.
 - `tests/page-hero.spec.ts` checks `.page-hero` and `.post-slab` at 1280 and
   390px: roundel present, on the edge, ringed `gold-text`, over no text; absent
-  on `PHOTO_ROUTES`. A new hero photo adds its route there.
+  on `PHOTO_ROUTES` and on posts with a cover. A new PageHero photo adds its
+  route there.
 
 ### Colour roles and ratios
 
@@ -770,7 +771,17 @@ Enforced by `tests/post-page.spec.ts`.
   `.band.py-section` holding `.post-layout`. `BaseLayout` adds no
   element, so articles never nest.
 - Source order: the `<header>` in the slab (breadcrumb, `h1`, teaser, date and
-  reading time), contents list, `.prose`, tags.
+  reading time, then the cover when the post has one), contents list,
+  `.prose`, tags.
+- A cover takes [Media](#media) in PageHero's photo layout, in its own ratio
+  (`.aspect-sizer`): text in the left half, the photo in columns 8 to 12
+  crossing the slab's bottom edge, no roundel. `tests/post-page.spec.ts`.
+- A cover is never cropped: the file keeps its full frame, and the hero and
+  the `/blog` feature card show it in its own ratio. Only `og:image` is cropped,
+  to the platforms' 1.91:1 (`src/lib/og-image.ts`).
+- `coverCredit` puts "Photo: name" in the date line, `text-gold-muted`, linked
+  when the name is in `PHOTOGRAPHERS`. Not under the cover: the photo hangs
+  below the slab, off the gold ground.
 - Below `xl` they stack at `--spacing-head`; from `xl` the contents list sits
   right of the text, capped at `--container-rail`.
 - Outline: one `h1`; `h2` per section; `h3` only under an `h2`. The contents
@@ -784,8 +795,14 @@ Enforced by `tests/post-page.spec.ts`.
 - In rem, not `ch`: Firefox measures Lexend's `ch` wider than Chromium.
 - `text-reading-h1` stops at 70px so ACCESSIBILITY fits one line; never 64px
   or less (`text-h2`'s ceiling).
-- Post photo `sizes`: `min(calc(100vw - 3rem), 36rem)` from 640px,
-  `min(calc(100vw - 2rem), 36rem)` below.
+- Body figures break out of the measure; the text does not. A landscape
+  takes the page column, and from `xl` the measure plus the track right of it,
+  from the text's left edge toward the page column's right edge like the hero
+  photo; a height-capped one ends short. A portrait stays
+  on the measure, centred.
+  Both stop at 80vh tall, uncropped, caption on the image's left edge.
+- Figure `sizes`, from `post-figure.mjs`: that slot, capped by the file's width
+  and by 80vh times its ratio. Markdown images take `MARKDOWN_WIDTHS`, to 2400.
 
 ### The opening
 
@@ -798,18 +815,18 @@ Enforced by `tests/post-page.spec.ts`.
 
 ### Rhythm inside `.prose`
 
-| Element     | Treatment                                                                                                    |
-| ----------- | ------------------------------------------------------------------------------------------------------------ |
-| Paragraph   | `mt-6`, `text-body` (18 to 19px, line height 1.62), `text`                                                   |
-| `h2`        | `mt-16`, `text-post-h2` (24 to 36px); its text follows at the next `mt-6`                                    |
-| `h3`        | `mt-12`, `text-post-h3` (19 to 24px). The last level                                                         |
-| Inline code | `.prose code`: the mono stack at `--text-code`, on a `surface` fill with `px-1` and no border                |
-| Code block  | `.prose pre`: mono, `border-4 border-border` on `surface`, `p-4`, scrolls sideways, a named tab stop         |
-| Lists       | `mt-6 pl-6`, items `mt-3`, gold markers; a link-only item is 24px tall                                       |
-| Blockquote  | `mt-6`, `border-l-8 border-gold`, `pl-6`, its text at weight 900                                             |
-| Table       | `mt-6`, `border-4`, fixed layout, cells `px-4 py-3`, headers on `surface`                                    |
-| Figure      | `mt-8`, an `.aspect-frame` sized by the file with a 4px `border` ring; caption `mt-4 text-label text-subtle` |
-| `hr`        | `mt-16`, an 8px `border` rule                                                                                |
+| Element     | Treatment                                                                                                                                               |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Paragraph   | `mt-6`, `text-body` (18 to 19px, line height 1.62), `text`                                                                                              |
+| `h2`        | `mt-16`, `text-post-h2` (24 to 36px); its text follows at the next `mt-6`                                                                               |
+| `h3`        | `mt-12`, `text-post-h3` (19 to 24px). The last level                                                                                                    |
+| Inline code | `.prose code`: the mono stack at `--text-code`, on a `surface` fill with `px-1` and no border                                                           |
+| Code block  | `.prose pre`: mono, `border-4 border-border` on `surface`, `p-4`, scrolls sideways, a named tab stop                                                    |
+| Lists       | `mt-6 pl-6`, items `mt-3`, gold markers; a link-only item is 24px tall                                                                                  |
+| Blockquote  | `mt-6`, `border-l-8 border-gold`, `pl-6`, its text at weight 900                                                                                        |
+| Table       | `mt-6`, `border-4`, fixed layout, cells `px-4 py-3`, headers on `surface`                                                                               |
+| Figure      | `mt-8`, wider than the text ([Measure](#measure)), an `.aspect-frame` sized by the file with a 4px `border` ring; caption `mt-4 text-label text-subtle` |
+| `hr`        | `mt-16`, an 8px `border` rule                                                                                                                           |
 
 - A heading sits 24px above its own text and 48 to 64px below the text before
   it.
@@ -1074,7 +1091,7 @@ shows no alt text. Enforced by `tests/replaced-elements.spec.ts` and
 size-full object-cover`). Never put `aspect-ratio` on the image: WebKit
   drops it, and the ratio from `width` and `height`, when the image fails.
 - A designed ratio is a class on the frame: `aspect-portrait` (4:5, hero),
-  `aspect-photo` (4:3, blog cover), `aspect-square`, `aspect-video` (16:9,
+  `aspect-photo` (4:3, the placeholder box), `aspect-square`, `aspect-video` (16:9,
   `lg:aspect-2/1` for the About panorama).
 - A file's own ratio is an `.aspect-sizer`: an empty `aria-hidden` SVG whose
   viewBox is the file's width and height. PhotoTile reads it from image

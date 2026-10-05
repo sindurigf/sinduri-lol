@@ -144,6 +144,7 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 | `cover`          | image             | no           |         |
 | `coverAlt`       | string            | with `cover` |         |
 | `coverCardAlt`   | string            | no           |         |
+| `coverCredit`    | string            | no           |         |
 
 - Categories: `skincare`, `travel`, `personal-thoughts`,
   `professional-journey`, `open-source`. Import `BLOG_CATEGORIES`.
@@ -160,8 +161,9 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 - Non-placeholder posts get `og:type` `article`,
   `article:published_time` and a `BlogPosting` JSON-LD node. Other pages are
   `website`.
-- `cover` is relative to the post and shown only on a `feature` card; the
-  schema requires `coverAlt` with it. `coverCardAlt` replaces `coverAlt` on
+- `cover` is relative to the post, any ratio, never cropped except for `og:image`, and shown as the post's hero photo, on the
+  `/blog` feature card and as the `og:image`; the schema requires `coverAlt`
+  with it. `coverCardAlt` replaces `coverAlt` on
   the 1.91:1 `og:image` crop when the crop drops something `coverAlt` names.
 - `updated` sets `dateModified`; absent, it is omitted, not copied from `date`.
 - Pagination (`/blog/page/<n>`) builds only past `POSTS_PER_PAGE`, 9 unless
@@ -335,8 +337,13 @@ in `wrangler.jsonc`).
 
 ### Photos and video
 
-- Photos: `src/assets/photos/` (pages) and `src/assets/blog/<slug>/` (posts).
-  Masters are JPEG, cropped to shape, 2x drawn size, metadata stripped.
+- Photos: `src/assets/photos/` (pages, and posts that reuse one) and
+  `src/assets/blog/<slug>/` (posts).
+  Masters are JPEG at their full original frame, metadata stripped, never
+  cropped in the file. Strips, figures and covers show the whole frame; only
+  `og:image` and `PhotoTile`'s fluid square and 16:9 tiles crop, on display.
+  `drupal-mountain-camp.jpg` is a 16:9 cropped master and stays until the full
+  frame replaces it.
 - Fixed-size photos pass `DENSITIES`; fluid ones pass `WIDTHS` and `sizes`
   from `src/lib/image-densities.ts`. `WIDTHS` steps at most 1.5x; `sizes` is
   the real drawn width. `tests/image-size.spec.ts` fails on stretching,
@@ -346,12 +353,18 @@ in `wrangler.jsonc`).
 - `/about` photo boxes match their file's ratio (hence CSS-column masonry). No
   text over photos.
 - Markdown images: `post-figure.mjs` sets `layout: 'full-width'` so
-  `image.breakpoints` applies. An image alone in a paragraph with a title
-  becomes a `figure` with that `figcaption`.
+  `image.breakpoints` (`MARKDOWN_WIDTHS`) applies. An image alone in a post
+  paragraph becomes a `figure`, its title the `figcaption`; a portrait gets
+  `.figure-portrait`. `.post-layout` is the container a figure breaks out to.
+- From `xl` a landscape figure breaks out right, under the contents rail's
+  column: place it below the contents; `tests/post-page.spec.ts` fails a
+  figure that overlaps the rail.
 - Markdown images are WebP only, by the owner's choice: Markdown renders
   `<img>`, not `<Picture>`, so `PHOTO_FORMATS` (AVIF first) does not reach them.
 - Credits: `src/lib/credits.ts`, in order of preference (personal site,
-  Drupal.org, LinkedIn). Captions and `/credits` read from it.
+  Drupal.org, LinkedIn). Captions and `/credits` read from it. A Markdown
+  image title "Photo: name" links `PHOTOGRAPHERS`, "Screenshot: name" links
+  `SCREENSHOT_SOURCES`; a `LICENSED_PHOTOS` file adds its source and licence.
 - **Video** goes in `public/videos/` (none published). Encode AV1 WebM, H.264
   MP4 fallback, WebP poster, WebVTT captions; max 25 MiB a file.
   - Workers static assets answer `Range` with a full `200`; Safari and iOS need

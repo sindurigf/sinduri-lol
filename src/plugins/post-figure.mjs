@@ -1,12 +1,26 @@
 /*
  * Adds `layout` and `sizes` to markdown images for getImage(). A lone image gets
  * an SVG-viewBox `.aspect-frame`: WebKit drops a failed image's size and the CSP
- * bars inline styles. Its title becomes a figcaption, linked via PHOTOGRAPHERS.
+ * bars inline styles. In a post it becomes a figure, its title a figcaption
+ * linked via CREDITS; on a slide only a titled image does.
  */
 
+import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { imageMetadata } from 'astro/assets/utils';
-import { PHOTOGRAPHERS, PHOTO_CREDIT_PREFIX } from '../lib/credits.ts';
+import {
+  LICENSED_PHOTOS,
+  PHOTOGRAPHERS,
+  PHOTO_CREDIT_PREFIX,
+  SCREENSHOT_CREDIT_PREFIX,
+  SCREENSHOT_SOURCES,
+} from '../lib/credits.ts';
+
+const CREDITS = [
+  [PHOTO_CREDIT_PREFIX, PHOTOGRAPHERS],
+  [SCREENSHOT_CREDIT_PREFIX, SCREENSHOT_SOURCES],
+];
 
 /* `--container-measure`, less the gutter on narrow viewports. */
 const SIZES =
@@ -25,8 +39,42 @@ const SLIDE_SIZES =
 /* Must match where src/lib/talk-loader.ts reads the slides from. */
 const TALKS_PATH = '/src/content/talks/';
 
-const sizesFor = (fileURL) =>
-  String(fileURL ?? '').includes(TALKS_PATH) ? SLIDE_SIZES : SIZES;
+const isTalk = (fileURL) => String(fileURL ?? '').includes(TALKS_PATH);
+
+const sizesFor = (fileURL) => (isTalk(fileURL) ? SLIDE_SIZES : SIZES);
+
+/*
+ * A post figure's slot, `.post-layout .prose figure` in prose.css: a landscape
+ * takes the page column, and from 80rem the measure plus the track right of it;
+ * a portrait keeps the measure.
+ */
+const LANDSCAPE_SLOTS = [
+  ['(min-width: 80rem)', 'calc((min(100vw - 3rem, 80rem) + 36rem) / 2)'],
+  ['(min-width: 40rem)', 'calc(100vw - 3rem)'],
+  ['', 'calc(100vw - 2rem)'],
+];
+const PORTRAIT_SLOTS = [
+  ['(min-width: 40rem)', 'min(calc(100vw - 3rem), 36rem)'],
+  ['', 'min(calc(100vw - 2rem), 36rem)'],
+];
+
+const isPortrait = ({ width, height }) => height > width;
+
+/* `--figure-max-height` in prose.css. */
+const FIGURE_MAX_HEIGHT_VH = 80;
+
+/* Uncropped, the figure is drawn no wider than its file or than its capped height allows. */
+const figureSizes = ({ width, height }) => {
+  const heightCapped = `${((FIGURE_MAX_HEIGHT_VH * width) / height).toFixed(2)}vh`;
+  const slots = isPortrait({ width, height })
+    ? PORTRAIT_SLOTS
+    : LANDSCAPE_SLOTS;
+  return slots
+    .map(([media, slot]) =>
+      `${media} min(${slot}, ${width}px, ${heightCapped})`.trim(),
+    )
+    .join(', ');
+};
 
 /* Candidates come from `image.breakpoints` in astro.config.mjs: a `widths` array does not survive hast. */
 const LAYOUT = 'full-width';
@@ -56,6 +104,8 @@ const framed = (image, { width, height }) => ({
       properties: {
         className: ['aspect-sizer'],
         viewBox: `0 0 ${width} ${height}`,
+        width,
+        height,
         ariaHidden: 'true',
         focusable: 'false',
       },
@@ -65,22 +115,52 @@ const framed = (image, { width, height }) => ({
   ],
 });
 
-const captionChildren = (caption) => {
-  if (!caption.startsWith(PHOTO_CREDIT_PREFIX)) return [text(caption)];
+const link = (href, label) => ({
+  type: 'element',
+  tagName: 'a',
+  properties: { href },
+  children: [text(label)],
+});
 
-  const name = caption.slice(PHOTO_CREDIT_PREFIX.length);
-  const href = PHOTOGRAPHERS[name];
+/* A Creative Commons photo's source, licence and changes, from its file name. */
+const licenceChildren = (src) => {
+  const stem =
+    String(src)
+      .split('/')
+      .pop()
+      ?.replace(/\.[^.]+$/, '') ?? '';
+  const photo = LICENSED_PHOTOS[stem];
+  if (photo === undefined) return [];
+  return [
+    text(' ('),
+    link(photo.source, photo.title),
+    text(' on Flickr, '),
+    link(photo.licenceHref, photo.licence),
+    text(`, ${photo.changes})`),
+  ];
+};
+
+const captionChildren = (caption, src) => {
+  const [prefix, sources] =
+    CREDITS.find(([candidate]) => caption.startsWith(candidate)) ?? [];
+  if (prefix === undefined) return [text(caption)];
+
+  const name = caption.slice(prefix.length);
+  const href = Object.hasOwn(sources, name) ? sources[name] : undefined;
   if (href === undefined) return [text(caption)];
 
-  return [
-    text(PHOTO_CREDIT_PREFIX),
-    {
-      type: 'element',
-      tagName: 'a',
-      properties: { href },
-      children: [text(name)],
-    },
-  ];
+  return [text(prefix), link(href, name), ...licenceChildren(src)];
+};
+
+/* A post with a `cover` opens on it (src/pages/blog/[slug].astro), so that photo loads first. */
+const FRONTMATTER = /^---\n([\s\S]*?)\n---/;
+const COVER_FIELD = /^cover:/m;
+
+const opensOnCover = (fileURL) => {
+  const path = String(fileURL ?? '');
+  if (!path.endsWith('.md')) return false;
+  const source = readFileSync(fileURLToPath(path), 'utf8');
+  return COVER_FIELD.test(FRONTMATTER.exec(source)?.[1] ?? '');
 };
 
 /*
@@ -88,7 +168,8 @@ const captionChildren = (caption) => {
  * screen. Not slides: each is compiled alone, so every slide would have one.
  */
 export const postFigure = ({ fileURL } = {}) => {
-  let firstSeen = String(fileURL ?? '').includes(TALKS_PATH);
+  let firstSeen =
+    String(fileURL ?? '').includes(TALKS_PATH) || opensOnCover(fileURL);
   const isFirst = () => !firstSeen && (firstSeen = true);
 
   return {
@@ -100,17 +181,6 @@ export const postFigure = ({ fileURL } = {}) => {
       async visit(node, ctx) {
         const { title, ...properties } = node.properties ?? {};
         const priority = isFirst();
-        const image = {
-          type: 'element',
-          tagName: 'img',
-          properties: {
-            ...properties,
-            layout: LAYOUT,
-            sizes: sizesFor(ctx.fileURL),
-            ...(priority ? { priority: true } : {}),
-          },
-          children: [],
-        };
 
         const parent = ctx.parent(node);
         const aloneInParagraph =
@@ -127,12 +197,24 @@ export const postFigure = ({ fileURL } = {}) => {
           return;
         }
 
+        const size = await sizeOf(String(properties.src), ctx.fileURL);
+        const talk = isTalk(ctx.fileURL);
         const frame = framed(
-          image,
-          await sizeOf(String(properties.src), ctx.fileURL),
+          {
+            type: 'element',
+            tagName: 'img',
+            properties: {
+              ...properties,
+              layout: LAYOUT,
+              sizes: talk ? SLIDE_SIZES : figureSizes(size),
+              ...(priority ? { priority: true } : {}),
+            },
+            children: [],
+          },
+          size,
         );
 
-        if (caption === '') {
+        if (talk && caption === '') {
           ctx.replaceNode(node, frame);
           return;
         }
@@ -140,15 +222,21 @@ export const postFigure = ({ fileURL } = {}) => {
         ctx.replaceNode(parent, {
           type: 'element',
           tagName: 'figure',
-          properties: {},
+          properties: isPortrait(size)
+            ? { className: ['figure-portrait'] }
+            : {},
           children: [
             frame,
-            {
-              type: 'element',
-              tagName: 'figcaption',
-              properties: {},
-              children: captionChildren(caption),
-            },
+            ...(caption === ''
+              ? []
+              : [
+                  {
+                    type: 'element',
+                    tagName: 'figcaption',
+                    properties: {},
+                    children: captionChildren(caption, properties.src),
+                  },
+                ]),
           ],
         });
       },

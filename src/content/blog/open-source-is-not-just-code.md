@@ -8,6 +8,9 @@ teaser: 'The best code in the world does not save a project if nobody can figure
 featured: true
 readingTime: 14
 seoTitle: 'Open Source Is Not Just Code'
+cover: '../../assets/blog/open-source-is-not-just-code/mentoring-table.jpg'
+coverAlt: 'Sinduri writing on sticky notes at the Drupal mentoring table at DrupalCon Rotterdam, beside a sign that reads Many tiny drops make an ocean.'
+coverCredit: 'Bram Driesen'
 seoDescription: 'Six pillars that decide whether an open source project lasts: governance, contributor experience, recognition, local community, communication and funding.'
 ---
 
@@ -27,6 +30,8 @@ What actually kills projects is more mundane. When contribution paths are unclea
 
 Open source is a socio-technical system. The code and the community are not two things you manage separately. They are one system, and they shape each other.
 
+![Sinduri standing and clapping in a lecture hall full of Drupal event attendees.](../../assets/photos/drupal-lecture-hall.jpg 'Photo: Andrey Pshenichny')
+
 When the community is healthy, the code benefits. When the community breaks down, the code suffers, no matter how elegant it is. Community design is not a soft or secondary concern. It matters as much as the technical design.
 
 ## The maintainer trap
@@ -34,6 +39,8 @@ When the community is healthy, the code benefits. When the community breaks down
 The most common failure has a name. In the maintainer trap, the same few people end up doing everything, and the entire community comes to depend on them. We call those people heroes, and we mean it kindly. But cheering for someone who is overloaded does not fix the overload.
 
 When one person becomes a single point of failure, that is a design flaw in the project, not a weakness in the person.
+
+![An attendee in red braces working alone on a laptop at a high table, in a quiet DrupalCon Rotterdam exhibition hall.](../../assets/blog/open-source-is-not-just-code/maintainer-at-laptop.jpg 'Photo: Joris Vercammen')
 
 [Rust](https://www.rust-lang.org/governance) avoids this on purpose. Instead of one or two heroes, the work is split across topic teams, each owning its own area, with a council coordinating them. Ownership is spread by design, so no single person carries the whole project.
 
@@ -44,6 +51,8 @@ If nobody should carry a project alone, the real question is how you share the l
 ### 1. Governance
 
 Governance sounds heavy, but it just means deciding how you will decide, before a crisis forces you to. Put the shared things, funding, events, and infrastructure, under a neutral body instead of one person. Spread maintainer roles across more people. Give conflict a clear route.
+
+![Drupal board members standing together on a conference stage, in event lanyards.](../../assets/blog/open-source-is-not-just-code/drupal-board.jpg 'Photo: Karl Hepworth')
 
 There is no one right shape. Some projects run on a benevolent dictator, some on a council, some under a foundation. What matters is that the model is explicit, not accidental. Big projects usually mix several. Kubernetes layers all three: a foundation holds the assets, a steering committee makes the cross-cutting calls, and individual teams run the day to day.
 
@@ -58,6 +67,8 @@ Governance feels boring right up until the day you desperately need it.
 ### 2. Contributor experience
 
 Contributor experience is about lowering the cost of a first contribution. Give people a clear place to start. Label good first issues. Make the path from first patch to trusted contributor visible, so people can see a future in the project.
+
+![The Drupal.org contributor guide's Contribution areas page. It says the Drupal project has many areas you can contribute to, not just the Drupal Core code, and lists them: accessibility, community building, contributed modules, themes and distributions, the contributor guide, documentation, Drupal core, Drupal.org websites, event planning, knowledge sharing, marketing, mentoring, support, translation and usability.](../../assets/blog/open-source-is-not-just-code/contribution-areas.png 'Screenshot: Drupal.org')
 
 [Kubernetes](https://github.com/kubernetes/community/blob/master/community-membership.md) does this well, with a published ladder running from member to reviewer to approver, mentoring cohorts, and a graceful way to step back when life gets busy.
 
@@ -79,6 +90,8 @@ Put those together and recognition stops being a favor you ask for. It becomes s
 
 People do not form belonging at a 2,000-person conference. They form it in small rooms, over shared problems, working together. So pair the big global event with small local ones, where the barrier drops.
 
+![About twenty Drupal Austria meetup attendees posing together in a room, one of them holding a Drupal Austria sign.](../../assets/blog/open-source-is-not-just-code/drupal-austria-meetup.webp 'Photo: lowfidelity')
+
 Drupal is the community I know best. [DrupalCon](https://events.drupal.org/) is the flagship, but the real engine is the local camps, run by volunteers and kept deliberately small. That is where new people get pulled in, and where most organizers, including me, learned how any of this works.
 
 These events also build in real ways for newcomers to start, rather than leaving them to watch from the back of a room:
@@ -96,6 +109,8 @@ I felt this clearly at DrupalMountain Camp, in a workshop called Why Drupal, whe
 Communication is the pillar communities most often skip. A project needs people who can explain what problem it solves and why anyone should care. This matters most early, when nobody knows the project exists. Good communication is what turns a useful tool into a known one.
 
 That work lives in documentation, tutorials, blog posts, videos, conference talks, and case studies. Great code that nobody understands just sits there. Explaining it should not be an afterthought.
+
+![New, a Drupal Association pilot: Advocacy now earns contribution credit. Tell the story of modern Drupal. The Drupal Association awards the credit. Create, then share, then earn credits, at drupal.org/advocacy.](../../assets/blog/open-source-is-not-just-code/advocacy-contribution-credit.png 'Screenshot: Drupal Association')
 
 ### 6. Funding and sponsorship
 
@@ -181,6 +196,8 @@ Open source is not just code. The system around the code is what scales, or what
 Be honest with yourself too. There is no quick fix. You will not get it all right, and you usually control your corner, not the whole. Changing a community default is slow, and that is normal.
 
 So do not try to move all six pillars at once. Pick the one that hurts most right now, and start there.
+
+![Drupal Mountain Camp attendees gathered in front of a wooden building, with snowy mountains behind them and Drupal and Mountain Camp banners on the ground.](../../assets/blog/open-source-is-not-just-code/mountain-camp-attendees.webp 'Photo: Patrick Itten')
 
 ---
 
