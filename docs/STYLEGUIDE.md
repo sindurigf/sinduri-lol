@@ -299,6 +299,7 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 | `text-copyright`         | 20     | 20     | 1.2         | 900    | Footer copyright                 |
 | `text-footer-name`       | 32     | 40     | 1           | 900    | Footer name                      |
 | `text-section-number`    | 21     | 28     | 1           | 900    | Category glyph tile              |
+| `text-quote-mark`        | 64     | 144    | 0.75        | 900    | About kindness quote mark        |
 
 - Lexend, self-hosted from `@fontsource-variable/lexend` (OFL-1.1), family
   `'Lexend Variable'`. Only the latin subset is declared, in the `@font-face`
@@ -537,10 +538,11 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
   full slab.
 - **Cross-links between two sections:** a chip.
 - **The kindness sentence:** `text-h2` at 900, on `/about` and on `/contact`'s
-  closing band.
+  closing band. On `/about` it sits on a raised gold card under a decorative
+  `text-quote-mark`, joined to the photo and kindness list.
 - **A name with a line saying what it did** (`/credits`): each entry on an
   inset `bg-background` tile inside the card. No rule between entries.
-- **Photo captions:** none on People and places; the alt text names who is in
+- **Photo captions:** none on People and Places; the alt text names who is in
   each photo. Where a photo carries a caption, it starts at the photo's left edge.
 - **Form fields:** an 8px edge. A failing field adds a 4px pink inset ring
   inside the pink 8px edge.
