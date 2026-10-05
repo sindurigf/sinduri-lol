@@ -134,7 +134,8 @@ Rules:
   Active voice, everyday words, no "e.g." or "i.e.".
 - An error message says what is wrong and how to fix it, without blame.
 - Editorial copy (posts, About, Career, taglines, bios, anything in Sinduri's
-  voice) is never invented. It stays lorem ipsum until the owner writes it.
+  voice) is never invented. It is drafted only from her own words and follows
+  [docs/VOICE.md](docs/VOICE.md); she approves every line.
 - New images, video, audio or editorial text: ask the owner whether AI made or
   edited it. If so, label it on the page and in
   [AI_DISCLOSURE.md](AI_DISCLOSURE.md#keeping-this-current) (EU AI Act Art. 50).
