@@ -82,8 +82,6 @@ Most communities recognize the visible work: features, code, commits. But the ma
 
 The fix is to make it visible. Record who actually did the work, and let that credit reach the companies funding it. [Drupal's contribution credit system](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues) does this publicly and at scale, attributing every issue across both code and the invisible work, and crediting sponsoring organizations alongside individuals.
 
-![New, a Drupal Association pilot: Advocacy now earns contribution credit. Tell the story of modern Drupal. The Drupal Association awards the credit. Create, then share, then earn credits, at drupal.org/advocacy.](../../assets/blog/open-source-is-not-just-code/advocacy-contribution-credit.png 'Screenshot: Drupal Association')
-
 Recognition is not just being nice. It quietly changes what people do. Individuals get credit tied to real work. The system records it, so nobody has to advocate for themselves, and the unglamorous work becomes worth doing. Companies get visible standing for what they fund, so their business interest lines up with the health of the project.
 
 Put those together and recognition stops being a favor you ask for. It becomes something the system produces on its own. The pattern I keep seeing is that when a company treats contribution as real work, with time and budget behind it, the involvement lasts. Good incentives beat good intentions every time.
@@ -111,6 +109,8 @@ I felt this clearly at DrupalMountain Camp, in a workshop called Why Drupal, whe
 Communication is the pillar communities most often skip. A project needs people who can explain what problem it solves and why anyone should care. This matters most early, when nobody knows the project exists. Good communication is what turns a useful tool into a known one.
 
 That work lives in documentation, tutorials, blog posts, videos, conference talks, and case studies. Great code that nobody understands just sits there. Explaining it should not be an afterthought.
+
+![New, a Drupal Association pilot: Advocacy now earns contribution credit. Tell the story of modern Drupal. The Drupal Association awards the credit. Create, then share, then earn credits, at drupal.org/advocacy.](../../assets/blog/open-source-is-not-just-code/advocacy-contribution-credit.png 'Screenshot: Drupal Association')
 
 ### 6. Funding and sponsorship
 
