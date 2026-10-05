@@ -12,6 +12,8 @@ export const PHOTOGRAPHERS = {
   'Josef Kruckenberg': 'https://www.dasjo.at/',
   'Karl Hepworth': 'https://www.drupal.org/u/fubarhouse',
   'Klaus Purer': 'https://klau.si/',
+  lowfidelity: 'https://www.lowfidelity.at/',
+  'Patrick Itten': 'https://www.patrickitten.ch/',
   'Paul Johnson': 'https://www.drupal.org/u/pdjohnson',
   'Tdm Dilip': 'https://www.instagram.com/tdmdilip/',
 } as const satisfies Readonly<Record<string, string>>;
@@ -26,6 +28,14 @@ export const photographerHref = (name: Photographer): string => {
 };
 
 export const PHOTO_CREDIT_PREFIX = 'Photo: ';
+
+/* Keyed by the name as written after "Screenshot: ". */
+export const SCREENSHOT_SOURCES = {
+  'Drupal Association': 'https://www.drupal.org/association',
+  'Drupal.org': 'https://www.drupal.org/',
+} as const satisfies Readonly<Record<string, string>>;
+
+export const SCREENSHOT_CREDIT_PREFIX = 'Screenshot: ';
 
 /**
  * Photos used under a Creative Commons licence, keyed by file name without its

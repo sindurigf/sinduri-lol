@@ -7,6 +7,7 @@ import {
   LICENSED_PHOTOS,
   NAME_INSPIRATION,
   PHOTOGRAPHERS,
+  SCREENSHOT_SOURCES,
   THANKS,
 } from '../lib/credits';
 
@@ -209,6 +210,19 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
         </ul>
 
         <p class="mt-4 text-body text-text text-pretty">And more.</p>
+
+        <p class="mt-6 text-body text-text text-pretty">
+          Screenshots in posts are from:
+        </p>
+        <ul class="bullet-list mt-4">
+          {Object.entries(SCREENSHOT_SOURCES).map(([name, href]) => (
+            <li>
+              <a href={href} class={LINK_ITEM}>
+                {name}
+              </a>
+            </li>
+          ))}
+        </ul>
 
         <p class="mt-6 text-body text-text text-pretty">
           Used under Creative Commons Attribution (CC BY) or

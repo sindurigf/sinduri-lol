@@ -40,6 +40,8 @@ The most common failure has a name. In the maintainer trap, the same few people 
 
 When one person becomes a single point of failure, that is a design flaw in the project, not a weakness in the person.
 
+![An attendee in red braces working alone on a laptop at a high table, in a quiet DrupalCon Rotterdam exhibition hall.](../../assets/blog/open-source-is-not-just-code/maintainer-at-laptop.jpg 'Photo: Joris Vercammen')
+
 [Rust](https://www.rust-lang.org/governance) avoids this on purpose. Instead of one or two heroes, the work is split across topic teams, each owning its own area, with a council coordinating them. Ownership is spread by design, so no single person carries the whole project.
 
 ## Six pillars that decide whether a project lasts
@@ -49,6 +51,8 @@ If nobody should carry a project alone, the real question is how you share the l
 ### 1. Governance
 
 Governance sounds heavy, but it just means deciding how you will decide, before a crisis forces you to. Put the shared things, funding, events, and infrastructure, under a neutral body instead of one person. Spread maintainer roles across more people. Give conflict a clear route.
+
+![Drupal board members standing together on a conference stage, in event lanyards.](../../assets/blog/open-source-is-not-just-code/drupal-board.jpg 'Photo: Karl Hepworth')
 
 There is no one right shape. Some projects run on a benevolent dictator, some on a council, some under a foundation. What matters is that the model is explicit, not accidental. Big projects usually mix several. Kubernetes layers all three: a foundation holds the assets, a steering committee makes the cross-cutting calls, and individual teams run the day to day.
 
@@ -64,6 +68,8 @@ Governance feels boring right up until the day you desperately need it.
 
 Contributor experience is about lowering the cost of a first contribution. Give people a clear place to start. Label good first issues. Make the path from first patch to trusted contributor visible, so people can see a future in the project.
 
+![The Drupal.org contributor guide's Contribution areas page. It says the Drupal project has many areas you can contribute to, not just the Drupal Core code, and lists them: accessibility, community building, contributed modules, themes and distributions, the contributor guide, documentation, Drupal core, Drupal.org websites, event planning, knowledge sharing, marketing, mentoring, support, translation and usability.](../../assets/blog/open-source-is-not-just-code/contribution-areas.png 'Screenshot: Drupal.org')
+
 [Kubernetes](https://github.com/kubernetes/community/blob/master/community-membership.md) does this well, with a published ladder running from member to reviewer to approver, mentoring cohorts, and a graceful way to step back when life gets busy.
 
 When the path is confusing, people do not complain. They leave, and you never learn why.
@@ -76,6 +82,8 @@ Most communities recognize the visible work: features, code, commits. But the ma
 
 The fix is to make it visible. Record who actually did the work, and let that credit reach the companies funding it. [Drupal's contribution credit system](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues) does this publicly and at scale, attributing every issue across both code and the invisible work, and crediting sponsoring organizations alongside individuals.
 
+![New, a Drupal Association pilot: Advocacy now earns contribution credit. Tell the story of modern Drupal. The Drupal Association awards the credit. Create, then share, then earn credits, at drupal.org/advocacy.](../../assets/blog/open-source-is-not-just-code/advocacy-contribution-credit.png 'Screenshot: Drupal Association')
+
 Recognition is not just being nice. It quietly changes what people do. Individuals get credit tied to real work. The system records it, so nobody has to advocate for themselves, and the unglamorous work becomes worth doing. Companies get visible standing for what they fund, so their business interest lines up with the health of the project.
 
 Put those together and recognition stops being a favor you ask for. It becomes something the system produces on its own. The pattern I keep seeing is that when a company treats contribution as real work, with time and budget behind it, the involvement lasts. Good incentives beat good intentions every time.
@@ -83,6 +91,8 @@ Put those together and recognition stops being a favor you ask for. It becomes s
 ### 4. Local community
 
 People do not form belonging at a 2,000-person conference. They form it in small rooms, over shared problems, working together. So pair the big global event with small local ones, where the barrier drops.
+
+![About twenty Drupal Austria meetup attendees posing together in a room, one of them holding a Drupal Austria sign.](../../assets/blog/open-source-is-not-just-code/drupal-austria-meetup.webp 'Photo: lowfidelity')
 
 Drupal is the community I know best. [DrupalCon](https://events.drupal.org/) is the flagship, but the real engine is the local camps, run by volunteers and kept deliberately small. That is where new people get pulled in, and where most organizers, including me, learned how any of this works.
 
@@ -186,6 +196,8 @@ Open source is not just code. The system around the code is what scales, or what
 Be honest with yourself too. There is no quick fix. You will not get it all right, and you usually control your corner, not the whole. Changing a community default is slow, and that is normal.
 
 So do not try to move all six pillars at once. Pick the one that hurts most right now, and start there.
+
+![Drupal Mountain Camp attendees gathered in front of a wooden building, with snowy mountains behind them and Drupal and Mountain Camp banners on the ground.](../../assets/blog/open-source-is-not-just-code/mountain-camp-attendees.webp 'Photo: Patrick Itten')
 
 ---
 
