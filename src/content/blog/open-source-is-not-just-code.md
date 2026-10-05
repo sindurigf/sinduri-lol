@@ -124,7 +124,7 @@ Recognition is not just being nice. It quietly changes what people do:
 - **Individuals** get credit tied to real work. The system records it, so nobody has to advocate for themselves, and the unglamorous work becomes worth doing.
 - **Companies** get visible standing for what they fund, so their business interest lines up with the health of the project.
 
-With credit for individuals and standing for companies, recognition stops being a favour you ask for. It becomes something the system produces on its own. The pattern I keep seeing is that when a company treats contribution as real work, with time and budget behind it, its involvement lasts. Incentives keep people contributing long after good intentions run out.
+With credit for individuals and standing for companies, recognition stops being a favour you ask for. It becomes something the system produces on its own. The pattern I keep seeing is that when a company treats contribution as real work, with time and budget behind it, its involvement lasts. Good intentions bring people in. Good incentives make contribution last.
 
 ### 4. Local Community
 
@@ -203,7 +203,7 @@ It is not only curl. The [Python Software Foundation](https://sethmlarson.dev/sl
 
 > AI can make it cheaper to contribute without making it cheaper to review.
 
-To be fair, the same tools in skilled hands find real problems. In 2025, [Joshua Rogers checked the output of several AI scanners himself and reported about 50 genuine bugs in curl](https://www.theregister.com/2025/10/02/curl_project_swamped_with_ai/), which the team fixed. So the tool is not the problem. Unverified slop is. AI does not replace community design. It raises the stakes on the same six pillars.
+The same tools have also found real bugs in curl. In 2025, [Joshua Rogers checked the output of several AI scanners himself and reported about 50 genuine bugs in curl](https://www.theregister.com/2025/10/02/curl_project_swamped_with_ai/), which the team fixed. So the tool is not the problem. Unverified slop is. AI does not replace community design. It raises the stakes on the same six pillars.
 
 ## How to Tell Whether It Is Working
 
