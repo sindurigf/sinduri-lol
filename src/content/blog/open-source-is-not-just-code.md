@@ -29,7 +29,7 @@ The uncomfortable part is that much of this software is maintained by very small
 
 Most of us quietly believe that a project succeeds because its code is good: better architecture, cleaner tests and faster releases, and everything else follows. It is a comfortable story, because the code is the part we control.
 
-It is also mostly wrong. Brilliant code cannot save a project when nobody can work out how to contribute, or when the few people maintaining it burn out.
+The story is mostly wrong: brilliant code cannot save a project when nobody can work out how to contribute, or when the few people maintaining it burn out.
 
 What actually kills projects is more ordinary:
 
@@ -82,7 +82,7 @@ The opposite extreme is a project controlled entirely by one company. That is co
 - Each project is governed by its own Project Management Committee (PMC), which controls the project and decides who joins it.
 - You earn a place on the PMC through merit: the work you actually do on the project, not your job title or your employer.
 - You sit on it as an individual, never on behalf of a company. Companies do not get a seat; only people do.
-- If one employer begins to dominate a PMC, the board steps in and pushes for more diversity.
+- If one employer begins to dominate a PMC, the Apache board steps in and pushes for more diversity.
 
 Nobody thinks about governance while things go well. It is what decides how a project gets through the day things go wrong.
 
@@ -124,7 +124,7 @@ Recognition is not just being nice. It quietly changes what people do:
 - **Individuals** get credit tied to real work. The system records it, so nobody has to advocate for themselves, and the unglamorous work becomes worth doing.
 - **Companies** get visible standing for what they fund, so their business interest lines up with the health of the project.
 
-Put those together and recognition stops being a favour you ask for. It becomes something the system produces on its own. The pattern I keep seeing is that when a company treats contribution as real work, with time and budget behind it, its involvement lasts. Incentives keep people contributing long after good intentions run out.
+With credit for individuals and standing for companies, recognition stops being a favour you ask for. It becomes something the system produces on its own. The pattern I keep seeing is that when a company treats contribution as real work, with time and budget behind it, its involvement lasts. Incentives keep people contributing long after good intentions run out.
 
 ### 4. Local Community
 
@@ -134,13 +134,13 @@ People do not find belonging at a 2,000-person conference. They find it in small
 
 Drupal is the community I know best. [DrupalCon](https://events.drupal.org/) is the flagship, and it keeps pulling people in: at DrupalCon Rotterdam, 27% of attendees were new to DrupalCon. But the real engine is the local camps, run by volunteers and kept deliberately small. That is where new people get pulled in, and where most organisers, including me, learned how any of this works.
 
-These events also build in real ways for newcomers to start, instead of leaving them to watch from the back of the room. Each one lowers a different barrier:
+Drupal events, big and small, also give newcomers three ways to start, instead of leaving them to watch from the back of the room. Each one lowers a different barrier:
 
 - **[Mentorship workshops](https://www.drupal.org/community/contributor-guide/role/mentor)** lower fear. A volunteer team runs them at almost every event, so nobody has to figure it out alone.
 - **[Contribution days](https://events.drupal.org/atlanta2025/contribution)** lower the logistics. They give people a dedicated room to sit down together and actually contribute.
 - **[Drupal in a Day](https://www.drupal.org/drupalorg/blog/state-of-drupal-open-university)** raises awareness. It is a newer initiative that brings students in and teaches them Drupal from scratch.
 
-I felt this clearly at [Drupal Mountain Camp](https://drupalmountaincamp.ch/), in a workshop called Why Drupal, where we talked about why each of us contributes. Different backgrounds, different journeys, but the same underlying goal: build something meaningful and grow while doing it. That is what "come for the code, stay for the community" actually means.
+I felt this clearly at [Drupal Mountain Camp](https://drupalmountaincamp.ch/), in a workshop called Why Drupal, where we talked about why each of us contributes. Different backgrounds, different journeys, but the same underlying goal: build something meaningful and grow while doing it. That shared goal is why people say "come for the code, stay for the community".
 
 ### 5. Communi&shy;cation
 
@@ -195,7 +195,7 @@ One force is reshaping all six pillars at once, so it deserves its own section.
 This is not theoretical. Someone asks a model to find a bug, pastes the confident output into a report, marks it critical and never checks whether it is real. curl is the clearest case:
 
 - [Daniel Stenberg](https://daniel.haxx.se/blog/), who has maintained curl for decades, called it a denial of service on the project.
-- In 2025, [about 1 in 5 submissions was AI slop, and only about 1 in 20 turned out to be a genuine vulnerability](https://daniel.haxx.se/blog/2025/07/14/death-by-a-thousand-slops/).
+- In 2025, [about 1 in 5 submissions was AI slop, and only about 1 in 20 turned out to be a genuine vulnerability](https://daniel.haxx.se/blog/2025/07/14/death-by-a-thousand-slops/). AI slop means reports generated by AI that sound technical but describe no real problem.
 - Each report takes three or four people from the security team, for 30 minutes to three hours each. They are volunteers with a few hours a week.
 - In January 2026 the team [ended its paid bug bounty](https://daniel.haxx.se/blog/2026/01/26/the-end-of-the-curl-bug-bounty/), simply to stop the flood.
 
@@ -214,7 +214,7 @@ It is easy to say you have these pillars. Four signals tell you whether they are
 - **Retention.** Do first-time contributors come back, or is every contributor a new face who never returns?
 - **Maintainer count.** Is it growing, holding or shrinking? A shrinking count is an early warning, long before anything visibly breaks.
 
-Watch the trend, not a single snapshot. Together, these tell you whether the pillars are actually working, or just look good on paper.
+Watch the trend, not a single snapshot. Together, these four signals tell you whether the pillars are actually working, or just look good on paper.
 
 ## What to Prioritise, and What Can Wait
 
@@ -238,11 +238,11 @@ There is a similar trap in how we take advice. Most good advice only works when 
 - **Moving fast needs transparency,** so contributors can follow the changes and are not blindsided.
 - **Documenting everything needs clear ownership,** so the docs stay current.
 
-When good advice fails, the advice is rarely the problem. Look for the partner it is missing.
+So when a good practice is not working, check whether its partner is missing.
 
 ## Why Some Projects Thrive and Others Decay
 
-If you remember one thing from this post, make it this contrast:
+Here is the difference between thriving and decaying projects, pillar by pillar:
 
 | Thriving projects     | Decaying projects            |
 | --------------------- | ---------------------------- |
@@ -253,7 +253,7 @@ If you remember one thing from this post, make it this contrast:
 | Communicate the why   | Stay hard to understand      |
 | Fund the work         | Rely on unpaid time          |
 
-The dangerous part is that decay is slow and quiet. There is no alarm, and you often notice only when it is far along.
+The dangerous part is that decay is slow and quiet. There is no alarm, and you often notice only after maintainers and contributors have already left.
 
 ## What You Can Realistically Influence
 
@@ -268,11 +268,11 @@ You do not have to be a maintainer, or even a contributor. If you care about ope
 
 I fund five maintainers, about 100 euros a month in total. It is small, but steady support like this is what keeps people going, and it nudges others to chip in too.
 
-Each of these is small, but they change how a community works, and together they add up.
+Each of these actions is small, but together they change how a community works.
 
 ## Closing
 
-Open source is not just code. The system around the code is what scales, or what quietly fades. Every community has that system, whether anyone designed it or not. The only question is whether you shape it on purpose.
+Open source is not just code. The system around the code is what scales, or what quietly fades. Every community has that system, whether anyone designed it or not. Shaping it on purpose gives the project a better chance to last.
 
 Be honest with yourself too. There is no quick fix. You will not get it all right, and you usually control your own corner, not the whole community. Changing a community's defaults is slow, and that is normal.
 
