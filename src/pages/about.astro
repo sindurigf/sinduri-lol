@@ -559,7 +559,8 @@ const catInfo: CatInfo[] = await Promise.all(
           {ROTTERDAM_PHOTOGRAPHER}
         </a>{' '}
         at DrupalCon Rotterdam (
-        <a href={ROTTERDAM_AWARD.source}>{ROTTERDAM_AWARD.title}</a> on Flickr,{' '}
+        <a href={ROTTERDAM_AWARD.source}>{ROTTERDAM_AWARD.title}</a> on{' '}
+        {ROTTERDAM_AWARD.sourceName},{' '}
         <a href={ROTTERDAM_AWARD.licenceHref}>{ROTTERDAM_AWARD.licence}</a>,{' '}
         {ROTTERDAM_AWARD.changes}),{' '}
         <a href={photographerHref(MOUNTAIN_CAMP_PHOTOGRAPHER)}>

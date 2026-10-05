@@ -363,6 +363,10 @@ in `wrangler.jsonc`).
   Drupal.org, LinkedIn). Captions and `/credits` read from it. A Markdown
   image title "Photo: name" links `PHOTOGRAPHERS`, "Screenshot: name" links
   `SCREENSHOT_SOURCES`; a `LICENSED_PHOTOS` file adds its source and licence.
+- A `LICENSED_PHOTOS` entry, keyed by file name without the extension:
+  `photographer`, `title`, `source`, `sourceName` (Flickr, Wikimedia Commons),
+  `licence` (spelled out), `licenceHref` and `changes`. Captions, `/about`,
+  `/brand` and `/credits` read the source site from `sourceName`.
 - **Video** goes in `public/videos/` (none published). Encode AV1 WebM, H.264
   MP4 fallback, WebP poster, WebVTT captions; max 25 MiB a file.
   - Workers static assets answer `Range` with a full `200`; Safari and iOS need

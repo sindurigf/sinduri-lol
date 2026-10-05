@@ -4,7 +4,8 @@ import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { expect, test } from './test';
 import { linkListItem } from '../src/plugins/link-list-item.mjs';
-import { postFigure } from '../src/plugins/post-figure.mjs';
+import { captionChildren, postFigure } from '../src/plugins/post-figure.mjs';
+import { PHOTOGRAPHERS, type LicensedPhoto } from '../src/lib/credits';
 import { NODE } from './tags';
 
 type Node = {
@@ -141,6 +142,50 @@ test.describe('post-figure', NODE, () => {
       sizesOf(landscape),
       'a landscape slot stops at the measure',
     ).toContain('80rem');
+  });
+
+  test('a Creative Commons photo credits its source, licence and changes', () => {
+    const photo: LicensedPhoto = {
+      photographer: 'Karl Hepworth',
+      title: 'A Fixture Photo',
+      source: 'https://photos.example/fixture',
+      sourceName: 'Photos Example',
+      licence: 'Creative Commons Attribution 4.0',
+      licenceHref: 'https://creativecommons.org/licenses/by/4.0/',
+      changes: 'cropped',
+    };
+    const nodes: Node[] = captionChildren(
+      'Photo: Karl Hepworth',
+      '../../assets/photos/cc-fixture.jpg',
+      { 'cc-fixture': photo },
+    );
+    const textOf = (node: Node): string =>
+      node.type === 'text'
+        ? String(node.value)
+        : (node.children ?? []).map(textOf).join('');
+    expect(
+      nodes.map(textOf).join(''),
+      'the caption does not name the source, licence and changes',
+    ).toBe(
+      'Photo: Karl Hepworth (A Fixture Photo on Photos Example, Creative Commons Attribution 4.0, cropped)',
+    );
+    expect(
+      nodes
+        .filter((node) => node.tagName === 'a')
+        .map((a) => a.properties?.href),
+      'the photographer, source and licence are not all linked',
+    ).toEqual([
+      PHOTOGRAPHERS['Karl Hepworth'],
+      photo.source,
+      photo.licenceHref,
+    ]);
+  });
+
+  test('a photo not in LICENSED_PHOTOS gets no licence text', () => {
+    expect(
+      captionChildren('Photo: Karl Hepworth', 'other.jpg', {}).length,
+      'a licence was added to an unlicensed photo',
+    ).toBe(2);
   });
 
   test('an image inside a sentence keeps its paragraph and its title', async () => {
