@@ -14,167 +14,248 @@ coverCredit: 'Bram Driesen'
 seoDescription: 'Six pillars that decide whether an open source project lasts: governance, contributor experience, recognition, local community, communication and funding.'
 ---
 
-Open source runs almost everything we depend on. [Linux](https://www.kernel.org/) is in the cloud and inside every Android phone. [Git](https://git-scm.com/) version controls nearly all software written today. [curl](https://curl.se/) moves data inside cars, televisions, phones, and servers. [OpenSSL](https://www.openssl.org/) secures a huge share of the traffic on the web. [Python](https://www.python.org/) powers most data work and most of modern AI. [Kubernetes](https://kubernetes.io/) runs cloud infrastructure at scale. You almost certainly used several of them before breakfast.
+Open source runs almost everything we depend on. You almost certainly used several of these before breakfast:
 
-The uncomfortable part is that a lot of that software is maintained by very small teams, often unpaid volunteers. That is why sustaining these communities matters so much.
+- [Linux](https://www.kernel.org/) runs the cloud and every Android phone.
+- [Git](https://git-scm.com/) version-controls nearly all software written today.
+- [curl](https://curl.se/) moves data inside cars, televisions, phones and servers.
+- [OpenSSL](https://www.openssl.org/) secures a huge share of the traffic on the web.
+- [Python](https://www.python.org/) powers much of data work and modern AI.
+- [Kubernetes](https://kubernetes.io/) runs cloud infrastructure at scale.
 
-## The comfortable myth
+The uncomfortable part is that much of this software is maintained by very small teams, often unpaid volunteers. That is why sustaining these communities matters so much.
 
-Most of us quietly believe that a project succeeds because the code is good. Better architecture, cleaner tests, faster releases, and everything else follows. It is a comfortable story, because the code is the part we control.
+## The Comfortable Myth
 
-It is also mostly wrong. The best code in the world does not save a project if nobody can figure out how to contribute to it, or if the handful of people maintaining it burn out.
+Most of us quietly believe that a project succeeds because its code is good: better architecture, cleaner tests and faster releases, and everything else follows. It is a comfortable story, because the code is the part we control.
 
-What actually kills projects is more mundane. When contribution paths are unclear, people who want to help do not know how, so they simply do not. When expectations are never written down, everyone guesses, and that breeds confusion and quiet conflict. Over time, a few people absorb all of the work and all of the pressure. The project looks healthy for years. Then one person steps back, and the whole thing turns fragile and stalls.
+It is also mostly wrong. Brilliant code cannot save a project when nobody can work out how to contribute, or when the few people maintaining it burn out.
 
-## Open source is a socio-technical system
+What actually kills projects is more ordinary:
 
-Open source is a socio-technical system. The code and the community are not two things you manage separately. They are one system, and they shape each other.
+- **Unclear contribution paths.** People who want to help do not know how, so they do not.
+- **Unwritten expectations.** Everyone guesses, and that breeds confusion and quiet conflict.
+- **Concentrated work.** A few people absorb all of the work and all of the pressure. The project looks healthy for years. Then one person steps back, and the whole thing turns fragile and stalls.
+
+## Open Source Is a Socio-Technical System
+
+Open source is a socio-technical system: the people and the technology depend on each other, and neither works without the other. The code and the community are not two things you manage separately. They are one system, and they shape each other.
 
 ![Sinduri standing and clapping in a lecture hall full of Drupal event attendees.](../../assets/photos/drupal-lecture-hall.jpg 'Photo: Andrey Pshenichny')
 
-When the community is healthy, the code benefits. When the community breaks down, the code suffers, no matter how elegant it is. Community design is not a soft or secondary concern. It matters as much as the technical design.
+When the community is healthy, the code benefits. When the community breaks down, the code suffers, however elegant it is. So community design is not a soft or secondary concern. It matters as much as the technical design.
 
-## The maintainer trap
+## The Maintainer Trap
 
-The most common failure has a name. In the maintainer trap, the same few people end up doing everything, and the entire community comes to depend on them. We call those people heroes, and we mean it kindly. But cheering for someone who is overloaded does not fix the overload.
+The most common failure has a name. In the maintainer trap, the same few people end up doing everything, and the whole community comes to depend on them. We call those people heroes, and we mean it kindly. But cheering for someone who is overloaded does not take any of the load off them.
 
 When one person becomes a single point of failure, that is a design flaw in the project, not a weakness in the person.
 
 ![An attendee in red braces working alone on a laptop at a high table, in a quiet DrupalCon Rotterdam exhibition hall.](../../assets/blog/open-source-is-not-just-code/maintainer-at-laptop.jpg 'Photo: Joris Vercammen')
 
-[Rust](https://www.rust-lang.org/governance) avoids this on purpose. Instead of one or two heroes, the work is split across topic teams, each owning its own area, with a council coordinating them. Ownership is spread by design, so no single person carries the whole project.
+[Rust](https://www.rust-lang.org/governance) avoids this on purpose. Instead of relying on one or two heroes, it splits the work across topic teams, each owning its own area, with a council coordinating them. Ownership is spread by design, so no single person carries the whole project.
 
-## Six pillars that decide whether a project lasts
+## Six Pillars That Decide Whether a Project Lasts
 
-If nobody should carry a project alone, the real question is how you share the load in practice. Six pillars matter most: governance, contributor experience, recognition, local community, communication, and funding. I will take each in turn, with a project that does it well.
+If nobody should carry a project alone, the real question is how to share the load in practice. Six pillars matter most: governance, contributor experience, recognition, local community, communication and funding. I will take each in turn, with a project that does it well.
 
 ### 1. Governance
 
-Governance sounds heavy, but it just means deciding how you will decide, before a crisis forces you to. Put the shared things, funding, events, and infrastructure, under a neutral body instead of one person. Spread maintainer roles across more people. Give conflict a clear route.
+Governance sounds heavy, but it simply means deciding how you will make decisions, before a crisis forces you to. In practice:
+
+- Put the shared things, such as funding, events and infrastructure, under a neutral body instead of one person.
+- Spread maintainer roles across more people.
+- Give conflict a clear route.
 
 ![Drupal board members standing together on a conference stage, in event lanyards.](../../assets/blog/open-source-is-not-just-code/drupal-board.jpg 'Photo: Karl Hepworth')
 
-There is no one right shape. Some projects run on a benevolent dictator, some on a council, some under a foundation. What matters is that the model is explicit, not accidental. Big projects usually mix several. Kubernetes layers all three: a foundation holds the assets, a steering committee makes the cross-cutting calls, and individual teams run the day to day.
+There is no one right model. Some projects run on a benevolent dictator, some on a council and some under a foundation. What matters is that the model is explicit, not accidental. Big projects usually mix several. Kubernetes layers all three:
+
+- A foundation holds the assets.
+- A steering committee makes the calls that cut across the whole project.
+- Individual teams run the day to day.
 
 The opposite extreme is a project controlled entirely by one company. That is common and not always bad, but the company's interests and the community's can split, and the community usually finds out last.
 
-[Apache](https://www.apache.org/theapacheway/) is a good model, and it is built to prevent exactly that. Each project is governed by its own Project Management Committee, or PMC, which controls the project and decides who joins it. You earn a place on the PMC through merit, meaning the work you actually do on the project, not your job title or your employer. And you sit on it as an individual, never on behalf of a company. Apache is strict about this: companies do not get a seat, only people do. If one employer begins to dominate a PMC, the board intervenes and pushes for more diversity.
+[Apache](https://www.apache.org/theapacheway/) is a good model, and it is built to prevent exactly that:
 
-Governance feels boring right up until the day you desperately need it.
+- Each project is governed by its own Project Management Committee (PMC), which controls the project and decides who joins it.
+- You earn a place on the PMC through merit: the work you actually do on the project, not your job title or your employer.
+- You sit on it as an individual, never on behalf of a company. Companies do not get a seat; only people do.
+- If one employer begins to dominate a PMC, the board steps in and pushes for more diversity.
 
-**A code of conduct** is part of governance, and it needs to be specific, not aspirational. Name what is unacceptable, including harassment, discrimination, personal attacks, and sustained disruption. Then enforce it, because a code nobody acts on is worse than having none at all: it signals a safety that does not exist. The [Contributor Covenant](https://www.contributor-covenant.org/) is a widely adopted starting point, setting out expected behavior, unacceptable behavior, and a path to report and act on violations.
+Nobody thinks about governance while things go well. It is what decides how a project gets through the day things go wrong.
 
-### 2. Contributor experience
+**A code of conduct** is part of governance, and it needs to be specific, not aspirational:
 
-Contributor experience is about lowering the cost of a first contribution. Give people a clear place to start. Label good first issues. Make the path from first patch to trusted contributor visible, so people can see a future in the project.
+- Name what is unacceptable, including harassment, discrimination, personal attacks and sustained disruption.
+- Enforce it. A code nobody acts on is worse than having none, because it signals a safety that does not exist.
+
+The [Contributor Covenant](https://www.contributor-covenant.org/) is a widely adopted starting point. It sets out expected behaviour, unacceptable behaviour and a path to report and act on violations.
+
+### 2. Contributor Experience
+
+Contributor experience is about lowering the cost of a first contribution:
+
+- Give people a clear place to start.
+- Label good first issues.
+- Make the path from first patch to trusted contributor visible, so people can see a future in the project.
 
 ![The Drupal.org contributor guide's Contribution areas page. It says the Drupal project has many areas you can contribute to, not just the Drupal Core code, and lists them: accessibility, community building, contributed modules, themes and distributions, the contributor guide, documentation, Drupal core, Drupal.org websites, event planning, knowledge sharing, marketing, mentoring, support, translation and usability.](../../assets/blog/open-source-is-not-just-code/contribution-areas.png 'Screenshot: Drupal.org')
 
-[Kubernetes](https://github.com/kubernetes/community/blob/master/community-membership.md) does this well, with a published ladder running from member to reviewer to approver, mentoring cohorts, and a graceful way to step back when life gets busy.
+[Kubernetes](https://github.com/kubernetes/community/blob/master/community-membership.md) does this well:
+
+- A published ladder that runs from member to reviewer to approver.
+- Mentoring cohorts.
+- A graceful way to step back when life gets busy.
 
 When the path is confusing, people do not complain. They leave, and you never learn why.
 
-I know that feeling from my own start. My first contribution was in 2021, during Covid, before I had really interacted with the Drupal community beyond the people I worked with. Writing the issue took me 45 minutes. Not the code, just the issue, because I was scared of being judged. Nobody judged me. People were kind and helpful the whole way. That gap between how frightening it felt and how welcoming it actually was is exactly what good contributor experience should close.
+I know that feeling from my own start. My first contribution was in 2021, during the pandemic, before I had really interacted with the Drupal community beyond the people I worked with. Writing the issue took me 45 minutes. Not the code, just the issue, because I was scared of being judged. Nobody judged me. People were kind and helpful the whole way. Good contributor experience should close exactly that gap between how frightening it feels and how welcoming it actually is.
 
 ### 3. Recognition
 
-Most communities recognize the visible work: features, code, commits. But the majority of what keeps a project alive is invisible. Review, triage, documentation, and mentoring do not show up in a commit graph. Invisible work gets undervalued, and once it is undervalued, people stop doing it.
+Most communities recognise the visible work: features, code and commits. But most of what keeps a project alive is invisible: review, triage, documentation and mentoring. None of it shows up in a commit graph. Invisible work gets undervalued, and once it is undervalued, people stop doing it.
 
-The fix is to make it visible. Record who actually did the work, and let that credit reach the companies funding it. [Drupal's contribution credit system](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues) does this publicly and at scale, attributing every issue across both code and the invisible work, and crediting sponsoring organizations alongside individuals.
+The fix is to make it visible. Record who actually did the work, and let that credit reach the companies funding it. [Drupal's contribution credit system](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues) does this publicly and at scale. It credits every issue, for code and for the invisible work, and credits sponsoring organisations alongside individuals.
 
-Recognition is not just being nice. It quietly changes what people do. Individuals get credit tied to real work. The system records it, so nobody has to advocate for themselves, and the unglamorous work becomes worth doing. Companies get visible standing for what they fund, so their business interest lines up with the health of the project.
+Recognition is not just being nice. It quietly changes what people do:
 
-Put those together and recognition stops being a favor you ask for. It becomes something the system produces on its own. The pattern I keep seeing is that when a company treats contribution as real work, with time and budget behind it, the involvement lasts. Good incentives beat good intentions every time.
+- **Individuals** get credit tied to real work. The system records it, so nobody has to advocate for themselves, and the unglamorous work becomes worth doing.
+- **Companies** get visible standing for what they fund, so their business interest lines up with the health of the project.
 
-### 4. Local community
+Put those together and recognition stops being a favour you ask for. It becomes something the system produces on its own. The pattern I keep seeing is that when a company treats contribution as real work, with time and budget behind it, its involvement lasts. Incentives keep people contributing long after good intentions run out.
 
-People do not form belonging at a 2,000-person conference. They form it in small rooms, over shared problems, working together. So pair the big global event with small local ones, where the barrier drops.
+### 4. Local Community
+
+People do not find belonging at a 2,000-person conference. They find it in small rooms, working together on shared problems. So pair the big global event with small local ones, where the barrier to joining drops.
 
 ![About twenty Drupal Austria meetup attendees posing together in a room, one of them holding a Drupal Austria sign.](../../assets/blog/open-source-is-not-just-code/drupal-austria-meetup.webp 'Photo: lowfidelity')
 
-Drupal is the community I know best. [DrupalCon](https://events.drupal.org/) is the flagship, but the real engine is the local camps, run by volunteers and kept deliberately small. That is where new people get pulled in, and where most organizers, including me, learned how any of this works.
+Drupal is the community I know best. [DrupalCon](https://events.drupal.org/) is the flagship, and it keeps pulling people in: at DrupalCon Rotterdam, 27% of attendees were new to DrupalCon. But the real engine is the local camps, run by volunteers and kept deliberately small. That is where new people get pulled in, and where most organisers, including me, learned how any of this works.
 
-These events also build in real ways for newcomers to start, rather than leaving them to watch from the back of a room:
+These events also build in real ways for newcomers to start, instead of leaving them to watch from the back of the room. Each one lowers a different barrier:
 
-- **[Mentorship workshops](https://www.drupal.org/community/contributor-guide/role/mentor)**, run by a volunteer team at almost every event, so nobody has to figure it out alone.
-- **[Contribution days](https://events.drupal.org/atlanta2025/contribution)**, which give people a dedicated room to sit down together and actually contribute.
-- **[Drupal in a Day](https://www.drupal.org/drupalorg/blog/state-of-drupal-open-university)**, a newer initiative that brings students in and teaches them Drupal from scratch.
+- **[Mentorship workshops](https://www.drupal.org/community/contributor-guide/role/mentor)** lower fear. A volunteer team runs them at almost every event, so nobody has to figure it out alone.
+- **[Contribution days](https://events.drupal.org/atlanta2025/contribution)** lower the logistics. They give people a dedicated room to sit down together and actually contribute.
+- **[Drupal in a Day](https://www.drupal.org/drupalorg/blog/state-of-drupal-open-university)** raises awareness. It is a newer initiative that brings students in and teaches them Drupal from scratch.
 
-Each of those lowers a different barrier: fear, logistics, and awareness.
-
-I felt this clearly at DrupalMountain Camp, in a workshop called Why Drupal, where we talked about why we each contribute. Different backgrounds, different journeys, but the same underlying goal: build something meaningful and grow while doing it. That is what "come for the code, stay for the community" actually means.
+I felt this clearly at [Drupal Mountain Camp](https://drupalmountaincamp.ch/), in a workshop called Why Drupal, where we talked about why each of us contributes. Different backgrounds, different journeys, but the same underlying goal: build something meaningful and grow while doing it. That is what "come for the code, stay for the community" actually means.
 
 ### 5. Communi&shy;cation
 
-Communication is the pillar communities most often skip. A project needs people who can explain what problem it solves and why anyone should care. This matters most early, when nobody knows the project exists. Good communication is what turns a useful tool into a known one.
+Communication is the pillar communities most often skip. A project needs people who can explain what problem it solves and why anyone should care. This matters most early on, when nobody knows the project exists. Good communication is what turns a useful tool into a known one.
 
-That work lives in documentation, tutorials, blog posts, videos, conference talks, and case studies. Great code that nobody understands just sits there. Explaining it should not be an afterthought.
+That work lives in:
+
+- documentation and tutorials
+- blog posts and videos
+- conference talks and case studies
+
+Great code that nobody understands just sits there unused, so explaining it should never be an afterthought. Drupal now counts this work as contribution: in a pilot, the Drupal Association awards contribution credit for advocacy, such as telling the story of modern Drupal.
 
 ![New, a Drupal Association pilot: Advocacy now earns contribution credit. Tell the story of modern Drupal. The Drupal Association awards the credit. Create, then share, then earn credits, at drupal.org/advocacy.](../../assets/blog/open-source-is-not-just-code/advocacy-contribution-credit.png 'Screenshot: Drupal Association')
 
-### 6. Funding and sponsorship
+### 6. Funding and Sponsorship
 
-Funding is the pillar we are shyest about. Time is not free. Someone always pays, either in money or in unpaid evenings and weekends. Without sustainable funding, we are asking volunteers to quietly subsidize infrastructure everyone depends on.
+Funding is the pillar we are shyest about. Time is not free. Someone always pays, either in money or in unpaid evenings and weekends. I pay my own way and take time off to attend Drupal events. Without sustainable funding, we are asking volunteers to quietly subsidise infrastructure everyone depends on.
 
-Fund the boring, critical work: maintenance, security, and documentation. Not just the shiny new features. [Django](https://www.djangoproject.com/fundraising/) shows what that looks like: the Django Software Foundation raises money and pays Fellows who triage tickets, review patches, and ship releases, the work that otherwise would not get done.
+Fund the boring, critical work, not just the shiny new features:
+
+- maintenance
+- security
+- documentation
+
+[Django](https://www.djangoproject.com/fundraising/) shows what that looks like. The Django Software Foundation raises money and pays Fellows who triage tickets, review patches and ship releases: the work that otherwise would not get done.
 
 A project does not need funding on day one. Small projects run fine on volunteer time. But as more people depend on you, keep sustainability in mind and put funding in place before the load gets too heavy.
 
-Where to look: [Open Collective](https://opencollective.com/), [GitHub Sponsors](https://github.com/sponsors), and [Patreon](https://www.patreon.com/) for direct support, [Tidelift](https://tidelift.com/) for paying maintainers through subscriptions, and the [Sovereign Tech Fund](https://www.sovereign.tech/programs/fund) for public investment in critical infrastructure.
+Where to look:
 
-## How to tell whether it is working
+- **Direct support:** [Open Collective](https://opencollective.com/), [GitHub Sponsors](https://github.com/sponsors) and [Patreon](https://www.patreon.com/).
+- **Paying maintainers through subscriptions:** [Tidelift](https://tidelift.com/).
+- **Public investment in critical infrastructure:** the [Sovereign Tech Fund](https://www.sovereign.tech/programs/fund).
+
+## What AI Changes
+
+One force is reshaping all six pillars at once, so it deserves its own section.
+
+**Where AI helps:**
+
+- It lowers the barrier to a first contribution.
+- It speeds up documentation, translation and issue triage.
+- It helps people who do not work in English as a first language.
+- It shortens the time needed to understand a codebase, which could ease open source's long reliance on people's spare time.
+
+**Where AI adds strain:**
+
+- It is cheap to generate a change, but a maintainer still has to understand it, so the cost shifts from the author to the reviewer.
+- Access is unequal. The best tools cost money and know-how, so people at well-funded companies get faster, while volunteers and people in lower-income regions get left behind. AI risks becoming a new kind of privilege.
+
+This is not theoretical. Someone asks a model to find a bug, pastes the confident output into a report, marks it critical and never checks whether it is real. curl is the clearest case:
+
+- [Daniel Stenberg](https://daniel.haxx.se/blog/), who has maintained curl for decades, called it a denial of service on the project.
+- In 2025, [about 1 in 5 submissions was AI slop, and only about 1 in 20 turned out to be a genuine vulnerability](https://daniel.haxx.se/blog/2025/07/14/death-by-a-thousand-slops/).
+- Each report takes three or four people from the security team, for 30 minutes to three hours each. They are volunteers with a few hours a week.
+- In January 2026 the team [ended its paid bug bounty](https://daniel.haxx.se/blog/2026/01/26/the-end-of-the-curl-bug-bounty/), simply to stop the flood.
+
+It is not only curl. The [Python Software Foundation](https://sethmlarson.dev/slop-security-reports) and Open Collective report the same thing, and tie it directly to maintainer burnout. The problem is the asymmetry: seconds to generate, hours to debunk, aimed at unpaid people who keep critical software running. As Dries Buytaert puts it in [The Privilege of AI in Open Source](https://dri.es/the-privilege-of-ai-in-open-source):
+
+> AI can make it cheaper to contribute without making it cheaper to review.
+
+To be fair, the same tools in skilled hands find real problems. In 2025, [Joshua Rogers checked the output of several AI scanners himself and reported about 50 genuine bugs in curl](https://www.theregister.com/2025/10/02/curl_project_swamped_with_ai/), which the team fixed. So the tool is not the problem. Unverified slop is. AI does not replace community design. It raises the stakes on the same six pillars.
+
+## How to Tell Whether It Is Working
 
 It is easy to say you have these pillars. Four signals tell you whether they are real:
 
 - **Bus factor.** How many people could walk away before the project stalls? If the answer is one, that is the maintainer trap in numbers.
 - **Time to first response** on issues and pull requests. Slow first responses are where newcomers quietly give up.
 - **Retention.** Do first-time contributors come back, or is every contributor a new face who never returns?
-- **Maintainer count.** Growing, holding, or shrinking? A shrinking count is an early warning, long before anything visibly breaks.
+- **Maintainer count.** Is it growing, holding or shrinking? A shrinking count is an early warning, long before anything visibly breaks.
 
-Watch the trend, not a single snapshot. Together these tell you if the pillars are actually working, or just look good on paper.
+Watch the trend, not a single snapshot. Together, these tell you whether the pillars are actually working, or just look good on paper.
 
-## What to prioritize, and what can wait
+## What to Prioritise, and What Can Wait
 
 Not everything deserves your attention at once.
 
-Optimize early: clear contribution paths, expectations written down, and distributing authority before it all lands on one person. These are cheap now and expensive to fix later.
+**Optimise early.** These are cheap now and expensive to fix later:
 
-Delay heavy formal governance, complex tooling and automation, and structure a small community does not need yet. Heavy process can strangle a small project before it ever grows.
+- clear contribution paths
+- expectations written down
+- authority distributed before it all lands on one person
 
-There is a similar trap in how we take advice. Most good advice only works when you pair it with the right thing. Being welcoming works only if you keep up with the people who show up. An ignored first contribution is the fastest way to lose someone, and triage is what makes the welcome real. Moving fast works only with transparency, so contributors can follow the changes and not get blindsided. Documenting everything works only with clear ownership, so the docs stay current. The practice is not the problem. The missing partner is.
+**Delay** what a small community does not need yet. Heavy process can strangle a small project before it ever grows:
 
-## What AI changes
+- heavy formal governance
+- complex tooling and automation
+- structure the community has not grown into
 
-One force is reshaping all six pillars at once, so it deserves its own section.
+There is a similar trap in how we take advice. Most good advice only works when you pair it with the right partner:
 
-AI helps. It lowers the barrier to a first contribution, speeds up documentation, translation, and issue triage, and helps people who do not work in English as a first language. It can also shorten the time needed to understand a codebase, which could ease the reliance on spare free time that open source has always depended on.
+- **Being welcoming needs triage.** An ignored first contribution is the fastest way to lose someone, and triage is what makes the welcome real.
+- **Moving fast needs transparency,** so contributors can follow the changes and are not blindsided.
+- **Documenting everything needs clear ownership,** so the docs stay current.
 
-The strain is just as real. It is cheap to generate a change, but a maintainer still has to understand it, so the cost shifts from author to reviewer. Access is unequal too. The best tools cost money and know-how, so people at well-funded companies get faster, while volunteers and people in lower-income regions get left behind. AI risks becoming a new kind of privilege.
+When good advice fails, the advice is rarely the problem. Look for the partner it is missing.
 
-This is not theoretical. Someone asks a model to find a bug, pastes the confident output into a report, marks it critical, and never checks whether it is real. curl is the clearest case. [Daniel Stenberg](https://daniel.haxx.se/blog/), who has maintained it for decades, called it a denial of service on the project. By 2025 roughly 1 in 5 submissions was slop, and fewer than 1 in 20 turned out to be a genuine vulnerability. Each fake report can take an hour to debunk, and these are volunteers with a few hours a week. The team eventually shut down its paid bug bounty simply to stop the flood.
+## Why Some Projects Thrive and Others Decay
 
-It is not only curl. The [Python Software Foundation](https://sethmlarson.dev/slop-security-reports) and Open Collective report the same thing, and tie it directly to maintainer burnout. The problem is the asymmetry: seconds to generate, hours to debunk, aimed at unpaid people who keep critical software running. As Dries Buytaert puts it in [The Privilege of AI in Open Source](https://dri.es/the-privilege-of-ai-in-open-source):
-
-> AI can make it cheaper to contribute without making it cheaper to review.
-
-To be fair, the same tools in skilled hands recently found dozens of real bugs in curl. So the tool is not the problem. Unverified slop is. AI does not replace community design. It raises the stakes on the same six pillars.
-
-## Why some projects thrive and others decay
-
-If you remember one thing from this, remember this contrast.
+If you remember one thing from this post, make it this contrast:
 
 | Thriving projects     | Decaying projects            |
 | --------------------- | ---------------------------- |
 | Share decisions       | Concentrate decisions        |
 | Make it easy to help  | Leave contributors guessing  |
-| Recognize the work    | Let invisible work go unseen |
+| Recognise the work    | Let invisible work go unseen |
 | Build local belonging | Stay purely global           |
 | Communicate the why   | Stay hard to understand      |
 | Fund the work         | Rely on unpaid time          |
 
-The dangerous part is that decay is slow and quiet. There is no alarm. You often notice only when it is far along.
+The dangerous part is that decay is slow and quiet. There is no alarm, and you often notice only when it is far along.
 
-## What you can realistically influence
+## What You Can Realistically Influence
 
 You do not have to be a maintainer, or even a contributor. If you care about open source, any of these help:
 
@@ -185,15 +266,15 @@ You do not have to be a maintainer, or even a contributor. If you care about ope
 - Fund a project you rely on, even a little.
 - Share a project you use with your team or on social media.
 
-> I fund 5 maintainers, about 100 euros a month in total. It is small, but steady support like this is what keeps people going, and it nudges others to chip in too.
+I fund five maintainers, about 100 euros a month in total. It is small, but steady support like this is what keeps people going, and it nudges others to chip in too.
 
-These are small structural acts, and they compound.
+Each of these is small, but they change how a community works, and together they add up.
 
 ## Closing
 
-Open source is not just code. The system around the code is what scales, or what quietly fades. Either way, you are designing it. The only question is whether you do it on purpose.
+Open source is not just code. The system around the code is what scales, or what quietly fades. Every community has that system, whether anyone designed it or not. The only question is whether you shape it on purpose.
 
-Be honest with yourself too. There is no quick fix. You will not get it all right, and you usually control your corner, not the whole. Changing a community default is slow, and that is normal.
+Be honest with yourself too. There is no quick fix. You will not get it all right, and you usually control your own corner, not the whole community. Changing a community's defaults is slow, and that is normal.
 
 So do not try to move all six pillars at once. Pick the one that hurts most right now, and start there.
 
@@ -201,7 +282,7 @@ So do not try to move all six pillars at once. Pick the one that hurts most righ
 
 ---
 
-## About this talk
+## About This Talk
 
 This article is based on my talk, _Open Source Is Not Just Code: Designing Communities That Actually Scale_, given at the [WeAreDevelopers World Congress](https://www.wearedevelopers.com/world-congress/agenda/sessions/open-source-is-not-just-code-designing-communities-that-actually-scale-1142282) on Friday 10 July 2026, 09:40 to 10:10, on Stage 3 (powered by AWS).
 
@@ -209,15 +290,15 @@ This article is based on my talk, _Open Source Is Not Just Code: Designing Commu
 
 ---
 
-## Sources and further reading
+## Sources and Further Reading
 
-### Primary reading
+### Primary Reading
 
 - David Hirsch, [Open Source Communities](https://www.linkedin.com/pulse/open-source-communities-david-hirsch/)
 - Dries Buytaert, [The Privilege of AI in Open Source](https://dri.es/the-privilege-of-ai-in-open-source)
 - Chris Short, [OSPO Notes: Open Source Governance, Who Decides and How](https://chrisshort.net/ospo-notes-open-source-governance-who-decides-and-how/)
 
-### Community models
+### Community Models
 
 - Rust, [Governance and teams](https://www.rust-lang.org/governance)
 - Apache Software Foundation, [The Apache Way](https://www.apache.org/theapacheway/)
@@ -225,7 +306,7 @@ This article is based on my talk, _Open Source Is Not Just Code: Designing Commu
 - Kubernetes, [Contributor ladder](https://github.com/kubernetes/community/blob/master/community-membership.md)
 - Drupal, [Contribution credit](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues)
 
-### Drupal programs
+### Drupal Programmes
 
 - [DrupalCon and community events](https://events.drupal.org/)
 - [Mentoring and first-time contributor workshops](https://www.drupal.org/community/contributor-guide/role/mentor)
@@ -241,12 +322,15 @@ This article is based on my talk, _Open Source Is Not Just Code: Designing Commu
 - [Tidelift](https://tidelift.com/)
 - [Sovereign Tech Fund](https://www.sovereign.tech/programs/fund)
 
-### AI and maintainer burden
+### AI and Maintainer Burden
 
 - Daniel Stenberg, [curl blog](https://daniel.haxx.se/blog/)
+- Daniel Stenberg, [Death by a thousand slops](https://daniel.haxx.se/blog/2025/07/14/death-by-a-thousand-slops/)
+- Daniel Stenberg, [The end of the curl bug-bounty](https://daniel.haxx.se/blog/2026/01/26/the-end-of-the-curl-bug-bounty/)
 - Seth Larson, [New era of slop security reports for open source](https://sethmlarson.dev/slop-security-reports)
+- The Register, [Curl project, swamped with AI slop, finds not all AI is bad](https://www.theregister.com/2025/10/02/curl_project_swamped_with_ai/)
 
-### Projects referenced
+### Projects Referenced
 
 - [Linux](https://www.kernel.org/)
 - [Git](https://git-scm.com/)
