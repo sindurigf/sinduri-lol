@@ -70,6 +70,16 @@ const FIRST_USES: readonly {
   },
   {
     route: '/credits',
+    abbreviation: 'CC BY',
+    expansion: 'Creative Commons Attribution',
+  },
+  {
+    route: '/credits',
+    abbreviation: 'SA',
+    expansion: 'ShareAlike',
+  },
+  {
+    route: '/credits',
     abbreviation: 'SEO',
     expansion: 'search engine optimisation',
   },

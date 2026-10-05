@@ -27,6 +27,33 @@ export const photographerHref = (name: Photographer): string => {
 
 export const PHOTO_CREDIT_PREFIX = 'Photo: ';
 
+/**
+ * Photos used under a Creative Commons licence: the caption and /credits name
+ * the photographer, link the source and licence, and say what was changed.
+ */
+export const LICENSED_PHOTOS = {
+  'drupalcon-rotterdam-award': {
+    photographer: 'Karl Hepworth',
+    title: 'Women in Drupal Award Ceremony - DrupalCon Rotterdam 2026',
+    source: 'https://www.flickr.com/photos/200855369@N08/55559653507/',
+    licence: 'CC BY-SA 4.0',
+    licenceHref: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    changes: 'resized',
+  },
+} as const satisfies Readonly<
+  Record<
+    string,
+    {
+      photographer: Photographer;
+      title: string;
+      source: string;
+      licence: string;
+      licenceHref: string;
+      changes: string;
+    }
+  >
+>;
+
 /** The site's name and email address are borrowed from norman.lol. */
 export const NAME_INSPIRATION = {
   name: 'Norman Kämper-Leymann',
