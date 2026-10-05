@@ -5,6 +5,7 @@ import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CloseRow from '../components/CloseRow.astro';
 import PageHero from '../components/PageHero.astro';
+import LicensedPhotoCredit from '../components/LicensedPhotoCredit.astro';
 import PhotoTile from '../components/PhotoTile.astro';
 import PhotoViewer from '../components/PhotoViewer.astro';
 import Section from '../components/Section.astro';
@@ -74,8 +75,6 @@ const SIZES = {
 /* Matches `lg:h-16`. */
 const MARK_HEIGHT = 64;
 
-const LECTURE_HALL = LICENSED_PHOTOS['drupal-lecture-hall'];
-const LECTURE_HALL_PHOTOGRAPHER: Photographer = LECTURE_HALL.photographer;
 const MENTOR: Photographer = 'Klaus Purer';
 const MOUNTAIN_CAMP_PHOTOGRAPHER: Photographer = 'Josef Kruckenberg';
 const ROTTERDAM_AWARD = LICENSED_PHOTOS['drupalcon-rotterdam-award'];
@@ -497,13 +496,7 @@ const catInfo: CatInfo[] = await Promise.all(
             aspect="video"
           >
             <span class="block font-black text-text">The Drupal community</span>
-            Photo:{' '}
-            <a href={photographerHref(LECTURE_HALL_PHOTOGRAPHER)}>
-              {LECTURE_HALL_PHOTOGRAPHER}
-            </a>{' '}
-            (<a href={LECTURE_HALL.source}>{LECTURE_HALL.title}</a> on Flickr,{' '}
-            <a href={LECTURE_HALL.licenceHref}>{LECTURE_HALL.licence}</a>,{' '}
-            {LECTURE_HALL.changes})
+            <LicensedPhotoCredit photo="drupal-lecture-hall" />
           </PhotoTile>
         </div>
         <div class="min-w-0 sm:flex-1">

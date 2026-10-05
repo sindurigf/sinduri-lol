@@ -1,0 +1,19 @@
+---
+import {
+  LICENSED_PHOTOS,
+  PHOTO_CREDIT_PREFIX,
+  photographerHref,
+} from '../lib/credits';
+
+interface Props {
+  photo: keyof typeof LICENSED_PHOTOS;
+}
+
+const { photographer, title, source, licence, licenceHref, changes } =
+  LICENSED_PHOTOS[Astro.props.photo];
+---
+
+{PHOTO_CREDIT_PREFIX}
+<a href={photographerHref(photographer)}>{photographer}</a> (
+<a href={source}>{title}</a> on Flickr, <a href={licenceHref}>{licence}</a>,{' '}
+{changes})
