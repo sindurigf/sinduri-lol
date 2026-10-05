@@ -22,6 +22,7 @@ run the commands in [AGENTS.md](AGENTS.md#done-means).
   dashboard settings
 - [ARCHITECTURE.md](ARCHITECTURE.md): stack, tokens, content, assets, headers
 - [docs/STYLEGUIDE.md](docs/STYLEGUIDE.md): visual rules and page patterns
+- [docs/VOICE.md](docs/VOICE.md): how editorial copy sounds
 - [ACCESSIBILITY.md](ACCESSIBILITY.md): conformance statement, known gaps,
   and how to report a barrier
 - [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md): by-hand accessibility checks
