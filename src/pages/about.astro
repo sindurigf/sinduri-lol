@@ -69,7 +69,8 @@ const THUMB_SIZE = 56;
 const SIZES = {
   panorama:
     '(min-width: 40rem) min(calc(100vw - 9rem), 74rem), calc(100vw - 6rem)',
-  food: '(min-width: 64rem) min(calc(50vw - 120px), 34rem), (min-width: 40rem) calc(100vw - 9rem), calc(100vw - 6rem)',
+  halfCard:
+    '(min-width: 64rem) min(calc(50vw - 120px), 34rem), (min-width: 40rem) calc(100vw - 9rem), calc(100vw - 6rem)',
 } as const;
 
 /* Matches `lg:h-16`. */
@@ -339,9 +340,17 @@ const catInfo: CatInfo[] = await Promise.all(
   </Section>
 
   <Section id={SECTIONS[1].id} title={SECTIONS[1].title}>
-    <div class="card-block grid">
+    <div class="card-block grid lg:grid-cols-2">
+      <blockquote class="card card-raised surface-gold flex flex-col justify-center">
+        <span aria-hidden="true" class="self-start text-quote-mark font-black">
+          &ldquo;
+        </span>
+        <p class="mt-6 text-h2 font-black text-pretty">
+          We should all be a bit kinder and more empathetic.
+        </p>
+      </blockquote>
       <div class="card">
-        <div class="aspect-frame">
+        <div class:list={['aspect-frame', PHOTO]}>
           <svg
             class="aspect-sizer"
             viewBox={`0 0 ${mossWallSize.width} ${mossWallSize.height}`}
@@ -355,17 +364,10 @@ const catInfo: CatInfo[] = await Promise.all(
             width={mossWallSize.width}
             height={mossWallSize.height}
             widths={WIDTHS}
-            sizes={SIZES.panorama}
+            sizes={SIZES.halfCard}
           />
         </div>
-      </div>
-      <blockquote class="card surface-gold">
-        <p class="max-w-3xl text-h2 font-black text-pretty">
-          We should all be a bit kinder and more empathetic.
-        </p>
-      </blockquote>
-      <div class="card">
-        <ul class="bullet-list max-w-measure text-body text-text">
+        <ul class="bullet-list mt-8 max-w-measure text-body text-text">
           <li>Be as generous with compliments as with critique.</li>
           <li>
             When someone is down, you do not need the right words. A hug and
@@ -478,7 +480,7 @@ const catInfo: CatInfo[] = await Promise.all(
               src={dosa}
               alt="Sinduri, eyes closed, about to take a bite of dosa with her hand."
               widths={WIDTHS}
-              sizes={SIZES.food}
+              sizes={SIZES.halfCard}
             />
           </div>
         </div>
