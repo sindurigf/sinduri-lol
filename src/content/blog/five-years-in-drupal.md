@@ -14,10 +14,6 @@ coverCardAlt: 'Sinduri and a friend laughing together.'
 seoDescription: 'How a civil engineer in Vienna discovered Drupal, said yes to the community, and won the Women in Drupal Award at DrupalCon Vienna.'
 ---
 
-This is how one became the other.
-
-![Sinduri holding her award next to Klaus Purer, in front of the DrupalCon Vienna backdrop.](../../assets/blog/five-years-in-drupal/with-klausi.jpg 'Photo: Klaus Purer')
-
 ## Before Drupal
 
 I studied civil engineering in India, then moved to the US to study environmental engineering. In 2017 I moved to Vienna, and that is when my tech journey began.
@@ -61,6 +57,8 @@ I was reminded of this at a workshop organised by Mikko Hämäläinen, CEO of Dr
 ## The Women in Drupal Award
 
 At DrupalCon Vienna in 2025, I won the Women in Drupal Award in the Build category. It was overwhelming.
+
+![Sinduri holding her award next to Klaus Purer, in front of the DrupalCon Vienna backdrop.](../../assets/blog/five-years-in-drupal/with-klausi.jpg 'Photo: Klaus Purer')
 
 ![Sinduri on stage at DrupalCon Vienna, with her name and "Build Winner 2025" on the big screen behind her.](../../assets/blog/five-years-in-drupal/award-stage.jpg 'Photo: Baris Tosun')
 
