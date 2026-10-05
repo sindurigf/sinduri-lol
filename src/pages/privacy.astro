@@ -1,4 +1,5 @@
 ---
+import Abbr from '../components/Abbr.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import { CONTACT_EMAIL, CONTACT_MAILTO } from '../lib/contact';
@@ -38,8 +39,9 @@ const UMAMI_HOST = new URL(UMAMI_HOST_URL).host;
       counts visits with Umami, which does not use cookies either. It stores
       what you type into the contact form, so that there is something to reply
       to. Each form submission's request is logged for{' '}
-      {WORKER_LOG_RETENTION_DAYS} days, including your IP address, the internet
-      address of your connection.
+      {WORKER_LOG_RETENTION_DAYS} days, including your{' '}
+      <Abbr short="IP" long="Internet Protocol" /> address, the internet address
+      of your connection.
     </p>
 
     <p class="mt-6 text-body">
@@ -196,9 +198,7 @@ const UMAMI_HOST = new URL(UMAMI_HOST_URL).host;
           <li>the time it was sent</li>
           <li>the time the emailed copy below went out</li>
           <li>how many times a failed copy has been retried</li>
-          <li>
-            a random identifier (ID) that only tells one message from another
-          </li>
+          <li>a random identifier that only tells one message from another</li>
         </ul>
 
         <p>
@@ -211,17 +211,19 @@ const UMAMI_HOST = new URL(UMAMI_HOST_URL).host;
         <p>
           To stop the form being used for bulk submissions, the number of
           submissions from one network address is limited to about five a
-          minute. For an address in the newer format, Internet Protocol version
-          6 (IPv6), the limit covers its whole /64 network. That is the block a
-          single connection is normally given. The limit is counted by
-          Cloudflare's <dfn>rate limiter</dfn>, the service that enforces it. It
-          counts against a SHA-256 hash, a one-way fingerprint made with Secure
-          Hash Algorithm 256. The hash is made from the current date and your
-          address in the older format, Internet Protocol version 4 (IPv4), or
-          your IPv6 /64. This site writes the hash nowhere else: it is not
-          stored with your message or linked to it. A hash of an address is not
-          anonymous. The date is no secret, so anyone holding the hash of an
-          IPv4 address could recover the address by hashing every possible one.
+          minute. For an address in the newer format,{' '}
+          <Abbr short="IPv6" long="Internet Protocol version 6" />, the limit
+          covers its whole /64 network. That is the block a single connection is
+          normally given. The limit is counted by Cloudflare's{' '}
+          <dfn>rate limiter</dfn>, the service that enforces it. It counts
+          against a <Abbr short="SHA-256" long="Secure Hash Algorithm 256" />{' '}
+          hash, a one-way fingerprint. The hash is made from the current date
+          and your address in the older format,{' '}
+          <Abbr short="IPv4" long="Internet Protocol version 4" />, or your IPv6
+          /64. This site writes the hash nowhere else: it is not stored with
+          your message or linked to it. A hash of an address is not anonymous.
+          The date is no secret, so anyone holding the hash of an IPv4 address
+          could recover the address by hashing every possible one.
         </p>
 
         <p>
