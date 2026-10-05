@@ -16,21 +16,11 @@ interface Props {
   size?: 'fluid' | 'natural';
   /** `fluid` only. */
   sizes?: string;
-  /** `natural` only: what surrounds the strip, if not About's. */
+  /** `natural` only: one inset at every width, for a strip outside About's layout. */
   stripInset?: string;
 }
 
-/* Gutter, panel and strip borders and padding; tests/image-size.spec.ts fails on drift. */
-const STRIP_INSET = '7rem';
-
-const {
-  image,
-  alt,
-  group,
-  size = 'fluid',
-  sizes,
-  stripInset = STRIP_INSET,
-} = Astro.props;
+const { image, alt, group, size = 'fluid', sizes, stripInset } = Astro.props;
 
 /*
  * Size via getImage, not `image.width`: reading the imported Proxy marks the
@@ -50,10 +40,17 @@ const master = {
 
 const NATURAL_HEIGHT = 320;
 
+/* Gutter, panel and strip borders and padding; tests/image-size.spec.ts fails on drift. */
+const STRIP_INSET = '7rem';
+/* From `sm` (40rem) the section and card padding grow. */
+const STRIP_INSET_SM = '10.5rem';
+
 const naturalWidth = Math.round(
   NATURAL_HEIGHT * (master.width / master.height),
 );
-const naturalSizes = `min(${naturalWidth}px, calc(100vw - ${stripInset}))`;
+const naturalSizes = stripInset
+  ? `min(${naturalWidth}px, calc(100vw - ${stripInset}))`
+  : `(min-width: 40rem) min(${naturalWidth}px, calc(100vw - ${STRIP_INSET_SM})), min(${naturalWidth}px, calc(100vw - ${STRIP_INSET}))`;
 
 const naturalWidths = [
   ...new Set([
