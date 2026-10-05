@@ -332,7 +332,8 @@ in `wrangler.jsonc`).
 
 ### Photos and video
 
-- Photos: `src/assets/photos/` (pages) and `src/assets/blog/<slug>/` (posts).
+- Photos: `src/assets/photos/` (pages, and posts that reuse one) and
+  `src/assets/blog/<slug>/` (posts).
   Masters are JPEG, cropped to shape, 2x drawn size, metadata stripped.
 - Fixed-size photos pass `DENSITIES`; fluid ones pass `WIDTHS` and `sizes`
   from `src/lib/image-densities.ts`. `WIDTHS` steps at most 1.5x; `sizes` is

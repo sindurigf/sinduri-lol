@@ -28,10 +28,18 @@ export const photographerHref = (name: Photographer): string => {
 export const PHOTO_CREDIT_PREFIX = 'Photo: ';
 
 /**
- * Photos used under a Creative Commons licence: the caption and /credits name
- * the photographer, link the source and licence, and say what was changed.
+ * Photos used under a Creative Commons licence, keyed by file name without its
+ * extension: the caption and /credits link the source and licence and say what changed.
  */
 export const LICENSED_PHOTOS = {
+  'drupal-lecture-hall': {
+    photographer: 'Andrey Pshenichny',
+    title: 'DrupalDevDays 2023 Vienna',
+    source: 'https://www.flickr.com/photos/beta-robot/53065586392/',
+    licence: 'CC BY 2.0',
+    licenceHref: 'https://creativecommons.org/licenses/by/2.0/',
+    changes: 'cropped and resized',
+  },
   'drupalcon-rotterdam-award': {
     photographer: 'Karl Hepworth',
     title: 'Women in Drupal Award Ceremony - DrupalCon Rotterdam 2026',

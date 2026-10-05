@@ -30,6 +30,8 @@ What actually kills projects is more mundane. When contribution paths are unclea
 
 Open source is a socio-technical system. The code and the community are not two things you manage separately. They are one system, and they shape each other.
 
+![Sinduri standing and clapping in a lecture hall full of Drupal event attendees.](../../assets/photos/drupal-lecture-hall.jpg 'Photo: Andrey Pshenichny')
+
 When the community is healthy, the code benefits. When the community breaks down, the code suffers, no matter how elegant it is. Community design is not a soft or secondary concern. It matters as much as the technical design.
 
 ## The maintainer trap

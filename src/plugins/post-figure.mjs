@@ -8,7 +8,11 @@ import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { imageMetadata } from 'astro/assets/utils';
-import { PHOTOGRAPHERS, PHOTO_CREDIT_PREFIX } from '../lib/credits.ts';
+import {
+  LICENSED_PHOTOS,
+  PHOTOGRAPHERS,
+  PHOTO_CREDIT_PREFIX,
+} from '../lib/credits.ts';
 
 /* `--container-measure`, less the gutter on narrow viewports. */
 const SIZES =
@@ -67,22 +71,39 @@ const framed = (image, { width, height }) => ({
   ],
 });
 
-const captionChildren = (caption) => {
+const link = (href, label) => ({
+  type: 'element',
+  tagName: 'a',
+  properties: { href },
+  children: [text(label)],
+});
+
+/* A Creative Commons photo's source, licence and changes, from its file name. */
+const licenceChildren = (src) => {
+  const stem =
+    String(src)
+      .split('/')
+      .pop()
+      ?.replace(/\.[^.]+$/, '') ?? '';
+  const photo = LICENSED_PHOTOS[stem];
+  if (photo === undefined) return [];
+  return [
+    text(' ('),
+    link(photo.source, photo.title),
+    text(' on Flickr, '),
+    link(photo.licenceHref, photo.licence),
+    text(`, ${photo.changes})`),
+  ];
+};
+
+const captionChildren = (caption, src) => {
   if (!caption.startsWith(PHOTO_CREDIT_PREFIX)) return [text(caption)];
 
   const name = caption.slice(PHOTO_CREDIT_PREFIX.length);
   const href = PHOTOGRAPHERS[name];
   if (href === undefined) return [text(caption)];
 
-  return [
-    text(PHOTO_CREDIT_PREFIX),
-    {
-      type: 'element',
-      tagName: 'a',
-      properties: { href },
-      children: [text(name)],
-    },
-  ];
+  return [text(PHOTO_CREDIT_PREFIX), link(href, name), ...licenceChildren(src)];
 };
 
 /* A post with a `cover` opens on it (src/pages/blog/[slug].astro), so that photo loads first. */
@@ -161,7 +182,7 @@ export const postFigure = ({ fileURL } = {}) => {
               type: 'element',
               tagName: 'figcaption',
               properties: {},
-              children: captionChildren(caption),
+              children: captionChildren(caption, properties.src),
             },
           ],
         });
