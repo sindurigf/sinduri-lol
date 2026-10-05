@@ -197,7 +197,7 @@ Be honest with yourself too. There is no quick fix. You will not get it all righ
 
 So do not try to move all six pillars at once. Pick the one that hurts most right now, and start there.
 
-![Drupal Mountain Camp attendees gathered in front of a wooden building, with snowy mountains behind them and Drupal and Mountain Camp banners on the ground.](../../assets/blog/open-source-is-not-just-code/mountain-camp-attendees.webp 'Photo: Patrick Itten')
+![Drupal Mountain Camp attendees gathered in front of a wooden building, with snowy mountains behind them and Drupal and Mountain Camp banners on the ground.](../../assets/photos/drupal-mountain-camp.webp 'Photo: Patrick Itten')
 
 ---
 
