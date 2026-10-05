@@ -41,6 +41,9 @@ Sinduri's voice. Functional copy follows [AGENTS.md](../AGENTS.md#copy).
 - No fact for a line: ask her, never fill the gap.
 - Edit, do not rewrite: fix spelling and grammar, split long sentences, cut
   repeats, keep her words.
+- Improve, do not remove: a flippant or unclear line is reworded, never cut,
+  and no fact is lost.
+- Bullets where content is a list; prose where it is an argument or a story.
 - Show numbered options with one recommendation; she approves every line.
 - Keep the whole page cohesive: headings, leads, captions and closers read as
   one set.
