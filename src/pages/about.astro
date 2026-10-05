@@ -5,6 +5,7 @@ import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CloseRow from '../components/CloseRow.astro';
 import PageHero from '../components/PageHero.astro';
+import LicensedPhotoCredit from '../components/LicensedPhotoCredit.astro';
 import PhotoTile from '../components/PhotoTile.astro';
 import PhotoViewer from '../components/PhotoViewer.astro';
 import Section from '../components/Section.astro';
@@ -33,7 +34,22 @@ import kannurSea from '../assets/photos/kannur-sea.jpg';
 import withFriend from '../assets/photos/pride-with-friend.jpg';
 import dosa from '../assets/photos/sinduri-dosa.jpg';
 import lectureHall from '../assets/photos/drupal-lecture-hall.jpg';
-import { photographerHref, type Photographer } from '../lib/credits';
+import mountainCampBeanie from '../assets/photos/mountain-camp-beanie.jpg';
+import mountainCampTable from '../assets/photos/mountain-camp-table.jpg';
+import mountainCampGroup from '../assets/photos/mountain-camp-group.jpg';
+import { photoSize } from '../lib/photo-size';
+import mountainCampDinner from '../assets/photos/mountain-camp-dinner.jpg';
+import mountainCampTalk from '../assets/photos/mountain-camp-talk.jpg';
+import mountainCampAudience from '../assets/photos/mountain-camp-audience.jpg';
+import mountainCampFriend from '../assets/photos/mountain-camp-friend.jpg';
+import mountainCampHallway from '../assets/photos/mountain-camp-hallway.jpg';
+import rotterdamAward from '../assets/photos/drupalcon-rotterdam-award.jpg';
+import PhotoStrip from '../components/PhotoStrip.astro';
+import {
+  LICENSED_PHOTOS,
+  photographerHref,
+  type Photographer,
+} from '../lib/credits';
 import { DENSITIES, WIDTHS } from '../lib/image-densities';
 import { JOURNEY_POST_HREF } from '../lib/paths';
 
@@ -59,9 +75,12 @@ const SIZES = {
 /* Matches `lg:h-16`. */
 const MARK_HEIGHT = 64;
 
-const LECTURE_HALL_PHOTOGRAPHER: Photographer = 'Andrey Pshenichny';
 const MENTOR: Photographer = 'Klaus Purer';
 const MOUNTAIN_CAMP_URL = 'https://drupalmountaincamp.ch/';
+const MOUNTAIN_CAMP_PHOTOGRAPHER: Photographer = 'Josef Kruckenberg';
+const EVENT_PHOTOGRAPHER: Photographer = 'Patrick Itten';
+const ROTTERDAM_AWARD = LICENSED_PHOTOS['drupalcon-rotterdam-award'];
+const ROTTERDAM_PHOTOGRAPHER: Photographer = ROTTERDAM_AWARD.photographer;
 
 const SECTIONS = [
   { id: 'lepus-ridet', title: 'Why Lepus Ridet' },
@@ -116,6 +135,41 @@ const PLACES = [
     src: withFriend,
     alt: 'Sinduri leaning on a friend’s shoulder, both smiling into the camera.',
   },
+  {
+    src: mountainCampBeanie,
+    alt: 'Sinduri in a pink beanie, laughing, with snowy mountains behind her.',
+  },
+] as const;
+
+const DRUPAL_EVENTS = [
+  {
+    src: mountainCampGroup,
+    alt: 'Sinduri in a pink beanie with a group of Drupal Mountain Camp attendees on a sunny terrace, snowy mountains behind them.',
+  },
+  {
+    src: rotterdamAward,
+    alt: 'Sinduri on stage at DrupalCon Rotterdam with the Women in Drupal Award winners, two of them holding trophies.',
+  },
+  {
+    src: mountainCampHallway,
+    alt: 'Sinduri holding a bottle among Drupal Mountain Camp attendees, in front of the event banner.',
+  },
+  {
+    src: mountainCampAudience,
+    alt: 'Sinduri in profile, listening to a talk at Drupal Mountain Camp.',
+  },
+  {
+    src: mountainCampTalk,
+    alt: 'Two speakers at the front of the Drupal Mountain Camp room, one reading from a sheet of paper, beside the Drupal and sponsor posters.',
+  },
+  {
+    src: mountainCampDinner,
+    alt: 'Sinduri smiling at a dinner table in a wooden restaurant at Drupal Mountain Camp, beside a friend serving salad.',
+  },
+  {
+    src: mountainCampFriend,
+    alt: 'Sinduri smiling at a friend across a dinner table at Drupal Mountain Camp.',
+  },
 ] as const;
 
 const CATS = [
@@ -149,6 +203,9 @@ const CAT_PHOTO_SIZES = '(min-width: 48rem) 288px, 192px';
 /* Thanked in each cat's card for the idea; the link comes from the Credits list. */
 const catInspiration = THANKS.find((person) => person.name === 'Arthur Lorenz');
 if (!catInspiration) throw new Error('No THANKS entry for "Arthur Lorenz".');
+
+/* Shown whole, in its own ratio, so nobody at the table is cut off. */
+const tableSize = await photoSize(mountainCampTable);
 
 const catInfo: CatInfo[] = await Promise.all(
   CATS.map(async (cat) => {
@@ -311,50 +368,13 @@ const catInfo: CatInfo[] = await Promise.all(
           />
         </div>
 
-        <div class="mb-4 mt-8 flex items-center justify-between gap-4">
-          <span class="label block text-subtle">More photos</span>
-          {/* Unhidden by src/scripts/photo-viewer.ts while the strip overflows. */}
-          <div class="flex gap-3">
-            <button
-              type="button"
-              class="strip-button"
-              aria-controls="people-photos"
-              aria-label="Scroll photos left"
-              data-strip-scroll="-1"
-              hidden
-            >
-              <span aria-hidden="true">&larr;</span>
-            </button>
-            <button
-              type="button"
-              class="strip-button"
-              aria-controls="people-photos"
-              aria-label="Scroll photos right"
-              data-strip-scroll="1"
-              hidden
-            >
-              <span aria-hidden="true">&rarr;</span>
-            </button>
-          </div>
-        </div>
-        {/* accesslint focus-order flags tabindex="0" here: false positive, a keyboard can only scroll a focusable region. */}
-        <ul
+        <PhotoStrip
           id="people-photos"
-          class="photo-strip"
-          tabindex="0"
-          aria-label="More photos, scrolls sideways"
-        >
-          {PLACES.map((place) => (
-            <li>
-              <PhotoTile
-                image={place.src}
-                alt={place.alt}
-                group="people"
-                size="natural"
-              />
-            </li>
-          ))}
-        </ul>
+          label="More photos"
+          noun="photos"
+          group="people"
+          photos={PLACES}
+        />
       </div>
     </div>
   </Section>
@@ -442,6 +462,33 @@ const catInfo: CatInfo[] = await Promise.all(
     </p>
 
     <div class="card">
+      <figure class="mb-8">
+        <div class:list={['aspect-frame', PHOTO]}>
+          <svg
+            class="aspect-sizer"
+            viewBox={`0 0 ${tableSize.width} ${tableSize.height}`}
+            aria-hidden="true"
+            focusable="false"
+          />
+          <Picture
+            {...PHOTO_FORMATS}
+            src={mountainCampTable}
+            alt="Sinduri laughing with friends around a red-lit table at Drupal Mountain Camp, one of them holding up a toy frog on a fork."
+            width={tableSize.width}
+            height={tableSize.height}
+            widths={WIDTHS}
+            sizes={SIZES.panorama}
+          />
+        </div>
+        <figcaption class="mt-4 text-body text-text">
+          <span class="block font-black">Drupal Mountain Camp</span>
+          Photo:{' '}
+          <a href={photographerHref(MOUNTAIN_CAMP_PHOTOGRAPHER)}>
+            {MOUNTAIN_CAMP_PHOTOGRAPHER}
+          </a>
+        </figcaption>
+      </figure>
+
       <div class="flex flex-col gap-8 sm:flex-row">
         <div class="min-w-0 sm:flex-1">
           <span class="label block text-gold">Before</span>
@@ -482,10 +529,7 @@ const catInfo: CatInfo[] = await Promise.all(
             aspect="video"
           >
             <span class="block font-black text-text">The Drupal community</span>
-            Photo:{' '}
-            <a href={photographerHref(LECTURE_HALL_PHOTOGRAPHER)}>
-              {LECTURE_HALL_PHOTOGRAPHER}
-            </a>
+            <LicensedPhotoCredit photo="drupal-lecture-hall" />
           </PhotoTile>
         </div>
         <div class="min-w-0 sm:flex-1">
@@ -497,9 +541,36 @@ const catInfo: CatInfo[] = await Promise.all(
             aspect="video"
           >
             <span class="block font-black text-text">Drupal Mountain Camp</span>
+            Photo:{' '}
+            <a href={photographerHref(EVENT_PHOTOGRAPHER)}>
+              {EVENT_PHOTOGRAPHER}
+            </a>
           </PhotoTile>
         </div>
       </div>
+
+      <PhotoStrip
+        id="drupal-photos"
+        label="Drupal events"
+        noun="Drupal photos"
+        group="drupal"
+        photos={DRUPAL_EVENTS}
+      />
+      <p class="mt-4 text-body text-subtle">
+        Photos:{' '}
+        <a href={photographerHref(ROTTERDAM_PHOTOGRAPHER)}>
+          {ROTTERDAM_PHOTOGRAPHER}
+        </a>{' '}
+        at DrupalCon Rotterdam (
+        <a href={ROTTERDAM_AWARD.source}>{ROTTERDAM_AWARD.title}</a> on{' '}
+        {ROTTERDAM_AWARD.sourceName},{' '}
+        <a href={ROTTERDAM_AWARD.licenceHref}>{ROTTERDAM_AWARD.licence}</a>,{' '}
+        {ROTTERDAM_AWARD.changes}),{' '}
+        <a href={photographerHref(MOUNTAIN_CAMP_PHOTOGRAPHER)}>
+          {MOUNTAIN_CAMP_PHOTOGRAPHER}
+        </a>{' '}
+        at Drupal Mountain Camp.
+      </p>
     </div>
   </Section>
 

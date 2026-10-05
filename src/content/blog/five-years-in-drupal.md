@@ -14,10 +14,6 @@ coverCardAlt: 'Sinduri and a friend laughing together.'
 seoDescription: 'How a civil engineer in Vienna discovered Drupal, said yes to the community, and won the Women in Drupal Award at DrupalCon Vienna.'
 ---
 
-This is how one became the other.
-
-![Sinduri holding her award next to Klaus Purer, in front of the DrupalCon Vienna backdrop.](../../assets/blog/five-years-in-drupal/with-klausi.jpg 'Photo: Klaus Purer')
-
 ## Before Drupal
 
 I studied civil engineering in India, then moved to the US to study environmental engineering. In 2017 I moved to Vienna, and that is when my tech journey began.
@@ -46,7 +42,7 @@ At drunomics I worked on mossbo, our cloud CMS, and the projects that tie into i
 
 In 2023 Klausi asked me to volunteer at Drupal Dev Days Vienna. I enjoyed working with the community so much that I started saying yes to every organising committee that asked for help. Soon I was helping organise Drupal Mountain Camp, Drupal Dev Days and DrupalCamp Berlin, all in the same year.
 
-![Drupal Mountain Camp attendees gathered together in the snow, with a mountain behind them.](../../assets/blog/five-years-in-drupal/drupal-mountain-camp.jpg)
+![Drupal Mountain Camp attendees gathered together in the snow, with a mountain behind them.](../../assets/blog/five-years-in-drupal/drupal-mountain-camp.jpg 'Photo: Patrick Itten')
 
 The Swiss community adopted me and taught me so much about events. The Austrian community welcomed me so warmly that it feels like home. I was elected to the Drupal Austria board as marketing manager, and in 2026 I am deputy marketing manager. My work continues through my commitment to Drupal Switzerland and Drupal Austria.
 
@@ -69,6 +65,8 @@ The Build category is for builders and makers. Developers, architects, or even H
 ![The Women in Drupal Award winners on stage, holding flowers and certificates.](../../assets/blog/five-years-in-drupal/award-winners.jpg 'Photo: Daniel Lemon')
 
 This recognition truly belongs to the incredible community that has been with me every step of my Drupal adventure. This is what I wrote after the award, and every word still stands.
+
+![Sinduri holding her award next to Klaus Purer, in front of the DrupalCon Vienna backdrop.](../../assets/blog/five-years-in-drupal/with-klausi.jpg 'Photo: Klaus Purer')
 
 Thank you JAKALA and Kitt Ralkov for creating this beautiful initiative that celebrates women in Drupal. To the jury members and previous winners Esmeralda Tijhoff, Pamela Barone, and Alla Petrovska 🇺🇦, thank you for considering me for this award. Being recognized alongside the brilliant Jess (xjm) and Emma Horrell feels so humbling.
 
