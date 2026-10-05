@@ -9,11 +9,18 @@ interface Props {
   photo: keyof typeof LICENSED_PHOTOS;
 }
 
-const { photographer, title, source, licence, licenceHref, changes } =
-  LICENSED_PHOTOS[Astro.props.photo];
+const {
+  photographer,
+  title,
+  source,
+  sourceName,
+  licence,
+  licenceHref,
+  changes,
+} = LICENSED_PHOTOS[Astro.props.photo];
 ---
 
 {PHOTO_CREDIT_PREFIX}
 <a href={photographerHref(photographer)}>{photographer}</a> (
-<a href={source}>{title}</a> on Flickr, <a href={licenceHref}>{licence}</a>,{' '}
-{changes})
+<a href={source}>{title}</a> on {sourceName},{' '}
+<a href={licenceHref}>{licence}</a>, {changes})

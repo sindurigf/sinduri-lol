@@ -122,25 +122,34 @@ const link = (href, label) => ({
   children: [text(label)],
 });
 
-/* A Creative Commons photo's source, licence and changes, from its file name. */
-const licenceChildren = (src) => {
+/**
+ * A Creative Commons photo's source, licence and changes, keyed by its file name.
+ * @param {unknown} src
+ * @param {Readonly<Record<string, import('../lib/credits.ts').LicensedPhoto>>} [photos]
+ */
+export const licenceChildren = (src, photos = LICENSED_PHOTOS) => {
   const stem =
     String(src)
       .split('/')
       .pop()
       ?.replace(/\.[^.]+$/, '') ?? '';
-  const photo = LICENSED_PHOTOS[stem];
+  const photo = Object.hasOwn(photos, stem) ? photos[stem] : undefined;
   if (photo === undefined) return [];
   return [
     text(' ('),
     link(photo.source, photo.title),
-    text(' on Flickr, '),
+    text(` on ${photo.sourceName}, `),
     link(photo.licenceHref, photo.licence),
     text(`, ${photo.changes})`),
   ];
 };
 
-const captionChildren = (caption, src) => {
+/**
+ * @param {string} caption
+ * @param {unknown} src
+ * @param {Readonly<Record<string, import('../lib/credits.ts').LicensedPhoto>>} [photos]
+ */
+export const captionChildren = (caption, src, photos = LICENSED_PHOTOS) => {
   const [prefix, sources] =
     CREDITS.find(([candidate]) => caption.startsWith(candidate)) ?? [];
   if (prefix === undefined) return [text(caption)];
@@ -149,7 +158,7 @@ const captionChildren = (caption, src) => {
   const href = Object.hasOwn(sources, name) ? sources[name] : undefined;
   if (href === undefined) return [text(caption)];
 
-  return [text(prefix), link(href, name), ...licenceChildren(src)];
+  return [text(prefix), link(href, name), ...licenceChildren(src, photos)];
 };
 
 /* A post with a `cover` opens on it (src/pages/blog/[slug].astro), so that photo loads first. */
