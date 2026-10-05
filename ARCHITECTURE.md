@@ -339,7 +339,11 @@ in `wrangler.jsonc`).
 
 - Photos: `src/assets/photos/` (pages, and posts that reuse one) and
   `src/assets/blog/<slug>/` (posts).
-  Masters are JPEG, cropped to shape, 2x drawn size, metadata stripped.
+  Masters are JPEG at their full original frame, metadata stripped, never
+  cropped in the file. Strips, figures and covers show the whole frame; only
+  `og:image` and `PhotoTile`'s fluid square and 16:9 tiles crop, on display.
+  `drupal-lecture-hall.jpg` is a cropped master and stays until the full frame
+  replaces it.
 - Fixed-size photos pass `DENSITIES`; fluid ones pass `WIDTHS` and `sizes`
   from `src/lib/image-densities.ts`. `WIDTHS` steps at most 1.5x; `sizes` is
   the real drawn width. `tests/image-size.spec.ts` fails on stretching,
