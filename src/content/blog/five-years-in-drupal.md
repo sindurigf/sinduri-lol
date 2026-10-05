@@ -58,8 +58,6 @@ I was reminded of this at a workshop organised by Mikko Hämäläinen, CEO of Dr
 
 At DrupalCon Vienna in 2025, I won the Women in Drupal Award in the Build category. It was overwhelming.
 
-![Sinduri holding her award next to Klaus Purer, in front of the DrupalCon Vienna backdrop.](../../assets/blog/five-years-in-drupal/with-klausi.jpg 'Photo: Klaus Purer')
-
 ![Sinduri on stage at DrupalCon Vienna, with her name and "Build Winner 2025" on the big screen behind her.](../../assets/blog/five-years-in-drupal/award-stage.jpg 'Photo: Baris Tosun')
 
 The Build category is for builders and makers. Developers, architects, or even HR specialists recruiting talent to build an innovative Drupal agency can be nominated, and so can community members who help build a thriving Drupal community.
@@ -67,6 +65,8 @@ The Build category is for builders and makers. Developers, architects, or even H
 ![The Women in Drupal Award winners on stage, holding flowers and certificates.](../../assets/blog/five-years-in-drupal/award-winners.jpg 'Photo: Daniel Lemon')
 
 This recognition truly belongs to the incredible community that has been with me every step of my Drupal adventure. This is what I wrote after the award, and every word still stands.
+
+![Sinduri holding her award next to Klaus Purer, in front of the DrupalCon Vienna backdrop.](../../assets/blog/five-years-in-drupal/with-klausi.jpg 'Photo: Klaus Purer')
 
 Thank you JAKALA and Kitt Ralkov for creating this beautiful initiative that celebrates women in Drupal. To the jury members and previous winners Esmeralda Tijhoff, Pamela Barone, and Alla Petrovska 🇺🇦, thank you for considering me for this award. Being recognized alongside the brilliant Jess (xjm) and Emma Horrell feels so humbling.
 
