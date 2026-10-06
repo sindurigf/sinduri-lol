@@ -1,6 +1,9 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { BLOG_CATEGORIES, type BlogCategory } from '../content.config';
+import { categoryLabel } from './labels';
 import { BLOG_PATH, categoryHref, postHref } from './paths';
+
+export { categoryLabel };
 
 export type BlogPost = CollectionEntry<'blog'>;
 
@@ -45,31 +48,6 @@ interface CategoryFilterOption {
   href: string;
   category: BlogCategory | null;
 }
-
-/* Sentence case for the unstyled <title>; visible uses are uppercase CSS. */
-/* Chicago title case keeps these lower case unless they open the label. */
-const TITLE_CASE_SMALL_WORDS = new Set([
-  'a',
-  'an',
-  'and',
-  'for',
-  'in',
-  'of',
-  'on',
-  'or',
-  'the',
-  'to',
-]);
-
-export const categoryLabel = (category: string): string =>
-  category
-    .split('-')
-    .map((word, index) =>
-      index > 0 && TITLE_CASE_SMALL_WORDS.has(word)
-        ? word
-        : word.charAt(0).toUpperCase() + word.slice(1),
-    )
-    .join(' ');
 
 /* Proper nouns; other tags use `categoryLabel`. */
 const TAG_LABELS: Record<string, string> = {
