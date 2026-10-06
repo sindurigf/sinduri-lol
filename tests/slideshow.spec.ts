@@ -212,7 +212,7 @@ test.describe('the talk slideshow', () => {
     await open(page, '#slide-11');
     await expect(visible(page)).toHaveId('slide-11');
     await expect(page.locator('[data-deck-part]')).toHaveText(
-      'Part 2: The fellowship',
+      'Part 2: The Fellowship',
     );
     await expect(visible(page).locator('h2')).toBeInViewport();
   });
