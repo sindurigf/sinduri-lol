@@ -170,6 +170,7 @@ const problems = [
 if (problems.length) fail(`${out}: ${problems.join('; ')}.`);
 
 const target = join(OUT_DIR, `${deck}.pdf`);
+mkdirSync(OUT_DIR, { recursive: true });
 renameSync(out, target);
 console.log(
   `publish:talk: ${target}, ${pages} pages, ${Math.round(bytes.length / BYTES_PER_KB)} KB. ` +
