@@ -136,9 +136,12 @@ Rules:
 - Editorial copy (posts, About, Career, taglines, bios, anything in Sinduri's
   voice) is never invented. It is drafted only from her own words and follows
   [docs/VOICE.md](docs/VOICE.md); she approves every line.
-- New images, video, audio or editorial text: ask the owner whether AI made or
-  edited it. If so, label it on the page and in
+- New images, video or audio: ask the owner whether AI made or edited it. If
+  so, label it on the page and in
   [AI_DISCLOSURE.md](AI_DISCLOSURE.md#keeping-this-current) (EU AI Act Art. 50).
+- Editorial text Claude drafts or edits needs the owner's approval line by line.
+  She holds editorial responsibility, so it needs no page label (EU AI Act
+  Art. 50(4)); AI_DISCLOSURE.md records it.
 
 ## Hard rules
 

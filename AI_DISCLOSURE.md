@@ -1,49 +1,41 @@
 # AI disclosure
 
-How AI tooling was used to build this repository.
+How AI tooling was used to build this site.
 
-| Item   | Detail                                                                                                                                                       |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Model  | Claude (Anthropic)                                                                                                                                           |
-| Tool   | Claude Code, as a VS Code extension                                                                                                                          |
-| Design | Stitch (Google) for design, Claude Design (Anthropic) for refinement, as on `/credits`                                                                       |
-| Scope  | Scaffolding, components, design tokens, functional microcopy, `/accessibility` and `/privacy` disclosure, the About cat drawings, docs, a11y fixes and tests |
+| Item  | Detail                                                                                                                                   |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Model | Claude (Anthropic)                                                                                                                       |
+| Tools | Claude Code; Stitch (Google) and Claude Design (Anthropic) for design                                                                    |
+| Scope | Code, tests, docs, functional microcopy, the `/accessibility` and `/privacy` text, the About cat drawings, and editing my editorial copy |
 
 ## Review
 
-- I direct the work: every design, behaviour and copy change is my decision,
-  reviewed in the browser before it ships.
-- I review changes by what they do, not line by line. Every change must pass the
-  build, typecheck, convention and format checks, and the test suites, including
-  automated WCAG 2.2 AA checks in Chromium, Firefox and WebKit. The code also
-  goes through independent adversarial reviews, and their findings are fixed
-  before it is published.
-- Review findings, from a person, a tool or an agent, are checked against the
-  code before they are acted on;
-  [AGENTS.md](AGENTS.md#review-findings) says how.
-- Automated checks do not cover everything:
-  [ACCESSIBILITY.md](ACCESSIBILITY.md#7-known-gaps) lists what still needs
-  manual testing.
+- Every change is my decision, reviewed in the browser. It must pass the build,
+  checks and test suites, including automated WCAG 2.2 AA checks in Chromium,
+  Firefox and WebKit, and independent reviews.
+- Review findings are checked against the code before anyone acts on them
+  ([AGENTS.md](AGENTS.md#review-findings)).
+- What automated checks miss is in
+  [ACCESSIBILITY.md](ACCESSIBILITY.md#7-known-gaps).
+
+## Editorial copy
+
+- The words are mine. Claude drafted some of them from my answers and edited
+  them for clarity; I approved every line and am responsible for it.
 
 ## Attribution
 
-- Recorded here once for the repository, not per commit.
-- Commits carry no AI trailer ([AGENTS.md](AGENTS.md#commits)).
-- A missing trailer says nothing about whether AI was involved.
-- A `Co-Authored-By:` naming a person is kept.
+- Recorded here once. Commits carry no AI trailer, so a missing trailer says
+  nothing either way; a `Co-Authored-By:` naming a person is kept.
 
-## No AI at runtime
+## At runtime
 
-- The site is a static build; no model runs, in the browser or on the server.
-- No visitor data is sent to a model.
-- No AI-written editorial copy is served. Functional microcopy and the
-  `/accessibility` and `/privacy` disclosure are agent-written by design
-  ([AGENTS.md](AGENTS.md#copy)).
-- One AI-made image set is served: the drawn, animated cats on `/about/`,
-  labelled on that page as drawn with AI. The cat photos are real.
+- No AI runs on the site, and no visitor data is sent to a model.
+- The drawn, animated cats on `/about/` are AI-made and labelled there; the
+  cat photos are real.
 
 ## Keeping this current
 
-Update this file in the same commit when the model, tool or scope changes, when
-AI writes editorial copy that ships (label it on the page too), when any AI runs
-at runtime, or when the review process changes.
+Update this file in the same commit when the tools, scope, review or runtime
+use change. AI-made images, and any editorial text I have not approved line by
+line, are also labelled on the page.
