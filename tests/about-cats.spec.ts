@@ -883,7 +883,7 @@ test.describe('About cats', () => {
       ).toHaveAccessibleName(`Wake ${NAMES[id]}`);
       await expect(
         page.locator(`#cat-spot-${id} .cat-prop`),
-        `a toy or box stayed out after ${NAMES[id]} fell asleep`,
+        `a toy or prop stayed out after ${NAMES[id]} fell asleep`,
       ).toHaveCount(0);
       await control.click();
       await expectMood(
@@ -1113,7 +1113,7 @@ test.describe('About cats', () => {
     await tricksButton(page, id).click();
     await expect(list).toBeVisible();
     await expect(
-      list.getByRole('button', { name: TRICKS.hop.label }),
+      list.getByRole('button', { name: TRICKS.look.label }),
     ).toBeAttached();
     await expect(
       list.getByRole('button', { name: TRICKS.fly.label }),
