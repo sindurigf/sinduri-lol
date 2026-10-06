@@ -89,7 +89,7 @@ test.describe('the talk slideshow', () => {
     await expect(visible(page)).toHaveId('slide-2');
     await expect(next(page)).toBeFocused();
     await expect(page.locator('[data-deck-status]')).toHaveText(
-      /^Slide 2 of \d+: About me$/,
+      /^Slide 2 of \d+: About Me$/,
     );
     await expect(page.locator('[data-deck-count]')).toHaveText(/^2 \/ \d+$/);
     expect(new URL(page.url()).hash).toBe('#slide-2');
@@ -212,7 +212,7 @@ test.describe('the talk slideshow', () => {
     await open(page, '#slide-11');
     await expect(visible(page)).toHaveId('slide-11');
     await expect(page.locator('[data-deck-part]')).toHaveText(
-      'Part 2: The fellowship',
+      'Part 2: The Fellowship',
     );
     await expect(visible(page).locator('h2')).toBeInViewport();
   });
