@@ -199,7 +199,7 @@ A public record of who did what, across code and the invisible work. Contributio
 label: 'Pillar 3'
 ```
 
-# Why Recognition Changes Behaviour
+# Why Recognition Changes Behavior
 
 - Tie recognition to real work
 - Companies get visible standing for what they fund

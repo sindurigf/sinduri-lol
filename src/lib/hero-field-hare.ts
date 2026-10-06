@@ -197,7 +197,7 @@ const drawFace = (
 };
 
 /*
- * Every closed shape fills with the page colour before stroking, or limbs and
+ * Every closed shape fills with the page color before stroking, or limbs and
  * grass show through. Ink is `border` to match the field.
  */
 export const drawHare = (

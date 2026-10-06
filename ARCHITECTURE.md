@@ -58,7 +58,7 @@ This section keeps the mechanisms.
 
 ### Light mode
 
-Dark is the default. Colours and rules:
+Dark is the default. Colors and rules:
 [STYLEGUIDE Light mode](docs/STYLEGUIDE.md#light-mode).
 
 - `data-theme="light"` on `<html>`; `src/styles/light-mode.css`, imported last,
@@ -66,7 +66,7 @@ Dark is the default. Colours and rules:
   variants.
 - Only `<main>` changes; the header, no-JS nav and footer stay dark, except
   the header's bottom edge, which turns `text`.
-- `bunny` and `tile-edge` hold the mode-independent logo-tile colours.
+- `bunny` and `tile-edge` hold the mode-independent logo-tile colors.
 - An inline script in `BaseLayout.astro`'s `<head>` sets `data-theme` from the
   saved choice or `prefers-color-scheme` before the body parses, and adds the
   `js` class the slideshow's pre-hide keys on. Its hash is in `script-src`.
@@ -78,7 +78,7 @@ Dark is the default. Colours and rules:
 - `HeroField.vue` (through `use-hero-field.ts`) reads its palette from its own element and rebuilds when a
   `MutationObserver` sees `data-theme` change. Its ground is `hero-ground`.
   A `(resolution)` media query resizes its canvases when only the pixel ratio
-  changes; in forced colours it is hidden (`tests/hero-media.spec.ts`).
+  changes; in forced colors it is hidden (`tests/hero-media.spec.ts`).
 - `AboutCats.vue` needs neither: its SVG parts carry classes, and
   `about-cats.css` maps them to tokens, so the cats follow the theme in CSS.
 - `playwright.config.ts` sets `colorScheme: 'dark'`; specs that measure light
@@ -113,7 +113,7 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 
 ### Design reference
 
-- Colours: [Colour tokens](docs/STYLEGUIDE.md#colour-tokens),
+- Colors: [Color tokens](docs/STYLEGUIDE.md#color-tokens),
   [Contrast](docs/STYLEGUIDE.md#contrast),
   [Gold surface](docs/STYLEGUIDE.md#gold-surface).
 - Typography: [Type scale](docs/STYLEGUIDE.md#type-scale),
@@ -280,7 +280,7 @@ Commits, copy rules and process: [AGENTS.md](AGENTS.md).
   `webServer` builds, so a literal subset of `ROUTES` is unavoidable; a second
   test derives the real list from the build and fails when the literal falls
   behind. `FRAME_ROUTES` in `tests/failed-images.spec.ts` is the pattern.
-- **CI caches optimised images, not `dist/`.** Each shard's `webServer` runs
+- **CI caches optimized images, not `dist/`.** Each shard's `webServer` runs
   `npm run build`; image generation is nearly all of it. The checks job saves
   `node_modules/.astro/assets` and the shards restore it, so the shards still
   start together. A shared `dist/` artifact would need a build job in front of
@@ -307,7 +307,7 @@ in `wrangler.jsonc`).
 
 ## Assets
 
-- **The suffix names the artwork colour.** `-dark` is `#111111` artwork (goes
+- **The suffix names the artwork color.** `-dark` is `#111111` artwork (goes
   on gold or light); `-white` is `#FFFFFF` artwork (goes on dark). The wrong
   pairing renders invisible.
 - `src/assets/`: rendered artwork, through `astro:assets`, WebP, hashed into
@@ -337,7 +337,7 @@ in `wrangler.jsonc`).
   and pass the result as a prop.
 - Footer links: seven sticker tiles with Simple Icons (CC0) paths, one
   `<symbol>` per link label in `src/assets/social-icons.svg`. The footer hare
-  is an inline `aria-hidden` SVG coloured from `components/footer.css`. The
+  is an inline `aria-hidden` SVG colored from `components/footer.css`. The
   footer runs no JavaScript.
 
 ### Photos and video
@@ -367,17 +367,17 @@ in `wrangler.jsonc`).
 - Credits: `src/lib/credits.ts`, in order of preference (personal site,
   Drupal.org, LinkedIn). Captions and `/credits` read from it. A Markdown
   image title "Photo: name" links `PHOTOGRAPHERS`, "Screenshot: name" links
-  `SCREENSHOT_SOURCES`; a `LICENSED_PHOTOS` file adds its source and licence.
+  `SCREENSHOT_SOURCES`; a `LICENSED_PHOTOS` file adds its source and license.
 - A `LICENSED_PHOTOS` entry, keyed by file name without the extension:
   `photographer`, `title`, `source`, `sourceName` (Flickr, Wikimedia Commons),
-  `licence` (spelled out), `licenceHref` and `changes`. Captions, `/about`,
+  `license` (spelled out), `licenseHref` and `changes`. Captions, `/about`,
   `/brand` and `/credits` read the source site from `sourceName`.
 - **Video** goes in `public/videos/` (none published). Encode AV1 WebM, H.264
   MP4 fallback, WebP poster, WebVTT captions; max 25 MiB a file.
   - Workers static assets answer `Range` with a full `200`; Safari and iOS need
     `206`. So `/videos/*` is in `run_worker_first` and
     `src/lib/video-range.ts` serves one `bytes` range, `416` past the end,
-    honours `If-Range`, else the whole file.
+    honors `If-Range`, else the whole file.
   - Sizes come from `__VIDEO_SIZES__` at build (the ASSETS binding streams
     without `Content-Length`). A re-encoded video needs a rebuild.
   - Slices go through `FixedLengthStream` so the `206` has a length.

@@ -154,7 +154,7 @@ src/
   content.config.ts Content collection schema
   layouts/          BaseLayout: head, header, footer
   lib/              Shared TypeScript
-  licenses/         Licence texts for vendored scripts
+  licenses/         License texts for vendored scripts
   pages/            File-based routes
   plugins/          Markdown plugins
   presenter/        Dev-only presenter view for talks
@@ -195,7 +195,7 @@ slideshow cannot render, naming file, slide and line (`src/lib/slides.ts`).
 - Later slides put settings in a `yaml` code block at the top, never between
   `---` lines (Prettier breaks those).
 - The first slide after the cover sets `part:`. `layout: section` also opens a
-  part, centred under its number; name it `Part N: Title`.
+  part, centered under its number; name it `Part N: Title`.
 - One `#` heading per slide, in the case it should display.
 - A group label is a `**bold**` paragraph. Two or more on a slide become cards.
   `**A good model: ...**` and `**Example: ...**` always become a card. Six or

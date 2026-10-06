@@ -31,11 +31,11 @@ How AI tooling was used to build this site.
 ## At runtime
 
 - No AI runs on the site, and no visitor data is sent to a model.
-- The drawn, animated cats on `/about/` are AI-made and labelled there; the
+- The drawn, animated cats on `/about/` are AI-made and labeled there; the
   cat photos are real.
 
 ## Keeping this current
 
 Update this file in the same commit when the tools, scope, review or runtime
 use change. AI-made images, and any editorial text I have not approved line by
-line, are also labelled on the page.
+line, are also labeled on the page.
