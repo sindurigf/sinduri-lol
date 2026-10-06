@@ -31,8 +31,9 @@ How AI tooling was used to build this site.
 ## At runtime
 
 - No AI runs on the site, and no visitor data is sent to a model.
-- The drawn, animated cats on `/about/` are AI-made and labeled there; the
-  cat photos are real.
+- The drawn, animated cats on `/about/` and their trick icons
+  (`src/lib/about-cats-tricks.json`) are AI-made and labeled there; the cat
+  photos are real.
 
 ## Keeping this current
 
