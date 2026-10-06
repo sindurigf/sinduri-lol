@@ -27,6 +27,7 @@ import {
   reachOf,
   stepTail,
 } from '../src/lib/about-cats-rig';
+import { createIdle, idleOffsets, tickIdle } from '../src/lib/about-cats-idle';
 import { isTricksData, tricksOf } from '../src/lib/about-cats-tricks';
 import tricksData from '../src/lib/about-cats-tricks.json' with { type: 'json' };
 import {
@@ -484,6 +485,47 @@ test(
       expect(isTricksData(body), `accepted ${JSON.stringify(body)}`).toBe(
         false,
       );
+  },
+);
+
+test(
+  'a resting cat idles in small offsets: breath, glance, ear and tail stay in range, and each really moves',
+  NODE,
+  () => {
+    const MAX = { bt: 2, hr: 15, ears: 1, ta: 8 };
+    const SPAN_MS = 120_000;
+    const STEP_MS = 50;
+    for (const roll of [() => 0, () => 0.9, () => 1, Math.random]) {
+      const idle = createIdle();
+      const seen = { bt: 0, hr: 0, ears: 0, tw: 0 };
+      const outOfRange: string[] = [];
+      for (let now = 0; now < SPAN_MS; now += STEP_MS) {
+        tickIdle(idle, now, roll);
+        const o = idleOffsets(idle, now);
+        if (Math.abs(o.bt) > MAX.bt) outOfRange.push(`chest ${o.bt} at ${now}`);
+        if (Math.abs(o.hr) > MAX.hr) outOfRange.push(`head ${o.hr} at ${now}`);
+        if (Math.abs(o.ta) > MAX.ta) outOfRange.push(`tail ${o.ta} at ${now}`);
+        if (o.ears < 0 || o.ears > MAX.ears)
+          outOfRange.push(`ear ${o.ears} at ${now}`);
+        seen.bt = Math.max(seen.bt, Math.abs(o.bt));
+        seen.hr = Math.max(seen.hr, Math.abs(o.hr));
+        seen.ears = Math.max(seen.ears, o.ears);
+        seen.tw = Math.max(seen.tw, o.tw);
+      }
+      expect(outOfRange.slice(0, 3), 'an idle offset left its range').toEqual(
+        [],
+      );
+      expect(seen.bt, 'the chest never moved').toBeGreaterThan(0);
+      expect(seen.ears, 'no ear ever flicked').toBeGreaterThan(0);
+      expect(seen.tw, 'the tail tip never twitched').toBeGreaterThan(0);
+    }
+    const glancing = createIdle();
+    let turned = 0;
+    for (let now = 0; now < SPAN_MS; now += STEP_MS) {
+      tickIdle(glancing, now, () => 0.9);
+      turned = Math.max(turned, Math.abs(idleOffsets(glancing, now).hr));
+    }
+    expect(turned, 'the head never turned').toBeGreaterThan(0);
   },
 );
 
