@@ -27,12 +27,18 @@ import {
   reachOf,
   stepTail,
 } from '../src/lib/about-cats-rig';
-import { createIdle, idleOffsets, tickIdle } from '../src/lib/about-cats-idle';
+import {
+  createIdle,
+  idleFrameMs,
+  idleOffsets,
+  tickIdle,
+} from '../src/lib/about-cats-idle';
 import { isTricksData, tricksOf } from '../src/lib/about-cats-tricks';
 import tricksData from '../src/lib/about-cats-tricks.json' with { type: 'json' };
 import {
   CONTROL_ROOM,
   MAX_OVERHANG,
+  POINTER_IDLE_MS,
   TAIL_REST,
   TRACK_MARGIN,
   cupPush,
@@ -528,6 +534,70 @@ test(
     expect(turned, 'the head never turned').toBeGreaterThan(0);
   },
 );
+
+test(
+  'resting cats do not flick, glance or twitch together, and idle frames slow down while only the breath moves',
+  NODE,
+  () => {
+    const START_MS = 10_000;
+    const firstFlick = [0.1, 0.5, 0.9].map((fixed) => {
+      const idle = createIdle();
+      for (let now = START_MS; now < START_MS + 20_000; now += 50) {
+        tickIdle(idle, now, () => fixed);
+        if (idleOffsets(idle, now).ears > 0) return now;
+      }
+      return Infinity;
+    });
+    expect(
+      new Set(firstFlick).size,
+      `cats flicked an ear together: ${firstFlick.join(', ')}`,
+    ).toBe(firstFlick.length);
+    expect(
+      Math.min(...firstFlick),
+      'a cat flicked on its first idle frame',
+    ).toBeGreaterThan(START_MS);
+    const idle = createIdle();
+    tickIdle(idle, START_MS, () => 0.5);
+    const calm = idleFrameMs(idle, START_MS);
+    let busy = Infinity;
+    for (let now = START_MS; now < START_MS + 20_000; now += 50) {
+      tickIdle(idle, now, () => 0.5);
+      busy = Math.min(busy, idleFrameMs(idle, now));
+    }
+    expect(
+      busy,
+      'a flick or glance drew no faster than the breath',
+    ).toBeLessThan(calm);
+  },
+);
+
+/** Counts the changes to one cat's drawing (its SVG, props included, not its controls) over a window: a redraw rewrites its paths. */
+const MUTATION_WINDOW_MS = 1200;
+const drawnIn = (page: Page, id: (typeof CATS)[number]) =>
+  page.evaluate(
+    ([spotId, ms]) =>
+      new Promise<number>((resolve) => {
+        const drawing = document
+          .getElementById(String(spotId))
+          ?.querySelector('.cat-svg');
+        let count = 0;
+        const observer = new MutationObserver((records) => {
+          count += records.length;
+        });
+        if (drawing)
+          observer.observe(drawing, {
+            attributes: true,
+            childList: true,
+            subtree: true,
+          });
+        setTimeout(() => {
+          count += observer.takeRecords().length;
+          observer.disconnect();
+          resolve(count);
+        }, Number(ms));
+      }),
+    [`cat-spot-${id}`, MUTATION_WINDOW_MS] as const,
+  );
 
 test.describe('About cats', () => {
   test('each cat is a named button that opens its photo in a dialog, Close first, and returns focus', async ({
@@ -1161,6 +1231,41 @@ test.describe('About cats', () => {
       list.getByRole('button', { name: TRICKS.fly.label }),
       'a trick that cannot fit the band is offered',
     ).toHaveCount(0);
+  });
+
+  test('a held cat, a sleeping cat and every cat under reduced motion are not redrawn (SC 2.2.2, 2.3.3)', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ viewport: MINERVA_AND_HELA });
+    const page = await context.newPage();
+    await gotoSettled(page, ROUTE);
+    await pointAt(page, 'minerva');
+    /* A held cat turns to the pointer, relaxes once it has been idle for POINTER_IDLE_MS, and settles its tail. */
+    await page.waitForTimeout(POINTER_IDLE_MS + SETTLE_MS);
+    expect(
+      await drawnIn(page, 'minerva'),
+      'a held cat that has settled was redrawn',
+    ).toBe(0);
+    await napControl(page, 'hela').click();
+    await expectMood(page, 'hela', 'asleep', 'Hela did not fall asleep');
+    /* Lying down and the tail's settling end within 5 s (SC 2.2.2). */
+    await page.waitForTimeout(SC_2_2_2_MS);
+    expect(await drawnIn(page, 'hela'), 'a sleeping cat was redrawn').toBe(0);
+    await context.close();
+
+    const still = await browser.newContext({
+      reducedMotion: 'reduce',
+      viewport: MINERVA_AND_HELA,
+    });
+    const quiet = await still.newPage();
+    await gotoSettled(quiet, ROUTE);
+    await quiet.waitForTimeout(STILL_WINDOW_MS);
+    for (const id of CATS)
+      expect(
+        await drawnIn(quiet, id),
+        `${NAMES[id]} was redrawn under reduced motion`,
+      ).toBe(0);
+    await still.close();
   });
 
   test('under reduced motion the cats sit still with no sleep control', async ({

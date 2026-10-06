@@ -47,15 +47,18 @@ export interface IdleOffsets {
 
 type Range = readonly [number, number];
 
+/** A timer not yet started: the first tick schedules it, so cats never flick and glance together. */
+const UNSET = -1;
+
 export const createIdle = (): IdleState => ({
   breathPhase: Math.random() * BREATH_MS,
-  nextEarFlick: 0,
+  nextEarFlick: UNSET,
   earFlickUntil: 0,
-  nextGlance: 0,
+  nextGlance: UNSET,
   glanceFrom: 0,
   glanceTo: 0,
   glanceAt: 0,
-  nextTwitch: 0,
+  nextTwitch: UNSET,
   twitchUntil: 0,
 });
 
@@ -74,6 +77,12 @@ export const tickIdle = (
   now: number,
   roll: () => number = Math.random,
 ): void => {
+  if (state.nextEarFlick === UNSET)
+    state.nextEarFlick = now + within(EAR_FLICK_EVERY_MS, roll());
+  if (state.nextGlance === UNSET)
+    state.nextGlance = now + within(GLANCE_EVERY_MS, roll());
+  if (state.nextTwitch === UNSET)
+    state.nextTwitch = now + within(TWITCH_EVERY_MS, roll());
   if (now >= state.nextEarFlick) {
     state.earFlickUntil = now + EAR_FLICK_MS;
     state.nextEarFlick = now + within(EAR_FLICK_EVERY_MS, roll());
@@ -109,3 +118,14 @@ export const idleOffsets = (state: IdleState, now: number): IdleOffsets => {
     tw: now < state.twitchUntil ? TWITCH_AMPLITUDE : 0,
   };
 };
+
+/** Slow while only the breath and sway move, quicker for a flick, glance or twitch. */
+const CALM_FRAME_MS = 100;
+const BUSY_FRAME_MS = 50;
+
+export const idleFrameMs = (state: IdleState, now: number): number =>
+  now < state.earFlickUntil ||
+  now < state.twitchUntil ||
+  now - state.glanceAt < GLANCE_MS
+    ? BUSY_FRAME_MS
+    : CALM_FRAME_MS;
