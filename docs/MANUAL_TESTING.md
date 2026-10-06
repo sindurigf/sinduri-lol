@@ -345,12 +345,12 @@ Setup: Firefox, 1280px, `/404` (preview serves it with 200;
 `tests/not-found.spec.ts` covers the status).
 
 - [ ] Reading from the top, it is soon clear the address was wrong. → SC 1.3.1
-- [ ] `Orca+Slash` includes "Page not found". → SC 2.4.2
+- [ ] `Orca+Slash` includes "Page Not Found". → SC 2.4.2
 - [ ] One heading, the `h1` "These are not the droids you are looking for."
       Judge whether it alone makes the reason clear. → SC 1.3.1, 2.4.6
 - [ ] `G` finds only the header mark; the gold bunny tile is silent. → SC 1.1.1
 - [ ] "Episode 404" reads as text. Record how "404" is spoken.
-- [ ] Three links: "Go to the Homepage", "Read the blog" (a list of two), and
+- [ ] Three links: "Go to the Homepage", "Read the Blog" (a list of two), and
       "tell me about the broken link" in the body. Judge the third hardest. → SC 2.4.4, 1.3.1
 
 Heard: `________________________`
