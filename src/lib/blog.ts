@@ -39,7 +39,7 @@ export const cardProps = (post: BlogPost) => ({
   readingTime: post.data.readingTime,
 });
 
-/** `category: null` is the "All posts" row. */
+/** `category: null` is the "All Posts" row. */
 interface CategoryFilterOption {
   label: string;
   href: string;
@@ -96,7 +96,7 @@ export const getPostsByTag = async (): Promise<Map<string, BlogPost[]>> => {
 };
 
 export const CATEGORY_FILTERS: readonly CategoryFilterOption[] = [
-  { label: 'All posts', href: BLOG_PATH, category: null },
+  { label: 'All Posts', href: BLOG_PATH, category: null },
   ...BLOG_CATEGORIES.map((category) => ({
     label: categoryLabel(category),
     href: categoryHref(category),
