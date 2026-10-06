@@ -144,14 +144,14 @@ test.describe('post-figure', NODE, () => {
     ).toContain('80rem');
   });
 
-  test('a Creative Commons photo credits its source, licence and changes', () => {
+  test('a Creative Commons photo credits its source, license and changes', () => {
     const photo: LicensedPhoto = {
       photographer: 'Karl Hepworth',
       title: 'A Fixture Photo',
       source: 'https://photos.example/fixture',
       sourceName: 'Photos Example',
-      licence: 'Creative Commons Attribution 4.0',
-      licenceHref: 'https://creativecommons.org/licenses/by/4.0/',
+      license: 'Creative Commons Attribution 4.0',
+      licenseHref: 'https://creativecommons.org/licenses/by/4.0/',
       changes: 'cropped',
     };
     const nodes: Node[] = captionChildren(
@@ -165,7 +165,7 @@ test.describe('post-figure', NODE, () => {
         : (node.children ?? []).map(textOf).join('');
     expect(
       nodes.map(textOf).join(''),
-      'the caption does not name the source, licence and changes',
+      'the caption does not name the source, license and changes',
     ).toBe(
       'Photo: Karl Hepworth (A Fixture Photo on Photos Example, Creative Commons Attribution 4.0, cropped)',
     );
@@ -173,18 +173,18 @@ test.describe('post-figure', NODE, () => {
       nodes
         .filter((node) => node.tagName === 'a')
         .map((a) => a.properties?.href),
-      'the photographer, source and licence are not all linked',
+      'the photographer, source and license are not all linked',
     ).toEqual([
       PHOTOGRAPHERS['Karl Hepworth'],
       photo.source,
-      photo.licenceHref,
+      photo.licenseHref,
     ]);
   });
 
-  test('a photo not in LICENSED_PHOTOS gets no licence text', () => {
+  test('a photo not in LICENSED_PHOTOS gets no license text', () => {
     expect(
       captionChildren('Photo: Karl Hepworth', 'other.jpg', {}).length,
-      'a licence was added to an unlicensed photo',
+      'a license was added to an unlicensed photo',
     ).toBe(2);
   });
 

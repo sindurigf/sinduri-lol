@@ -123,7 +123,7 @@ const sceneFor = (width: number, height: number): Scene => {
   };
 };
 
-const clumpCentres = (
+const clumpCenters = (
   { boxWidth }: Scene,
   rng: () => number,
   density: number,
@@ -134,7 +134,7 @@ const clumpCentres = (
     () => -margin + rng() * (boxWidth + margin * 2),
   );
 
-/* About three quarters of stems cluster on clump centres; the rest scatter. */
+/* About three quarters of stems cluster on clump centers; the rest scatter. */
 const clumpPlacer = (
   { boxWidth, world }: Scene,
   clumps: readonly number[],
@@ -143,9 +143,9 @@ const clumpPlacer = (
 ): ((spread: number) => number) => {
   return (spread) => {
     if (rng() < STRAY_ODDS) return -margin + rng() * (boxWidth + margin * 2);
-    const centre = clumps[Math.floor(rng() * clumps.length)] ?? boxWidth / 2;
-    /* Difference of two uniforms: triangular, densest at the centre. */
-    return centre + (rng() - rng()) * spread * world;
+    const center = clumps[Math.floor(rng() * clumps.length)] ?? boxWidth / 2;
+    /* Difference of two uniforms: triangular, densest at the center. */
+    return center + (rng() - rng()) * spread * world;
   };
 };
 
@@ -179,7 +179,7 @@ const buildStems = (scene: Scene): Stem[] => {
   const density = scene.boxWidth / world / REFERENCE_WIDTH;
   const margin = CLUMP_SPREAD * world;
   const rng = random(FIELD_SEED);
-  const clumps = clumpCentres(scene, rng, density, margin);
+  const clumps = clumpCenters(scene, rng, density, margin);
   const built: Stem[] = [];
 
   const sow = (next: () => number, share: number, nearTip = -Infinity) => {

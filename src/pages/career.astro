@@ -71,18 +71,18 @@ const SKILLS = [
   'Community and ecosystem management',
 ] as const;
 
-/* `honour` renders in `lang="la"` (SC 3.1.2). */
+/* `honor` renders in `lang="la"` (SC 3.1.2). */
 const EDUCATION = [
   {
     award: 'Java',
     detail: 'Code Factory, Austria, 2020.',
-    honour: 'Summa cum laude',
+    honor: 'Summa cum laude',
   },
   {
     award: 'Full Stack Web Development',
     detail:
       'Code Factory, Austria, 2019. HTML, CSS, JS, Bootstrap, TypeScript, Angular, PHP, Symfony, MySQL.',
-    honour: 'Summa cum laude',
+    honor: 'Summa cum laude',
   },
   /* From the journey post, not the CV, which names no school for it. */
   { award: 'Python', detail: 'Short course, 2019.' },
@@ -114,12 +114,12 @@ const OPEN_SOURCE = [
   {
     award: 'Drupal Switzerland',
     detail:
-      'Active in the Swiss Drupal community, where I gained most of my event organising experience.',
+      'Active in the Swiss Drupal community, where I gained most of my event organizing experience.',
   },
   {
-    award: 'Event organising',
+    award: 'Event organizing',
     detail:
-      'Volunteered at Drupal Dev Days Vienna in 2023, then helped organise Drupal Mountain Camp, Drupal Dev Days and DrupalCamp Berlin.',
+      'Volunteered at Drupal Dev Days Vienna in 2023, then helped organize Drupal Mountain Camp, Drupal Dev Days and DrupalCamp Berlin.',
   },
 ] as const;
 ---
@@ -135,7 +135,7 @@ const OPEN_SOURCE = [
       <span class="block">Continuous Learner.</span>
     </p>
 
-    {/* Size, not only colour, carries the hierarchy: forced colours flattens colour. */}
+    {/* Size, not only color, carries the hierarchy: forced colors flattens color. */}
     <p class="mt-4 text-body text-gold-muted">
       Web development, product management and open source community programs.
     </p>
@@ -215,10 +215,10 @@ const OPEN_SOURCE = [
               <strong class="font-black text-text">{item.award}</strong>
               {': '}
               {item.detail}
-              {'honour' in item ? (
+              {'honor' in item ? (
                 <>
                   {' '}
-                  <span lang="la">{item.honour}</span>.
+                  <span lang="la">{item.honor}</span>.
                 </>
               ) : null}
             </li>

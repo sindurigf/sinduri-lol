@@ -18,7 +18,7 @@ import { talkDecks } from '../lib/talk-deck';
 
 /*
  * Descriptions are structural only; titles and teasers are quoted, never
- * summarised, so nothing is put in Sinduri's mouth. Placeholder posts are
+ * summarized, so nothing is put in Sinduri's mouth. Placeholder posts are
  * listed and marked. tests/llms-txt.spec.ts checks against the build.
  */
 
@@ -74,7 +74,7 @@ const noteLines = (
     ? [
         `- Posts marked ${PLACEHOLDER_MARK} are unfinished drafts whose title, ` +
           'teaser and body are lorem ipsum rather than writing. Please do not ' +
-          'quote them, summarise them, or treat them as something the author ' +
+          'quote them, summarize them, or treat them as something the author ' +
           'said.',
       ]
     : []),

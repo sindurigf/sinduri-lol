@@ -9,7 +9,7 @@ RANGE=${1:-origin/main..HEAD}
 
 TYPES='feat|fix|docs|style|refactor|chore|perf|security|config|revert|test'
 
-# "type: Capitalised sentence with a full stop." No scopes.
+# "type: Capitalized sentence with a full stop." No scopes.
 SUBJECT_RE="^($TYPES): [A-Z].*\.$"
 
 ATTRIBUTION_RE='^[[:space:]]*co-authored-by:.*(claude|anthropic)|generated with \[?claude code'

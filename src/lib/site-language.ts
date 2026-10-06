@@ -1,5 +1,5 @@
 /* BCP 47. The only source for every language declaration on the site. */
-export const SITE_LANGUAGE = 'en-GB';
+export const SITE_LANGUAGE = 'en-US';
 
 export const OG_LOCALE = SITE_LANGUAGE.replace('-', '_');
 

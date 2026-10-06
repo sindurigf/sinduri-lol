@@ -91,7 +91,7 @@ Nobody thinks about governance while things go well. It is what decides how a pr
 - Name what is unacceptable, including harassment, discrimination, personal attacks and sustained disruption.
 - Enforce it. A code nobody acts on is worse than having none, because it signals a safety that does not exist.
 
-The [Contributor Covenant](https://www.contributor-covenant.org/) is a widely adopted starting point. It sets out expected behaviour, unacceptable behaviour and a path to report and act on violations.
+The [Contributor Covenant](https://www.contributor-covenant.org/) is a widely adopted starting point. It sets out expected behavior, unacceptable behavior and a path to report and act on violations.
 
 ### 2. Contributor Experience
 
@@ -115,16 +115,16 @@ I know that feeling from my own start. My first contribution was in 2021, during
 
 ### 3. Recognition
 
-Most communities recognise the visible work: features, code and commits. But most of what keeps a project alive is invisible: review, triage, documentation and mentoring. None of it shows up in a commit graph. Invisible work gets undervalued, and once it is undervalued, people stop doing it.
+Most communities recognize the visible work: features, code and commits. But most of what keeps a project alive is invisible: review, triage, documentation and mentoring. None of it shows up in a commit graph. Invisible work gets undervalued, and once it is undervalued, people stop doing it.
 
-The fix is to make it visible. Record who actually did the work, and let that credit reach the companies funding it. [Drupal's contribution credit system](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues) does this publicly and at scale. It credits every issue, for code and for the invisible work, and credits sponsoring organisations alongside individuals.
+The fix is to make it visible. Record who actually did the work, and let that credit reach the companies funding it. [Drupal's contribution credit system](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues) does this publicly and at scale. It credits every issue, for code and for the invisible work, and credits sponsoring organizations alongside individuals.
 
 Recognition is not just being nice. It quietly changes what people do:
 
 - **Individuals** get credit tied to real work. The system records it, so nobody has to advocate for themselves, and the unglamorous work becomes worth doing.
 - **Companies** get visible standing for what they fund, so their business interest lines up with the health of the project.
 
-With credit for individuals and standing for companies, recognition stops being a favour you ask for. It becomes something the system produces on its own. The pattern I keep seeing is that when a company treats contribution as real work, with time and budget behind it, its involvement lasts. Good intentions bring people in. Good incentives make contribution last.
+With credit for individuals and standing for companies, recognition stops being a favor you ask for. It becomes something the system produces on its own. The pattern I keep seeing is that when a company treats contribution as real work, with time and budget behind it, its involvement lasts. Good intentions bring people in. Good incentives make contribution last.
 
 ### 4. Local Community
 
@@ -132,7 +132,7 @@ People do not find belonging at a 2,000-person conference. They find it in small
 
 ![About twenty Drupal Austria meetup attendees posing together in a room, one of them holding a Drupal Austria sign.](../../assets/blog/open-source-is-not-just-code/drupal-austria-meetup.webp 'Photo: lowfidelity')
 
-Drupal is the community I know best. [DrupalCon](https://events.drupal.org/) is the flagship, and it keeps pulling people in: at DrupalCon Rotterdam, 27% of attendees were new to DrupalCon. But the real engine is the local camps, run by volunteers and kept deliberately small. That is where new people get pulled in, and where most organisers, including me, learned how any of this works.
+Drupal is the community I know best. [DrupalCon](https://events.drupal.org/) is the flagship, and it keeps pulling people in: at DrupalCon Rotterdam, 27% of attendees were new to DrupalCon. But the real engine is the local camps, run by volunteers and kept deliberately small. That is where new people get pulled in, and where most organizers, including me, learned how any of this works.
 
 Drupal events, big and small, also give newcomers three ways to start, instead of leaving them to watch from the back of the room. Each one lowers a different barrier:
 
@@ -158,7 +158,7 @@ Great code that nobody understands just sits there unused, so explaining it shou
 
 ### 6. Funding and Sponsorship
 
-Funding is the pillar we are shyest about. Time is not free. Someone always pays, either in money or in unpaid evenings and weekends. I pay my own way and take time off to attend Drupal events. Without sustainable funding, we are asking volunteers to quietly subsidise infrastructure everyone depends on.
+Funding is the pillar we are shyest about. Time is not free. Someone always pays, either in money or in unpaid evenings and weekends. I pay my own way and take time off to attend Drupal events. Without sustainable funding, we are asking volunteers to quietly subsidize infrastructure everyone depends on.
 
 Fund the boring, critical work, not just the shiny new features:
 
@@ -216,11 +216,11 @@ It is easy to say you have these pillars. Four signals tell you whether they are
 
 Watch the trend, not a single snapshot. Together, these four signals tell you whether the pillars are actually working, or just look good on paper.
 
-## What to Prioritise, and What Can Wait
+## What to Prioritize, and What Can Wait
 
 Not everything deserves your attention at once.
 
-**Optimise early.** These are cheap now and expensive to fix later:
+**Optimize early.** These are cheap now and expensive to fix later:
 
 - clear contribution paths
 - expectations written down
@@ -248,7 +248,7 @@ Here is the difference between thriving and decaying projects, pillar by pillar:
 | --------------------- | ---------------------------- |
 | Share decisions       | Concentrate decisions        |
 | Make it easy to help  | Leave contributors guessing  |
-| Recognise the work    | Let invisible work go unseen |
+| Recognize the work    | Let invisible work go unseen |
 | Build local belonging | Stay purely global           |
 | Communicate the why   | Stay hard to understand      |
 | Fund the work         | Rely on unpaid time          |
@@ -306,7 +306,7 @@ This article is based on my talk, _Open Source Is Not Just Code: Designing Commu
 - Kubernetes, [Contributor ladder](https://github.com/kubernetes/community/blob/master/community-membership.md)
 - Drupal, [Contribution credit](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues)
 
-### Drupal Programmes
+### Drupal Programs
 
 - [DrupalCon and community events](https://events.drupal.org/)
 - [Mentoring and first-time contributor workshops](https://www.drupal.org/community/contributor-guide/role/mentor)

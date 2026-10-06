@@ -24,7 +24,7 @@ I always wanted to become a developer, but I never felt ready to make the switch
 
 Klaus Purer, a Drupal veteran who is now my mentor, found me on LinkedIn and interviewed me for a configuration manager role at Jobiqo. The role involved setting up third-party APIs and working as a backend developer. He gave me a test in Drupal. I had absolutely no idea what Drupal was at the time, but I did well enough to get the job.
 
-![Sinduri with colleagues in matching teal T-shirts, sitting and standing on a flight of colourfully painted stairs.](../../assets/blog/five-years-in-drupal/jobiqo-team.jpg)
+![Sinduri with colleagues in matching teal T-shirts, sitting and standing on a flight of colorfully painted stairs.](../../assets/blog/five-years-in-drupal/jobiqo-team.jpg)
 
 I worked there for two and a half years, as a configuration manager and then as a developer, and by the end Drupal and its community were a big part of my life.
 
@@ -40,7 +40,7 @@ At drunomics I worked on mossbo, our cloud CMS, and the projects that tie into i
 
 ## Saying Yes to the Community
 
-In 2023 Klausi asked me to volunteer at Drupal Dev Days Vienna. I enjoyed working with the community so much that I started saying yes to every organising committee that asked for help. Soon I was helping organise Drupal Mountain Camp, Drupal Dev Days and DrupalCamp Berlin, all in the same year.
+In 2023 Klausi asked me to volunteer at Drupal Dev Days Vienna. I enjoyed working with the community so much that I started saying yes to every organizing committee that asked for help. Soon I was helping organize Drupal Mountain Camp, Drupal Dev Days and DrupalCamp Berlin, all in the same year.
 
 ![Drupal Mountain Camp attendees gathered together in the snow, with a mountain behind them.](../../assets/photos/drupal-mountain-camp.webp 'Photo: Patrick Itten')
 
@@ -50,7 +50,7 @@ The Swiss community adopted me and taught me so much about events. The Austrian 
 
 Why do I keep showing up? It comes down to two things: my passion for open source and the incredible strength of this community. Drupal would not exist without people contributing code, ideas and energy, and community events create the perfect space for that collaboration to happen.
 
-I was reminded of this at a workshop organised by Mikko Hämäläinen, CEO of Druid, at Drupal Mountain Camp, where we discussed everyone's motivations for contributing. Despite our different backgrounds and journeys, we all shared the same core goal: contribute to something meaningful while growing personally in the process. That is what makes these events special: they are about more than networking. They turn our shared passion for Drupal into work that improves the project and the community.
+I was reminded of this at a workshop organized by Mikko Hämäläinen, CEO of Druid, at Drupal Mountain Camp, where we discussed everyone's motivations for contributing. Despite our different backgrounds and journeys, we all shared the same core goal: contribute to something meaningful while growing personally in the process. That is what makes these events special: they are about more than networking. They turn our shared passion for Drupal into work that improves the project and the community.
 
 ![DrupalCamp Berlin attendees gathered in a courtyard in front of a white tent.](../../assets/blog/five-years-in-drupal/drupalcamp-berlin.jpg)
 

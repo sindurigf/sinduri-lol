@@ -16,7 +16,7 @@ export interface HeroPalette {
   readonly background: string;
   /*
    * Edges keep their hue: canvas gradients interpolate unpremultiplied, so
-   * `transparent` would grey them.
+   * `transparent` would gray them.
    */
   /** `--color-hero-veil`. */
   readonly veil: string;
@@ -111,7 +111,7 @@ export const BANDS = {
   NEAR: { count: 8, near: 0, far: 1.7, height: [0.78, 0.6], spread: 0 },
 } as const;
 
-/** Clump centres at the reference width. */
+/** Clump centers at the reference width. */
 export const CLUMP_COUNT = 16;
 /** Share of stems placed anywhere, not in a clump. */
 export const STRAY_ODDS = 0.26;
@@ -267,7 +267,7 @@ export const SIT = { rate: 1.3, gain: 1.7 } as const;
 /* About the hare's body width, so it reads as touch, not a gust. */
 export const REACH = { base: 58, bySize: 110 } as const;
 
-/** Stem tone above which a bud takes the bud, then the muted colour. */
+/** Stem tone above which a bud takes the bud, then the muted color. */
 export const BUD_TONE = { bud: 0.78, subtle: 0.5 } as const;
 
 /** By stem height in reference units, tallest first; shorter stems get none. */

@@ -14,8 +14,8 @@ const {
   title,
   source,
   sourceName,
-  licence,
-  licenceHref,
+  license,
+  licenseHref,
   changes,
 } = LICENSED_PHOTOS[Astro.props.photo];
 ---
@@ -23,4 +23,4 @@ const {
 {PHOTO_CREDIT_PREFIX}
 <a href={photographerHref(photographer)}>{photographer}</a> (
 <a href={source}>{title}</a> on {sourceName},{' '}
-<a href={licenceHref}>{licence}</a>, {changes})
+<a href={licenseHref}>{license}</a>, {changes})

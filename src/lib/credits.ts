@@ -45,15 +45,15 @@ export interface LicensedPhoto {
   /** Where `source` is, e.g. Flickr or Wikimedia Commons. */
   sourceName: string;
   /** Spelled out, e.g. "Creative Commons Attribution 4.0" (SC 3.1.4). */
-  licence: string;
-  licenceHref: string;
-  /** What was changed, as the licence asks, e.g. "resized". */
+  license: string;
+  licenseHref: string;
+  /** What was changed, as the license asks, e.g. "resized". */
   changes: string;
 }
 
 /**
- * Photos used under a Creative Commons licence, keyed by file name without its
- * extension: the caption and /credits link the source and licence and say what changed.
+ * Photos used under a Creative Commons license, keyed by file name without its
+ * extension: the caption and /credits link the source and license and say what changed.
  */
 export const LICENSED_PHOTOS = {
   'drupal-lecture-hall': {
@@ -61,8 +61,8 @@ export const LICENSED_PHOTOS = {
     title: 'DrupalDevDays 2023 Vienna',
     source: 'https://www.flickr.com/photos/beta-robot/53065586392/',
     sourceName: 'Flickr',
-    licence: 'Creative Commons Attribution 2.0',
-    licenceHref: 'https://creativecommons.org/licenses/by/2.0/',
+    license: 'Creative Commons Attribution 2.0',
+    licenseHref: 'https://creativecommons.org/licenses/by/2.0/',
     changes: 'resized',
   },
   'drupalcon-rotterdam-award': {
@@ -70,8 +70,8 @@ export const LICENSED_PHOTOS = {
     title: 'Women in Drupal Award Ceremony - DrupalCon Rotterdam 2026',
     source: 'https://www.flickr.com/photos/200855369@N08/55559653507/',
     sourceName: 'Flickr',
-    licence: 'Creative Commons Attribution-ShareAlike 4.0',
-    licenceHref: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    license: 'Creative Commons Attribution-ShareAlike 4.0',
+    licenseHref: 'https://creativecommons.org/licenses/by-sa/4.0/',
     changes: 'resized',
   },
 } as const satisfies Readonly<Record<string, LicensedPhoto>>;
@@ -100,7 +100,7 @@ export const THANKS = [
     name: 'Alexandru Teodor Ieremia',
     href: 'https://www.linkedin.com/in/alexandru-teodor-ieremia-8581231b4/',
     reason:
-      'Thank you for teaching me frontend and accessibility. I used what I learnt from you to build this site.',
+      'Thank you for teaching me frontend and accessibility. I used what I learned from you to build this site.',
   },
   {
     name: 'Petra Morawa-Zechner',

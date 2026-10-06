@@ -8,7 +8,7 @@ Sinduri's voice. Functional copy follows [AGENTS.md](../AGENTS.md#copy).
 - Fun, cheeky, sassy, warm and direct. Write like a real person, not a company.
 - Warm and positive without going over the top.
 - Humble: credit other people and avoid self-promotion.
-- Humour carries a fact. A joke with nothing true inside it is reworded until
+- Humor carries a fact. A joke with nothing true inside it is reworded until
   it has one.
 - Concrete details over adjectives: Minerva sips wine and turns her nose up at
   meat, not "a sweet cat".
@@ -51,7 +51,7 @@ Sinduri's voice. Functional copy follows [AGENTS.md](../AGENTS.md#copy).
 
 | Rule        | Write                                                         |
 | ----------- | ------------------------------------------------------------- |
-| Spelling    | UK English: organise, recognise, behaviour, favourite         |
+| Spelling    | US English: organize, recognize, behavior, favorite           |
 | Headings    | Chicago title case: "People and Places", "What AI Changes"    |
 | Dashes      | None as punctuation: a comma, a full stop or a new sentence   |
 | Apostrophes | No contractions ("I do not"); possessives only ("the year's") |

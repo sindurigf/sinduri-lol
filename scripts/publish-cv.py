@@ -593,7 +593,7 @@ def verify(output, source):
             for heading in headings:
                 shown = ''.join(''.join(part['chars'] for part in drawn(heading, marks)).split())
                 if shown != ''.join(title(heading).split()):
-                    problems.append(f'{heading.S} is labelled "{title(heading)}" but draws "{shown}".')
+                    problems.append(f'{heading.S} is labeled "{title(heading)}" but draws "{shown}".')
             h1_style = first_text(headings[0], marks)
             h2_styles = {first_text(h, marks) for h in headings[1:]}
             if len(h2_styles) != 1:
