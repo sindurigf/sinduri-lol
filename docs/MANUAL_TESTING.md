@@ -261,7 +261,7 @@ CSS. Dropping uppercase would be a design decision, not a fix.
 **6.4.5 Chrome, other elements.**
 
 - [ ] `/privacy` `h1` ("Privacy"): `________________________`
-- [ ] `/404` "Go to the homepage" (`.btn-primary`): `________________________`
+- [ ] `/404` "Go to the Homepage" (`.btn-primary`): `________________________`
 - [ ] 6.4.3 again at the other verbosity (`Orca+V`): `________________________`
 
 ### 6.5 Skip link
@@ -329,7 +329,7 @@ Setup: Firefox, 1280px, `/blog/open-source-is-not-just-code` (25 headings:
       Every `h3` has an `h2` above it. → SC 1.3.1, 2.4.6
 - [ ] `H` from the top walks the same headings, each with its level. → SC 1.3.1
 - [ ] `Alt+Shift+M` lists ten landmarks: banner, navigation "Primary", main,
-      navigation "Breadcrumb", "In this post", "Tags", contentinfo, "Site",
+      navigation "Breadcrumb", "In This Post", "Tags", contentinfo, "Site",
       "About this site", "Social". No `article` or inner `header`. → SC 1.3.1
 - [ ] From main, `Down` reads breadcrumb, `h1`, teaser, date, body. → SC 1.3.2
 - [ ] The breadcrumb is Home, Blog, Open source. In `Alt+Shift+K`, judge
@@ -350,7 +350,7 @@ Setup: Firefox, 1280px, `/404` (preview serves it with 200;
       Judge whether it alone makes the reason clear. → SC 1.3.1, 2.4.6
 - [ ] `G` finds only the header mark; the gold bunny tile is silent. → SC 1.1.1
 - [ ] "Episode 404" reads as text. Record how "404" is spoken.
-- [ ] Three links: "Go to the homepage", "Read the blog" (a list of two), and
+- [ ] Three links: "Go to the Homepage", "Read the blog" (a list of two), and
       "tell me about the broken link" in the body. Judge the third hardest. → SC 2.4.4, 1.3.1
 
 Heard: `________________________`
@@ -403,13 +403,13 @@ described by its expansion (`src/components/Abbr.astro`).
 - [ ] Escape: the box closes and focus stays on the button. → SC 1.4.13
 - [ ] On a phone, tap "IPv6": the box opens; tap again: it closes. → SC 3.1.4
 
-#### 6.12.2 The "In this post" disclosure
+#### 6.12.2 The "In This Post" disclosure
 
 Setup: `/blog/open-source-is-not-just-code` at 1280px (open), then below 1280px
 (closed). `<nav aria-labelledby>` around `<details>`; the `+`/`−` marker is
 `aria-hidden`.
 
-- [ ] The landmark is named "In this post". → SC 1.3.1
+- [ ] The landmark is named "In This Post". → SC 1.3.1
 - [ ] The summary announces a state (collapsed or expanded). → SC 4.1.2
 - [ ] No "plus", "minus" or stray character in the name. → SC 4.1.2
 - [ ] Enter: state flips; an ordered list of 12 items. → SC 1.3.1

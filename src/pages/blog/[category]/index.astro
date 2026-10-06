@@ -38,10 +38,10 @@ const trail = blogTrail(label);
 
 <BaseLayout
   title={label}
-  description={`${CATEGORIES[category].teaser} Posts filed under ${label}, newest first.`}
+  description={`${CATEGORIES[category].teaser} By Sinduri Guntupalli.`}
   trail={trail}
 >
-  {/* No "All posts" link here: the filter's first option already is one. */}
+  {/* No "All Posts" link here: the filter's first option already is one. */}
   <PageHero title={headingLabel(label)} titleSize="h2" slab="none">
     <Breadcrumbs slot="eyebrow" crumbs={trail.crumbs} />
   </PageHero>
