@@ -61,7 +61,11 @@ Record rejected findings beside the code so they are not raised again;
 - CI must pass. The owner reviews and merges.
 - One commit per logical change.
 - Update every credit, doc and claim page the change makes stale, in the same
-  pull request; the template's "Docs and pages" section lists them.
+  pull request. The places to check: `src/lib/credits.ts`,
+  `src/pages/credits.astro`, README, ARCHITECTURE, ACCESSIBILITY,
+  AI_DISCLOSURE, SECURITY, `docs/*`,
+  `.claude/skills/sinduri-design-system/SKILL.md`, /accessibility, /privacy,
+  /brand, `llms.txt` and `robots.txt`.
 - Port every fix, upgrade, test, tooling or CI change to
   [astro-cat-portfolio](https://github.com/sindurigf/astro-cat-portfolio) as a
   pull request there, or say in one line under "Template port" why it does
@@ -75,6 +79,10 @@ Record rejected findings beside the code so they are not raised again;
 - What changed and why, then how it was tested (commands and totals).
 - No narrative, no restating the diff, no "Not applicable" lines. Leave out
   sections that do not apply.
+- Aim for under 200 words. A long list, such as a word list, goes in one fenced
+  block.
+- No Claude artifact links and no "Written for:" lines, in pull requests,
+  commits or docs. The pull request is the record.
 
 ## Commits
 
