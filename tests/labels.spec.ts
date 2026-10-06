@@ -13,6 +13,7 @@ const EXPECTED: ReadonlyArray<readonly [slug: string, label: string]> = [
   ['from-here-to-there', 'From Here to There'],
   ['look-at-it-but-never-by-me', 'Look at It but Never by Me'],
   ['neither-here-nor-there', 'Neither Here nor There'],
+  ['thrive-vs-decay', 'Thrive vs Decay'],
 ];
 
 const startsUpper = (word: string): boolean => /^\p{Lu}/u.test(word);

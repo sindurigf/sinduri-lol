@@ -26,13 +26,14 @@
     "check:pdf": "node scripts/check-pdf.mjs",
     "check:classes": "node scripts/check-classes.mjs",
     "check:untransformed": "node scripts/check-untransformed.mjs",
+    "check:title-case": "node scripts/check-title-case.mjs",
     "check:commits": "sh scripts/check-commits.sh",
     "check:live": "sh scripts/check-live.sh",
     "check:live:console": "playwright test -c playwright.live.config.ts",
     "check:umami": "sh scripts/check-umami.sh",
     "publish:cv": "python3 scripts/publish-cv.py",
     "publish:talk": "node scripts/publish-talk.mjs",
-    "check": "npm run check:tokens && npm run check:links && npm run check:pins && npm run check:classes && npm run check:untransformed && npm run format:check && npm run check:commits"
+    "check": "npm run check:tokens && npm run check:links && npm run check:pins && npm run check:classes && npm run check:untransformed && npm run check:title-case && npm run format:check && npm run check:commits"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.3",

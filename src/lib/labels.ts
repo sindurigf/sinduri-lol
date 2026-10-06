@@ -15,6 +15,7 @@ export const TITLE_CASE_SMALL_WORDS: ReadonlySet<string> = new Set([
   'or',
   'the',
   'to',
+  'vs',
   'with',
 ]);
 
