@@ -284,7 +284,7 @@ test.describe('/brand', () => {
       if (request.method() !== 'GET') requests.push(request.url());
     });
     await form.getByLabel(/^Name/).fill('A name');
-    await form.getByRole('button', { name: 'Send message' }).click();
+    await form.getByRole('button', { name: 'Send Message' }).click();
     await form.getByLabel(/^Name/).press('Enter');
     await expect(page, 'the example form left the page').toHaveURL(
       new RegExp(`${ROUTE}$`),
@@ -378,9 +378,9 @@ test.describe('/brand', () => {
   }) => {
     await gotoSettled(page, ROUTE);
     for (const [name, href] of [
-      ['Use this design', USE_TEMPLATE_URL],
-      ['View the template', TEMPLATE_URL],
-      ['See the demo', DEMO_URL],
+      ['Use This Design', USE_TEMPLATE_URL],
+      ['View the Template', TEMPLATE_URL],
+      ['See the Demo', DEMO_URL],
     ] as const) {
       const links = page.getByRole('link', { name, exact: true });
       expect(await links.count(), `no "${name}" link`).toBeGreaterThan(0);

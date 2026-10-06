@@ -6,7 +6,7 @@ import { gotoSettled } from './settle';
 import { ROUTES, SAMPLED_ROUTES } from './routes';
 import { AXE_TIMEOUT_MS, FOCUSABLE_SELECTOR, REFLOW_VIEWPORT } from './wcag';
 
-const SWITCH_NAME = 'Light mode';
+const SWITCH_NAME = 'Light Mode';
 /** More than the header's stops before the switch, so a missing switch fails. */
 const MAX_TABS = 12;
 

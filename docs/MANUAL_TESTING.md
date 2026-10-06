@@ -500,7 +500,7 @@ the browser.
 - [ ] On a post, say a tag chip's word, such as "click Drupal": the tag page
       opens. → SC 2.5.3
 - [ ] On `/contact`, say "click Name", "click Email" and "click Message": each
-      field takes focus; dictate into it; say "click Send message". → SC 2.5.3
+      field takes focus; dictate into it; say "click Send Message". → SC 2.5.3
 - [ ] Icon-only controls (footer profiles, theme switch, hero pause): reachable
       by the tool's numbers or grid overlay. → SC 2.1.1
 - [ ] Note any command that did nothing, and the words that were said.

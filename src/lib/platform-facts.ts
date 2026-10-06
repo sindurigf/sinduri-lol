@@ -1,5 +1,5 @@
 /*
- * Claims on /privacy and /contact that can change outside this repo.
+ * Claims on /privacy that can change outside this repo.
  * tests/platform-facts.spec.ts fails when `checkedOn` goes stale: re-check at
  * `check`, then move the date. D1's EU jurisdiction is immutable, so not here.
  */
@@ -54,15 +54,5 @@ export const PLATFORM_FACTS: Readonly<Record<string, PlatformFact>> = {
       "curl -sI https://sinduri.lol/ | grep -iE '^(nel|report-to):', and " +
       "Cloudflare's Network Error Logging docs for what a report holds",
     checkedOn: '2026-09-25',
-  },
-  porkbunForwarding: {
-    claim:
-      '/contact: the form goes to the same inbox as lol@sinduri.lol, because ' +
-      'Porkbun forwards that address to the CONTACT_NOTIFY_TO inbox',
-    check:
-      'Porkbun > Domain Management > sinduri.lol > Email Forwarding, ' +
-      'compared with the CONTACT_NOTIFY_TO secret under Cloudflare dashboard ' +
-      '> Workers & Pages > sinduri-lol > Settings > Variables and Secrets',
-    checkedOn: '2026-09-19',
   },
 };
