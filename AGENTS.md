@@ -133,6 +133,8 @@ Rules:
   ([GOV.UK](https://insidegovuk.blog.gov.uk/2014/08/04/sentence-length-why-25-words-is-our-limit/)).
   Active voice, everyday words, no "e.g." or "i.e.".
 - An error message says what is wrong and how to fix it, without blame.
+- Headings and labels use Chicago title case; sentences use sentence case
+  ([rule](docs/STYLEGUIDE.md#uppercase)).
 - Editorial copy (posts, About, Career, taglines, bios, anything in Sinduri's
   voice) is never invented. It is drafted only from her own words and follows
   [docs/VOICE.md](docs/VOICE.md); she approves every line.
