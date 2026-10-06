@@ -15,7 +15,7 @@ Sinduri Guntupalli
 part: Introduction
 ```
 
-# About me
+# About Me
 
 ![Sinduri smiling in a studio portrait, standing against a dark wall beside a teal block.](./images/sinduri-studio.jpg)
 
@@ -28,7 +28,7 @@ Sinduri Guntupalli, Sr Developer Programs Engineer, OSPO team at Dynatrace
 
 ---
 
-# Open source runs everything
+# Open Source Runs Everything
 
 - **Linux**: most servers, the cloud, and every Android phone.
 - **Git**: version control behind nearly all software.
@@ -43,16 +43,16 @@ Most of the open source projects are maintained by small teams, often unpaid vol
 
 ```yaml
 layout: section
-part: 'Part 1: The burden'
+part: 'Part 1: The Burden'
 ```
 
-# The burden
+# The Burden
 
 Most projects don't fail on code. They fail under invisible weight.
 
 ---
 
-# The comfortable myth
+# The Comfortable Myth
 
 - The myth: success comes from code quality
 - Just ship better code, and the rest follows
@@ -60,7 +60,7 @@ Most projects don't fail on code. They fail under invisible weight.
 
 ---
 
-# What actually kills projects
+# What Actually Kills Projects
 
 - Unclear contribution paths
 - Expectations never written down
@@ -69,7 +69,7 @@ Most projects don't fail on code. They fail under invisible weight.
 
 ---
 
-# A socio-technical system
+# A Socio-Technical System
 
 - A socio-technical system
 - Code and community are one system
@@ -77,7 +77,7 @@ Most projects don't fail on code. They fail under invisible weight.
 
 ---
 
-# The maintainer trap
+# The Maintainer Trap
 
 - Work piles onto a few people
 - The hero maintainer burns out
@@ -91,16 +91,16 @@ Topic-focused teams (compiler, language, libraries, tooling, infrastructure) eac
 
 ```yaml
 layout: section
-part: 'Part 2: The fellowship'
+part: 'Part 2: The Fellowship'
 ```
 
-# The fellowship
+# The Fellowship
 
 The work is too much for one person. It has to be shared.
 
 ---
 
-# Six pillars that decide whether a project lasts
+# Six Pillars That Decide Whether a Project Lasts
 
 - **Governance**: who decides, and how. Make decision-making explicit before you need it.
 - **Contributor Experience**: how easy and rewarding it is to help. Lower the cost of showing up.
@@ -134,7 +134,7 @@ The PMC elects committers on merit. Individuals represent themselves, not employ
 label: 'Pillar 1'
 ```
 
-# A code of conduct
+# A Code of Conduct
 
 - Explicit rules, not vague good vibes
 - Name what is not acceptable: harassment, discrimination, personal attacks, sustained disruption
@@ -150,7 +150,7 @@ A widely adopted code of conduct. Clear expected behavior, clear unacceptable be
 label: 'Pillar 2'
 ```
 
-# Contributor experience
+# Contributor Experience
 
 - Lower the cost of a first contribution
 - Give newcomers a clear place to start
@@ -164,10 +164,10 @@ Published contributor ladder: from member to approver, with clear expectations a
 ---
 
 ```yaml
-label: 'Pillar 2 · From experience'
+label: 'Pillar 2 · From Experience'
 ```
 
-# My first contribution
+# My First Contribution
 
 - 2021, during Covid, new to the community
 - 45 min just to open the issue, scared of being judged
@@ -199,7 +199,7 @@ A public record of who did what, across code and the invisible work. Contributio
 label: 'Pillar 3'
 ```
 
-# Why recognition changes behavior
+# Why Recognition Changes Behaviour
 
 - Tie recognition to real work
 - Companies get visible standing for what they fund
@@ -213,7 +213,7 @@ When a company treats contribution as part of the actual work, with real time an
 label: 'Pillar 4'
 ```
 
-# Local community
+# Local Community
 
 **Why it matters**
 
@@ -250,7 +250,7 @@ label: 'Pillar 5'
 label: 'Pillar 6'
 ```
 
-# Funding and sponsorship
+# Funding and Sponsorship
 
 - Time is not free. Someone pays, in money or unpaid hours
 - Sustainable funding keeps maintainers from burning out
@@ -263,7 +263,7 @@ The Django Software Foundation pays Fellows to do the unglamorous maintenance: t
 
 ---
 
-# Signals of a healthy community
+# Signals of a Healthy Community
 
 - Bus factor: how many can leave before it stalls
 - Time to first response on issues and pull requests
@@ -276,16 +276,16 @@ These tell you if the pillars are working, or just look good on paper.
 
 ```yaml
 layout: section
-part: 'Part 3: The road ahead'
+part: 'Part 3: The Road Ahead'
 ```
 
-# The road ahead
+# The Road Ahead
 
 What to prioritize, what AI changes, and what you can actually do.
 
 ---
 
-# What to do now vs later
+# What to Do Now vs Later
 
 **Optimize early**
 
@@ -305,7 +305,7 @@ Heavy process on a tiny project can strangle it before it grows.
 
 ---
 
-# Good advice needs the right partner
+# Good Advice Needs the Right Partner
 
 - **"Be welcoming to everyone"** works when paired with triage, so maintainers can keep up.
 - **"Move fast"** works when paired with transparency, so contributors can follow the changes and not get blindsided.
@@ -316,10 +316,10 @@ Context decides whether a practice helps. The practices aren't the problem; the 
 ---
 
 ```yaml
-label: 'The AI question'
+label: 'The AI Question'
 ```
 
-# Help and hazard
+# Help and Hazard
 
 **Where AI helps**
 
@@ -338,10 +338,10 @@ AI doesn't replace community design. It raises the stakes. Share the cost and sk
 ---
 
 ```yaml
-label: 'The AI question'
+label: 'The AI Question'
 ```
 
-# When AI becomes slop
+# When AI Becomes Slop
 
 - Low-effort AI output lands as real work for maintainers
 - Bogus AI security reports flood small volunteer teams
@@ -354,7 +354,7 @@ curl was flooded with AI-generated security reports. By 2025 about 1 in 5 submis
 
 ---
 
-# Thrive vs decay
+# Thrive vs Decay
 
 | Thriving projects     | Decaying projects            |
 | --------------------- | ---------------------------- |
@@ -369,7 +369,7 @@ The drift is slow and quiet. That's exactly why it's easy to miss.
 
 ---
 
-# What you can realistically influence
+# What You Can Realistically Influence
 
 You don't need to be a maintainer, or even a contributor. If you care about open source, any of these help.
 
@@ -415,7 +415,7 @@ part: Closing
 
 ---
 
-# Sources & further reading
+# Sources & Further Reading
 
 **Primary reading**
 
@@ -439,7 +439,7 @@ part: Closing
 
 ---
 
-# Thank you
+# Thank You
 
 Q&A
 
