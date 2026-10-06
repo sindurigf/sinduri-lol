@@ -1491,7 +1491,9 @@ test.describe('About cats', () => {
         await expect(svg).toHaveAttribute('aria-hidden', 'true');
     }
     await expect(
-      page.getByText('The moving cats are drawn with AI.'),
+      page.getByText(
+        'The moving cats and their trick icons are drawn with AI.',
+      ),
     ).toBeVisible();
   });
 
@@ -1503,7 +1505,9 @@ test.describe('About cats', () => {
     await page.goto(ROUTE);
     await expect(page.locator('.cat-button')).toHaveCount(0);
     await expect(
-      page.getByText('The moving cats are drawn with AI.'),
+      page.getByText(
+        'The moving cats and their trick icons are drawn with AI.',
+      ),
     ).toBeVisible();
     await context.close();
   });
