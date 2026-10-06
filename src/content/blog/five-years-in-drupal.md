@@ -20,7 +20,7 @@ I studied civil engineering in India, then moved to the US to study environmenta
 
 I always wanted to become a developer, but I never felt ready to make the switch until I moved to Vienna. Honestly, after doing a few German courses, learning to code seemed much easier! In 2019 I took a short Python course just to see if I was actually good at programming, and I loved it. That gave me the confidence to do a full-stack web development course focused on PHP.
 
-## The Drupal test
+## The Drupal Test
 
 Klaus Purer, a Drupal veteran who is now my mentor, found me on LinkedIn and interviewed me for a configuration manager role at Jobiqo. The role involved setting up third-party APIs and working as a backend developer. He gave me a test in Drupal. I had absolutely no idea what Drupal was at the time, but I did well enough to get the job.
 
@@ -28,9 +28,9 @@ Klaus Purer, a Drupal veteran who is now my mentor, found me on LinkedIn and int
 
 I worked there for two and a half years, as a configuration manager and then as a developer, and by the end Drupal and its community were a big part of my life.
 
-If you have never heard of it either: Drupal is a free, open source content management system that lets you build anything from a simple blog to complex enterprise websites. The European Commission, the United Nations, Kurier and a lot of universities and governments trust it because it is secure, scalable, and handles complex requirements well. What makes Drupal special is its community, who keep improving the platform.
+If you have never heard of it either: Drupal is a free, open source content management system that lets you build anything from a simple blog to complex enterprise websites. The European Commission, the United Nations, Kurier and a lot of universities and governments trust it because it is secure, scalable and handles complex requirements well. What makes Drupal special is its community, who keep improving the platform.
 
-## From developer to product manager
+## From Developer to Product Manager
 
 When layoffs hit my company, I faced a choice: continue as a developer outside of open source, or try something new. drunomics offered me a product manager role, and I was immediately drawn to their commitment to the Drupal community and to open source contributions.
 
@@ -38,7 +38,7 @@ At drunomics I worked on mossbo, our cloud CMS, and the projects that tie into i
 
 ![Sinduri and colleagues on stage at the International Splash Awards, two of them holding trophies.](../../assets/blog/five-years-in-drupal/splash-awards.jpg 'Photo: Paul Johnson')
 
-## Saying yes to the community
+## Saying Yes to the Community
 
 In 2023 Klausi asked me to volunteer at Drupal Dev Days Vienna. I enjoyed working with the community so much that I started saying yes to every organising committee that asked for help. Soon I was helping organise Drupal Mountain Camp, Drupal Dev Days and DrupalCamp Berlin, all in the same year.
 
@@ -50,7 +50,7 @@ The Swiss community adopted me and taught me so much about events. The Austrian 
 
 Why do I keep showing up? It comes down to two things: my passion for open source and the incredible strength of this community. Drupal would not exist without people contributing code, ideas and energy, and community events create the perfect space for that collaboration to happen.
 
-I was reminded of this at a workshop organised by Mikko Hämäläinen, CEO of Druid, at Drupal Mountain Camp, where we discussed everyone's motivations for contributing. Despite our different backgrounds and journeys, we all shared the same core goal: contribute to something meaningful while growing personally in the process. That is what makes these events special. They are not just about networking. They are about channelling our collective passion for Drupal into something bigger and better.
+I was reminded of this at a workshop organised by Mikko Hämäläinen, CEO of Druid, at Drupal Mountain Camp, where we discussed everyone's motivations for contributing. Despite our different backgrounds and journeys, we all shared the same core goal: contribute to something meaningful while growing personally in the process. That is what makes these events special: they are about more than networking. They turn our shared passion for Drupal into work that improves the project and the community.
 
 ![DrupalCamp Berlin attendees gathered in a courtyard in front of a white tent.](../../assets/blog/five-years-in-drupal/drupalcamp-berlin.jpg)
 
@@ -60,7 +60,7 @@ At DrupalCon Vienna in 2025, I won the Women in Drupal Award in the Build catego
 
 ![Sinduri on stage at DrupalCon Vienna, with her name and "Build Winner 2025" on the big screen behind her.](../../assets/blog/five-years-in-drupal/award-stage.jpg 'Photo: Baris Tosun')
 
-The Build category is for builders and makers. Developers, architects, or even HR specialists recruiting talent to build an innovative Drupal agency can be nominated, and so can community members who help build a thriving Drupal community.
+The Build category is for builders and makers. Developers, architects or HR specialists recruiting talent to build an innovative Drupal agency can be nominated, and so can community members who help build a thriving Drupal community.
 
 ![The Women in Drupal Award winners on stage, holding flowers and certificates.](../../assets/blog/five-years-in-drupal/award-winners.jpg 'Photo: Daniel Lemon')
 
@@ -86,7 +86,7 @@ Special thanks to Miro Michalicka, Niklas Franke, Gábor Hojtsy, Norman Kämper-
 
 Last but not least, to the non-Drupaler, my husband Johann Fladeboe, thank you for blindly supporting me through all those self-funded trips, for being patient while I was glued to my computer almost every weekend and evening, and for taking care of me through it all. Thank you for always having my back.
 
-## There is room for everyone
+## Why I Want More People in Open Source
 
 Open source communities like Drupal are models for effective collaboration. Drupal has created a global network where people contribute based on passion and expertise, not hierarchies. The skills you develop while contributing (communication, collaboration, problem-solving and mentorship) transfer to every aspect of life.
 

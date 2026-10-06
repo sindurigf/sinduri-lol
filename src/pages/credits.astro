@@ -64,7 +64,7 @@ const GUIDES = [
       name: 'Felipe A. Carriço',
       href: 'https://www.linkedin.com/in/fecarrico',
     },
-    use: 'Pointed out that axe, an automated accessibility checker, ships some Web Content Accessibility Guidelines rules switched off; this site turns them on. Also informed the rules on conflicting access needs and on content held back by scripts.',
+    use: 'Showed that axe, an automated accessibility checker, ships some Web Content Accessibility Guidelines rules switched off, so this site turns them on. It also shaped the rules on conflicting access needs and on content held back by scripts.',
   },
   {
     name: 'Upstream First',
@@ -73,7 +73,7 @@ const GUIDES = [
       name: 'Upstream First contributors',
       href: 'https://github.com/mgifford/upstream-first/graphs/contributors',
     },
-    use: "Informed reporting a browser bug to the browser's makers, and linking the report where this site works around the bug.",
+    use: "The reason this site reports browser bugs to the browser's makers and links each report where it works around the bug.",
   },
   {
     name: 'Spec-First Coding',
@@ -82,19 +82,19 @@ const GUIDES = [
       name: 'Laurence Lewis',
       href: 'https://github.com/LaurenceRLewis',
     },
-    use: 'Informed citing the Web Content Accessibility Guidelines and their Understanding documents as the rule, and marking other sources as opinion.',
+    use: 'The reason this site treats the Web Content Accessibility Guidelines and their Understanding documents as the rule, and marks other sources as opinion.',
   },
   {
     name: 'Intopia Web Accessibility Skill',
     href: 'https://github.com/Intopia/intopia-web-accessibility-skill',
     author: { name: 'Intopia', href: 'https://www.intopia.digital/' },
-    use: 'Ideas only: informed blending a see-through colour with the colour behind it before measuring contrast, and checking that pages fit a window 256px tall.',
+    use: 'Ideas only: blending a see-through colour with the colour behind it before measuring contrast, and checking that pages fit a window 256px tall.',
   },
   {
     name: 'accessibility-skills',
     href: 'https://github.com/mgifford/accessibility-skills',
     author: { name: 'Mike Gifford', href: 'https://ox.ca/' },
-    use: 'Ideas only: informed the voice-control check in the manual tests.',
+    use: 'Ideas only: the voice-control check in the manual tests.',
   },
   {
     name: 'Accessibility Agents',
@@ -123,19 +123,19 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
 
 <BaseLayout
   title="Credits"
-  description="Where the name sinduri.lol comes from, who helped, who took the photos, and what the site was designed, built and tested with."
+  description="Where the name sinduri.lol comes from, who helped, who took the photos and what the site was designed, built and tested with."
 >
   <PageHero title="Credits">
     <p class="standfirst">
-      A big thank you to everyone who helped me build this site, and to the
-      tools that made it possible.
+      Thank you to the people who had a part in this site, and to the open
+      source projects it is built with.
     </p>
   </PageHero>
 
   <section class="band py-section">
     <div class="mx-auto max-w-page">
       <div id="name" class="card">
-        <h2 class={CARD_HEADING}>Where the name comes from</h2>
+        <h2 class={CARD_HEADING}>Where the Name Comes From</h2>
         <p class="mt-6 mb-paragraph max-w-4xl text-lead font-normal text-text text-pretty">
           The inspiration for the name came from{' '}
           <a href={NAME_INSPIRATION.href}>{NAME_INSPIRATION.site}</a>, the
@@ -156,25 +156,8 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
         </p>
       </div>
 
-      <div id="not-found" class="card mt-grid">
-        <h2 class={CARD_HEADING}>The 404 page</h2>
-        <p class="mt-6 mb-paragraph max-w-4xl text-lead font-normal text-text text-pretty">
-          The 404 page is a nod to <cite>Star Wars</cite> (1977), the film later
-          called <cite>Episode IV: A New Hope</cite>.
-        </p>
-        <p class="mt-6 max-w-measure text-body text-text text-pretty">
-          Its opening line is the film's own, with a website in place of the
-          galaxy. The headline comes from a checkpoint in Mos Eisley, where
-          stormtroopers stop Obi-Wan Kenobi and Luke Skywalker with R2-D2 and
-          C-3PO right there in the speeder. Obi-Wan waves his hand and says
-          &ldquo;These aren't the droids you're looking for.&rdquo; It is a Jedi
-          mind trick: the stormtrooper repeats it and waves them through. Here
-          it means the page you wanted is not here, so move along.
-        </p>
-      </div>
-
       <div class="card mt-grid">
-        <h2 class={CARD_HEADING}>Thank you</h2>
+        <h2 class={CARD_HEADING}>Thank You</h2>
         <dl class:list={[NAMED_LIST, 'md:grid-cols-2']}>
           {THANKS.map((person) => (
             <div class={NAMED_ENTRY}>
@@ -209,7 +192,9 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
           ))}
         </ul>
 
-        <p class="mt-4 text-body text-text text-pretty">And more.</p>
+        <p class="mt-4 text-body text-text text-pretty">
+          And others whose names I do not have.
+        </p>
 
         <p class="mt-6 text-body text-text text-pretty">
           Screenshots in posts are from:
@@ -244,7 +229,7 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
   <section class="band pb-section">
     <div class="mx-auto grid max-w-page gap-grid lg:grid-cols-2">
       <div class="card">
-        <h2 class={CARD_HEADING}>Design tools</h2>
+        <h2 class={CARD_HEADING}>Design Tools</h2>
 
         <dl class={NAMED_LIST}>
           {DESIGNED_WITH.map((tool) => (
@@ -259,10 +244,10 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
           ))}
           <div class={NAMED_ENTRY}>
             <dt class="text-body font-black text-text">
-              Multiple artists on Fiverr and Upwork
+              Several artists on Fiverr and Upwork
             </dt>
             <dd class="mt-1 text-body text-text">
-              Created and cleaned the logo
+              Created and cleaned up the logo
             </dd>
           </div>
         </dl>
@@ -289,7 +274,7 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
       </div>
 
       <div class="card lg:col-span-2">
-        <h2 class={CARD_HEADING}>Built and tested with</h2>
+        <h2 class={CARD_HEADING}>Built and Tested With</h2>
 
         <ul class="bullet-list mt-6 gap-x-12 sm:grid sm:grid-cols-2 lg:grid-cols-3">
           {BUILT_WITH.map((tool) => (
@@ -306,13 +291,31 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
           browser is in <a href="/licenses.txt">the licences file</a>.
         </p>
       </div>
+
+      <div id="not-found" class="card lg:col-span-2">
+        <h2 class={CARD_HEADING}>The 404 Page</h2>
+        <p class="mt-6 mb-paragraph max-w-4xl text-lead font-normal text-text text-pretty">
+          The 404 page is a nod to <cite>Star Wars</cite> (1977), the film later
+          called <cite>Episode IV: A New Hope</cite>.
+        </p>
+        <p class="mt-6 max-w-measure text-body text-text text-pretty">
+          Its opening line, &ldquo;A long time ago, on a website not so far, far
+          away&hellip;&rdquo;, is the film's own, with a website in place of the
+          galaxy. The headline comes from a checkpoint in Mos Eisley, where
+          stormtroopers stop Obi-Wan Kenobi and Luke Skywalker with R2-D2 and
+          C-3PO right there in the speeder. Obi-Wan waves his hand and says
+          &ldquo;These aren't the droids you're looking for.&rdquo; It is a Jedi
+          mind trick: the stormtrooper repeats it and waves them through. Here
+          it means the page you wanted is not here, so move along.
+        </p>
+      </div>
     </div>
   </section>
 
   <CloseRow
     eyebrow="Next"
     readHref="/accessibility/"
-    readLabel="Accessibility statement"
+    readLabel="Accessibility Statement"
     actionHref="/contact/"
     actionLabel="Get in Touch"
   />

@@ -94,13 +94,13 @@ export const THANKS = [
     name: 'Vincenzo Gambino',
     href: 'https://www.gambinovincenzo.com/',
     reason:
-      'Thank you for introducing me to Astro at a Drupal session. I am so amazed by its performance!',
+      'Thank you for introducing me to Astro at a Drupal session. Its performance still amazes me, and this site is built with Astro and Vue.',
   },
   {
     name: 'Alexandru Teodor Ieremia',
     href: 'https://www.linkedin.com/in/alexandru-teodor-ieremia-8581231b4/',
     reason:
-      'Thank you for teaching me frontend and accessibility. I tried to use what I learned while building this site.',
+      'Thank you for teaching me frontend and accessibility. I used what I learnt from you to build this site.',
   },
   {
     name: 'Petra Morawa-Zechner',
