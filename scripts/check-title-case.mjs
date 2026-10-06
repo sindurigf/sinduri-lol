@@ -2,6 +2,7 @@
  * Fails if a built heading, title, summary or og:title is not in Chicago title
  * case: the first and last word are capitalised, and a word between is lower
  * case only if it is in TITLE_CASE_SMALL_WORDS (shared with categoryLabel).
+ * The brand names in src/lib/site.ts are exempt, in their own case.
  */
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
@@ -9,6 +10,7 @@ import { glob, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { assertBuildCurrent } from './build-fingerprint.mjs';
 import { TITLE_CASE_SMALL_WORDS } from '../src/lib/labels.ts';
+import { SITE_NAME, SITE_SHORT_NAME } from '../src/lib/site.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const DIST = join(ROOT, 'dist/client');
@@ -25,8 +27,11 @@ const KINDS = [
   { kind: 'og:title', pattern: OG_TITLE, group: 1 },
 ];
 
-/* The site name closes every <title> as "Page | domain", in the domain's own case. */
-const TITLE_SITE_SUFFIX = /\s\|\s[a-z0-9-]+(\.[a-z0-9-]+)+$/;
+/* The site name closes every <title> as "Page | name", in the name's own case. */
+const TITLE_SITE_SUFFIX = ` | ${SITE_NAME}`;
+
+/* The brand is written in its own case wherever a heading uses it. */
+const BRAND_TOKENS = new Set([SITE_NAME, SITE_SHORT_NAME]);
 
 /*
  * Each entry names why the text stays as written. An entry that no longer
@@ -73,6 +78,7 @@ const miss = (text) => {
   return words.find(
     (word, index) =>
       startsLowerCase(word) &&
+      !BRAND_TOKENS.has(word) &&
       (index === 0 ||
         index === last ||
         !TITLE_CASE_SMALL_WORDS.has(word.toLowerCase())),
@@ -110,7 +116,9 @@ const run = async () => {
       for (const match of html.matchAll(pattern)) {
         let text = textOf(match[group]);
         if (kind === 'title' || kind === 'og:title') {
-          text = text.replace(TITLE_SITE_SUFFIX, '');
+          if (text.endsWith(TITLE_SITE_SUFFIX)) {
+            text = text.slice(0, -TITLE_SITE_SUFFIX.length);
+          }
         }
         if (text === '') continue;
         scanned += 1;
