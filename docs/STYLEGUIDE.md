@@ -736,7 +736,7 @@ roundel.**
 ### Calls to action
 
 - Gold buttons only: [Buttons on gold](#buttons-on-gold).
-- Career is the one hero with actions: the CV download, then Get in touch,
+- Career is the one hero with actions: the CV download, then Get in Touch,
   `--spacing-head` under the standfirst.
 - Career is also the one hero with a line of fact: `mt-4 text-body
 text-gold-muted` under the standfirst, not a fourth `.block` beat. Colour

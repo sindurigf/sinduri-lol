@@ -56,11 +56,11 @@ const TEASER_PHOTO_SIZES =
 const STATS = [
   {
     value: '3 cats',
-    label: '1 queen, 1 conspirator, 1 baby',
+    label: 'Minerva, Hela and Rudra',
   },
   {
-    value: '1 ring',
-    label: 'Rules my calendar every year',
+    value: '2021',
+    label: 'The year Drupal found me',
   },
 ] as const;
 ---
@@ -68,7 +68,7 @@ const STATS = [
 <BaseLayout
   title="Sinduri Guntupalli, Open Source Enthusiast"
   titleSuffix={false}
-  description="Open source enthusiast and Drupal community organiser in Vienna. Positivity advocate, cat lover and a very serious Lord of the Rings fan."
+  description="Sinduri Guntupalli, open source enthusiast in Vienna, experienced in product and program management, web development and Drupal community work."
 >
   {/*
     One gold area for the hero and the section below. No `.surface-gold` on the
@@ -155,14 +155,14 @@ const STATS = [
           </ul>
 
           <p class="mt-8 text-body text-pretty">
-            I discovered Drupal in 2021, and the community has held my heart
-            ever since. I help organise events and serve on the Drupal Austria
-            board.
+            I live in Vienna with my husband and three cats. Professionally, I
+            am an open source enthusiast with a background in development,
+            product management and community work.
           </p>
 
           <p class="mt-head">
             <a href="/about/" class="btn-gold-secondary">
-              Learn more about me
+              Learn More About Me
             </a>
           </p>
         </div>
@@ -170,7 +170,7 @@ const STATS = [
     </Section>
   </div>
 
-  <Section title="What I write about">
+  <Section title="What I Write About">
     <ul class="card-block grid gap-grid sm:grid-cols-2 lg:grid-cols-3">
       {CATEGORY_CARDS.map((card, index) => (
         <li
@@ -205,12 +205,12 @@ const STATS = [
 
     <p class="mt-head">
       <a href={BLOG_PATH} class="btn-secondary">
-        View all posts
+        View All Posts
       </a>
     </p>
   </Section>
 
-  <Section title="Featured posts">
+  <Section title="Featured Posts">
     {/* Class names written out in full: Tailwind scans source text. */}
     <ul
       class:list={[
@@ -235,6 +235,6 @@ const STATS = [
     readHref="/career/"
     readLabel="Career"
     actionHref="/contact/"
-    actionLabel="Get in touch"
+    actionLabel="Get in Touch"
   />
 </BaseLayout>

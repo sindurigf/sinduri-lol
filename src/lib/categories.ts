@@ -32,27 +32,28 @@ export const CATEGORIES = {
   skincare: {
     accent: ACCENTS.ink,
     glyph: '✦',
-    teaser: 'Skincare routines, products and what works for me.',
+    teaser: 'The skincare routines and products that work for my skin.',
   },
   travel: {
     accent: ACCENTS.ink,
     glyph: '✈',
-    teaser: 'Places I have travelled to, from Kerala to Vienna and beyond.',
+    teaser: 'Slow holidays, good food and places that surprise me.',
   },
   'personal-thoughts': {
     accent: ACCENTS.pink,
     glyph: '❋',
-    teaser: 'Kindness, empathy and whatever else is on my mind.',
+    teaser: 'My thoughts on kindness, empathy and the people around me.',
   },
   'professional-journey': {
     accent: ACCENTS.gold,
     glyph: '◆',
     teaser:
-      'From civil engineering to Drupal, and what I keep learning on the way.',
+      'From civil engineering to development, product management and developer programs.',
   },
   'open-source': {
     accent: ACCENTS.gold,
     glyph: '</>',
-    teaser: 'Drupal, community events and why there is room for everyone.',
+    teaser:
+      'Drupal, community events and what makes open source communities last.',
   },
 } as const satisfies Record<BlogCategory, Category>;
