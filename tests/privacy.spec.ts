@@ -238,12 +238,12 @@ test.describe('the privacy policy is true', NODE, () => {
   test('the page discloses the visit counting', () => {
     const text = privacyBodyText();
 
-    const section = text.slice(text.indexOf('Visit counts'));
+    const section = text.slice(text.indexOf('Visit Counts'));
 
     expect(
       text,
-      '/privacy no longer has its "Visit counts" section.',
-    ).toContain('Visit counts');
+      '/privacy no longer has its "Visit Counts" section.',
+    ).toContain('Visit Counts');
 
     expect(
       section,
@@ -299,7 +299,7 @@ test.describe('the privacy policy is true', NODE, () => {
 
     // Fixed: D1 cannot change a database's EU jurisdiction after creation.
     expect(
-      privacySectionText('The contact form'),
+      privacySectionText('The Contact Form'),
       '/privacy no longer says stored messages are kept in the EU.',
     ).toContain('European Union');
 

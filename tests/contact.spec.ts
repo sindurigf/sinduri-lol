@@ -340,7 +340,7 @@ test.describe('the contact endpoint', () => {
     expect(
       html,
       'the rejected submission should render an error summary.',
-    ).toContain('problems with this form');
+    ).toContain('Problems with This Form');
     expectTitledAndHeaded(html, 'Check Your Message');
 
     expectTypedValuesKept(html, typed);

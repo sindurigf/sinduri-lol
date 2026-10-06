@@ -47,10 +47,29 @@ interface CategoryFilterOption {
 }
 
 /* Sentence case for the unstyled <title>; visible uses are uppercase CSS. */
-export const categoryLabel = (category: string): string => {
-  const words = category.replaceAll('-', ' ');
-  return words.charAt(0).toUpperCase() + words.slice(1);
-};
+/* Chicago title case keeps these lower case unless they open the label. */
+const TITLE_CASE_SMALL_WORDS = new Set([
+  'a',
+  'an',
+  'and',
+  'for',
+  'in',
+  'of',
+  'on',
+  'or',
+  'the',
+  'to',
+]);
+
+export const categoryLabel = (category: string): string =>
+  category
+    .split('-')
+    .map((word, index) =>
+      index > 0 && TITLE_CASE_SMALL_WORDS.has(word)
+        ? word
+        : word.charAt(0).toUpperCase() + word.slice(1),
+    )
+    .join(' ');
 
 /* Proper nouns; other tags use `categoryLabel`. */
 const TAG_LABELS: Record<string, string> = {
