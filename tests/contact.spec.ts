@@ -341,7 +341,7 @@ test.describe('the contact endpoint', () => {
       html,
       'the rejected submission should render an error summary.',
     ).toContain('problems with this form');
-    expectTitledAndHeaded(html, 'Check your message');
+    expectTitledAndHeaded(html, 'Check Your Message');
 
     expectTypedValuesKept(html, typed);
 
@@ -471,7 +471,7 @@ test.describe('the contact endpoint', () => {
     ).toBeDefined();
     expectTypedValuesKept(html!, typed);
     expectNotSentSummary(html!);
-    expectTitledAndHeaded(html!, 'Too many messages');
+    expectTitledAndHeaded(html!, 'Too Many Messages');
     expect(
       collapseSpace(html!),
       `the not-sent message does not state the limit as "${RATE_LIMIT_WORDS} messages ${RATE_LIMIT_PERIOD_WORDS}".`,
@@ -507,7 +507,7 @@ test.describe('the contact endpoint', () => {
       expect(html).toContain('Your message could not be saved');
       expectTypedValuesKept(html, typed);
       expectNotSentSummary(html);
-      expectTitledAndHeaded(html, 'Message not saved');
+      expectTitledAndHeaded(html, 'Message Not Saved');
     } finally {
       localD1(`ALTER TABLE ${MESSAGES_ASIDE} RENAME TO messages`);
     }
@@ -970,7 +970,7 @@ test.describe('the contact error pages in a browser', () => {
       page.getByText(/problems? with this form/),
       'the submission was not rejected as invalid, so the 422 page was never scanned',
     ).toBeVisible();
-    await expect(page).toHaveTitle(/^Error: Check your message /);
+    await expect(page).toHaveTitle(/^Error: Check Your Message /);
     await expectSummaryFocusedAndClean(page, 'rejected-submission');
     await expectEveryImageLoaded(page, 'rejected-submission');
     await expectTypedKept(page, typed);

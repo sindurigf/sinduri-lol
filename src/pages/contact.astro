@@ -41,11 +41,12 @@ const CONTACT_METHODS = [
 ] as const;
 
 const REASONS = [
-  'Drupal and open source communities',
+  'Open source and the power of community',
+  'Job opportunities, such as open source advocate roles',
   'Drupal events and Drupal Austria',
-  'Kindness, empathy and positivity',
-  'Lord of the Rings, Star Trek, One Piece and Star Wars',
-  'Cats, especially Minerva, Hela and Rudra',
+  'Kindness and positivity',
+  'Feedback on this website',
+  'Lord of the Rings and One Piece',
 ] as const;
 ---
 
@@ -55,13 +56,13 @@ const REASONS = [
 >
   <PageHero title="Get in Touch">
     <p class="standfirst">
-      I am always happy to talk about work opportunities and open source, or to
-      get nerdy about Lord of the Rings and Star Trek. I would love to hear from
-      you.
+      I am always happy to talk about open source, job opportunities and this
+      website, or to get nerdy about Lord of the Rings and One Piece. I would
+      love to hear from you.
     </p>
   </PageHero>
 
-  <Section title="Write to me">
+  <Section title="Write to Me">
     {/*
       "The same inbox" holds only while Porkbun forwards CONTACT_EMAIL to
       CONTACT_NOTIFY_TO (src/lib/platform-facts.ts).
@@ -80,7 +81,7 @@ const REASONS = [
 
       <div class="flex min-w-0 flex-col gap-grid lg:col-span-5">
         <div>
-          <h3 class="card-title">Or find me here</h3>
+          <h3 class="card-title">Or Find Me Here</h3>
 
           {/* Whole-card links, unlike BlogCard: the name stays short ("Email lol@sinduri.lol"). */}
           <ul class="mt-6 flex flex-col gap-6">
@@ -104,7 +105,7 @@ const REASONS = [
         </div>
 
         <div class="card">
-          <h3 class="card-title">Write to me about</h3>
+          <h3 class="card-title">Write to Me About</h3>
           <ul class="bullet-list mt-6">
             {REASONS.map((reason) => (
               <li class="mt-3 text-body text-pretty">{reason}</li>
@@ -125,7 +126,7 @@ const REASONS = [
         We should all be a bit kinder and more empathetic.
       </p>
       <a href="/about/" class="btn-gold-primary">
-        More about me
+        More About Me
       </a>
     </div>
   </section>
