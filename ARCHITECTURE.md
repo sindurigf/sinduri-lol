@@ -620,6 +620,16 @@ evidence.
 - **Emulate touch in the browser projects:** the menu, photo strip and
   slideshow use native buttons and links, which fire the same events for
   touch; pointer and keyboard runs already cover them.
+- **Fall back to `HEAD` in `scripts/check-commits.sh` when `origin/main` is
+  missing:** CI checks out with `fetch-depth: 0` and passes an explicit range,
+  and `.githooks` never calls the script; only an unusual local clone lacks
+  the ref.
+- **Derive the post `scripts/check-live.sh` probes from `src/content/blog`:**
+  a rename should fail rule 6, and the slug is also fixed in specs, the talk
+  folder and the PDF path, so a rename breaks those first.
+- **Guard `readPosts` in `astro.config.mjs` against a missing
+  `src/content/blog`:** two posts are tracked there, so the folder cannot be
+  missing in this repository.
 - **Drop the About cat card's "beside its cat, not over it" checks as
   decoration:** the owner asked for the card to open beside its cat, so where
   it opens is function; the test name in `tests/about-cats.spec.ts` says so.
