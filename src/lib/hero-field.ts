@@ -26,6 +26,8 @@ import {
   WIND_WAVE,
   breezeWave,
   FIELD_OF_VIEW_FLOOR,
+  EXTRA_SEED,
+  EXTRA_STEMS,
   FIELD_SEED,
   FOOT_Y,
   FRONT_DEPTH,
@@ -121,19 +123,24 @@ const sceneFor = (width: number, height: number): Scene => {
   };
 };
 
-/* About three quarters of stems cluster on clump centres; the rest scatter. */
-const clumpPlacer = (
-  scene: Scene,
+const clumpCentres = (
+  { boxWidth }: Scene,
   rng: () => number,
   density: number,
   margin: number,
+): number[] =>
+  Array.from(
+    { length: Math.max(4, Math.round(CLUMP_COUNT * density)) },
+    () => -margin + rng() * (boxWidth + margin * 2),
+  );
+
+/* About three quarters of stems cluster on clump centres; the rest scatter. */
+const clumpPlacer = (
+  { boxWidth, world }: Scene,
+  clumps: readonly number[],
+  rng: () => number,
+  margin: number,
 ): ((spread: number) => number) => {
-  const { boxWidth, world } = scene;
-  const clumps: number[] = [];
-  const clumpCount = Math.max(4, Math.round(CLUMP_COUNT * density));
-  for (let i = 0; i < clumpCount; i += 1) {
-    clumps.push(-margin + rng() * (boxWidth + margin * 2));
-  }
   return (spread) => {
     if (rng() < STRAY_ODDS) return -margin + rng() * (boxWidth + margin * 2);
     const centre = clumps[Math.floor(rng() * clumps.length)] ?? boxWidth / 2;
@@ -170,30 +177,48 @@ const makeStem = (
 const buildStems = (scene: Scene): Stem[] => {
   const { world, view } = scene;
   const density = scene.boxWidth / world / REFERENCE_WIDTH;
+  const margin = CLUMP_SPREAD * world;
   const rng = random(FIELD_SEED);
-  const clumped = clumpPlacer(scene, rng, density, CLUMP_SPREAD * world);
+  const clumps = clumpCentres(scene, rng, density, margin);
   const built: Stem[] = [];
 
-  const band = (spec: Band, veil: number, acrossFullWidth: boolean): void => {
-    const count = Math.max(2, Math.round(spec.count * density));
-    for (let i = 0; i < count; i += 1) {
-      /* Log-uniform in distance; uniform piles stems up at the horizon. */
-      const near = spec.near || view;
-      const z = near * Math.pow(spec.far / near, rng());
-      const x = acrossFullWidth
-        ? clumped(spec.spread)
-        : NEAR_BAND_LEFT * world + rng() * NEAR_BAND_WIDTH * world;
-      const height = spec.height[0] + rng() * spec.height[1];
-      built.push(makeStem(scene, rng, z, x, height, veil));
-    }
+  const sow = (next: () => number, share: number, nearTip = -Infinity) => {
+    const clumped = clumpPlacer(scene, clumps, next, margin);
+    const band = (spec: Band, veil: number, acrossFullWidth: boolean): void => {
+      const count = Math.round(
+        Math.max(2, Math.round(spec.count * density)) * share,
+      );
+      for (let i = 0; i < count; i += 1) {
+        /* Log-uniform in distance; uniform piles stems up at the horizon. */
+        const near = spec.near || view;
+        const z = near * Math.pow(spec.far / near, next());
+        const x = acrossFullWidth
+          ? clumped(spec.spread)
+          : NEAR_BAND_LEFT * world + next() * NEAR_BAND_WIDTH * world;
+        const height = spec.height[0] + next() * spec.height[1];
+        const stem = makeStem(scene, next, z, x, height, veil);
+        /* Never above `nearTip`, so a later sowing cannot reach the name. */
+        const rise = Math.min(stem.height, stem.root - nearTip);
+        built.push(rise < stem.height ? { ...stem, height: rise } : stem);
+      }
+    };
+
+    band(BANDS.FAR, 1, true);
+    band(BANDS.GRASS, 1, true);
+    band(BANDS.MIDDLE, 1, true);
+    band(BANDS.HARE, 1, true);
+    /* Near stems stay at the left edge, veiled, so they never blur over type. */
+    band(BANDS.NEAR, NEAR_VEIL, false);
   };
 
-  band(BANDS.FAR, 1, true);
-  band(BANDS.GRASS, 1, true);
-  band(BANDS.MIDDLE, 1, true);
-  band(BANDS.HARE, 1, true);
-  /* Near stems stay at the left edge, veiled, so they never blur over type. */
-  band(BANDS.NEAR, NEAR_VEIL, false);
+  sow(rng, 1);
+  const nearTip = Math.min(
+    ...built
+      .filter((stem) => stem.z < BANDS.NEAR.far)
+      .map((s) => s.root - s.height),
+  );
+  /* Its own seed, so the stems above keep their places. */
+  sow(random(EXTRA_SEED), EXTRA_STEMS, nearTip);
 
   return built.sort((a, b) => b.z - a.z);
 };
