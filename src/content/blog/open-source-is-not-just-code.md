@@ -140,7 +140,7 @@ Drupal events, big and small, also give newcomers three ways to start, instead o
 - **[Contribution days](https://events.drupal.org/atlanta2025/contribution)** lower the logistics. They give people a dedicated room to sit down together and actually contribute.
 - **[Drupal in a Day](https://www.drupal.org/drupalorg/blog/state-of-drupal-open-university)** raises awareness. It is a newer initiative that brings students in and teaches them Drupal from scratch.
 
-I felt this clearly at [Drupal Mountain Camp](https://drupalmountaincamp.ch/), in a workshop called Why Drupal, where we talked about why each of us contributes. Different backgrounds, different journeys, but the same underlying goal: build something meaningful and grow while doing it. That shared goal is why people say "come for the code, stay for the community".
+I felt this clearly at [Drupal Mountain Camp](https://drupalmountaincamp.ch/), in a workshop called Why Drupal led by [Mikko Hämäläinen](https://www.drupal.org/u/mkoh), CEO of Druid, where we talked about why each of us contributes. Different backgrounds, different journeys, but the same underlying goal: build something meaningful and grow while doing it. That shared goal is why people say "come for the code, stay for the community".
 
 ### 5. Communi&shy;cation
 
