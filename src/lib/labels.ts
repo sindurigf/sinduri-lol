@@ -34,3 +34,31 @@ export const categoryLabel = (category: string): string => {
     )
     .join(' ');
 };
+
+const EDGE_PUNCTUATION = /^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu;
+
+/**
+ * The first word of `text` that breaks Chicago title case, or undefined. A
+ * hyphenated compound counts each part as a word; `exempt` tokens keep their
+ * own case.
+ */
+export const titleCaseMiss = (
+  text: string,
+  exempt: ReadonlySet<string> = new Set(),
+): string | undefined => {
+  const words = text
+    .split(' ')
+    .map((token) => token.replace(EDGE_PUNCTUATION, ''))
+    .flatMap((token) => (exempt.has(token) ? [token] : token.split('-')))
+    .map((word) => word.replace(EDGE_PUNCTUATION, ''))
+    .filter((word) => /\p{L}/u.test(word));
+  const last = words.length - 1;
+  return words.find(
+    (word, index) =>
+      /^\p{Ll}/u.test(word) &&
+      !exempt.has(word) &&
+      (index === 0 ||
+        index === last ||
+        !TITLE_CASE_SMALL_WORDS.has(word.toLowerCase())),
+  );
+};

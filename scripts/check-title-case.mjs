@@ -2,6 +2,7 @@
  * Fails if a built heading, title, summary or og:title is not in Chicago title
  * case: the first and last word are capitalised, and a word between is lower
  * case only if it is in TITLE_CASE_SMALL_WORDS (shared with categoryLabel).
+ * Each part of a hyphenated compound counts as a word.
  * The brand names in src/lib/site.ts are exempt, in their own case.
  */
 import { fileURLToPath } from 'node:url';
@@ -9,7 +10,7 @@ import { existsSync } from 'node:fs';
 import { glob, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { assertBuildCurrent } from './build-fingerprint.mjs';
-import { TITLE_CASE_SMALL_WORDS } from '../src/lib/labels.ts';
+import { titleCaseMiss } from '../src/lib/labels.ts';
 import { SITE_NAME, SITE_SHORT_NAME } from '../src/lib/site.ts';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -67,24 +68,6 @@ const textOf = (html) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-const startsLowerCase = (word) => /^\p{Ll}/u.test(word);
-
-const miss = (text) => {
-  const words = text
-    .split(' ')
-    .map((word) => word.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ''))
-    .filter((word) => /\p{L}/u.test(word));
-  const last = words.length - 1;
-  return words.find(
-    (word, index) =>
-      startsLowerCase(word) &&
-      !BRAND_TOKENS.has(word) &&
-      (index === 0 ||
-        index === last ||
-        !TITLE_CASE_SMALL_WORDS.has(word.toLowerCase())),
-  );
-};
-
 const routeOf = (file) =>
   file
     .slice(DIST.length)
@@ -122,7 +105,7 @@ const run = async () => {
         }
         if (text === '') continue;
         scanned += 1;
-        const word = miss(text);
+        const word = titleCaseMiss(text, BRAND_TOKENS);
         if (word === undefined) continue;
         const allowed = ALLOWED.findIndex(
           (item) =>

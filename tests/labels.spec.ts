@@ -1,5 +1,5 @@
 import { expect, test } from './test';
-import { categoryLabel } from '../src/lib/labels';
+import { categoryLabel, titleCaseMiss } from '../src/lib/labels';
 import { NODE } from './tags';
 
 const EXPECTED: ReadonlyArray<readonly [slug: string, label: string]> = [
@@ -28,6 +28,40 @@ test.describe('categoryLabel', NODE, () => {
       const words = categoryLabel(slug).split(' ');
       expect(startsUpper(words[0]!), 'first word is lower case.').toBe(true);
       expect(startsUpper(words.at(-1)!), 'last word is lower case.').toBe(true);
+    });
+  }
+});
+
+const PASSES: readonly string[] = [
+  'The One-Keeper Problem',
+  'Up-to-Date Guides',
+  'What to Do Now vs Later',
+  'Privacy',
+  'Where the Name sinduri.lol Comes From',
+];
+
+const FAILS: ReadonlyArray<readonly [text: string, word: string]> = [
+  ['The One-keeper Problem', 'keeper'],
+  ['Socio-technical Systems', 'technical'],
+  ['things to Do', 'things'],
+  ['Things to Do in', 'in'],
+  ['A Day of Many things', 'things'],
+  ['privacy', 'privacy'],
+  ['Where the Name sinduri.com Comes From', 'sinduri.com'],
+];
+
+test.describe('titleCaseMiss', NODE, () => {
+  const exempt = new Set(['sinduri.lol']);
+
+  for (const text of PASSES) {
+    test(`accepts "${text}"`, () => {
+      expect(titleCaseMiss(text, exempt)).toBeUndefined();
+    });
+  }
+
+  for (const [text, word] of FAILS) {
+    test(`rejects "${text}" at "${word}"`, () => {
+      expect(titleCaseMiss(text, exempt)).toBe(word);
     });
   }
 });
