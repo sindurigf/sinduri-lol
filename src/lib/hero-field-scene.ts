@@ -187,6 +187,9 @@ export const ROUTE_MARGIN = 170;
 
 /* Fixed, so the field is identical on every load and screenshot. */
 export const FIELD_SEED = 4211;
+/** A second sowing, this share of every band, on its own seed so the first keeps its places. */
+export const EXTRA_STEMS = 0.3;
+export const EXTRA_SEED = 7537;
 export const ROUTE_SEED = 8171;
 
 /** Numerical Recipes' LCG. */
