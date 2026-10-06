@@ -29,7 +29,7 @@ const EXPERIENCE = [
     title: 'Sr Developer Programs Engineer',
     current: true,
     points: [
-      'Rebranded the Open Ecosystem Discourse community to OffOn and restructured its categories, navigation and gamification from community metrics.',
+      'Rebranded the Open Ecosystem Discourse community to OffOn and restructured its categories, navigation and gamification based on community metrics.',
       "Built offon.dev, the OffOn community's landing site, in React, then migrated it to Astro.",
       'Built AI automation for community operations: content generation, community digests and metrics reports.',
     ],
@@ -109,13 +109,12 @@ const OPEN_SOURCE = [
   },
   {
     award: 'Drupal Austria',
-    detail:
-      'Elected to the board as marketing manager. Deputy marketing manager in 2026.',
+    detail: 'Joined the board in 2025 as marketing manager.',
   },
   {
     award: 'Drupal Switzerland',
     detail:
-      'Active in the Swiss community, which taught me so much about events.',
+      'Active in the Swiss Drupal community, where I gained most of my event organising experience.',
   },
   {
     award: 'Event organising',
@@ -138,13 +137,13 @@ const OPEN_SOURCE = [
 
     {/* Size, not only colour, carries the hierarchy: forced colours flattens colour. */}
     <p class="mt-4 text-body text-gold-muted">
-      Development, product management, open source community programs.
+      Web development, product management and open source community programs.
     </p>
 
     {/* No `download` attribute: the browser's viewer is the more accessible default. */}
     <p class="actions mt-head">
       <a href={CV_HREF} class="btn-gold-primary">
-        Download my CV (PDF, {CV_KB} KB)
+        Download My CV (PDF, {CV_KB} KB)
       </a>
       <a href="/contact/" class="btn-gold-secondary">
         Get in Touch
@@ -155,19 +154,21 @@ const OPEN_SOURCE = [
   <Section title="Summary" panel>
     <p slot="lead" class="lead max-w-3xl">
       I am passionate about open source and actively involved in the Drupal
-      community. My developer background helps me every single day: it helps me
-      create realistic timelines, improve communication between stakeholders and
+      community. My developer background helps me every single day: I create
+      realistic timelines, improve communication between stakeholders and
       engineering, and understand what developers actually need to be
       successful.
     </p>
     <p class="max-w-measure text-body text-text text-pretty">
-      I never say no to a challenge just because I do not know how to approach
-      it. I commit to figuring it out and learning whatever it takes to make it
-      work.
+      I am always ready for a new challenge. Moving from civil engineering into
+      tech, I have worked across web development, product management and
+      developer programs, with technologies such as PHP, Drupal, Nuxt, Astro and
+      Discourse. When something is new to me, I commit to figuring it out and
+      learning whatever it takes.
     </p>
   </Section>
 
-  <Section title="Work experience">
+  <Section title="Work Experience">
     <ol class="card-block flex flex-col gap-grid">
       {
         /* Title first, so heading navigation lands before the employer. */
@@ -204,7 +205,7 @@ const OPEN_SOURCE = [
     </ol>
   </Section>
 
-  <Section title="Skills and education">
+  <Section title="Skills and Education">
     <div class="grid gap-grid lg:grid-cols-2">
       <div class="card">
         <h3 class="card-title">Education</h3>
@@ -251,11 +252,14 @@ const OPEN_SOURCE = [
     </div>
   </Section>
 
-  <Section title="Open source" surface="gold" class="gold-column">
+  <Section title="Open Source" surface="gold" class="gold-column">
     <div class="grid gap-grid lg:grid-cols-12 lg:items-start">
       <p class="lead mt-0 lg:col-span-5">
-        What I love about open source is that people contribute based on passion
-        and expertise, not hierarchy. There is room for everyone.
+        Open source runs almost everything we depend on, and it exists because
+        people share their code, ideas, time and resources. I contribute to be
+        part of that: to give back, to learn from some of the most knowledgeable
+        people in tech and to grow the skills I use every day, such as
+        communication, collaboration and problem-solving.
       </p>
       <dl class="grid gap-grid sm:grid-cols-2 lg:col-span-7">
         {OPEN_SOURCE.map((item) => (
@@ -271,7 +275,7 @@ const OPEN_SOURCE = [
 
   <CloseRow
     readHref={JOURNEY_POST_HREF}
-    readLabel="Five years in Drupal"
+    readLabel="Five Years in Drupal"
     actionHref="/about/"
     actionLabel="Learn More About Me"
   />
