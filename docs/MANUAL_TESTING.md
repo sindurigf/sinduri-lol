@@ -67,7 +67,7 @@ Setup: Chrome at 375px. No mouse.
 - [ ] The menu button shows a focus ring. → SC 2.4.7
 - [ ] Enter opens the panel; Escape closes; Space reopens. → SC 2.1.1
 - [ ] On open, focus is on the first link. → SC 2.4.3
-- [ ] Tab cycles Home, About, Career, Blog, Get in touch, Close, one stop in
+- [ ] Tab cycles Home, About, Career, Blog, Get in Touch, Close, one stop in
       the browser UI (correct `<dialog>` behaviour), Home. Focus never reaches
       the page behind. → SC 2.1.2
 - [ ] Shift+Tab from the first item goes to Close. → SC 2.1.2
@@ -124,7 +124,7 @@ The ring is 4px cyan at a 4px offset plus the element's shadow (4px or 8px);
       block. → SC 1.4.11, 2.4.7
 - [ ] Logo and contact cards (8px shadow, ring 12px out): the ring still reads
       as belonging to the control. → SC 1.4.11, 2.4.7
-- [ ] Gold skip link and "Get in touch": the ring is on the dark ground, never
+- [ ] Gold skip link and "Get in Touch": the ring is on the dark ground, never
       on gold. → SC 1.4.11
 - [ ] On a gold slab or band: the `#131313` ring is visible. → SC 1.4.11
 - [ ] No ring is clipped by a parent or hidden under the header. → SC 2.4.11
