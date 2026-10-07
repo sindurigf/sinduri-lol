@@ -54,11 +54,15 @@ Sinduri's voice. Functional copy follows [AGENTS.md](../AGENTS.md#copy).
 | Spelling    | US English: organize, recognize, behavior, favorite           |
 | Headings    | Chicago title case: "People and Places", "What AI Changes"    |
 | Dashes      | None as punctuation: a comma, a full stop or a new sentence   |
-| Apostrophes | No contractions ("I do not"); possessives only ("the year's") |
+| Apostrophes | No negative contractions ("do not"); "that's" is fine         |
 | Lists       | No comma before the last "and": "wine, watermelon and cake"   |
 | Numbers     | Words under 101 ("five maintainers"); figures for dates and % |
 | Quotes      | Song and talk titles in quotation marks; punctuation outside  |
 | Names       | Brands in their own casing: mossbo, drunomics                 |
+
+Negative contractions are written out because many readers find them harder
+to read, or misread them as the opposite
+([GOV.UK](https://guidance.publishing.service.gov.uk/writing-to-gov-uk-standards/style-guides/a-to-z-style-guide/)).
 
 ## Method
 
