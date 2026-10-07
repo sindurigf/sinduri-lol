@@ -101,6 +101,8 @@ view (development server only, never published), and forks.
   640px, 1280px and 1920px. The content box matches the
   [heading floors](docs/STYLEGUIDE.md#heading-floors), no heading word is wider
   than its box, and no text or control sits past either edge.
+- **Text resize.** Every text token reaches 2x by page zoom in Chromium and
+  Firefox ([Text resize](#text-resize-sc-144)).
 - **Target size.** A 44px square centered on every target outside a sentence
   hits only that target, at 305px and 1280px, on every page (listings sampled
   as below) and in the open cat card, photo viewer and menu (SC 2.5.5).
@@ -152,6 +154,58 @@ view (development server only, never published), and forks.
 - **Talk PDF.** Passes PDF/UA-1 in `npm run check:pdf`. See gap 6.
 
 Passing axe is not conformance.
+
+### Text resize (SC 1.4.4)
+
+[Understanding 1.4.4](https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html):
+"it should still be possible to get 200% text enlargement in some way
+compared to the default 100% zoom". Text tokens with a `vw` or `svh` term grow
+less than the zoom factor, so 2x comes at a higher page zoom.
+
+- **Met by:** page zoom up to 500% in Chromium and Firefox.
+  `tests/text-resize.spec.ts` finds the lowest zoom that reaches 2x for every
+  such token at 390, 1000, 1280 and 1920px and fails if none does.
+- **Headroom:** a token at 500% in the table reaches 2x only at the
+  browsers' ceiling.
+- **Safari:** its Page Zoom setting stops at 300% on macOS and iOS. Tokens
+  past 300% below reach 2x there only through system magnification (Zoom on
+  macOS and iOS). The site does not use Dynamic Type (`-apple-system-body`).
+  Known limit.
+- **Text-only zoom:** Firefox "Zoom Text Only" scales the `rem` parts only, so `vw` text does not reach 2x that way. Under
+  [F94](https://www.w3.org/WAI/WCAG22/Techniques/failures/F94) one working
+  method is enough.
+
+Lowest page zoom, in %, at which each token reaches 2x its 100% size, by
+window width. Chromium, with Firefox in brackets where its zoom steps differ.
+
+| Token                         | 390px     | 1000px    | 1280px    | 1920px    |
+| ----------------------------- | --------- | --------- | --------- | --------- |
+| `--text-h1`                   | 250 (240) | 500       | 500       | 200       |
+| `--text-hero-h1`              | 300       | 500       | 500       | 200       |
+| `--text-reading-h1`           | 250 (240) | 500       | 500       | 200       |
+| `--text-quote-mark`           | 200       | 400       | 500       | 500       |
+| `--text-post-title`           | 200       | 400       | 400       | 400       |
+| `--text-post-teaser`          | 200       | 200       | 250 (300) | 250 (300) |
+| `--text-post-h2`              | 200       | 250 (300) | 300       | 300       |
+| `--text-post-h3`              | 200       | 250 (240) | 300       | 300       |
+| `--text-post-card`            | 200       | 300       | 400       | 400       |
+| `--text-post-card-feature`    | 200       | 400       | 500       | 500       |
+| `--text-h2`                   | 200       | 500       | 500       | 500       |
+| `--text-h3`                   | 200       | 300       | 400       | 400       |
+| `--text-standfirst`           | 200       | 300       | 400       | 400       |
+| `--text-slide`                | 200       | 250 (240) | 300       | 400       |
+| `--text-slide-title`          | 200       | 400       | 500       | 500       |
+| `--text-slide-number`         | 400       | 400       | 400       | 500       |
+| `--text-hero-sticker`         | 200       | 250 (240) | 300       | 400       |
+| `--text-menu`                 | 200       | 400       | 400       | 200       |
+| `--text-body`                 | 200       | 200       | 200       | 250 (240) |
+| `--text-label`                | 200       | 175 (200) | 200       | 200       |
+| `--text-footer-name`          | 200       | 200       | 250 (240) | 250 (300) |
+| `--text-section-number`       | 200       | 250 (240) | 300       | 300       |
+| `--text-hero-h1-column`       | 200       | 500       | 500       | 500       |
+| `--text-hero-h1-column-phone` | 250 (300) | 200       | 200       | 200       |
+
+Needs more than 300% (Safari's ceiling) at one width or more: `--text-h1`, `--text-hero-h1`, `--text-reading-h1`, `--text-quote-mark`, `--text-post-title`, `--text-post-card`, `--text-post-card-feature`, `--text-h2`, `--text-h3`, `--text-standfirst`, `--text-slide`, `--text-slide-title`, `--text-slide-number`, `--text-hero-sticker`, `--text-menu`, `--text-hero-h1-column`.
 
 ## 5. Color and contrast
 
@@ -212,6 +266,7 @@ merge.
 | `tests/link-purpose.spec.ts`        | 2.4.9                                              | One link name, one destination, on every route; hidden text keeps the visible words first                                                                                                                                                                                                   |
 | `tests/unusual-words.spec.ts`       | 3.1.3                                              | Each listed term a `<dfn>` at first use, defined in its sentence; every `<dfn>` listed; replaced jargon stays out; `/404` links its idioms                                                                                                                                                  |
 | `tests/abbreviations.spec.ts`       | 3.1.4, 1.4.13                                      | First use of each listed abbreviation described by its expansion, which opens without JavaScript; focus and tap show it, Escape and a second tap hide it, the pointer can cross onto it, it opens flush below and inside 320px; no unlisted abbreviation on functional pages; no "min read" |
+| `tests/text-resize.spec.ts`         | 1.4.4                                              | Lowest page zoom, up to 500%, at which each viewport-sized text token reaches 2x, at four widths                                                                                                                                                                                            |
 | `tests/target-size.spec.ts`         | 2.5.5                                              | Every target's 44px square, on pages and in open dialogs, at 305px and 1280px                                                                                                                                                                                                               |
 | `tests/reflow.spec.ts`              | 1.4.10, 1.4.12                                     | No sideways scroll; content box; heading word fit                                                                                                                                                                                                                                           |
 | `tests/visual-presentation.spec.ts` | 1.4.8                                              | Line length, line height and paragraph spacing at three widths                                                                                                                                                                                                                              |
