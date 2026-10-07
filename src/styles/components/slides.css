@@ -150,6 +150,12 @@
     .deck:not(:fullscreen) .slide:not(.slide-cover) .slide-title {
       @apply text-slide-title-page wrap-anywhere;
     }
+
+    /* Never under the slide titles, so the h1 stays the largest heading. */
+    .deck:not(:fullscreen) .slide-cover .slide-title {
+      @apply wrap-anywhere;
+      font-size: max(var(--text-h1), var(--text-slide-title-page));
+    }
   }
 
   /*
