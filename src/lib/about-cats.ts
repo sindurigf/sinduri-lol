@@ -36,6 +36,7 @@ import {
 import type { PropState } from './about-cats-types';
 import {
   createIdle,
+  idleFrameMs,
   idleOffsets,
   tickIdle,
   type IdleOffsets,
@@ -44,8 +45,6 @@ import {
 
 /** The rest after each move, in ms, while the cat idles: cats act in bursts. */
 const PAUSE_MS = [1500, 4500] as const;
-/** A resting cat is drawn this often, in ms: breathing needs 20 frames a second, not 60. */
-const IDLE_FRAME_MS = 50;
 /** What a frame did for a cat: drew it, left it settled, or held it in a pause. */
 type StepResult = 'draw' | 'still' | 'rest';
 
@@ -71,7 +70,7 @@ const LEAPS: Partial<Record<MoveName, number>> = {
 /** Where a cat stands from the card's edge to push the cup, the track's end: CUP_AHEAD plus its push takes the cup past the edge. */
 export const CUP_EDGE = TRACK_MARGIN;
 /** A pointer that has not moved for this long no longer draws a cat's eye. */
-const POINTER_IDLE_MS = 4000;
+export const POINTER_IDLE_MS = 4000;
 const FACE_DEADBAND = 20;
 const WATCH_EASE = 0.12;
 const TILT_GAIN = 20;
@@ -578,13 +577,14 @@ export const createColony = (
       cat.idling = result === 'rest';
       if (cat.idling) {
         tickIdle(cat.idle, now);
-        const due = tailMoving || now - cat.idleDrawnAt >= IDLE_FRAME_MS;
+        const gap = idleFrameMs(cat.idle, now);
+        const due = tailMoving || now - cat.idleDrawnAt >= gap;
         /* Next frame: the tail's, the next idle one, the pause's end, or the nap. */
         wakeAt = Math.min(
           wakeAt,
           cat.restUntil,
           cat.napAt,
-          tailMoving ? now : (due ? now : cat.idleDrawnAt) + IDLE_FRAME_MS,
+          tailMoving ? now : (due ? now : cat.idleDrawnAt) + gap,
         );
         if (!due) continue;
         cat.idleDrawnAt = now;
