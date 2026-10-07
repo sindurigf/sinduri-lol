@@ -131,11 +131,12 @@ test.describe('JSON-LD structured data', NODE, () => {
       const person = nodeOfType(graphOf(html, route), 'Person')!;
       const sameAs = ((person.sameAs as string[]) ?? []).toSorted();
 
-      // Scraped from the footer, not imported, so filtering either list fails it.
-      const footer = html.slice(
+      // Scraped from the footer's Social nav, not imported, so filtering either list fails it.
+      const social = html.indexOf(
+        'aria-label="Social"',
         html.indexOf('<footer'),
-        html.indexOf('</footer>'),
       );
+      const footer = html.slice(social, html.indexOf('</nav>', social));
       const footerProfiles = [
         ...new Set(
           [...footer.matchAll(/href="(https:\/\/[^"]+)"/g)].map(
