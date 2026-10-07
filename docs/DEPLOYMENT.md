@@ -96,7 +96,15 @@ A collector host change also changes the CSP:
 ## Hostnames
 
 `www.sinduri.lol` and `sinduri-lol.pages.dev` 301 to the apex via an
-account-level Bulk Redirect list, outside this repository. The Pages project
+account-level Bulk Redirect list set in the Cloudflare dashboard. Nothing in
+this repository checks it; verify by hand:
+
+```sh
+curl -sI https://www.sinduri.lol | grep -i '^HTTP\|^location'
+curl -sI https://sinduri-lol.pages.dev | grep -i '^HTTP\|^location'
+```
+
+Each prints `301` and a `location` on `https://sinduri.lol`. The Pages project
 stays, builds disabled, to hold the `pages.dev` name.
 
 ## Google Search Console
@@ -134,4 +142,4 @@ Dashboard settings that change what ships without a file change.
   `CLOUDFLARE_ACCOUNT_ID`: let the weekly `check:live` count unsent
   notifications in production D1. Scope the token to D1 Read on this account;
   the D1 query endpoint accepts it. The account ID spares wrangler an account
-  lookup the token may not be allowed. Without both that check is skipped by name.
+  lookup the token may not be allowed. Without both, `check:live` prints a skip line for the D1 check.
