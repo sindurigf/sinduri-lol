@@ -230,7 +230,7 @@ merge.
 | `tests/failed-images.spec.ts`       | 1.1.1                                              | A failed photo shows its alt text                                                                                                                                                                                                                                                           |
 | `tests/contact.spec.ts`             | 3.3.1, 3.3.2, 3.3.3, 3.3.5, 3.3.6, 2.4.12          | 422 and 503 in a browser: input kept, `aria-invalid`, summary links, hints beside errors, no focus covered; honeypot, rate limit                                                                                                                                                            |
 | `tests/contact-sending.spec.ts`     | 4.1.3                                              | Status text, no busy ancestor, no second submit, back-forward cache reset                                                                                                                                                                                                                   |
-| `tests/slideshow.spec.ts`           | 1.4.11, 1.4.12, 2.1.1, 2.4.7, 4.1.3                | Buttons, keys, live region, focus, full screen (keys, focus ring, 200% zoom clipping, text spacing), no JS                                                                                                                                                                                  |
+| `tests/slideshow.spec.ts`           | 1.4.4, 1.4.10, 1.4.11, 1.4.12, 2.1.1, 2.4.7, 4.1.3 | Buttons, keys, live region, focus, full screen (keys, focus ring, 200% zoom clipping, text spacing), page-view titles and text 2x at 200%, titles at 320px, no JS                                                                                                                           |
 | `tests/word-spacing.spec.ts`        | 1.3.1                                              | No word glued to an inline element                                                                                                                                                                                                                                                          |
 | `tests/wave-alerts.spec.ts`         |                                                    | WAVE's possible-heading, redundant-link and noscript alerts                                                                                                                                                                                                                                 |
 | `tests/console.spec.ts`             |                                                    | No console error, CSP violation or failed request on any route                                                                                                                                                                                                                              |
@@ -330,12 +330,21 @@ links. Not automated:
    credits (the GIFs need a pause control, the captions do not stand alone,
    and licensing is unverified), and the labels above 27 slide titles that
    restate them.
-7. **Talk slide text does not reach 2x at 200% zoom (SC 1.4.4).**
-   `--text-slide` and `--text-slide-title` follow the screen, so zoom shrinks
-   them with it: at 1280x720 zoomed to 200%, slide titles stay the same size
-   (1.0x) and full-screen body text grows 1.48x. Page-view body text uses
-   `--text-body` and grows 2x. `tests/slideshow.spec.ts` asserts only that
-   nothing is cut off at 200%.
+7. **Some talk slide text reaches 2x only above 200% zoom (SC 1.4.4, met
+   via page zoom).** Understanding 1.4.4: "it should still be possible to get
+   200% text enlargement in some way compared to the default 100% zoom."
+   Chromium and Firefox page zoom up to 500% gets there; lowest zoom measured
+   in Chromium:
+   - Full-screen titles: 500% (1280x720, 1920x1080).
+   - Full-screen text: 300% (1280x720), 400% (1920x1080).
+   - Cover title (site `--text-h1`): 200% at 1920, 250% at 390, 500% at 1280
+     and 1000.
+   - Page-view text at 1920 or wider (site `--text-body`): 250%.
+
+   On the page, slide titles double at 200% from every width tested and slide
+   text from every width below 1920 (`tests/slideshow.spec.ts`). Safari page zoom stops at 300% on macOS and
+   iOS, so tokens that need more reach 2x only in Chromium or Firefox. The
+   site-wide `--text-h1` and `--text-body` are in their own pass.
 
 ## 8. Reporting a barrier
 

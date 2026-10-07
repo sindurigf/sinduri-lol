@@ -243,6 +243,9 @@
   --text-slide--line-height: 1.35;
   --text-slide-title: clamp(1.625rem, min(4.4vw, 7.8svh), 4.0625rem);
   --text-slide-title--line-height: 1;
+  /* Page-view slide title: rem only, so browser zoom always doubles it (SC 1.4.4). */
+  --text-slide-title-page: 3.5rem;
+  --text-slide-title-page--line-height: 1;
   /* A part opener's number, height-aware like the two above. */
   --text-slide-number: clamp(4.5rem, 16svh, 10rem);
   --text-slide-number--line-height: 1;

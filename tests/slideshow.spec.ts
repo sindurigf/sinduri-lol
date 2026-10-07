@@ -1,7 +1,7 @@
-import { expect, test, type Page } from './test';
+import { expect, test, type Browser, type Page } from './test';
 import { gotoSettled } from './settle';
 import { TALK_ROUTES } from './routes';
-import { NARROW_WIDTH, TEXT_SPACING_OVERRIDE } from './wcag';
+import { NARROW_WIDTH, REFLOW_VIEWPORT, TEXT_SPACING_OVERRIDE } from './wcag';
 import { NON_TEXT, PAGE_HELPERS } from './contrast';
 import { DECK_READY_TIMEOUT_MS } from '../src/lib/deck-ready';
 
@@ -648,5 +648,84 @@ test.describe('the talk slideshow in full screen', () => {
     await pressUntil('Space', 'atEnd');
     await page.keyboard.press('Space');
     await expect(visible(page)).toHaveId(after);
+  });
+});
+
+/** Starting widths for page-view zoom; body text is asserted only below 1920, where `--text-body` caps (ACCESSIBILITY.md section 7). */
+const PAGE_WIDTHS = [390, 1000, 1280, 1920] as const;
+const BODY_WIDTHS = [390, 1000, 1280] as const;
+const PAGE_HEIGHT = 900;
+/** Rounding of fractional px at 2x device scale. */
+const RATIO_TOLERANCE = 0.01;
+const DOUBLE = 2;
+
+/* Device px of the second slide's title and first body line, at `zoom` modeled as viewport / zoom at zoom x device scale. */
+const deviceSizes = async (browser: Browser, width: number, zoom: number) => {
+  const context = await browser.newContext({
+    viewport: { width: width / zoom, height: PAGE_HEIGHT / zoom },
+    deviceScaleFactor: zoom,
+    baseURL: test.info().project.use.baseURL,
+  });
+  try {
+    const page = await context.newPage();
+    await open(page, '#slide-2');
+    const sizes = await visible(page).evaluate((slide) => {
+      const size = (selector: string) =>
+        parseFloat(getComputedStyle(slide.querySelector(selector)!).fontSize);
+      return {
+        title: size('.slide-title'),
+        body: size('.slide-body :is(p, li)'),
+      };
+    });
+    return { title: sizes.title * zoom, body: sizes.body * zoom };
+  } finally {
+    await context.close();
+  }
+};
+
+test.describe('the talk slideshow on the page at 200% zoom', () => {
+  for (const width of PAGE_WIDTHS) {
+    test(`from ${width}px, slide titles${BODY_WIDTHS.includes(width as never) ? ' and text' : ''} double (SC 1.4.4)`, async ({
+      browser,
+    }) => {
+      const unzoomed = await deviceSizes(browser, width, 1);
+      const zoomed = await deviceSizes(browser, width, DOUBLE);
+      expect(
+        zoomed.title / unzoomed.title,
+        'the slide title grows less than 2x',
+      ).toBeGreaterThanOrEqual(DOUBLE - RATIO_TOLERANCE);
+      if (BODY_WIDTHS.includes(width as never)) {
+        expect(
+          zoomed.body / unzoomed.body,
+          'the slide text grows less than 2x',
+        ).toBeGreaterThanOrEqual(DOUBLE - RATIO_TOLERANCE);
+      }
+    });
+  }
+
+  // Hyphens are forced off: hyphenation dictionaries vary by engine, so the fit must come from overflow-wrap.
+  test('every slide title fits 320px without sideways scrolling (SC 1.4.10)', async ({
+    page,
+  }) => {
+    await page.setViewportSize(REFLOW_VIEWPORT);
+    await open(page);
+    await page.addStyleTag({
+      content: '.slide-title { hyphens: manual !important; }',
+    });
+    const count = await page.locator('.slide').count();
+    const over: string[] = [];
+    for (let at = 1; at <= count; at++) {
+      await expect(visible(page)).toHaveId(`slide-${at}`);
+      const extra = await visible(page).evaluate((slide) => {
+        const title = slide.querySelector<HTMLElement>('.slide-title')!;
+        return Math.max(
+          document.documentElement.scrollWidth - innerWidth,
+          title.scrollWidth - title.clientWidth,
+        );
+      });
+      if (extra > 0) over.push(`slide-${at} +${extra}px`);
+      await page.keyboard.press('ArrowRight');
+    }
+    expect(over, 'slides whose title scrolls sideways at 320px').toEqual([]);
   });
 });
