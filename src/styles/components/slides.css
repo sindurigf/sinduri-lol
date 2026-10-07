@@ -232,8 +232,9 @@
     @apply mt-0;
   }
 
+  /* 16px: paragraph spacing 1.5 times the line spacing at body size (SC 1.4.8). */
   .slide-body .slide-card > p:first-child + * {
-    @apply mt-2;
+    @apply mt-4;
   }
 
   .slide-body li {
