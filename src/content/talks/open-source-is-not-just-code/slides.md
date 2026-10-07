@@ -48,7 +48,7 @@ part: 'Part 1: The Burden'
 
 # The Burden
 
-Most projects don't fail on code. They fail under invisible weight.
+Most projects do not fail on code. They fail under invisible weight.
 
 ---
 
@@ -126,7 +126,7 @@ label: 'Pillar 1'
 
 **A good model: [Apache Software Foundation](https://www.apache.org/theapacheway/)**
 
-The PMC elects committers on merit. Individuals represent themselves, not employers. Decisions happen in the open: if it wasn't recorded, it didn't happen.
+The PMC elects committers on merit. Individuals represent themselves, not employers. Decisions happen in the open: if it was not recorded, it did not happen.
 
 ---
 
@@ -311,7 +311,7 @@ Heavy process on a tiny project can strangle it before it grows.
 - **"Move fast"** works when paired with transparency, so contributors can follow the changes and not get blindsided.
 - **"Document everything"** works when paired with clear ownership, so the docs stay current.
 
-Context decides whether a practice helps. The practices aren't the problem; the pairing is.
+Context decides whether a practice helps. The practices are not the problem; the pairing is.
 
 ---
 
@@ -333,7 +333,7 @@ label: 'The AI Question'
 - The cost shifts from author to maintainer
 - Access is unequal. AI can become a new privilege.
 
-AI doesn't replace community design. It raises the stakes. Share the cost and skill. Build it into contributor experience.
+AI does not replace community design. It raises the stakes. Share the cost and skill. Build it into contributor experience.
 
 ---
 
@@ -371,7 +371,7 @@ The drift is slow and quiet. That's exactly why it's easy to miss.
 
 # What You Can Realistically Influence
 
-You don't need to be a maintainer, or even a contributor. If you care about open source, any of these help.
+You do not need to be a maintainer, or even a contributor. If you care about open source, any of these help.
 
 - Document one unclear process
 - Review a first contribution
