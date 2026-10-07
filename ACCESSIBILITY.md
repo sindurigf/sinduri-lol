@@ -165,47 +165,20 @@ less than the zoom factor, so 2x comes at a higher page zoom.
 - **Met by:** page zoom up to 500% in Chromium and Firefox.
   `tests/text-resize.spec.ts` finds the lowest zoom that reaches 2x for every
   such token at 390, 1000, 1280 and 1920px and fails if none does.
-- **Headroom:** a token at 500% in the table reaches 2x only at the
-  browsers' ceiling.
-- **Safari:** its Page Zoom setting stops at 300% on macOS and iOS. Tokens
-  past 300% below reach 2x there only through system magnification (Zoom on
-  macOS and iOS). The site does not use Dynamic Type (`-apple-system-body`).
-  Known limit.
-- **Text-only zoom:** Firefox "Zoom Text Only" scales the `rem` parts only, so `vw` text does not reach 2x that way. Under
+- **Headroom:** several heading and slide tokens reach 2x only at 500% at
+  some widths, the browsers' ceiling; the annotation below names them.
+- **Safari:** its Page Zoom list stops at 300% on macOS and iOS, not
+  confirmed from an Apple or WebKit source. The spec runs WebKit up to 300%
+  and records which tokens reach 2x there without failing. Others reach 2x in
+  Safari only through system magnification (Zoom on macOS and iOS); the site
+  does not use Dynamic Type (`-apple-system-body`). Known limit.
+- **Text-only zoom:** Firefox "Zoom Text Only" scales the `rem` parts only,
+  so `vw` text does not reach 2x that way. Under
   [F94](https://www.w3.org/WAI/WCAG22/Techniques/failures/F94) one working
   method is enough.
 
-Lowest page zoom, in %, at which each token reaches 2x its 100% size, by
-window width. Chromium, with Firefox in brackets where its zoom steps differ.
-
-| Token                         | 390px     | 1000px    | 1280px    | 1920px    |
-| ----------------------------- | --------- | --------- | --------- | --------- |
-| `--text-h1`                   | 250 (240) | 500       | 500       | 200       |
-| `--text-hero-h1`              | 300       | 500       | 500       | 200       |
-| `--text-reading-h1`           | 250 (240) | 500       | 500       | 200       |
-| `--text-quote-mark`           | 200       | 400       | 500       | 500       |
-| `--text-post-title`           | 200       | 400       | 400       | 400       |
-| `--text-post-teaser`          | 200       | 200       | 250 (300) | 250 (300) |
-| `--text-post-h2`              | 200       | 250 (300) | 300       | 300       |
-| `--text-post-h3`              | 200       | 250 (240) | 300       | 300       |
-| `--text-post-card`            | 200       | 300       | 400       | 400       |
-| `--text-post-card-feature`    | 200       | 400       | 500       | 500       |
-| `--text-h2`                   | 200       | 500       | 500       | 500       |
-| `--text-h3`                   | 200       | 300       | 400       | 400       |
-| `--text-standfirst`           | 200       | 300       | 400       | 400       |
-| `--text-slide`                | 200       | 250 (240) | 300       | 400       |
-| `--text-slide-title`          | 200       | 400       | 500       | 500       |
-| `--text-slide-number`         | 400       | 400       | 400       | 500       |
-| `--text-hero-sticker`         | 200       | 250 (240) | 300       | 400       |
-| `--text-menu`                 | 200       | 400       | 400       | 200       |
-| `--text-body`                 | 200       | 200       | 200       | 250 (240) |
-| `--text-label`                | 200       | 175 (200) | 200       | 200       |
-| `--text-footer-name`          | 200       | 200       | 250 (240) | 250 (300) |
-| `--text-section-number`       | 200       | 250 (240) | 300       | 300       |
-| `--text-hero-h1-column`       | 200       | 500       | 500       | 500       |
-| `--text-hero-h1-column-phone` | 250 (300) | 200       | 200       | 200       |
-
-Needs more than 300% (Safari's ceiling) at one width or more: `--text-h1`, `--text-hero-h1`, `--text-reading-h1`, `--text-quote-mark`, `--text-post-title`, `--text-post-card`, `--text-post-card-feature`, `--text-h2`, `--text-h3`, `--text-standfirst`, `--text-slide`, `--text-slide-title`, `--text-slide-number`, `--text-hero-sticker`, `--text-menu`, `--text-hero-h1-column`.
+The lowest zoom each token needs, per browser and width, is the spec's "lowest
+zoom reaching 2x" annotation in the Playwright report.
 
 ## 5. Color and contrast
 
