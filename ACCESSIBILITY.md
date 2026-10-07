@@ -135,8 +135,8 @@ view (development server only, never published), and forks.
   control does not move into its shadow (SC 2.3.3); nothing else animates
   ([STYLEGUIDE Motion](docs/STYLEGUIDE.md#motion)).
 - **Forced colors.** Every non-link control keeps a painted border or opaque
-  background, links are distinct from body text, and every focus stop on `/`
-  keeps an outline.
+  background, links are distinct from body text, every focus stop on `/`
+  keeps an outline, and the menu button's bars take `ButtonText`.
 - **Contact form.** Labels with "(required)" in words, `autocomplete` on name
   and email (SC 1.3.5), a focused error summary on failure, typed values kept
   on a 422, `aria-disabled` on the button and a `role="status"` message while
