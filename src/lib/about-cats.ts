@@ -84,6 +84,8 @@ const MAX_FRAMES_PER_STEP = 6;
 const SETTLED = 0.01;
 /** ms a prop takes to fade when its move is cut short. */
 const PROP_FADE_MS = 250;
+/** A resting cat's tail swaying with its idle motion peaks at about 0.5; a landing whips it past this, and it is drawn at the quicker rate until it slows. */
+const IDLE_TAIL_WHIP = 1;
 /** Tail segment speed below which the tail counts as at rest. */
 export const TAIL_REST = 0.02;
 
@@ -576,14 +578,17 @@ export const createColony = (
       cat.idling = result === 'rest';
       if (cat.idling) {
         tickIdle(cat.idle, now);
-        const gap = idleFrameMs(cat.idle, now);
-        const due = tailMoving || now - cat.idleDrawnAt >= gap;
-        /* Next frame: the tail's, the next idle one, the pause's end, or the nap. */
+        const whipping = cat.rig.tailSpeed.some(
+          (v) => Math.abs(v) > IDLE_TAIL_WHIP,
+        );
+        const gap = idleFrameMs(cat.idle, now, whipping);
+        const due = now - cat.idleDrawnAt >= gap;
+        /* Next frame: the next idle one, the pause's end, or the nap. The idle sway keeps the tail moving, so it does not hold the loop awake. */
         wakeAt = Math.min(
           wakeAt,
           cat.restUntil,
           cat.napAt,
-          tailMoving ? now : (due ? now : cat.idleDrawnAt) + gap,
+          (due ? now : cat.idleDrawnAt) + gap,
         );
         if (!due) continue;
         cat.idleDrawnAt = now;

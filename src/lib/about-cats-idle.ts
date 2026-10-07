@@ -123,7 +123,12 @@ export const idleOffsets = (state: IdleState, now: number): IdleOffsets => {
 const CALM_FRAME_MS = 100;
 const BUSY_FRAME_MS = 50;
 
-export const idleFrameMs = (state: IdleState, now: number): number =>
+export const idleFrameMs = (
+  state: IdleState,
+  now: number,
+  busy = false,
+): number =>
+  busy ||
   now < state.earFlickUntil ||
   now < state.twitchUntil ||
   now - state.glanceAt < GLANCE_MS

@@ -599,6 +599,42 @@ const drawnIn = (page: Page, id: (typeof CATS)[number]) =>
     [`cat-spot-${id}`, MUTATION_WINDOW_MS] as const,
   );
 
+/** Animation frames in which one cat's drawing changed over a window. */
+const framesDrawnIn = (page: Page, id: (typeof CATS)[number], ms: number) =>
+  page.evaluate(
+    ([spotId, windowMs]) =>
+      new Promise<number>((resolve) => {
+        const drawing = document
+          .getElementById(String(spotId))
+          ?.querySelector('.cat-svg');
+        const observer = new MutationObserver(() => {});
+        if (drawing)
+          observer.observe(drawing, {
+            attributes: true,
+            childList: true,
+            subtree: true,
+          });
+        let frames = 0;
+        const request = window.requestAnimationFrame.bind(window);
+        window.requestAnimationFrame = (callback) =>
+          request((now) => {
+            callback(now);
+            if (observer.takeRecords().length > 0) frames += 1;
+          });
+        setTimeout(() => {
+          observer.disconnect();
+          window.requestAnimationFrame = request;
+          resolve(frames);
+        }, Number(windowMs));
+      }),
+    [`cat-spot-${id}`, ms] as const,
+  );
+
+/** A resting cat is drawn at most this often, in frames a second: the quick idle rate, well below the animation frame rate. */
+const IDLE_MAX_FPS = 25;
+/** Frames that must show a resting cat is idling, not frozen, in the window. */
+const IDLE_MIN_FRAMES = 3;
+
 test.describe('About cats', () => {
   test('each cat is a named button that opens its photo in a dialog, Close first, and returns focus', async ({
     page,
@@ -1266,6 +1302,40 @@ test.describe('About cats', () => {
         `${NAMES[id]} was redrawn under reduced motion`,
       ).toBe(0);
     await still.close();
+  });
+
+  test('a resting cat is drawn at the idle rate, not every animation frame', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      viewport: { width: 1280, height: 4200 },
+    });
+    await context.addInitScript(() => {
+      /* Near 1: the longest pause after a move, and no other random move or idle event inside the window. */
+      Math.random = () => 0.99;
+    });
+    const page = await context.newPage();
+    await gotoSettled(page, ROUTE);
+    const id = 'rudra';
+    await showCat(page, id);
+    await tricksButton(page, id).click();
+    await tricksList(page, id)
+      .getByRole('button', { name: tricksData.tricks.look.label })
+      .click();
+    /* Look Around, a turn to face its way first, then a pause: the window sits inside the pause. */
+    const AFTER_LOOK_MS = duration(MOVES.look()) + 2200;
+    await page.waitForTimeout(AFTER_LOOK_MS);
+    const WINDOW_MS = 1200;
+    const frames = await framesDrawnIn(page, id, WINDOW_MS);
+    expect(
+      frames,
+      'a resting cat was never drawn, so it was not idling',
+    ).toBeGreaterThanOrEqual(IDLE_MIN_FRAMES);
+    expect(
+      frames,
+      'a resting cat was drawn nearly every animation frame',
+    ).toBeLessThanOrEqual((IDLE_MAX_FPS * WINDOW_MS) / 1000);
+    await context.close();
   });
 
   test('under reduced motion the cats sit still with no sleep control', async ({
