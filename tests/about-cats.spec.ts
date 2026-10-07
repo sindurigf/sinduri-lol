@@ -396,6 +396,33 @@ test(
   },
 );
 
+/** How far any pose value may sit from the plain sit pose at a move's end. */
+const SIT_TOLERANCE = 0.01;
+
+test(
+  'every play move ends in a plain sit on the ground, so the cat settles and the next move starts from rest',
+  NODE,
+  () => {
+    const start = pose('sit');
+    const playMoves = (Object.keys(MOVES) as MoveName[]).filter(
+      (name) => name !== 'sleep' && name !== 'wake',
+    );
+    for (const name of playMoves) {
+      const end = poseAt(MOVES[name](), start, duration(MOVES[name]()));
+      const sit = pose('sit', { x: end.x, face: end.face });
+      const off = (Object.keys(sit) as (keyof typeof sit)[]).filter((key) => {
+        const a = end[key];
+        const b = sit[key];
+        return Array.isArray(a) && Array.isArray(b)
+          ? Math.abs(a[0] - b[0]) > SIT_TOLERANCE ||
+              Math.abs(a[1] - b[1]) > SIT_TOLERANCE
+          : Math.abs(Number(a) - Number(b)) > SIT_TOLERANCE;
+      });
+      expect(off, `${name} ends away from a plain sit`).toEqual([]);
+    }
+  },
+);
+
 /** Frames this far apart, as a loaded device drew them in CI; the tail must still settle in time. */
 const SLOW_FRAME_MS = 530;
 /** Frames a slow device may still draw after a move ends: the move's last, and the tail's. */
