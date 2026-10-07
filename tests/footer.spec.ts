@@ -6,6 +6,7 @@ import {
 } from '../src/lib/profiles';
 import { NON_TEXT, PAGE_HELPERS } from './contrast';
 import { gotoSettled } from './settle';
+import { ENGINE_INVARIANT } from './tags';
 
 /**
  * The footer: Lepus Ridet with the profiles as sticker tiles under it, the
@@ -87,11 +88,15 @@ test.describe('the footer', () => {
     await expect(page.locator('footer').getByRole('heading')).toHaveCount(0);
   });
 
-  test('the copyright line names the year and the site', async ({ page }) => {
-    await expect(page.locator('.footer-copyright')).toHaveText(
-      /^© \d{4} sinduri\.lol$/,
-    );
-  });
+  test(
+    'the copyright line names the year and the site',
+    ENGINE_INVARIANT,
+    async ({ page }) => {
+      await expect(page.locator('.footer-copyright')).toHaveText(
+        /^© \d{4} sinduri\.lol$/,
+      );
+    },
+  );
 
   // Reading order: on a phone the footer stacks in source order.
   test('the phone stack follows source order', async ({ page }) => {
