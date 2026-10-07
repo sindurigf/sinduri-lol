@@ -39,13 +39,13 @@ npm run build && npm run preview   # http://localhost:4340
 - Checks that need real sentences: `/career`,
   `/blog/open-source-is-not-just-code`, `/privacy`, `/accessibility`.
 
-| Tool          | Needed for          | Platform                       |
-| ------------- | ------------------- | ------------------------------ |
-| Google Chrome | §1 to §5b, §6.4, §9 | any                            |
-| Firefox       | §2, §6, §7, §8, §13 | any                            |
-| Orca          | §6, §13             | Linux (tested: GNOME, Wayland) |
-| NVDA          | §6.10               | Windows                        |
-| VoiceOver     | §6.10, §8           | macOS, iOS                     |
+| Tool          | Needed for               | Platform                       |
+| ------------- | ------------------------ | ------------------------------ |
+| Google Chrome | §1 to §5b, §6.4, §9      | any                            |
+| Firefox       | §2, §5b, §6, §7, §8, §13 | any                            |
+| Orca          | §6, §13                  | Linux (tested: GNOME, Wayland) |
+| NVDA          | §6.10                    | Windows                        |
+| VoiceOver     | §6.10, §8                | macOS, iOS                     |
 
 ### Teardown
 
@@ -59,7 +59,7 @@ npm run build && npm run preview   # http://localhost:4340
 | GTK `toolkit-accessibility` | §6.1 fallback only                                 | `gsettings set org.gnome.desktop.interface toolkit-accessibility false` |
 | DevTools Offline            | Network panel, §6.12.1                             | Untick Offline                                                          |
 | `*.webp` request blocking   | Network panel, §6.12.3                             | Remove the pattern, reload                                              |
-| `javascript.enabled`        | `about:config`, §6.12.3                            | Set it back to `true`                                                   |
+| `javascript.enabled`        | `about:config`, §5b and §6.12.3                    | Set it back to `true`                                                   |
 | Firefox 320px window        | Window or Responsive Design Mode, §6.7 and §6.12.5 | Close Responsive Design Mode, restore the window size                   |
 
 - [ ] Teardown done.
@@ -410,8 +410,9 @@ Setup: Firefox, 1280px, `/404` (preview serves it with 200;
 - [ ] `G` finds no image: the header mark and the roundel both have
       `alt=""`. → SC 1.1.1
 - [ ] "Episode 404" reads as text. Record how "404" is spoken.
-- [ ] Three links: "Go to the Homepage", "Read the Blog" (a list of two), and
-      "tell me about the broken link" in the body. Judge the third hardest. → SC 2.4.4, 1.3.1
+- [ ] Four links: "explain the Star Wars lines" and "tell me about the broken
+      link" in the body, then "Go to the Homepage" and "Read the Blog" (a list
+      of two). Judge the two body links hardest. → SC 2.4.4, 1.3.1
 
 Heard: `________________________`
 
@@ -497,7 +498,7 @@ Setup: a rate-limited or server-failed submit (`npm run test:worker` serves
 it, or submit on preview until the limit trips).
 
 - [ ] The summary is announced on arrival without a key press. → SC 3.3.1
-- [ ] "Your message was not sent" comes before the reason. → SC 3.3.1
+- [ ] "Your Message Was Not Sent" comes before the reason. → SC 3.3.1
 - [ ] The reason tells a rate limit from a server failure. → SC 3.3.1
 - [ ] The typed message is still there and reachable with `Down`. → SC 3.3.1
 
@@ -673,9 +674,9 @@ From the Accessible Astro checklist and
   ACCESSIBILITY.md §7 gap 1.
 - Plain language: gap 5.
 - Whether the hero field's still frame reads as a picture: §4.
-- Routes with no check of their own: `/contact/sent`, `/blog`, the tag
-  listings, and the category listing beyond §3. `/accessibility`, `/privacy`,
-  `/credits` and `/brand` are read only in §9a; `/privacy` also in §6.12.1a.
+- Routes with no check of their own: `/contact/sent`, the tag listings, and
+  the category listing beyond §3. `/accessibility`, `/credits` and `/brand`
+  are read only in §9a; `/privacy` also in §6.4 and §6.12.1a.
 
 ## 13. Published PDFs
 
@@ -730,13 +731,14 @@ page numbers or running headers read as content, decoration announced.
       deck's slide count and the title once; the slide text can be read after.
 - [ ] Home and End go to the first and last slide; Page Up and Page Down turn
       the slide, or first scroll one taller than the screen. → SC 2.1.1
-- [ ] A link to one slide (`#slide-N`) opens on it with focus on its heading;
-      focus inside a slide that turns moves to the new heading. → SC 2.4.3
+- [ ] A link to one slide opens on it; a `#slide-N` link followed within the
+      page moves focus to its heading. Focus inside a slide that turns moves
+      to the new heading. → SC 2.4.3
 - [ ] Full Screen: the button reads pressed, every slide fits a projector
       screen without scrolling, Escape leaves. → SC 1.4.10
 - [ ] Print preview: one page per slide, no controls. Matches the PDF.
 - [ ] Presenter view (`astro dev` only, `/talks/<deck>/presenter/`): the
-      timer button reads "Start timer" then "Pause timer", the time is not
+      timer button reads "Start Timer" then "Pause Timer", the time is not
       announced every second, and Next follows the slideshow in the other tab.
       `tests/presenter.spec.ts` checks only that the notes glob matches the
       deck file. → SC 2.2.2, 4.1.3
