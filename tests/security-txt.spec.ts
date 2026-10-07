@@ -5,6 +5,7 @@ import { DIST_DIR } from './routes';
 import { configuredSite } from './source';
 import { NODE } from './tags';
 import { DAY_MS } from '../src/lib/time';
+import { CONTACT_EMAIL } from '../src/lib/contact';
 
 /**
  * /.well-known/security.txt, per https://www.rfc-editor.org/rfc/rfc9116.
@@ -35,13 +36,6 @@ const securityTxt = (): string => {
   return readFileSync(SECURITY_TXT, 'utf8');
 };
 
-const contactEmail = (): string => {
-  const source = readFileSync(CONTACT_MODULE, 'utf8');
-  const match = /CONTACT_EMAIL\s*=\s*['"]([^'"]+)['"]/.exec(source);
-  expect(match, `no CONTACT_EMAIL found in ${CONTACT_MODULE}.`).not.toBeNull();
-  return match![1]!;
-};
-
 /** One field's value, by name. RFC 9116 fields are `Name: value` lines. */
 const field = (source: string, name: string): string | null => {
   const match = new RegExp(`^${name}:\\s*(.+)$`, 'im').exec(source);
@@ -65,25 +59,23 @@ test.describe('security.txt', NODE, () => {
 
   test('the contact is the address the site publishes', () => {
     const declared = field(securityTxt(), 'Contact');
-    const email = contactEmail();
 
     // RFC 9116 wants a `mailto:` URI, not a bare address.
     expect(
       declared,
-      `security.txt offers ${declared}, the site publishes ${email}.`,
-    ).toBe(`mailto:${email}`);
+      `security.txt offers ${declared}, the site publishes ${CONTACT_EMAIL}.`,
+    ).toBe(`mailto:${CONTACT_EMAIL}`);
   });
 
   test('SECURITY.md names the site contact address', () => {
     expect(existsSync(SECURITY_POLICY), `${SECURITY_POLICY} is missing.`).toBe(
       true,
     );
-    const email = contactEmail();
 
     expect(
       readFileSync(SECURITY_POLICY, 'utf8'),
-      `${SECURITY_POLICY} and ${CONTACT_MODULE} disagree: ${SECURITY_POLICY} does not name ${email}.`,
-    ).toContain(email);
+      `${SECURITY_POLICY} and ${CONTACT_MODULE} disagree: ${SECURITY_POLICY} does not name ${CONTACT_EMAIL}.`,
+    ).toContain(CONTACT_EMAIL);
   });
 
   test('the published commitment has not lapsed', () => {
