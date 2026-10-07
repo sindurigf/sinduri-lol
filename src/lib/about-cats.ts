@@ -157,6 +157,8 @@ interface CatState extends CatSpot {
   /** Resting between moves: breathing, ear flicks and glances are drawn on its pose. */
   idling: boolean;
   idleDrawnAt: number;
+  /** The idle offsets on screen: a move starts from these, not from offsets a frame newer. */
+  idleShown: IdleOffsets;
 }
 
 const rand = (lo: number, hi: number): number => lo + Math.random() * (hi - lo);
@@ -284,6 +286,7 @@ export const createColony = (
     idle: createIdle(),
     idling: false,
     idleDrawnAt: 0,
+    idleShown: { ta: 0, bt: 0, ears: 0, hr: 0, tw: 0 },
   }));
   const watcherId = cats[Math.floor(Math.random() * cats.length)]?.id ?? '';
   const pointerAt = new Map<CatSpot['id'], { x: number; y: number }>();
@@ -324,7 +327,7 @@ export const createColony = (
 
   const draw = (cat: CatState, now: number): void => {
     const p = clonePose(cat.pose);
-    if (cat.idling) addIdle(p, idleOffsets(cat.idle, now));
+    if (cat.idling) addIdle(p, cat.idleShown);
     if (now < cat.blinkUntil) p.eyes = 0;
     renderCat(cat.rig, p, now, p.x, cat.groundY);
   };
@@ -364,7 +367,7 @@ export const createColony = (
     const from = clonePose(cat.pose);
     /* The move starts from the pose last drawn, glance and breath included. */
     if (cat.idling) {
-      addIdle(from, idleOffsets(cat.idle, now));
+      addIdle(from, cat.idleShown);
       cat.idling = false;
     }
     const origin = from.x;
@@ -596,6 +599,7 @@ export const createColony = (
         );
         if (!due) continue;
         cat.idleDrawnAt = now;
+        cat.idleShown = idleOffsets(cat.idle, now);
       } else {
         /* A settled or sleeping cat keeps its last drawing. */
         if (result !== 'draw' && !tailMoving) continue;
@@ -727,6 +731,7 @@ export const createColony = (
       for (const { prop } of fading.splice(0)) prop.remove();
       for (const cat of cats) {
         drop(cat);
+        cat.idling = false;
         cat.pose = pose(cat.asleep ? 'sleep' : 'sit', {
           x: cat.pose.x,
           face: Math.sign(cat.pose.face) || cat.facing,
