@@ -26,10 +26,11 @@ const WINDOWS = [
   { width: 1920, height: 1080 },
 ] as const;
 
-/** Each browser's own zoom steps above 100%, up to its 500% ceiling. */
+/** Each browser's own zoom steps above 100%, up to its ceiling. */
 const ZOOM_LEVELS = {
   chromium: [1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5],
   firefox: [1.1, 1.2, 1.33, 1.5, 1.7, 2, 2.4, 3, 4, 5],
+  webkit: [1.15, 1.25, 1.5, 1.75, 2, 2.5, 3],
 } as const;
 
 const TARGET_SCALE = 2;
@@ -63,10 +64,6 @@ for (const { width, height } of WINDOWS) {
     page,
     browserName,
   }, testInfo) => {
-    test.skip(
-      browserName === 'webkit',
-      'Safari page zoom stops at 300%; ACCESSIBILITY.md lists the tokens that need more',
-    );
     const levels = ZOOM_LEVELS[browserName as keyof typeof ZOOM_LEVELS];
 
     await page.setViewportSize({ width, height });
@@ -98,6 +95,9 @@ for (const { width, height } of WINDOWS) {
       type: 'lowest zoom reaching 2x',
       description: report.join('; '),
     });
+
+    /* Safari stops at 300%, short of what some tokens need; recorded, not asserted. */
+    if (browserName === 'webkit') return;
 
     expect(
       report.filter((line) => line.endsWith('none')),
