@@ -350,7 +350,7 @@ label: 'The AI Question'
 
 **Example: [curl](https://daniel.haxx.se/blog/)**
 
-curl was flooded with AI-generated security reports. By 2025 about 1 in 5 submissions was slop, and the genuine rate fell below 5%. The team shut down its paid bug bounty to stop the noise. The Python Software Foundation and Open Collective hit the same wall.
+curl was flooded with AI-generated security reports. By 2025 about 1 in 5 submissions was slop, and the genuine rate fell below 5%. The team shut down its paid bug bounty to stop the noise. The Python Software Foundation and Open Collective hit the same wall. In October 2026 [Daniel Stenberg wrote](https://www.linkedin.com/posts/danielstenberg_google-closing-their-vdp-oss-program-made-share-7513141850833068032-KLmR/): "we don't anymore have the slop problem … These days, we have a high volume high quality challenge".
 
 ---
 
