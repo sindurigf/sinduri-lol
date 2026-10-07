@@ -130,7 +130,9 @@ npm run test:webkit -- tests/reflow.spec.ts
   holds content types for the test servers; `scripts/pdf-pages.mjs` counts PDF
   pages for `publish:talk` and `tests/talk-pdf.spec.ts`;
   `scripts/warm-browsers.mjs` opens one page per browser in CI before the
-  tests, so no worker's first page builds the browser caches inside a test.
+  tests, so no worker's first page builds the browser caches inside a test;
+  `scripts/shard-tests.mjs` deals CI's tests to the shards in turn and checks
+  each shard's `--test-list` selects exactly its share.
 - [AGENTS.md](../AGENTS.md) lists what must pass before a change is done.
 
 | Variable                        | Default                | Effect                                                   |
