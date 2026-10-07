@@ -199,6 +199,10 @@ This is not theoretical. Someone asks a model to find a bug, pastes the confiden
 - Each report takes three or four people from the security team, for 30 minutes to three hours each. They are volunteers with a few hours a week.
 - In January 2026 the team [ended its paid bug bounty](https://daniel.haxx.se/blog/2026/01/26/the-end-of-the-curl-bug-bounty/), simply to stop the flood.
 
+In October 2026 Daniel [posted on LinkedIn](https://www.linkedin.com/posts/danielstenberg_google-closing-their-vdp-oss-program-made-share-7513141850833068032-KLmR/):
+
+> Google closing their VDP OSS program made half a dozen journalists email me for comments. I've told them: in the open source world we don't anymore have the slop problem Google seem to address now, half a year after we've seen it mostly go away by itself. These days, we have a high volume high quality challenge.
+
 It is not only curl. The [Python Software Foundation](https://sethmlarson.dev/slop-security-reports) and Open Collective report the same thing, and tie it directly to maintainer burnout. The problem is the asymmetry: seconds to generate, hours to debunk, aimed at unpaid people who keep critical software running. As Dries Buytaert puts it in [The Privilege of AI in Open Source](https://dri.es/the-privilege-of-ai-in-open-source):
 
 > AI can make it cheaper to contribute without making it cheaper to review.
@@ -286,7 +290,7 @@ So do not try to move all six pillars at once. Pick the one that hurts most righ
 
 This article is based on my talk, _Open Source Is Not Just Code: Designing Communities That Actually Scale_, given at the [WeAreDevelopers World Congress](https://www.wearedevelopers.com/world-congress/agenda/sessions/open-source-is-not-just-code-designing-communities-that-actually-scale-1142282) on Friday 10 July 2026, 09:40 to 10:10, on Stage 3 (powered by AWS).
 
-[View the slides](/talks/open-source-is-not-just-code/), or [download them](/talks/open-source-is-not-just-code.pdf) (PDF, 499 KB, 31 pages).
+[View the slides](/talks/open-source-is-not-just-code/), or [download them](/talks/open-source-is-not-just-code.pdf) (PDF, 500 KB, 31 pages).
 
 ---
 
@@ -327,6 +331,7 @@ This article is based on my talk, _Open Source Is Not Just Code: Designing Commu
 - Daniel Stenberg, [curl blog](https://daniel.haxx.se/blog/)
 - Daniel Stenberg, [Death by a thousand slops](https://daniel.haxx.se/blog/2025/07/14/death-by-a-thousand-slops/)
 - Daniel Stenberg, [The end of the curl bug-bounty](https://daniel.haxx.se/blog/2026/01/26/the-end-of-the-curl-bug-bounty/)
+- Daniel Stenberg, [LinkedIn post on Google closing its VDP OSS program](https://www.linkedin.com/posts/danielstenberg_google-closing-their-vdp-oss-program-made-share-7513141850833068032-KLmR/)
 - Seth Larson, [New era of slop security reports for open source](https://sethmlarson.dev/slop-security-reports)
 - The Register, [Curl project, swamped with AI slop, finds not all AI is bad](https://www.theregister.com/2025/10/02/curl_project_swamped_with_ai/)
 
