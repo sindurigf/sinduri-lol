@@ -1,12 +1,18 @@
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { dirname, join, relative, resolve } from 'node:path';
 import { expect, test } from './test';
 import { linkListItem } from '../src/plugins/link-list-item.mjs';
 import { captionChildren, postFigure } from '../src/plugins/post-figure.mjs';
-import { PHOTOGRAPHERS, type LicensedPhoto } from '../src/lib/credits';
+import {
+  PHOTOGRAPHERS,
+  SCREENSHOT_SOURCES,
+  type LicensedPhoto,
+} from '../src/lib/credits';
 import { NODE } from './tags';
+import { BLOG_CONTENT_DIR, TALKS_DIR } from './routes';
+import { DECK_FILE } from '../src/lib/slides';
 
 type Node = {
   type: string;
@@ -75,9 +81,9 @@ test.describe('link-list-item', NODE, () => {
   });
 });
 
-const POST_URL = pathToFileURL(
-  resolve('src/content/blog/five-years-in-drupal.md'),
-);
+/* Paths only, unless passed as `fileURL`: then the plugin reads the post for a `cover`. */
+const POST_URL = pathToFileURL(resolve(BLOG_CONTENT_DIR, 'any-post.md'));
+const TALK_URL = pathToFileURL(resolve(TALKS_DIR, 'any-deck', DECK_FILE));
 /* A post opens on its cover, if it has one; the priority tests need both kinds. */
 const postFile = (frontmatter: string): URL => {
   const file = join(mkdtempSync(join(tmpdir(), 'post-figure-')), 'post.md');
@@ -86,12 +92,14 @@ const postFile = (frontmatter: string): URL => {
 };
 const UNCOVERED_POST_URL = postFile("title: 'No cover'");
 const COVERED_POST_URL = postFile("title: 'Cover'\ncover: './cover.jpg'");
-const TALK_URL = pathToFileURL(
-  resolve('src/content/talks/open-source-is-not-just-code/slides.md'),
+const PHOTO = relative(
+  dirname(fileURLToPath(POST_URL)),
+  resolve('tests/fixtures/photo-4x3.png'),
 );
-const PHOTO = '../../assets/blog/five-years-in-drupal/cover.jpg';
-const PORTRAIT_PHOTO =
-  '../../assets/blog/open-source-is-not-just-code/mentoring-table.jpg';
+const PORTRAIT_PHOTO = relative(
+  dirname(fileURLToPath(POST_URL)),
+  resolve('tests/fixtures/photo-3x4.png'),
+);
 
 test.describe('post-figure', NODE, () => {
   test('a captioned photo alone in its paragraph becomes a figure with a credit', async () => {
@@ -109,40 +117,25 @@ test.describe('post-figure', NODE, () => {
     expect(caption, 'the title became no caption').toBeDefined();
   });
 
-  test('an uncaptioned photo alone in a post paragraph still becomes a figure', async () => {
-    const img = el('img', [], { src: PHOTO, alt: 'Two friends' });
-    const root = el('root', [el('p', [img])]);
-    await postFigure().element.visit(img, contextFor(root, POST_URL));
-    const figure = root.children![0]!;
-    expect(figure.tagName).toBe('figure');
-    expect(
-      figure.children!.some((c) => c.tagName === 'figcaption'),
-      'an empty caption was added',
-    ).toBe(false);
-  });
-
-  test('a portrait figure is marked and sized to the measure, a landscape to the page', async () => {
-    const figureFor = async (src: string) => {
-      const img = el('img', [], { src, alt: 'x', title: 'Photo: Someone' });
+  for (const [prefix, name, href] of [
+    ['Photo: ', 'Karl Hepworth', PHOTOGRAPHERS['Karl Hepworth']],
+    ['Screenshot: ', 'Drupal.org', SCREENSHOT_SOURCES['Drupal.org']],
+  ] as const) {
+    test(`a "${prefix}${name}" caption links the listed source`, async () => {
+      const img = el('img', [], {
+        src: PHOTO,
+        alt: 'x',
+        title: `${prefix}${name}`,
+      });
       const root = el('root', [el('p', [img])]);
       await postFigure().element.visit(img, contextFor(root, POST_URL));
-      return root.children![0]!;
-    };
-    const sizesOf = (figure: Awaited<ReturnType<typeof figureFor>>) =>
-      String(figure.children![0]!.children![1]!.properties?.sizes);
-    const portrait = await figureFor(PORTRAIT_PHOTO);
-    const landscape = await figureFor(PHOTO);
-    expect(portrait.properties?.className).toEqual(['figure-portrait']);
-    expect(landscape.properties?.className).toBeUndefined();
-    expect(sizesOf(portrait), 'a portrait slot passes the measure').toContain(
-      '36rem)',
-    );
-    expect(sizesOf(portrait)).not.toContain('80rem');
-    expect(
-      sizesOf(landscape),
-      'a landscape slot stops at the measure',
-    ).toContain('80rem');
-  });
+      const caption = root.children![0]!.children!.find(
+        (c) => c.tagName === 'figcaption',
+      )!;
+      const anchor = caption.children!.find((c) => c.tagName === 'a');
+      expect(anchor?.properties?.href, `${name} is not linked`).toBe(href);
+    });
+  }
 
   test('a Creative Commons photo credits its source, license and changes', () => {
     const photo: LicensedPhoto = {
@@ -186,6 +179,58 @@ test.describe('post-figure', NODE, () => {
       captionChildren('Photo: Karl Hepworth', 'other.jpg', {}).length,
       'a license was added to an unlicensed photo',
     ).toBe(2);
+  });
+
+  test('a credit naming an unlisted source stays plain text', async () => {
+    const img = el('img', [], {
+      src: PHOTO,
+      alt: 'x',
+      title: 'Screenshot: Nobody Listed',
+    });
+    const root = el('root', [el('p', [img])]);
+    await postFigure().element.visit(img, contextFor(root, POST_URL));
+    const caption = root.children![0]!.children!.find(
+      (c) => c.tagName === 'figcaption',
+    )!;
+    expect(
+      caption.children!.some((c) => c.tagName === 'a'),
+      'an unlisted source was linked',
+    ).toBe(false);
+  });
+
+  test('an uncaptioned photo alone in a post paragraph still becomes a figure', async () => {
+    const img = el('img', [], { src: PHOTO, alt: 'Two friends' });
+    const root = el('root', [el('p', [img])]);
+    await postFigure().element.visit(img, contextFor(root, POST_URL));
+    const figure = root.children![0]!;
+    expect(figure.tagName).toBe('figure');
+    expect(
+      figure.children!.some((c) => c.tagName === 'figcaption'),
+      'an empty caption was added',
+    ).toBe(false);
+  });
+
+  test('a portrait figure is marked and sized to the measure, a landscape to the page', async () => {
+    const figureFor = async (src: string) => {
+      const img = el('img', [], { src, alt: 'x', title: 'Photo: Someone' });
+      const root = el('root', [el('p', [img])]);
+      await postFigure().element.visit(img, contextFor(root, POST_URL));
+      return root.children![0]!;
+    };
+    const sizesOf = (figure: Awaited<ReturnType<typeof figureFor>>) =>
+      String(figure.children![0]!.children![1]!.properties?.sizes);
+    const portrait = await figureFor(PORTRAIT_PHOTO);
+    const landscape = await figureFor(PHOTO);
+    expect(portrait.properties?.className).toEqual(['figure-portrait']);
+    expect(landscape.properties?.className).toBeUndefined();
+    expect(sizesOf(portrait), 'a portrait slot passes the measure').toContain(
+      '36rem)',
+    );
+    expect(sizesOf(portrait)).not.toContain('80rem');
+    expect(
+      sizesOf(landscape),
+      'a landscape slot stops at the measure',
+    ).toContain('80rem');
   });
 
   test('an image inside a sentence keeps its paragraph and its title', async () => {

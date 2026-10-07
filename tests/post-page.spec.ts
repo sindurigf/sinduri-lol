@@ -140,7 +140,7 @@ test.describe('the cover as the post hero', () => {
       page,
     }) => {
       await gotoSettled(page, post.route);
-      const slabImages = page.locator('main article .post-slab img');
+      const slabImages = page.locator('main article .post-slab header img');
       if (!post.hasCover) {
         await expect(
           slabImages,
