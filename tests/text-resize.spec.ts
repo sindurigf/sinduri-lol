@@ -15,9 +15,7 @@ const GLOBAL_CSS = readFileSync(
 
 /** Text tokens whose size follows the viewport; rem-only tokens scale 1:1. */
 const VIEWPORT_TEXT_TOKENS = [
-  ...GLOBAL_CSS.matchAll(
-    /^\s*(--text-[a-z0-9-]+):[^;]*\b[\d.]+(?:vw|svh)\b/gm,
-  ),
+  ...GLOBAL_CSS.matchAll(/^\s*(--text-[a-z0-9-]+):[^;]*\b[\d.]+(?:vw|svh)\b/gm),
 ].map((match) => match[1]);
 
 /** Phone, small laptop, laptop, desktop; heights set the svh terms. */
