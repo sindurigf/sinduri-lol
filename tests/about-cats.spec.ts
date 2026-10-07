@@ -31,6 +31,7 @@ import {
   createIdle,
   idleFrameMs,
   idleOffsets,
+  rearmIdle,
   tickIdle,
 } from '../src/lib/about-cats-idle';
 import { isTricksData, tricksOf } from '../src/lib/about-cats-tricks';
@@ -532,6 +533,41 @@ test(
       turned = Math.max(turned, Math.abs(idleOffsets(glancing, now).hr));
     }
     expect(turned, 'the head never turned').toBeGreaterThan(0);
+  },
+);
+
+test(
+  'after a move, resting cats start their timers again and do not flick, glance or twitch together',
+  NODE,
+  () => {
+    const START_MS = 10_000;
+    const MOVE_MS = 30_000;
+    const resumeAt = START_MS + MOVE_MS;
+    const cats = [0.1, 0.5, 0.9].map((fixed) => {
+      const idle = createIdle();
+      tickIdle(idle, START_MS, () => fixed);
+      return { idle, fixed };
+    });
+    for (const { idle, fixed } of cats) {
+      rearmIdle(idle);
+      tickIdle(idle, resumeAt, () => fixed);
+      const first = idleOffsets(idle, resumeAt);
+      expect(
+        [first.ears, first.hr, first.tw],
+        'a cat flicked, glanced or twitched on its first frame after a move',
+      ).toEqual([0, 0, 0]);
+    }
+    const firstFlick = cats.map(({ idle, fixed }) => {
+      for (let now = resumeAt; now < resumeAt + 20_000; now += 50) {
+        tickIdle(idle, now, () => fixed);
+        if (idleOffsets(idle, now).ears > 0) return now;
+      }
+      return Infinity;
+    });
+    expect(
+      new Set(firstFlick).size,
+      `cats flicked an ear together after a move: ${firstFlick.join(', ')}`,
+    ).toBe(firstFlick.length);
   },
 );
 

@@ -62,6 +62,18 @@ export const createIdle = (): IdleState => ({
   twitchUntil: 0,
 });
 
+/** Back to a cat that has just sat down: no event runs, and the timers start again at the next tick. */
+export const rearmIdle = (state: IdleState): void => {
+  state.nextEarFlick = UNSET;
+  state.nextGlance = UNSET;
+  state.nextTwitch = UNSET;
+  state.earFlickUntil = 0;
+  state.twitchUntil = 0;
+  state.glanceFrom = 0;
+  state.glanceTo = 0;
+  state.glanceAt = -Infinity;
+};
+
 const smooth = (k: number): number => k * k * (3 - 2 * k);
 
 const glanceNow = (state: IdleState, now: number): number =>

@@ -38,6 +38,7 @@ import {
   createIdle,
   idleFrameMs,
   idleOffsets,
+  rearmIdle,
   tickIdle,
   type IdleOffsets,
   type IdleState,
@@ -575,7 +576,10 @@ export const createColony = (
       if (cat.hiddenAt !== undefined) continue;
       const result = step(cat, now, frames);
       const tailMoving = cat.rig.tailSpeed.some((v) => Math.abs(v) > TAIL_REST);
-      cat.idling = result === 'rest';
+      const resting = result === 'rest';
+      /* Timers run only while resting, so each rest starts them afresh. */
+      if (resting && !cat.idling) rearmIdle(cat.idle);
+      cat.idling = resting;
       if (cat.idling) {
         tickIdle(cat.idle, now);
         const whipping = cat.rig.tailSpeed.some(
@@ -658,6 +662,8 @@ export const createColony = (
       const hiddenAt = cat.hiddenAt;
       if (hiddenAt === undefined) return;
       cat.hiddenAt = undefined;
+      /* Back on screen mid-rest: timers start afresh. */
+      cat.idling = false;
       updateMood(cat);
       if (cat.napAt === Infinity) {
         wakeCat(cat, now);
