@@ -428,6 +428,41 @@ const STALK_STEP_MS = 700;
 const STALK_PAW_UP: Pair = [20, 9];
 const STALK_PAW_MS = 170;
 const STALK_FREEZE_MS = 620;
+const STALK_REACH = 50;
+const POUNCE_REACH = 76;
+/** The pounce crouches, then wiggles until it springs. */
+const POUNCE_CROUCH_MS = 400;
+const POUNCE_WAIT_MS = 1300;
+/* A pounce's phases in ms: gather, air, land, rock back, hold the catch, sit up. */
+const GATHER_MS = 140;
+const AIR_MS = 400;
+const LAND_MS = 150;
+const ROCK_MS = 280;
+const HOLD_MS = 500;
+const SIT_UP_MS = 700;
+/** px the gather steps back, and the landing slides on past the air step. */
+const GATHER_BACK = 2;
+const LANDING_SLIDE = 8;
+/** The pounce from a crouch at `x`, starting at `start` ms: its leap spans the air and the landing, so the paws touch down as the arc ends. */
+const pounceFrom = (
+  start: number,
+  x: number,
+  reach: number,
+): { steps: Step[]; mods: Mod[] } => {
+  const landed = x + reach + LANDING_SLIDE;
+  const leapFrom = start + GATHER_MS;
+  return {
+    steps: [
+      step(GATHER_MS, 'crouch', { x: x - GATHER_BACK, sq: 0.9 }, 'in'),
+      step(AIR_MS, 'air', { x: x + reach }, 'linear'),
+      step(LAND_MS, 'crouch', { x: landed, sq: 0.84, ba: -10 }, 'out'),
+      step(ROCK_MS, 'crouch', { x: landed, hr: 8 }, 'back'),
+      step(HOLD_MS, 'crouch', { x: landed, hr: 8 }),
+      step(SIT_UP_MS, 'sit', { x: landed }),
+    ],
+    mods: [leap(leapFrom, leapFrom + AIR_MS + LAND_MS, POUNCE_HEIGHT)],
+  };
+};
 const LEAP_HEIGHT = 40;
 /** The scratching post stands this far ahead of the cat, clear of its chest. */
 const POST_GAP = 34;
@@ -562,37 +597,26 @@ export const MOVES = {
       mods.push(walking(t, t + STALK_STEP_MS, STALK_STRIDE));
       t += STALK_STEP_MS + 2 * STALK_PAW_MS + STALK_FREEZE_MS;
     }
-    const from = STALK_STEP_PX * STALK_STEPS;
-    steps.push(
-      step(140, 'crouch', { x: from - 2, sq: 0.9 }, 'in'),
-      step(400, 'air', { x: from + 50 }, 'linear'),
-      step(150, 'crouch', { x: from + 56, sq: 0.84, ba: -10 }, 'out'),
-      step(280, 'crouch', { x: from + 56, hr: 8 }, 'back'),
-      step(500, 'crouch', { x: from + 56, hr: 8 }),
-      step(700, 'sit', { x: from + 56 }),
-    );
+    const jump = pounceFrom(t, STALK_STEP_PX * STALK_STEPS, STALK_REACH);
     mods.push(
       between(STALK_CROUCH_MS, t, (p) => {
         p.tw = 3;
       }),
-      leap(t + 140, t + 540, POUNCE_HEIGHT),
     );
-    return { steps, mods };
+    return { steps: [...steps, ...jump.steps], mods: [...mods, ...jump.mods] };
   },
   /* Wiggle, leap, land front paws first, hold the catch pinned, then sit up. */
-  pounce: (): Move => ({
-    steps: [
-      step(400, 'crouch', { hr: 6 }),
-      step(900, 'crouch', { hr: 6 }),
-      step(140, 'crouch', { x: -2, sq: 0.9 }, 'in'),
-      step(400, 'air', { x: 76 }, 'linear'),
-      step(150, 'crouch', { x: 84, sq: 0.84, ba: -10 }, 'out'),
-      step(280, 'crouch', { x: 84, hr: 8 }, 'back'),
-      step(500, 'crouch', { x: 84, hr: 8 }),
-      step(700, 'sit', { x: 84 }),
-    ],
-    mods: [wiggle(400, 1300), leap(1440, 1990, POUNCE_HEIGHT)],
-  }),
+  pounce: (): Move => {
+    const jump = pounceFrom(POUNCE_WAIT_MS, 0, POUNCE_REACH);
+    return {
+      steps: [
+        step(POUNCE_CROUCH_MS, 'crouch', { hr: 6 }),
+        step(POUNCE_WAIT_MS - POUNCE_CROUCH_MS, 'crouch', { hr: 6 }),
+        ...jump.steps,
+      ],
+      mods: [wiggle(POUNCE_CROUCH_MS, POUNCE_WAIT_MS), ...jump.mods],
+    };
+  },
   stretch: (): Move => ({
     steps: [
       step(500, 'stand'),
