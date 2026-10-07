@@ -17,6 +17,9 @@ const GLANCE_MS = 700;
 /** Largest head turn in degrees; the head returns to centre about half the time. */
 const GLANCE_DEG = 28;
 const GLANCE_CENTRE_CHANCE = 0.5;
+/** A turn is to either side with equal chance, and at least this share of the largest. */
+const GLANCE_SIDE_CHANCE = 0.5;
+const GLANCE_MIN_SHARE = 0.5;
 const TWITCH_EVERY_MS = [4000, 10000] as const;
 const TWITCH_MS = 900;
 /** Tail-tip twitch amplitude while it twitches. */
@@ -57,7 +60,7 @@ export const createIdle = (): IdleState => ({
   nextGlance: UNSET,
   glanceFrom: 0,
   glanceTo: 0,
-  glanceAt: 0,
+  glanceAt: -Infinity,
   nextTwitch: UNSET,
   twitchUntil: 0,
 });
@@ -104,7 +107,9 @@ export const tickIdle = (
     state.glanceTo =
       roll() < GLANCE_CENTRE_CHANCE
         ? 0
-        : (roll() < 0.5 ? -1 : 1) * GLANCE_DEG * (0.5 + 0.5 * roll());
+        : (roll() < GLANCE_SIDE_CHANCE ? -1 : 1) *
+          GLANCE_DEG *
+          (GLANCE_MIN_SHARE + (1 - GLANCE_MIN_SHARE) * roll());
     state.glanceAt = now;
     state.nextGlance = now + within(GLANCE_EVERY_MS, roll());
   }
@@ -143,6 +148,6 @@ export const idleFrameMs = (
   busy ||
   now < state.earFlickUntil ||
   now < state.twitchUntil ||
-  now - state.glanceAt < GLANCE_MS
+  (state.glanceFrom !== state.glanceTo && now - state.glanceAt < GLANCE_MS)
     ? BUSY_FRAME_MS
     : CALM_FRAME_MS;

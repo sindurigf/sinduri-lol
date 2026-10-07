@@ -601,11 +601,17 @@ test(
       busy = Math.min(busy, idleFrameMs(idle, now));
     }
     expect(
+      idleFrameMs(createIdle(), 0),
+      'a cat that has not yet had an event draws at the busy rate',
+    ).toBe(calm);
+    expect(
       busy,
       'a flick or glance drew no faster than the breath',
     ).toBeLessThan(calm);
   },
 );
+
+const SLEEP_MARGIN_MS = 1000;
 
 /** Counts the changes to one cat's drawing (its SVG, props included, not its controls) over a window: a redraw rewrites its paths. */
 const MUTATION_WINDOW_MS = 1200;
@@ -1321,7 +1327,8 @@ test.describe('About cats', () => {
     await napControl(page, 'hela').click();
     await expectMood(page, 'hela', 'asleep', 'Hela did not fall asleep');
     /* Lying down and the tail's settling end within 5 s (SC 2.2.2). */
-    await page.waitForTimeout(SC_2_2_2_MS);
+    /* The margin covers frames a loaded runner draws late. */
+    await page.waitForTimeout(SC_2_2_2_MS + SLEEP_MARGIN_MS);
     expect(await drawnIn(page, 'hela'), 'a sleeping cat was redrawn').toBe(0);
     await context.close();
 
