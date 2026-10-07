@@ -498,7 +498,7 @@ Setup: a rate-limited or server-failed submit (`npm run test:worker` serves
 it, or submit on preview until the limit trips).
 
 - [ ] The summary is announced on arrival without a key press. → SC 3.3.1
-- [ ] "Your message was not sent" comes before the reason. → SC 3.3.1
+- [ ] "Your Message Was Not Sent" comes before the reason. → SC 3.3.1
 - [ ] The reason tells a rate limit from a server failure. → SC 3.3.1
 - [ ] The typed message is still there and reachable with `Down`. → SC 3.3.1
 
@@ -738,7 +738,7 @@ page numbers or running headers read as content, decoration announced.
       screen without scrolling, Escape leaves. → SC 1.4.10
 - [ ] Print preview: one page per slide, no controls. Matches the PDF.
 - [ ] Presenter view (`astro dev` only, `/talks/<deck>/presenter/`): the
-      timer button reads "Start timer" then "Pause timer", the time is not
+      timer button reads "Start Timer" then "Pause Timer", the time is not
       announced every second, and Next follows the slideshow in the other tab.
       `tests/presenter.spec.ts` checks only that the notes glob matches the
       deck file. → SC 2.2.2, 4.1.3
