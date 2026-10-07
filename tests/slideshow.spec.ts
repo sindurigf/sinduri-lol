@@ -651,18 +651,29 @@ test.describe('the talk slideshow in full screen', () => {
   });
 });
 
-/** Starting widths for page-view zoom; body text is asserted only below 1920, where `--text-body` caps (ACCESSIBILITY.md section 7). */
-const PAGE_WIDTHS = [390, 1000, 1280, 1920] as const;
+/** Body text doubles at 200% below 1920, where `--text-body` caps (ACCESSIBILITY.md section 7). */
 const BODY_WIDTHS = [390, 1000, 1280] as const;
+/** Titles fit the screen, so narrower starts need more zoom; section 7 lists the measured levels. */
+const TITLE_ZOOM = [
+  { width: 390, zoom: 5 },
+  { width: 1000, zoom: 5 },
+  { width: 1280, zoom: 2 },
+  { width: 1920, zoom: 2 },
+] as const;
 const PAGE_HEIGHT = 900;
-/** Rounding of fractional px at 2x device scale. */
+/** Rounding of fractional px at fractional device scale. */
 const RATIO_TOLERANCE = 0.01;
 const DOUBLE = 2;
+/** reflow.spec.ts's narrowest width: 320px less a classic scrollbar. */
+const SLIDE_PHONE = { width: NARROW_WIDTH, height: PAGE_HEIGHT };
 
 /* Device px of the second slide's title and first body line, at `zoom` modeled as viewport / zoom at zoom x device scale. */
 const deviceSizes = async (browser: Browser, width: number, zoom: number) => {
   const context = await browser.newContext({
-    viewport: { width: width / zoom, height: PAGE_HEIGHT / zoom },
+    viewport: {
+      width: Math.round(width / zoom),
+      height: Math.round(PAGE_HEIGHT / zoom),
+    },
     deviceScaleFactor: zoom,
     baseURL: test.info().project.use.baseURL,
   });
@@ -684,25 +695,77 @@ const deviceSizes = async (browser: Browser, width: number, zoom: number) => {
 };
 
 test.describe('the talk slideshow on the page at 200% zoom', () => {
-  for (const width of PAGE_WIDTHS) {
-    test(`from ${width}px, slide titles${BODY_WIDTHS.includes(width as never) ? ' and text' : ''} double (SC 1.4.4)`, async ({
+  for (const { width, zoom } of TITLE_ZOOM) {
+    test(`from ${width}px, slide titles reach 2x by ${zoom * 100}% page zoom (SC 1.4.4)`, async ({
+      browser,
+    }) => {
+      const unzoomed = await deviceSizes(browser, width, 1);
+      const zoomed = await deviceSizes(browser, width, zoom);
+      expect(
+        zoomed.title / unzoomed.title,
+        'the slide title grows less than 2x',
+      ).toBeGreaterThanOrEqual(DOUBLE - RATIO_TOLERANCE);
+    });
+  }
+
+  for (const width of BODY_WIDTHS) {
+    test(`from ${width}px, slide text doubles at 200% (SC 1.4.4)`, async ({
       browser,
     }) => {
       const unzoomed = await deviceSizes(browser, width, 1);
       const zoomed = await deviceSizes(browser, width, DOUBLE);
       expect(
-        zoomed.title / unzoomed.title,
-        'the slide title grows less than 2x',
+        zoomed.body / unzoomed.body,
+        'the slide text grows less than 2x',
       ).toBeGreaterThanOrEqual(DOUBLE - RATIO_TOLERANCE);
-      if (BODY_WIDTHS.includes(width as never)) {
-        expect(
-          zoomed.body / unzoomed.body,
-          'the slide text grows less than 2x',
-        ).toBeGreaterThanOrEqual(DOUBLE - RATIO_TOLERANCE);
-      }
     });
   }
 
+  // Hidden slides included: reflow.spec.ts measures only the slide on screen.
+  test('every word of every slide title fits its slide at 305px, so none is cut without a hyphen', async ({
+    page,
+  }) => {
+    await page.setViewportSize(SLIDE_PHONE);
+    await open(page);
+    const tooWide = await page.evaluate(() => {
+      const out: string[] = [];
+      const slides = [...document.querySelectorAll<HTMLElement>('.slide')];
+      for (const slide of slides) {
+        slides.forEach((s) => s.toggleAttribute('data-current', s === slide));
+        const title = slide.querySelector<HTMLElement>('.slide-title')!;
+        const style = getComputedStyle(title);
+        const probe = document.createElement('span');
+        Object.assign(probe.style, {
+          position: 'absolute',
+          whiteSpace: 'nowrap',
+          font: style.font,
+          letterSpacing: style.letterSpacing,
+          textTransform: style.textTransform,
+        });
+        document.body.append(probe);
+        const words = (title.textContent ?? '').split(/[\s-]+/).filter(Boolean);
+        for (const word of words) {
+          // A break at a soft hyphen paints a hyphen on the leading part.
+          const parts = word.split('\u00ad');
+          parts.forEach((part, i) => {
+            probe.textContent = i < parts.length - 1 ? `${part}-` : part;
+            const width = probe.getBoundingClientRect().width;
+            if (width > title.clientWidth + 0.5) {
+              out.push(
+                `${slide.id} "${probe.textContent}" ${width.toFixed(0)}px in ${title.clientWidth}px`,
+              );
+            }
+          });
+        }
+        probe.remove();
+      }
+      return out;
+    });
+    expect(
+      tooWide,
+      'slide title words wider than their slide at 305px',
+    ).toEqual([]);
+  });
   // Hyphens are forced off: hyphenation dictionaries vary by engine, so the fit must come from overflow-wrap.
   test('every slide title fits 320px without sideways scrolling (SC 1.4.10)', async ({
     page,

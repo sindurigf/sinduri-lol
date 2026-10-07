@@ -745,8 +745,9 @@ page numbers or running headers read as content, decoration announced.
 - [ ] Full screen at 200% zoom and with the text-spacing bookmarklet: nothing
       is cut off, long slides scroll. Titles reach 2x only at higher zoom
       ([ACCESSIBILITY.md](../ACCESSIBILITY.md) §7). → SC 1.4.4, 1.4.12
-- [ ] Page view at 200% zoom: slide titles and text double; at 320px long
-      title words break with no sideways scroll. → SC 1.4.4, 1.4.10
+- [ ] Page view at 200% zoom: slide text doubles; titles double at 200% from
+      1280, by 500% from narrower screens. At 320px no title word is cut
+      without a hyphen and nothing scrolls sideways. → SC 1.4.4, 1.4.10
 - [ ] Print preview: one page per slide, no controls. Matches the PDF.
 - [ ] Presenter view (`astro dev` only, `/talks/<deck>/presenter/`): the
       timer button reads "Start Timer" then "Pause Timer", the time is not

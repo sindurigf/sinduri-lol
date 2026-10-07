@@ -142,19 +142,12 @@
   }
 
   /*
-   * On the page a fixed size, so zoom doubles it. `anywhere`, not base.css's
-   * `break-word`, so a long word also shrinks min-content and fits 305px under
-   * text spacing (SC 1.4.10, 1.4.12). Full screen keeps the fitted size.
+   * `anywhere`, not base.css's `break-word`, so a long word also shrinks
+   * min-content under text spacing (SC 1.4.12). Full screen keeps its own size.
    */
   @media screen {
     .deck:not(:fullscreen) .slide:not(.slide-cover) .slide-title {
       @apply text-slide-title-page wrap-anywhere;
-    }
-
-    /* Never under the slide titles, so the h1 stays the largest heading. */
-    .deck:not(:fullscreen) .slide-cover .slide-title {
-      @apply wrap-anywhere;
-      font-size: max(var(--text-h1), var(--text-slide-title-page));
     }
   }
 
