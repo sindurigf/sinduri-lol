@@ -65,7 +65,8 @@ import {
   random,
   stemPoint,
 } from './hero-field-scene';
-import { drawHare, hopFrame } from './hero-field-hare';
+import { drawHare, footDrop, hopFrame } from './hero-field-hare';
+import type { HopFrame } from './hero-field-hare';
 import type {
   HeroField,
   HeroPalette,
@@ -481,7 +482,7 @@ const drawFloor = (
 
 /*
  * Shrinks, fades and blurs as the hare rises; the alpha floor keeps a contact
- * point at the top of a hop.
+ * point at the top of a hop. Sits under the planted pads, which tilt and sitting move.
  */
 const SHADOW_SHRINK = 0.45;
 const SHADOW_ALPHA_FLOOR = 0.08;
@@ -493,8 +494,9 @@ const drawHareShadow = (
   palette: HeroPalette,
   scene: Scene,
   x: number,
-  air: number,
+  frame: HopFrame,
 ): void => {
+  const { air } = frame;
   const shrink = 1 - air * SHADOW_SHRINK;
   ctx.globalAlpha = SHADOW_ALPHA_FLOOR + SHADOW_ALPHA_RANGE * (1 - air);
   ctx.filter = `blur(${(air * SHADOW_BLUR * scene.hareScale).toFixed(2)}px)`;
@@ -502,7 +504,7 @@ const drawHareShadow = (
   ctx.beginPath();
   ctx.ellipse(
     x,
-    scene.hareRoot + 2,
+    scene.hareRoot + (footDrop(frame) - FOOT_Y) * scene.hareScale,
     30 * scene.hareScale * shrink,
     4.2 * scene.hareScale * shrink,
     0,
@@ -604,7 +606,7 @@ const drawMid = (
   const frame = hopFrame(here.cycle, here.sit, seconds);
   const { hareRoot, hareScale } = state.scene;
 
-  drawHareShadow(ctx, palette, state.scene, here.x, frame.air);
+  drawHareShadow(ctx, palette, state.scene, here.x, frame);
   drawHare(
     ctx,
     here.x,

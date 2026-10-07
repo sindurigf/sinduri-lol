@@ -35,6 +35,19 @@ const earPath = (
   ctx.closePath();
 };
 
+/** Half-heights of the foot pads, in drawing units. */
+const HIND_PAD = 4.4;
+const FORE_PAD = 3.6;
+
+const hindFoot = (tuck: number) => ({
+  x: -26 + tuck * 12,
+  y: FOOT_Y - tuck * 8,
+});
+const foreFoot = (tuck: number) => ({
+  x: 22 - tuck * 7,
+  y: FOOT_Y - tuck * 12,
+});
+
 /*
  * `tuck`: 0 planted, 1 folded at the top of the arc. The foot and the shadow
  * share FOOT_Y, or the hare hovers. The far thigh is left out: shifted back,
@@ -52,8 +65,7 @@ const hindLeg = (
     ctx.stroke();
   }
 
-  const x = -26 + tuck * 12;
-  const y = FOOT_Y - tuck * 8;
+  const { x, y } = hindFoot(tuck);
   ctx.beginPath();
   ctx.moveTo(-28, 5);
   ctx.quadraticCurveTo(-31 + tuck * 8, 12 - tuck * 3, x - 2, y - 4);
@@ -63,15 +75,14 @@ const hindLeg = (
   ctx.translate(x, y);
   ctx.rotate(-0.1 + tuck * 0.95);
   ctx.beginPath();
-  ctx.ellipse(2, 0, 15 - tuck * 3, 4.4, 0, 0, Math.PI * 2);
+  ctx.ellipse(2, 0, 15 - tuck * 3, HIND_PAD, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
   ctx.restore();
 };
 
 const foreLeg = (ctx: CanvasRenderingContext2D, tuck: number): void => {
-  const x = 22 - tuck * 7;
-  const y = FOOT_Y - tuck * 12;
+  const { x, y } = foreFoot(tuck);
   ctx.beginPath();
   ctx.moveTo(17, 8);
   ctx.quadraticCurveTo(21 - tuck * 3, 14 - tuck * 5, x, y - 3);
@@ -81,13 +92,13 @@ const foreLeg = (ctx: CanvasRenderingContext2D, tuck: number): void => {
   ctx.translate(x, y);
   ctx.rotate(0.08 - tuck * 0.7);
   ctx.beginPath();
-  ctx.ellipse(1, 0, 8.5 - tuck * 1.5, 3.6, 0, 0, Math.PI * 2);
+  ctx.ellipse(1, 0, 8.5 - tuck * 1.5, FORE_PAD, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
   ctx.restore();
 };
 
-interface HopFrame {
+export interface HopFrame {
   /** 0 on the ground, 1 at the top of the arc. */
   readonly air: number;
   readonly pitch: number;
@@ -206,6 +217,19 @@ const drawFace = (
   ctx.fill();
 };
 
+const tilt = (frame: HopFrame): number => frame.pitch + frame.sit * -0.5;
+
+/**
+ * The lowest planted pad below the drawing origin, in drawing units, for this
+ * frame's tilt and squash: where the ground shadow belongs.
+ */
+export const footDrop = (frame: HopFrame): number => {
+  const angle = tilt(frame);
+  const below = ({ x, y }: { x: number; y: number }, pad: number): number =>
+    x * Math.sin(angle) + (y + pad) * frame.squash * Math.cos(angle);
+  return Math.max(below(hindFoot(0), HIND_PAD), below(foreFoot(0), FORE_PAD));
+};
+
 /*
  * Every closed shape fills with the page color before stroking, or limbs and
  * grass show through. Ink is `border` to match the field.
@@ -220,7 +244,7 @@ export const drawHare = (
 ): void => {
   ctx.save();
   ctx.translate(x, y);
-  ctx.rotate(frame.pitch + frame.sit * -0.5);
+  ctx.rotate(tilt(frame));
   ctx.scale(scale, scale * frame.squash);
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
