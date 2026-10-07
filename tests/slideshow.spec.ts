@@ -33,16 +33,21 @@ const open = async (page: Page, hash = '') => {
 };
 
 /* By attribute, not role: the bar that holds it is hidden in full screen. */
+const title = (page: Page) => visible(page).locator('.slide-title');
+
 const fullScreenButton = (page: Page) => page.locator('[data-deck-fullscreen]');
 
+/* WebKit sets fullscreenElement before fullscreenchange, so wait for the focus that event moves. */
 const enterFullScreen = async (page: Page) => {
   await fullScreenButton(page).click();
   await page.waitForFunction(
     () => document.fullscreenElement?.matches('[data-deck]') === true,
   );
+  await expect(
+    page.locator('.slide[data-current] .slide-title'),
+    'entering full screen did not move focus to the slide',
+  ).toBeFocused();
 };
-
-const title = (page: Page) => visible(page).locator('.slide-title');
 
 /* PROJECTOR at 200% zoom, in CSS px, as failed-images.spec.ts models it. */
 const ZOOMED_PROJECTOR = { width: 640, height: 360 };
@@ -406,6 +411,37 @@ test.describe('the talk slideshow in full screen', () => {
       page.locator('[data-deck-status]'),
       'the live region repeats the focused heading',
     ).toHaveText('');
+  });
+
+  test('a slide reached by keyboard has a focus ring around the whole card', async ({
+    page,
+  }) => {
+    await open(page);
+    await enterFullScreen(page);
+    await page.keyboard.press('Space');
+    await expect(title(page)).toBeFocused();
+    const ring = await visible(page).evaluate((slide) => {
+      const style = getComputedStyle(slide);
+      return {
+        width: parseFloat(style.outlineWidth),
+        style: style.outlineStyle,
+      };
+    });
+    expect(ring.style, 'the focused slide has no ring (SC 2.4.7)').toBe(
+      'solid',
+    );
+    expect(
+      ring.width,
+      'the ring is thinner than the site focus ring',
+    ).toBeGreaterThanOrEqual(
+      await page.evaluate(() =>
+        parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue(
+            '--focus-width',
+          ),
+        ),
+      ),
+    );
   });
 
   test('Space on a focused link does not turn the slide', async ({ page }) => {

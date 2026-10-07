@@ -40,6 +40,16 @@
     justify-content: safe center;
   }
 
+  /* The focused heading's ring goes around the whole card, which reads as the active slide. */
+  .deck:not(.presenter):fullscreen .slide:has(> .slide-title:focus-visible) {
+    outline: var(--focus-width) solid var(--color-cyan);
+    outline-offset: calc(var(--focus-gap) + var(--lift-object));
+  }
+
+  .deck:not(.presenter):fullscreen .slide-title:focus-visible {
+    outline-color: transparent;
+  }
+
   .deck:fullscreen[data-deck-idle],
   .deck:fullscreen[data-deck-idle] * {
     cursor: none;
