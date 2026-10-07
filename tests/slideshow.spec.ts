@@ -2,6 +2,7 @@ import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { TALK_ROUTES } from './routes';
 import { NARROW_WIDTH } from './wcag';
+import { DECK_READY_TIMEOUT_MS } from '../src/lib/deck-ready';
 
 /** src/scripts/slideshow.ts driven by buttons, keys, slide links, full screen, print, and without JavaScript. */
 
@@ -45,6 +46,34 @@ test.describe('the talk slideshow', () => {
     } finally {
       await context.close();
     }
+  });
+
+  test('a deck script that never loads leaves every slide on the page and no control', async ({
+    page,
+  }) => {
+    await page.route('**/_astro/_deck_*.js', (route) => route.abort());
+    await page.clock.install();
+    await page.goto(`${ROUTE}/`);
+    const slides = page.locator('.slide');
+    const count = await slides.count();
+    await expect(visible(page)).toHaveCount(1);
+    await page.clock.fastForward(DECK_READY_TIMEOUT_MS);
+    await expect(visible(page)).toHaveCount(count);
+    await expect(slideControls(page)).toBeHidden();
+  });
+
+  test('a deck script that throws after it is ready leaves every slide on the page and no control', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      Element.prototype.scrollIntoView = () => {
+        throw new Error('scrollIntoView failed');
+      };
+    });
+    await page.goto(`${ROUTE}/#slide-3`);
+    const count = await page.locator('.slide').count();
+    await expect(visible(page)).toHaveCount(count);
+    await expect(slideControls(page)).toBeHidden();
   });
 
   test('one slide at a time, starting on the cover', async ({ page }) => {
