@@ -61,11 +61,16 @@
   }
 
   /*
-   * Before the script is ready, show only the slide it will open on: the linked
-   * one, or the cover. Without JavaScript, or once the script has failed
-   * (`data-deck-failed`), every slide stays on the page.
+   * From `lg`, before the script is ready, show only the slide it will open on:
+   * the linked one, or the cover. Below `lg`, without JavaScript, or once the
+   * script has failed (`data-deck-failed`), every slide stays on the page.
    */
-  @media screen {
+  .deck:fullscreen[data-deck-ready]:not([data-deck-failed])
+    .slide:not([data-current]) {
+    display: none;
+  }
+
+  @media screen and (width >= theme(--breakpoint-lg)) {
     .deck[data-deck-ready]:not([data-deck-failed]) .slide:not([data-current]),
     :root.js
       .deck:not([data-deck-ready], [data-deck-failed])
@@ -270,9 +275,20 @@
     grid-row: 1 / span 12;
   }
 
+  /* Below `lg` the page is the stacked slides and the PDF, so no controls. */
   .deck-bar {
-    @apply order-last flex flex-wrap items-center gap-4;
+    @apply order-last flex flex-wrap items-center gap-4 max-lg:hidden;
     min-height: var(--spacing-deck-bar);
+  }
+
+  .deck-narrow {
+    @apply lg:hidden print:hidden;
+  }
+
+  @variant max-lg {
+    .slide {
+      min-height: 0;
+    }
   }
 
   /*
