@@ -37,13 +37,20 @@ const earPath = (
 
 /*
  * `tuck`: 0 planted, 1 folded at the top of the arc. The foot and the shadow
- * share FOOT_Y, or the hare hovers.
+ * share FOOT_Y, or the hare hovers. The far thigh is left out: shifted back,
+ * it shows past the rump as a gray crescent.
  */
-const hindLeg = (ctx: CanvasRenderingContext2D, tuck: number): void => {
-  ctx.beginPath();
-  ctx.ellipse(-20, 1, 16, 14, 0.12, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
+const hindLeg = (
+  ctx: CanvasRenderingContext2D,
+  tuck: number,
+  thigh: boolean,
+): void => {
+  if (thigh) {
+    ctx.beginPath();
+    ctx.ellipse(-20, 1, 16, 14, 0.12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
 
   const x = -26 + tuck * 12;
   const y = FOOT_Y - tuck * 8;
@@ -131,11 +138,14 @@ export const hopFrame = (
   };
 };
 
+/* Behind the near leg when planted; folded, it slides under it, or it shows below the rump. */
+const FAR_HIND_OFFSET = -4;
+
 const drawFarLegs = (ctx: CanvasRenderingContext2D, frame: HopFrame): void => {
   ctx.globalAlpha = 0.45;
   ctx.save();
-  ctx.translate(-4, 0);
-  hindLeg(ctx, frame.tuckHind);
+  ctx.translate(FAR_HIND_OFFSET * (1 - frame.tuckHind), 0);
+  hindLeg(ctx, frame.tuckHind, false);
   ctx.restore();
   ctx.save();
   ctx.translate(-5, 0);
@@ -220,7 +230,7 @@ export const drawHare = (
 
   drawFarLegs(ctx, frame);
   drawEars(ctx, frame);
-  hindLeg(ctx, frame.tuckHind);
+  hindLeg(ctx, frame.tuckHind, true);
   foreLeg(ctx, frame.tuckFore);
   drawBody(ctx, palette);
   drawFace(ctx, palette);
