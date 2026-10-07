@@ -23,7 +23,7 @@
     @apply font-black uppercase text-text;
   }
 
-  /* Phone: one full-width row per link, as tall as the target minimum. */
+  /* Phone: one full-width row per link. */
   .footer-pages,
   .footer-policies {
     justify-self: stretch;
@@ -217,7 +217,7 @@
       grid-column: 3;
     }
 
-    /* Padding spaces the line; the min-height above still sets the target. */
+    /* Rows stay --spacing-target tall; the padding insets the label. */
     .footer-pages a,
     .footer-policies a {
       padding-block: --spacing(2);

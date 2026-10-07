@@ -22,8 +22,8 @@ git config core.hooksPath .githooks
 npm run dev
 ```
 
-The pre-push hook refuses a push that does not contain the last-fetched `main`;
-the commit-msg hook: [AGENTS.md](../AGENTS.md#commits).
+The pre-push hook refuses a push that does not contain the last-fetched `main`
+and does not fetch: run `git fetch` first. The commit-msg hook: [AGENTS.md](../AGENTS.md#commits).
 
 The contact form needs a local D1 with the schema applied. To try it by hand:
 
@@ -47,26 +47,27 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 
 ## Commands
 
-| Command                      | Does                                                             |
-| ---------------------------- | ---------------------------------------------------------------- |
-| `npm run dev`                | Dev server at `http://localhost:4340`                            |
-| `npm test`                   | `test:a11y`, then `test:worker`; each builds first               |
-| `npm run build`              | Build to `dist/client` (assets) and `dist/server` (Worker)       |
-| `npm run preview`            | Serve the build through the Worker runtime                       |
-| `npm run typecheck`          | `astro check`, then `vue-tsc` on `.vue` files                    |
-| `npm run format`             | Prettier, write                                                  |
-| `npm run check`              | Conventions, format and commits; needs `npm run build` first     |
-| `npm run test:a11y`          | Playwright suite in Chromium and Firefox; CI adds WebKit         |
-| `npm run test:webkit`        | The same suite in WebKit, in Playwright's Docker image           |
-| `npm run test:a11y:ui`       | The same suite in Playwright's UI mode                           |
-| `npm run test:worker`        | Worker specs, local D1: contact, byte ranges, types, /blog pager |
-| `npm run test:coverage`      | `test:a11y` in Chromium, with line and branch coverage of `src/` |
-| `npm run check:live`         | Production headers and markup against this repository            |
-| `npm run check:live:console` | Every production route in a browser, failing on console errors   |
-| `npm run check:umami`        | The vendored Umami tracker against the one Umami serves          |
-| `npm run check:pdf`          | Every PDF in `public/` against PDF/UA-1, veraPDF in Docker       |
-| `npm run publish:cv`         | Scrub, retag and check a Canva export of the CV, then publish it |
-| `npm run publish:talk`       | Print a talk's slideshow to its tagged PDF in `public/talks/`    |
+| Command                      | Does                                                                                                                              |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                | Dev server at `http://localhost:4340`                                                                                             |
+| `npm test`                   | `test:a11y`, then `test:worker`; each builds first                                                                                |
+| `npm run build`              | Build to `dist/client` (assets) and `dist/server` (Worker)                                                                        |
+| `npm run preview`            | Serve the build through the Worker runtime                                                                                        |
+| `npm run typecheck`          | `astro check` (fails on hints), then `vue-tsc` on `.vue` files                                                                    |
+| `npm run format`             | Prettier, write                                                                                                                   |
+| `npm run check`              | `check:tokens`, `links`, `pins`, `classes`, `untransformed`, `title-case`, `format:check`, `commits`; needs `npm run build` first |
+| `npm run format:check`       | Prettier, check only                                                                                                              |
+| `npm run test:a11y`          | Playwright suite in Chromium and Firefox; CI adds WebKit                                                                          |
+| `npm run test:webkit`        | The same suite in WebKit, in Playwright's Docker image                                                                            |
+| `npm run test:a11y:ui`       | The same suite in Playwright's UI mode                                                                                            |
+| `npm run test:worker`        | Worker specs, local D1: contact, byte ranges, types, /blog pager                                                                  |
+| `npm run test:coverage`      | `test:a11y` in Chromium, with line and branch coverage of `src/`                                                                  |
+| `npm run check:live`         | Production headers and markup against this repository                                                                             |
+| `npm run check:live:console` | Every production route in a browser, failing on console errors                                                                    |
+| `npm run check:umami`        | The vendored Umami tracker against the one Umami serves                                                                           |
+| `npm run check:pdf`          | Every PDF in `public/` against PDF/UA-1, veraPDF in Docker                                                                        |
+| `npm run publish:cv`         | Scrub, retag and check a Canva export of the CV, then publish it                                                                  |
+| `npm run publish:talk`       | Print a talk's slideshow to its tagged PDF in `public/talks/`                                                                     |
 
 ### WebKit
 
@@ -96,7 +97,7 @@ npm run test:webkit -- tests/reflow.spec.ts
   (`check:pins` enforces it), with no network and a read-only mount.
 - Exit codes: 0 all pass, 1 a failure, 2 could not run (e.g. no Docker).
 - `EXPECTED_FAILURES` in `scripts/check-pdf.mjs` lists known non-conforming
-  files, pinned to a SHA-256 and to an [ACCESSIBILITY.md](../ACCESSIBILITY.md)
+  files (currently empty), pinned to a SHA-256 and to an [ACCESSIBILITY.md](../ACCESSIBILITY.md)
   section 7 gap. It fails when the bytes change, the file starts passing, or
   the gap no longer names it.
 - CI runs it; it stays out of `npm run check`, which needs no Docker.
@@ -108,7 +109,7 @@ npm run test:webkit -- tests/reflow.spec.ts
 - A test that never opens a page takes `NODE` from `tests/tags.ts`: it runs
   once, in the `node` project, and the browser projects skip it.
 - `.github/workflows/scheduled.yml` runs weekly, never on pull requests:
-  `npm audit --omit=dev`, `check:live`, `check:umami` and
+  `npm audit --omit=dev --audit-level=high`, `check:live`, `check:umami` and
   `tests/security-txt.spec.ts`. After a deploy:
   [DEPLOYMENT.md](DEPLOYMENT.md).
 - `test:coverage` writes `coverage/` (`index.html`, `lcov.info`). It covers
@@ -124,13 +125,20 @@ npm run test:webkit -- tests/reflow.spec.ts
 
 | Variable                        | Default                | Effect                                                   |
 | ------------------------------- | ---------------------- | -------------------------------------------------------- |
-| `LIVE_ORIGIN`                   | `https://sinduri.lol`  | Target of `check:live:console`, e.g. a preview URL       |
+| `LIVE_ORIGIN`                   | `https://sinduri.lol`  | Target of `check:live:console` only, e.g. a preview URL  |
 | `PORT`                          | 4321                   | Port of `node scripts/preview-static.mjs` run by hand    |
 | `TEST_PORT`, `TEST_WORKER_PORT` | from the checkout path | Ports for `test:a11y`, `test:worker`; must be 1024-65535 |
 | `WEBKIT`                        | unset                  | `1` adds the WebKit project outside CI                   |
 | `CLOUDFLARE_API_TOKEN`          | unset                  | Lets `check:live` count unsent notifications in D1       |
 | `CLOUDFLARE_ACCOUNT_ID`         | unset                  | Needed with the token: a D1-only token cannot look it up |
 | `CHECK_LIVE_SKIP_D1`            | unset                  | `1` skips that D1 count                                  |
+| `CI`                            | unset                  | Adds the WebKit project and one retry; set by CI         |
+| `TRUST_DEPENDABOT`              | unset                  | `1` skips `check:commits` subject checks for Dependabot  |
+| `COVERAGE`                      | unset                  | `1` builds source maps; set by `test:coverage`           |
+| `WORKERS_CI`                    | unset                  | `1` skips the build fingerprint, set in Workers Builds   |
+
+`check:live` takes an optional origin argument (`sh scripts/check-live.sh <origin>`),
+default the `site` in `astro.config.mjs`; `LIVE_ORIGIN` does not affect it.
 
 Each checkout gets its own pair. Set them when another process holds one:
 
@@ -169,7 +177,7 @@ scripts/            Convention and live-site checks, PDF publishing, test helper
 tests/              Playwright specs; fixtures/ holds files the specs serve
 .github/            CI workflows, Dependabot, pull request template
 .githooks/          commit-msg and pre-push hooks
-docs/               Development, deployment, style guide, manual testing
+docs/               Development, deployment, style guide, voice guide, manual testing
 ```
 
 ## Writing a post

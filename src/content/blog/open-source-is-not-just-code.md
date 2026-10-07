@@ -306,7 +306,7 @@ This article is based on my talk, _Open Source Is Not Just Code: Designing Commu
 - Kubernetes, [Contributor ladder](https://github.com/kubernetes/community/blob/master/community-membership.md)
 - Drupal, [Contribution credit](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues)
 
-### Drupal Programs
+### Drupal Community Initiatives
 
 - [DrupalCon and community events](https://events.drupal.org/)
 - [Mentoring and first-time contributor workshops](https://www.drupal.org/community/contributor-guide/role/mentor)
