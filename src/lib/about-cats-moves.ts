@@ -345,6 +345,44 @@ const walking = (from: number, to: number, strength = 1): Mod =>
       Math.min(1, s / GAIT_BLEND_MS, (to - from - s) / GAIT_BLEND_MS),
     ),
   );
+/** A chasing cat bounds: front paws land together, then hind paws, the back flexing between. px per stride, px of lift and hop, degrees of rock. */
+const BOUND_STRIDE = 44;
+const BOUND_LIFT = 6;
+const BOUND_HOP = 3;
+const BOUND_ROCK = 7;
+const BOUND_LEGS: readonly [
+  keyof Pick<Pose, 'fN' | 'fF' | 'hN' | 'hF'>,
+  number,
+][] = [
+  ['fN', 0],
+  ['fF', 0.08],
+  ['hN', 0.5],
+  ['hF', 0.58],
+];
+const bounding = (from: number, to: number): Mod =>
+  between(from, to, (p, s) => {
+    const weight = Math.min(
+      1,
+      s / GAIT_BLEND_MS,
+      (to - from - s) / GAIT_BLEND_MS,
+    );
+    const cycle = (p.x * Math.sign(p.face)) / BOUND_STRIDE;
+    const reach = BOUND_STRIDE / 4;
+    for (const [leg, offset] of BOUND_LEGS) {
+      const u = (((cycle + offset) % 1) + 1) % 1;
+      if (u < 0.5) {
+        p[leg][0] += weight * reach * (1 - 4 * u);
+      } else {
+        const k = (u - 0.5) * 2;
+        const e = k * k * (3 - 2 * k);
+        p[leg][0] += weight * reach * (-1 + 2 * e);
+        p[leg][1] -= weight * Math.sin(Math.PI * k) * BOUND_LIFT;
+      }
+    }
+    const phase = 2 * Math.PI * cycle;
+    p.y += weight * BOUND_HOP * Math.abs(Math.sin(phase));
+    p.ba += weight * BOUND_ROCK * Math.sin(phase);
+  });
 /** Hind paws tread in turn, lifting, while the rump sways over them. */
 const TREAD_LIFT = 3;
 /** px the rump sways side to side before a pounce. */
@@ -866,10 +904,10 @@ export const MOVES = {
       step(500, 'sit', { x: YARN_LAND_2 }),
     ],
     mods: [
-      walking(1000, 3400),
+      bounding(1000, 3400),
       wiggle(3400, 3700),
       arc(3840, 4320, YARN_BOUND_HEIGHT),
-      walking(4870, 6370),
+      bounding(4870, 6370),
       wiggle(6370, 6620),
       arc(6760, 7220, YARN_BOUND_HEIGHT),
       between(7920, 9420, (p, s) => {
