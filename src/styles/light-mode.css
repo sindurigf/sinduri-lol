@@ -47,6 +47,11 @@
     color: var(--color-text);
   }
 
+  /* The underline follows the ink, as on every other link. */
+  :root[data-theme='light'] main .slide-body a:not([class]) {
+    text-decoration-color: currentColor;
+  }
+
   :root[data-theme='light'] main :is(.label.text-gold, .slide-label)::before {
     content: '';
 
