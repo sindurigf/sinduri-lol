@@ -27,6 +27,9 @@ const ZOOMED_SLIDE = { width: 1024, height: 300 };
 /** The tightest projected size measured (1024x768 to 1920x1080). */
 const PROJECTOR = { width: 1280, height: 720 };
 
+/** A 4:3 projector at the slideshow's narrowest width, `lg`. */
+const FOUR_BY_THREE = { width: 1024, height: 768 };
+
 /** Presses before a scroll-first test gives up on reaching the slide's end. */
 const MAX_PAGE_PRESSES = 10;
 
@@ -586,31 +589,34 @@ test.describe('the talk slideshow in full screen', () => {
     );
   });
 
-  // A room cannot scroll a projected slide. 1280x720 is the tightest of the
-  // measured sizes (1024x768 to 1920x1080).
-  test('every slide fits its frame on a 1280x720 screen', async ({
-    page,
-    browserName,
-  }) => {
-    skipUnsizedFullScreen(browserName);
-    await open(page);
-    await enterFullScreen(page);
-    const all = await ids(page);
-    expect(all.length, 'the deck has no slides').toBeGreaterThan(1);
-    const over: string[] = [];
-    for (const id of all) {
-      await expect(
-        visible(page),
-        'ArrowRight did not reach the slide',
-      ).toHaveId(id);
-      const overflow = await visible(page).evaluate(
-        (slide) => slide.scrollHeight - slide.clientHeight,
-      );
-      if (overflow > 1) over.push(`${id} +${overflow}px`);
-      await page.keyboard.press('ArrowRight');
-    }
-    expect(over, 'slides that run past their frame').toEqual([]);
-  });
+  // A room cannot scroll a projected slide: a 16:9 and a 4:3 projector, the
+  // smallest the slideshow serves (`lg`).
+  for (const screen of [PROJECTOR, FOUR_BY_THREE]) {
+    test(`every slide fits its frame on a ${screen.width}x${screen.height} screen`, async ({
+      page,
+      browserName,
+    }) => {
+      skipUnsizedFullScreen(browserName);
+      await page.setViewportSize(screen);
+      await open(page);
+      await enterFullScreen(page);
+      const all = await ids(page);
+      expect(all.length, 'the deck has no slides').toBeGreaterThan(1);
+      const over: string[] = [];
+      for (const id of all) {
+        await expect(
+          visible(page),
+          'ArrowRight did not reach the slide',
+        ).toHaveId(id);
+        const overflow = await visible(page).evaluate(
+          (slide) => slide.scrollHeight - slide.clientHeight,
+        );
+        if (overflow > 1) over.push(`${id} +${overflow}px`);
+        await page.keyboard.press('ArrowRight');
+      }
+      expect(over, 'slides that run past their frame').toEqual([]);
+    });
+  }
 
   test('the SC 1.4.12 text spacing cuts nothing off', async ({ page }) => {
     await open(page);
