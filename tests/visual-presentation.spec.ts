@@ -26,7 +26,12 @@ const NOTHING_TO_MEASURE: Readonly<Record<string, string>> = {
   '/blog/tag/sustainability': 'one post card; its teaser is one sentence',
   '/blog/tag/talks': 'one post card; its teaser is one sentence',
   '/talks/open-source-is-not-just-code':
-    'slides of headings and one-sentence bullets',
+    'one slide of headings and one-sentence bullets',
+};
+
+/** Below Tailwind's `lg` the talk stacks every slide, so there is text to measure. */
+const EXEMPT_FROM: Readonly<Record<string, number>> = {
+  '/talks/open-source-is-not-just-code': 1024,
 };
 
 interface Block {
@@ -166,7 +171,10 @@ for (const width of WIDTHS) {
           { minSentences: MIN_SENTENCES, newLineShare: NEW_LINE_SHARE },
         );
 
-        const exemption = NOTHING_TO_MEASURE[route];
+        const exemption =
+          width >= (EXEMPT_FROM[route] ?? 0)
+            ? NOTHING_TO_MEASURE[route]
+            : undefined;
         expect(
           measured.blocks.length + measured.pairs.length > 0,
           exemption
