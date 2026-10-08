@@ -39,7 +39,9 @@
       .cat-tricks-button,
       .slide-label,
       .slide-number,
-      .slide-body strong
+      .slide-body strong,
+      .slide-lead,
+      .slide-body a:not([class])
     ),
   :root[data-theme='light'] main :is(.prose, .bullet-list) li::marker {
     color: var(--color-text);
