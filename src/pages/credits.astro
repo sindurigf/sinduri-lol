@@ -1,4 +1,5 @@
 ---
+import Abbr from '../components/Abbr.astro';
 import CloseRow from '../components/CloseRow.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
@@ -320,7 +321,9 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
       </div>
 
       <div id="ai" class="card lg:col-span-2">
-        <h2 class={CARD_HEADING}>Made with AI</h2>
+        <h2 class={CARD_HEADING}>
+          Made with <Abbr short="AI" long="artificial intelligence" />
+        </h2>
         <ul class="bullet-list mt-6">
           {MADE_WITH_AI.map((item) => (
             <li>
