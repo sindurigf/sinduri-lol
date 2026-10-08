@@ -41,7 +41,7 @@ const SIT_SETTLE = 6;
 const HIP: Point = [-21, 10];
 const SHOULDER: Point = [19, 8];
 const FOOT = { length: 25, thickness: 6.4 } as const;
-const PAW = { length: 10, thickness: 4.6 } as const;
+const PAW = { length: 7.5, thickness: 4.6 } as const;
 const TAIL = {
   at: [-34, -17] as Point,
   ring: 3.4,
@@ -59,7 +59,6 @@ interface HopFrame {
   /** 0 on the ground, 1 at the top of the arc. */
   readonly air: number;
   readonly pitch: number;
-  readonly tuckFore: number;
   readonly squash: number;
   readonly earNear: number;
   readonly earFar: number;
@@ -68,7 +67,7 @@ interface HopFrame {
 
 /*
  * Signs that are easy to invert: pitch is negative cosine (nose up on the
- * rise), ears trail, and the front foot leads by 0.06 of a cycle.
+ * rise) and the ears trail.
  */
 export const hopFrame = (
   cycle: number,
@@ -87,12 +86,6 @@ export const hopFrame = (
     cycle,
     air: sitting ? 0 : Math.sin(cycle * Math.PI),
     pitch: sitting ? 0 : -velocity * 0.28,
-    tuckFore: sitting
-      ? 0
-      : Math.pow(
-          Math.max(0, Math.sin(Math.min(1, cycle + 0.06) * Math.PI)),
-          0.8,
-        ),
     squash: 1 - land * 0.14,
     earNear: -0.92 - velocity * 0.32 - twitch,
     earFar: -1.2 - velocity * 0.26 + twitch,
@@ -100,44 +93,79 @@ export const hopFrame = (
   };
 };
 
-/* Hind foot per hop phase: heel offset from the hip, angle (0 is toes forward, flat), length share, and how planted it is. */
-interface HindKey {
-  readonly dx: number;
-  readonly dy: number;
-  readonly angle: number;
-  readonly length: number;
-  readonly planted: number;
-}
-/* The planted heel sits under the haunch, so the rump is one curve down to the foot. */
-const PLANTED: HindKey = { dx: -1, dy: 0, angle: 0, length: 1, planted: 1 };
-const HIND_KEYS: readonly (readonly [number, HindKey])[] = [
-  [0, PLANTED],
-  [0.14, { dx: -6, dy: 0, angle: 2.85, length: 0.8, planted: 0 }],
-  [0.3, { dx: -3, dy: -1, angle: -0.1, length: 0.68, planted: 0 }],
-  [0.5, { dx: -2, dy: -1, angle: -0.12, length: 0.72, planted: 0 }],
-  [0.8, { dx: 25, dy: 0, angle: 0, length: 1, planted: 1 }],
-  [1, PLANTED],
+/* Hind leg per hop phase: [cycle, hock dx, hock dy from the hip, foot angle (0 toes forward, PI toes back), foot length share]. */
+type HindKey = readonly [
+  cycle: number,
+  dx: number,
+  dy: number,
+  angle: number,
+  share: number,
 ];
+type ForeKey = readonly [cycle: number, dx: number, dy: number];
+
+const HIND_KEYS: readonly HindKey[] = [
+  [0, -1, 8, 0, 1],
+  [0.1, -10, 11, Math.PI - 0.3, 1],
+  [0.28, -18, -1, Math.PI + 0.35, 1],
+  [0.48, -17, -1, Math.PI + 0.3, 0.95],
+  [0.62, -6, 6, Math.PI - 0.75, 0.55],
+  [0.74, 3, 8, 1.2, 0.6],
+  [0.87, 10, 9, 0.25, 0.9],
+  [0.95, 9, 8, 0, 1],
+  [1, -1, 8, 0, 1],
+];
+/* Foreleg per hop phase: [cycle, paw dx, paw dy from the shoulder]. */
+const FORE_KEYS: readonly ForeKey[] = [
+  [0, 1, 20],
+  [0.1, -4, 14],
+  [0.32, 12, 10],
+  [0.6, 11, 11],
+  [0.82, 5, 18],
+  [1, 1, 20],
+];
+const SHIN_REACH = 20;
+const FORE_REACH = 19;
+const FORE_THICKNESS = 4.2;
+/* The far legs sit higher and behind, smaller, and a step later in the hop. */
+const FAR = {
+  scale: 0.85,
+  hip: [-3, -5] as Point,
+  shoulder: [-3, -3.5] as Point,
+  hindLag: 0.03,
+  foreLag: 0.04,
+} as const;
+const FOOT_GROUND = -FOOT.thickness / 2;
+const PAW_GROUND = -PAW.thickness / 2;
 
 const smooth = (t: number): number => t * t * (3 - 2 * t);
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 
-const hindAt = (cycle: number): HindKey => {
-  for (let i = 1; i < HIND_KEYS.length; i++) {
-    const [t0, a] = HIND_KEYS[i - 1]!;
-    const [t1, b] = HIND_KEYS[i]!;
-    if (cycle <= t1) {
-      const t = smooth((cycle - t0) / (t1 - t0));
-      return {
-        dx: lerp(a.dx, b.dx, t),
-        dy: lerp(a.dy, b.dy, t),
-        angle: lerp(a.angle, b.angle, t),
-        length: lerp(a.length, b.length, t),
-        planted: lerp(a.planted, b.planted, t),
-      };
+/* Smoothstep between the keys either side of `cycle`; every field, the cycle too, is interpolated. */
+const sample = <K extends readonly number[]>(
+  keys: readonly K[],
+  cycle: number,
+): K => {
+  for (let i = 1; i < keys.length; i++) {
+    const a = keys[i - 1];
+    const b = keys[i];
+    if (cycle <= b[0]) {
+      const t = smooth((cycle - a[0]) / (b[0] - a[0]));
+      const mixed: readonly number[] = a.map((v, j) => lerp(v, b[j], t));
+      return mixed as K;
     }
   }
-  return PLANTED;
+  return keys[keys.length - 1];
+};
+
+/* `to`, or the point `max` from `from` on the way to it. */
+const reach = (from: Point, to: Point, max: number): Point => {
+  const d = Math.hypot(to[0] - from[0], to[1] - from[1]);
+  return d <= max
+    ? to
+    : [
+        from[0] + ((to[0] - from[0]) * max) / d,
+        from[1] + ((to[1] - from[1]) * max) / d,
+      ];
 };
 
 const tiltOf = (frame: HopFrame): number => frame.pitch + frame.sit * SIT_TILT;
@@ -217,102 +245,133 @@ const closedSpline = (
 
 type Shape = (ctx: CanvasRenderingContext2D) => void;
 
-/* Every closed shape of the silhouette in ground units; drawn twice (ink grown, then fill) for one clean outline. */
+/* Hind leg: thigh from the haunch to the hock, then the long foot; the toes never dip below the ground. */
+const hindLeg = (
+  hip: Point,
+  cycle: number,
+  sitting: boolean,
+  scale: number,
+  far: boolean,
+): Shape[] => {
+  const [, dx, dy, footAngle, share] = sitting
+    ? HIND_KEYS[0]
+    : sample(HIND_KEYS, cycle);
+  const raised = reach(hip, [hip[0] + dx, hip[1] + dy], SHIN_REACH * scale);
+  const hock: Point = [raised[0], Math.min(raised[1], FOOT_GROUND)];
+  const length = FOOT.length * scale * share;
+  const thickness = FOOT.thickness * scale;
+  let angle = footAngle;
+  if (hock[1] + Math.sin(angle) * length > FOOT_GROUND) {
+    const lift = Math.min(1, Math.max(-1, (FOOT_GROUND - hock[1]) / length));
+    angle = Math.cos(angle) < 0 ? Math.PI - Math.asin(lift) : Math.asin(lift);
+  }
+  const shapes: Shape[] = [];
+  const span = Math.hypot(hock[0] - hip[0], hock[1] - hip[1]);
+  if (!sitting && !far && span > 1) {
+    const d: Point = [(hock[0] - hip[0]) / span, (hock[1] - hip[1]) / span];
+    const n: Point = [-d[1], d[0]];
+    const r = thickness / 2;
+    const thigh: Point[] = [
+      [hip[0] + n[0] * 8, hip[1] + n[1] * 8],
+      [hip[0] - d[0] * 3, hip[1] - d[1] * 3],
+      [hip[0] - n[0] * 8, hip[1] - n[1] * 8],
+      [hock[0] - n[0] * r, hock[1] - n[1] * r],
+      [hock[0] + d[0] * r * 0.6, hock[1] + d[1] * r * 0.6],
+      [hock[0] + n[0] * r, hock[1] + n[1] * r],
+    ];
+    shapes.push((ctx) => closedSpline(ctx, thigh));
+  } else if (span > 4) {
+    shapes.push((ctx) => bar(ctx, hip, hock, thickness * 0.9));
+  }
+  shapes.push((ctx) => capsule(ctx, hock, angle, length, thickness));
+  /* A flat foot meets the belly at a sharp angle; fill the wedge so the outline has no ink sliver. */
+  if (!far && Math.cos(angle) > 0.9 && hock[1] >= FOOT_GROUND - 1) {
+    const top = FOOT_GROUND - thickness / 2;
+    const toe = hock[0] + length;
+    const wedge: Point[] = [
+      hip,
+      [hock[0], top],
+      [toe - 5, top],
+      [toe - 10, top - 8],
+    ];
+    shapes.push((ctx) => closedSpline(ctx, wedge));
+  }
+  return shapes;
+};
+
+/* Foreleg: slim, with a small paw; it reaches the ground first when the shoulder is low enough. */
+const foreLeg = (
+  shoulder: Point,
+  cycle: number,
+  sitting: boolean,
+  scale: number,
+): Shape[] => {
+  const [, dx, dy] = sitting ? FORE_KEYS[0] : sample(FORE_KEYS, cycle);
+  const reached = reach(
+    shoulder,
+    [shoulder[0] + dx, shoulder[1] + dy],
+    FORE_REACH * scale,
+  );
+  const paw: Point = [reached[0], Math.min(reached[1], PAW_GROUND)];
+  const grounded = paw[1] >= PAW_GROUND - 0.5;
+  const leg = Math.atan2(paw[1] - shoulder[1], paw[0] - shoulder[0]);
+  return [
+    (ctx) => bar(ctx, shoulder, paw, FORE_THICKNESS * scale),
+    (ctx) =>
+      capsule(
+        ctx,
+        [paw[0] - 1.5, paw[1]],
+        grounded ? 0 : leg - 1.1,
+        PAW.length * scale,
+        PAW.thickness * scale,
+      ),
+  ];
+};
+
+/* Every closed shape in ground units; each group is drawn twice (ink grown, then fill) for one clean outline. */
 const silhouette = (
   frame: HopFrame,
   hop: number,
-): { shapes: Shape[]; g: (p: Point) => Point } => {
+): { near: Shape[]; far: Shape[]; g: (p: Point) => Point } => {
   const sitting = frame.sit > 0.05;
   const g = bodyToGround(frame, frame.air * hop - frame.sit * SIT_SETTLE);
-  const shapes: Shape[] = [];
-
   const body = BODY.map(g);
-  shapes.push((ctx) => {
-    ctx.beginPath();
-    ctx.moveTo(...body[0]!);
-    for (let i = 1; i < body.length; i += 3) {
-      ctx.bezierCurveTo(
-        ...body[i]!,
-        ...body[i + 1]!,
-        ...(body[i + 2] ?? body[0]!),
-      );
-    }
-    ctx.closePath();
-  });
-
-  /* Hind leg: shin from hip to heel, then the long foot; the toes never dip below the ground. */
-  const key = sitting ? PLANTED : hindAt(frame.cycle);
   const hip = g(HIP);
-  const groundY = -FOOT.thickness / 2;
-  const heel: Point = [
-    hip[0] + key.dx,
-    lerp(hip[1] + 8 + key.dy, groundY, key.planted),
-  ];
-  const length = FOOT.length * key.length;
-  let angle = key.angle;
-  if (heel[1] + Math.sin(angle) * length > groundY) {
-    const lift = Math.min(1, Math.max(-1, (groundY - heel[1]) / length));
-    angle = Math.cos(angle) < 0 ? Math.PI - Math.asin(lift) : Math.asin(lift);
-  }
-  const toe: Point = [
-    heel[0] + Math.cos(angle) * length,
-    heel[1] + Math.sin(angle) * length,
-  ];
-  if (!sitting) {
-    shapes.push((ctx) => {
-      ctx.beginPath();
-      ctx.ellipse(hip[0] - 3, hip[1] - 1, 10, 8.5, 0, 0, Math.PI * 2);
-    });
-  }
-  if (Math.hypot(heel[0] - hip[0], heel[1] - hip[1]) > 6) {
-    shapes.push((ctx) => bar(ctx, hip, heel, FOOT.thickness));
-  }
-  shapes.push((ctx) => capsule(ctx, heel, angle, length, FOOT.thickness));
-
-  /* Front paw: short and flat on the ground when down, folded under the chest in the air. */
   const shoulder = g(SHOULDER);
-  const tuck = sitting ? 0 : frame.tuckFore;
-  const paw: Point = [
-    lerp(shoulder[0] + 1, shoulder[0] - 2, tuck),
-    lerp(-PAW.thickness / 2, shoulder[1] + 6, tuck),
-  ];
-  shapes.push((ctx) => bar(ctx, shoulder, paw, 5.4));
-  if (!sitting) {
-    shapes.push((ctx) => {
+  const near: Shape[] = [
+    (ctx) => {
       ctx.beginPath();
-      ctx.ellipse(
-        shoulder[0] - 3,
-        shoulder[1] + 3,
-        5.5,
-        4.5,
-        0,
-        0,
-        Math.PI * 2,
-      );
-    });
-  }
-  shapes.push((ctx) =>
-    capsule(ctx, [paw[0] - 2, paw[1]], -0.5 * tuck, PAW.length, PAW.thickness),
-  );
-
-  /* Landing: a smooth web from the hip along the inside of the belly to the shoulder, then back along the feet, so no gap opens under the belly. */
-  if (!sitting && frame.cycle > 0.55 && toe[0] > hip[0] + 4) {
-    const half = FOOT.thickness / 2 + 1;
-    const pawEdge: Point = [paw[0] + 3, paw[1]];
-    const toeEdge: Point = [toe[0] - half, toe[1]];
-    const front = toeEdge[0] > pawEdge[0] ? [toeEdge] : [pawEdge, toeEdge];
-    const ring: Point[] = [
-      hip,
-      g([-6, 9]),
-      g([6, 8]),
-      [shoulder[0] - 2, shoulder[1] + 1],
-      ...front,
-      [heel[0] + half, heel[1]],
-    ];
-    shapes.push((ctx) => closedSpline(ctx, ring));
-  }
-
-  return { shapes, g };
+      ctx.moveTo(...body[0]!);
+      for (let i = 1; i < body.length; i += 3) {
+        ctx.bezierCurveTo(
+          ...body[i]!,
+          ...body[i + 1]!,
+          ...(body[i + 2] ?? body[0]!),
+        );
+      }
+      ctx.closePath();
+    },
+    ...hindLeg(hip, frame.cycle, sitting, 1, false),
+    ...foreLeg(shoulder, frame.cycle, sitting, 1),
+  ];
+  const far: Shape[] = sitting
+    ? []
+    : [
+        ...hindLeg(
+          [hip[0] + FAR.hip[0], hip[1] + FAR.hip[1]],
+          Math.max(0, frame.cycle - FAR.hindLag),
+          false,
+          FAR.scale,
+          true,
+        ),
+        ...foreLeg(
+          [shoulder[0] + FAR.shoulder[0], shoulder[1] + FAR.shoulder[1]],
+          Math.max(0, frame.cycle - FAR.foreLag),
+          false,
+          FAR.scale,
+        ),
+      ];
+  return { near, far, g };
 };
 
 /* Ears behind the head, each with its inner line. */
@@ -395,7 +454,7 @@ export const drawHare = (
   hop: number,
   palette: HeroPalette,
 ): void => {
-  const { shapes, g } = silhouette(frame, hop);
+  const { near, far, g } = silhouette(frame, hop);
   ctx.save();
   ctx.translate(x, ground);
   ctx.scale(scale, scale);
@@ -404,18 +463,20 @@ export const drawHare = (
 
   drawEars(ctx, frame, g, palette);
 
-  ctx.fillStyle = palette.border;
-  ctx.strokeStyle = palette.border;
-  ctx.lineWidth = LINE * 2;
-  for (const shape of shapes) {
-    shape(ctx);
-    ctx.fill();
-    ctx.stroke();
-  }
-  ctx.fillStyle = palette.background;
-  for (const shape of shapes) {
-    shape(ctx);
-    ctx.fill();
+  for (const group of [far, near]) {
+    ctx.fillStyle = palette.border;
+    ctx.strokeStyle = palette.border;
+    ctx.lineWidth = LINE * 2;
+    for (const shape of group) {
+      shape(ctx);
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.fillStyle = palette.background;
+    for (const shape of group) {
+      shape(ctx);
+      ctx.fill();
+    }
   }
 
   drawTail(ctx, frame, g, palette);
