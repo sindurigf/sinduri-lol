@@ -14,6 +14,8 @@ export interface HeroPalette {
   readonly bud: string;
   /** `--color-hero-ground`. Must be opaque: it hides limbs behind the body. */
   readonly background: string;
+  /** `--color-light-ground`: the highlight in the bunny's eye. */
+  readonly shine: string;
   /*
    * Edges keep their hue: canvas gradients interpolate unpremultiplied, so
    * `transparent` would gray them.
