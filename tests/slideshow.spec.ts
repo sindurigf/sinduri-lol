@@ -562,8 +562,6 @@ test.describe('the talk slideshow in full screen', () => {
       .not.toBe('none');
   });
 
-  // A room cannot scroll a projected slide. 1280x720 is the tightest of the
-  // measured sizes (1024x768 to 1920x1080).
   test('every content slide starts its title at one height', async ({
     page,
   }) => {
@@ -588,6 +586,8 @@ test.describe('the talk slideshow in full screen', () => {
     );
   });
 
+  // A room cannot scroll a projected slide. 1280x720 is the tightest of the
+  // measured sizes (1024x768 to 1920x1080).
   test('every slide fits its frame on a 1280x720 screen', async ({
     page,
     browserName,
