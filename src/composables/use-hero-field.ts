@@ -73,6 +73,7 @@ export const useHeroField = (): HeroFieldState => {
       subtle: read('--color-gold-muted'),
       bud: read('--color-gold-bud'),
       background: read('--color-hero-ground'),
+      shine: read('--color-light-ground'),
       veil: read('--color-hero-veil'),
       veilEdge: read('--color-hero-veil-edge'),
       floor: read('--color-hero-floor'),

@@ -2,11 +2,11 @@
 
 How AI tooling was used to build this site.
 
-| Item  | Detail                                                                                                                                   |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Model | Claude (Anthropic)                                                                                                                       |
-| Tools | Claude Code; Stitch (Google) and Claude Design (Anthropic) for design                                                                    |
-| Scope | Code, tests, docs, functional microcopy, the `/accessibility` and `/privacy` text, the About cat drawings, and editing my editorial copy |
+| Item  | Detail                                                                                                                                                             |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Model | Claude (Anthropic)                                                                                                                                                 |
+| Tools | Claude Code; Stitch (Google) and Claude Design (Anthropic) for design                                                                                              |
+| Scope | Code, tests, docs, functional microcopy, the `/accessibility` and `/privacy` text, the About cat drawings, the home page hero bunny, and editing my editorial copy |
 
 ## Review
 
@@ -34,6 +34,8 @@ How AI tooling was used to build this site.
 - The drawn, animated cats on `/about/` and their trick icons
   (`src/lib/about-cats-tricks.json`) are AI-made and labeled there; the cat
   photos are real.
+- The hopping bunny in the home page hero (`src/lib/hero-field-hare.ts`) is
+  AI-drawn.
 
 ## Keeping this current
 
