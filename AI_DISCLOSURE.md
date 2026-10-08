@@ -2,11 +2,11 @@
 
 How AI tooling was used to build this site.
 
-| Item  | Detail                                                                                                                                   |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Model | Claude (Anthropic)                                                                                                                       |
-| Tools | Claude Code; Stitch (Google) and Claude Design (Anthropic) for design                                                                    |
-| Scope | Code, tests, docs, functional microcopy, the `/accessibility` and `/privacy` text, the About cat drawings, and editing my editorial copy |
+| Item  | Detail                                                                                                                                                             |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Model | Claude (Anthropic)                                                                                                                                                 |
+| Tools | Claude Code; Stitch (Google) and Claude Design (Anthropic) for design                                                                                              |
+| Scope | Code, tests, docs, functional microcopy, the `/accessibility` and `/privacy` text, the About cat drawings, the home page hero bunny, and editing my editorial copy |
 
 ## Review
 
@@ -31,12 +31,16 @@ How AI tooling was used to build this site.
 ## At runtime
 
 - No AI runs on the site, and no visitor data is sent to a model.
-- The drawn, animated cats on `/about/` and their trick icons
-  (`src/lib/about-cats-tricks.json`) are AI-made and labeled there; the cat
-  photos are real.
+- AI-made and listed under
+  [Made with AI on `/credits/`](https://sinduri.lol/credits/#ai):
+  - the hopping bunny in the homepage hero (`src/lib/hero-field-hare.ts`);
+  - the drawn, animated cats on `/about/` and their trick icons
+    (`src/lib/about-cats-tricks.json`). The cat photos are real.
 
 ## Keeping this current
 
 Update this file in the same commit when the tools, scope, review or runtime
-use change. AI-made images, and any editorial text I have not approved line by
-line, are also labeled on the page.
+use change. AI-made drawings and animation are also listed on `/credits/`.
+Realistic AI images, video or audio (deep fakes, EU AI Act Art. 50(4)), and any
+editorial text I have not approved line by line, are labeled on the page that
+shows them.
