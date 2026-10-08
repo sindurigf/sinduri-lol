@@ -94,7 +94,16 @@ export const hopFrame = (
 };
 
 /* Hind leg per hop phase: [cycle, hock dx, hock dy from the hip, foot angle (0 toes forward, PI toes back), foot length share]. */
-const HIND_KEYS: readonly (readonly number[])[] = [
+type HindKey = readonly [
+  cycle: number,
+  dx: number,
+  dy: number,
+  angle: number,
+  share: number,
+];
+type ForeKey = readonly [cycle: number, dx: number, dy: number];
+
+const HIND_KEYS: readonly HindKey[] = [
   [0, -1, 8, 0, 1],
   [0.1, -10, 11, Math.PI - 0.3, 1],
   [0.28, -18, -1, Math.PI + 0.35, 1],
@@ -106,7 +115,7 @@ const HIND_KEYS: readonly (readonly number[])[] = [
   [1, -1, 8, 0, 1],
 ];
 /* Foreleg per hop phase: [cycle, paw dx, paw dy from the shoulder]. */
-const FORE_KEYS: readonly (readonly number[])[] = [
+const FORE_KEYS: readonly ForeKey[] = [
   [0, 1, 20],
   [0.1, -4, 14],
   [0.32, 12, 10],
@@ -131,19 +140,21 @@ const PAW_GROUND = -PAW.thickness / 2;
 const smooth = (t: number): number => t * t * (3 - 2 * t);
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 
-const sample = (
-  keys: readonly (readonly number[])[],
+/* Smoothstep between the keys either side of `cycle`; every field, the cycle too, is interpolated. */
+const sample = <K extends readonly number[]>(
+  keys: readonly K[],
   cycle: number,
-): number[] => {
+): K => {
   for (let i = 1; i < keys.length; i++) {
-    const a = keys[i - 1]!;
-    const b = keys[i]!;
-    if (cycle <= b[0]!) {
-      const t = smooth((cycle - a[0]!) / (b[0]! - a[0]!));
-      return a.slice(1).map((v, j) => lerp(v, b[j + 1]!, t));
+    const a = keys[i - 1];
+    const b = keys[i];
+    if (cycle <= b[0]) {
+      const t = smooth((cycle - a[0]) / (b[0] - a[0]));
+      const mixed: readonly number[] = a.map((v, j) => lerp(v, b[j], t));
+      return mixed as K;
     }
   }
-  return keys[keys.length - 1]!.slice(1);
+  return keys[keys.length - 1];
 };
 
 /* `to`, or the point `max` from `from` on the way to it. */
@@ -242,14 +253,14 @@ const hindLeg = (
   scale: number,
   far: boolean,
 ): Shape[] => {
-  const [dx, dy, footAngle, share] = sitting
-    ? HIND_KEYS[0]!.slice(1)
+  const [, dx, dy, footAngle, share] = sitting
+    ? HIND_KEYS[0]
     : sample(HIND_KEYS, cycle);
-  const raised = reach(hip, [hip[0] + dx!, hip[1] + dy!], SHIN_REACH * scale);
+  const raised = reach(hip, [hip[0] + dx, hip[1] + dy], SHIN_REACH * scale);
   const hock: Point = [raised[0], Math.min(raised[1], FOOT_GROUND)];
-  const length = FOOT.length * scale * share!;
+  const length = FOOT.length * scale * share;
   const thickness = FOOT.thickness * scale;
-  let angle = footAngle!;
+  let angle = footAngle;
   if (hock[1] + Math.sin(angle) * length > FOOT_GROUND) {
     const lift = Math.min(1, Math.max(-1, (FOOT_GROUND - hock[1]) / length));
     angle = Math.cos(angle) < 0 ? Math.PI - Math.asin(lift) : Math.asin(lift);
@@ -295,10 +306,10 @@ const foreLeg = (
   sitting: boolean,
   scale: number,
 ): Shape[] => {
-  const [dx, dy] = sitting ? FORE_KEYS[0]!.slice(1) : sample(FORE_KEYS, cycle);
+  const [, dx, dy] = sitting ? FORE_KEYS[0] : sample(FORE_KEYS, cycle);
   const reached = reach(
     shoulder,
-    [shoulder[0] + dx!, shoulder[1] + dy!],
+    [shoulder[0] + dx, shoulder[1] + dy],
     FORE_REACH * scale,
   );
   const paw: Point = [reached[0], Math.min(reached[1], PAW_GROUND)];
