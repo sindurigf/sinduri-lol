@@ -107,6 +107,15 @@ const GUIDES = [
   },
 ] as const;
 
+/* Keep in step with AI_DISCLOSURE.md "At runtime". */
+const MADE_WITH_AI = [
+  { name: 'The hopping bunny on the homepage', href: '/' },
+  { name: 'The About cats and their trick icons', href: '/about/' },
+] as const;
+
+const AI_DISCLOSURE =
+  'https://github.com/sindurigf/sinduri-lol/blob/main/AI_DISCLOSURE.md';
+
 const photographers = Object.entries(PHOTOGRAPHERS).map(([name, href]) => ({
   name,
   href,
@@ -307,6 +316,23 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
           &ldquo;These aren't the droids you're looking for.&rdquo; It is a Jedi
           mind trick: the stormtrooper repeats it and waves them through. Here
           it means the page you wanted is not here, so move along.
+        </p>
+      </div>
+
+      <div id="ai" class="card lg:col-span-2">
+        <h2 class={CARD_HEADING}>Made with AI</h2>
+        <ul class="bullet-list mt-6">
+          {MADE_WITH_AI.map((item) => (
+            <li>
+              <a href={item.href} class={LINK_ITEM}>
+                {item.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p class="mt-6 text-body text-text text-pretty">
+          How AI helped build the site:{' '}
+          <a href={AI_DISCLOSURE}>AI disclosure</a>.
         </p>
       </div>
     </div>
