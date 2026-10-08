@@ -13,13 +13,9 @@ import { ENGINE_INVARIANT_TAG, NODE_TAG } from './tests/tags';
 const WEBKIT = Boolean(process.env.CI) || process.env.WEBKIT === '1';
 
 /*
- * Firefox `page.goto` stalls on COOP navigations, worse after 1.62.1, hence the
- * exact pin: https://github.com/microsoft/playwright/issues/42731. Disabling
- * Firefox COOP removes the trigger; Chromium still enforces it.
+ * @playwright/test is pinned exactly: the image digest in scripts/test-webkit.sh
+ * and CI's browser cache key both follow it, so it moves by hand.
  */
-const FIREFOX_PREFS = {
-  'browser.tabs.remote.useCrossOriginOpenerPolicy': false,
-};
 
 const PORT = TEST_PORT;
 
@@ -35,7 +31,7 @@ export default defineConfig({
   testIgnore: [...WORKER_SPECS],
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
-  /* For the Firefox stall above; a retried pass still fails CI (--fail-on-flaky-tests). */
+  /* One retry tells flaky from failing; a retried pass still fails CI (--fail-on-flaky-tests). */
   retries: process.env.CI ? 1 : 0,
   /* Fixed so local runs match CI. All workers share one static server; more time out at random. */
   workers: 2,
@@ -66,10 +62,7 @@ export default defineConfig({
     {
       name: 'firefox',
       grepInvert: NODE_OR_INVARIANT,
-      use: {
-        ...devices['Desktop Firefox'],
-        launchOptions: { firefoxUserPrefs: FIREFOX_PREFS },
-      },
+      use: { ...devices['Desktop Firefox'] },
     },
     ...(WEBKIT
       ? [

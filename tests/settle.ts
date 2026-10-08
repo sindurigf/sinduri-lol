@@ -1,9 +1,6 @@
 import { expect, type Page, type Response } from '@playwright/test';
 
-/**
- * Not `networkidle`: it says nothing about hydration or fonts. The Firefox
- * navigation stall is in the harness, not here; see `retries` in playwright.config.ts.
- */
+/** Not `networkidle`: it says nothing about hydration or fonts. */
 
 /*
  * A margin for a shared runner whose main thread can stay busy past an assertion's 5s,
