@@ -942,6 +942,24 @@ test.describe('the talk below lg: the PDF and every slide as text', () => {
 
 test.describe('gold on talk slides', () => {
   for (const theme of ['dark', 'light'] as const) {
+    test(`in ${theme} mode a slide link changes color on hover`, async ({
+      page,
+    }) => {
+      await page.addInitScript((value) => {
+        localStorage.setItem('theme', value);
+      }, theme);
+      await open(page, '#slide-12');
+      const link = visible(page).locator('.slide-body a:not([class])').first();
+      const color = () => link.evaluate((a) => getComputedStyle(a).color);
+      const rest = await color();
+      await link.hover();
+      await expect
+        .poll(color, 'the slide link looks the same under the pointer')
+        .not.toBe(rest);
+    });
+  }
+
+  for (const theme of ['dark', 'light'] as const) {
     test(`in ${theme} mode lead-in terms and slide links are at least 4.5:1 on their slide`, async ({
       page,
     }) => {
