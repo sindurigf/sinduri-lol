@@ -12,13 +12,13 @@ const D = Math.PI / 180;
 const EDGE = 5;
 const SHADOW = 3;
 const LEG_W = 7.5;
-/** Half a leg's width at the hip or shoulder, knee or elbow, hock or wrist, and paw: thick at the top, a small paw below. */
-const LEG_TAPER = [LEG_W / 2, 3.2, 2.5, 2.25];
+/** Half a front leg's width at the shoulder, elbow, wrist and paw. */
+const FRONT_R = [LEG_W / 2, 3.2, 2.5, 2.25];
+/** Half a hind leg's width at the hip, knee, heel, paw and toes: a thigh that tapers to the knee, a thin shank and foot. */
+const HIND_R = [7.2, 4.8, 2.9, 2.5, 2.3];
 const TAIL_W = 7;
 const TAIL_SEGS = 8;
 const TAIL_SEG = 4.2;
-const UPPER = 9.5;
-const LOWER = 9.5;
 const BODY_LEN = 30;
 const HEAD_RX = 13;
 const HEAD_RY = 11.5;
@@ -84,32 +84,18 @@ const el = <K extends keyof SVGElementTagNameMap>(
   return node;
 };
 
-/** Two-bone inverse kinematics; `sign` picks which way the joint bends. */
-const ik = (
-  a: Point,
-  t: Point,
-  sign: number,
-  scale: number,
-): [Point, Point] => {
-  const upper = UPPER * scale;
-  const lower = LOWER * scale;
+/** Inverse kinematics for two bones of one length; `sign` picks which way the joint bends. */
+const ik = (a: Point, t: Point, sign: number, bone: number): [Point, Point] => {
   const dx = t.x - a.x;
   const dy = t.y - a.y;
   const d = Math.hypot(dx, dy) || 0.001;
-  const reach = clamp(d, Math.abs(upper - lower) + 0.5, upper + lower - 0.01);
+  const reach = clamp(d, 0.5, 2 * bone - 0.01);
   const ux = dx / d;
   const uy = dy / d;
-  const bend =
-    Math.acos(
-      clamp(
-        (upper * upper + reach * reach - lower * lower) / (2 * upper * reach),
-        -1,
-        1,
-      ),
-    ) * sign;
+  const bend = Math.acos(reach / (2 * bone)) * sign;
   const joint = pt(
-    a.x + upper * (ux * Math.cos(bend) - uy * Math.sin(bend)),
-    a.y + upper * (ux * Math.sin(bend) + uy * Math.cos(bend)),
+    a.x + bone * (ux * Math.cos(bend) - uy * Math.sin(bend)),
+    a.y + bone * (ux * Math.sin(bend) + uy * Math.cos(bend)),
   );
   return [joint, pt(a.x + ux * reach, a.y + uy * reach)];
 };
@@ -199,17 +185,6 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
         : { class: tone === 'edge' ? 'cat-edge' : 'cat-fill' },
       flip,
     );
-    const stroke = (width: number, part: string): SVGPathElement =>
-      el(
-        'path',
-        {
-          class: `cat-line-${part}`,
-          'stroke-width': width + extra,
-          'stroke-linecap': 'round',
-          'stroke-linejoin': 'round',
-        },
-        group,
-      );
     const solid = (part: string): Record<string, string | number> => ({
       class: `cat-solid-${part}`,
       'stroke-width': extra,
@@ -219,7 +194,16 @@ export const createCatRig = (svg: SVGSVGElement, id: CatId): CatRig => {
       el('path', solid('far'), group),
       el('path', solid('far'), group),
     ];
-    const tail = stroke(TAIL_W, id === 'hela' ? 'patch' : 'fur');
+    const tail = el(
+      'path',
+      {
+        class: `cat-line-${id === 'hela' ? 'patch' : 'fur'}`,
+        'stroke-width': TAIL_W + extra,
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+      },
+      group,
+    );
     const body = el('path', solid('fur'), group);
     const haunch = el('ellipse', solid('fur'), group);
     const legs: [SVGPathElement, SVGPathElement] = [
@@ -470,75 +454,114 @@ type Paw = 'fN' | 'fF' | 'hN' | 'hF';
 
 /*
  * Cats stand on their toes: below the elbow and knee each leg has a wrist or
- * hock, the hind one high and pointing back. Lengths in px, angles in degrees
- * from the ground, forward positive.
+ * hock, the hind one high and pointing back. Lengths in px before the leg
+ * scale, angles in degrees from the ground, forward positive.
  */
+const LEG = 19;
 const WRIST = 2.5;
-const HOCK = 7;
-const WRIST_STAND = 80;
+const HOCK = 7.5;
+const FRONT_BONE = (LEG - WRIST) / 2;
+/** Thigh and shank: together longer than the hip stands high, so a standing leg bends. */
+const HIND_BONE = 8.2;
+const HIND_TOES = 2.4;
+/** The paw height by which the toes hang in line with the foot. */
+const TOES_HANG_AT = 5;
 const HOCK_STAND = 62;
 const HOCK_FLAT = 14;
+/** A hind foot lies flat with the paw this near the hip, as a share of LEG, and stands upright this much farther out. */
+const HOCK_FLAT_AT = 0.45;
+const HOCK_RISE = 0.5;
 /*
- * The wrist angle by paw height, [lift px, degrees]: a stepping paw flicks back
- * sole up; a paw raised high to swat hangs curled from the wrist.
+ * The wrist angle by paw height: a stepping paw flicks back sole up, and from
+ * WRIST_HANG_FROM px a paw raised to swat comes to hang curled from the wrist.
+ * Degrees, and degrees per px of lift.
  */
-const WRIST_BY_LIFT: readonly (readonly [number, number])[] = [
-  [0, WRIST_STAND],
-  [5, 130],
-  [9, 130],
-  [16, 100],
-];
+const WRIST_STAND = 80;
+const WRIST_FLICK = 130;
+const WRIST_HANG = 100;
+const WRIST_FLICK_RATE = 10;
+const WRIST_HANG_FROM = 9;
+const WRIST_HANG_RATE = 30 / 7;
 /** How far a lifted hind paw hangs more upright under the hock, per px of lift. */
 const HOCK_FOLD = 7;
 const HOCK_FOLD_MAX = 40;
 
-const wristAngle = (lift: number): number => {
-  for (let i = 1; i < WRIST_BY_LIFT.length; i += 1) {
-    const [x1, y1] = WRIST_BY_LIFT[i];
-    if (lift <= x1) {
-      const [x0, y0] = WRIST_BY_LIFT[i - 1];
-      return y0 + ((y1 - y0) * (lift - x0)) / (x1 - x0);
-    }
-  }
-  return WRIST_BY_LIFT[WRIST_BY_LIFT.length - 1][1];
+/** How far towards flat a folding hind foot has come when its heel is under the hip, as a share. */
+const HEEL_UNDER_AT = 2 / 3;
+
+/** A chain of tapered segments with round joints, as one filled path. */
+const limb = (pts: Point[], r: number[]): string => {
+  let d = '';
+  pts.forEach((q, i) => {
+    d += `M${f(q.x - r[i])} ${f(q.y)}a${r[i]} ${r[i]} 0 1 0 ${f(2 * r[i])} 0a${r[i]} ${r[i]} 0 1 0 ${f(-2 * r[i])} 0Z`;
+    if (i === 0) return;
+    const a = pts[i - 1];
+    const len = Math.hypot(q.x - a.x, q.y - a.y) || 1;
+    const nx = (a.y - q.y) / len;
+    const ny = (q.x - a.x) / len;
+    d += `M${f(a.x + nx * r[i - 1])} ${f(a.y + ny * r[i - 1])}L${f(q.x + nx * r[i])} ${f(q.y + ny * r[i])}L${f(q.x - nx * r[i])} ${f(q.y - ny * r[i])}L${f(a.x - nx * r[i - 1])} ${f(a.y - ny * r[i - 1])}Z`;
+  });
+  return d;
 };
 
-/** Each leg's hip or shoulder, knee or elbow, hock or wrist, and paw, as drawn. */
-const legBones = (p: Pose): Record<Paw, [Point, Point, Point, Point]> => {
+const wristAngle = (lift: number): number =>
+  Math.min(
+    WRIST_STAND + WRIST_FLICK_RATE * lift,
+    WRIST_FLICK,
+    Math.max(
+      WRIST_HANG,
+      WRIST_FLICK - WRIST_HANG_RATE * (lift - WRIST_HANG_FROM),
+    ),
+  );
+
+/** Each leg's hip or shoulder, knee or elbow, hock or wrist, and paw, as drawn; a hind leg's toes follow. */
+const legBones = (p: Pose): Record<Paw, Point[]> => {
   const { center, length, half, at } = skeleton(p);
   const front = at(length - 3, -half * 0.3);
   const hind = at(3, -half * 0.3);
-  const bone = (
-    from: Point,
-    k: Paw,
-    sign: number,
-  ): [Point, Point, Point, Point] => {
+  const bone = (from: Point, k: Paw, sign: number): Point[] => {
     const isFront = k[0] === 'f';
     const scale = isFront ? p.fl : p.hl;
     const paw = pt(center.x + p[k][0], center.y + p[k][1]);
     const lift = Math.max(0, -paw.y);
-    const seg = isFront ? WRIST : HOCK;
-    const reach = (UPPER + LOWER) * scale;
-    const room = clamp(
-      Math.hypot(paw.x - from.x, paw.y - from.y) / reach,
-      0,
-      1,
-    );
+    const room = Math.hypot(paw.x - from.x, paw.y - from.y) / (LEG * scale);
     /* Up from the paw to the wrist or hock: angle from the ground, measured backwards. */
     const angle = isFront
       ? wristAngle(lift)
       : HOCK_FLAT +
-        (HOCK_STAND - HOCK_FLAT) * clamp((room - 0.45) / 0.5, 0, 1) +
+        (HOCK_STAND - HOCK_FLAT) *
+          clamp((room - HOCK_FLAT_AT) / HOCK_RISE, 0, 1) +
         Math.min(HOCK_FOLD_MAX, lift * HOCK_FOLD);
-    const lower = pt(
-      paw.x - seg * scale * Math.cos(angle * D),
-      paw.y - seg * scale * Math.sin(angle * D),
+    const seg = (isFront ? WRIST : HOCK) * scale;
+    const cos = Math.cos(angle * D);
+    const sin = Math.sin(angle * D);
+    /* A folded hind leg rests on the whole foot: it slides forward so the heel, not the toes, comes under the hip. */
+    if (!isFront)
+      paw.x +=
+        seg *
+        cos *
+        clamp(
+          (HOCK_STAND - angle) / ((HOCK_STAND - HOCK_FLAT) * HEEL_UNDER_AT),
+          0,
+          1,
+        );
+    const lower = pt(paw.x - seg * cos, paw.y - seg * sin);
+    const [joint, reached] = ik(
+      from,
+      lower,
+      sign,
+      (isFront ? FRONT_BONE : HIND_BONE) * scale,
     );
-    const upperScale = scale * (1 - seg / (UPPER + LOWER));
-    const [joint, reached] = ik(from, lower, sign, upperScale);
     /* A paw its leg cannot reach stops short with it. */
-    const short = pt(reached.x - lower.x, reached.y - lower.y);
-    return [from, joint, reached, pt(paw.x + short.x, paw.y + short.y)];
+    const end = pt(paw.x + reached.x - lower.x, paw.y + reached.y - lower.y);
+    const bones = [from, joint, reached, end];
+    if (isFront) return bones;
+    /* Toes lie forward on the ground, and hang in line with the foot once it lifts. */
+    const hang = clamp(-end.y / TOES_HANG_AT, 0, 1);
+    const tx = 1 - hang + hang * cos;
+    const ty = hang * sin;
+    const reach = HIND_TOES / (Math.hypot(tx, ty) || 1);
+    return [...bones, pt(end.x + tx * reach, end.y + ty * reach)];
   };
   return {
     fN: bone(front, 'fN', 1),
@@ -578,7 +601,7 @@ const outline = (p: Pose): Point[] => {
     headPoint(pt(HEAD_RX, 0)),
     headPoint(pt(-HEAD_RX, 0)),
     ...ears.map(headPoint),
-    ...Object.values(legBones(p)).map(([, , , end]) => end),
+    ...Object.values(legBones(p)).map((bones) => bones[3]),
   ];
   let q = at(-4, 0);
   for (const angle of tailTargets(p, 0)) {
@@ -630,25 +653,8 @@ export const renderCat = (
   rig.bodyClip.setAttribute('d', body);
 
   const bones = legBones(p);
-  const leg = (k: Paw): string => {
-    const joints = bones[k];
-    const left: string[] = [];
-    const right: string[] = [];
-    joints.forEach((q, i) => {
-      const a = joints[Math.max(0, i - 1)];
-      const b = joints[Math.min(joints.length - 1, i + 1)];
-      const d = Math.hypot(b.x - a.x, b.y - a.y) || 1;
-      const nx = ((a.y - b.y) / d) * LEG_TAPER[i];
-      const ny = ((b.x - a.x) / d) * LEG_TAPER[i];
-      left.push(`${f(q.x + nx)} ${f(q.y + ny)}`);
-      right.unshift(`${f(q.x - nx)} ${f(q.y - ny)}`);
-    });
-    const [, , lower, paw] = joints;
-    const d = Math.hypot(paw.x - lower.x, paw.y - lower.y) || 1;
-    const tip = (LEG_TAPER[3] * 2) / d;
-    /* Rounded past the paw, as the stroke's round cap was. */
-    return `M${left.join('L')}Q${f(paw.x + (paw.x - lower.x) * tip)} ${f(paw.y + (paw.y - lower.y) * tip)} ${right.join('L')}Z`;
-  };
+  const leg = (k: Paw): string =>
+    limb(bones[k], k[0] === 'f' ? FRONT_R : HIND_R);
   const legs = { fN: leg('fN'), fF: leg('fF'), hN: leg('hN'), hF: leg('hF') };
 
   const targets = tailTargets(p, now / 1000);
