@@ -84,18 +84,18 @@ const LOAF = derive(BASE, {
 });
 
 const POSES = {
-  /* Up tall on the hind legs after something overhead. */
+  /* Up tall on the hind legs after something overhead, the paws held out clear of the head. */
   tall: derive(BASE, {
     ba: 84,
     by: 31,
     haunch: 6,
-    fN: [22, -30],
-    fF: [18, -24],
+    fN: [27, -22],
+    fF: [20, -8],
     hN: [0, 31],
     hF: [3, 31],
     hl: 1.6,
     fl: 1.5,
-    hx: 3,
+    hx: -1,
     hy: -14,
     hr: -24,
     ta: 150,
@@ -527,13 +527,14 @@ const FLY_TAKES_OFF = 4600;
 const FLY_ESCAPES = 8600;
 /** A swat starts with the paw raised high, curled at the wrist, and comes down onto its target. */
 const WINDUP_MS = 180;
-const SWAT_RAISED: Pair = [30, -20];
-const REAR_RAISED: Pair = [27, -24];
+/** Raised ahead of the face, the head drawn back: a gap keeps the paw a shape of its own on a black coat. */
+const SWAT_RAISED: Pair = [36, -17];
+const REAR_RAISED: Pair = [31, -20];
 const SWAT_MS = 160;
 /** A sitting swat `leadMs` after the last, the head tipped back `hr` degrees and the paw landing at height `y`. */
 const sitSwat = (leadMs: number, hr: number, y: number): Step[] => [
   step(leadMs - WINDUP_MS, 'sit', { hr: -15 }),
-  step(WINDUP_MS, 'sit', { hr, fN: SWAT_RAISED }, 'out'),
+  step(WINDUP_MS, 'sit', { hr, hx: -4, fN: SWAT_RAISED }, 'out'),
   step(SWAT_MS, 'sit', { hr, fN: [34, y] }, 'in'),
 ];
 /** Reared up, both paws swipe down. */
@@ -543,7 +544,7 @@ const rearSwat = (leadMs: number): Step[] => [
   step(
     WINDUP_MS,
     'rear',
-    { ...REAR_UP, fN: REAR_RAISED, fF: [16, -10] },
+    { ...REAR_UP, hx: -6, fN: REAR_RAISED, fF: [16, -10] },
     'out',
   ),
   step(SWAT_MS, 'rear', { ...REAR_UP, fN: [32, -3], fF: [28, 0] }, 'in'),
