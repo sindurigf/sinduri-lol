@@ -389,8 +389,8 @@ Setup: Firefox, 1280px, `/blog/open-source-is-not-just-code` (25 headings:
       navigation "Breadcrumb", "In This Post", "Tags", contentinfo, "Site",
       "About this site", "Social". No `article` or inner `header`. → SC 1.3.1
 - [ ] From main, `Down` reads breadcrumb, `h1`, teaser, date, body. → SC 1.3.2
-- [ ] The breadcrumb is Home, Blog, Open source. In `Alt+Shift+K`, judge
-      whether "Open source" and "Blog" make sense alone. → SC 2.4.4
+- [ ] The breadcrumb is Home, Blog, Open Source. In `Alt+Shift+K`, judge
+      whether "Open Source" and "Blog" make sense alone. → SC 2.4.4
 - [ ] The date reads "10 July 2026", not the ISO string. → SC 1.3.1
 - [ ] Tags: announced by name, then a list of five links. → SC 1.3.1
 
@@ -621,7 +621,7 @@ header or nav layout change.
 - [ ] Header nav links are 40.8px tall and equal height, current or not; each
       `.hit-target` area is 44px tall.
 - [ ] Mobile menu button and theme switch 48x48, 44x44 below 21rem (336px).
-- [ ] Footer profile tiles 56x56, 48x48 on a phone; footer page links 44px
+- [ ] Footer profile tiles 56x56 from 64rem, 48x48 below; footer page links 44px
       rows.
 - [ ] Breadcrumb links above a post `h1` keep a 44px pointer area, and wrapped
       rows do not overlap it.
