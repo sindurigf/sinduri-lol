@@ -360,6 +360,9 @@ const BOUND_STRIDE = 44;
 const BOUND_LIFT = 6;
 const BOUND_HOP = 3;
 const BOUND_ROCK = 7;
+/** Each pair is down for a quarter of the stride and lands this many px out from its standing place, so the four legs never gather to a point. */
+const BOUND_STANCE = 0.25;
+const BOUND_SPREAD = 5;
 const BOUND_LEGS: typeof WALK_LEGS = [
   ['fN', 0],
   ['fF', 0.08],
@@ -374,10 +377,12 @@ const bounding = (from: number, to: number): Mod =>
       p,
       BOUND_LEGS,
       cycle,
-      STANCE,
+      BOUND_STANCE,
       weight * BOUND_STRIDE,
       weight * BOUND_LIFT,
     );
+    for (const k of PAWS)
+      p[k][0] += weight * (k[0] === 'f' ? BOUND_SPREAD : -BOUND_SPREAD);
     const phase = 2 * Math.PI * cycle;
     p.y += weight * BOUND_HOP * Math.abs(Math.sin(phase));
     p.ba += weight * BOUND_ROCK * Math.sin(phase);
