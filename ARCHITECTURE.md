@@ -693,6 +693,12 @@ evidence.
   answers 500 after the endpoint's 413. It can recur in CI under
   `--fail-on-flaky-tests`: the log shows `POST /contact/send/ 413`, then
   undici "fetch failed". Keep the test strict.
+- **Give the bunny mark alt text (Bing Webmaster Tools "Alt attribute for
+  images is missing"):** every `<img>` has an `alt`; the scanner counts an
+  empty one as missing. The header mark sits in the home link beside the site
+  name, and the hero roundel is decoration, so `alt=""` is right
+  ([H67](https://www.w3.org/WAI/WCAG22/Techniques/html/H67)). Text there would
+  be announced twice.
 
 ## Content notes
 
