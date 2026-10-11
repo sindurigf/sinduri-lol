@@ -431,11 +431,14 @@ fi
 # checks the local side.
 check_response /speculationrules.json 200
 
-# Rule 7 for the favicons and feeds, and rule 1 for the Markdown copy's noindex.
+# Rule 7 for the favicons and feeds, and rule 1 for the noindex on the
+# Markdown copy and the two PDFs.
 check_response /favicon.ico 200
 check_response /favicon.svg 200
 check_response /rss.xml 200
 check_response "${POST_PATH%/}.md" 200
+check_response /sinduri-guntupalli-cv.pdf 200
+check_response /talks/open-source-is-not-just-code.pdf 200
 
 check_response "$UNKNOWN_PATH" 404
 
