@@ -430,11 +430,11 @@ const leap = (from: number, to: number, height: number): Mod => {
     const push = Math.max(0, 1 - 3 * k);
     for (const paw of ['fN', 'fF'] as const) {
       p[paw][0] += (LANDING_REACH / 2) * land;
-      p[paw][1] += LANDING_REACH * land;
+      p[paw][1] = Math.min(p[paw][1] + LANDING_REACH * land, p.by + p.y);
     }
     for (const paw of ['hN', 'hF'] as const) {
       p[paw][0] -= PUSH_OFF * push;
-      p[paw][1] += PUSH_OFF * push;
+      p[paw][1] = Math.min(p[paw][1] + PUSH_OFF * push, p.by + p.y);
     }
   });
 };
