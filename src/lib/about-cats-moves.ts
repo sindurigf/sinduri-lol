@@ -921,7 +921,7 @@ export const MOVES = {
       o: Math.min(1, t / 300, Math.max(0, (4700 - t) / 300)),
     }),
   }),
-  /* Bats the ball, trots after it, pounces with its paws on it, bats it on, then rolls over hugging it. */
+  /* Bats the ball, bounds after it, pounces with its paws on it, bats it on, then rolls over hugging it. */
   yarn: (): Move => ({
     steps: [
       ...bat([30, 14]),
