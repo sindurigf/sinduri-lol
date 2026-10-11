@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SOCIAL_PROFILES } from '../src/lib/profiles';
+import { BING_SITE_VERIFICATION } from '../src/lib/site';
 import { expect, test } from './test';
 import { configuredSite, pngSize } from './source';
 import {
@@ -534,6 +535,18 @@ test.describe('profile verification', NODE, () => {
       missing,
       'a profile link lacks rel="me", so Mastodon cannot verify the site.',
     ).toEqual([]);
+  });
+
+  test('only the homepage carries the Bing Webmaster Tools verification tag', () => {
+    const carrying = builtHtml()
+      .filter(({ html }) => metaContent(html, 'msvalidate.01') !== null)
+      .map(
+        ({ route, html }) => `${route} ${metaContent(html, 'msvalidate.01')}`,
+      );
+    expect(
+      carrying,
+      'Bing reads msvalidate.01 on the homepage; without it the site is unverified.',
+    ).toEqual([`/ ${BING_SITE_VERIFICATION}`]);
   });
 });
 
