@@ -114,6 +114,13 @@ stays, builds disabled, to hold the `pages.dev` name.
 - Nothing on the site loads from Google, so `/privacy` has nothing to disclose.
 - Submitted sitemap: `https://sinduri.lol/sitemap-index.xml`.
 
+## Bing Webmaster Tools
+
+- Verified by the `msvalidate.01` meta tag on the homepage
+  (`BING_SITE_VERIFICATION` in `src/lib/site.ts`). Removing it unverifies the
+  site.
+- The tag loads nothing from Microsoft, so `/privacy` has nothing to disclose.
+
 ## Cloudflare settings
 
 Dashboard settings that change what ships without a file change.
