@@ -7,8 +7,6 @@ import { THEME_STORAGE_KEY } from '../lib/theme';
 /* The woff2 global.css's @font-face names; `?url` gives Vite's hashed path to preload. */
 import lexendLatin from '@fontsource-variable/lexend/files/lexend-latin-wght-normal.woff2?url';
 import { structuredDataScript, type ArticleMeta } from '../lib/structured-data';
-import { getImage } from 'astro:assets';
-import personPortrait from '../assets/photos/sinduri-studio.jpg';
 import type { Trail } from '../lib/breadcrumbs';
 import {
   UMAMI_HOST_URL,
@@ -16,6 +14,7 @@ import {
   UMAMI_WEBSITE_ID,
 } from '../lib/analytics';
 import { DEFAULT_OG_IMAGE, type OgImage } from '../lib/og-image';
+import { personImageUrl } from '../lib/person-image';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE_FEED_PATH, SITEMAP_PATH } from '../lib/paths';
@@ -44,8 +43,6 @@ interface Props {
   profile?: boolean;
 }
 
-const PERSON_IMAGE_WIDTH = 640;
-
 const {
   title,
   titleSuffix = true,
@@ -70,12 +67,7 @@ const canonical = new URL(Astro.url.pathname, site);
 /* Only the production host is counted; localhost and previews send nothing. */
 const analyticsDomain = site.hostname;
 const ogImageUrl = new URL(ogImage.src, site);
-const personImage = Astro.isPrerendered
-  ? new URL(
-      (await getImage({ src: personPortrait, width: PERSON_IMAGE_WIDTH })).src,
-      site,
-    )
-  : undefined;
+const personImage = await personImageUrl(site);
 const articleData = article && {
   ...article,
   description,

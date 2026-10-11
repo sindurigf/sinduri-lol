@@ -25,11 +25,6 @@ const SERVED_AS_IS = new Map([
       'rendered on demand.',
   ],
   [
-    'photos/sinduri-studio.jpg',
-    'BaseLayout.astro imports it for the Person image; the bundle of ' +
-      '/contact/send/, rendered on demand, carries the import and names no image.',
-  ],
-  [
     'social-icons.svg',
     'the footer imports it with `?url` and every page links it as a <use> sprite.',
   ],
