@@ -843,6 +843,43 @@ const IDLE_MAX_FPS = 25;
 /** Frames that must show a resting cat is idling, not frozen, in the window. */
 const IDLE_MIN_FRAMES = 3;
 
+/*
+ * A frame stamped this soon after the request for it: Firefox can stamp the frame
+ * after a timer wake within a millisecond of the wake, so it covers almost no time.
+ */
+const WAKE_FRAME_LEAD_MS = 0.02;
+
+/** Hela asleep and Rudra off screen, so only Minerva's own schedule can wake the loop. */
+const expectHeldHeadRelaxes = async (page: Page) => {
+  await gotoSettled(page, ROUTE);
+  await napControl(page, 'hela').click();
+  await expectMood(page, 'hela', 'asleep', 'Hela did not fall asleep');
+  expect(
+    await settles(page, 'hela', SC_2_2_2_MS + SLEEP_MARGIN_MS),
+    'Hela was still moving after lying down',
+  ).toBe(true);
+  await pointAt(page, 'minerva');
+  await expect
+    .poll(() => headTurn(page, 'minerva'), {
+      message: 'a held cat never turned its head to the pointer',
+      timeout: POINTER_IDLE_MS,
+    })
+    .toBeGreaterThan(HEAD_TURNED_DEG);
+  try {
+    await expect
+      .poll(() => headTurn(page, 'minerva'), {
+        message: 'a held cat kept its head turned to an idle pointer',
+        timeout: POINTER_IDLE_MS + SC_2_2_2_MS,
+      })
+      .toBeLessThan(HEAD_LEVEL_DEG);
+  } catch (error) {
+    if (error instanceof Error) {
+      error.message += `\nCat state: ${await catState(page, 'minerva')}`;
+    }
+    throw error;
+  }
+};
+
 test.describe('About cats', () => {
   test('each cat is a named button that opens its photo in a dialog, Close first, and returns focus', async ({
     page,
@@ -1509,34 +1546,23 @@ test.describe('About cats', () => {
   }) => {
     const context = await browser.newContext({ viewport: MINERVA_AND_HELA });
     const page = await context.newPage();
-    await gotoSettled(page, ROUTE);
-    await napControl(page, 'hela').click();
-    await expectMood(page, 'hela', 'asleep', 'Hela did not fall asleep');
-    expect(
-      await settles(page, 'hela', SC_2_2_2_MS + SLEEP_MARGIN_MS),
-      'Hela was still moving after lying down',
-    ).toBe(true);
-    /* Rudra is below the viewport, so only Minerva's own schedule can wake the loop. */
-    await pointAt(page, 'minerva');
-    await expect
-      .poll(() => headTurn(page, 'minerva'), {
-        message: 'a held cat never turned its head to the pointer',
-        timeout: POINTER_IDLE_MS,
-      })
-      .toBeGreaterThan(HEAD_TURNED_DEG);
-    try {
-      await expect
-        .poll(() => headTurn(page, 'minerva'), {
-          message: 'a held cat kept its head turned to an idle pointer',
-          timeout: POINTER_IDLE_MS + SC_2_2_2_MS,
-        })
-        .toBeLessThan(HEAD_LEVEL_DEG);
-    } catch (error) {
-      if (error instanceof Error) {
-        error.message += `\nCat state: ${await catState(page, 'minerva')}`;
-      }
-      throw error;
-    }
+    await expectHeldHeadRelaxes(page);
+    await context.close();
+  });
+
+  test('a held cat relaxes its head when the frame after the loop wakes covers almost no time', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ viewport: MINERVA_AND_HELA });
+    const page = await context.newPage();
+    await page.addInitScript((leadMs) => {
+      const request = window.requestAnimationFrame.bind(window);
+      window.requestAnimationFrame = (callback) => {
+        const asked = performance.now();
+        return request(() => callback(asked + leadMs));
+      };
+    }, WAKE_FRAME_LEAD_MS);
+    await expectHeldHeadRelaxes(page);
     await context.close();
   });
 
