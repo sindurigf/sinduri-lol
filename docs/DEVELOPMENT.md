@@ -111,6 +111,9 @@ npm run test:webkit -- tests/reflow.spec.ts
 
 - A test that never opens a page takes `NODE` from `tests/tags.ts`: it runs
   once, in the `node` project, and the browser projects skip it.
+- A browser test that reads only markup and attributes takes `ENGINE_INVARIANT`:
+  Chromium runs it, Firefox and WebKit skip it. Anything reading computed
+  styles, layout, focus, scrolling or role and name stays in every engine.
 - `.github/workflows/scheduled.yml` runs weekly, never on pull requests:
   `npm audit --omit=dev --audit-level=high`, `check:live`, `check:umami` and
   `tests/security-txt.spec.ts`. After a deploy:
@@ -130,7 +133,9 @@ npm run test:webkit -- tests/reflow.spec.ts
   holds content types for the test servers; `scripts/pdf-pages.mjs` counts PDF
   pages for `publish:talk` and `tests/talk-pdf.spec.ts`;
   `scripts/warm-browsers.mjs` opens one page per browser in CI before the
-  tests, so no worker's first page builds the browser caches inside a test.
+  tests, so no worker's first page builds the browser caches inside a test;
+  `scripts/shard-tests.mjs` deals CI's tests to the shards in turn and checks
+  each shard's `--test-list` selects exactly its share.
 - [AGENTS.md](../AGENTS.md) lists what must pass before a change is done.
 
 | Variable                        | Default                | Effect                                                   |

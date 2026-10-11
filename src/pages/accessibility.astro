@@ -33,6 +33,7 @@ const SUPPORTED = [
   'anything you click or tap at least 44 by 44 pixels, with no two overlapping',
   'a distinct, descriptive title on every page',
   'a contact form with written labels, a focused error summary, and your text kept if sending fails',
+  'talk slides on screens narrower than 1024 pixels as plain text that reflows, with a copy to download',
 ];
 
 /* Not counted: a total this page cannot recount would go stale. */
@@ -134,8 +135,8 @@ const AUTOMATED = [
             only been measured by machine. The published{' '}
             <Abbr short="PDF" long="Portable Document Format" /> files pass an
             automated check but have not been read with a screen reader. Talk
-            slide titles do not get bigger when you zoom in, and slide text in
-            full screen grows less than double at 200%.
+            slide titles fit the screen, so on some screens they reach double
+            size only at high zoom, up to 500% in Chrome and Firefox.
           </p>
 
           <p>

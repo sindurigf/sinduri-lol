@@ -1,5 +1,5 @@
 import { expect, test, type Page } from './test';
-import { gotoSettled } from './settle';
+import { gotoSettled, setViewportSettled } from './settle';
 import {
   MIN_TARGET,
   SUBPIXEL_TOLERANCE,
@@ -681,40 +681,98 @@ const headTurn = (page: Page, id: (typeof CATS)[number]) =>
     throw new Error('The cat has no head turn to read.');
   });
 
+/* Window for counting animation frames: none in it means the renderer, not the cat loop, has stopped. */
+const FRAME_COUNT_MS = 500;
+
+/** What a stuck cat's page shows: its reported state, band visibility, tab visibility and frame rate. */
+const catState = async (page: Page, id: (typeof CATS)[number]) => {
+  try {
+    const state = await page.evaluate(
+      ([spotId, windowMs]) =>
+        new Promise<Record<string, unknown>>((resolve) => {
+          const spot = document.getElementById(String(spotId));
+          let frames = 0;
+          let done = false;
+          const count = () => {
+            if (done) return;
+            frames += 1;
+            requestAnimationFrame(count);
+          };
+          requestAnimationFrame(count);
+          setTimeout(() => {
+            done = true;
+            resolve({
+              state: spot
+                ?.querySelector('[data-cat-state]')
+                ?.getAttribute('data-cat-state'),
+              bandVisible: spot?.hasAttribute('data-cat-visible'),
+              documentHidden: document.hidden,
+              framesIn500ms: frames,
+            });
+          }, Number(windowMs));
+        }),
+      [`cat-spot-${id}`, FRAME_COUNT_MS] as const,
+    );
+    return JSON.stringify({ ...state, headTurn: await headTurn(page, id) });
+  } catch (error) {
+    return `the page state could not be read: ${String(error)}`;
+  }
+};
+
 /** Frames a loaded runner draws late, beyond the 5 s bound for lying down. */
 const SLEEP_MARGIN_MS = 1000;
+/* Longer than MAX_FRAMES_PER_STEP frames at 60fps, so the next frame covers the most a frame can. */
+const STALL_MS = 150;
 /** A cat counts as settled once its drawing has not changed for this long. */
 const QUIET_MS = 500;
-/** Resolves true once a cat's drawing has been unchanged for QUIET_MS, or false if it is still changing after `limitMs`. */
+/* Frames as well as time: a starved runner can draw no frame for QUIET_MS while the cat is still mid-move. */
+const QUIET_FRAMES = 10;
+/** Resolves true once a cat's drawing is unchanged for QUIET_MS and QUIET_FRAMES frames, or false if it is still changing after `limitMs`. */
 const settles = (page: Page, id: (typeof CATS)[number], limitMs: number) =>
   page.evaluate(
-    ([spotId, quietMs, maxMs]) =>
+    ([spotId, quietMs, quietFrames, maxMs]) =>
       new Promise<boolean>((resolve) => {
         const drawing = document
           .getElementById(String(spotId))
           ?.querySelector('.cat-svg');
         if (!drawing) throw new Error(`#${spotId} has no .cat-svg to watch.`);
-        let quiet = 0;
-        let limit = 0;
-        const finish = (settled: boolean) => {
-          observer.disconnect();
-          clearTimeout(quiet);
-          clearTimeout(limit);
-          resolve(settled);
-        };
+        let changed = false;
         const observer = new MutationObserver(() => {
-          clearTimeout(quiet);
-          quiet = window.setTimeout(() => finish(true), Number(quietMs));
+          changed = true;
         });
         observer.observe(drawing, {
           attributes: true,
           childList: true,
           subtree: true,
         });
-        quiet = window.setTimeout(() => finish(true), Number(quietMs));
-        limit = window.setTimeout(() => finish(false), Number(maxMs));
+        let started = -1;
+        let changedAt = -1;
+        let still = 0;
+        const check = (now: number) => {
+          if (started < 0) started = changedAt = now;
+          if (changed || observer.takeRecords().length > 0) {
+            changed = false;
+            changedAt = now;
+            still = 0;
+          } else {
+            still += 1;
+          }
+          if (
+            still >= Number(quietFrames) &&
+            now - changedAt >= Number(quietMs)
+          ) {
+            observer.disconnect();
+            resolve(true);
+          } else if (now - started >= Number(maxMs)) {
+            observer.disconnect();
+            resolve(false);
+          } else {
+            requestAnimationFrame(check);
+          }
+        };
+        requestAnimationFrame(check);
       }),
-    [`cat-spot-${id}`, QUIET_MS, limitMs] as const,
+    [`cat-spot-${id}`, QUIET_MS, QUIET_FRAMES, limitMs] as const,
   );
 
 /** Counts the changes to one cat's drawing (its SVG, props included, not its controls) over a window: a redraw rewrites its paths. */
@@ -1433,7 +1491,7 @@ test.describe('About cats', () => {
       'the picked fly never appeared',
     ).toBeAttached({ timeout: NAP_TIMEOUT_MS });
 
-    await page.setViewportSize(REFLOW_VIEWPORT);
+    await setViewportSettled(page, REFLOW_VIEWPORT);
     await showCat(page, id);
     await tricksButton(page, id).click();
     await expect(list).toBeVisible();
@@ -1466,12 +1524,67 @@ test.describe('About cats', () => {
         timeout: POINTER_IDLE_MS,
       })
       .toBeGreaterThan(HEAD_TURNED_DEG);
-    await expect
-      .poll(() => headTurn(page, 'minerva'), {
-        message: 'a held cat kept its head turned to an idle pointer',
-        timeout: POINTER_IDLE_MS + SC_2_2_2_MS,
-      })
-      .toBeLessThan(HEAD_LEVEL_DEG);
+    try {
+      await expect
+        .poll(() => headTurn(page, 'minerva'), {
+          message: 'a held cat kept its head turned to an idle pointer',
+          timeout: POINTER_IDLE_MS + SC_2_2_2_MS,
+        })
+        .toBeLessThan(HEAD_LEVEL_DEG);
+    } catch (error) {
+      if (error instanceof Error) {
+        error.message += `\nCat state: ${await catState(page, 'minerva')}`;
+      }
+      throw error;
+    }
+    await context.close();
+  });
+
+  test('a held cat that has settled is not redrawn after a slow frame', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ viewport: MINERVA_AND_HELA });
+    const page = await context.newPage();
+    await gotoSettled(page, ROUTE);
+    /* Hela playing keeps the loop running, so a frame follows the stall. */
+    await expectMood(page, 'hela', 'playing', 'Hela is not playing beside her');
+    await pointAt(page, 'minerva');
+    await page.waitForTimeout(POINTER_IDLE_MS);
+    expect(
+      await settles(page, 'minerva', SC_2_2_2_MS),
+      'a held cat was still moving 5 s after the pointer went idle',
+    ).toBe(true);
+    const redraws = await page.evaluate(
+      ([spotId, stallMs, windowMs]) =>
+        new Promise<number>((resolve) => {
+          const drawing = document
+            .getElementById(String(spotId))
+            ?.querySelector('.cat-svg');
+          if (!drawing) throw new Error(`#${spotId} has no .cat-svg to watch.`);
+          let records = 0;
+          const observer = new MutationObserver((changes) => {
+            records += changes.length;
+          });
+          observer.observe(drawing, {
+            attributes: true,
+            childList: true,
+            subtree: true,
+          });
+          setTimeout(() => {
+            const end = performance.now() + Number(stallMs);
+            while (performance.now() < end);
+          }, 0);
+          setTimeout(() => {
+            observer.disconnect();
+            resolve(records);
+          }, Number(windowMs));
+        }),
+      ['cat-spot-minerva', STALL_MS, MUTATION_WINDOW_MS] as const,
+    );
+    expect(
+      redraws,
+      'a held cat that had settled was redrawn after one slow frame',
+    ).toBe(0);
     await context.close();
   });
 
@@ -1965,7 +2078,7 @@ test.describe('About cats', () => {
     });
   }
 
-  test('the drawings are hidden from assistive technology and the AI label is on the page', async ({
+  test('the drawings are hidden from assistive technology', async ({
     page,
   }) => {
     await gotoSettled(page, ROUTE);
@@ -1978,25 +2091,13 @@ test.describe('About cats', () => {
       for (const svg of await drawings.all())
         await expect(svg).toHaveAttribute('aria-hidden', 'true');
     }
-    await expect(
-      page.getByText(
-        'The moving cats and their trick icons are drawn with AI.',
-      ),
-    ).toBeVisible();
   });
 
-  test('without JavaScript there are no cats and the AI label stays', async ({
-    browser,
-  }) => {
+  test('without JavaScript there are no cats', async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
     await page.goto(ROUTE);
     await expect(page.locator('.cat-button')).toHaveCount(0);
-    await expect(
-      page.getByText(
-        'The moving cats and their trick icons are drawn with AI.',
-      ),
-    ).toBeVisible();
     await context.close();
   });
 });

@@ -1,4 +1,5 @@
 ---
+import Abbr from '../components/Abbr.astro';
 import CloseRow from '../components/CloseRow.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
@@ -49,13 +50,13 @@ const GUIDES = [
     name: 'ACCESSIBILITY.md',
     href: 'https://github.com/mgifford/ACCESSIBILITY.md',
     author: { name: 'Mike Gifford', href: 'https://ox.ca/' },
-    use: 'The format this site uses for its accessibility statement.',
+    use: 'Thank you for posting about ACCESSIBILITY.md, and for sharing so many resources that make websites more accessible. It is a good place to learn how to declare what a project does for accessibility. The accessibility statement of this site follows this format.',
   },
   {
     name: 'The Website Specification',
     href: 'https://specification.website/',
     author: { name: 'Joost de Valk', href: 'https://joost.blog/' },
-    use: "The checklist used to check this site's search engine optimization and security, and how well automated assistants can read it.",
+    use: 'A checklist anyone can use to check a website for search engine optimization and security, and how well automated assistants can read it. It made checking this site much easier. Thank you!',
   },
   {
     name: 'A11Y.md',
@@ -64,7 +65,7 @@ const GUIDES = [
       name: 'Felipe A. Carriço',
       href: 'https://www.linkedin.com/in/fecarrico',
     },
-    use: 'Showed that axe, an automated accessibility checker, ships some Web Content Accessibility Guidelines rules switched off, so this site turns them on. It also shaped the rules on conflicting access needs and on content held back by scripts.',
+    use: 'From A11Y.md you can learn that axe, an automated accessibility checker, has some Web Content Accessibility Guidelines rules switched off by default. This site turns them on. It also follows two more principles from A11Y.md: every choice between conflicting access needs is recorded, and no content is held back behind a script. Thank you, Felipe!',
   },
   {
     name: 'Upstream First',
@@ -73,7 +74,7 @@ const GUIDES = [
       name: 'Upstream First contributors',
       href: 'https://github.com/mgifford/upstream-first/graphs/contributors',
     },
-    use: "The reason this site reports browser bugs to the browser's makers and links each report where it works around the bug.",
+    use: "Upstream First explains why a bug should go back to the people who can fix it for everyone, and it has a template for reporting one. On this site, a workaround for a browser bug links the browser's own bug report. Thank you to everyone who contributes to it.",
   },
   {
     name: 'Spec-First Coding',
@@ -82,19 +83,19 @@ const GUIDES = [
       name: 'Laurence Lewis',
       href: 'https://github.com/LaurenceRLewis',
     },
-    use: 'The reason this site treats the Web Content Accessibility Guidelines and their Understanding documents as the rule, and marks other sources as opinion.',
+    use: 'This makes coding assistants cite the specification before they write any code, which is a good lesson for people too. This site treats the Web Content Accessibility Guidelines and their Understanding documents as the rule, and everything else as opinion. Thank you for sharing it.',
   },
   {
     name: 'Intopia Web Accessibility Skill',
     href: 'https://github.com/Intopia/intopia-web-accessibility-skill',
     author: { name: 'Intopia', href: 'https://www.intopia.digital/' },
-    use: 'Ideas only: blending a see-through color with the color behind it before measuring contrast, and checking that pages fit a window 256px tall.',
+    use: 'This skill comes with scripts that blend a see-through color with the color behind it before measuring contrast. Its guide to zoomed-in pages covers a window 256px tall. This site tests both ideas. Thank you for sharing them.',
   },
   {
     name: 'accessibility-skills',
     href: 'https://github.com/mgifford/accessibility-skills',
     author: { name: 'Mike Gifford', href: 'https://ox.ca/' },
-    use: 'Ideas only: the voice-control check in the manual tests.',
+    use: 'Thank you, Mike, for another helpful one! Its navigation and touch skills show how to test a website with voice control. The voice control check in the manual tests of this site comes from them.',
   },
   {
     name: 'Accessibility Agents',
@@ -103,9 +104,18 @@ const GUIDES = [
       name: 'Taylor Arndt, Jeff Bishop and contributors',
       href: 'https://github.com/Community-Access/accessibility-agents/graphs/contributors',
     },
-    use: 'Ideas for the plain-language and error-message rules this site is written to.',
+    use: 'The cognitive accessibility skill in this set has good ideas on plain language and error messages. The writing rules of this site borrow from them. Thank you to Taylor, Jeff and everyone who contributes.',
   },
 ] as const;
+
+/* Keep in step with AI_DISCLOSURE.md "At runtime". */
+const MADE_WITH_AI = [
+  { name: 'The hopping bunny on the homepage', href: '/' },
+  { name: 'The About cats and their trick icons', href: '/about/' },
+] as const;
+
+const AI_DISCLOSURE =
+  'https://github.com/sindurigf/sinduri-lol/blob/main/AI_DISCLOSURE.md';
 
 const photographers = Object.entries(PHOTOGRAPHERS).map(([name, href]) => ({
   name,
@@ -307,6 +317,25 @@ const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
           &ldquo;These aren't the droids you're looking for.&rdquo; It is a Jedi
           mind trick: the stormtrooper repeats it and waves them through. Here
           it means the page you wanted is not here, so move along.
+        </p>
+      </div>
+
+      <div id="ai" class="card lg:col-span-2">
+        <h2 class={CARD_HEADING}>
+          Made with <Abbr short="AI" long="artificial intelligence" />
+        </h2>
+        <ul class="bullet-list mt-6">
+          {MADE_WITH_AI.map((item) => (
+            <li>
+              <a href={item.href} class={LINK_ITEM}>
+                {item.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p class="mt-6 text-body text-text text-pretty">
+          How AI helped build the site:{' '}
+          <a href={AI_DISCLOSURE}>AI disclosure</a>.
         </p>
       </div>
     </div>

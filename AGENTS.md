@@ -147,8 +147,9 @@ Rules:
   voice) is never invented. It is drafted only from her own words and follows
   [docs/VOICE.md](docs/VOICE.md); she approves every line.
 - New images, video or audio: ask the owner whether AI made or edited it. If
-  so, label it on the page and in
-  [AI_DISCLOSURE.md](AI_DISCLOSURE.md#keeping-this-current) (EU AI Act Art. 50).
+  so, list it under Made with AI on `/credits/` and in
+  [AI_DISCLOSURE.md](AI_DISCLOSURE.md#keeping-this-current). Only a realistic
+  one (a deep fake, EU AI Act Art. 50(4)) also needs a label on its page.
 - Editorial text Claude drafts or edits needs the owner's approval line by line.
   She holds editorial responsibility, so it needs no page label (EU AI Act
   Art. 50(4)); AI_DISCLOSURE.md records it.

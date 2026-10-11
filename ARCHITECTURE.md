@@ -242,7 +242,9 @@ presenter view and a PDF. Authoring rules:
   region. Hidden slides use `data-current`, not `hidden`: Tailwind's
   `[hidden]` `!important` would stop print showing them. Focus stays on a bar
   control as a slide turns (APG carousel), scrolled back into view when a
-  taller slide pushes it off screen.
+  taller slide pushes it off screen. Below `lg` a media query stacks every
+  slide and hides the controls, the script ignores slide keys, and a card
+  links the talk PDF with its size.
   `tests/slideshow.spec.ts`, which also checks every slide fits 1280x720.
 - **Presenter view.** `src/presenter/integration.mjs`, `astro dev` only, synced
   over `BroadcastChannel`. Notes load via `import.meta.glob` (no `node:fs` in
@@ -683,6 +685,14 @@ evidence.
   path falls back:** apt reuses a cached file of the right size, so a corrupt
   `.deb` would fail in dpkg again. After a failed `dpkg -i` the fallback only
   fetches what failed.
+- **Drop `tests/header-fit.spec.ts`'s sideways-scroll check as a reflow
+  duplicate:** it is the only sideways check at 336px (`--breakpoint-xs`), and
+  it reads one number from the page state the test already measures.
+- **Change the contact endpoint for an over-cap chunked 500
+  (template run 37695518322):** the dev proxy (`@cloudflare/vite-plugin` 1.62.5)
+  answers 500 after the endpoint's 413. It can recur in CI under
+  `--fail-on-flaky-tests`: the log shows `POST /contact/send/ 413`, then
+  undici "fetch failed". Keep the test strict.
 
 ## Content notes
 

@@ -29,7 +29,6 @@ import {
   EXTRA_SEED,
   EXTRA_STEMS,
   FIELD_SEED,
-  FOOT_Y,
   FRONT_DEPTH,
   GROUND_SPAN,
   HARE_DEPTH,
@@ -500,11 +499,12 @@ const drawHareShadow = (
   ctx.filter = `blur(${(air * SHADOW_BLUR * scene.hareScale).toFixed(2)}px)`;
   ctx.fillStyle = palette.border;
   ctx.beginPath();
+  /* Centered under the feet, which sit 2 units ahead of the drawing origin. */
   ctx.ellipse(
-    x,
-    scene.hareRoot + 2,
+    x + 2 * scene.hareScale,
+    scene.hareRoot + 1.2 * scene.hareScale,
     30 * scene.hareScale * shrink,
-    4.2 * scene.hareScale * shrink,
+    3.6 * scene.hareScale * shrink,
     0,
     0,
     Math.PI * 2,
@@ -605,14 +605,7 @@ const drawMid = (
   const { hareRoot, hareScale } = state.scene;
 
   drawHareShadow(ctx, palette, state.scene, here.x, frame.air);
-  drawHare(
-    ctx,
-    here.x,
-    hareRoot - FOOT_Y * hareScale - frame.air * here.hop * hareScale,
-    hareScale,
-    frame,
-    palette,
-  );
+  drawHare(ctx, here.x, hareRoot, hareScale, frame, here.hop, palette);
 
   paintWhere(
     ctx,

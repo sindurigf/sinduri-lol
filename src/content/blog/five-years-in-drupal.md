@@ -32,7 +32,7 @@ If you have never heard of it either: Drupal is a free, open source content mana
 
 ## From Developer to Product Manager
 
-When layoffs hit my company, I faced a choice: continue as a developer outside of open source, or try something new. drunomics offered me a product manager role, and I was immediately drawn to their commitment to the Drupal community and to open source contributions.
+When layoffs hit my company, I faced a choice: continue as a developer outside of open source, or try something new. drunomics offered me a product manager role. I was immediately drawn to their commitment to the Drupal community and to open source contributions.
 
 At drunomics I worked on mossbo, our cloud CMS, and the projects that tie into it: product development cycles, QA, client requirements and documentation. My developer background helped every single day. It helped me create realistic timelines, improve communication between stakeholders and engineering, and understand what developers actually need to be successful. I am so proud that our baby mossbo collected multiple awards in 2025!
 

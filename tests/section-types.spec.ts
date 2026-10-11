@@ -1,16 +1,21 @@
 import { expect, test } from './test';
 import { gotoSettled } from './settle';
+import { ENGINE_INVARIANT } from './tags';
 
 /** The two sections about the name, on /about and /credits. */
 
-test('the two name sections link to each other', async ({ page }) => {
-  await gotoSettled(page, '/about');
-  await expect(page.locator('main a[href*="/credits/#name"]')).toHaveCount(1);
-  await gotoSettled(page, '/credits');
-  await expect(page.locator('main a[href*="/about/#lepus-ridet"]')).toHaveCount(
-    1,
-  );
-});
+test(
+  'the two name sections link to each other',
+  ENGINE_INVARIANT,
+  async ({ page }) => {
+    await gotoSettled(page, '/about');
+    await expect(page.locator('main a[href*="/credits/#name"]')).toHaveCount(1);
+    await gotoSettled(page, '/credits');
+    await expect(
+      page.locator('main a[href*="/about/#lepus-ridet"]'),
+    ).toHaveCount(1);
+  },
+);
 
 /*
  * What a reader copies, not the accessible name. The hidden "Why" is out of flow,
