@@ -14,9 +14,6 @@ const LOADING_DELAY_MS = 200;
 
 const FAILED_MESSAGE = 'This photo could not be loaded.';
 
-const reducedMotion = (): boolean =>
-  matchMedia('(prefers-reduced-motion: reduce)').matches;
-
 const isPlainClick = (event: MouseEvent): boolean =>
   !event.defaultPrevented &&
   event.button === 0 &&
@@ -216,7 +213,9 @@ const setUpStrips = (): void => {
       if (atEdge()) return;
       strip.scrollBy({
         left: direction * strip.clientWidth * STRIP_STEP,
-        behavior: reducedMotion() ? 'auto' : 'smooth',
+        behavior: matchMedia('(prefers-reduced-motion: reduce)').matches
+          ? 'auto'
+          : 'smooth',
       });
     });
   }
