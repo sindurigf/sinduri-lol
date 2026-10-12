@@ -9,7 +9,7 @@ const currentTheme = (): Theme =>
   root.dataset.theme === 'light' ? 'light' : 'dark';
 
 const reflect = (button: HTMLButtonElement): void => {
-  button.ariaPressed = String(currentTheme() === 'light');
+  button.setAttribute('aria-pressed', String(currentTheme() === 'light'));
 };
 
 const remember = (theme: Theme): void => {

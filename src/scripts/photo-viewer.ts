@@ -139,9 +139,11 @@ const setUpViewer = (viewer: HTMLDialogElement): void => {
 /* A strip that fits has nothing to scroll: it leaves the tab order and its name stops saying it scrolls. */
 const reflectFit = (strip: HTMLElement): boolean => {
   const scrolls = strip.scrollWidth - strip.clientWidth > SCROLL_ROUNDING_PX;
-  strip.ariaLabel =
-    (strip.ariaLabel ?? '').replace(SCROLLS_SUFFIX, '') +
-    (scrolls ? SCROLLS_SUFFIX : '');
+  strip.setAttribute(
+    'aria-label',
+    (strip.getAttribute('aria-label') ?? '').replace(SCROLLS_SUFFIX, '') +
+      (scrolls ? SCROLLS_SUFFIX : ''),
+  );
   strip.tabIndex = scrolls ? 0 : -1;
   return scrolls;
 };
@@ -181,7 +183,9 @@ const setUpStrips = (): void => {
         : strip.scrollLeft >= end - SCROLL_ROUNDING_PX;
     const update = (): void => {
       const disabled = String(atEdge());
-      if (button.ariaDisabled !== disabled) button.ariaDisabled = disabled;
+      if (button.getAttribute('aria-disabled') !== disabled) {
+        button.setAttribute('aria-disabled', disabled);
+      }
     };
     /* A strip that fits has nothing to scroll, so its arrows leave the tab order. */
     const fit = (): void => {
