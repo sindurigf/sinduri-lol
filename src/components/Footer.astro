@@ -1,6 +1,6 @@
 ---
 import { CONTACT_MAILTO } from '../lib/contact';
-import { NAV_LINKS } from '../lib/nav';
+import { NAV_LINKS, ariaCurrent } from '../lib/nav';
 import {
   EMAIL_LINK_NAME,
   SOCIAL_PROFILES,
@@ -28,6 +28,8 @@ const POLICY_LINKS = [
   { href: '/brand/', label: 'Brand' },
 ] as const;
 
+const current = (href: string) => ariaCurrent(Astro.url.pathname, href);
+
 /* The year of first publication, not the build year: a build date goes stale. */
 const FIRST_PUBLISHED = 2026;
 
@@ -48,7 +50,11 @@ const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
           <ul>
             {NAV_LINKS.map((link) => (
               <li>
-                <a href={link.href} class="label text-text hover:text-cyan">
+                <a
+                  href={link.href}
+                  aria-current={current(link.href)}
+                  class="label text-text hover:text-cyan"
+                >
                   {link.label}
                 </a>
               </li>
@@ -60,7 +66,11 @@ const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
           <ul>
             {POLICY_LINKS.map((link) => (
               <li>
-                <a href={link.href} class="label text-subtle hover:text-cyan">
+                <a
+                  href={link.href}
+                  aria-current={current(link.href)}
+                  class="label text-subtle hover:text-cyan"
+                >
                   {link.label}
                 </a>
               </li>
