@@ -81,7 +81,7 @@ Dark is the default. Colors and rules:
   It sits in `<head>`, not beside the switch, so nothing paints in the wrong
   theme first.
 - `src/components/ThemeSwitch.astro` is a `<button aria-pressed>` named "Light
-  mode"; `src/scripts/theme-switch.ts` wires it and a press saves the choice.
+  Mode"; `src/scripts/theme-switch.ts` wires it and a press saves the choice.
 - Without JavaScript the page is dark and the switch hidden.
 - `HeroField.vue` (through `use-hero-field.ts`) reads its palette from its own element and rebuilds when a
   `MutationObserver` sees `data-theme` change. Its ground is `hero-ground`.
@@ -91,7 +91,7 @@ Dark is the default. Colors and rules:
   `about-cats.css` maps them to tokens, so the cats follow the theme in CSS.
 - `playwright.config.ts` sets `colorScheme: 'dark'`; specs that measure light
   set `colorScheme: 'light'` themselves (`light-mode.spec.ts`, `focus.spec.ts`,
-  the talk scan in `a11y.spec.ts`).
+  `states.spec.ts`, `about-cats.spec.ts`, the talk scan in `a11y.spec.ts`).
 
 ### Token enforcement
 
@@ -244,13 +244,13 @@ presenter view and a PDF. Authoring rules:
   visitors above, with a strict schema
   ([what fails the build](docs/DEVELOPMENT.md#writing-a-talk)).
 - **Slideshow.** Every slide is a `.card` in `<section id="slide-N">`, all in
-  the HTML. `src/scripts/slideshow.ts` adds controls, keys and a polite live
-  region. Hidden slides use `data-current`, not `hidden`: Tailwind's
-  `[hidden]` `!important` would stop print showing them. Focus stays on a bar
-  control as a slide turns (APG carousel), scrolled back into view when a
-  taller slide pushes it off screen. Below `lg` a media query stacks every
-  slide and hides the controls, the script ignores slide keys, and a card
-  links the talk PDF with its size.
+  the HTML. `DeckBar.astro` holds the controls and a polite live region;
+  `src/scripts/slideshow.ts` wires them and the keys. Hidden slides use
+  `data-current`, not `hidden`: Tailwind's `[hidden]` `!important` would stop
+  print showing them. Focus stays on a bar control as a slide turns (APG
+  carousel), scrolled back into view when a taller slide pushes it off screen.
+  Below `lg` a media query stacks every slide and hides the controls, the
+  script ignores slide keys, and a card links the talk PDF with its size.
   `tests/slideshow.spec.ts`, which also checks every slide fits 1280x720.
 - **Presenter view.** `src/presenter/integration.mjs`, `astro dev` only, synced
   over `BroadcastChannel`. Notes load via `import.meta.glob` (no `node:fs` in
@@ -318,7 +318,7 @@ Commits, copy rules and process: [AGENTS.md](AGENTS.md).
 ### Claims that rest on a platform setting
 
 A public claim that depends on a dashboard or plan setting (retention, region,
-mail forward) gets an entry in `src/lib/platform-facts.ts` with the page to
+error reporting) gets an entry in `src/lib/platform-facts.ts` with the page to
 check and the date checked. `tests/platform-facts.spec.ts` fails when one
 lapses. A fact that cannot drift gets a comment instead (D1's EU jurisdiction
 in `wrangler.jsonc`).
@@ -338,7 +338,7 @@ in `wrangler.jsonc`).
 | ------------------------------ | --------- | -------------------- | ------------------------------------------------ |
 | `src/assets/bunny-dark.png`    | `#111111` | Gold, light surfaces | `Header.astro` logo tile, `Roundel.astro`, About |
 | `artwork/badge-white.png`      | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge                   |
-| `public/images/og-default.png` | Composite | n/a                  | `BaseLayout.astro`, every page                   |
+| `public/images/og-default.png` | Composite | n/a                  | `BaseLayout.astro`, every page without a cover   |
 
 | Artwork             | on `#131313` | on `#1A1A1A` | on `#FFFFFF` | on `#FFC000` |
 | ------------------- | ------------ | ------------ | ------------ | ------------ |
@@ -371,7 +371,7 @@ in `wrangler.jsonc`).
   more than 1.5x oversize, or `sizes` over 1.1x.
 - Exception: the `/about` cat card photo has two drawn widths, so
   `about.astro` gives it its own widths and `sizes` (`CAT_PHOTO_WIDTHS`).
-- `/about` photo boxes match their file's ratio (hence CSS-column masonry). No
+- `/about` photo boxes match their file's ratio. No
   text over photos.
 - Markdown images: `post-figure.mjs` sets `layout: 'full-width'` so
   `image.breakpoints` (`MARKDOWN_WIDTHS`) applies. An image alone in a post
@@ -400,8 +400,8 @@ in `wrangler.jsonc`).
     without `Content-Length`). A re-encoded video needs a rebuild.
   - Slices go through `FixedLengthStream` so the `206` has a length.
   - Ranged responses keep the `_headers` rules.
-  - `tests/video-range.spec.ts` runs under the Worker config; its end-to-end
-    tests skip while no video exists.
+  - `tests/video-range.spec.ts` runs under the Worker config, against a
+    fixture the config copies into `public/videos/` for that build.
   - Not dead code ([rejected](#rejected-findings)).
 
 ### The favicon set
@@ -587,8 +587,8 @@ evidence.
   content. `SEE LICENSE IN README.md` is npm's form for that case.
 - **Hide the honeypot with CSS instead of `hidden`:** if the
   stylesheet fails, a person sees the field and loses their message.
-- **Make `/contact`'s "Or find me here" and "Write to me about" `h2`:** they
-  are parts of the "Write to me" section, other ways to write and what to
+- **Make `/contact`'s "Or Find Me Here" and "Write to Me About" `h2`:** they
+  are parts of the "Write to Me" section, other ways to write and what to
   write about, so `h3` is the true outline.
 - **Turn on `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes`:**
   none of their errors is a bug. Every index is guarded at runtime (an empty
@@ -640,9 +640,9 @@ evidence.
   slideshow use native buttons and links, which fire the same events for
   touch; pointer and keyboard runs already cover them.
 - **Fall back to `HEAD` in `scripts/check-commits.sh` when `origin/main` is
-  missing:** CI checks out with `fetch-depth: 0` and passes an explicit range,
-  and `.githooks` never calls the script; only an unusual local clone lacks
-  the ref.
+  missing:** CI checks out with `fetch-depth: 0`, so `origin/main` exists there
+  (a push also passes an explicit range), and `.githooks` never calls the
+  script; only an unusual local clone lacks the ref.
 - **Derive the post `scripts/check-live.sh` probes from `src/content/blog`:**
   a rename should fail rule 6, and the slug is also fixed in specs, the talk
   folder and the PDF path, so a rename breaks those first.
@@ -706,6 +706,15 @@ evidence.
   name, and the hero roundel is decoration, so `alt=""` is right
   ([H67](https://www.w3.org/WAI/WCAG22/Techniques/html/H67)). Text there would
   be announced twice.
+- **Answer the unslashed URL with a 301, not a 307:** the status is the
+  platform's (`html_handling` in `wrangler.jsonc`). Every internal link,
+  canonical, sitemap and feed URL ends in `/`, so only a typed or outside link
+  meets it; the alternative is one `_redirects` line per route.
+- **AccessLint engine hits, each checked against the live DOM:**
+  `color-contrast` on the homepage "Sinduri" is read against a gold ancestor
+  the text does not sit on; `landmark-unique` counts the no-JavaScript nav,
+  which is `display: none` with scripts on; `focus-order` flags the photo
+  strips, which are focusable so a keyboard can scroll them.
 
 ## Content notes
 
