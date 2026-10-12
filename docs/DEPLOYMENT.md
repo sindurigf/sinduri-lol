@@ -21,7 +21,7 @@ npm run build && npx wrangler deploy --dry-run
   (mobile) on `https://sinduri.lol/` and the changed page; record the
   performance score and Total Blocking Time in a comment on the change's pull
   request. CI does not run Lighthouse: timing scores vary on shared runners.
-  `tests/performance.spec.ts` covers script bytes and layout shift,
+  `tests/performance.spec.ts` covers script and CSS bytes and layout shift,
   `tests/image-priority.spec.ts` image formats and priority, and
   `tests/head.spec.ts` the font preload.
 - Custom domains belong in `wrangler.jsonc`: a deploy replaces the Worker's
