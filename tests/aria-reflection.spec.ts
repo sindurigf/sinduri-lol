@@ -8,7 +8,7 @@ import { NODE } from './tags';
  * the floor in ARCHITECTURE.md > Browser support is Firefox 114, where assigning
  * one sets a plain property and no attribute. No browser under test is that old.
  */
-const SOURCE_DIRS = ['src/scripts', 'src/components', 'src/layouts', 'src/lib'];
+const SOURCE_DIRS = ['src'];
 const SOURCE_FILE = /\.(ts|astro|vue)$/;
 const REFLECTED = /\.aria[A-Z]\w*/g;
 
