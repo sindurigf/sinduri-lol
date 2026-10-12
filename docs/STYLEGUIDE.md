@@ -1011,8 +1011,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 
 - Sticky, 96px (`--spacing-header`). `html` keeps focus and anchors
   `--spacing-header` plus `--spacing(4)` below the top.
-- Under 30rem of viewport height (`short`: a landscape phone, any window 960px
-  tall or less at 200% zoom) it scrolls away and the scroll padding drops to
+- Under 30rem of viewport height (`short`: a landscape phone, any window under
+  960px tall at 200% zoom) it scrolls away and the scroll padding drops to
   `--spacing(4)`.
 - Offset with `scroll-padding-top` on `html`, never `scroll-margin-top` on
   elements: WebKit ignores the latter for focused inputs.
