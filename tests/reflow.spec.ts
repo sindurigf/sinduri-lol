@@ -392,3 +392,40 @@ for (const route of TALK_ROUTES) {
     }
   });
 }
+
+/* SC 1.4.10: a cropped photo loses content. A square `object-cover` image squeezed by its row shows half of itself. */
+test.describe('square thumbnails at 305px', () => {
+  test.use({ viewport: { width: NARROW_WIDTH, height: REFLOW_HEIGHT } });
+
+  test('/about draws every square thumbnail square', async ({ page }) => {
+    await gotoSettled(page, '/about');
+    const squeezed = await page.evaluate((tolerance) => {
+      const square = [
+        ...document.querySelectorAll<HTMLImageElement>('main img'),
+      ].filter(
+        (img) =>
+          getComputedStyle(img).objectFit === 'cover' &&
+          img.getAttribute('width') !== null &&
+          img.getAttribute('width') === img.getAttribute('height'),
+      );
+      return {
+        found: square.length,
+        squeezed: square
+          .map((img) => ({ alt: img.alt, box: img.getBoundingClientRect() }))
+          .filter(({ box }) => Math.abs(box.width - box.height) > tolerance)
+          .map(
+            ({ alt, box }) =>
+              `"${alt}" is ${Math.round(box.width)} by ${Math.round(box.height)}px`,
+          ),
+      };
+    }, EDGE_TOLERANCE_PX);
+    expect(
+      squeezed.found,
+      '/about has no square thumbnail to measure',
+    ).toBeGreaterThan(0);
+    expect(
+      squeezed.squeezed,
+      'a square thumbnail is drawn narrower than it is tall, so object-cover crops it',
+    ).toEqual([]);
+  });
+});
