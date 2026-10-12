@@ -1,6 +1,7 @@
 ---
 title: 'Open Source Is Not Just Code: Designing Communities That Actually Scale'
 date: 2026-07-10
+updated: 2026-10-08
 category: 'open-source'
 placeholder: false
 tags: ['community', 'governance', 'maintainers', 'sustainability', 'talks']

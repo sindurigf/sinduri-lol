@@ -34,7 +34,8 @@ How AI tooling was used to build this site.
 - AI-made and listed under
   [Made with AI on `/credits/`](https://sinduri.lol/credits/#ai):
   - the hopping bunny in the homepage hero (`src/lib/hero-field-hare.ts`);
-  - the drawn, animated cats on `/about/` and their trick icons
+  - the drawn, animated cats on `/about/`, their sleep, wake and trick-list
+    icons (`src/components/ui/AboutCats.vue`) and their trick icons
     (`src/lib/about-cats-tricks.json`). The cat photos are real.
 
 ## Keeping this current

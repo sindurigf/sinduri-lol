@@ -420,7 +420,7 @@
    */
   --breakpoint-xs: 21rem;
   /*
-   * Reading measure: at most 75 characters per line at 17px in Chromium and
+   * Reading measure: at most 75 characters per line at 18px in Chromium and
    * Firefox. rem, not `ch`: Lexend's `ch` differs by engine, which an image's
    * `sizes` cannot express. tests/post-page.spec.ts.
    */

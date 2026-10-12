@@ -27,7 +27,7 @@ cd "$(dirname "$0")/.."
 CONFIG=astro.config.mjs
 HEADERS_FILE=public/_headers
 
-# The one non-placeholder post; a rename fails rule 6.
+# A published post; a rename fails rule 6.
 POST_PATH=/blog/open-source-is-not-just-code/
 UNKNOWN_PATH=/check-live-no-such-page/
 TIMEOUT_SECONDS=20
