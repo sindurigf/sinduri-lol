@@ -15,7 +15,7 @@ const LOADING_DELAY_MS = 200;
 const FAILED_MESSAGE = 'This photo could not be loaded.';
 
 const reducedMotion = (): boolean =>
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const isPlainClick = (event: MouseEvent): boolean =>
   !event.defaultPrevented &&
@@ -37,12 +37,14 @@ const groupsOf = (root: ParentNode): Map<string, HTMLAnchorElement[]> => {
 };
 
 const setUpViewer = (viewer: HTMLDialogElement): void => {
-  const figure = viewer.querySelector<HTMLElement>('[data-viewer-figure]');
-  const caption = viewer.querySelector<HTMLElement>('[data-viewer-caption]');
-  const count = viewer.querySelector<HTMLElement>('[data-viewer-count]');
-  const steps = viewer.querySelector<HTMLElement>('[data-viewer-steps]');
-  const close = viewer.querySelector<HTMLButtonElement>('[data-viewer-close]');
-  const message = viewer.querySelector<HTMLElement>('[data-viewer-message]');
+  const part = (name: string): HTMLElement | null =>
+    viewer.querySelector<HTMLElement>(`[data-viewer-${name}]`);
+  const figure = part('figure');
+  const caption = part('caption');
+  const count = part('count');
+  const steps = part('steps');
+  const close = part('close');
+  const message = part('message');
   if (!figure || !caption || !count || !steps || !close || !message) {
     throw new Error('photo-viewer: the dialog is missing one of its parts.');
   }
@@ -66,7 +68,7 @@ const setUpViewer = (viewer: HTMLDialogElement): void => {
     const alt = link.querySelector('img')?.alt ?? '';
     const token = ++request;
 
-    const waited = window.setTimeout(() => {
+    const waited = setTimeout(() => {
       if (token !== request) return;
       figure.dataset.state = 'loading';
       count.textContent = `Loading photo ${position()}`;
@@ -79,7 +81,7 @@ const setUpViewer = (viewer: HTMLDialogElement): void => {
       .then(() => true)
       .catch(() => false);
 
-    window.clearTimeout(waited);
+    clearTimeout(waited);
     if (token !== request) return;
 
     caption.textContent = alt;
@@ -171,32 +173,32 @@ const setUpStrips = (): void => {
     );
     if (!strip) continue;
     const direction = Number(button.dataset.stripScroll);
-    /* Scroll snap holds the last photo at the snap line, which can be short of the last pixels. */
-    let snapPadding = 0;
-    const lastSnapped = (): boolean =>
-      (strip.lastElementChild?.getBoundingClientRect().left ?? Infinity) <=
-      strip.getBoundingClientRect().left +
-        strip.clientLeft +
-        snapPadding +
-        SCROLL_ROUNDING_PX;
+    /* Where the strip stops going right: its last pixel, or sooner where scroll snap holds the last photo at the snap line. */
+    let end = 0;
     const atEdge = (): boolean =>
       direction < 0
         ? strip.scrollLeft <= 0
-        : strip.scrollLeft >=
-            strip.scrollWidth - strip.clientWidth - SCROLL_ROUNDING_PX ||
-          lastSnapped();
+        : strip.scrollLeft >= end - SCROLL_ROUNDING_PX;
     const update = (): void => {
       const disabled = String(atEdge());
-      if (button.getAttribute('aria-disabled') !== disabled) {
-        button.setAttribute('aria-disabled', disabled);
-      }
+      if (button.ariaDisabled !== disabled) button.ariaDisabled = disabled;
     };
     /* A strip that fits has nothing to scroll, so its arrows leave the tab order. */
     const fit = (): void => {
       const hide = !reflectFit(strip);
+      const last = strip.lastElementChild;
       /* `auto` parses to NaN: the snap line is then the strip's own edge. */
-      snapPadding =
-        parseFloat(getComputedStyle(strip).scrollPaddingInlineStart) || 0;
+      end = Math.min(
+        strip.scrollWidth - strip.clientWidth,
+        last
+          ? last.getBoundingClientRect().left -
+              strip.getBoundingClientRect().left -
+              strip.clientLeft +
+              strip.scrollLeft -
+              (parseFloat(getComputedStyle(strip).scrollPaddingInlineStart) ||
+                0)
+          : Infinity,
+      );
       if (hide && document.activeElement === button) strip.focus();
       button.hidden = hide;
       update();
@@ -205,7 +207,7 @@ const setUpStrips = (): void => {
     const resizes = new ResizeObserver(fit);
     resizes.observe(strip);
     for (const tile of strip.children) resizes.observe(tile);
-    strip.addEventListener('scroll', update, { passive: true });
+    strip.addEventListener('scroll', update);
     button.addEventListener('click', () => {
       if (atEdge()) return;
       strip.scrollBy({
