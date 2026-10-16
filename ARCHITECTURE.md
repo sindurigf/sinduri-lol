@@ -353,9 +353,10 @@ in `wrangler.jsonc`).
 | `-white`, `#FFFFFF` | **19.68**    | **17.40**    | 1.00         | 1.64         |
 
 - `og-default.png`: 1200x630. Gold panel with the name and the tagline in two
-  lines, `#131313` strip with the logo tile, Lepus and Ridet stickers on the
-  seam. Drawn in Chromium with Lexend 900 and the site tokens. PNG in
-  `public/` because scrapers need a stable URL and format.
+  lines, `background` strip with the logo tile, Lepus and Ridet stickers on
+  the seam. `npm run og` (`scripts/make-og.mjs`) draws it in Chromium with
+  Lexend and the site tokens; rerun after changing a token, the name or the
+  tagline. PNG in `public/` because scrapers need a stable URL and format.
 - Every placement renders through `<Image>` at its drawn size with `DENSITIES`
   (1x, 2x). The roundel resizes, so it passes `widths` and `sizes`.
 - A `.vue` component cannot reach `astro:assets`: call `getImage()` in Astro

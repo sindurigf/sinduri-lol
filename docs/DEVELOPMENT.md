@@ -68,6 +68,7 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run check:live`          | Production headers and markup against this repository                                                                             |
 | `npm run check:live:console`  | Every production route in a browser, failing on console errors                                                                    |
 | `npm run check:umami`         | The vendored Umami tracker against the one Umami serves                                                                           |
+| `npm run og`                  | Redraws `public/images/og-default.png` from the site tokens, name and tagline                                                     |
 | `npm run check:pdf`           | Every PDF in `public/` against PDF/UA-1, veraPDF in Docker                                                                        |
 | `npm run publish:cv`          | Print `cv/cv.html` to the tagged CV PDF in `public/`                                                                              |
 | `npm run publish:talk`        | Print a talk's slideshow to its tagged PDF in `public/talks/`                                                                     |

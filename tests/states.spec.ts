@@ -1,6 +1,8 @@
 import { expect, test, type Locator, type Page } from './test';
 import { gotoSettled } from './settle';
-import { AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
+import { AAA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
+import { hoveredTextBelowAaa } from './hover-contrast';
+import { ROUTES } from './routes';
 import { DESKTOP_VIEWPORT, PHONE_VIEWPORT } from './wcag';
 
 type Look = { paint: string; text: number | null };
@@ -59,7 +61,7 @@ const expectHoverReadsAndDiffers = async (
     'the hovered text has no resolvable ground',
   ).not.toBeNull();
   expect(hovered.text!, 'the hovered text contrast').toBeGreaterThanOrEqual(
-    AA_TEXT,
+    AAA_TEXT,
   );
 };
 
@@ -90,6 +92,23 @@ for (const scheme of ['dark', 'light'] as const) {
     }
   });
 }
+
+/* The header and footer stay dark in light mode, so this also covers them there; light <main> is in tests/light-mode.spec.ts. */
+test.describe('dark mode reaches AAA contrast under the pointer (SC 1.4.6)', () => {
+  test.use({ colorScheme: 'dark' });
+
+  for (const route of ROUTES) {
+    test(`${route}: hovered text is at least 7:1, large text included`, async ({
+      page,
+    }) => {
+      await gotoSettled(page, route);
+      expect(
+        await hoveredTextBelowAaa(page, 'header, main, footer'),
+        `${route}: hovered text below AAA in dark mode`,
+      ).toEqual([]);
+    });
+  }
+});
 
 /** What marks a link without color: its underline, outline and edge. */
 const shapeOf = (link: Locator): Promise<string> =>
@@ -202,7 +221,7 @@ test('the current page stands apart from its siblings and reads', async ({
     'the current fill against the header',
   ).toBeGreaterThanOrEqual(NON_TEXT);
   expect(found!.text, 'the current label on its fill').toBeGreaterThanOrEqual(
-    AA_TEXT,
+    AAA_TEXT,
   );
 });
 
