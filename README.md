@@ -44,8 +44,9 @@ privately instead: [SECURITY.md](SECURITY.md). Pull requests use
 - Content: all rights reserved, copyright Sinduri Guntupalli or the credited
   creator. Covers `src/content/`, `src/assets/` except `social-icons.svg`,
   `artwork/`, `public/images/`, `public/talks/`,
-  `public/sinduri-guntupalli-cv.pdf` and the icons in `public/`.
-- `src/assets/social-icons.svg`: brand icon paths from
+  `cv/`, `public/sinduri-guntupalli-cv.pdf` and the icons in `public/`.
+- `src/assets/social-icons.svg` and the GitHub and LinkedIn icons in
+  `cv/cv.html`: brand icon paths from
   [Simple Icons](https://simpleicons.org), CC0 1.0.
 - Lexend: SIL Open Font License 1.1, copyright 2019 The Lexend Project Authors.
 - The build writes `/licenses.txt` covering every third-party package, vendored

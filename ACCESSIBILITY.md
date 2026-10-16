@@ -156,13 +156,11 @@ view (development server only, never published), and forks.
   on a 422, `aria-disabled` on the button and a `role="status"` message while
   sending, with no `aria-busy` to hold that message back. Details
   in gap 1.
-- **CV PDF.** The photo and shapes are artifacts, the name is the H1 and the
-  six section titles are H2s. The photo is decorative
-  ([why](ARCHITECTURE.md#content-notes)). Firefox's PDF viewer exposes that
-  structure, and `npm run check:pdf` passes it. Job and course titles are
-  body text on purpose, because Canva exports give them inconsistent levels
-  ([MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §13.4 flags this). How it is
-  made: [DEVELOPMENT.md](docs/DEVELOPMENT.md#publishing-the-cv).
+- **CV PDF.** Printed from HTML. The photo, icons and shapes are artifacts,
+  the name is the H1, the six section titles are H2s, and job and course
+  titles are H3s. Lists and links are tagged as such. The photo is decorative
+  ([why](ARCHITECTURE.md#content-notes)). `npm run check:pdf` passes it. How
+  it is made: [DEVELOPMENT.md](docs/DEVELOPMENT.md#publishing-the-cv).
 - **Talk PDF.** Passes PDF/UA-1 in `npm run check:pdf`. See gap 6. Below
   `lg` (1024px) the talk page links it with its size and shows every slide as
   text that reflows, so the PDF is never the only way to read the talk on a
