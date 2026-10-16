@@ -13,7 +13,7 @@ import {
   UMAMI_SCRIPT_PATH,
   UMAMI_WEBSITE_ID,
 } from '../lib/analytics';
-import { DEFAULT_OG_IMAGE, type OgImage } from '../lib/og-image';
+import { pageOgImage } from '../lib/og-image';
 import { personImageUrl } from '../lib/person-image';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -30,7 +30,6 @@ interface Props {
   title: string;
   titleSuffix?: boolean;
   description: string;
-  ogImage?: OgImage;
   /* For the 404 page, which is served at every dead URL. */
   noCanonical?: boolean;
   /* `noindex, follow`; src/lib/sitemap-filter.ts must drop the same pages. */
@@ -47,7 +46,6 @@ const {
   title,
   titleSuffix = true,
   description,
-  ogImage = DEFAULT_OG_IMAGE,
   noCanonical = false,
   noindex = false,
   article,
@@ -66,6 +64,7 @@ const site = requireSite(
 const canonical = new URL(Astro.url.pathname, site);
 /* Only the production host is counted; localhost and previews send nothing. */
 const analyticsDomain = site.hostname;
+const ogImage = pageOgImage(Astro.url.pathname);
 const ogImageUrl = new URL(ogImage.src, site);
 const personImage = await personImageUrl(site);
 const articleData = article && {
