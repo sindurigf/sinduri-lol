@@ -449,7 +449,7 @@ for (const colorScheme of SCHEMES) {
   }
 }
 
-/** How far the hard shadows of a control, or of anything inside it, reach past its box, in px. */
+/** How far the hard box and drop shadows of a control, or of anything inside it, reach past its box, in px. */
 const SHADOW_REACH = `
   const shadowsOf = (value) =>
     value
@@ -463,7 +463,9 @@ const SHADOW_REACH = `
     let reach = 0;
     for (const node of [el, ...el.querySelectorAll('*')]) {
       const r = node.getBoundingClientRect();
-      for (const [dx, dy] of shadowsOf(getComputedStyle(node).boxShadow)) {
+      const style = getComputedStyle(node);
+      const drops = [...style.filter.matchAll(/drop-shadow\\((?:[^()]|\\([^()]*\\))*\\)/g)].map((m) => m[0]);
+      for (const [dx, dy] of [...shadowsOf(style.boxShadow), ...drops.flatMap(shadowsOf)]) {
         reach = Math.max(reach, r.right + dx - box.right, r.bottom + dy - box.bottom);
       }
     }
