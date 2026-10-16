@@ -22,6 +22,9 @@ const VIEWPORT_HEIGHT = 900;
 const NOTHING_TO_MEASURE: Readonly<Record<string, string>> = {
   '/talks/open-source-is-not-just-code':
     'one slide of headings and one-sentence bullets',
+  '/brand/type': 'a one-sentence lead and rule, then type specimens',
+  '/brand/motion': 'a one-sentence lead and rule, then a list of rules',
+  '/brand/template': 'one-sentence lines, then a list of licenses',
 };
 
 /** Below Tailwind's `lg` the talk stacks every slide, so there is text to measure. */

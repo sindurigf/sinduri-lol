@@ -1,6 +1,7 @@
 import { readdirSync, existsSync, readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { BLOG_CONTENT_DIR } from '../src/lib/paths';
+import { BRAND_ROUTES } from '../src/lib/brand-sections';
 
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---/;
 
@@ -67,7 +68,7 @@ export const postFrontmatter = (
 };
 
 /**
- * Pages, hardcoded: Playwright collects tests before `webServer` builds, so reading
+ * Pages from source, not dist/: Playwright collects tests before `webServer` builds, so reading
  * `dist/` at module scope silently generates wrong tests. a11y.spec.ts "route coverage" catches drift.
  */
 const PAGE_ROUTES = [
@@ -84,7 +85,8 @@ const PAGE_ROUTES = [
   '/privacy',
   '/credits',
   '/brand',
-] as const;
+  ...BRAND_ROUTES,
+];
 
 interface PostSummary {
   route: string;
