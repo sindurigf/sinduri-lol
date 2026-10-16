@@ -610,4 +610,21 @@ test.describe('/brand', () => {
       );
     expect(shown, 'a split word shows in forced colors').toBe(0);
   });
+
+  for (const target of ['color-all', 'primary-button'] as const) {
+    test(`a link to #${target} opens its fold and shows the target`, async ({
+      page,
+    }) => {
+      await page.goto(`${ROUTE}#${target}`);
+      const element = page.locator(`#${target}`);
+      await expect(
+        element.locator('xpath=ancestor::details[1]'),
+        `#${target} is left in a closed fold`,
+      ).toHaveAttribute('open', '');
+      await expect(
+        element,
+        `#${target} is not scrolled into view`,
+      ).toBeInViewport();
+    });
+  }
 });
