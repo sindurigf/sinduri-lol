@@ -138,8 +138,7 @@ view (development server only, never published), and forks.
   Every `<title>` is distinct, and every one but the homepage's names the
   page before the site.
 - **Language.** One language, declared in `<html lang>`, `og:locale`,
-  structured data and the feed. Lepus Ridet carries `lang="la"`; the Lorem
-  ipsum sample on `/brand` does not.
+  structured data and the feed. Lepus Ridet carries `lang="la"`.
 - **Alt text.** Every image in the build is named or decorative on purpose;
   a failed photo in an `.aspect-frame` shows its alt text on its frame
   without doubling it for a screen reader.
