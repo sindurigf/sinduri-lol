@@ -36,7 +36,11 @@ const onSubmit =
     /* Offline, the browser's error page would discard the typed message. */
     if (!navigator.onLine) {
       event.preventDefault();
-      if (status) status.textContent = OFFLINE_STATUS;
+      if (status) {
+        status.textContent = OFFLINE_STATUS;
+        /* Focus stays put, so Enter can send again; the status sits below the button, often past the fold (SC 3.3.1). */
+        status.scrollIntoView({ block: 'nearest' });
+      }
       return;
     }
 
@@ -56,6 +60,14 @@ const forms = document.querySelectorAll<HTMLFormElement>(
 for (const form of forms) {
   form.addEventListener('submit', onSubmit(form));
 }
+
+/* Back online, "You are offline" is no longer true. */
+window.addEventListener('online', () => {
+  for (const form of forms) {
+    const { status } = partsOf(form);
+    if (status?.textContent === OFFLINE_STATUS) status.textContent = '';
+  }
+});
 
 /* A page restored from the back-forward cache is still mid-send. */
 window.addEventListener('pageshow', (event) => {

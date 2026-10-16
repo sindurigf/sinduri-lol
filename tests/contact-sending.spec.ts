@@ -131,6 +131,55 @@ test('offline, the form keeps the message and says it was not sent', async ({
   await context.setOffline(false);
 });
 
+/* SC 3.3.1, 4.1.3: Enter in a field leaves the button, and the status under it, below the fold. */
+test('offline, Enter in a field brings the status into view and keeps focus, and back online clears it', async ({
+  page,
+  context,
+}) => {
+  await page.route('**/contact/send/', (route) =>
+    route.fulfill({ status: 204 }),
+  );
+  await gotoSettled(page, '/contact/');
+  const name = page.getByLabel('Name');
+  await name.fill('Ada Lovelace');
+  await page.getByLabel('Email').fill('ada@example.com');
+  await page
+    .getByLabel('Message')
+    .fill('A message typed while the connection dropped.');
+
+  const status = page.locator('form[data-contact-form]').getByRole('status');
+  await name.focus();
+  await page.evaluate(() => {
+    const field = document.activeElement as HTMLElement;
+    window.scrollTo(
+      0,
+      field.getBoundingClientRect().top + window.scrollY - 120,
+    );
+  });
+  await expect(
+    status,
+    'the setup did not put the status below the fold',
+  ).not.toBeInViewport();
+
+  await context.setOffline(true);
+  await page.keyboard.press('Enter');
+
+  await expect(status).toHaveText(/offline/i);
+  await expect(
+    status,
+    'the offline status stayed out of view',
+  ).toBeInViewport();
+  await expect(
+    name,
+    'the offline notice moved focus off the field',
+  ).toBeFocused();
+
+  await context.setOffline(false);
+  await expect(status, 'the offline notice outlived the connection').toHaveText(
+    '',
+  );
+});
+
 test('the message field states its limits and keeps pasted text past them', async ({
   page,
 }) => {
