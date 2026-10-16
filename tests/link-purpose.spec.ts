@@ -12,7 +12,7 @@ const OWNER_COPY: readonly { route: string; name: string }[] = [
   { route: '/blog/open-source-is-not-just-code', name: 'Kubernetes' },
 ];
 
-/* Names that fit any destination (WCAG 2.2 G91 failure examples). */
+/* Names that fit any destination: WCAG failure F84, a non-specific link name. */
 const VAGUE_NAMES = new Set([
   'link',
   'here',
