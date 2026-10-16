@@ -1,10 +1,5 @@
-import { readFileSync } from 'node:fs';
-import {
-  OG_CARD_MANIFEST,
-  ogCardPath,
-  ogRoute,
-  type OgCardManifest,
-} from './og-cards';
+import cards from '../../public/images/og/cards.json';
+import { ogCardPath, ogRoute, type OgCardManifest } from './og-cards';
 
 /*
  * 1.91:1, the large-card crop of Facebook, LinkedIn and X; every card is
@@ -28,10 +23,8 @@ export const DEFAULT_OG_IMAGE: OgImage = {
   alt: 'Sinduri Guntupalli, open source enthusiast and positivity advocate, beside the sinduri.lol bunny logo.',
 };
 
-/* Read at build time from public/; scripts/make-og.mjs writes it. */
-const CARDS: OgCardManifest = JSON.parse(
-  readFileSync(`public/${OG_CARD_MANIFEST}`, 'utf8'),
-);
+/* Imported, not read from disk: the Worker renders /contact/send/ with no public/ to read. */
+const CARDS: OgCardManifest = cards;
 
 /**
  * The page's own card, or the site card for a page `npm run og` has not drawn
