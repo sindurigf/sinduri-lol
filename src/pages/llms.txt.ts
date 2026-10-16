@@ -15,6 +15,7 @@ import {
 } from '../lib/paths';
 import { PERSON_NAME } from '../lib/profiles';
 import { talkDecks } from '../lib/talk-deck';
+import { BRAND_PATH, BRAND_SECTIONS, brandHref } from '../lib/brand-sections';
 
 /*
  * Descriptions are structural only; titles and teasers are quoted, never
@@ -51,6 +52,11 @@ const ROUTE_NOTES: { path: string; label: string; note: string }[] = [
     note: 'The blog index, newest first.',
   },
   { path: CONTACT_PATH, label: 'Contact', note: 'How to get in touch.' },
+  {
+    path: BRAND_PATH,
+    label: 'Brand',
+    note: "The site's design system, one page per section, listed below.",
+  },
 ];
 
 type Absolute = (path: string) => string;
@@ -104,6 +110,13 @@ export const GET: APIRoute = async ({ site: configuredSite }) => {
     '',
     ...ROUTE_NOTES.map(
       ({ path, label, note }) => `- [${label}](${absolute(path)}): ${note}`,
+    ),
+    '',
+    '## Design System',
+    '',
+    ...BRAND_SECTIONS.map(
+      ({ slug, title, description }) =>
+        `- [${title}](${absolute(brandHref(slug))}): ${description}`,
     ),
     '',
     '## Posts',
