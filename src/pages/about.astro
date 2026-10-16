@@ -6,7 +6,6 @@ import bunnyDark from '../assets/bunny-dark.png';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CloseRow from '../components/CloseRow.astro';
 import PageHero from '../components/PageHero.astro';
-import LicensedPhotoCredit from '../components/LicensedPhotoCredit.astro';
 import PhotoTile from '../components/PhotoTile.astro';
 import PhotoViewer from '../components/PhotoViewer.astro';
 import Section from '../components/Section.astro';
@@ -27,13 +26,11 @@ import starTrek from '../assets/photos/sinduri-star-trek.jpg';
 import minerva from '../assets/photos/minerva.jpg';
 import hela from '../assets/photos/hela.jpg';
 import rudra from '../assets/photos/rudra.jpg';
-import mountainCamp from '../assets/photos/drupal-mountain-camp.webp';
 import friendsMossWall from '../assets/photos/friends-moss-wall.jpg';
 import escapeRoom from '../assets/photos/escape-room.jpg';
 import kannurSea from '../assets/photos/kannur-sea.jpg';
 import withFriend from '../assets/photos/pride-with-friend.jpg';
 import dosa from '../assets/photos/sinduri-dosa.jpg';
-import lectureHall from '../assets/photos/drupal-lecture-hall.jpg';
 import mountainCampBeanie from '../assets/photos/mountain-camp-beanie.jpg';
 import mountainCampTable from '../assets/photos/mountain-camp-table.jpg';
 import mountainCampGroup from '../assets/photos/mountain-camp-group.jpg';
@@ -76,7 +73,6 @@ const MARK_HEIGHT = 64;
 const MENTOR: Photographer = 'Klaus Purer';
 const MOUNTAIN_CAMP_URL = 'https://drupalmountaincamp.ch/';
 const MOUNTAIN_CAMP_PHOTOGRAPHER: Photographer = 'Josef Kruckenberg';
-const EVENT_PHOTOGRAPHER: Photographer = 'Patrick Itten';
 const ROTTERDAM_AWARD = LICENSED_PHOTOS['drupalcon-rotterdam-award'];
 const ROTTERDAM_PHOTOGRAPHER: Photographer = ROTTERDAM_AWARD.photographer;
 
@@ -226,10 +222,6 @@ const pairSizes = async (images: readonly [ImageMetadata, ImageMetadata]) => {
 const [johannSizes, selfieSizes] = await pairSizes([
   withJohann,
   bestFriendSelfie,
-]);
-const [lectureHallSizes, mountainCampSizes] = await pairSizes([
-  lectureHall,
-  mountainCamp,
 ]);
 
 const catInfo: CatInfo[] = await Promise.all(
@@ -547,30 +539,6 @@ const catInfo: CatInfo[] = await Promise.all(
             In 2025 I won the Women in Drupal Award in the Build category.
           </p>
         </div>
-      </div>
-
-      <div class="photo-pair mt-8">
-        <PhotoTile
-          image={lectureHall}
-          alt="Sinduri standing and clapping in a lecture hall full of Drupal event attendees."
-          group="drupal"
-          sizes={lectureHallSizes}
-        >
-          <span class="block font-black text-text">The Drupal community</span>
-          <LicensedPhotoCredit photo="drupal-lecture-hall" />
-        </PhotoTile>
-        <PhotoTile
-          image={mountainCamp}
-          alt="Drupal Mountain Camp attendees gathered together in the snow."
-          group="drupal"
-          sizes={mountainCampSizes}
-        >
-          <span class="block font-black text-text">Drupal Mountain Camp</span>
-          Photo:{' '}
-          <a href={photographerHref(EVENT_PHOTOGRAPHER)}>
-            {EVENT_PHOTOGRAPHER}
-          </a>
-        </PhotoTile>
       </div>
 
       <PhotoStrip
