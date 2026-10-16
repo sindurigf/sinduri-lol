@@ -137,9 +137,8 @@
   --color-pink: #ff007a;
   --color-pink-text: #ff79b6;
   /*
-   * The bunny marks and the dark gold-slab button's shadow. Same hexes as
-   * `pink` and `border`, kept apart because light mode turns those two ink and
-   * these stay.
+   * The bunny marks and the dark gold-slab button's shadow. Same hex as `pink`,
+   * kept apart because light mode turns `pink` ink and this stays.
    */
   --color-bunny: #ff007a;
   /* The system color forced-colors mode pairs with the button face; bars on it use `forced-colors:bg-button-text`. */
