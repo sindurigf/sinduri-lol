@@ -1,8 +1,10 @@
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test } from './test';
 import { gotoSettled } from './settle';
 import { codeBlock } from '../src/plugins/code-block.mjs';
-import { POST_ROUTES } from './routes';
+import { builtHtml, DIST_DIR, POST_ROUTES } from './routes';
+import { hasCodeBlock } from '../src/lib/code-blocks';
 import { REFLOW_VIEWPORT } from './wcag';
 import { NODE } from './tags';
 
@@ -222,5 +224,55 @@ test.describe('a code block is a tab stop only while it scrolls', () => {
     await expect
       .poll(() => stateOf(page), 'widened, the block kept its tab stop')
       .toMatchObject({ scrolls: false, tabIndex: -1, name: 'Code' });
+  });
+});
+
+/* The selector src/scripts/code-block-fit.ts queries: its fingerprint in a built chunk. */
+const FIT_SELECTOR = 'pre[role=group]>code';
+
+/** Every script a page loads, its imports followed. */
+const scriptsOf = (html: string): string[] => {
+  const seen = new Map<string, string>();
+  const visit = (path: string): void => {
+    if (seen.has(path)) return;
+    const source = readFileSync(join(DIST_DIR, path), 'utf8');
+    seen.set(path, source);
+    for (const [, relative] of source.matchAll(
+      /(?:from|import)\s*"\.\/([^"]+\.js)"/g,
+    )) {
+      visit(`/_astro/${relative}`);
+    }
+  };
+  for (const [, src] of html.matchAll(
+    /<script\b[^>]*\bsrc="(\/_astro\/[^"]+)"/g,
+  )) {
+    visit(src!);
+  }
+  return [...seen.values()];
+};
+
+/* Performance: the fit script loads where a code block renders, and nowhere else. */
+test.describe('the code-block fit script', NODE, () => {
+  test('loads on every page with a code block and on no other', () => {
+    const wrong = [...builtHtml()]
+      .filter(([, html]) => {
+        const hasBlock = /<pre\b[^>]*\brole="group"/.test(html);
+        const loads = scriptsOf(html).some((source) =>
+          source.includes(FIT_SELECTOR),
+        );
+        return hasBlock !== loads;
+      })
+      .map(([route]) => route);
+
+    expect(wrong, 'page(s) whose code blocks and fit script disagree').toEqual(
+      [],
+    );
+  });
+
+  test('hasCodeBlock finds fenced and indented code, and passes plain prose', () => {
+    expect(hasCodeBlock('Text.\n\n```sh\nnpm run build\n```\n')).toBe(true);
+    expect(hasCodeBlock('Text.\n\n~~~\ncode\n~~~\n')).toBe(true);
+    expect(hasCodeBlock('Text.\n\n    indented code\n')).toBe(true);
+    expect(hasCodeBlock('A paragraph with `inline code` only.\n')).toBe(false);
   });
 });
