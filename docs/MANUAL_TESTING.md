@@ -721,8 +721,8 @@ page numbers or running headers read as content, decoration announced.
 
 ### 13.4 Headings and tables
 
-- [ ] CV: heading tags match the visual hierarchy. Job and course titles are
-      body text on purpose (ACCESSIBILITY.md §4).
+- [ ] CV: heading tags match the visual hierarchy: name, sections, then job
+      and course titles.
 - [ ] Deck: heading tags match the visual hierarchy.
 - [ ] Any table has tagged, scoped header cells.
 
