@@ -38,6 +38,11 @@ const FIRST_USES: readonly {
   },
   { route: '/brand', abbreviation: 'CSS', expansion: 'Cascading Style Sheets' },
   {
+    route: '/brand',
+    abbreviation: 'AI',
+    expansion: 'artificial intelligence',
+  },
+  {
     route: '/credits',
     abbreviation: 'AI',
     expansion: 'artificial intelligence',
