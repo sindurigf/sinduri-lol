@@ -315,6 +315,17 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
   `'Lexend Variable'`. Only the latin subset is declared, in the `@font-face`
   at the top of `global.css`: importing the package CSS ships all three
   subsets. Never the Google Fonts CDN.
+- Until Lexend arrives (`font-display: swap`) the text shows in a
+  `Lexend Fallback` family: a local Arial or Roboto face with `size-adjust`
+  and the ascent, descent and line-gap overrides set to Lexend's mean advance
+  and line box, so the swap reflows less. Each face keeps Lexend's
+  `unicode-range`, so nothing changes for the characters Lexend has. A
+  character in the range that Lexend lacks (a prime, a per mille sign) takes
+  the fallback face: one wider glyph on the same line box.
+  `scripts/font-fallback-metrics.mjs` prints the numbers;
+  `tests/font-fallback.spec.ts` holds the faces to Lexend's metrics and a late
+  font's shift on a phone to its ceiling. Wider viewports still shift where a
+  heading wraps differently.
 - `--font-mono` is the platform monospace stack, nothing downloaded.
 - A paragraph of more than one sentence (SC 1.4.8): line height 1.5 or more
   (`--leading-paragraph` at display size) and at most 80 characters a line
@@ -792,6 +803,16 @@ text-gold-muted` under the standfirst. Color
 None. Gold buttons press 4px into their shadow at 0ms like every control. The
 roundel's tilt is static.
 
+### The hero pause control
+
+- Beside the first name at every size (`.hero-motion-toggle`): right edge on
+  the window's, `--spacing(4)` above its top rule. The window can be too low to
+  hold it clear of the name.
+- It sits on the page, not the gold, so its focus ring is the page's `cyan`.
+- A first name long enough to reach it would sit under it:
+  `tests/hero-fit.spec.ts` measures the letters against its box.
+- It is the first stop in `<main>` at every size.
+
 ## Posts
 
 Enforced by `tests/post-page.spec.ts`.
@@ -1064,7 +1085,7 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   leaps move them on), and sit still under reduced motion. Each cat's button
   ("Meet Minerva") opens its card and changes nothing else.
 - Each cat's SC 2.2.2 control sits in its band's corner: Zz ("Put Minerva to
-  sleep") while it plays, a paw ("Wake Minerva") while it sleeps.
+  sleep") while it plays, an eye ("Wake Minerva") while it sleeps.
   Hidden under reduced motion, where nothing moves.
 - A paw button under Zz ("Choose a trick for Minerva") opens that cat's tricks:
   Random first, then its own moves, each an icon and a name
