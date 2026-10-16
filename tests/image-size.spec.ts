@@ -1,6 +1,7 @@
 import { expect, test, type Page } from './test';
 import { builtHtml, SAMPLED_ROUTES } from './routes';
 import { gotoSettled, setViewportSettled } from './settle';
+import { openFolds } from './folds';
 import { NODE } from './tags';
 
 /*
@@ -192,6 +193,7 @@ for (const route of SAMPLED_ROUTES) {
     page,
   }) => {
     await gotoSettled(page, route);
+    await openFolds(page);
 
     const measured = new Set<number>();
     const measureAtEveryWidth = async () => {

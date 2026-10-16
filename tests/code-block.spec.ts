@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from './test';
 import { gotoSettled } from './settle';
+import { openFolds } from './folds';
 import { codeBlock } from '../src/plugins/code-block.mjs';
 import { builtHtml, DIST_DIR, POST_ROUTES } from './routes';
 import { hasCodeBlock } from '../src/lib/code-blocks';
@@ -155,6 +156,7 @@ test.describe('a code block is a tab stop only while it scrolls', () => {
   }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await gotoSettled(page, '/brand');
+    await openFolds(page);
     await expect
       .poll(
         () => stateOf(page),
@@ -169,6 +171,7 @@ test.describe('a code block is a tab stop only while it scrolls', () => {
   }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await gotoSettled(page, '/brand');
+    await openFolds(page);
     const block = page.locator('.prose pre[role="group"]').first();
     /* Just wider than its text: the narrowest it can be and still fit. */
     await block.evaluate((element) => {
@@ -209,6 +212,7 @@ test.describe('a code block is a tab stop only while it scrolls', () => {
   }) => {
     await page.setViewportSize({ width: REFLOW_VIEWPORT.width, height: 900 });
     await gotoSettled(page, '/brand');
+    await openFolds(page);
     await expect
       .poll(
         () => stateOf(page),
