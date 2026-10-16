@@ -24,7 +24,7 @@ const HEIGHT = 630;
 const TAGLINE = ['Open source enthusiast', 'Positivity advocate'];
 
 /* The header's 48px logo tile, scaled up: edge, radius, shadow and mark keep its proportions. */
-const TILE_SCALE = 5;
+const TILE_SCALE = 7;
 const TILE = {
   size: 48 * TILE_SCALE,
   edge: 4 * TILE_SCALE,
@@ -32,7 +32,7 @@ const TILE = {
   shadow: 8 * TILE_SCALE,
   mark: 24 * TILE_SCALE,
 };
-const STRIP_LEFT = 820;
+const STRIP_LEFT = 700;
 /* Whole, centered on the strip with its shadow: link previews crop the edges. */
 const TILE_LEFT =
   STRIP_LEFT + (WIDTH - STRIP_LEFT - TILE.size - TILE.shadow) / 2;
@@ -56,15 +56,15 @@ const page = () => `<!doctype html><html><head><meta charset="utf-8"><style>
 html,body{margin:0}
 .og{position:relative;width:${WIDTH}px;height:${HEIGHT}px;overflow:hidden;background:${TOKENS.gold};font-family:'Lexend Variable';color:${TOKENS.goldText}}
 .strip{position:absolute;inset:0 0 0 ${STRIP_LEFT}px;background:${TOKENS.background}}
-.text{position:absolute;left:80px;top:0;bottom:62px;width:680px;display:flex;flex-direction:column}
-.name{margin-top:150px;font-size:92px;font-weight:900;line-height:.94;text-transform:uppercase;letter-spacing:.01em}
+.text{position:absolute;left:80px;top:0;bottom:62px;width:${STRIP_LEFT - 110}px;display:flex;flex-direction:column}
+.name{margin-top:150px;font-size:80px;font-weight:900;line-height:.94;text-transform:uppercase;letter-spacing:.01em}
 .tag{margin-top:40px;font-size:30px;line-height:1.35}
 .domain{margin-top:auto;font-size:24px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
 .tile{position:absolute;left:${TILE_LEFT}px;top:${TILE_TOP}px;box-sizing:border-box;width:${TILE.size}px;height:${TILE.size}px;display:grid;place-items:center;background:${TOKENS.gold};border:${TILE.edge}px solid ${TOKENS.fillEdge};border-radius:${TILE.radius}px;box-shadow:${TILE.shadow}px ${TILE.shadow}px 0 ${TOKENS.bunny};rotate:5deg}
 .tile img{height:${TILE.mark}px}
 .sticker{position:absolute;padding:14px 28px;background:${TOKENS.background};font-size:44px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;box-shadow:10px 10px 0 ${TOKENS.pink};rotate:-3deg}
-.lepus{left:700px;top:78px;color:${TOKENS.gold}}
-.ridet{left:662px;top:484px;color:${TOKENS.pinkText}}
+.lepus{left:${STRIP_LEFT - 120}px;top:40px;color:${TOKENS.gold}}
+.ridet{left:${STRIP_LEFT - 158}px;top:500px;color:${TOKENS.pinkText}}
 </style></head><body><div class="og">
 <div class="strip"></div>
 <div class="tile"><img alt="" src="${dataUri(MARK, 'image/png')}"></div>
