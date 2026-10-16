@@ -12,6 +12,17 @@ const OWNER_COPY: readonly { route: string; name: string }[] = [
   { route: '/blog/open-source-is-not-just-code', name: 'Kubernetes' },
 ];
 
+/* Names that fit any destination (WCAG 2.2 G91 failure examples). */
+const VAGUE_NAMES = new Set([
+  'link',
+  'here',
+  'click here',
+  'more',
+  'read more',
+  'this',
+  'this link',
+]);
+
 interface Link {
   name: string;
   destination: string;
@@ -103,6 +114,20 @@ test.describe('link purpose from the name alone (SC 2.4.9)', () => {
       expect(
         failing.map(([name, to]) => `"${name}" -> ${to.join(', ')}`),
         `${route} has link names that lead to different destinations.`,
+      ).toEqual([]);
+    });
+
+    test(`${route} names no link with a word that says nothing of where it goes`, async ({
+      page,
+    }) => {
+      await gotoSettled(page, route);
+      const vague = (await exposedLinks(page))
+        .filter(({ name }) => VAGUE_NAMES.has(name.toLowerCase()))
+        .map(({ name, destination }) => `"${name}" -> ${destination}`);
+
+      expect(
+        vague,
+        `${route} has links named only "link", "here" and the like.`,
       ).toEqual([]);
     });
   }
