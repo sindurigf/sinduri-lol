@@ -31,6 +31,7 @@
     "check:live": "sh scripts/check-live.sh",
     "check:live:console": "playwright test -c playwright.live.config.ts",
     "check:umami": "sh scripts/check-umami.sh",
+    "og": "node scripts/make-og.mjs",
     "publish:cv": "python3 scripts/publish-cv.py",
     "publish:talk": "node scripts/publish-talk.mjs",
     "check": "npm run check:tokens && npm run check:links && npm run check:pins && npm run check:classes && npm run check:untransformed && npm run check:title-case && npm run format:check && npm run check:commits"
