@@ -4,6 +4,8 @@ import { expect, test } from './test';
 import { DIST_DIR } from './routes';
 import { NODE } from './tags';
 import { CV_HTML, cvDigest } from '../scripts/cv-source.mjs';
+import { ratio } from '../scripts/contrast-table.mjs';
+import { AAA_TEXT } from './contrast';
 
 /**
  * The CV PDF, printed from cv/cv.html by `npm run publish:cv`. Leaked metadata
@@ -184,6 +186,37 @@ test.describe('the CV file', () => {
         taggedImages(cvBytes()),
         `${CV_PATH} tags an image (Figure or alt text); run npm run publish:cv.`,
       ).toEqual([]);
+    },
+  );
+});
+
+test.describe('the CV source', () => {
+  const CV_CSS = 'cv/cv.css';
+  const TEXT_TOKENS = ['--ink', '--heading', '--muted', '--icon'];
+  const GROUNDS = ['--side-bg', '--page-bg'];
+
+  test(
+    'draws every text color at AAA contrast on both column grounds (SC 1.4.6)',
+    NODE,
+    () => {
+      const css = readFileSync(CV_CSS, 'utf8');
+      const token = (name: string) => {
+        const hex = new RegExp(`${name}:\\s*(#[0-9a-fA-F]{6})\\b`).exec(
+          css,
+        )?.[1];
+        if (!hex) throw new Error(`${CV_CSS} has no six-digit hex ${name}`);
+        return hex;
+      };
+
+      for (const text of TEXT_TOKENS) {
+        for (const ground of GROUNDS) {
+          const value = ratio(token(text), token(ground));
+          expect(
+            value,
+            `${text} on ${ground} is ${value.toFixed(2)}:1, under ${AAA_TEXT}:1.`,
+          ).toBeGreaterThanOrEqual(AAA_TEXT);
+        }
+      }
     },
   );
 });

@@ -158,7 +158,8 @@ view (development server only, never published), and forks.
   in gap 1.
 - **CV PDF.** Printed from HTML. The photo, icons and shapes are artifacts,
   the name is the H1, the six section titles are H2s, and job and course
-  titles are H3s. Lists and links are tagged as such. The photo is decorative
+  titles are H3s. Lists and links are tagged as such. Every text color is
+  at least 7:1 on both column backgrounds (`tests/cv.spec.ts`). The photo is decorative
   ([why](ARCHITECTURE.md#content-notes)). `npm run check:pdf` passes it. How
   it is made: [DEVELOPMENT.md](docs/DEVELOPMENT.md#publishing-the-cv).
 - **Talk PDF.** Passes PDF/UA-1 in `npm run check:pdf`. See gap 6. Below
