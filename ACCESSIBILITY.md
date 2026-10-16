@@ -131,8 +131,9 @@ view (development server only, never published), and forks.
 - **No JavaScript.** A fallback navigation replaces the mobile menu, sits
   below the header and never duplicates the primary nav.
 - **Current page.** `aria-current` in every navigation, plus a shape change,
-  never color alone: a filled block in the header, menu and no-JavaScript
-  navigations, an underline in the footer.
+  never color alone: a sticker pressed flat into its shadow in the header and
+  menu, a filled block in the no-JavaScript navigation, an underline in the
+  footer.
 - **Help.** Every page has the Get in Touch link: in the header from 48rem,
   in the menu below it (SC 3.2.6).
 - **Headings and titles.** One `h1`, no skipped level, nothing under 19px
@@ -238,9 +239,9 @@ inside, the focus ring included, is `background` (`tests/solid-block.spec.ts`,
 
 ### Light mode
 
-With JavaScript, `<main>` turns light on `prefers-color-scheme: light` or the
-header switch, and the choice is remembered; without it the page stays dark and
-the switch is hidden. The header and footer stay dark. Every
+With JavaScript, `<main>` and the header turn light on `prefers-color-scheme:
+light` or the header switch, and the choice is remembered; without it the page
+stays dark and the switch is hidden. The footer stays dark. Every
 text color clears 7:1 on white:
 [Light mode](docs/STYLEGUIDE.md#light-mode).
 

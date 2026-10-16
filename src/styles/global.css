@@ -454,7 +454,7 @@
    * stays small at 400% zoom; html's scroll-padding-top derives from it (SC
    * 2.4.11).
    */
-  --spacing-header: 96px;
+  --spacing-header: 120px;
   /* The slideshow's control row: a ~59px button plus its 4px shadow. */
   --spacing-deck-bar: 4.5rem;
 
