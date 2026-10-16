@@ -36,6 +36,46 @@ const FIRST_USES: readonly {
     abbreviation: 'PDF',
     expansion: 'Portable Document Format',
   },
+  {
+    route: '/accessibility',
+    abbreviation: 'SC',
+    expansion: 'success criterion',
+  },
+  {
+    route: '/accessibility',
+    abbreviation: 'HTML',
+    expansion: 'HyperText Markup Language',
+  },
+  {
+    route: '/accessibility',
+    abbreviation: 'CSS',
+    expansion: 'Cascading Style Sheets',
+  },
+  {
+    route: '/accessibility',
+    abbreviation: 'UA-1',
+    expansion: 'Universal Accessibility, part 1',
+  },
+  {
+    route: '/accessibility',
+    abbreviation: 'NVDA',
+    expansion: 'NonVisual Desktop Access',
+  },
+  {
+    route: '/accessibility',
+    abbreviation: 'JAWS',
+    expansion: 'Job Access With Speech',
+  },
+  {
+    route: '/accessibility',
+    abbreviation: 'CV',
+    expansion: 'curriculum vitae',
+  },
+  {
+    route: '/accessibility',
+    abbreviation: 'CI',
+    expansion: 'continuous integration',
+  },
   { route: '/brand', abbreviation: 'CSS', expansion: 'Cascading Style Sheets' },
   {
     route: '/brand',
