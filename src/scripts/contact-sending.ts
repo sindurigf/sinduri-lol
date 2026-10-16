@@ -14,6 +14,26 @@ const partsOf = (form: HTMLFormElement) => ({
   status: form.querySelector<HTMLElement>('[data-contact-status]'),
 });
 
+/*
+ * The status sits below the button, often past the fold (SC 3.3.1). Focus stays
+ * put so Enter can send again, so the page scrolls only when the focused field
+ * and the status both fit below the sticky header; otherwise role="status" speaks.
+ */
+const revealWithFocus = (status: HTMLElement): void => {
+  const root = getComputedStyle(document.documentElement);
+  const top = parseFloat(root.scrollPaddingTop) || 0;
+  const bottom =
+    window.innerHeight - (parseFloat(root.scrollPaddingBottom) || 0);
+  const focused = document.activeElement;
+  const fieldTop =
+    focused instanceof HTMLElement && focused !== document.body
+      ? focused.getBoundingClientRect().top
+      : top;
+  const below = status.getBoundingClientRect().bottom - bottom;
+  /* Partway would move the page and still not show the status. */
+  if (below > 0 && below <= fieldTop - top) window.scrollBy(0, below);
+};
+
 const reset = (form: HTMLFormElement): void => {
   const { button, status } = partsOf(form);
   delete form.dataset.sending;
@@ -38,8 +58,7 @@ const onSubmit =
       event.preventDefault();
       if (status) {
         status.textContent = OFFLINE_STATUS;
-        /* Focus stays put, so Enter can send again; the status sits below the button, often past the fold (SC 3.3.1). */
-        status.scrollIntoView({ block: 'nearest' });
+        revealWithFocus(status);
       }
       return;
     }
