@@ -458,15 +458,14 @@ with a comment beside it.
   defaults to `currentColor`); `gold-border` inside `.surface-gold`.
 - Shadows are hard offsets, no blur. Gold casts none (gold on gold is 1.00).
 
-| Utility                     | Casts it                                                                                                 |
-| --------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `shadow-hard-pink-4`        | `.btn-primary`, `.btn-secondary`, link chips, `.nav-cta`, the theme switch, footer stickers, slide cards |
-| `shadow-hard-pink-4`        | Cards, card groups, post contents, gold areas, the PageHero photo                                        |
-| `shadow-hard-cyan-4`        | A hovered linked card or contact card, in place of pink                                                  |
-| `shadow-hard-gold-border-4` | A card on gold                                                                                           |
-| `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                          |
-| `shadow-hard-bunny-8`       | The logo tile, the roundel, the homepage stickers                                                        |
-| `shadow-hard-bunny-12`      | The logo tile's larger copy on `/about`                                                                  |
+| Utility                     | Casts it                                                                                                                                                                    |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shadow-hard-pink-4`        | Cards, card groups, post contents, gold areas, the PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, `.nav-cta`, the theme switch, footer stickers, slide cards |
+| `shadow-hard-cyan-4`        | A hovered linked card or contact card, in place of pink                                                                                                                     |
+| `shadow-hard-gold-border-4` | A card on gold                                                                                                                                                              |
+| `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                                                                             |
+| `shadow-hard-bunny-8`       | The logo tile, the roundel, the homepage stickers                                                                                                                           |
+| `shadow-hard-bunny-12`      | The logo tile's larger copy on `/about`                                                                                                                                     |
 
 - `bunny` is `pink`'s hex but stays pink in light mode, where `pink` turns
   ink.
