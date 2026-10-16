@@ -74,3 +74,30 @@ test.describe('the site declares one language everywhere', NODE, () => {
     ).toBe(FEED_LANGUAGE);
   });
 });
+
+/** Latin on the site; each use must be marked so a screen reader switches voice (SC 3.1.2). */
+const LATIN = ['Lepus Ridet', 'Summa cum laude'] as const;
+/* Non-nesting: every Latin span on the site holds text only. */
+const LATIN_ELEMENT = /<(\w+)\b[^>]*\blang="la"[^>]*>[\s\S]*?<\/\1>/g;
+/* Not read aloud, so no voice to switch: the hero's sticker words. */
+const HIDDEN_ELEMENT = /<(\w+)\b[^>]*\baria-hidden="true"[^>]*>[\s\S]*?<\/\1>/g;
+
+test('every Latin phrase on a page is marked lang="la"', NODE, () => {
+  const unmarked: string[] = [];
+  let seen = 0;
+  for (const [route, html] of builtHtml()) {
+    const body = html.slice(html.indexOf('<body'));
+    const text = body
+      .replace(/<(script|style)\b[\s\S]*?<\/\1>/g, ' ')
+      .replace(LATIN_ELEMENT, ' ')
+      .replace(HIDDEN_ELEMENT, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ');
+    for (const phrase of LATIN) {
+      if (body.includes(phrase)) seen += 1;
+      if (text.includes(phrase)) unmarked.push(`${route}: "${phrase}"`);
+    }
+  }
+  expect(seen, 'no page shows a listed Latin phrase').toBeGreaterThan(0);
+  expect(unmarked, 'Latin outside a lang="la" element').toEqual([]);
+});
