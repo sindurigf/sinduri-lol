@@ -16,7 +16,7 @@ import {
   getFeaturedPosts,
 } from '../lib/blog';
 import { WIDTHS } from '../lib/image-densities';
-import { CATEGORIES } from '../lib/categories';
+import { CATEGORIES, CATEGORY_TILE } from '../lib/categories';
 import { BLOG_PATH, categoryHref } from '../lib/paths';
 
 /* Editorial copy is Sinduri's own words; add no line she has not approved. */
@@ -183,7 +183,7 @@ const STATS = [
             aria-hidden="true"
             class:list={[
               'flex size-16 -rotate-3 items-center justify-center border-4 border-border text-section-number font-black leading-none',
-              card.accent.tile,
+              CATEGORY_TILE,
             ]}
           >
             {card.glyph}
