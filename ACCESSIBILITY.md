@@ -144,9 +144,11 @@ view (development server only, never published), and forks.
   without doubling it for a screen reader.
 - **Motion.** The hero field on `/` has a pause control and each cat on
   `/about` a sleep control (SC 2.2.2). Under `prefers-reduced-motion: reduce`
-  the hero field is drawn once and held, the cats sit still, and a pressed
-  control does not move into its shadow (SC 2.3.3); nothing else animates
-  ([STYLEGUIDE Motion](docs/STYLEGUIDE.md#motion)).
+  the hero field is drawn once and held, the cats sit still, `/brand`'s split
+  words stop crossing, and a pressed control does not move into its shadow
+  (SC 2.3.3); nothing else animates
+  ([STYLEGUIDE Motion](docs/STYLEGUIDE.md#motion)). The split words move only
+  with scrolling, never on their own, and never move text or a control.
 - **Forced colors.** Every non-link control keeps a painted border or opaque
   background, except the last row of a cat's trick list; links are distinct
   from body text, every focus stop on `/` keeps an outline, and the menu

@@ -266,6 +266,10 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
   light).
 - RIDET and `.sticker` are black blocks.
 - `tests/light-mode.spec.ts` scans every route in light at WCAG 2.2 AA.
+- A `.mode-light` block shows light mode on a dark page, and a `.mode-dark`
+  block dark mode on a light page (`src/styles/light-mode.css`): /brand's
+  spreads draw each sample on both grounds. A `.mode-dark` block takes the
+  dark values from `--dark-*`, read at `:root`, where light mode never reaches.
 
 ## Type scale
 
@@ -551,15 +555,16 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
 
 ### Section types
 
-| Type    | Build                                                                                                                      |
-| ------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Hero    | First section on every page except a post; a `.gold-column`. See [Hero](#hero).                                            |
-| Open    | `Section`: `text-h2` heading, optional `.lead` 24px under it, content at `--spacing-head`, `max-w-page` in `.page-gutter`. |
-| Panel   | `Section panel`: the same box, the whole section in one `.card`, its h2 `text-h2` inside the card.                         |
-| Listing | Grid of cards, 1 to 3 columns, `--spacing-grid` gaps: blog index, categories, tags, Home's two grids.                      |
-| Reading | One `.prose` column, `max-w-measure` (36rem): Privacy, Accessibility, a post's body.                                       |
-| Surface | The gold band (Home, Career, Contact), a `.gold-column`. With the hero slab, the only change of ground.                    |
-| Close   | `CloseRow`, its own band, always last, never nested.                                                                       |
+| Type    | Build                                                                                                                            |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Hero    | First section on every page except a post; a `.gold-column`. See [Hero](#hero).                                                  |
+| Open    | `Section`: `text-h2` heading, optional `.lead` 24px under it, content at `--spacing-head`, `max-w-page` in `.page-gutter`.       |
+| Panel   | `Section panel`: the same box, the whole section in one `.card`, its h2 `text-h2` inside the card.                               |
+| Listing | Grid of cards, 1 to 3 columns, `--spacing-grid` gaps: blog index, categories, tags, Home's two grids.                            |
+| Reading | One `.prose` column, `max-w-measure` (36rem): Privacy, Accessibility, a post's body.                                             |
+| Surface | The gold band (Home, Career, Contact), a `.gold-column`. With the hero slab, the only change of ground outside /brand's spreads. |
+| Close   | `CloseRow`, its own band, always last, never nested.                                                                             |
+| Spread  | /brand only: a section on the dark and light grounds side by side (`BrandSpread`), its full content in a fold.                   |
 
 ### One treatment per type
 
@@ -590,7 +595,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
   `py-section`, not `pb-section`, for this reason.
 - The slab's edge separates the hero from the first section; no line under it.
 - The only ground change is gold (hero slab and gold surface), 11.32 against
-  the page, never color alone.
+  the page, never color alone; /brand's spreads also show the other mode's ground, as the samples' subject.
 - Panels and the closing row are cards: 6px edge and 8px shadow.
 - No rules or dividers between sections or before the footer.
 
@@ -647,6 +652,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
 | Blog category, tag     | Hero, Listing                                                  |
 | Post                   | Article header, Reading (contents box from 1280px), Tags nav   |
 | 404                    | Hero (starfield) only                                          |
+| Brand                  | Hero, six spreads: each a dark and light pair, then a fold     |
 
 - Contact ends on its gold surface, not a closing row: the band is its call to
   action.
@@ -1076,6 +1082,13 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 - Nothing flashes more than three times per second (SC 2.3.1).
 - Controls press into their shadow at 0ms; no movement under reduced motion.
 - No marquee.
+- /brand's split words (`src/styles/components/brand.css`) cross their band
+  as the page scrolls, in alternate directions, and come to rest once a spread
+  has passed. Scroll-linked (`animation-timeline: view()`), never on their own;
+  decoration only, so text, columns and controls never move. Still under
+  reduced motion, below `lg` and where scroll timelines are missing; hidden in
+  forced colors. `aria-hidden`, not selectable, in a band of its own that no
+  text or focus ring enters (`tests/brand.spec.ts`).
 - Pattern (`src/components/ui/HeroField.vue`, its logic in
   `src/composables/use-hero-field.ts`): start the animation on mount,
   never in server HTML. Under reduced motion render one still frame and no
