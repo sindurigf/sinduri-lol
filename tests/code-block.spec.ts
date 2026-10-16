@@ -161,6 +161,47 @@ test.describe('a code block is a tab stop only while it scrolls', () => {
       .toMatchObject({ scrolls: false, tabIndex: -1, name: 'Code' });
   });
 
+  /* SC 1.4.12: letter and word spacing widen the text, not the block's box. */
+  test('/brand: text spacing that makes a fitting block overflow makes it a tab stop', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await gotoSettled(page, '/brand');
+    const block = page.locator('.prose pre[role="group"]').first();
+    /* Just wider than its text: the narrowest it can be and still fit. */
+    await block.evaluate((element) => {
+      const pre = element as HTMLElement;
+      const range = document.createRange();
+      /* The text node: a range over an element measures its box. */
+      range.selectNodeContents(pre.querySelector('code')!.firstChild!);
+      const style = getComputedStyle(pre);
+      const chrome =
+        pre.offsetWidth -
+        pre.clientWidth +
+        parseFloat(style.paddingLeft) +
+        parseFloat(style.paddingRight);
+      pre.style.maxWidth = `${Math.ceil(range.getBoundingClientRect().width + chrome) + 2}px`;
+    });
+    await expect
+      .poll(() => stateOf(page), 'the narrowed block should still fit')
+      .toMatchObject({ scrolls: false, tabIndex: -1 });
+
+    await page.addStyleTag({
+      content:
+        '* { letter-spacing: 0.12em !important; word-spacing: 0.16em !important; }',
+    });
+    await expect
+      .poll(
+        () => stateOf(page),
+        'spaced out, the block overflows but is no tab stop',
+      )
+      .toMatchObject({
+        scrolls: true,
+        tabIndex: 0,
+        name: 'Code, scrolls sideways',
+      });
+  });
+
   test('/brand: narrowed until it overflows, the block becomes a tab stop named as scrolling, and leaves again when widened', async ({
     page,
   }) => {
