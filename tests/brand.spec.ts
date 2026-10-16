@@ -40,14 +40,25 @@ const resolveTokens = (page: Page, tokens: string[]) =>
     return hex;
   }, tokens);
 
+/* Every section's full content lives in its spread's fold; open them all. */
+const gotoBrand = async (page: Page) => {
+  await gotoSettled(page, ROUTE);
+  await page.evaluate(() => {
+    for (const fold of document.querySelectorAll<HTMLDetailsElement>(
+      'main details',
+    ))
+      fold.open = true;
+  });
+};
+
 test.describe('/brand', () => {
   test(
     'the full contrast table lists every pairing the site measures, in order',
     ENGINE_INVARIANT,
     async ({ page }) => {
-      await gotoSettled(page, ROUTE);
+      await gotoBrand(page);
       const pairs = await page
-        .locator('#contrast .contrast-dark details tbody tr th')
+        .locator('#contrast-all .contrast-dark details tbody tr th')
         .evaluateAll((cells) =>
           cells.map((cell) =>
             [...cell.querySelectorAll('code')]
@@ -69,14 +80,16 @@ test.describe('/brand', () => {
   test('every contrast table has a caption and a row header per row (SC 1.3.1)', async ({
     page,
   }) => {
-    await gotoSettled(page, ROUTE);
-    const tables = await page.locator('#contrast table').evaluateAll((all) =>
-      all.map((table) => ({
-        caption: table.querySelector('caption')?.textContent?.trim() ?? '',
-        rows: table.querySelectorAll('tbody tr').length,
-        rowHeaders: table.querySelectorAll('tbody th[scope="row"]').length,
-      })),
-    );
+    await gotoBrand(page);
+    const tables = await page
+      .locator('#contrast-all table')
+      .evaluateAll((all) =>
+        all.map((table) => ({
+          caption: table.querySelector('caption')?.textContent?.trim() ?? '',
+          rows: table.querySelectorAll('tbody tr').length,
+          rowHeaders: table.querySelectorAll('tbody th[scope="row"]').length,
+        })),
+      );
     expect(tables.length, 'the page has no contrast table').toBeGreaterThan(0);
     for (const table of tables) {
       expect(table.caption, 'a contrast table has no caption').not.toBe('');
@@ -97,10 +110,10 @@ test.describe('/brand', () => {
         theme,
       );
       const page = await context.newPage();
-      await gotoSettled(page, ROUTE);
-      const shown = page.locator(`#contrast .contrast-${theme}`);
+      await gotoBrand(page);
+      const shown = page.locator(`#contrast-all .contrast-${theme}`);
       const other = page.locator(
-        `#contrast .contrast-${theme === 'dark' ? 'light' : 'dark'}`,
+        `#contrast-all .contrast-${theme === 'dark' ? 'light' : 'dark'}`,
       );
       await expect(shown, `${theme} mode hides its own pairings`).toBeVisible();
       await expect(
@@ -180,9 +193,9 @@ test.describe('/brand', () => {
         theme,
       );
       const page = await context.newPage();
-      await gotoSettled(page, ROUTE);
+      await gotoBrand(page);
       const rows = await page
-        .locator('#color li')
+        .locator('#color-all li')
         .evaluateAll((items, mode) => {
           /* The last opaque color in the value: Tailwind lists empty ring and inset layers before a shadow. */
           const hex = (value: string) => {
@@ -242,7 +255,7 @@ test.describe('/brand', () => {
     'every component row has a name, what it is for, its rule and a live example',
     ENGINE_INVARIANT,
     async ({ page }) => {
-      await gotoSettled(page, ROUTE);
+      await gotoBrand(page);
       const rows = await page.locator('[data-component]').evaluateAll((items) =>
         items.map((item) => {
           const [use, rule] = [...item.querySelectorAll(':scope > p')].map(
@@ -250,7 +263,7 @@ test.describe('/brand', () => {
           );
           return {
             id: item.getAttribute('data-component'),
-            name: item.querySelector(':scope > h3')?.textContent?.trim() ?? '',
+            name: item.querySelector(':scope > h5')?.textContent?.trim() ?? '',
             use: use ?? '',
             rule: rule ?? '',
             example:
@@ -276,7 +289,7 @@ test.describe('/brand', () => {
   test('ids and landmark names are unique, with the examples on the page', async ({
     page,
   }) => {
-    await gotoSettled(page, ROUTE);
+    await gotoBrand(page);
     const { ids, landmarks, mains, h1s } = await page.evaluate(() => {
       const repeated = (values: string[]) =>
         values.filter((value, i) => values.indexOf(value) !== i);
@@ -306,7 +319,7 @@ test.describe('/brand', () => {
   test('the example form sends nothing and stays on the page', async ({
     page,
   }) => {
-    await gotoSettled(page, ROUTE);
+    await gotoBrand(page);
     const form = page.locator('#form ~ [data-example] form');
     const requests: string[] = [];
     page.on('request', (request) => {
@@ -324,7 +337,7 @@ test.describe('/brand', () => {
   test('both theme switches change the one theme and always agree', async ({
     page,
   }) => {
-    await gotoSettled(page, ROUTE);
+    await gotoBrand(page);
     const switches = page.locator('.theme-switch');
     await expect(switches).toHaveCount(2);
     const state = () =>
@@ -347,7 +360,7 @@ test.describe('/brand', () => {
   });
 
   test('each motion example changes only its own name', async ({ page }) => {
-    await gotoSettled(page, ROUTE);
+    await gotoBrand(page);
     const toggles = page.locator('button[data-example-toggle]');
     expect(await toggles.count()).toBeGreaterThan(1);
     const names = () =>
@@ -362,11 +375,11 @@ test.describe('/brand', () => {
   });
 
   for (const width of [1280, 390] as const) {
-    test(`no roundel covers a control at ${width}px, with every States closed or open`, async ({
+    test(`no roundel covers a control at ${width}px, with every fold closed or open`, async ({
       page,
     }) => {
       await page.setViewportSize({ width, height: 900 });
-      await gotoSettled(page, ROUTE);
+      await gotoBrand(page);
       for (const open of [false, true]) {
         const covered = await page.evaluate((openAll) => {
           for (const details of document.querySelectorAll('main details')) {
@@ -396,7 +409,7 @@ test.describe('/brand', () => {
         }, open);
         expect(
           covered,
-          `a roundel covers a control with every States ${open ? 'open' : 'closed'}`,
+          `a roundel covers a control with every fold ${open ? 'open' : 'closed'}`,
         ).toEqual([]);
       }
     });
@@ -405,7 +418,7 @@ test.describe('/brand', () => {
   test('the calls to action open the template and its demo', async ({
     page,
   }) => {
-    await gotoSettled(page, ROUTE);
+    await gotoBrand(page);
     for (const [name, href] of [
       ['Use This Design', USE_TEMPLATE_URL],
       ['View the Template', TEMPLATE_URL],
@@ -418,5 +431,183 @@ test.describe('/brand', () => {
       ))
         expect(href_, `"${name}" points elsewhere`).toBe(href);
     }
+  });
+
+  test('each spread draws its sections on both grounds, the light copy hidden and inert', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    const spreads = await page.locator('.spread').evaluateAll((all) =>
+      all.map((spread) => {
+        const halves = [
+          ...spread.querySelectorAll<HTMLElement>(':scope > .spread-half'),
+        ];
+        return {
+          halves: halves.length,
+          live: halves.filter((h) => !h.inert && !h.hasAttribute('aria-hidden'))
+            .length,
+          hiddenCopy: halves.filter(
+            (h) => h.inert && h.getAttribute('aria-hidden') === 'true',
+          ).length,
+          liveSamples: [
+            ...spread.querySelectorAll('.spread-half li > div:last-child'),
+          ].filter((d) => !(d as HTMLElement).inert).length,
+          heading:
+            spread
+              .closest('section')
+              ?.querySelector('h2')
+              ?.textContent?.trim() ?? '',
+        };
+      }),
+    );
+    expect(spreads.length, '/brand shows no spread').toBeGreaterThan(0);
+    for (const spread of spreads) {
+      expect(spread.halves, `${spread.heading} has not two halves`).toBe(2);
+      expect(
+        spread.live,
+        `${spread.heading}: not exactly one half is read`,
+      ).toBe(1);
+      expect(
+        spread.hiddenCopy,
+        `${spread.heading}: the copy is reachable`,
+      ).toBe(1);
+      expect(
+        spread.liveSamples,
+        `${spread.heading}: a sample can take focus`,
+      ).toBe(0);
+    }
+  });
+
+  test('each half resolves its own mode, whatever mode the page is in', async ({
+    page,
+  }) => {
+    for (const theme of ['dark', 'light'] as const) {
+      await page.emulateMedia({ colorScheme: theme });
+      await gotoSettled(page, ROUTE);
+      const grounds = await page.evaluate(() =>
+        [
+          ...document
+            .querySelectorAll('.spread')[0]!
+            .querySelectorAll(':scope > .spread-half'),
+        ].map((half) => getComputedStyle(half).backgroundColor),
+      );
+      /* The page's own ground: --color-background resolved inside <main>. */
+      const page_ = await page.evaluate(() => {
+        const probe = document.createElement('span');
+        probe.style.backgroundColor = 'var(--color-background)';
+        document.querySelector('main')!.append(probe);
+        const ground = getComputedStyle(probe).backgroundColor;
+        probe.remove();
+        return ground;
+      });
+      expect(
+        grounds,
+        `in ${theme} mode a spread has not two halves`,
+      ).toHaveLength(2);
+      expect(grounds[0], `in ${theme} mode the dark half is not dark`).not.toBe(
+        grounds[1],
+      );
+      expect(
+        grounds[theme === 'dark' ? 0 : 1],
+        `in ${theme} mode the half in the page's own mode differs from the page ground`,
+      ).toBe(page_);
+    }
+  });
+
+  for (const width of [1280, 320] as const) {
+    test(`at ${width}px the split words cover no text and nothing scrolls sideways`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await gotoSettled(page, ROUTE);
+      const { covered, wide, decoration } = await page.evaluate(() => {
+        const out: string[] = [];
+        const marks = [
+          ...document.querySelectorAll<HTMLElement>('.split-word'),
+        ];
+        for (const mark of marks) {
+          const band = mark.getBoundingClientRect();
+          const half = mark.closest('.spread-half')!;
+          for (const el of half.querySelectorAll('p, h2, li, span')) {
+            if (mark.contains(el) || el.contains(mark)) continue;
+            const box = el.getBoundingClientRect();
+            if (
+              box.width &&
+              box.left < band.right &&
+              band.left < box.right &&
+              box.top < band.bottom - 1 &&
+              band.top < box.bottom - 1
+            )
+              out.push((el.textContent ?? '').trim().slice(0, 30));
+          }
+        }
+        return {
+          covered: out,
+          wide:
+            document.documentElement.scrollWidth >
+            document.documentElement.clientWidth,
+          decoration: marks.every((m) => {
+            const style = getComputedStyle(m);
+            return (
+              m.getAttribute('aria-hidden') === 'true' &&
+              style.userSelect === 'none' &&
+              style.pointerEvents === 'none'
+            );
+          }),
+        };
+      });
+      expect(covered, 'a split word covers text').toEqual([]);
+      expect(wide, 'the page scrolls sideways').toBe(false);
+      expect(decoration, 'a split word is read, selected or pointed at').toBe(
+        true,
+      );
+    });
+  }
+
+  test('while the words cross, no text moves', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await gotoSettled(page, ROUTE);
+    const positions = () =>
+      page.evaluate(() =>
+        [...document.querySelectorAll('.spread-half :is(h2, p, li)')]
+          .map((el) => {
+            const box = el.getBoundingClientRect();
+            return `${Math.round(box.left)},${Math.round(box.top + scrollY)}`;
+          })
+          .join(' '),
+      );
+    const first = await positions();
+    for (const fraction of [0.25, 0.5, 0.75]) {
+      await page.evaluate(
+        (f) =>
+          window.scrollTo({
+            top: document.documentElement.scrollHeight * f,
+            behavior: 'instant',
+          }),
+        fraction,
+      );
+      expect(await positions(), 'text moved as the page scrolled').toBe(first);
+    }
+  });
+
+  test('the split words stand still under reduced motion and hide in forced colors', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await gotoSettled(page, ROUTE);
+    const names = await page
+      .locator('.split-word > span')
+      .evaluateAll((all) => all.map((s) => getComputedStyle(s).animationName));
+    expect(new Set(names), 'a split word moves under reduced motion').toEqual(
+      new Set(['none']),
+    );
+    await page.emulateMedia({ forcedColors: 'active' });
+    const shown = await page
+      .locator('.split-word')
+      .evaluateAll(
+        (all) =>
+          all.filter((m) => getComputedStyle(m).display !== 'none').length,
+      );
+    expect(shown, 'a split word shows in forced colors').toBe(0);
   });
 });

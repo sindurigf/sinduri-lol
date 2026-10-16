@@ -1,5 +1,6 @@
 import { test, expect, type Page } from './test';
 import { gotoSettled, sweepTimeout } from './settle';
+import { openFolds } from './folds';
 import { AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { goldRoutesFromBuild } from './routes';
 
@@ -110,6 +111,7 @@ test('a hovered gold link changes, reads, and keeps a visible underline', async 
 
   for (const route of routes) {
     await gotoSettled(page, route);
+    await openFolds(page);
     const links = page.locator(GOLD_LINKS);
     const count = await links.count();
 

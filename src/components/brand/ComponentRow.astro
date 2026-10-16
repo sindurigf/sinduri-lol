@@ -1,7 +1,8 @@
 ---
 /*
  * One /brand row: the component's name, what it is for, the rule that matters,
- * one live example and, when it has them, its other states behind a + toggle.
+ * one live example and its other states shown under it. h5: it sits under its
+ * section's h4 in a spread's fold.
  */
 interface Props {
   id: string;
@@ -15,9 +16,9 @@ const hasStates = Astro.slots.has('states');
 ---
 
 <li class="py-8" data-component={id}>
-  <h3 id={id} class="text-h3 text-text">
+  <h5 id={id} class="text-h3 text-text">
     {name}
-  </h3>
+  </h5>
   <p class="mt-2 mb-paragraph max-w-measure text-body text-text">
     Use it for {use}
   </p>
@@ -26,14 +27,8 @@ const hasStates = Astro.slots.has('states');
     <slot />
   </div>
   {hasStates && (
-    <details class="mt-6">
-      <summary class="post-contents-summary">
-        <span>States</span>
-        <span class="post-contents-marker" aria-hidden="true" />
-      </summary>
-      <div class="mt-6" data-example>
-        <slot name="states" />
-      </div>
-    </details>
+    <div class="mt-6" data-example>
+      <slot name="states" />
+    </div>
   )}
 </li>

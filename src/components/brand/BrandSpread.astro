@@ -1,0 +1,102 @@
+---
+/*
+ * One /brand spread: a group of sections drawn on the dark ground and the
+ * light one side by side, then everything in them under a fold.
+ *
+ * The dark half carries the h2, an h3 per section and the text; the light half
+ * repeats it as a hidden picture in divs, adding no heading or paragraph.
+ * Samples are inert in both halves,
+ * so no control is reached twice: the live examples are in the fold, drawn in
+ * the visitor's own mode.
+ */
+interface Item {
+  /* On the live half, so a bookmark to a section lands on its picture, outside the fold. */
+  id: string;
+  title: string;
+  rule: string;
+}
+
+interface Props {
+  id: string;
+  title: string;
+  /* Decoration across the seam: hidden from assistive technology. */
+  word: string;
+  lead: string;
+  items: Item[];
+  /* Every other spread's word crosses the other way. */
+  reverse?: boolean;
+}
+
+const { id, title, word, lead, items, reverse = false } = Astro.props;
+const samples = await Promise.all(
+  items.map((_, i) => Astro.slots.render(`sample-${i}`)),
+);
+---
+
+<section id={id} aria-labelledby={`${id}-heading`}>
+  <div class:list={['spread', reverse && 'spread-reverse']}>
+    {(['dark', 'light'] as const).map((mode) => {
+      const live = mode === 'dark';
+      return (
+        <div
+          class:list={['spread-half', `mode-${mode}`]}
+          inert={!live}
+          aria-hidden={live ? undefined : 'true'}
+        >
+          <div class="split-word" aria-hidden="true">
+            <span>{word}</span>
+          </div>
+          <div class="label text-subtle">{live ? 'Dark' : 'Light'}</div>
+          {live ? (
+            <>
+              <h2 id={`${id}-heading`} class="mt-2 text-h2 text-text">
+                {title}
+              </h2>
+              <p class="mt-4 max-w-measure text-body text-text">{lead}</p>
+            </>
+          ) : (
+            <>
+              <div class="mt-2 text-h2 font-black uppercase tracking-heading text-text">
+                {title}
+              </div>
+              <div class="mt-4 max-w-measure text-body text-text">{lead}</div>
+            </>
+          )}
+          <ul class="mt-head space-y-12">
+            {items.map((item, i) => (
+              <li id={live ? item.id : undefined}>
+                {live ? (
+                  <>
+                    <h3 class="text-h3 text-text">{item.title}</h3>
+                    <p class="mt-2 max-w-measure text-body text-subtle">
+                      {item.rule}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div class="text-h3 text-text">{item.title}</div>
+                    <div class="mt-2 max-w-measure text-body text-subtle">
+                      {item.rule}
+                    </div>
+                  </>
+                )}
+                <div class="mt-6 min-w-0" inert aria-hidden="true">
+                  <Fragment set:html={samples[i]} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    })}
+  </div>
+  <details class="mt-6">
+    <summary class="post-contents-summary">
+      <span>Everything in {title}</span>
+      <span class="post-contents-marker" aria-hidden="true" />
+    </summary>
+    <div class="mt-head space-y-section">
+      <slot />
+    </div>
+  </details>
+</section>

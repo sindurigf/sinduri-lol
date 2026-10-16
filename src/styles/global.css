@@ -268,6 +268,14 @@
    */
   --text-quote-mark: clamp(4rem, 12vw, 9rem);
   --text-quote-mark--line-height: 0.75;
+  /*
+   * /brand's split word across each spread's seam. Decoration, so no reflow
+   * floor; the narrow step keeps the longest word inside a 288px half.
+   */
+  --text-split-word: clamp(3.6rem, 13vw, 9rem);
+  --text-split-word--line-height: 1;
+  --text-split-word-wide: clamp(4rem, 9vw, 9rem);
+  --text-split-word-wide--line-height: 1;
   /* Blog post title, in its own case; "Communities" fits at 305px. */
   --text-post-title: 2rem;
   --text-post-title--line-height: 1.06;

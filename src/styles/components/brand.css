@@ -1,0 +1,103 @@
+@reference '../global.css';
+
+@layer components {
+  /*
+   * /brand's spreads: each section shown on the dark ground and the light one
+   * side by side (BrandSpread.astro). One edge round the pair; the seam is the
+   * change of ground itself.
+   */
+  .spread {
+    @apply grid grid-cols-1 edge border-border lg:grid-cols-2;
+  }
+
+  /* clip, not hidden: hidden makes a scroll container and freezes view() timelines. */
+  .spread-half {
+    @apply min-w-0 bg-background p-card-tight text-text sm:p-card;
+
+    overflow: clip;
+  }
+
+  /*
+   * Decoration: hidden from assistive technology, never selected or pointed
+   * at, and in its own band so it never covers text or a focus ring.
+   */
+  .split-word {
+    @apply relative mb-6 overflow-clip text-split-word font-black uppercase tracking-heading text-text select-none pointer-events-none;
+
+    /* One line of the word, so its band never grows into the text below. */
+    height: 1lh;
+  }
+
+  .split-word > span {
+    @apply absolute inset-x-0 top-0 text-center whitespace-nowrap;
+  }
+
+  /* From `lg` the word runs across both halves: each half shows its own side. */
+  @media (width >= 64rem) {
+    .split-word {
+      @apply text-split-word-wide;
+
+      overflow: visible;
+    }
+
+    .split-word > span {
+      right: auto;
+      width: calc(200% + 2 * var(--spacing-card));
+    }
+
+    .spread-half + .spread-half .split-word > span {
+      left: calc(-100% - 2 * var(--spacing-card));
+    }
+  }
+
+  /* The focus ring drawn at rest, so a still sample shows it (base.css :focus-visible). */
+  .focus-sample {
+    outline: var(--focus-width) solid var(--color-cyan);
+    outline-offset: calc(var(--focus-gap) + var(--lift, 0px));
+  }
+
+  /* Forced colors give both halves one ground, so the split reads as noise. */
+  @media (forced-colors: active) {
+    .split-word {
+      display: none;
+    }
+  }
+
+  /*
+   * Scroll-linked, decoration only: text, columns and controls never move.
+   * Static where scroll timelines are missing, under reduced motion and below
+   * `lg`. Spreads alternate direction.
+   */
+  @media (width >= 64rem) and (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .split-word > span {
+        animation: split-word-cross linear both;
+        animation-timeline: view();
+      }
+
+      .spread-reverse .split-word > span {
+        animation-name: split-word-cross-back;
+      }
+    }
+  }
+
+  @keyframes split-word-cross {
+    from {
+      translate: 22% 0;
+    }
+
+    to {
+      translate: -22% 0;
+    }
+  }
+
+  @keyframes split-word-cross-back {
+    from {
+      translate: -22% 0;
+    }
+
+    to {
+      translate: 22% 0;
+    }
+  }
+}

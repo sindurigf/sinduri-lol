@@ -3,6 +3,7 @@ import { expect, test, type Page } from './test';
 import { FUNCTIONAL_ROUTES, firstUse, mainText } from './first-use';
 import { builtHtml, builtPages } from './routes';
 import { gotoSettled } from './settle';
+import { openFolds } from './folds';
 import { NODE } from './tags';
 
 /**
@@ -129,6 +130,7 @@ test.describe('abbreviations are expanded at first use (SC 3.1.4)', () => {
       page,
     }) => {
       await gotoSettled(page, route);
+      await openFolds(page);
 
       for (const { abbreviation, expansion } of FIRST_USES.filter(
         (entry) => entry.route === route,
@@ -156,6 +158,7 @@ test.describe('abbreviations are expanded at first use (SC 3.1.4)', () => {
       const page = await context.newPage();
       /* Not gotoSettled: it waits for the menu script, which cannot run here. */
       await page.goto(route);
+      await openFolds(page);
 
       for (const { abbreviation, expansion } of FIRST_USES.filter(
         (entry) => entry.route === route,

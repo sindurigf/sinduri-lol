@@ -23,8 +23,8 @@ interface Props {
   hiddenPrefix?: string;
   /* Plain tier only: stars across the slab, cleared behind every line of text. */
   starfield?: boolean;
-  /* 3 only for /brand's examples, so the page keeps one h1. */
-  headingLevel?: 1 | 3;
+  /* 6 only for /brand's examples, under their h5 row, so the page keeps one h1. */
+  headingLevel?: 1 | 6;
 }
 
 const {
@@ -38,7 +38,7 @@ const {
   starfield = false,
   headingLevel = 1,
 } = Astro.props;
-const Title = `h${headingLevel}` as 'h1' | 'h3';
+const Title = `h${headingLevel}` as 'h1' | 'h6';
 
 const reading = measure === 'reading' && !image;
 const gold = slab !== 'none';

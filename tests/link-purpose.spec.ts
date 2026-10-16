@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from './test';
 import { POSTS, ROUTES } from './routes';
 import { gotoSettled } from './settle';
+import { openFolds } from './folds';
 
 /**
  * SC 2.4.9 Link Purpose (Link Only): one accessible name, one destination, per
@@ -164,11 +165,6 @@ const COMPLETED_NAMES: readonly {
     links: 'nav[aria-label="On this page"] a',
     completedBy: /\bsection$/i,
   },
-  {
-    route: '/brand',
-    links: 'nav[aria-label="On this page"] a',
-    completedBy: /\bsection$/i,
-  },
 ];
 
 /** The link's text without its visually hidden part, in source case. */
@@ -183,6 +179,7 @@ test.describe('hidden text completes short link names', () => {
   for (const { route, links, completedBy } of COMPLETED_NAMES) {
     test(`${route} names ${links} in full`, async ({ page }) => {
       await gotoSettled(page, route);
+      await openFolds(page);
       const found = page.locator(links);
       expect(await found.count(), `${route} has no ${links}`).toBeGreaterThan(
         0,

@@ -1,5 +1,6 @@
 import { expect, test, type Locator } from './test';
 import { gotoSettled } from './settle';
+import { openFolds } from './folds';
 import { DESKTOP_VIEWPORT, REFLOW_VIEWPORT } from './wcag';
 
 /**
@@ -25,6 +26,7 @@ test.describe('the photo strip where it overflows', () => {
     page,
   }) => {
     await gotoSettled(page, ROUTE);
+    await openFolds(page);
     const strip = page.locator('main .photo-strip').first();
     const right = page.getByRole('button', { name: 'Scroll photos right' });
     expect(
@@ -59,6 +61,7 @@ test.describe('the photo strip where it overflows', () => {
 
   test('the strip is a tab stop named for scrolling', async ({ page }) => {
     await gotoSettled(page, ROUTE);
+    await openFolds(page);
     const strip = page.locator('main .photo-strip').first();
     await expect(strip).toHaveAttribute('tabindex', '0');
     await expect(strip).toHaveAccessibleName(SCROLLS);
@@ -72,6 +75,7 @@ test.describe('the photo strip where it fits', () => {
     page,
   }) => {
     await gotoSettled(page, ROUTE);
+    await openFolds(page);
     const strip = page.locator('main .photo-strip').first();
     expect(
       await overflow(strip),

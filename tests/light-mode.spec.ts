@@ -3,6 +3,7 @@ import { timedScan } from './axe';
 import { expectIncompleteDecided } from './incomplete';
 import { AAA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { gotoSettled } from './settle';
+import { openFolds } from './folds';
 import { ROUTES, SAMPLED_ROUTES } from './routes';
 import { AXE_TIMEOUT_MS, FOCUSABLE_SELECTOR, REFLOW_VIEWPORT } from './wcag';
 import { THEME_STORAGE_KEY } from '../src/lib/theme';
@@ -73,6 +74,7 @@ test.describe('light mode keeps every control edge visible', () => {
   for (const route of SAMPLED_ROUTES) {
     test(route, async ({ page }) => {
       await gotoSettled(page, route);
+      await openFolds(page);
       const { shaped, faint } = (await page.evaluate(`(() => {
         ${PAGE_HELPERS}
         let shaped = 0;
