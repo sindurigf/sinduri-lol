@@ -80,7 +80,7 @@ Dark is the default. Colors and rules:
   variants.
 - Only `<main>` changes; the header, no-JS nav and footer stay dark, except
   the header's bottom edge, which turns `text`.
-- `bunny` and `tile-edge` hold the mode-independent logo-tile colors.
+- `bunny` and `fill-edge` hold the mode-independent logo-tile colors.
 - An inline script in `BaseLayout.astro`'s `<head>` sets `data-theme` from the
   saved choice or `prefers-color-scheme` before the body parses, and adds the
   `js` class the slideshow's pre-hide keys on. After `DECK_READY_TIMEOUT_MS` it
@@ -347,10 +347,10 @@ in `wrangler.jsonc`).
 | `artwork/badge-white.png`      | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge                   |
 | `public/images/og-default.png` | Composite | n/a                  | `BaseLayout.astro`, every page without a cover   |
 
-| Artwork             | on `#131313` | on `#1A1A1A` | on `#FFFFFF` | on `#FFC000` |
+| Artwork             | on `#0B0B0B` | on `#1A1A1A` | on `#FFFFFF` | on `#FFC000` |
 | ------------------- | ------------ | ------------ | ------------ | ------------ |
-| `-dark`, `#111111`  | 1.02         | 1.08         | **18.88**    | **11.50**    |
-| `-white`, `#FFFFFF` | **18.58**    | **17.40**    | 1.00         | 1.64         |
+| `-dark`, `#111111`  | 1.04         | 1.08         | **18.88**    | **11.50**    |
+| `-white`, `#FFFFFF` | **19.68**    | **17.40**    | 1.00         | 1.64         |
 
 - `og-default.png`: 1200x630. Gold panel with the name and the tagline in two
   lines, `#131313` strip with the logo tile, Lepus and Ridet stickers on the
@@ -414,7 +414,7 @@ in `wrangler.jsonc`).
 ### The favicon set
 
 - Tab icons (`favicon.*`, `artwork/favicon-*`): the header logo tile, with its
-  `tile-edge` ring, 3deg tilt and `bunny` shadow, on a transparent ground.
+  `fill-edge` ring, 3deg tilt and `bunny` shadow, on a transparent ground.
 - App icons (`apple-touch-icon`, `android-chrome-*`, `maskable-icon`): the mark
   on a full-bleed `#FFC000` square.
 
