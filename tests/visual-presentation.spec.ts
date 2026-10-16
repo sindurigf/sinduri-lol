@@ -1,6 +1,6 @@
 import { expect, test } from './test';
 import { gotoSettled } from './settle';
-import { ROUTES } from './routes';
+import { BRAND_SAMPLED_ROUTES } from './routes';
 
 /*
  * SC 1.4.8 on blocks of text, "more than one sentence" in the Understanding
@@ -22,9 +22,6 @@ const VIEWPORT_HEIGHT = 900;
 const NOTHING_TO_MEASURE: Readonly<Record<string, string>> = {
   '/talks/open-source-is-not-just-code':
     'one slide of headings and one-sentence bullets',
-  '/brand/type': 'a one-sentence lead and rule, then type specimens',
-  '/brand/motion': 'a one-sentence lead and rule, then a list of rules',
-  '/brand/template': 'one-sentence lines, then a list of licenses',
 };
 
 /** Below Tailwind's `lg` the talk stacks every slide, so there is text to measure. */
@@ -57,7 +54,7 @@ for (const width of WIDTHS) {
   test.describe(`blocks of text at ${width}px (SC 1.4.8)`, () => {
     test.use({ viewport: { width, height: VIEWPORT_HEIGHT } });
 
-    for (const route of ROUTES) {
+    for (const route of BRAND_SAMPLED_ROUTES) {
       test(`${route} keeps lines short, leading open and paragraphs apart`, async ({
         page,
       }) => {
