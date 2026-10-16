@@ -7,7 +7,7 @@ Results: filled blanks stay in this file. A passed check goes in
 ACCESSIBILITY.md [§6 Manual](../ACCESSIBILITY.md#manual); a failed or
 unreached check goes in its [§7 Known gaps](../ACCESSIBILITY.md#7-known-gaps).
 
-### Status
+## Status
 
 An empty box or blank is an untested check. ACCESSIBILITY.md §6 Manual records
 a pass for the §9 mobile menu button, footer profile tiles and mobile menu
