@@ -473,7 +473,7 @@ const SHADOW_REACH = `
   };
 `;
 
-/* SC 1.4.11: cyan over a pink shadow is 2.29, so no ring may start inside the shadows of its own control. */
+/* SC 1.4.11: cyan over a pink shadow is 2.29, so no ring outside its box may start inside the shadows of its own control. */
 for (const colorScheme of SCHEMES) {
   test.describe(`ring clearance, ${colorScheme}`, () => {
     test.use({ colorScheme, viewport: { width: 1280, height: 900 } });
@@ -503,15 +503,19 @@ for (const colorScheme of SCHEMES) {
                 return {
                   name: (el.getAttribute('aria-label') || el.textContent || el.tagName).trim().slice(0, 40),
                   offset: parseFloat(s.outlineOffset) || 0,
+                  width: parseFloat(s.outlineWidth) || 0,
                   shadow: shadowReach(el),
                 };`,
               ) as (el: Element) => {
                 name: string;
                 offset: number;
+                width: number;
                 shadow: number;
               },
             );
-            if (found.shadow > 0 && found.offset < found.shadow)
+            // A ring drawn wholly inside its box, as on the header's bricks, never meets a shadow outside it.
+            const inside = found.offset + found.width <= 0;
+            if (!inside && found.shadow > 0 && found.offset < found.shadow)
               short.push(
                 `${found.name}${hover ? ' (hovered)' : ''}: ring offset ${found.offset}px, shadow reaches ${found.shadow.toFixed(1)}px past the box`,
               );
