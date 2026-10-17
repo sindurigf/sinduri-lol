@@ -3,7 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Abbr from '../components/Abbr.astro';
 import PageHero from '../components/PageHero.astro';
 import { accessibilityFacts } from '../lib/accessibility-facts';
-import { CONTACT_EMAIL, CONTACT_MAILTO } from '../lib/contact';
 import { formatPostDate } from '../lib/post-date';
 
 /* A summary of ACCESSIBILITY.md; the volatile facts are derived from it at build time. */
@@ -13,6 +12,7 @@ const {
   lastReviewed,
   responseTime,
   publicReporting,
+  privateReporting,
 } = accessibilityFacts;
 
 const W3C_STATEMENTS = 'https://www.w3.org/WAI/planning/statements/';
@@ -303,8 +303,8 @@ const FULL_RECORD =
             mode, at 390 and 1280px, every drawn edge reaches 3:1 against the
             ground it sits on, unless the element's own opaque fill already
             does. A gold fill's edge also reaches 3:1 against the fill. Cards
-            are gold or light blocks whose fill reaches 3:1 against the page,
-            with a 4px ink edge that forced colors keep. Every{' '}
+            are gold or light blocks whose fill or 4px ink edge reaches 3:1
+            against the page; forced colors keep the edge. Every{' '}
             <dfn>focus ring</dfn>, the outline on the control you are on,
             reaches 3:1 against the ground it paints over, on every page with
             listings sampled.
@@ -452,7 +452,8 @@ const FULL_RECORD =
           <p>
             The tab walk proves every control is reached and visible. Pressing
             each control with Enter or Space is tested only for the menu, skip
-            link, slides and cat buttons.
+            link, slides, cat buttons, theme switch, hero pause control, photo
+            viewer and contact form.
           </p>
           <p>
             Tests check that you can reach every control by keyboard, but not
@@ -542,8 +543,8 @@ const FULL_RECORD =
 
           <p>
             If any content here does not work for you, email{' '}
-            <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a> and I can send it
-            another way, for example as plain text.
+            <a href={`mailto:${privateReporting}`}>{privateReporting}</a> and I
+            can send it another way, for example as plain text.
           </p>
 
           <h2>How It Is Tested</h2>
@@ -656,8 +657,8 @@ const FULL_RECORD =
 
         <ul class="actions mt-head">
           <li>
-            <a href={CONTACT_MAILTO} class="btn-secondary">
-              Email {CONTACT_EMAIL}
+            <a href={`mailto:${privateReporting}`} class="btn-secondary">
+              Email {privateReporting}
             </a>
           </li>
           <li>
