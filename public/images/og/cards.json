@@ -79,6 +79,96 @@
     "photo": null,
     "alt": "Brand, sinduri.lol, beside the sinduri.lol bunny logo."
   },
+  "/brand/accessibility": {
+    "title": "Accessibility Target · Brand",
+    "photo": null,
+    "alt": "Accessibility Target · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/borders-and-shadows": {
+    "title": "Borders and Shadows · Brand",
+    "photo": null,
+    "alt": "Borders and Shadows · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/buttons-and-links": {
+    "title": "Buttons and Links · Brand",
+    "photo": null,
+    "alt": "Buttons and Links · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/cards": {
+    "title": "Cards · Brand",
+    "photo": null,
+    "alt": "Cards · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/chips-and-labels": {
+    "title": "Chips and Labels · Brand",
+    "photo": null,
+    "alt": "Chips and Labels · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/color": {
+    "title": "Color · Brand",
+    "photo": null,
+    "alt": "Color · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/contrast": {
+    "title": "Contrast · Brand",
+    "photo": null,
+    "alt": "Contrast · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/controls": {
+    "title": "Controls · Brand",
+    "photo": null,
+    "alt": "Controls · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/forms": {
+    "title": "Forms · Brand",
+    "photo": null,
+    "alt": "Forms · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/grounds": {
+    "title": "Grounds · Brand",
+    "photo": null,
+    "alt": "Grounds · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/heroes": {
+    "title": "Heroes · Brand",
+    "photo": null,
+    "alt": "Heroes · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/motion": {
+    "title": "Motion · Brand",
+    "photo": null,
+    "alt": "Motion · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/navigation": {
+    "title": "Navigation · Brand",
+    "photo": null,
+    "alt": "Navigation · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/photos": {
+    "title": "Photos · Brand",
+    "photo": null,
+    "alt": "Photos · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/spacing": {
+    "title": "Spacing · Brand",
+    "photo": null,
+    "alt": "Spacing · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/template": {
+    "title": "The Template · Brand",
+    "photo": null,
+    "alt": "The Template · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/text": {
+    "title": "Text · Brand",
+    "photo": null,
+    "alt": "Text · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/type": {
+    "title": "Type · Brand",
+    "photo": null,
+    "alt": "Type · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
   "/career": {
     "title": "Career",
     "photo": "src/assets/photos/sinduri-studio.jpg",

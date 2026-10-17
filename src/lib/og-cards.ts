@@ -16,6 +16,8 @@ export const SITE_CARD_ROUTES: readonly string[] = ['/'];
  */
 export const OG_PHOTO_CHOICES: Readonly<Record<string, string | null>> = {
   '/brand': null,
+  /* Its sample photo is a specimen, not the page's subject; /brand keeps the logo. */
+  '/brand/photos': null,
   '/career': 'src/assets/photos/sinduri-studio.jpg',
 };
 
