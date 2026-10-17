@@ -60,7 +60,7 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run check:links`         | Relative Markdown links and `#heading` anchors resolve; no link names a gitignored path; no network                                       |
 | `npm run check:classes`       | Every class in the built HTML has a CSS rule                                                                                              |
 | `npm run check:untransformed` | No built file is byte-identical to a source image                                                                                         |
-| `npm run check:exif`          | No EXIF or XMP metadata in images under `src/assets` and `public`                                                                         |
+| `npm run check:exif`          | No EXIF, XMP or IPTC in JPEG, PNG or WebP under `src/assets` and `public`; AVIF is not read                                               |
 | `npm run test:a11y`           | Playwright suite in Chromium and Firefox; CI adds WebKit                                                                                  |
 | `npm run test:webkit`         | The same suite in WebKit, in Playwright's Docker image                                                                                    |
 | `npm run test:a11y:ui`        | The same suite in Playwright's UI mode                                                                                                    |
