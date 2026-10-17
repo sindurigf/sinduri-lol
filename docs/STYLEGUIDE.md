@@ -24,7 +24,9 @@ blur, uppercase headings, tilted marks.
 
 ### The gold register
 
-- `cyan` is what you are touching: hover and focus, never at rest.
+- `cyan` is what you are touching: hover and focus, never at rest. Inside a
+  block that job goes to `gold-link` (11.38 on gold, 14.49 on light), new with
+  blocks: cyan is 1.01 on gold.
 - `pink` is depth and error: hard shadows, the invalid edge.
 - `border` is boundary. `text` is words.
 - Gold is the single accent, held by a register rather than one job. A review
