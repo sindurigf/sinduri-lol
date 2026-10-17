@@ -648,8 +648,8 @@ onBeforeUnmount(() => {
             {{ open.name }}
           </h2>
         </div>
-        <p class="mt-8 text-label text-text">{{ open.role }}</p>
-        <p class="mt-4 text-label text-subtle">
+        <p class="mt-8 text-body text-text">{{ open.role }}</p>
+        <p class="mt-6 text-body text-subtle">
           Thank you for the inspiration,
           <a :href="inspiration.href">{{ inspiration.name }}</a
           >.

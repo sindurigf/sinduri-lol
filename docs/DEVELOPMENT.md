@@ -9,8 +9,8 @@
 - No Cloudflare account or secrets for `dev`, `build`, `check` or any test
   suite. Only `check:live`'s D1 count needs `npx wrangler login` or
   `CLOUDFLARE_API_TOKEN` with `CLOUDFLARE_ACCOUNT_ID`.
-- Python 3 with pikepdf for `publish:cv` and `publish:talk`, plus
-  poppler-utils for `publish:cv`: `apt install python3-pikepdf poppler-utils`.
+- Python 3 with pikepdf for `publish:cv` and `publish:talk`:
+  `apt install python3-pikepdf`.
 
 ## Setup
 
@@ -70,7 +70,7 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run check:umami`         | The vendored Umami tracker against the one Umami serves                                                                           |
 | `npm run og`                  | After a build, redraws `public/images/og-default.png` and every page's card in `public/images/og/`                                |
 | `npm run check:pdf`           | Every PDF in `public/` against PDF/UA-1, veraPDF in Docker                                                                        |
-| `npm run publish:cv`          | Scrub, retag and check a Canva export of the CV, then publish it                                                                  |
+| `npm run publish:cv`          | Print `cv/cv.html` to the tagged CV PDF in `public/`                                                                              |
 | `npm run publish:talk`        | Print a talk's slideshow to its tagged PDF in `public/talks/`                                                                     |
 
 ### WebKit
@@ -245,17 +245,18 @@ npm run check:pdf -- public/talks/<deck>.pdf
 ```
 
 - Prints the built slideshow to `public/talks/<deck>.pdf`, one slide a page,
-  and tags it with `scripts/tag-talk-pdf.py`. Refuses a stale build.
-- `tag-talk-pdf.py` fixes what veraPDF fails in Chromium's tagged print:
+  and tags it with `scripts/tag-pdf.py`. Refuses a stale build.
+- `tag-pdf.py` fixes what veraPDF fails in Chromium's tagged print, for the
+  talk and the CV:
 
-  | PDF/UA-1 rule      | Fix                                                                                                 |
-  | ------------------ | --------------------------------------------------------------------------------------------------- |
-  | 7.1-3              | Untagged paths and text become `/Artifact`; untagged text must equal the page's `aria-hidden` count |
-  | 7.1-5              | Role map `Strong` to `Span`                                                                         |
-  | 7.2-20             | `LI` content beside `Lbl` moves into an `LBody`                                                     |
-  | 7.18.1-2, 7.18.5-2 | Link annotations get `/Contents` from the page's link text                                          |
-  | 7.1-8              | XMP title, language and PDF/UA identifier                                                           |
-  | Not a rule         | Bookmarks are retitled from the page: Chromium drops spaces at line breaks                          |
+  | PDF/UA-1 rule      | Fix                                                                                                         |
+  | ------------------ | ----------------------------------------------------------------------------------------------------------- |
+  | 7.1-3              | Untagged paths, images and text become `/Artifact`; untagged text must equal the page's `aria-hidden` count |
+  | 7.1-5              | Role map `Strong` to `Span`                                                                                 |
+  | 7.2-20             | `LI` content beside `Lbl` moves into an `LBody`                                                             |
+  | 7.18.1-2, 7.18.5-2 | Link annotations get `/Contents` from the page's link text                                                  |
+  | 7.1-8              | XMP title, language and PDF/UA identifier                                                                   |
+  | Not a rule         | Bookmarks are retitled from the page: Chromium drops spaces at line breaks                                  |
 
 - Update the size and page count wherever the PDF is linked;
   `tests/slides.spec.ts` fails until they match.
@@ -279,31 +280,28 @@ npm run dev
 
 ## Publishing the CV
 
-The CV is designed in Canva. Every export needs its metadata scrubbed, its
-language fixed and its tags repaired:
+The CV source is `cv/cv.html`, styled by `cv/cv.css`, with `cv/portrait.jpg`.
+Edit the text there, then:
 
 ```sh
-npm run publish:cv -- ~/Downloads/export.pdf
+npm run publish:cv
+npm run check:pdf -- public/sinduri-guntupalli-cv.pdf
 ```
 
-- Draws every Canva form with tagged text in the page stream, so no text is
-  tagged inside an artifact and Firefox's viewer keeps the structure.
-- Untags the photo, which stays drawn as an artifact
-  ([decorative](../ARCHITECTURE.md#content-notes)), and refuses anything
-  tagged inside an artifact.
-- Makes invisible Figures (`/Alt ()`, which veraPDF fails) artifacts.
-- Joins the H1s into one, keeps H2 and turns H3 to H6 into P: only H1 and H2
-  are stable across exports.
-- Removes identifying metadata and the German language tag.
-- Refuses an export that shows a phone number, before writing anything.
-- Writes `public/sinduri-guntupalli-cv.pdf` only if the result renders like
-  the export (anti-aliasing aside), extracts the same text, has one H1 and the
-  six expected H2s drawing their own labels, and passes PDF/UA-1
-  ([Published PDFs](#published-pdfs)).
-  Otherwise it prints why and leaves `public/` alone.
-- A section added, removed or renamed: update `SECTIONS` at the top of
-  `scripts/publish-cv.py`.
-- Unmeasured shapes stop the run: a structure type, font or form layout that
-  no measured export had is refused, and the message says what.
-- Read the result in a PDF reader before committing: the checks cover
-  structure, not readability.
+- Prints one A4 page with Chromium and tags it with `scripts/tag-pdf.py`
+  ([what it fixes](#publishing-the-pdf)); no build needed.
+- Refuses a CV taller than one page, and a result without one H1, six H2s and
+  English `/Lang`, or with a tagged image. `public/` is left alone.
+- Removes the printing application from the metadata; keeps the title from
+  `<title>`.
+- Stores a SHA-256 of `cv/` as `/CvSHA256`; `tests/cv.spec.ts` fails when `cv/`
+  changes and the PDF is not reprinted.
+- Headings are tagged at their HTML level: name H1, sections H2, jobs and
+  courses H3.
+- Prints with static Lexend 300 to 600 from `@fontsource/lexend`, which has no
+  italic: dates are a slanted Regular.
+- A section added or removed: update `SECTIONS` in `scripts/publish-cv.mjs` and
+  the H2 count in `tests/cv.spec.ts`.
+- Update the size on `/career` (`tests/cv.spec.ts` checks it), and read the
+  result in a PDF reader before committing: the checks cover structure, not
+  readability.

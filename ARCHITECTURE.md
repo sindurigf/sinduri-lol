@@ -262,7 +262,7 @@ presenter view and a PDF. Authoring rules:
   the Cloudflare dev runtime). `tests/talk.spec.ts` checks no note is in the
   build.
 - **PDF.** `scripts/publish-talk.mjs` prints one slide per 1280x720 page,
-  then `scripts/tag-talk-pdf.py` fixes tags for PDF/UA-1. It prints with static
+  then `scripts/tag-pdf.py` fixes tags for PDF/UA-1. It prints with static
   Lexend 400/900 from `@fontsource/lexend` (dev only): the variable font
   becomes Type 3 and stalls veraPDF past CI's timeout. The PDF stores a
   SHA-256 of the deck; `tests/talk-pdf.spec.ts` fails on drift.
@@ -747,16 +747,15 @@ evidence.
 - `/career` draws on the CV and `five-years-in-drupal.md` (`career.astro` marks
   which lines). /career is the full version and the CV PDF the shorter one, so
   wording may differ; dates, roles and employers must agree.
-- **CV PDF** (`public/sinduri-guntupalli-cv.pdf`): always publish through
-  `npm run publish:cv`
-  ([docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#publishing-the-cv)). It uses
-  pikepdf, not Ghostscript, to keep the structure tree. `tests/cv.spec.ts`
-  asserts the published file.
+- **CV PDF** (`public/sinduri-guntupalli-cv.pdf`): printed from `cv/cv.html`
+  by `npm run publish:cv`
+  ([docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#publishing-the-cv)), the same
+  Chromium and pikepdf path as the talk PDF. `cv/` is outside `src/`, so the
+  site never serves the HTML. `tests/cv.spec.ts` asserts the published file.
 - The CV portrait is decorative, with no alt text: the name H1 beside it
   carries the same information.
 - The published CV shows the contact email, "Vienna, Austria" and the GitHub
   profiles on purpose. It has no phone number, street address or date of
-  birth, and its metadata only a title and dates. Remove anything else in
-  Canva before export: drawing over text leaves it in the text layer.
+  birth, and its metadata only a title, dates and the `cv/` digest.
 - **Post artwork.** A `feature` `BlogCard` without a `cover` shows
   `PlaceholderBox`. `/career` has no photo placement.
