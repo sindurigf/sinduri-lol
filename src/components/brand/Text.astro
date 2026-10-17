@@ -6,10 +6,9 @@ import ComponentRow from './ComponentRow.astro';
 const CODE_LABEL = 'Code, scrolls sideways';
 ---
 
-<ul class="divide-y-4 divide-border">
+<ul class="brand-parts">
   <ComponentRow
     id="prose"
-    name="Prose"
     use="running text: posts and reading pages."
     rule="Lines of about 70 characters; links underlined; lists keep their markers."
   >
@@ -28,7 +27,6 @@ const CODE_LABEL = 'Code, scrolls sideways';
 
   <ComponentRow
     id="blockquote"
-    name="Quote"
     use="words from someone else, set apart from the text."
     rule="A thick edge on its start side; the source sits below it."
   >
@@ -52,7 +50,6 @@ const CODE_LABEL = 'Code, scrolls sideways';
 
   <ComponentRow
     id="code-block"
-    name="Code Block"
     use="code a reader may copy."
     rule="Scrolls sideways, never wraps, and takes keyboard focus while it overflows, so a keyboard can scroll it."
   >
@@ -68,7 +65,6 @@ const CODE_LABEL = 'Code, scrolls sideways';
 
   <ComponentRow
     id="standfirst"
-    name="Standfirst and Lead"
     use="the one or two lines that open a page or a section."
     rule="Larger than body text at the reading weight; one per page or section."
   >
@@ -82,7 +78,6 @@ const CODE_LABEL = 'Code, scrolls sideways';
 
   <ComponentRow
     id="bullet-list"
-    name="Bullet List"
     use="short points outside prose."
     rule="Square pink markers; one point per line."
   >
