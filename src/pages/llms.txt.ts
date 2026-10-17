@@ -70,7 +70,9 @@ const ROUTE_NOTES: { path: string; label: string; note: string }[] = [
   {
     path: PRIVACY_PATH,
     label: 'Privacy',
-    note: 'What the site collects: no cookies, cookie-free visit counts.',
+    note:
+      'What the site collects: cookie-free visit counts and contact form ' +
+      'messages, kept for a set time; no cookies.',
   },
   {
     path: CREDITS_PATH,
