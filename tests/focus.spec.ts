@@ -473,7 +473,7 @@ const SHADOW_REACH = `
   };
 `;
 
-/* SC 1.4.11: cyan over a pink shadow is 2.29, so no ring may start inside the shadows of its own control. */
+/* SC 1.4.11: cyan over a pink shadow is 2.29, so no ring outside its box may start inside the shadows of its own control. */
 for (const colorScheme of SCHEMES) {
   test.describe(`ring clearance, ${colorScheme}`, () => {
     test.use({ colorScheme, viewport: { width: 1280, height: 900 } });
