@@ -68,21 +68,20 @@ Record rejected findings beside the code so they are not raised again;
   /brand, `llms.txt` and `robots.txt`.
 - Port every fix, upgrade, test, tooling or CI change to
   [astro-cat-portfolio](https://github.com/sindurigf/astro-cat-portfolio) as a
-  pull request there, or say in one line under "Template port" why it does
-  not apply.
+  pull request there, or say on the "Template port:" line why it does not
+  apply.
 - Do not rename the `Required checks` job
   ([why](docs/DEPLOYMENT.md#repository-settings)).
 
 ### PR descriptions
 
-- Bullets. One fact per line. File or function name first.
-- What changed and why, then how it was tested (commands and totals).
-- No narrative, no restating the diff, no "Not applicable" lines. Leave out
-  sections that do not apply.
-- Aim for under 200 words. A long list, such as a word list, goes in one fenced
-  block.
-- No Claude artifact links and no "Written for:" lines, in pull requests,
-  commits or docs. The pull request is the record.
+- Short bullets of what the PR does, about 100 words. File or function name
+  first, one fact per line.
+- One "Tested:" line: the commands and totals.
+- Clear and technical: no narrative, marketing words or restating the diff.
+  Leave out sections that do not apply.
+- No code blocks, no Claude links and no "Written for:" lines, in pull
+  requests, commits or docs. The pull request is the record.
 
 ## Commits
 
@@ -104,6 +103,9 @@ covers attribution once. `scripts/check-commits.sh` enforces it in CI;
 - Named constants, no magic numbers.
 - Validate external input at the boundary; never swallow errors.
 - Reuse existing patterns and dependencies. Ask before installing a package.
+- UI: native elements with a visible focus indicator, targets outside a
+  sentence at least 44x44 CSS px (SC 2.5.5), colors only as tokens from
+  `src/styles/global.css`.
 - Vue only for components with real state (`HeroField.vue`). Small
   scripts are plain modules, e.g. `src/scripts/mobile-menu.ts`.
 
