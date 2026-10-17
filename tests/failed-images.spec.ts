@@ -23,7 +23,7 @@ const FRAME_ROUTES = [
   '/',
   '/about',
   '/blog',
-  '/brand',
+  '/brand/photos',
   ...new Set([
     ...PHOTO_POST_ROUTES,
     ...POSTS.filter((post) => post.hasCover).map((post) => post.route),

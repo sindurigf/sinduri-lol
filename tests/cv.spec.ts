@@ -3,11 +3,14 @@ import { join } from 'node:path';
 import { expect, test } from './test';
 import { DIST_DIR } from './routes';
 import { NODE } from './tags';
+import { CV_HTML, cvDigest } from '../scripts/cv-source.mjs';
+import { ratio } from '../scripts/contrast-table.mjs';
+import { AAA_TEXT } from './contrast';
 
 /**
- * The CV PDF. `npm run publish:cv` strips Canva's identifying metadata and
- * retags the structure; an unscrubbed export looks identical on the page, so
- * the assertions are on the bytes. `/Title` must stay (PDF/UA, SC 2.4.2).
+ * The CV PDF, printed from cv/cv.html by `npm run publish:cv`. Leaked metadata
+ * and lost tags do not show on the page, so the assertions are on the bytes.
+ * `/Title` must stay (PDF/UA, SC 2.4.2).
  */
 const CV_PATH = 'sinduri-guntupalli-cv.pdf';
 const BYTES_PER_KB = 1024;
@@ -94,11 +97,11 @@ test.describe('the CV file', () => {
         ['/Author', 'the author name of whoever the template belonged to'],
         ['/Producer', 'the producing application'],
         ['/Creator', 'the creating application'],
-        ['/Keywords', 'the Canva template ids'],
+        ['/Keywords', 'keywords nobody chose'],
         ['dc:creator', 'the XMP copy of the author name'],
         ['xmp:CreatorTool', 'the XMP copy of the creating application'],
         ['pdf:Producer', 'the XMP copy of the producing application'],
-        ['pdf:Keywords', 'the XMP copy of the template ids'],
+        ['pdf:Keywords', 'the XMP copy of the keywords'],
       ];
 
       for (const [field, what] of forbidden) {
@@ -138,24 +141,42 @@ test.describe('the CV file', () => {
     ).toBe(true);
   });
 
-  // Counted in the bytes because publish:cv saves without object streams,
-  // which leaves every structure element readable as text.
-  test(
-    'carries the tags publish:cv leaves, not the ones Canva exports',
-    NODE,
-    () => {
-      const tags = (level: string) =>
-        cvBytes().match(new RegExp(`/S\\s*/${level}\\b`, 'g'))?.length ?? 0;
-      const raw = `${CV_PATH} carries Canva's own tags; run npm run publish:cv`;
+  test(`is printed from ${CV_HTML} as it stands`, NODE, () => {
+    const stored = /\/CvSHA256\s*\(([0-9a-f]{64})\)/.exec(cvBytes())?.[1];
+    expect(
+      stored,
+      `${CV_PATH} carries no /CvSHA256, so npm run publish:cv did not make it.`,
+    ).toBeDefined();
+    expect(
+      stored,
+      `cv/ changed since ${CV_PATH} was printed; run npm run publish:cv.`,
+    ).toBe(cvDigest());
+  });
 
-      expect(tags('H1'), `${raw}: the name should be one H1.`).toBe(1);
-      expect(tags('H2'), `${raw}: the six section titles are the H2s.`).toBe(6);
+  // Counted in the bytes because pikepdf saves without object streams, which
+  // leaves every structure element readable as text.
+  test('tags each heading of the source at its level', NODE, () => {
+    const html = readFileSync(CV_HTML, 'utf8');
+    const levels = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+
+    for (const level of levels) {
+      const inPdf =
+        cvBytes().match(new RegExp(`/S\\s*/${level}\\b`, 'g'))?.length ?? 0;
+      const inHtml = html.match(new RegExp(`<${level}\\b`, 'gi'))?.length ?? 0;
+
       expect(
-        tags('H[3-6]'),
-        `${raw}: Canva's H3 to H6 change between exports, so they become P.`,
-      ).toBe(0);
-    },
-  );
+        inPdf,
+        `${CV_PATH} has ${inPdf} ${level}s where ${CV_HTML} has ${inHtml}.`,
+      ).toBe(inHtml);
+    }
+  });
+
+  test('keeps the name as the one H1 and six sections as H2s', NODE, () => {
+    const html = readFileSync(CV_HTML, 'utf8');
+
+    expect(html.match(/<h1\b/g)?.length, 'the name is the one H1').toBe(1);
+    expect(html.match(/<h2\b/g)?.length, 'six section titles').toBe(6);
+  });
 
   test(
     'draws the portrait as decoration, since the name H1 says who it shows',
@@ -165,6 +186,37 @@ test.describe('the CV file', () => {
         taggedImages(cvBytes()),
         `${CV_PATH} tags an image (Figure or alt text); run npm run publish:cv.`,
       ).toEqual([]);
+    },
+  );
+});
+
+test.describe('the CV source', () => {
+  const CV_CSS = 'cv/cv.css';
+  const TEXT_TOKENS = ['--ink', '--heading', '--muted', '--icon'];
+  const GROUNDS = ['--side-bg', '--page-bg'];
+
+  test(
+    'draws every text color at AAA contrast on both column grounds (SC 1.4.6)',
+    NODE,
+    () => {
+      const css = readFileSync(CV_CSS, 'utf8');
+      const token = (name: string) => {
+        const hex = new RegExp(`${name}:\\s*(#[0-9a-fA-F]{6})\\b`).exec(
+          css,
+        )?.[1];
+        if (!hex) throw new Error(`${CV_CSS} has no six-digit hex ${name}`);
+        return hex;
+      };
+
+      for (const text of TEXT_TOKENS) {
+        for (const ground of GROUNDS) {
+          const value = ratio(token(text), token(ground));
+          expect(
+            value,
+            `${text} on ${ground} is ${value.toFixed(2)}:1, under ${AAA_TEXT}:1.`,
+          ).toBeGreaterThanOrEqual(AAA_TEXT);
+        }
+      }
     },
   );
 });
