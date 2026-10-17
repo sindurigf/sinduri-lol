@@ -624,7 +624,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
 - **Photo captions:** none on People and Places; the alt text names who is in
   each photo. Where a photo carries a caption, it starts at the photo's left edge.
 - **Form fields:** a 6px edge. A failing field adds a 4px pink inset ring
-  inside the pink 6px edge.
+  inside the 6px edge, which turns pink on the page and stays ink in a block.
 
 ### How sections separate
 
