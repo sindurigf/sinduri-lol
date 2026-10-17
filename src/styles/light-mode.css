@@ -17,6 +17,7 @@
     --dark-gold-border: var(--color-gold-border);
     --dark-card-edge: var(--color-card-edge);
     --dark-card-grid: var(--card-grid);
+    --dark-card-sheet: var(--color-card-sheet);
     --dark-gold-bud: var(--color-gold-bud);
     --dark-hero-ground: var(--color-hero-ground);
     --dark-hero-veil: var(--color-hero-veil);
@@ -36,6 +37,7 @@
     --color-gold-border: var(--color-light-ink);
     --color-card-edge: var(--color-light-ink);
     --card-grid: none;
+    --color-card-sheet: transparent;
     --color-gold-bud: var(--color-light-ink);
     --color-hero-ground: var(--color-light-ground);
     --color-hero-veil: var(--color-light-hero-veil);
@@ -57,6 +59,7 @@
     --color-gold-border: var(--dark-gold-border);
     --color-card-edge: var(--dark-card-edge);
     --card-grid: var(--dark-card-grid);
+    --color-card-sheet: var(--dark-card-sheet);
     --color-gold-bud: var(--dark-gold-bud);
     --color-hero-ground: var(--dark-hero-ground);
     --color-hero-veil: var(--dark-hero-veil);
