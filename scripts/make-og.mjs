@@ -83,7 +83,12 @@ const MIME = {
   webp: 'image/webp',
   avif: 'image/avif',
 };
-const mimeOf = (path) => MIME[path.split('.').at(-1).toLowerCase()];
+const mimeOf = (path) => {
+  const type = MIME[path.split('.').at(-1).toLowerCase()];
+  if (!type)
+    throw new Error(`make-og: ${path} is not a JPEG, PNG, WebP or AVIF.`);
+  return type;
+};
 
 const tileMarkup = () =>
   `<div class="tile"><img alt="" src="${dataUri(MARK, 'image/png')}"></div>`;
