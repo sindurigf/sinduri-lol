@@ -700,7 +700,7 @@ test.describe('the talk slideshow in full screen', () => {
           style: card.outlineStyle,
           width: parseFloat(card.outlineWidth),
           headingAlpha: parse(getComputedStyle(slide.querySelector('.slide-title')).outlineColor).a,
-          onCard: ratio(color, parse(card.backgroundColor)),
+          onCard: ratio(color, fillOf(slide, card)),
           onPage: ratio(color, parse(getComputedStyle(deck).backgroundColor)),
         };
       })()`)) as {
@@ -1238,7 +1238,7 @@ test.describe('gold on talk slides', () => {
           const slide = el.closest('.slide');
           return {
             text: el.textContent.trim(),
-            ratio: ratio(parse(getComputedStyle(el).color), parse(getComputedStyle(slide).backgroundColor)),
+            ratio: ratio(parse(getComputedStyle(el).color), fillOf(slide, getComputedStyle(slide))),
           };
         });
       })()`)) as { text: string; ratio: number }[];
