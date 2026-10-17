@@ -10,7 +10,6 @@ readingTime: 6
 seoTitle: 'Five Years in Drupal'
 cover: '../../assets/blog/five-years-in-drupal/cover.jpg'
 coverAlt: 'Sinduri and a friend laughing together, each holding a bottle.'
-coverCardAlt: 'Sinduri and a friend laughing together.'
 seoDescription: 'How a civil engineer in Vienna discovered Drupal, said yes to the community, and won the Women in Drupal Award at DrupalCon Vienna.'
 ---
 

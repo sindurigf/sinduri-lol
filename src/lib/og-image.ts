@@ -1,8 +1,8 @@
-import type { ImageMetadata } from 'astro';
-import { getImage } from 'astro:assets';
+import cards from '../../public/images/og/cards.json';
+import { ogCardPath, ogRoute, type OgCardManifest } from './og-cards';
 
 /*
- * 1.91:1, the large-card crop of Facebook, LinkedIn and X; og-default.png is
+ * 1.91:1, the large-card crop of Facebook, LinkedIn and X; every card is
  * drawn at it. tests/seo.spec.ts checks every declared size against its file.
  */
 const CARD_WIDTH = 1200;
@@ -23,29 +23,23 @@ export const DEFAULT_OG_IMAGE: OgImage = {
   alt: 'Sinduri Guntupalli, open source enthusiast and positivity advocate, beside the sinduri.lol bunny logo.',
 };
 
-/* JPEG: WebP support among link unfurlers is uneven. */
-const CARD_FORMAT = 'jpg';
+/* Imported, not read from disk: the Worker renders /contact/send/ with no public/ to read. */
+const CARDS: OgCardManifest = cards;
 
-/* Crop, not letterbox. sharp's `attention` keeps faces a centered crop cuts. */
-const CARD_FIT = 'cover';
-const CARD_POSITION = 'attention';
-
-export const coverOgImage = async (
-  cover: ImageMetadata,
-  alt: string,
-): Promise<OgImage> => {
-  const card = await getImage({
-    src: cover,
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
-    fit: CARD_FIT,
-    position: CARD_POSITION,
-    format: CARD_FORMAT,
-  });
-  return {
-    src: card.src,
-    width: Number(card.attributes.width),
-    height: Number(card.attributes.height),
-    alt,
-  };
+/**
+ * The page's own card, or the site card for a page `npm run og` has not drawn
+ * yet: the card is drawn from the built page, so a new page can only have one
+ * after a build. tests/seo.spec.ts fails until it is drawn.
+ */
+export const pageOgImage = (pathname: string): OgImage => {
+  const route = ogRoute(pathname);
+  const card = CARDS[route];
+  return card
+    ? {
+        src: `/${ogCardPath(route)}`,
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
+        alt: card.alt,
+      }
+    : DEFAULT_OG_IMAGE;
 };

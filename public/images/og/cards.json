@@ -1,0 +1,202 @@
+{
+  "/about": {
+    "title": "About",
+    "photo": "/_astro/sinduri-bicycle.BrStwMe4_Z8c9zf.webp",
+    "alt": "About, sinduri.lol, beside a photo: Sinduri laughing as she rides a bicycle with a basket down a tree-lined path."
+  },
+  "/accessibility": {
+    "title": "Accessibility",
+    "photo": null,
+    "alt": "Accessibility, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/blog": {
+    "title": "Blog",
+    "photo": "/_astro/cover.BaYAHj5r_1uFe5D.webp",
+    "alt": "Blog, sinduri.lol, beside a photo: Sinduri and a friend laughing together, each holding a bottle."
+  },
+  "/blog/five-years-in-drupal": {
+    "title": "Five Years in Drupal",
+    "photo": "/_astro/cover.BaYAHj5r_1uFe5D.webp",
+    "alt": "Five Years in Drupal, sinduri.lol, beside a photo: Sinduri and a friend laughing together, each holding a bottle."
+  },
+  "/blog/open-source": {
+    "title": "Open Source",
+    "photo": null,
+    "alt": "Open Source, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/blog/open-source-is-not-just-code": {
+    "title": "Open Source Is Not Just Code",
+    "photo": "/_astro/mentoring-table.BlT0bjAS_2dcWLX.webp",
+    "alt": "Open Source Is Not Just Code, sinduri.lol, beside a photo: Sinduri writing on sticky notes at the Drupal mentoring table at DrupalCon Rotterdam, beside a sign that reads Many tiny drops make an ocean."
+  },
+  "/blog/professional-journey": {
+    "title": "Professional Journey",
+    "photo": null,
+    "alt": "Professional Journey, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/blog/tag/career": {
+    "title": "Posts Tagged Career",
+    "photo": null,
+    "alt": "Posts Tagged Career, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/blog/tag/community": {
+    "title": "Posts Tagged Community",
+    "photo": null,
+    "alt": "Posts Tagged Community, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/blog/tag/drupal": {
+    "title": "Posts Tagged Drupal",
+    "photo": null,
+    "alt": "Posts Tagged Drupal, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/blog/tag/governance": {
+    "title": "Posts Tagged Governance",
+    "photo": null,
+    "alt": "Posts Tagged Governance, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/blog/tag/maintainers": {
+    "title": "Posts Tagged Maintainers",
+    "photo": null,
+    "alt": "Posts Tagged Maintainers, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/blog/tag/sustainability": {
+    "title": "Posts Tagged Sustainability",
+    "photo": null,
+    "alt": "Posts Tagged Sustainability, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/blog/tag/talks": {
+    "title": "Posts Tagged Talks",
+    "photo": null,
+    "alt": "Posts Tagged Talks, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/blog/tag/women-in-drupal": {
+    "title": "Posts Tagged Women in Drupal",
+    "photo": null,
+    "alt": "Posts Tagged Women in Drupal, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand": {
+    "title": "Brand",
+    "photo": null,
+    "alt": "Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/accessibility": {
+    "title": "Accessibility Target · Brand",
+    "photo": null,
+    "alt": "Accessibility Target · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/borders-and-shadows": {
+    "title": "Borders and Shadows · Brand",
+    "photo": null,
+    "alt": "Borders and Shadows · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/buttons-and-links": {
+    "title": "Buttons and Links · Brand",
+    "photo": null,
+    "alt": "Buttons and Links · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/cards": {
+    "title": "Cards · Brand",
+    "photo": null,
+    "alt": "Cards · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/chips-and-labels": {
+    "title": "Chips and Labels · Brand",
+    "photo": null,
+    "alt": "Chips and Labels · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/color": {
+    "title": "Color · Brand",
+    "photo": null,
+    "alt": "Color · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/contrast": {
+    "title": "Contrast · Brand",
+    "photo": null,
+    "alt": "Contrast · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/controls": {
+    "title": "Controls · Brand",
+    "photo": null,
+    "alt": "Controls · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/forms": {
+    "title": "Forms · Brand",
+    "photo": null,
+    "alt": "Forms · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/grounds": {
+    "title": "Grounds · Brand",
+    "photo": null,
+    "alt": "Grounds · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/heroes": {
+    "title": "Heroes · Brand",
+    "photo": null,
+    "alt": "Heroes · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/motion": {
+    "title": "Motion · Brand",
+    "photo": null,
+    "alt": "Motion · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/navigation": {
+    "title": "Navigation · Brand",
+    "photo": null,
+    "alt": "Navigation · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/photos": {
+    "title": "Photos · Brand",
+    "photo": null,
+    "alt": "Photos · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/spacing": {
+    "title": "Spacing · Brand",
+    "photo": null,
+    "alt": "Spacing · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/template": {
+    "title": "The Template · Brand",
+    "photo": null,
+    "alt": "The Template · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/text": {
+    "title": "Text · Brand",
+    "photo": null,
+    "alt": "Text · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/brand/type": {
+    "title": "Type · Brand",
+    "photo": null,
+    "alt": "Type · Brand, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/career": {
+    "title": "Career",
+    "photo": "src/assets/photos/sinduri-studio.jpg",
+    "alt": "Career, sinduri.lol, beside a photo of Sinduri Guntupalli."
+  },
+  "/contact": {
+    "title": "Contact",
+    "photo": null,
+    "alt": "Contact, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/contact/sent": {
+    "title": "Message Sent",
+    "photo": null,
+    "alt": "Message Sent, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/credits": {
+    "title": "Credits",
+    "photo": null,
+    "alt": "Credits, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/privacy": {
+    "title": "Privacy",
+    "photo": null,
+    "alt": "Privacy, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/talks/open-source-is-not-just-code": {
+    "title": "Open Source Is Not Just Code, the Slides",
+    "photo": "/_astro/sinduri-studio.BXKCzLan_Z13DGm0.webp",
+    "alt": "Open Source Is Not Just Code, the Slides, sinduri.lol, beside a photo: Sinduri smiling in a studio portrait, standing against a dark wall beside a teal block."
+  }
+}

@@ -164,7 +164,6 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 | `seoDescription` | string            | no           |         |
 | `cover`          | image             | no           |         |
 | `coverAlt`       | string            | with `cover` |         |
-| `coverCardAlt`   | string            | no           |         |
 | `coverCredit`    | string            | no           |         |
 
 - Categories: `skincare`, `travel`, `personal-thoughts`,
@@ -181,10 +180,9 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 - Non-placeholder posts get `og:type` `article`,
   `article:published_time` and a `BlogPosting` JSON-LD node. Other pages are
   `website`.
-- `cover` is relative to the post, any ratio, never cropped except for `og:image`, and shown as the post's hero photo, on the
-  `/blog` feature card and as the `og:image`; the schema requires `coverAlt`
-  with it. `coverCardAlt` replaces `coverAlt` on
-  the 1.91:1 `og:image` crop when the crop drops something `coverAlt` names.
+- `cover` is relative to the post, any ratio, never cropped, and shown as the
+  post's hero photo, on the `/blog` feature card and on its sharing card; the
+  schema requires `coverAlt` with it.
 - `updated` sets `dateModified`; absent, it is omitted, not copied from `date`.
 - Pagination (`/blog/page/<n>`) builds only past `POSTS_PER_PAGE`, 9 unless
   the build's `POSTS_PER_PAGE` variable sets another positive whole number.
@@ -345,7 +343,8 @@ in `wrangler.jsonc`).
 | ------------------------------ | --------- | -------------------- | ------------------------------------------------ |
 | `src/assets/bunny-dark.png`    | `#111111` | Gold, light surfaces | `Header.astro` logo tile, `Roundel.astro`, About |
 | `artwork/badge-white.png`      | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge                   |
-| `public/images/og-default.png` | Composite | n/a                  | `BaseLayout.astro`, every page without a cover   |
+| `public/images/og-default.png` | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404     |
+| `public/images/og/*.jpg`       | Composite | n/a                  | `BaseLayout.astro`, every other page             |
 
 | Artwork             | on `#0B0B0B` | on `#1A1A1A` | on `#FFFFFF` | on `#FFC000` |
 | ------------------- | ------------ | ------------ | ------------ | ------------ |
@@ -355,8 +354,17 @@ in `wrangler.jsonc`).
 - `og-default.png`: 1200x630. Gold panel with the name and the tagline in two
   lines, `background` strip with the logo tile, Lepus and Ridet stickers on
   the seam. `npm run og` (`scripts/make-og.mjs`) draws it in Chromium with
-  Lexend and the site tokens; rerun after changing a token, the name or the
-  tagline. PNG in `public/` because scrapers need a stable URL and format.
+  Lexend and the site tokens. PNG in `public/` because scrapers need a stable
+  URL and format.
+- `public/images/og/<route>.jpg`: every other page's card, drawn by the same
+  script from the built page: the page title on gold, and on the strip the
+  first photo in `<main>`, whole, or the logo tile when there is none.
+  `OG_PHOTO_CHOICES` in `src/lib/og-cards.ts` holds the owner's exceptions.
+  `cards.json` records each card's title, photo and alt; `tests/seo.spec.ts`
+  fails when a page's title or first photo no longer matches its card.
+- Rerun `npm run build && npm run og` after changing a token, a page title,
+  a page's first photo, the name or the tagline, and commit `public/images/`.
+  Not part of `npm run build`: the Cloudflare build has no Chromium.
 - Every placement renders through `<Image>` at its drawn size with `DENSITIES`
   (1x, 2x). The roundel resizes, so it passes `widths` and `sizes`.
 - A `.vue` component cannot reach `astro:assets`: call `getImage()` in Astro
@@ -372,7 +380,7 @@ in `wrangler.jsonc`).
   `src/assets/blog/<slug>/` (posts).
   Masters are JPEG or WebP at their full original frame, metadata stripped,
   never cropped in the file. Tiles, pairs, strips, figures and covers show the
-  whole frame; only `og:image` crops.
+  whole frame, sharing cards included.
 - Fixed-size photos pass `DENSITIES`; fluid ones pass `WIDTHS` and `sizes`
   from `src/lib/image-densities.ts`. `WIDTHS` steps at most 1.5x; `sizes` is
   the real drawn width. `tests/image-size.spec.ts` fails on stretching,
