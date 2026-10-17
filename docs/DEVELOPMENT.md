@@ -271,7 +271,7 @@ npm run dev
 ```
 
 - Open `/talks/<deck>/presenter/` for yourself and the slideshow from its
-  "Open the slideshow" link for the room; put that window on the projector and
+  "Open the Slideshow" link for the room; put that window on the projector and
   press Full Screen.
 - The windows stay in sync; arrow keys and Page Up/Down (clickers) work in
   both. In full screen Space, Shift+Space and Enter also turn the slide, and
