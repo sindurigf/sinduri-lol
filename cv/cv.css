@@ -1,0 +1,255 @@
+/* Static Lexend faces: the variable font prints as Type 3, which PDF/UA checks stall on. */
+@font-face {
+  font-family: 'Lexend CV';
+  font-weight: 300;
+  src: url('../node_modules/@fontsource/lexend/files/lexend-latin-300-normal.woff2')
+    format('woff2');
+}
+@font-face {
+  font-family: 'Lexend CV';
+  font-weight: 400;
+  src: url('../node_modules/@fontsource/lexend/files/lexend-latin-400-normal.woff2')
+    format('woff2');
+}
+@font-face {
+  font-family: 'Lexend CV';
+  font-weight: 500;
+  src: url('../node_modules/@fontsource/lexend/files/lexend-latin-500-normal.woff2')
+    format('woff2');
+}
+@font-face {
+  font-family: 'Lexend CV';
+  font-weight: 600;
+  src: url('../node_modules/@fontsource/lexend/files/lexend-latin-600-normal.woff2')
+    format('woff2');
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+:root {
+  --page-width: 210mm;
+  --page-height: 297mm;
+  --side-width: 316px;
+  --gutter: 33px;
+  --column-gap: 40px;
+  --portrait-size: 132px;
+
+  --ink: #1e1e1e;
+  --heading: #2e485b;
+  --muted: #424e58;
+  --icon: #2d2a24;
+  --side-bg: #e1ecf6;
+  --page-bg: #ffffff;
+
+  --text-name: 36px;
+  --text-h2: 22.66px;
+  --text-tagline: 20px;
+  --text-lead: 14.66px;
+  --text-summary: 14px;
+  --text-body: 13.33px;
+  --text-small: 12px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Lexend CV', sans-serif;
+  font-weight: 400;
+  font-size: var(--text-body);
+  line-height: 1.35;
+  color: var(--ink);
+  background: var(--page-bg);
+  print-color-adjust: exact;
+}
+
+a {
+  color: inherit;
+}
+
+.cv-defs {
+  display: none;
+}
+
+.cv {
+  display: grid;
+  grid-template-columns: var(--side-width) 1fr;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    'header header'
+    'side summary'
+    'side work';
+  width: var(--page-width);
+  height: var(--page-height);
+  overflow: hidden;
+  background: linear-gradient(
+    to right,
+    var(--side-bg) var(--side-width),
+    var(--page-bg) var(--side-width)
+  );
+}
+
+.cv-header {
+  grid-area: header;
+  display: grid;
+  grid-template-columns: var(--side-width) 1fr var(--portrait-size);
+  align-items: start;
+  padding: 24px var(--gutter) 0 0;
+}
+
+.cv-name,
+h2 {
+  font-weight: 400;
+  color: var(--heading);
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.cv-name {
+  font-size: var(--text-name);
+  padding: 30px var(--gutter) 0;
+}
+
+.cv-tagline {
+  font-size: var(--text-tagline);
+  font-weight: 300;
+  line-height: 1.4;
+  color: var(--muted);
+  padding: 36px 0 0 var(--column-gap);
+}
+
+.cv-portrait {
+  width: var(--portrait-size);
+  height: var(--portrait-size);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--page-bg);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
+}
+
+h2 {
+  font-size: var(--text-h2);
+  margin-bottom: 10px;
+}
+
+h3 {
+  font-size: var(--text-lead);
+  font-weight: 600;
+}
+
+.cv-summary,
+.cv-work {
+  padding: 0 var(--gutter) 0 var(--column-gap);
+}
+
+.cv-summary {
+  grid-area: summary;
+  margin-top: 4px;
+}
+
+.cv-summary p {
+  font-size: var(--text-summary);
+  line-height: 1.5;
+}
+
+.cv-work {
+  grid-area: work;
+  margin-top: 20px;
+  line-height: 1.3;
+}
+
+.cv-work h2 {
+  margin-bottom: 2px;
+}
+
+.cv-work h3 {
+  margin-top: 8px;
+}
+
+.cv-dates {
+  font-style: italic;
+  color: var(--muted);
+  margin: 1px 0 4px;
+}
+
+.cv-work ul {
+  padding-left: 26px;
+}
+
+.cv-work li + li {
+  margin-top: 3px;
+}
+
+.cv-side {
+  grid-area: side;
+  padding: 26px var(--gutter) 0;
+}
+
+.cv-side section + section {
+  margin-top: 26px;
+}
+
+.cv-contact {
+  list-style: none;
+}
+
+.cv-contact li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.cv-icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--icon);
+}
+
+.cv-timeline {
+  list-style: none;
+  border-left: 1px solid var(--muted);
+  margin-left: 4px;
+}
+
+.cv-timeline > li {
+  position: relative;
+  padding-left: 16px;
+}
+
+.cv-timeline > li + li {
+  margin-top: 8px;
+}
+
+.cv-timeline > li::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.cv-timeline h3 {
+  font-size: var(--text-lead);
+}
+
+.cv-skills {
+  list-style: disc;
+  font-size: var(--text-small);
+  padding-left: 22px;
+  margin: 4px 0;
+}
+
+.cv-muted {
+  color: var(--muted);
+}

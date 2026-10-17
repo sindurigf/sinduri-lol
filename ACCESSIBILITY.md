@@ -160,13 +160,12 @@ view (development server only, never published), and forks.
   on a 422, `aria-disabled` on the button and a `role="status"` message while
   sending, with no `aria-busy` to hold that message back. Details
   in gap 1.
-- **CV PDF.** The photo and shapes are artifacts, the name is the H1 and the
-  six section titles are H2s. The photo is decorative
-  ([why](ARCHITECTURE.md#content-notes)). Firefox's PDF viewer exposes that
-  structure, and `npm run check:pdf` passes it. Job and course titles are
-  body text on purpose, because Canva exports give them inconsistent levels
-  ([MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §13.4 flags this). How it is
-  made: [DEVELOPMENT.md](docs/DEVELOPMENT.md#publishing-the-cv).
+- **CV PDF.** Printed from HTML. The photo, icons and shapes are artifacts,
+  the name is the H1, the six section titles are H2s, and job and course
+  titles are H3s. Lists and links are tagged as such. Every text color is
+  at least 7:1 on both column backgrounds (`tests/cv.spec.ts`). The photo is decorative
+  ([why](ARCHITECTURE.md#content-notes)). `npm run check:pdf` passes it. How
+  it is made: [DEVELOPMENT.md](docs/DEVELOPMENT.md#publishing-the-cv).
 - **Talk PDF.** Passes PDF/UA-1 in `npm run check:pdf`. See gap 6. Below
   `lg` (1024px) the talk page links it with its size and shows every slide as
   text that reflows, so the PDF is never the only way to read the talk on a
@@ -274,7 +273,7 @@ merge.
 | `tests/text-resize.spec.ts`         | 1.4.4                                                            | Lowest page zoom, up to 500%, at which each viewport-sized text token reaches 2x, at four widths                                                                                                                                                                                                     |
 | `tests/target-size.spec.ts`         | 2.5.5                                                            | Every target's 44px square, on pages and in open dialogs, at 305px and 1280px                                                                                                                                                                                                                        |
 | `tests/reflow.spec.ts`              | 1.4.10, 1.4.12                                                   | No sideways scroll; content box; heading word fit                                                                                                                                                                                                                                                    |
-| `tests/visual-presentation.spec.ts` | 1.4.8                                                            | Line length, line height and paragraph spacing at three widths                                                                                                                                                                                                                                       |
+| `tests/visual-presentation.spec.ts` | 1.4.8                                                            | Line length, line height and paragraph spacing at three widths, open cat card included                                                                                                                                                                                                               |
 | `tests/zoom-lines.spec.ts`          | 1.4.8                                                            | Every line of text on screen and no sideways scroll at 200px and 256px, the 500% zoom widths; code blocks and photo strips scroll in their own region                                                                                                                                                |
 | `tests/hero-fit.spec.ts`            | 1.4.10, 1.4.11, 1.4.12, 2.2.2, 2.4.11                            | Hero name unclipped and uncovered; pause control on the first screen beside the first name, every point of it reachable, clear of the name, edge and ring 3:1 on the page                                                                                                                            |
 | `tests/close-row.spec.ts`           | 1.4.10                                                           | The close row's sticker never covers its text; light mode changes only its colors                                                                                                                                                                                                                    |
