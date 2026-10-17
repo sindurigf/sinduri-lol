@@ -7,6 +7,7 @@ import CloseRow from '../components/CloseRow.astro';
 import PageHero from '../components/PageHero.astro';
 import Section from '../components/Section.astro';
 import { JOURNEY_POST_HREF } from '../lib/paths';
+import { wallClasses } from '../lib/wall';
 
 /*
  * Every claim comes from the published CV or five-years-in-drupal.md; lines
@@ -61,6 +62,8 @@ const EXPERIENCE = [
     ],
   },
 ] as const;
+
+const EXPERIENCE_WALL = wallClasses({}, EXPERIENCE.length);
 
 const SKILLS = [
   'Product and program management',
@@ -172,8 +175,13 @@ const OPEN_SOURCE = [
     <ol class="card-block flex flex-col gap-grid">
       {
         /* Title first, so heading navigation lands before the employer. */
-        EXPERIENCE.map((role) => (
-          <li class:list={['card grid gap-8 lg:grid-cols-12']}>
+        EXPERIENCE.map((role, index) => (
+          <li
+            class:list={[
+              'card grid gap-8 lg:grid-cols-12',
+              EXPERIENCE_WALL.bricks[index],
+            ]}
+          >
             <div class="flex min-w-0 flex-col items-start gap-4 lg:col-span-12">
               {role.current && <span class="badge">Current</span>}
               <h3 class="card-title">{role.title}</h3>
@@ -200,8 +208,8 @@ const OPEN_SOURCE = [
   </Section>
 
   <Section title="Skills and Education">
-    <div class="grid gap-grid lg:grid-cols-2">
-      <div class="card">
+    <div class="card-block grid lg:grid-cols-2">
+      <div class="card lg:row-span-2">
         <h3 class="card-title">Education</h3>
         <ul class="mt-8 flex flex-col gap-4">
           {EDUCATION.map((item) => (
@@ -220,28 +228,26 @@ const OPEN_SOURCE = [
         </ul>
       </div>
 
-      <div class="flex min-w-0 flex-col gap-grid">
-        <div class="card">
-          <h3 class="card-title">Skills</h3>
-          <ul class="mt-8 flex flex-wrap gap-3">
-            {SKILLS.map((skill) => (
-              <li class="badge">{skill}</li>
-            ))}
-          </ul>
-        </div>
+      <div class="card card-step-1 lg:card-step-0">
+        <h3 class="card-title">Skills</h3>
+        <ul class="mt-8 flex flex-wrap gap-3">
+          {SKILLS.map((skill) => (
+            <li class="badge">{skill}</li>
+          ))}
+        </ul>
+      </div>
 
-        <div class="card">
-          <h3 class="card-title">Languages</h3>
-          <ul class="mt-8 flex flex-col gap-4">
-            {LANGUAGES.map((item) => (
-              <li class="text-body text-text">
-                <strong class="font-black text-text">{item.language}</strong>
-                {': '}
-                {item.level}
-              </li>
-            ))}
-          </ul>
-        </div>
+      <div class="card card-step-2 lg:card-step-1">
+        <h3 class="card-title">Languages</h3>
+        <ul class="mt-8 flex flex-col gap-4">
+          {LANGUAGES.map((item) => (
+            <li class="text-body text-text">
+              <strong class="font-black text-text">{item.language}</strong>
+              {': '}
+              {item.level}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   </Section>
