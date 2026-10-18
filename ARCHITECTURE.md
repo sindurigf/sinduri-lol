@@ -348,7 +348,7 @@ in `wrangler.jsonc`).
   pairing renders invisible.
 - `src/assets/`: rendered artwork, through `astro:assets`, WebP, hashed into
   `/_astro/`, cached immutably. Unimported files are not emitted.
-- `public/images/`: stable URLs for outside consumers (Open Graph PNGs).
+- `public/images/`: stable URLs for outside consumers (Open Graph images).
 - `artwork/`: source artwork the build never reads (the Lepus Ridet badge,
   the `favicon.ico` frames). Nothing in it ships.
 
