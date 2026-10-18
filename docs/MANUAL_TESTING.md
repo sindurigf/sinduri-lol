@@ -79,7 +79,7 @@ Setup: Chrome, 1280px, `/`, focus in the address bar.
 - [ ] Every stop shows a cyan ring with a visible gap. → SC 2.4.7
 - [ ] Shift+Tab back out: the order reverses exactly. → SC 2.1.2
 - [ ] No stop swallows Tab, Escape or arrow keys. → SC 2.1.2
-- [ ] The footer hare is never a tab stop. → SC 1.1.1
+- [ ] The footer bunny is never a tab stop. → SC 1.1.1
 
 ## 2. The mobile menu, keyboard only
 
@@ -91,7 +91,8 @@ Setup: Chrome at 375px. No mouse.
 - [ ] Tab cycles Home, About, Career, Blog, Get in Touch, Close, one stop in
       the browser UI (correct `<dialog>` behavior), Home. The theme switch is
       not in the dialog. Focus never reaches the page behind. → SC 2.1.2
-- [ ] Shift+Tab from the first item goes to Close. → SC 2.1.2
+- [ ] Shift+Tab from the first item stays in the dialog: the browser's own stop
+      or the dialog itself (Firefox), then Close. → SC 2.1.2
 - [ ] Escape closes and focus returns to the menu button. → SC 2.1.2, 2.4.3
 - [ ] Close button: focus returns to the menu button. → SC 2.4.3
 - [ ] A nav link activated with Enter navigates. → SC 2.1.1
@@ -343,7 +344,7 @@ skipped level, an `h2` opening each region, and the home link named
       whether the list is useful or crowded. → SC 1.3.1
 - [ ] `M` from the top steps through them in that order. → SC 1.3.1
 - [ ] The "On this page" nav lists all five spreads. → SC 2.4.6
-- [ ] `G` finds no footer hare. → SC 1.1.1
+- [ ] `G` finds no footer bunny. → SC 1.1.1
 - [ ] `K` to About: announced as the current page. → SC 4.1.2
 - [ ] The current-page box adds nothing to the announcement. → SC 1.3.1
 - [ ] `Alt+Shift+K`: every link name stands alone; no two destinations share
