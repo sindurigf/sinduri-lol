@@ -19,6 +19,7 @@ import {
   SITE_CARD_ROUTES,
   decodeEntities,
   firstPhoto,
+  imageMime,
   ogCardPath,
 } from '../src/lib/og-cards.ts';
 import { PERSON_NAME } from '../src/lib/profiles.ts';
@@ -76,19 +77,10 @@ const TOKENS = {
 const dataUri = (path, type) =>
   `data:${type};base64,${readFileSync(path).toString('base64')}`;
 
-const MIME = {
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  png: 'image/png',
-  webp: 'image/webp',
-  avif: 'image/avif',
-};
-const mimeOf = (path) => MIME[path.split('.').at(-1).toLowerCase()];
-
 const tileMarkup = () =>
   `<div class="tile"><img alt="" src="${dataUri(MARK, 'image/png')}"></div>`;
 const photoMarkup = (path) =>
-  `<div class="photo"><img alt="" src="${dataUri(path, mimeOf(path))}"></div>`;
+  `<div class="photo"><img alt="" src="${dataUri(path, imageMime(path))}"></div>`;
 
 const page = (art) => `<!doctype html><html><head><meta charset="utf-8"><style>
 @font-face{font-family:'Lexend Variable';src:url(${dataUri(FONT, 'font/woff2')}) format('woff2');font-weight:100 900}
