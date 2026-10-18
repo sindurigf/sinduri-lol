@@ -4,7 +4,7 @@
  */
 @layer utilities {
   /*
-   * Slim once scrolled (src/scripts/header-compact.ts): a 60px bar whose 52px
+   * Slim once scrolled (src/scripts/header-compact.ts): a 68px bar whose 60px
    * inside holds the 44px bricks and their throw, and the logo tile at three
    * quarters. Not when the header scrolls away. Utilities, to beat the
    * header's `h-header` and `py-3`.

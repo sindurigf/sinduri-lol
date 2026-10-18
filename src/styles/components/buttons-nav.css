@@ -180,7 +180,7 @@
   /*
    * The bar is gold in both modes, edged in ink and thrown like a card (pink,
    * ink in light mode). Inside it the bricks take light fills and ink lines, and
-   * the ring and hover label are ink (11.32 on gold, 14.49 on light).
+   * the ring, hover label and brick throws are ink (11.32 on gold, 14.49 on light).
    */
   .header-slab {
     --color-background: var(--color-block-light);
@@ -188,6 +188,8 @@
     --color-cyan: var(--color-gold-link);
     --hover-fill: var(--dark-cyan);
     --hover-label: var(--color-gold-text);
+    --shadow-brick: var(--brick-throw) var(--brick-throw) 0
+      var(--color-block-ink);
 
     /* The gold hero's edges (`.gold-column` in layout.css): from the rail, out to the screen clearance. */
     --hero-column-rail: max(0px, calc((100% - var(--container-page)) / 2));
@@ -210,6 +212,7 @@
     /* Unset, so hovers fall back to the page's cyan and ground. */
     --hover-fill: initial;
     --hover-label: initial;
+    --shadow-brick: var(--brick-throw) var(--brick-throw) 0 var(--page-text);
   }
 
   /* Rings drawn inside the brick, on its own fill, so they never cross the next one. */

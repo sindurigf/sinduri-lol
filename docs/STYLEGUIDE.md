@@ -1106,7 +1106,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 - Nav links, the theme switch and the call to action are joined bricks
   (`.header-bricks`): 44px tall, the target (SC 2.5.5), sharing their 4px
   edges, one `shadow-brick` per row. Each row sits half its throw high, so
-  there is 7px above it and under its throw. Gold marks the current page; the
+  there is 11px above it and under its throw. On the bar the throw is
+  `block-ink` in both modes. Gold marks the current page; the
   rest take `block-light`. Gold bricks on the gold bar read by their ink edge. A brick after
   another drops its left edge, so the two share one 4px wall and never overlap
   each other's target.
@@ -1120,12 +1121,12 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 
 ### By height
 
-- Sticky, 96px (`--spacing-header`): the 72px bar and 12px above and below;
+- Sticky, 104px (`--spacing-header`): the 80px bar and 12px above and below;
   `tests/header-fit.spec.ts` holds both.
 - Once the page scrolls past it, the header goes slim
-  (`src/scripts/header-compact.ts`): 72px (`--spacing-header-compact`), a 60px
+  (`src/scripts/header-compact.ts`): 80px (`--spacing-header-compact`), a 68px
   bar, the logo tile at three quarters, bricks still 44px with their throw. A
-  state, not an animation. Its flow box keeps 96px, so nothing below moves, and
+  state, not an animation. Its flow box keeps 104px, so nothing below moves, and
   the full header's scroll padding still clears it. Not under `short`. `html` keeps focus and anchors
   `--spacing-header` and `--spacing(4)` below the top.
 - Under 30rem of viewport height (`short`: a landscape phone, any window under
