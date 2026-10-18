@@ -25,7 +25,7 @@ const PRESSABLE: Pressable[] = [
   },
   {
     name: 'a chip',
-    route: '/blog/',
+    route: '/about/',
     control: 'main a.chip:not([aria-current])',
     moves: 'main a.chip:not([aria-current])',
   },
@@ -256,6 +256,18 @@ test.describe('bricks', () => {
     await pressCenter(page, MENU_LINK);
     expect(await castsShadow(page, MENU_LINK)).toBe(false);
     expect(await translateOf(page, MENU_LINK)).toEqual([0, 0]);
+    await page.mouse.up();
+  });
+
+  test('a joined filter chip holds still when pressed', async ({ page }) => {
+    const chip = 'main .chip-row a.chip:not([aria-current])';
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    await gotoSettled(page, '/blog/');
+    await pressCenter(page, chip);
+    expect(
+      await translateOf(page, chip),
+      'a joined chip moved out of its row',
+    ).toEqual([0, 0]);
     await page.mouse.up();
   });
 
