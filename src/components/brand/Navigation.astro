@@ -6,8 +6,8 @@ import { BRAND_PATH, brandHref } from '../../lib/brand-sections';
 
 const PAGER_PAGES = [1, 2] as const;
 const CONTENTS = [
-  { href: '#close-row', label: 'Close row' },
-  { href: '#footer-links', label: 'Footer link group' },
+  { href: '#close-row', label: 'Close Row' },
+  { href: '#footer-links', label: 'Footer Link Group' },
 ];
 ---
 
@@ -18,7 +18,7 @@ const CONTENTS = [
     rule="Label type in subtle, slashes hidden from screen readers; on gold it turns gold-muted."
   >
     <Breadcrumbs
-      label="Example breadcrumb"
+      label="Example Breadcrumb"
       crumbs={[
         { href: '/', label: 'Home' },
         { href: BRAND_PATH, label: 'Brand' },
@@ -89,7 +89,7 @@ const CONTENTS = [
       <CloseRow
         eyebrow="Next"
         readHref="/accessibility/"
-        readLabel="Accessibility statement"
+        readLabel="Accessibility Statement"
         actionHref="/contact/"
         actionLabel="Get in Touch"
       />
