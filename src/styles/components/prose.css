@@ -42,7 +42,7 @@
 
   /* A by-the-way aside: caption size and color (`subtle` is 7:1 or more on the page). */
   .prose .post-aside {
-    @apply text-label leading-paragraph text-subtle;
+    @apply max-w-aside text-label leading-paragraph text-subtle;
   }
 
   /*

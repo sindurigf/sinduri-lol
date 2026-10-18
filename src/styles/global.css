@@ -448,6 +448,8 @@
    * `sizes` cannot express. tests/post-page.spec.ts.
    */
   --container-measure: 36rem;
+  /* A caption-size aside: at most 80 characters per line at 14px (SC 1.4.8, tests/visual-presentation.spec.ts). */
+  --container-aside: 32rem;
   /*
    * The rail beside a post that holds its contents list. A width in a `1fr`
    * track, so the reading column stays centered.

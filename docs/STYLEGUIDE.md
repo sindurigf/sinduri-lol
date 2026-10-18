@@ -951,7 +951,7 @@ Enforced by `tests/post-page.spec.ts`.
 | Table       | `mt-6`, `edge`, fixed layout, cells `px-4 py-3`, headers on `surface`; Markdown headers get `scope="col"`, a table with row headers is HTML                                                  |
 | Figure      | `mt-8`, wider than the text ([Measure](#measure)), an `.aspect-frame` sized by the file with a 4px `border` ring; caption `mt-4 text-label text-subtle`                                      |
 | `hr`        | `mt-16`, a 6px `border` rule                                                                                                                                                                 |
-| Aside       | `p.post-aside`: a plain paragraph in caption style, `text-label leading-paragraph text-subtle`; no rule or border                                                                            |
+| Aside       | `p.post-aside`: a plain paragraph in caption style, `max-w-aside text-label leading-paragraph text-subtle` (80 characters a line, SC 1.4.8); no rule or border                               |
 | Pillar wall | `ol.pillar-wall`: equal joined light columns under gold capitals, one throw, each a step higher; one column below `xs`, two from `xs`, three from `sm`, six from `xl` out to the page column |
 
 - A heading sits 24px above its own text and 48 to 64px below the text before
