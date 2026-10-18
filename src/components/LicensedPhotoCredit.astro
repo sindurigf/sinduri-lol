@@ -1,5 +1,4 @@
 ---
-import Abbr from './Abbr.astro';
 import { LICENSED_PHOTOS } from '../lib/credits';
 
 /* The name after "Photo: ": CC BY 2.0 §4(a) asks for the license link with every copy. */
@@ -7,9 +6,8 @@ interface Props {
   photo: keyof typeof LICENSED_PHOTOS;
 }
 
-const { photographer, source, license, licenseShort, licenseHref } =
+const { photographer, source, licenseShort, licenseHref } =
   LICENSED_PHOTOS[Astro.props.photo];
 ---
 
-<a href={source}>{photographer}</a> (
-<Abbr short={licenseShort} long={license} href={licenseHref} after=")" />
+<a href={source}>{photographer}</a> (<a href={licenseHref}>{licenseShort}</a>)

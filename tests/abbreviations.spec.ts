@@ -4,6 +4,7 @@ import { FUNCTIONAL_ROUTES, firstUse, mainText } from './first-use';
 import { builtHtml, builtPages } from './routes';
 import { gotoSettled } from './settle';
 import { NODE } from './tags';
+import { LICENSED_PHOTOS } from '../src/lib/credits';
 
 /**
  * SC 3.1.4 Abbreviations, by H28 with a programmatic expansion: on functional
@@ -15,8 +16,6 @@ const FIRST_USES: readonly {
   route: string;
   abbreviation: string;
   expansion: string;
-  /** The name of the link that holds it, when it links its definition (G55) instead of opening a button. */
-  link?: string;
 }[] = [
   {
     route: '/accessibility',
@@ -105,12 +104,6 @@ const FIRST_USES: readonly {
     expansion: "the highest of WCAG's three levels",
   },
   {
-    route: '/brand/photos',
-    abbreviation: 'CC BY',
-    expansion: 'Creative Commons Attribution 2.0',
-    link: 'CC BY 2.0',
-  },
-  {
     route: '/brand/template',
     abbreviation: 'CC BY',
     expansion: 'Creative Commons Attribution',
@@ -181,6 +174,11 @@ const NAMES = [
   'LICENSE-photos',
 ];
 
+/** A photo's short license links to its deed, which names it in full (G55). */
+const LINKED_LICENSES = Object.values(LICENSED_PHOTOS).map(
+  (photo) => photo.licenseShort,
+);
+
 const ABBREVIATION = /\bCC BY\b|\bIPv[46]\b|\b[A-Z][A-Z0-9]+(?:-\d+)?\b/g;
 const HEX_COLOR = /^[0-9A-F]{6}$/;
 
@@ -212,7 +210,7 @@ test.describe('abbreviations are expanded at first use (SC 3.1.4)', () => {
     }) => {
       await gotoSettled(page, route);
 
-      for (const { abbreviation, expansion, link } of FIRST_USES.filter(
+      for (const { abbreviation, expansion } of FIRST_USES.filter(
         (entry) => entry.route === route,
       )) {
         const use = await firstUse(page, abbreviation);
@@ -225,13 +223,8 @@ test.describe('abbreviations are expanded at first use (SC 3.1.4)', () => {
           `${route} first uses ${abbreviation} without "${expansion}" as its description.`,
         ).toBe(expansion);
         await expect(
-          page
-            .getByRole(link ? 'link' : 'button', {
-              name: link ?? abbreviation,
-              exact: true,
-            })
-            .first(),
-          `${route}: ${abbreviation} is not a ${link ? 'link' : 'button'} described by its expansion.`,
+          page.getByRole('button', { name: abbreviation, exact: true }).first(),
+          `${route}: ${abbreviation} is not a button described by its expansion.`,
         ).toHaveAccessibleDescription(expansion);
       }
     });
@@ -244,9 +237,8 @@ test.describe('abbreviations are expanded at first use (SC 3.1.4)', () => {
       /* Not gotoSettled: it waits for the menu script, which cannot run here. */
       await page.goto(route);
 
-      /* A link opens its definition instead (G55). */
       for (const { abbreviation, expansion } of FIRST_USES.filter(
-        (entry) => entry.route === route && entry.link === undefined,
+        (entry) => entry.route === route,
       )) {
         const button = page
           .getByRole('button', { name: abbreviation, exact: true })
@@ -376,7 +368,7 @@ test('functional pages use no abbreviation outside FIRST_USES', NODE, () => {
         (entry) => entry.abbreviation,
       ),
     );
-    const text = NAMES.reduce(
+    const text = [...NAMES, ...LINKED_LICENSES].reduce(
       (rest, name) => rest.replaceAll(name, ' '),
       mainText(html),
     );
