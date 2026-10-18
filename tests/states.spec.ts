@@ -3,7 +3,7 @@ import { gotoSettled } from './settle';
 import { AAA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { hoveredTextBelowAaa } from './hover-contrast';
 import { BRAND_SAMPLED_ROUTES } from './routes';
-import { DESKTOP_VIEWPORT, PHONE_VIEWPORT } from './wcag';
+import { DESKTOP_VIEWPORT, PHONE_VIEWPORT, SUBPIXEL_TOLERANCE } from './wcag';
 
 type Look = { paint: string; text: number | null };
 
@@ -93,7 +93,7 @@ for (const scheme of ['dark', 'light'] as const) {
   });
 }
 
-/* The header and footer stay dark in light mode, so this also covers them there; light <main> is in tests/light-mode.spec.ts. */
+/* Light mode, header and footer included, is in tests/light-mode.spec.ts and tests/footer.spec.ts. */
 test.describe('dark mode reaches AAA contrast under the pointer (SC 1.4.6)', () => {
   test.use({ colorScheme: 'dark' });
 
@@ -240,14 +240,15 @@ for (const scheme of ['dark', 'light'] as const) {
 
 /**
  * SC 1.4.11 measures a ring against what it touches: a chip's ring (offset plus
- * width) must not meet a neighbor's box plus its hard shadow.
+ * width) must not meet a neighbor's box plus its hard shadow. A joined chip's
+ * inset ring ends on the shared edge; Firefox lays out in 1/60px units.
  */
 test('a focused chip ring stays clear of the chips beside it', async ({
   page,
 }) => {
   await page.setViewportSize(DESKTOP_VIEWPORT);
   await gotoSettled(page, '/blog/open-source/');
-  const { count, overlaps } = await page.evaluate(() => {
+  const { count, overlaps } = await page.evaluate((tolerance) => {
     const chips = [...document.querySelectorAll<HTMLElement>('main a.chip')];
     const reach = (el: HTMLElement) => {
       const r = el.getBoundingClientRect();
@@ -282,7 +283,11 @@ test('a focused chip ring stays clear of the chips beside it', async ({
       for (const other of chips) {
         if (other === chip) continue;
         const o = reach(other);
-        const hit = box.l < o.r && box.r > o.l && box.t < o.b && box.b > o.t;
+        const hit =
+          box.l < o.r - tolerance &&
+          box.r > o.l + tolerance &&
+          box.t < o.b - tolerance &&
+          box.b > o.t + tolerance;
         if (hit)
           out.push(
             `${chip.textContent?.trim()} touches ${other.textContent?.trim()}`,
@@ -290,7 +295,7 @@ test('a focused chip ring stays clear of the chips beside it', async ({
       }
     }
     return { count: chips.length, overlaps: out };
-  });
+  }, SUBPIXEL_TOLERANCE);
   expect(
     count,
     'fewer than two chips, so nothing was compared',

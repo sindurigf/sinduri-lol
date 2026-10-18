@@ -125,6 +125,14 @@ const OPEN_SOURCE = [
       'Volunteered at Drupal Dev Days Vienna in 2023, then helped organize Drupal Mountain Camp, Drupal Dev Days and DrupalCamp Berlin.',
   },
 ] as const;
+/* Joined pairs: each pair is its own wall, its second brick climbing from `sm` (the Step). */
+const PAIR_SIZE = 2;
+const OPEN_SOURCE_PAIRS = Array.from(
+  { length: Math.ceil(OPEN_SOURCE.length / PAIR_SIZE) },
+  (_, index) => OPEN_SOURCE.slice(index * PAIR_SIZE, (index + 1) * PAIR_SIZE),
+);
+const pairWall = (count: number) =>
+  wallClasses({ sm: [[...Array(count).keys()]] }, count);
 ---
 
 <BaseLayout
@@ -261,15 +269,22 @@ const OPEN_SOURCE = [
         people in tech and to grow the skills I use every day, such as
         communication, collaboration and problem-solving.
       </p>
-      <dl class="grid gap-grid sm:grid-cols-2 lg:col-span-7">
-        {OPEN_SOURCE.map((item) => (
-          <div class="card">
-            {/* `text-gold` and `text-text` fail SC 1.4.3 on this ground. */}
-            <dt class="label text-gold-muted">{item.award}</dt>
-            <dd class="mt-4 text-body text-pretty">{item.detail}</dd>
-          </div>
-        ))}
-      </dl>
+      <div class="grid gap-grid lg:col-span-7">
+        {OPEN_SOURCE_PAIRS.map((pair) => {
+          const wall = pairWall(pair.length);
+          return (
+            <dl class:list={['card-block grid sm:grid-cols-2', wall.wall]}>
+              {pair.map((item, index) => (
+                <div class:list={['card', wall.bricks[index]]}>
+                  {/* `text-gold` and `text-text` fail SC 1.4.3 on this ground. */}
+                  <dt class="label text-gold-muted">{item.award}</dt>
+                  <dd class="mt-4 text-body text-pretty">{item.detail}</dd>
+                </div>
+              ))}
+            </dl>
+          );
+        })}
+      </div>
     </div>
   </Section>
 
