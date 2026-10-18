@@ -40,6 +40,143 @@
     color: var(--color-gold);
   }
 
+  /* A by-the-way aside: caption size and color (`subtle` is 7:1 or more on the page). */
+  .prose .post-aside {
+    @apply max-w-aside text-label leading-paragraph text-subtle;
+  }
+
+  /*
+   * Climbing pillars: equal joined columns, each a `--pillar-rise` higher than
+   * the last in its row, with one throw. One column on the narrowest screens, two from `xs`, three from `sm`, and six
+   * from `xl`, out to `.post-layout`'s width where the names fit one row.
+   */
+  .prose .pillar-wall {
+    --pillar-rise: --spacing(5);
+    --pillar-pad: --spacing(3);
+
+    @apply mt-8 grid list-none grid-cols-1;
+
+    padding: 0 0 var(--block-edge) var(--block-edge);
+    filter: drop-shadow(
+      var(--hard-throw) var(--hard-throw) 0 var(--color-pink)
+    );
+
+    & > li {
+      @apply mt-0 flex min-w-0 flex-col;
+
+      margin: 0 0 calc(var(--block-edge) * -1) calc(var(--block-edge) * -1);
+      border: var(--block-edge) solid var(--color-block-ink);
+      background-color: var(--color-block-light);
+      color: var(--color-block-ink);
+    }
+
+    & strong {
+      @apply flex min-h-target items-center text-label font-black uppercase tracking-label;
+
+      padding: var(--pillar-pad);
+      border-bottom: var(--block-edge) solid var(--color-block-ink);
+      background-color: var(--color-block-gold);
+      color: var(--color-block-ink);
+    }
+
+    & p {
+      @apply mt-0 flex-1;
+
+      min-height: --spacing(32);
+      padding: var(--pillar-pad);
+      color: var(--color-block-ink);
+    }
+
+    @variant xs {
+      @apply grid-cols-2;
+
+      padding-top: var(--pillar-rise);
+
+      & > li:nth-child(even) {
+        translate: 0 calc(var(--pillar-rise) * -1);
+      }
+    }
+
+    @variant sm {
+      --pillar-rise: --spacing(6);
+      --pillar-pad: --spacing(4);
+
+      @apply grid-cols-3;
+
+      padding-top: calc(var(--pillar-rise) * 2);
+
+      & > li:nth-child(even) {
+        translate: none;
+      }
+
+      & > li:nth-child(3n + 2) {
+        translate: 0 calc(var(--pillar-rise) * -1);
+      }
+
+      & > li:nth-child(3n) {
+        translate: 0 calc(var(--pillar-rise) * -2);
+      }
+    }
+
+    @media (forced-colors: active), print {
+      filter: none;
+    }
+  }
+
+  /* `xl` only: below it the rail and the measure leave each name too narrow. */
+  .post-layout .prose .pillar-wall {
+    @variant xl {
+      --pillar-outdent: calc((100cqi - 100%) / 2);
+
+      /* The page's 12-column grid (docs/STYLEGUIDE.md, Grid), two per pillar. */
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+
+      width: calc(100% + 2 * var(--pillar-outdent));
+      margin-inline-start: calc(-1 * var(--pillar-outdent));
+      padding-top: calc(var(--pillar-rise) * 5);
+
+      & > li {
+        grid-column: span 2;
+      }
+
+      & > li:nth-child(1) {
+        translate: none;
+      }
+
+      & > li:nth-child(2) {
+        translate: 0 calc(var(--pillar-rise) * -1);
+      }
+
+      & > li:nth-child(3) {
+        translate: 0 calc(var(--pillar-rise) * -2);
+      }
+
+      & > li:nth-child(4) {
+        translate: 0 calc(var(--pillar-rise) * -3);
+      }
+
+      & > li:nth-child(5) {
+        translate: 0 calc(var(--pillar-rise) * -4);
+      }
+
+      & > li:nth-child(6) {
+        translate: 0 calc(var(--pillar-rise) * -5);
+      }
+    }
+  }
+
+  /* Printed flat and whole: a filter rasterizes the text and a translated brick splits across pages. */
+  @media print {
+    .post-layout .prose .pillar-wall {
+      padding-top: 0;
+
+      & > li:nth-child(n) {
+        translate: none;
+        break-inside: avoid;
+      }
+    }
+  }
+
   /*
    * Marked by src/plugins/link-list-item.mjs, as CSS cannot tell it from an
    * inline link (SC 2.5.5, tests/target-size.spec.ts). `top` keeps the bullet
