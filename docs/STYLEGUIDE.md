@@ -1132,7 +1132,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   bar, the logo tile at three quarters, bricks still 44px with their throw. A
   state, not an animation. Its flow box keeps 104px, so nothing below moves, and
   the full header's scroll padding still clears it. Not under `short`. `html` keeps focus and anchors
-  `--spacing-header` and `--spacing(4)` below the top.
+  `--spacing-header` and `--spacing(10)` below the top, so a focused field's
+  label stays in view too.
 - Under 30rem of viewport height (`short`: a landscape phone, any window under
   960px tall at 200% zoom) it scrolls away and the scroll padding drops to
   `--spacing(4)`.
