@@ -174,10 +174,26 @@ const NAMES = [
   'LICENSE-photos',
 ];
 
-/** A photo's short license links to its deed, which names it in full (G55). */
-const LINKED_LICENSES = Object.values(LICENSED_PHOTOS).map(
-  (photo) => photo.licenseShort,
-);
+/*
+ * A photo's short license is defined by its deed (G55), so it is exempt only
+ * where every use in `<main>` is exactly the text of a link to that deed.
+ */
+const linkedLicenses = (html: string): string[] => {
+  const main = /<main\b[\s\S]*?<\/main>/.exec(html)?.[0] ?? '';
+  const text = mainText(html);
+  return Object.values(LICENSED_PHOTOS)
+    .filter(({ licenseShort, licenseHref }) => {
+      const uses = text.split(licenseShort).length - 1;
+      const links = main.match(
+        new RegExp(
+          `<a\\b[^>]*\\bhref="${RegExp.escape(licenseHref)}"[^>]*>${RegExp.escape(licenseShort)}</a>`,
+          'g',
+        ),
+      );
+      return uses > 0 && uses === (links?.length ?? 0);
+    })
+    .map(({ licenseShort }) => licenseShort);
+};
 
 const ABBREVIATION = /\bCC BY\b|\bIPv[46]\b|\b[A-Z][A-Z0-9]+(?:-\d+)?\b/g;
 const HEX_COLOR = /^[0-9A-F]{6}$/;
@@ -368,7 +384,7 @@ test('functional pages use no abbreviation outside FIRST_USES', NODE, () => {
         (entry) => entry.abbreviation,
       ),
     );
-    const text = [...NAMES, ...LINKED_LICENSES].reduce(
+    const text = [...NAMES, ...linkedLicenses(html)].reduce(
       (rest, name) => rest.replaceAll(name, ' '),
       mainText(html),
     );
@@ -378,6 +394,6 @@ test('functional pages use no abbreviation outside FIRST_USES', NODE, () => {
   });
   expect(
     unlisted,
-    'expand each at its first use and list it in FIRST_USES, or add a name to NAMES',
+    'expand each at its first use and list it in FIRST_USES, add a name to NAMES, or link a short license to its deed',
   ).toEqual([]);
 });
