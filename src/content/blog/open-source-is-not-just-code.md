@@ -1,7 +1,7 @@
 ---
 title: 'Open Source Is Not Just Code: Designing Communities That Actually Scale'
 date: 2026-07-10
-updated: 2026-10-08
+updated: 2026-10-18
 category: 'open-source'
 placeholder: false
 tags: ['community', 'governance', 'maintainers', 'sustainability', 'talks']
@@ -17,14 +17,16 @@ seoDescription: 'Six pillars that decide whether an open source project lasts: g
 
 Open source runs almost everything we depend on. You almost certainly used several of these before breakfast:
 
-- [Linux](https://www.kernel.org/) runs the cloud and every Android phone.
+- [Linux](https://www.kernel.org/) is in the cloud and inside every Android phone.
 - [Git](https://git-scm.com/) version-controls nearly all software written today.
 - [curl](https://curl.se/) moves data inside cars, televisions, phones and servers.
 - [OpenSSL](https://www.openssl.org/) secures a huge share of the traffic on the web.
-- [Python](https://www.python.org/) powers much of data work and modern AI.
+- [Python](https://www.python.org/) powers much of the data work and modern AI.
 - [Kubernetes](https://kubernetes.io/) runs cloud infrastructure at scale.
 
 The uncomfortable part is that much of this software is maintained by very small teams, often unpaid volunteers. That is why sustaining these communities matters so much.
+
+<p class="post-aside">Full disclosure: I am part of the Drupal community and its biggest fan. That is why every photo and screenshot here comes from Drupal.</p>
 
 ## The Comfortable Myth
 
@@ -40,7 +42,7 @@ What actually kills projects is more ordinary:
 
 ## Open Source Is a Socio-Technical System
 
-Open source is a socio-technical system: the people and the technology depend on each other, and neither works without the other. The code and the community are not two things you manage separately. They are one system, and they shape each other.
+Open source is a socio-technical system: the people and the technology depend on each other. The code and the community are not two things you manage separately. They are one system, and they shape each other.
 
 ![Sinduri standing and clapping in a lecture hall full of Drupal event attendees.](../../assets/photos/drupal-lecture-hall.jpg 'Photo: Andrey Pshenichny')
 
@@ -52,7 +54,7 @@ The most common failure has a name. In the maintainer trap, the same few people 
 
 When one person becomes a single point of failure, that is a design flaw in the project, not a weakness in the person.
 
-![An attendee in red braces working alone on a laptop at a high table, in a quiet DrupalCon Rotterdam exhibition hall.](../../assets/blog/open-source-is-not-just-code/maintainer-at-laptop.jpg 'Photo: Joris Vercammen')
+![An attendee in red suspenders working alone on a laptop at a high table, in a quiet DrupalCon Rotterdam exhibition hall.](../../assets/blog/open-source-is-not-just-code/maintainer-at-laptop.jpg 'Photo: Joris Vercammen')
 
 [Rust](https://www.rust-lang.org/governance) avoids this on purpose. Instead of relying on one or two heroes, it splits the work across topic teams, each owning its own area, with a council coordinating them. Ownership is spread by design, so no single person carries the whole project.
 
@@ -68,7 +70,7 @@ Governance sounds heavy, but it simply means deciding how you will make decision
 - Spread maintainer roles across more people.
 - Give conflict a clear route.
 
-![Drupal board members standing together on a conference stage, in event lanyards.](../../assets/blog/open-source-is-not-just-code/drupal-board.jpg 'Photo: Karl Hepworth')
+![Drupal Association board members standing together on a conference stage, in event lanyards.](../../assets/blog/open-source-is-not-just-code/drupal-board.jpg 'Photo: Karl Hepworth')
 
 There is no one right model. Some projects run on a benevolent dictator, some on a council and some under a foundation. What matters is that the model is explicit, not accidental. Big projects usually mix several. Kubernetes layers all three:
 
@@ -83,9 +85,9 @@ The opposite extreme is a project controlled entirely by one company. That is co
 - Each project is governed by its own Project Management Committee (PMC), which controls the project and decides who joins it.
 - You earn a place on the PMC through merit: the work you actually do on the project, not your job title or your employer.
 - You sit on it as an individual, never on behalf of a company. Companies do not get a seat; only people do.
-- If one employer begins to dominate a PMC, the Apache board steps in and pushes for more diversity.
+- If one employer begins to dominate a PMC, the [Apache board may take a closer look](https://community.apache.org/projectIndependence.html).
 
-Nobody thinks about governance while things go well. It is what decides how a project gets through the day things go wrong.
+Governance feels boring right up until the day you desperately need it.
 
 **A code of conduct** is part of governance, and it needs to be specific, not aspirational:
 
@@ -107,18 +109,18 @@ Contributor experience is about lowering the cost of a first contribution:
 [Kubernetes](https://github.com/kubernetes/community/blob/master/community-membership.md) does this well:
 
 - A published ladder that runs from member to reviewer to approver.
-- Mentoring cohorts.
-- A graceful way to step back when life gets busy.
+- [Mentoring cohorts](https://github.com/kubernetes/community/tree/master/mentoring).
+- A [graceful way to step back](https://www.kubernetes.dev/docs/guide/owners/) when life gets busy.
 
 When the path is confusing, people do not complain. They leave, and you never learn why.
 
-I know that feeling from my own start. My first contribution was in 2021, during the pandemic, before I had really interacted with the Drupal community beyond the people I worked with. Writing the issue took me 45 minutes. Not the code, just the issue, because I was scared of being judged. Nobody judged me. People were kind and helpful the whole way. Good contributor experience should close exactly that gap between how frightening it feels and how welcoming it actually is.
+I know that feeling from my own start. My first contribution was in 2021, during the pandemic, before I had really interacted with the Drupal community beyond the people I worked with. Writing the issue took me forty-five minutes. Not the code, just the issue, because I was scared of being judged. Nobody judged me. People were kind and helpful the whole way. Good contributor experience should close exactly that gap between how frightening it felt and how welcoming it actually was.
 
 ### 3. Recognition
 
 Most communities recognize the visible work: features, code and commits. But most of what keeps a project alive is invisible: review, triage, documentation and mentoring. None of it shows up in a commit graph. Invisible work gets undervalued, and once it is undervalued, people stop doing it.
 
-The fix is to make it visible. Record who actually did the work, and let that credit reach the companies funding it. [Drupal's contribution credit system](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues) does this publicly and at scale. It credits every issue, for code and for the invisible work, and credits sponsoring organizations alongside individuals.
+The fix is to make it visible. Record who actually did the work, and let that credit reach the companies funding it. [Drupal's contribution credit system](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues) does this publicly and at scale. Maintainers grant credit on every fixed issue, for code and for the invisible work, and credit sponsoring organizations alongside individuals.
 
 Recognition is not just being nice. It quietly changes what people do:
 
@@ -133,15 +135,15 @@ People do not find belonging at a 2,000-person conference. They find it in small
 
 ![About twenty Drupal Austria meetup attendees posing together in a room, one of them holding a Drupal Austria sign.](../../assets/blog/open-source-is-not-just-code/drupal-austria-meetup.webp 'Photo: lowfidelity')
 
-Drupal is the community I know best. [DrupalCon](https://events.drupal.org/) is the flagship, and it keeps pulling people in: at DrupalCon Rotterdam, 27% of attendees were new to DrupalCon. But the real engine is the local camps, run by volunteers and kept deliberately small. That is where new people get pulled in, and where most organizers, including me, learned how any of this works.
+Drupal is the community I know best. [DrupalCon](https://events.drupal.org/) is the flagship, and at DrupalCon Rotterdam 27% of attendees were new to it. But the real engine is the local camps, run by volunteers and kept deliberately small. That is where new people get pulled in, and where most organizers, including me, learned how any of this works.
 
 Drupal events, big and small, also give newcomers three ways to start, instead of leaving them to watch from the back of the room. Each one lowers a different barrier:
 
-- **[Mentorship workshops](https://www.drupal.org/community/contributor-guide/role/mentor)** lower fear. A volunteer team runs them at almost every event, so nobody has to figure it out alone.
-- **[Contribution days](https://events.drupal.org/atlanta2025/contribution)** lower the logistics. They give people a dedicated room to sit down together and actually contribute.
+- **[Mentorship workshops](https://www.drupal.org/community/contributor-guide/role/mentor)** lower fear. A volunteer team runs them at every DrupalCon and many camps, so nobody has to figure it out alone.
+- **[Contribution days](https://www.drupal.org/community/mentoring)** lower the logistics. They give people a dedicated room to sit down together and actually contribute.
 - **[Drupal in a Day](https://www.drupal.org/drupalorg/blog/state-of-drupal-open-university)** raises awareness. It is a newer initiative that brings students in and teaches them Drupal from scratch.
 
-I felt this clearly at [Drupal Mountain Camp](https://drupalmountaincamp.ch/), in a workshop called Why Drupal led by [Mikko Hämäläinen](https://www.drupal.org/u/mkoh), CEO of Druid, where we talked about why each of us contributes. Different backgrounds, different journeys, but the same underlying goal: build something meaningful and grow while doing it. That shared goal is why people say "come for the code, stay for the community".
+I felt this clearly at [Drupal Mountain Camp](https://drupalmountaincamp.ch/), in a workshop called Nine Whys of Drupal led by [Mikko Hämäläinen](https://www.drupal.org/u/mkoh), CEO of Druid, where we talked about why each of us contributes. Different backgrounds, different journeys, but the same underlying goal: build something meaningful and grow while doing it. That shared goal is what "come for the code, stay for the community" actually means.
 
 ### 5. Communi&shy;cation
 
@@ -159,7 +161,7 @@ Great code that nobody understands just sits there unused, so explaining it shou
 
 ### 6. Funding and Sponsorship
 
-Funding is the pillar we are shyest about. Time is not free. Someone always pays, either in money or in unpaid evenings and weekends. I pay my own way and take time off to attend Drupal events. Without sustainable funding, we are asking volunteers to quietly subsidize infrastructure everyone depends on.
+Funding is the pillar we are shyest about. Time is not free. Someone always pays, either in money or in unpaid evenings and weekends. Without sustainable funding, we are asking volunteers to quietly subsidize infrastructure everyone depends on.
 
 Fund the boring, critical work, not just the shiny new features:
 
@@ -174,8 +176,20 @@ A project does not need funding on day one. Small projects run fine on volunteer
 Where to look:
 
 - **Direct support:** [Open Collective](https://opencollective.com/), [GitHub Sponsors](https://github.com/sponsors) and [Patreon](https://www.patreon.com/).
-- **Paying maintainers through subscriptions:** [Tidelift](https://tidelift.com/).
 - **Public investment in critical infrastructure:** the [Sovereign Tech Fund](https://www.sovereign.tech/programs/fund).
+
+## Drupal Across All Six Pillars
+
+Drupal is a project that closely follows all six pillars.
+
+<ol class="pillar-wall">
+<li><strong>Governance</strong><p>A Drupal Association board with member-elected seats, a Code of Conduct, and a Community Working Group that handles code of conduct reports.</p></li>
+<li><strong>Contributor Experience</strong><p>First-time contributor workshops at almost every Drupal event, issues tagged Novice, and a welcoming and active Slack workspace for support.</p></li>
+<li><strong>Recognition</strong><p>Contribution credit for people and companies, for code, reviews, testing, documentation, design and accessibility reviews, triage and case studies.</p></li>
+<li><strong>Local Community</strong><p>DrupalCamps, meetups and local Drupal associations, and LocalGov Drupal.</p></li>
+<li><strong>Communi&shy;cation</strong><p>Finally, the Drupal Advocacy Program credits telling the Drupal story: blog posts, videos, podcasts, translations and talks at non-Drupal events.</p></li>
+<li><strong>Funding and Sponsor&shy;ship</strong><p>Drupal Certified Partners, Sustaining Members and individual members as Ripple Makers.</p></li>
+</ol>
 
 ## What AI Changes
 
@@ -186,7 +200,7 @@ One force is reshaping all six pillars at once, so it deserves its own section.
 - It lowers the barrier to a first contribution.
 - It speeds up documentation, translation and issue triage.
 - It helps people who do not work in English as a first language.
-- It shortens the time needed to understand a codebase, which could ease open source's long reliance on people's spare time.
+- It can shorten the time needed to understand a codebase, which could ease open source's long reliance on people's spare time.
 
 **Where AI adds strain:**
 
@@ -195,22 +209,22 @@ One force is reshaping all six pillars at once, so it deserves its own section.
 
 This is not theoretical. Someone asks a model to find a bug, pastes the confident output into a report, marks it critical and never checks whether it is real. curl is the clearest case:
 
-- [Daniel Stenberg](https://daniel.haxx.se/blog/), who has maintained curl for decades, called it a denial of service on the project.
-- In 2025, [about 1 in 5 submissions was AI slop, and only about 1 in 20 turned out to be a genuine vulnerability](https://daniel.haxx.se/blog/2025/07/14/death-by-a-thousand-slops/). AI slop means reports generated by AI that sound technical but describe no real problem.
-- Each report takes three or four people from the security team, for 30 minutes to three hours each. They are volunteers with a few hours a week.
-- In January 2026 the team [ended its paid bug bounty](https://daniel.haxx.se/blog/2026/01/26/the-end-of-the-curl-bug-bounty/), simply to stop the flood.
+- [Daniel Stenberg](https://daniel.haxx.se/blog/), who has maintained curl for decades, said the project was [effectively being DDoSed](https://www.theregister.com/2025/05/07/curl_ai_bug_reports/).
+- In 2025, [about one in five submissions was AI slop, and only about one in twenty turned out to be a genuine vulnerability](https://daniel.haxx.se/blog/2025/07/14/death-by-a-thousand-slops/). AI slop means reports generated by AI that sound technical but describe no real problem.
+- Each report takes three or four people from the security team, for thirty minutes to three hours each. Most of them have only a few hours a week for curl.
+- In January 2026 the team [ended its paid bug bounty](https://daniel.haxx.se/blog/2026/01/26/the-end-of-the-curl-bug-bounty/) to stop the flood.
 
-It is not only curl. The [Python Software Foundation](https://sethmlarson.dev/slop-security-reports) and Open Collective report the same thing, and tie it directly to maintainer burnout. The problem is the asymmetry: seconds to generate, hours to debunk, aimed at unpaid people who keep critical software running. As Dries Buytaert puts it in [The Privilege of AI in Open Source](https://dri.es/the-privilege-of-ai-in-open-source):
+It is not only curl. [Seth Larson](https://sethmlarson.dev/slop-security-reports), the Python Software Foundation's Security Developer-in-Residence, reports the same thing and ties it to maintainer burnout. The problem is the asymmetry: seconds to generate, hours to debunk, aimed at unpaid people who keep critical software running. As Dries Buytaert puts it in [The Privilege of AI in Open Source](https://dri.es/the-privilege-of-ai-in-open-source):
 
 > AI can make it cheaper to contribute without making it cheaper to review.
 
-The same tools have also found real bugs in curl. In 2025, [Joshua Rogers checked the output of several AI scanners himself and reported about 50 genuine bugs in curl](https://www.theregister.com/2025/10/02/curl_project_swamped_with_ai/), which the team fixed.
+The same tools have also found real bugs in curl. In 2025, [Joshua Rogers used several AI scanners and reported dozens of issues](https://www.theregister.com/2025/10/02/curl_project_swamped_with_ai/). The team merged about fifty fixes based on his reports.
 
 In October 2026 Daniel [posted on LinkedIn](https://www.linkedin.com/posts/danielstenberg_google-closing-their-vdp-oss-program-made-share-7513141850833068032-KLmR/):
 
 > Google closing their VDP OSS program made half a dozen journalists email me for comments. I've told them: in the open source world we don't anymore have the slop problem Google seem to address now, half a year after we've seen it mostly go away by itself. These days, we have a high volume high quality challenge.
 
-So the tool is not the problem. Unverified slop is. AI does not replace community design. It raises the stakes on the same six pillars.
+By then, the slop had mostly gone away by itself. So the tool is not the problem. Unverified slop is. AI does not replace community design. It raises the stakes on the same six pillars.
 
 ## How to Tell Whether It Is Working
 
@@ -275,7 +289,7 @@ You do not have to be a maintainer, or even a contributor. If you care about ope
 
 I fund five maintainers, about 100 euros a month in total. It is small, but steady support like this is what keeps people going, and it nudges others to chip in too.
 
-Each of these actions is small, but together they change how a community works.
+These are small acts, and they add up.
 
 ## Closing
 
@@ -287,15 +301,11 @@ So do not try to move all six pillars at once. Pick the one that hurts most righ
 
 ![Drupal Mountain Camp attendees gathered in front of a wooden building, with snowy mountains behind them and Drupal and Mountain Camp banners on the ground.](../../assets/photos/drupal-mountain-camp.webp 'Photo: Patrick Itten')
 
----
-
 ## About This Talk
 
 This article is based on my talk, _Open Source Is Not Just Code: Designing Communities That Actually Scale_, given at the [WeAreDevelopers World Congress](https://www.wearedevelopers.com/world-congress/agenda/sessions/open-source-is-not-just-code-designing-communities-that-actually-scale-1142282) on Friday 10 July 2026, 09:40 to 10:10, on Stage 3 (powered by AWS).
 
 [View the slides](/talks/open-source-is-not-just-code/), or [download them](/talks/open-source-is-not-just-code.pdf) (PDF, 503 KB, 31 pages).
-
----
 
 ## Sources and Further Reading
 
@@ -317,7 +327,7 @@ This article is based on my talk, _Open Source Is Not Just Code: Designing Commu
 
 - [DrupalCon and community events](https://events.drupal.org/)
 - [Mentoring and first-time contributor workshops](https://www.drupal.org/community/contributor-guide/role/mentor)
-- [Contribution days at events](https://events.drupal.org/atlanta2025/contribution)
+- [Contribution days at events](https://www.drupal.org/community/mentoring)
 - [Drupal in a Day and Open University](https://www.drupal.org/drupalorg/blog/state-of-drupal-open-university)
 
 ### Funding
@@ -326,7 +336,6 @@ This article is based on my talk, _Open Source Is Not Just Code: Designing Commu
 - [Open Collective](https://opencollective.com/)
 - [GitHub Sponsors](https://github.com/sponsors)
 - [Patreon](https://www.patreon.com/)
-- [Tidelift](https://tidelift.com/)
 - [Sovereign Tech Fund](https://www.sovereign.tech/programs/fund)
 
 ### AI and Maintainer Burden
@@ -346,3 +355,5 @@ This article is based on my talk, _Open Source Is Not Just Code: Designing Commu
 - [OpenSSL](https://www.openssl.org/)
 - [Python](https://www.python.org/)
 - [Kubernetes](https://kubernetes.io/)
+
+<p class="post-aside">Updated 18 October 2026: facts, quotes and links rechecked against their sources and corrected, and the Drupal Across All Six Pillars section added with new information.</p>
