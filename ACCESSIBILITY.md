@@ -421,7 +421,8 @@ links. Not automated:
 If something on this site blocks you, report it. You do not need to know the
 WCAG criterion or say anything about yourself.
 
-- **Public:** <https://github.com/sindurigf/sinduri-lol/issues>
+- **Public:** <https://github.com/sindurigf/sinduri-lol/issues/new?template=accessibility.yml>,
+  a short form with every field optional
 - **Private:** <lol@sinduri.lol>
 
 Useful, never required: the page, what you tried and what happened, your
