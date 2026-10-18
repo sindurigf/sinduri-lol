@@ -266,7 +266,7 @@ const catInfo: CatInfo[] = await Promise.all(
     </p>
 
     <nav aria-label="On this page" class="mt-8">
-      <ul class="flex flex-wrap gap-6">
+      <ul role="list" class="flex flex-wrap gap-6">
         {SECTIONS.map((section) => (
           <li>
             <a href={`#${section.id}`} class="chip">
