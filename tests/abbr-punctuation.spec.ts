@@ -16,10 +16,13 @@ const BLOCK_WIDTHS = { min: 120, max: 320 };
 
 /* Static, so `--list` works before a build; the first test keeps it complete. */
 const ABBR_ROUTES = [
+  '/about',
   '/accessibility',
+  '/blog/open-source-is-not-just-code',
   '/brand',
   '/brand/accessibility',
   '/brand/cards',
+  '/brand/photos',
   '/brand/template',
   '/brand/text',
   '/credits',

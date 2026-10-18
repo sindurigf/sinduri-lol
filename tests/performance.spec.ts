@@ -11,10 +11,10 @@ import { LAYOUT_SHIFT, layoutShiftOf } from './layout-shift';
  * so it is checked with Lighthouse on the live site (docs/DEPLOYMENT.md).
  */
 
-/* Decoded script bytes. `/` and `/about` carry Vue. */
+/* Decoded script bytes. `/` and `/about` carry Vue; `/about` also the abbreviation script for its photo license. */
 const ROUTE_SCRIPT_BUDGETS: Readonly<Record<string, number>> = {
   '/': 96_000,
-  '/about': 127_000,
+  '/about': 128_000,
 };
 const PAGE_SCRIPT_BUDGET = 14_000;
 
