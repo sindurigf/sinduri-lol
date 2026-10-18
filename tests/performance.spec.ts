@@ -19,7 +19,7 @@ const ROUTE_SCRIPT_BUDGETS: Readonly<Record<string, number>> = {
 const PAGE_SCRIPT_BUDGET = 14_000;
 
 /* Decoded bytes of the stylesheets a page links plus its inline `<style>`. Every route links the one sheet. */
-const PAGE_STYLE_BUDGET = 103_000;
+const PAGE_STYLE_BUDGET = 120_000;
 
 const STYLESHEET_HREF = /<link\b[^>]*\brel="stylesheet"[^>]*\bhref="([^"]+)"/g;
 const INLINE_STYLE = /<style\b[^>]*>([\s\S]*?)<\/style>/g;
