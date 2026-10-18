@@ -10,7 +10,7 @@ featured: true
 readingTime: 14
 seoTitle: 'Open Source Is Not Just Code'
 cover: '../../assets/blog/open-source-is-not-just-code/mentoring-table.jpg'
-coverAlt: 'Sinduri writing on sticky notes at the Drupal mentoring table at DrupalCon Rotterdam, beside a sign that reads Many tiny drops make an ocean.'
+coverAlt: 'Sinduri at the Drupal mentoring table at DrupalCon Rotterdam.'
 coverCredit: 'Bram Driesen'
 seoDescription: 'Six pillars that decide whether an open source project lasts: governance, contributor experience, recognition, local community, communication and funding.'
 ---
@@ -44,7 +44,7 @@ What actually kills projects is more ordinary:
 
 Open source is a socio-technical system: the people and the technology depend on each other. The code and the community are not two things you manage separately. They are one system, and they shape each other.
 
-![Sinduri standing and clapping in a lecture hall full of Drupal event attendees.](../../assets/photos/drupal-lecture-hall.jpg 'Photo: Andrey Pshenichny')
+![Sinduri clapping at a Drupal event.](../../assets/photos/drupal-lecture-hall.jpg 'Photo: Andrey Pshenichny')
 
 When the community is healthy, the code benefits. When the community breaks down, the code suffers, however elegant it is. So community design is not a soft or secondary concern. It matters as much as the technical design.
 
@@ -54,7 +54,7 @@ The most common failure has a name. In the maintainer trap, the same few people 
 
 When one person becomes a single point of failure, that is a design flaw in the project, not a weakness in the person.
 
-![An attendee in red suspenders working alone on a laptop at a high table, in a quiet DrupalCon Rotterdam exhibition hall.](../../assets/blog/open-source-is-not-just-code/maintainer-at-laptop.jpg 'Photo: Joris Vercammen')
+![An attendee at DrupalCon Rotterdam.](../../assets/blog/open-source-is-not-just-code/maintainer-at-laptop.jpg 'Photo: Joris Vercammen')
 
 [Rust](https://www.rust-lang.org/governance) avoids this on purpose. Instead of relying on one or two heroes, it splits the work across topic teams, each owning its own area, with a council coordinating them. Ownership is spread by design, so no single person carries the whole project.
 
@@ -70,7 +70,7 @@ Governance sounds heavy, but it simply means deciding how you will make decision
 - Spread maintainer roles across more people.
 - Give conflict a clear route.
 
-![Drupal Association board members standing together on a conference stage, in event lanyards.](../../assets/blog/open-source-is-not-just-code/drupal-board.jpg 'Photo: Karl Hepworth')
+![Drupal Association board members on stage.](../../assets/blog/open-source-is-not-just-code/drupal-board.jpg 'Photo: Karl Hepworth')
 
 There is no one right model. Some projects run on a benevolent dictator, some on a council and some under a foundation. What matters is that the model is explicit, not accidental. Big projects usually mix several. Kubernetes layers all three:
 
@@ -104,7 +104,7 @@ Contributor experience is about lowering the cost of a first contribution:
 - Label good first issues.
 - Make the path from first patch to trusted contributor visible, so people can see a future in the project.
 
-![Drupal.org's Contribution areas page: there are many ways to contribute beyond core code, from accessibility and documentation to mentoring and translation.](../../assets/blog/open-source-is-not-just-code/contribution-areas.png 'Screenshot: Drupal.org')
+![Drupal.org's Contribution areas page, with many ways to contribute beyond code.](../../assets/blog/open-source-is-not-just-code/contribution-areas.png 'Screenshot: Drupal.org')
 
 [Kubernetes](https://github.com/kubernetes/community/blob/master/community-membership.md) does this well:
 
@@ -133,7 +133,7 @@ With credit for individuals and standing for companies, recognition stops being 
 
 People do not find belonging at a 2,000-person conference. They find it in small rooms, working together on shared problems. So pair the big global event with small local ones, where the barrier to joining drops.
 
-![About twenty Drupal Austria meetup attendees posing together in a room, one of them holding a Drupal Austria sign.](../../assets/blog/open-source-is-not-just-code/drupal-austria-meetup.webp 'Photo: lowfidelity')
+![A Drupal Austria meetup.](../../assets/blog/open-source-is-not-just-code/drupal-austria-meetup.webp 'Photo: lowfidelity')
 
 Drupal is the community I know best. [DrupalCon](https://events.drupal.org/) is the flagship, and at DrupalCon Rotterdam 27% of attendees were new to it. But the real engine is the local camps, run by volunteers and kept deliberately small. That is where new people get pulled in, and where most organizers, including me, learned how any of this works.
 
@@ -299,7 +299,7 @@ Be honest with yourself too. There is no quick fix. You will not get it all righ
 
 So do not try to move all six pillars at once. Pick the one that hurts most right now, and start there.
 
-![Drupal Mountain Camp attendees gathered in front of a wooden building, with snowy mountains behind them and Drupal and Mountain Camp banners on the ground.](../../assets/photos/drupal-mountain-camp.webp 'Photo: Patrick Itten')
+![Drupal Mountain Camp attendees.](../../assets/photos/drupal-mountain-camp.webp 'Photo: Patrick Itten')
 
 ## About This Talk
 
