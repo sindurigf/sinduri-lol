@@ -1102,7 +1102,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   take `block-light` fills and `block-ink` lines. `.site-header` keeps the
   page's values as `--page-*` for the menu dialog.
 - The logo tile and name sit on the bar with no block, edge or throw of
-  their own; the tile keeps its `bunny` shadow.
+  their own; the tile keeps its `bunny` shadow. The link pads that shadow
+  inside its box, so its ring clears it and stays on the gold, full and slim.
 - Nav links, the theme switch and the call to action are joined bricks
   (`.header-bricks`): 44px tall, the target (SC 2.5.5), sharing their 4px
   edges, one `shadow-brick` per row. Each row sits half its throw high, so
