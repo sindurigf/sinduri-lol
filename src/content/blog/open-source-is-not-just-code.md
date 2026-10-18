@@ -44,7 +44,7 @@ What actually kills projects is more ordinary:
 
 Open source is a socio-technical system: the people and the technology depend on each other. The code and the community are not two things you manage separately. They are one system, and they shape each other.
 
-![Sinduri clapping at a Drupal event.](../../assets/photos/drupal-lecture-hall.jpg 'Photo: Andrey Pshenichny')
+![Attendees at Drupal Dev Days Vienna.](../../assets/photos/drupal-lecture-hall.jpg 'Photo: Andrey Pshenichny')
 
 When the community is healthy, the code benefits. When the community breaks down, the code suffers, however elegant it is. So community design is not a soft or secondary concern. It matters as much as the technical design.
 
