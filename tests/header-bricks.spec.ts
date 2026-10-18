@@ -11,8 +11,7 @@ import { DESKTOP_VIEWPORT, PHONE_VIEWPORT } from './wcag';
 
 /* A route with a current header link, so a gold brick is walked too. */
 const ROUTE = '/about/';
-const BRICKS =
-  '.header-slab :is(.logo-link, .header-bricks a, .header-bricks button)';
+const BRICKS = '.header-bricks :is(a, button)';
 const MAX_STOPS = 12;
 
 interface Stop {
@@ -44,7 +43,7 @@ const readStop = `(() => {
     range.selectNodeContents(node);
     text.push(...range.getClientRects());
   }
-  const marks = [...text, ...[...el.querySelectorAll('svg, img, .logo-tile')].map((n) => n.getBoundingClientRect())]
+  const marks = [...text, ...[...el.querySelectorAll('svg, img')].map((n) => n.getBoundingClientRect())]
     .filter((r) => r.width > 0 && r.height > 0);
   const clear = marks.every((r) => r.left >= inner.left - 0.5 && r.right <= inner.right + 0.5 && r.top >= inner.top - 0.5 && r.bottom <= inner.bottom + 0.5);
   return {
