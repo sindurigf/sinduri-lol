@@ -102,7 +102,7 @@ Contributor experience is about lowering the cost of a first contribution:
 - Label good first issues.
 - Make the path from first patch to trusted contributor visible, so people can see a future in the project.
 
-![The Drupal.org contributor guide's Contribution areas page. It says the Drupal project has many areas you can contribute to, not just the Drupal Core code, and lists them: accessibility, community building, contributed modules, themes and distributions, the contributor guide, documentation, Drupal core, Drupal.org websites, event planning, knowledge sharing, marketing, mentoring, support, translation and usability.](../../assets/blog/open-source-is-not-just-code/contribution-areas.png 'Screenshot: Drupal.org')
+![Drupal.org's Contribution areas page: there are many ways to contribute beyond core code, from accessibility and documentation to mentoring and translation.](../../assets/blog/open-source-is-not-just-code/contribution-areas.png 'Screenshot: Drupal.org')
 
 [Kubernetes](https://github.com/kubernetes/community/blob/master/community-membership.md) does this well:
 
@@ -155,7 +155,7 @@ That work lives in:
 
 Great code that nobody understands just sits there unused, so explaining it should never be an afterthought. Drupal now counts this work as contribution: in a pilot, the Drupal Association awards contribution credit for advocacy, such as telling the story of modern Drupal.
 
-![New, a Drupal Association pilot: Advocacy now earns contribution credit. Tell the story of modern Drupal. The Drupal Association awards the credit. Create, then share, then earn credits, at drupal.org/advocacy.](../../assets/blog/open-source-is-not-just-code/advocacy-contribution-credit.png 'Screenshot: Drupal Association')
+![Drupal Association announcement: advocacy now earns contribution credit, at drupal.org/advocacy.](../../assets/blog/open-source-is-not-just-code/advocacy-contribution-credit.png 'Screenshot: Drupal Association')
 
 ### 6. Funding and Sponsorship
 
