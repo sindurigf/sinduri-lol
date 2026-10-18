@@ -42,6 +42,7 @@ import mountainCampAudience from '../assets/photos/mountain-camp-audience.jpg';
 import mountainCampFriend from '../assets/photos/mountain-camp-friend.jpg';
 import mountainCampHallway from '../assets/photos/mountain-camp-hallway.jpg';
 import rotterdamAward from '../assets/photos/drupalcon-rotterdam-award.jpg';
+import LicensedPhotoCredit from '../components/LicensedPhotoCredit.astro';
 import PhotoStrip from '../components/PhotoStrip.astro';
 import {
   LICENSED_PHOTOS,
@@ -74,8 +75,8 @@ const MARK_HEIGHT = 64;
 const MENTOR: Photographer = 'Klaus Purer';
 const MOUNTAIN_CAMP_URL = 'https://drupalmountaincamp.ch/';
 const MOUNTAIN_CAMP_PHOTOGRAPHER: Photographer = 'Josef Kruckenberg';
-const ROTTERDAM_AWARD = LICENSED_PHOTOS['drupalcon-rotterdam-award'];
-const ROTTERDAM_PHOTOGRAPHER: Photographer = ROTTERDAM_AWARD.photographer;
+const ROTTERDAM_AWARD: keyof typeof LICENSED_PHOTOS =
+  'drupalcon-rotterdam-award';
 
 const SECTIONS = [
   { id: 'lepus-ridet', title: 'Why Lepus Ridet' },
@@ -550,15 +551,8 @@ const catInfo: CatInfo[] = await Promise.all(
         photos={DRUPAL_EVENTS}
       />
       <p class="mt-4 text-body text-subtle">
-        Photos:{' '}
-        <a href={photographerHref(ROTTERDAM_PHOTOGRAPHER)}>
-          {ROTTERDAM_PHOTOGRAPHER}
-        </a>{' '}
-        at DrupalCon Rotterdam (
-        <a href={ROTTERDAM_AWARD.source}>{ROTTERDAM_AWARD.title}</a> on{' '}
-        {ROTTERDAM_AWARD.sourceName},{' '}
-        <a href={ROTTERDAM_AWARD.licenseHref}>{ROTTERDAM_AWARD.license}</a>,{' '}
-        {ROTTERDAM_AWARD.changes}),{' '}
+        Photos: <LicensedPhotoCredit photo={ROTTERDAM_AWARD} /> at DrupalCon
+        Rotterdam,{' '}
         <a href={photographerHref(MOUNTAIN_CAMP_PHOTOGRAPHER)}>
           {MOUNTAIN_CAMP_PHOTOGRAPHER}
         </a>{' '}
