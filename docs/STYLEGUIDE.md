@@ -634,7 +634,9 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
   closing band. On `/about` it sits on a gold card under a decorative
   `text-quote-mark`, joined to the photo and kindness list.
 - **A name with a line saying what it did** (`/credits`): each entry on an
-  inset `bg-background` tile inside the card. No rule between entries.
+  inset `bg-background` tile inside the card. No rule between entries. On a
+  full-width card (Guides), each tile is a row from `lg`: name in 3 of 12
+  columns, text in 9 at `max-w-measure`; stacked below.
 - **Photo captions:** none on People and Places; the alt text names who is in
   each photo. Where a photo carries a caption, it starts at the photo's left edge.
 - **Form fields:** a 6px edge. A failing field adds a 4px pink inset ring
@@ -700,7 +702,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
 | Career                 | Hero, Panel, Open (with the solid block), Open, Surface, Close |
 | Contact                | Hero, Open, Surface                                            |
 | Contact sent           | Hero, Panel, Close                                             |
-| Credits                | Hero, Open (panels), Open (panels), Close                      |
+| Credits                | Hero, Open (panels) x4, Close                                  |
 | Privacy, Accessibility | Hero (reading measure), Reading                                |
 | Blog index             | Hero, Listing, Close                                           |
 | Blog category, tag     | Hero, Listing                                                  |
@@ -941,18 +943,20 @@ Enforced by `tests/post-page.spec.ts`.
 
 ### Rhythm inside `.prose`
 
-| Element     | Treatment                                                                                                                                               |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Paragraph   | `mt-6`, `text-body` (18 to 19px, line height 1.62), `text`                                                                                              |
-| `h2`        | `mt-16`, `text-post-h2` (28px); its text follows at the next `mt-6`                                                                                     |
-| `h3`        | `mt-12`, `text-post-h3` (22px). The last level                                                                                                          |
-| Inline code | `.prose code`: the mono stack at `--text-code`, on a `surface` fill with `px-1` and no border                                                           |
-| Code block  | `.prose pre`: mono, `border-4 border-border` on `surface`, `p-4`, scrolls sideways, a named tab stop while it overflows                                 |
-| Lists       | `mt-6 pl-6`, items `mt-3`, gold markers; a link-only item is 44px tall                                                                                  |
-| Blockquote  | `mt-6`, `edge-l border-border`, `pl-6`, its text at weight 900; with a source, a `figure` whose `figcaption` names it below                             |
-| Table       | `mt-6`, `edge`, fixed layout, cells `px-4 py-3`, headers on `surface`; Markdown headers get `scope="col"`, a table with row headers is HTML             |
-| Figure      | `mt-8`, wider than the text ([Measure](#measure)), an `.aspect-frame` sized by the file with a 4px `border` ring; caption `mt-4 text-label text-subtle` |
-| `hr`        | `mt-16`, a 6px `border` rule                                                                                                                            |
+| Element     | Treatment                                                                                                                                                                                    |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Paragraph   | `mt-6`, `text-body` (18 to 19px, line height 1.62), `text`                                                                                                                                   |
+| `h2`        | `mt-16`, `text-post-h2` (28px); its text follows at the next `mt-6`                                                                                                                          |
+| `h3`        | `mt-12`, `text-post-h3` (22px). The last level                                                                                                                                               |
+| Inline code | `.prose code`: the mono stack at `--text-code`, on a `surface` fill with `px-1` and no border                                                                                                |
+| Code block  | `.prose pre`: mono, `border-4 border-border` on `surface`, `p-4`, scrolls sideways, a named tab stop while it overflows                                                                      |
+| Lists       | `mt-6 pl-6`, items `mt-3`, gold markers; a link-only item is 44px tall                                                                                                                       |
+| Blockquote  | `mt-6`, `edge-l border-border`, `pl-6`, its text at weight 900; with a source, a `figure` whose `figcaption` names it below                                                                  |
+| Table       | `mt-6`, `edge`, fixed layout, cells `px-4 py-3`, headers on `surface`; Markdown headers get `scope="col"`, a table with row headers is HTML                                                  |
+| Figure      | `mt-8`, wider than the text ([Measure](#measure)), an `.aspect-frame` sized by the file with a 4px `border` ring; caption `mt-4 text-label text-subtle`                                      |
+| `hr`        | `mt-16`, a 6px `border` rule                                                                                                                                                                 |
+| Aside       | `p.post-aside`: a plain paragraph in caption style, `max-w-aside text-label leading-paragraph text-subtle` (80 characters a line, SC 1.4.8); no rule or border                               |
+| Pillar wall | `ol.pillar-wall`: equal joined light columns under gold capitals, one throw, each a step higher; one column below `xs`, two from `xs`, three from `sm`, six from `xl` out to the page column |
 
 - A heading sits 24px above its own text and 48 to 64px below the text before
   it.
