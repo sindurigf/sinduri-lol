@@ -118,7 +118,7 @@
       }
     }
 
-    @media (forced-colors: active) {
+    @media (forced-colors: active), print {
       filter: none;
     }
   }
@@ -161,6 +161,18 @@
 
       & > li:nth-child(6) {
         translate: 0 calc(var(--pillar-rise) * -5);
+      }
+    }
+  }
+
+  /* Printed flat and whole: a filter rasterizes the text and a translated brick splits across pages. */
+  @media print {
+    .post-layout .prose .pillar-wall {
+      padding-top: 0;
+
+      & > li:nth-child(n) {
+        translate: none;
+        break-inside: avoid;
       }
     }
   }

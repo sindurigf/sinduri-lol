@@ -71,3 +71,27 @@ test('a post prints its In This Post list open', async ({ page }) => {
     'the contents links do not print',
   ).toBeVisible();
 });
+
+/** The post that holds the pillar wall (`.pillar-wall` in prose.css). */
+const PILLAR_POST = '/blog/open-source-is-not-just-code/';
+
+/* SC 1.3.2: a filter rasterizes the wall's text and a raised brick splits across pages, so print lays it flat. */
+test('a pillar wall prints flat, with text and no split bricks', async ({
+  page,
+}) => {
+  await gotoSettled(page, PILLAR_POST);
+  await page.emulateMedia({ media: 'print' });
+  const wall = await page.locator('.pillar-wall').evaluate((list) => ({
+    filter: getComputedStyle(list).filter,
+    bricks: [...list.children].map((brick) => {
+      const style = getComputedStyle(brick);
+      return { translate: style.translate, breakInside: style.breakInside };
+    }),
+  }));
+  expect(wall.filter, 'the wall keeps its filter on paper').toBe('none');
+  expect(wall.bricks.length, 'the wall has no bricks').toBeGreaterThan(0);
+  for (const brick of wall.bricks) {
+    expect(brick.translate, 'a brick stays raised on paper').toBe('none');
+    expect(brick.breakInside, 'a brick can split across pages').toBe('avoid');
+  }
+});
