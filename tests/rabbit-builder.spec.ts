@@ -215,3 +215,36 @@ test('a tumble at 320px never widens or lengthens the page', async ({
     'a falling brick widened or lengthened the page (SC 1.4.10)',
   ).toEqual([]);
 });
+
+test('focusing a falling brick ends the tumble clip', async ({ page }) => {
+  await gotoSettled(page, ROUTE);
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+  const knock = page.getByRole('button', { name: KNOCK_NAME });
+  await expect(knock).toBeVisible();
+  await expectAtRest(page, 'the page was still building before the press');
+
+  await knock.click();
+  const falling = page.locator('[data-build="tumble"]');
+  await expect(
+    falling.first(),
+    'pressing Knock It Down moved nothing',
+  ).toBeAttached();
+  /* Focus lands one falling brick and a press lands the rest, all before their animations end. */
+  await page
+    .locator('[data-build="tumble"] a, a[data-build="tumble"]')
+    .first()
+    .focus();
+  await page.evaluate(() =>
+    document
+      .querySelectorAll<HTMLElement>('[data-build="tumble"]')
+      .forEach((brick) =>
+        brick.dispatchEvent(new Event('pointerdown', { bubbles: true })),
+      ),
+  );
+
+  await expect(falling).toHaveCount(0);
+  await expect(
+    page.locator('html'),
+    'main and footer stay clipped after the last brick landed early',
+  ).not.toHaveAttribute('data-tumbling');
+});

@@ -37,6 +37,10 @@ const settle = (brick: HTMLElement): void => {
   brick.removeAttribute('data-build');
   brick.style.removeProperty('animation-delay');
   brick.querySelector(':scope > .builder-rabbit')?.remove();
+  /* Here, not on animationend: a brick landed early by focus or a press cancels its animation. */
+  if (!document.querySelector('[data-build="tumble"]')) {
+    delete document.documentElement.dataset.tumbling;
+  }
 };
 
 const makeRabbit = (delayMs: number): HTMLElement | null => {
@@ -96,7 +100,6 @@ const arm = (): IntersectionObserver => {
 };
 
 const tumble = (): void => {
-  document.documentElement.dataset.tumbling = '';
   tuft?.setAttribute('data-build', 'kick');
   tuft?.addEventListener(
     'animationend',
@@ -131,12 +134,12 @@ const tumble = (): void => {
         if (event.animationName !== 'build-tumble') return;
         brick.removeEventListener('animationend', land);
         settle(brick);
-        if (!document.querySelector('[data-build="tumble"]')) {
-          delete document.documentElement.dataset.tumbling;
-        }
       };
       brick.addEventListener('animationend', land);
     });
+  if (document.querySelector('[data-build="tumble"]')) {
+    document.documentElement.dataset.tumbling = '';
+  }
 };
 
 let observer: IntersectionObserver | null = null;
