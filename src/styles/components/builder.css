@@ -49,6 +49,20 @@
       animation: build-stride var(--build-stride) ease-in-out 6;
     }
 
+    /* The crew: the boss faces the pusher and waves it on; the puller leans back on the far end. */
+    :is(.crew-boss, .crew-puller) .footer-tuft {
+      rotate: y 180deg;
+    }
+
+    .crew-boss .footer-tuft {
+      animation: build-boss var(--build-stride) ease-in-out 6;
+    }
+
+    .crew-puller .footer-tuft {
+      transform-origin: 0 100%;
+      animation: build-pull calc(var(--build-stride) * 2) ease-in-out 3;
+    }
+
     /* A falling brick never widens or lengthens the page (SC 1.4.10); clip keeps sticky working. */
     [data-tumbling] :is(main, footer) {
       overflow: clip;
@@ -118,6 +132,18 @@
     100% {
       transform: translateX(var(--run));
       opacity: 0;
+    }
+  }
+
+  @keyframes build-boss {
+    50% {
+      translate: 0 --spacing(-1);
+    }
+  }
+
+  @keyframes build-pull {
+    50% {
+      skew: 8deg 0deg;
     }
   }
 

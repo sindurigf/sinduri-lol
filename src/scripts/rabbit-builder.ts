@@ -31,13 +31,13 @@ const knock = Object.assign(document.createElement('button'), {
 });
 
 /* Each wall's rabbit: kept outside the wall, so the wall's own clip and moves never touch it. */
-const rabbits = new WeakMap<HTMLElement, HTMLElement>();
+const rabbits = new WeakMap<HTMLElement, HTMLElement[]>();
 
 const settle = (element: HTMLElement): void => {
   element.removeAttribute('data-build');
   element.style.removeProperty('animation-delay');
   element.style.removeProperty('--push');
-  rabbits.get(element)?.remove();
+  rabbits.get(element)?.forEach((rabbit) => rabbit.remove());
   rabbits.delete(element);
   /* Here, not on animationend: a brick landed early by focus or a press cancels its animation. */
   if (!document.querySelector('[data-build="tumble"]')) {
@@ -97,7 +97,18 @@ const planPush = (wall: HTMLElement): PushPlan => {
   };
 };
 
-const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
+/* The crew: who stands where along the wall's top, as a share of the room left. */
+const CREW = [
+  { role: 'pusher', at: 0 },
+  { role: 'boss', at: 0.5 },
+  { role: 'puller', at: 1 },
+] as const;
+
+const makeRabbit = (
+  plan: PushPlan,
+  delayMs: number,
+  member: (typeof CREW)[number],
+): HTMLElement | null => {
   const height = Math.min(plan.room - RABBIT_CLEARANCE_PX, RABBIT_MAX_PX);
   if (!tuft || height < RABBIT_MIN_PX) return null;
   /* The rabbit's own box, kept beside its drawing in Footer.astro. */
@@ -110,15 +121,16 @@ const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
     .forEach((grass) => grass.remove());
   drawing.setAttribute('viewBox', crop);
   const rabbit = document.createElement('span');
-  rabbit.className = 'builder-rabbit';
+  rabbit.className = `builder-rabbit crew-${member.role}`;
+  const offset = (plan.width - width) * member.at;
   rabbit.setAttribute('aria-hidden', 'true');
   Object.assign(rabbit.style, {
-    left: `${plan.left}px`,
+    left: `${plan.left + offset}px`,
     top: `${plan.floor - height}px`,
     width: `${width}px`,
     animationDelay: `${delayMs}ms`,
   });
-  rabbit.style.setProperty('--run', `${plan.width - width}px`);
+  rabbit.style.setProperty('--run', `${plan.width - width - offset}px`);
   rabbit.append(drawing);
   return rabbit;
 };
@@ -129,19 +141,27 @@ const push = (plan: PushPlan, delayMs: number): void => {
   wall.style.setProperty('--push', `${plan.width}px`);
   wall.style.animationDelay = `${delayMs}ms`;
   wall.dataset.build = 'push';
-  const rabbit = makeRabbit(plan, delayMs);
+  /* A crew only where all three fit side by side. */
+  const crew = CREW.map((member) => makeRabbit(plan, delayMs, member));
+  const team = crew.every(Boolean) ? (crew as HTMLElement[]) : [];
+  const fits =
+    team.length > 0 &&
+    team.reduce((sum, rabbit) => sum + parseFloat(rabbit.style.width), 0) <=
+      plan.width;
+  const members = fits ? team : [];
   wall.addEventListener('animationend', (event) => {
     if (event.target !== wall || event.animationName !== 'build-push') return;
-    if (rabbit) rabbit.classList.add('run');
+    if (members.length)
+      members.forEach((rabbit) => rabbit.classList.add('run'));
     else settle(wall);
   });
-  if (!rabbit) return;
-  rabbits.set(wall, rabbit);
-  /* The wall rests once its rabbit has gone. */
-  rabbit.addEventListener('animationend', (event) => {
+  if (!members.length) return;
+  rabbits.set(wall, members);
+  /* The wall rests once the last of its crew has gone. */
+  members.at(-1)!.addEventListener('animationend', (event) => {
     if (event.animationName === 'build-run') settle(wall);
   });
-  plan.host.append(rabbit);
+  plan.host.append(...members);
 };
 
 /* Outermost walls only: a wall inside another builds with it. */
