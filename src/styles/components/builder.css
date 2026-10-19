@@ -49,6 +49,63 @@
       animation: build-stride var(--build-stride) ease-in-out 6;
     }
 
+    /* The repertoire: each act stays inside the wall's own box. */
+    [data-build='push'][data-act='drop'] {
+      animation-name: build-drop;
+      animation-timing-function: ease-in;
+      transform-origin: 50% 100%;
+    }
+
+    [data-build='push'][data-act='stamp'] {
+      animation-name: build-stamp;
+    }
+
+    [data-build='push'][data-act='unfold'] {
+      animation-name: build-unfold;
+      transform-origin: 0 50%;
+    }
+
+    /* The rabbit braces for a drop or a stamp, and walks the edge of an unfold. */
+    .builder-rabbit:is([data-act='drop'], [data-act='stamp']) .footer-tuft {
+      animation: build-brace var(--build-push) ease-in-out both;
+    }
+
+    .builder-rabbit[data-act='unfold'] {
+      --run-from: var(--run);
+      animation: build-walk var(--build-push) var(--build-push-ease) both;
+    }
+
+    .builder-dust {
+      position: absolute;
+      aspect-ratio: 1;
+      @apply rounded-full;
+      background: var(--color-subtle);
+      pointer-events: none;
+      animation: build-puff var(--build-run) ease-out both;
+    }
+
+    :has(> .builder-rabbit) {
+      position: relative;
+    }
+
+    /* Stands on the wall's left end, in the empty gap above it, while the wall comes out under it. */
+    .builder-rabbit {
+      position: absolute;
+      pointer-events: none;
+      /* Bricks remap gold to ink inside; the rabbit keeps the footer's colors. */
+      --color-gold: var(--color-block-gold);
+    }
+
+    .builder-rabbit.run {
+      animation: build-run var(--build-run) ease-in both;
+    }
+
+    .builder-rabbit .footer-tuft {
+      width: 100%;
+      transform-origin: 50% 100%;
+      animation: build-stride var(--build-stride) ease-in-out 6;
+    }
+
     /* A falling brick never widens or lengthens the page (SC 1.4.10); clip keeps sticky working. */
     [data-tumbling] :is(main, footer) {
       overflow: clip;
@@ -109,7 +166,7 @@
   /* Along the top of the wall and out, never up past the gap. */
   @keyframes build-run {
     0% {
-      transform: translateX(0);
+      transform: translateX(var(--run-from, 0));
       opacity: 1;
     }
     70% {
@@ -117,6 +174,110 @@
     }
     100% {
       transform: translateX(var(--run));
+      opacity: 0;
+    }
+  }
+
+  @keyframes build-drop {
+    0% {
+      translate: 0 calc(var(--push-y) * -1);
+      clip-path: inset(
+        var(--push-y) calc(var(--hard-throw) * -1) calc(var(--hard-throw) * -1)
+          0
+      );
+    }
+    70% {
+      translate: 0 0;
+      scale: 1;
+      clip-path: inset(
+        0 calc(var(--hard-throw) * -1) calc(var(--hard-throw) * -1) 0
+      );
+    }
+    82% {
+      scale: 1 0.94;
+    }
+    92% {
+      scale: 1 1.01;
+    }
+    99% {
+      clip-path: inset(
+        0 calc(var(--hard-throw) * -1) calc(var(--hard-throw) * -1) 0
+      );
+    }
+    100% {
+      translate: 0 0;
+      scale: 1;
+      clip-path: none;
+    }
+  }
+
+  @keyframes build-stamp {
+    0% {
+      scale: 0.5;
+      opacity: 0;
+    }
+    55% {
+      scale: 0.5;
+      opacity: 0;
+    }
+    75% {
+      scale: 1;
+      opacity: 1;
+    }
+    85% {
+      scale: 0.97;
+    }
+    100% {
+      scale: 1;
+      opacity: 1;
+    }
+  }
+
+  @keyframes build-unfold {
+    0% {
+      scale: 0 1;
+    }
+    85% {
+      scale: 1 1;
+    }
+    92% {
+      scale: 0.98 1;
+    }
+    100% {
+      scale: 1 1;
+    }
+  }
+
+  @keyframes build-walk {
+    85%,
+    100% {
+      transform: translateX(var(--run));
+    }
+  }
+
+  @keyframes build-brace {
+    0%,
+    60% {
+      scale: 1;
+    }
+    72% {
+      scale: 1.12 0.82;
+    }
+    84% {
+      scale: 0.96 1.06;
+    }
+    100% {
+      scale: 1;
+    }
+  }
+
+  @keyframes build-puff {
+    0% {
+      scale: 0.4;
+      opacity: 0.8;
+    }
+    100% {
+      scale: 1.6;
       opacity: 0;
     }
   }

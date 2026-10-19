@@ -35,8 +35,10 @@ const rabbits = new WeakMap<HTMLElement, HTMLElement>();
 
 const settle = (element: HTMLElement): void => {
   element.removeAttribute('data-build');
+  element.removeAttribute('data-act');
   element.style.removeProperty('animation-delay');
   element.style.removeProperty('--push');
+  element.style.removeProperty('--push-y');
   rabbits.get(element)?.remove();
   rabbits.delete(element);
   /* Here, not on animationend: a brick landed early by focus or a press cancels its animation. */
@@ -50,6 +52,7 @@ interface PushPlan {
   /* Where the rabbit goes: the wall's nearest ancestor that may hold a span. */
   readonly host: HTMLElement;
   readonly width: number;
+  readonly height: number;
   /* In px, inside the host: the wall's left edge, the top it stands on, and the empty gap above. */
   readonly left: number;
   readonly floor: number;
@@ -91,6 +94,7 @@ const planPush = (wall: HTMLElement): PushPlan => {
     wall,
     host,
     width: box.width,
+    height: box.height,
     left: box.left - frame.left,
     floor: top - frame.top,
     room: top - ceilingOver(wall, box, top),
@@ -123,19 +127,55 @@ const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
   return rabbit;
 };
 
+/* How each wall arrives, by `data-act`, and the landing animation each ends on. */
+const ACTS = ['slide', 'drop', 'stamp', 'unfold'] as const;
+const LANDINGS = new Set([
+  'build-push',
+  'build-drop',
+  'build-stamp',
+  'build-unfold',
+]);
+/* A puff of dust either side of a landing, in the gap above the wall. */
+const PUFF_MAX_PX = 14;
+const PUFF_GROWTH = 1.6;
+
+const puff = (plan: PushPlan): void => {
+  const size = Math.min(
+    PUFF_MAX_PX,
+    (plan.room - RABBIT_CLEARANCE_PX) / PUFF_GROWTH,
+  );
+  if (size <= 0) return;
+  for (const x of [plan.left, plan.left + plan.width - size]) {
+    const dust = document.createElement('span');
+    dust.className = 'builder-dust';
+    dust.setAttribute('aria-hidden', 'true');
+    Object.assign(dust.style, {
+      left: `${x}px`,
+      top: `${plan.floor - size}px`,
+      width: `${size}px`,
+    });
+    dust.addEventListener('animationend', () => dust.remove());
+    plan.host.append(dust);
+  }
+};
+
 const push = (plan: PushPlan, delayMs: number): void => {
   const { wall } = plan;
   if (wall.dataset.build !== 'waiting') return;
   wall.style.setProperty('--push', `${plan.width}px`);
+  wall.style.setProperty('--push-y', `${plan.height}px`);
   wall.style.animationDelay = `${delayMs}ms`;
+  wall.dataset.act = ACTS[Math.floor(Math.random() * ACTS.length)];
   wall.dataset.build = 'push';
   const rabbit = makeRabbit(plan, delayMs);
   wall.addEventListener('animationend', (event) => {
-    if (event.target !== wall || event.animationName !== 'build-push') return;
+    if (event.target !== wall || !LANDINGS.has(event.animationName)) return;
+    puff(plan);
     if (rabbit) rabbit.classList.add('run');
     else settle(wall);
   });
   if (!rabbit) return;
+  rabbit.dataset.act = wall.dataset.act;
   rabbits.set(wall, rabbit);
   /* The wall rests once its rabbit has gone. */
   rabbit.addEventListener('animationend', (event) => {
