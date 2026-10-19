@@ -18,6 +18,15 @@
     @apply relative z-1;
   }
 
+  /* A wall's empty top, above a lower brick, is where a cat on that brick stands: it takes no clicks. */
+  .cat-perch > .card-block {
+    @apply pointer-events-none;
+  }
+
+  .cat-perch > .card-block > * {
+    @apply pointer-events-auto;
+  }
+
   /* Never a scroll anchor: WebKit would scroll the page along with a moving cat. */
   .cat-spot {
     @apply pointer-events-none absolute inset-x-0 top-0 h-cat-band;

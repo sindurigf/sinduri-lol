@@ -11,7 +11,7 @@ import {
 import { IDLE, useMotionLoop } from '../../composables/use-motion-loop';
 import { markFailed } from '../../scripts/failed-frame';
 import { clamp, createCatRig } from '../../lib/about-cats-rig';
-import type { CatId } from '../../lib/about-cats-types';
+import type { CatId, Ledge } from '../../lib/about-cats-types';
 import tricksUrl from '../../lib/about-cats-tricks-url';
 import {
   isTricksData,
@@ -264,16 +264,49 @@ const showSpot = (node: Element, on: boolean): void => {
   colony.visible(id, on, performance.now());
 };
 
+/** Brick tops within this many px of each other are one floor. */
+const SAME_FLOOR = 1;
+
+/** The topmost brick edge under each stretch of a band, read from the laid-out wall, so a raised brick is a step. */
+const ledgesUnder = (svg: SVGSVGElement): Ledge[] => {
+  const band = svg.getBoundingClientRect();
+  const bricks = [
+    ...(svg
+      .closest('.cat-perch')
+      ?.querySelectorAll(':scope > .card, :scope > .card-block > .card') ?? []),
+  ].map((node) => node.getBoundingClientRect());
+  const xs = [...new Set(bricks.flatMap((r) => [r.left, r.right]))].sort(
+    (a, b) => a - b,
+  );
+  const ledges: Ledge[] = [];
+  xs.slice(1).forEach((right, i) => {
+    const mid = (xs[i] + right) / 2;
+    const tops = bricks
+      .filter((r) => r.left <= mid && mid < r.right)
+      .map((r) => r.top);
+    if (tops.length === 0) return;
+    const drop = Math.round(Math.min(...tops) - band.bottom);
+    const last = ledges.at(-1);
+    if (last && Math.abs(last.drop - drop) <= SAME_FLOOR)
+      last.x1 = right - band.left;
+    else ledges.push({ x0: xs[i] - band.left, x1: right - band.left, drop });
+  });
+  return ledges.length > 1 ? ledges : [];
+};
+
 const layout = (): void => {
   if (!colony) return;
-  const sizes = new Map<CatId, { width: number; height: number }>();
+  const sizes = new Map<
+    CatId,
+    { width: number; height: number; ledges: Ledge[] }
+  >();
   for (const cat of props.cats) {
     const svg = svgs.get(cat.id);
     if (!svg) continue;
     const width = svg.clientWidth;
     const height = svg.clientHeight;
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    sizes.set(cat.id, { width, height });
+    sizes.set(cat.id, { width, height, ledges: ledgesUnder(svg) });
   }
   colony.layout(sizes);
 };
