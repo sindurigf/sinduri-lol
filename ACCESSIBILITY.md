@@ -422,11 +422,13 @@ links. Not automated:
 If something on this site blocks you, report it. You do not need to know the
 WCAG criterion or say anything about yourself.
 
-- **Public:** <https://github.com/sindurigf/sinduri-lol/issues>
+- **Public:** <https://github.com/sindurigf/sinduri-lol/issues/new?template=accessibility.yml>,
+  a short form with every field optional
 - **Private:** <lol@sinduri.lol>
 
-Useful, never required: the page, what you tried and what happened, your
-browser, operating system and assistive technology, a screenshot.
+Useful, never required: the page address, the problem, steps to reproduce,
+severity, your browser and device, any assistive technology, and screenshots or
+recordings.
 
 Replies aim to arrive within the Response time in [section 1](#1-project-information).
 
