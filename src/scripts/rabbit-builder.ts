@@ -123,23 +123,38 @@ const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
   return rabbit;
 };
 
+const GAGS = ['trip', 'double-take'] as const;
+const GAG_EVERY = 2;
+/* The animations a rabbit leaves on: its run, or a gag's own ending. */
+const EXITS = new Set(['build-run', 'build-double-take', 'build-bow']);
+let built = 0;
+
 const push = (plan: PushPlan, delayMs: number): void => {
   const { wall } = plan;
   if (wall.dataset.build !== 'waiting') return;
   wall.style.setProperty('--push', `${plan.width}px`);
   wall.style.animationDelay = `${delayMs}ms`;
   wall.dataset.build = 'push';
-  const rabbit = makeRabbit(plan, delayMs);
+  /* Mostly quiet: a rabbit comes every few walls with a gag, and bows on the last. */
+  built += 1;
+  const last = wall === walls.at(-1);
+  const gag = last
+    ? 'bow'
+    : built % GAG_EVERY === 0
+      ? GAGS[(built / GAG_EVERY) % GAGS.length]
+      : null;
+  const rabbit = gag ? makeRabbit(plan, delayMs) : null;
   wall.addEventListener('animationend', (event) => {
     if (event.target !== wall || event.animationName !== 'build-push') return;
     if (rabbit) rabbit.classList.add('run');
     else settle(wall);
   });
   if (!rabbit) return;
+  rabbit.classList.add(`gag-${gag}`);
   rabbits.set(wall, rabbit);
   /* The wall rests once its rabbit has gone. */
   rabbit.addEventListener('animationend', (event) => {
-    if (event.animationName === 'build-run') settle(wall);
+    if (EXITS.has(event.animationName)) settle(wall);
   });
   plan.host.append(rabbit);
 };
