@@ -32,11 +32,13 @@
     }
 
     /*
-     * Stands in the host brick's bottom padding, where no text is, and keeps
-     * its place on screen while the wall slides past under it.
+     * Stands on the wall's left end, in the empty gap above it, and keeps its
+     * place on screen while the wall slides out under it.
      */
     .builder-rabbit {
       position: absolute;
+      bottom: calc(100% + var(--lift));
+      left: 0;
       pointer-events: none;
       animation: build-hold var(--build-push) var(--build-push-ease) both;
       /* Bricks remap gold to ink inside; the rabbit keeps the footer's colors. */
@@ -93,13 +95,15 @@
     0% {
       translate: calc(var(--push) * -1) 0;
       clip-path: inset(
-        0 calc(var(--hard-throw) * -1) calc(var(--hard-throw) * -1) var(--push)
+        calc(var(--above) * -1) calc(var(--hard-throw) * -1)
+          calc(var(--hard-throw) * -1) var(--push)
       );
     }
     99% {
       translate: 0 0;
       clip-path: inset(
-        0 calc(var(--hard-throw) * -1) calc(var(--hard-throw) * -1) 0
+        calc(var(--above) * -1) calc(var(--hard-throw) * -1)
+          calc(var(--hard-throw) * -1) 0
       );
     }
     100% {
@@ -118,7 +122,7 @@
     }
   }
 
-  /* Along the padding strip and out, never up into the text. */
+  /* Along the top of the wall and out, never up past the gap. */
   @keyframes build-run {
     0% {
       transform: translateX(0);

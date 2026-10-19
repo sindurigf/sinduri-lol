@@ -12,8 +12,9 @@ const CAT_BAND = 'section:has(.cat-perch)';
 /* The rabbit without its grass, cropped to its body and throw. */
 const RABBIT_VIEW_BOX = '-96 -94 192 102';
 const RABBIT_ASPECT = 192 / 102;
-/* Share of the wall's bottom padding the rabbit stands in, so it never reaches text. */
-const RABBIT_FILL = 0.8;
+/* The rabbit stands on the wall, in the empty gap above it: never taller than that gap, nor than this. */
+const RABBIT_MAX_PX = 48;
+const RABBIT_MIN_PX = 16;
 const PUSH_STAGGER_MS = 260;
 /* Caps the stagger, so a jump that reveals many walls still lands them all within 5 s (SC 2.2.2). */
 const PUSH_STAGGER_STEPS = 3;
@@ -40,6 +41,7 @@ const settle = (element: HTMLElement): void => {
   element.removeAttribute('data-build');
   element.style.removeProperty('animation-delay');
   element.style.removeProperty('--push');
+  element.style.removeProperty('--above');
   element.querySelector('.builder-rabbit')?.remove();
   /* Here, not on animationend: a brick landed early by focus or a press cancels its animation. */
   if (!document.querySelector('[data-build="tumble"]')) {
@@ -47,40 +49,42 @@ const settle = (element: HTMLElement): void => {
   }
 };
 
-/* The brick whose bottom padding the rabbit stands in: a card's own, or a wall's first. */
-const hostOf = (wall: HTMLElement): HTMLElement | null => {
-  const first = wall.matches('.card')
-    ? wall
-    : (wall.firstElementChild as HTMLElement | null);
-  return first?.querySelector<HTMLElement>('.card') ?? first;
-};
-
 interface PushPlan {
   readonly wall: HTMLElement;
   readonly width: number;
-  readonly host: HTMLElement | null;
-  /* The host's left and bottom padding and its inner width, in px. */
-  readonly left: number;
-  readonly bottom: number;
-  readonly room: number;
+  /* In px: how far the wall's own parts, a hung label say, rise above its top; and the empty gap over them. */
+  readonly lift: number;
+  readonly above: number;
 }
 
+/* The nearest box above the wall in the flow, or null at the top of the page. */
+const boxAbove = (wall: HTMLElement): Element | null => {
+  let node: Element | null = wall;
+  while (node && !node.previousElementSibling) node = node.parentElement;
+  return node?.previousElementSibling ?? null;
+};
+
 const planPush = (wall: HTMLElement): PushPlan => {
-  const host = hostOf(wall);
-  const style = host ? getComputedStyle(host) : null;
+  const box = wall.getBoundingClientRect();
+  const top = Math.min(
+    box.top,
+    ...[...wall.querySelectorAll('*')]
+      .map((part) => part.getBoundingClientRect())
+      .filter((part) => part.width > 1 && part.height > 1)
+      .map((part) => part.top),
+  );
+  const over = boxAbove(wall)?.getBoundingClientRect();
   return {
     wall,
-    width: wall.getBoundingClientRect().width,
-    host,
-    left: parseFloat(style?.paddingLeft ?? '0'),
-    bottom: parseFloat(style?.paddingBottom ?? '0'),
-    room: host?.clientWidth ?? 0,
+    width: box.width,
+    lift: box.top - top,
+    above: over ? top - over.bottom : 0,
   };
 };
 
 const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
-  if (!tuft || !plan.host) return null;
-  const height = plan.bottom * RABBIT_FILL;
+  const height = Math.min(plan.above, RABBIT_MAX_PX);
+  if (!tuft || height < RABBIT_MIN_PX) return null;
   const width = height * RABBIT_ASPECT;
   const drawing = tuft.cloneNode(true) as SVGSVGElement;
   drawing.querySelectorAll('.tuft-back, .tuft-front').forEach((grass) => {
@@ -91,24 +95,21 @@ const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
   rabbit.className = 'builder-rabbit';
   rabbit.setAttribute('aria-hidden', 'true');
   Object.assign(rabbit.style, {
-    left: `${plan.left}px`,
-    bottom: `${(plan.bottom - height) / 2}px`,
     width: `${width}px`,
     animationDelay: `${delayMs}ms`,
   });
   rabbit.style.setProperty('--push', `${plan.width}px`);
-  rabbit.style.setProperty(
-    '--run',
-    `${Math.max(0, plan.room - plan.left * 2 - width)}px`,
-  );
+  rabbit.style.setProperty('--lift', `${plan.lift}px`);
+  rabbit.style.setProperty('--run', `${plan.width - width}px`);
   rabbit.append(drawing);
   return rabbit;
 };
 
 const push = (plan: PushPlan, delayMs: number): void => {
-  const { wall, host } = plan;
+  const { wall } = plan;
   if (wall.dataset.build !== 'waiting') return;
   wall.style.setProperty('--push', `${plan.width}px`);
+  wall.style.setProperty('--above', `${plan.lift + plan.above}px`);
   wall.style.animationDelay = `${delayMs}ms`;
   wall.dataset.build = 'push';
   const rabbit = makeRabbit(plan, delayMs);
@@ -117,7 +118,7 @@ const push = (plan: PushPlan, delayMs: number): void => {
     if (event.animationName === 'build-push') rabbit?.classList.add('run');
     if (!rabbit || event.animationName === 'build-run') settle(wall);
   });
-  if (rabbit) host?.append(rabbit);
+  if (rabbit) wall.append(rabbit);
 };
 
 const walls = [...document.querySelectorAll<HTMLElement>(WALLS)].filter(

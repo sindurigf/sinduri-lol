@@ -1209,8 +1209,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   `/about`, whose walls the cats stand on, not `/contact`, whose form
   must hold still, and not `/brand/cards`, a still reference. A wall below the fold waits unseen, then slides out of
   its own slot, clipped to it, so it never crosses a neighbor or widens the
-  page. The footer rabbit stands in its first brick's bottom padding, where
-  no text is, then runs along it and fades. Walls on screen at load never
+  page. The footer rabbit stands on the wall's left end, in the empty gap
+  above it (no rabbit where there is none), then runs along the top and fades. Walls on screen at load never
   move.
 - Knock It Down is made by that script and placed before the footer tuft;
   it tumbles the bricks, headings and footer stickers on screen and rebuilds

@@ -152,7 +152,7 @@ view (development server only, never published), and forks.
   under them, and a pressed
   control does not move into its shadow (SC 2.3.3). On pages with brick
   walls, each wall below the fold slides out of its own slot with the footer
-  rabbit in its bottom padding, never over text or past the page width, and
+  rabbit standing in the empty gap above it, never over text or past the page width, and
   Knock It Down in the footer tumbles what is on screen and rebuilds it; each
   move ends within 5 s, a focused or pressed brick lands at once, and under
   reduced motion neither runs and the button is not offered; nothing else animates

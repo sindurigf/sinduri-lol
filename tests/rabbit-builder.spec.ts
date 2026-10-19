@@ -73,10 +73,13 @@ test('a brick below the fold lands within five seconds and rests in place', asyn
 
 test('the rabbit is hidden from assistive technology', async ({ page }) => {
   await gotoSettled(page, ROUTE);
-  const brick = await lastWaitingBrick(page);
-  await brick.scrollIntoViewIfNeeded();
-  const rabbit = brick.locator('.builder-rabbit');
-  await expect(rabbit, 'no rabbit pushed the brick').toBeAttached();
+  const rabbit = page.locator('.builder-rabbit').first();
+  await expect(async () => {
+    await page.evaluate(() => scrollBy(0, innerHeight / 2));
+    await expect(rabbit, 'no rabbit came to build').toBeAttached({
+      timeout: 500,
+    });
+  }).toPass({ timeout: MOTION_LIMIT_MS * 2 });
   await expect(rabbit).toHaveAttribute('aria-hidden', 'true');
 });
 
@@ -338,6 +341,9 @@ const sampleBuilds = (page: Page) =>
     return { wide, covered: [...new Set(covered)], rabbitFrames };
   }, MOTION_LIMIT_MS);
 
+/* Rabbits stand only where a wall has an empty gap above it; / and /career have such walls. */
+const RABBIT_ROUTES = new Set(['/', '/career']);
+
 for (const route of ['/', '/career', '/blog', '/credits']) {
   for (const viewport of [REFLOW_VIEWPORT, DESKTOP_VIEWPORT]) {
     test(`${route} at ${viewport.width}px builds inside the page and never over text`, async ({
@@ -347,9 +353,12 @@ for (const route of ['/', '/career', '/blog', '/credits']) {
       await page.setViewportSize(viewport);
       await gotoSettled(page, route);
       const { wide, covered, rabbitFrames } = await sampleBuilds(page);
-      expect(rabbitFrames, 'no rabbit was on screen to check').toBeGreaterThan(
-        0,
-      );
+      if (RABBIT_ROUTES.has(route)) {
+        expect(
+          rabbitFrames,
+          'no rabbit was on screen to check',
+        ).toBeGreaterThan(0);
+      }
       expect(wide, 'a build widened the page (SC 1.4.10)').toEqual([]);
       expect(covered, 'a rabbit crossed this text').toEqual([]);
     });
