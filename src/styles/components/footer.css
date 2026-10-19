@@ -158,8 +158,8 @@
   }
 
   /*
-   * 266x102 viewBox, 220px wide on a phone, 1:1 from `md`; the hare's ground
-   * sits 8 units up, on the footer's bottom edge. Gold with gold-text lines.
+   * 266x102 viewBox, 220px wide on a phone, 1:1 from `md`; the rabbit's ground
+   * sits 8 units up, on the footer's bottom edge.
    */
   .footer-tuft {
     display: block;
@@ -177,25 +177,33 @@
     fill: var(--color-subtle);
   }
 
-  .footer-tuft .hare-shadow {
-    fill: var(--color-pink);
-  }
-
-  .footer-tuft .hare {
-    fill: var(--color-gold);
-    stroke: var(--color-gold-text);
-    stroke-width: 1.9;
+  .footer-tuft :is(.hare, .hare-shadow) {
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 
-  .footer-tuft .hare-line {
-    fill: none;
+  .footer-tuft .hare-shadow {
+    fill: var(--color-pink);
+    stroke: var(--color-pink);
   }
 
-  .footer-tuft .hare-nose {
+  /* The hero rabbit's own parts: ink edge, gold body, white catch-light. */
+  .footer-tuft .hare-edge {
     fill: var(--color-gold-text);
-    stroke: none;
+    stroke: var(--color-gold-text);
+  }
+
+  .footer-tuft .hare-body {
+    fill: var(--color-gold);
+  }
+
+  .footer-tuft .hare-stroke {
+    fill: none;
+    stroke: var(--color-gold-text);
+  }
+
+  .footer-tuft .hare-shine {
+    fill: var(--color-light-ground);
   }
 
   /*
@@ -304,13 +312,17 @@
   @media (forced-colors: active) {
     .footer-tuft .tuft-back,
     .footer-tuft .tuft-front,
-    .footer-tuft .hare-nose {
+    .footer-tuft .hare-edge {
       fill: CanvasText;
+      stroke: CanvasText;
     }
 
-    .footer-tuft .hare {
-      fill: Canvas;
+    .footer-tuft .hare-stroke {
       stroke: CanvasText;
+    }
+
+    .footer-tuft :is(.hare-body, .hare-shine) {
+      fill: Canvas;
     }
 
     .footer-tuft .hare-shadow {
