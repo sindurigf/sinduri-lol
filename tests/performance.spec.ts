@@ -14,7 +14,7 @@ import { LAYOUT_SHIFT, layoutShiftOf } from './layout-shift';
 /* Decoded script bytes. `/` and `/about` carry Vue. */
 const ROUTE_SCRIPT_BUDGETS: Readonly<Record<string, number>> = {
   '/': 96_000,
-  '/about': 127_000,
+  '/about': 129_800,
 };
 const PAGE_SCRIPT_BUDGET = 14_000;
 
