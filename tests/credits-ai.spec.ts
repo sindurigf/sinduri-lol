@@ -14,7 +14,7 @@ test.describe('/credits Made with AI', () => {
       ).toBeVisible();
       await expect(
         section.getByRole('link', {
-          name: 'The hopping bunny on the homepage',
+          name: 'The bunny hopping on the homepage and sitting in the footer',
         }),
       ).toHaveAttribute('href', '/');
       await expect(
