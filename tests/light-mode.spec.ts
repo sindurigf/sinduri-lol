@@ -4,7 +4,7 @@ import { expectIncompleteDecided } from './incomplete';
 import { NON_TEXT, PAGE_HELPERS } from './contrast';
 import { hoveredTextBelowAaa, sampleControls, sampled } from './hover-contrast';
 import { gotoSettled } from './settle';
-import { SAMPLED_ROUTES, BRAND_SAMPLED_ROUTES } from './routes';
+import { SAMPLED_ROUTES, ROUTES } from './routes';
 import {
   AXE_TIMEOUT_MS,
   DESKTOP_VIEWPORT,
@@ -13,7 +13,6 @@ import {
   REFLOW_VIEWPORT,
 } from './wcag';
 import { THEME_CHOICES, THEME_STORAGE_KEY } from '../src/lib/theme';
-import { brandHref } from '../src/lib/brand-sections';
 
 /** SC 2.4.13's minimum ring thickness. */
 const MIN_RING_PX = 2;
@@ -34,7 +33,7 @@ test.describe('light mode meets WCAG 2.2 AA on every route', () => {
   test.use({ colorScheme: 'light' });
   test.describe.configure({ timeout: AXE_TIMEOUT_MS });
 
-  for (const route of BRAND_SAMPLED_ROUTES) {
+  for (const route of ROUTES) {
     test(route, async ({ page }) => {
       await gotoSettled(page, route);
       expect(
@@ -60,7 +59,7 @@ test.describe('light mode meets WCAG 2.2 AA at 320px', () => {
   test.use({ colorScheme: 'light', viewport: REFLOW_VIEWPORT });
   test.describe.configure({ timeout: AXE_TIMEOUT_MS });
 
-  for (const route of BRAND_SAMPLED_ROUTES) {
+  for (const route of ROUTES) {
     test(route, async ({ page }) => {
       await gotoSettled(page, route);
       const results = await timedScan(page, `${route} in light mode at 320px`);
@@ -130,7 +129,7 @@ const RING_GAP_PX = 2;
 test.describe('light mode reaches AAA contrast under the pointer (SC 1.4.6)', () => {
   test.use({ colorScheme: 'light' });
 
-  for (const route of BRAND_SAMPLED_ROUTES) {
+  for (const route of ROUTES) {
     test(`${route}: hovered text is at least 7:1, large text included`, async ({
       page,
     }) => {
@@ -147,7 +146,7 @@ test.describe('light mode reaches AAA contrast under the pointer (SC 1.4.6)', ()
 test.describe('light mode focus ring stands out from the page, and from the control it touches (SC 2.4.13)', () => {
   test.use({ colorScheme: 'light' });
 
-  for (const route of BRAND_SAMPLED_ROUTES) {
+  for (const route of ROUTES) {
     test(`${route}: every ring is at least 3:1 against its ground and its control`, async ({
       page,
     }) => {
@@ -282,10 +281,7 @@ test.describe('the theme menu', () => {
       'a stored choice gave way to the device.',
     ).toBe(true);
 
-    await page
-      .getByRole('group', { name: 'Theme' })
-      .getByRole('radio', { name: 'System' })
-      .check();
+    await choose(page, 'System');
     expect(await stored(page), 'System left a stored choice.').toBeNull();
     expect(await mainIsLight(page)).toBe(false);
 
@@ -363,6 +359,7 @@ test.describe('the theme menu', () => {
     await page.keyboard.press('ArrowDown');
     await expect(radio(page, 'dark')).toBeChecked();
     expect(await mainIsLight(page)).toBe(false);
+    await expect(menu, 'an arrow key closed the menu').toBeVisible();
 
     await page.keyboard.press('Escape');
     await expect(menu).toBeHidden();
@@ -373,6 +370,47 @@ test.describe('the theme menu', () => {
     await expect(menu).toBeVisible();
     await expect(radio(page, 'dark')).toBeFocused();
   });
+
+  /* SC 2.4.3: a pick ends at the button that opened the menu. */
+  test('a pointer pick closes the menu and returns focus to the button', async ({
+    page,
+  }) => {
+    await gotoSettled(page, '/about');
+    await choose(page, 'Light');
+    await expect(headerMenu(page)).toBeHidden();
+    await expect(switchButton(page)).toBeFocused();
+    await expect(switchButton(page)).toHaveAttribute('aria-expanded', 'false');
+    expect(await mainIsLight(page)).toBe(true);
+  });
+
+  for (const key of ['Enter', 'Space']) {
+    test(`${key} picks the focused choice, closes the menu and returns focus to the button`, async ({
+      page,
+    }) => {
+      await gotoSettled(page, '/about');
+      const button = switchButton(page);
+      await tabTo(page, button);
+      await page.keyboard.press('Enter');
+      await expect(radio(page, 'system')).toBeFocused();
+      await page.keyboard.press('ArrowDown');
+      await expect(headerMenu(page)).toBeVisible();
+
+      await page.keyboard.press(key);
+      await expect(headerMenu(page)).toBeHidden();
+      await expect(button).toBeFocused();
+      await expect(button).toHaveAttribute('aria-expanded', 'false');
+      await expect(radio(page, 'light')).toBeChecked();
+      expect(await mainIsLight(page)).toBe(true);
+      // The key's release lands on the button; it must not open the menu again.
+      await page.evaluate(
+        () =>
+          new Promise((done) =>
+            requestAnimationFrame(() => requestAnimationFrame(done)),
+          ),
+      );
+      await expect(headerMenu(page)).toBeHidden();
+    });
+  }
 
   /* SC 2.4.11: left open, it would cover the control focus moves to. */
   test('Tab out of the menu closes it', async ({ page }) => {
@@ -405,7 +443,7 @@ test.describe('the theme menu', () => {
   ]) {
     for (const [route, scope] of [
       ['/about', 'header'],
-      [brandHref('controls'), `main [data-example]`],
+      ['/brand', `#controls [data-example]`],
     ]) {
       test(`opens whole inside a ${width}px viewport, below its button (${route} ${scope})`, async ({
         page,

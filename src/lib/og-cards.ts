@@ -15,9 +15,8 @@ export const SITE_CARD_ROUTES: readonly string[] = ['/'];
  * keeps the logo tile, a path names a photo under src/assets/.
  */
 export const OG_PHOTO_CHOICES: Readonly<Record<string, string | null>> = {
+  /* Its sample photos are specimens, not the page's subject. */
   '/brand': null,
-  /* Its sample photo is a specimen, not the page's subject; /brand keeps the logo. */
-  '/brand/photos': null,
   '/career': 'src/assets/photos/sinduri-studio.jpg',
 };
 
