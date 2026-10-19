@@ -97,6 +97,34 @@ test.describe('navigation without JavaScript', () => {
     }
   });
 
+  test('the header CTA keeps its left edge when the theme switch is hidden', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      javaScriptEnabled: false,
+      viewport: DESKTOP,
+    });
+
+    try {
+      const page = await context.newPage();
+      await page.goto('/');
+
+      // SC 1.4.11: without its left edge the CTA's boundary is open on one side.
+      const cta = page.locator('header .header-bricks > div > .nav-cta');
+      await expect(page.locator('header .theme-switch')).toBeHidden();
+      const [left, right] = await cta.evaluate((el) => {
+        const style = getComputedStyle(el);
+        return [style.borderLeftWidth, style.borderRightWidth];
+      });
+      expect(
+        left,
+        'The CTA lost its left edge to the hidden theme switch.',
+      ).toBe(right);
+    } finally {
+      await context.close();
+    }
+  });
+
   test('the fallback does not duplicate the primary nav above the breakpoint', async ({
     browser,
   }) => {
