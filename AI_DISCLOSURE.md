@@ -2,11 +2,11 @@
 
 How AI tooling was used to build this site.
 
-| Item  | Detail                                                                                                                                                             |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Model | Claude (Anthropic)                                                                                                                                                 |
-| Tools | Claude Code; Stitch (Google) and Claude Design (Anthropic) for design                                                                                              |
-| Scope | Code, tests, docs, functional microcopy, the `/accessibility` and `/privacy` text, the About cat drawings, the home page hero bunny, and editing my editorial copy |
+| Item  | Detail                                                                                                                                                                               |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Model | Claude (Anthropic)                                                                                                                                                                   |
+| Tools | Claude Code; Stitch (Google) and Claude Design (Anthropic) for design                                                                                                                |
+| Scope | Code, tests, docs, functional microcopy, the `/accessibility` and `/privacy` text, the About cat drawings, the home page hero bunny, the footer bunny, and editing my editorial copy |
 
 ## Review
 
@@ -35,6 +35,7 @@ How AI tooling was used to build this site.
   [Made with AI on `/credits/`](https://sinduri.lol/credits/#ai):
   - the hopping bunny in the homepage hero (`src/lib/hero-field-hare.ts`),
     and its stills shown without JavaScript (`src/assets/hero-still-*.webp`);
+  - the sticker bunny in the footer (`src/components/Footer.astro`);
   - the drawn, animated cats on `/about/`, their sleep, wake and trick-list
     icons (`src/components/ui/AboutCats.vue`) and their trick icons
     (`src/lib/about-cats-tricks.json`). The cat photos are real.
