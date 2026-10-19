@@ -16,6 +16,8 @@ const FIRST_USES: readonly {
   route: string;
   abbreviation: string;
   expansion: string;
+  /** A photo caption's license links to its deed, which names it in full (G55), so its use needs no expansion. */
+  viaDeed?: true;
 }[] = [
   {
     route: '/accessibility',
@@ -107,6 +109,7 @@ const FIRST_USES: readonly {
     route: '/brand',
     abbreviation: 'CC BY',
     expansion: 'Creative Commons Attribution',
+    viaDeed: true,
   },
   {
     route: '/brand',
@@ -201,7 +204,7 @@ test.describe('abbreviations are expanded at first use (SC 3.1.4)', () => {
     }) => {
       await gotoSettled(page, route);
 
-      for (const { abbreviation, expansion } of FIRST_USES.filter(
+      for (const { abbreviation, expansion, viaDeed } of FIRST_USES.filter(
         (entry) => entry.route === route,
       )) {
         const use = await firstUse(page, abbreviation);
@@ -209,6 +212,13 @@ test.describe('abbreviations are expanded at first use (SC 3.1.4)', () => {
           use,
           `${abbreviation} no longer appears in ${route}'s <main>; remove its entry.`,
         ).not.toBeNull();
+        if (viaDeed) {
+          expect(
+            use!.inDeedLink,
+            `${route} first uses ${abbreviation} outside a link to its deed.`,
+          ).toBe(true);
+          continue;
+        }
         expect(
           use!.description,
           `${route} first uses ${abbreviation} without "${expansion}" as its description.`,
