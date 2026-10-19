@@ -190,6 +190,8 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
   are `noindex, follow` and excluded from the sitemap by
   `src/lib/sitemap-filter.ts` (`tests/sitemap.spec.ts`).
   `/contact/sent/` is `noindex`.
+  Every other page sends `robots` `max-image-preview:large`, so Google may
+  show its share image large (`tests/canonical.spec.ts`).
 - Non-placeholder posts get `og:type` `article`,
   `article:published_time` and a `BlogPosting` JSON-LD node. Other pages are
   `website`.
@@ -414,11 +416,13 @@ in `wrangler.jsonc`).
 - Credits: `src/lib/credits.ts`, in order of preference (personal site,
   Drupal.org, LinkedIn). Captions and `/credits` read from it. A Markdown
   image title "Photo: name" links `PHOTOGRAPHERS`, "Screenshot: name" links
-  `SCREENSHOT_SOURCES`; a `LICENSED_PHOTOS` file adds its source and license.
+  `SCREENSHOT_SOURCES`; a `LICENSED_PHOTOS` file links the name to its
+  `source` and adds its short license
+  ([Photo credits](docs/STYLEGUIDE.md#photo-credits)).
 - A `LICENSED_PHOTOS` entry, keyed by file name without the extension:
   `photographer`, `title`, `source`, `sourceName` (Flickr, Wikimedia Commons),
-  `license` (spelled out), `licenseHref` and `changes`. Captions, `/about`,
-  `/brand` and `/credits` read the source site from `sourceName`.
+  `license` (spelled out), `licenseShort` ("CC BY 2.0"), `licenseHref` and
+  `changes`. Only `/credits` shows the title, `sourceName` and `changes`.
 - **Video** goes in `public/videos/` (none published). Encode AV1 WebM, H.264
   MP4 fallback, WebP poster, WebVTT captions; max 25 MiB a file.
   - Workers static assets answer `Range` with a full `200`; Safari and iOS need
