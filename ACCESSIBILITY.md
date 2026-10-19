@@ -423,11 +423,13 @@ links. Not automated:
 If something on this site blocks you, report it. You do not need to know the
 WCAG criterion or say anything about yourself.
 
-- **Public:** <https://github.com/sindurigf/sinduri-lol/issues>
+- **Public:** <https://github.com/sindurigf/sinduri-lol/issues/new?template=accessibility.yml>,
+  a short form with every field optional
 - **Private:** <lol@sinduri.lol>
 
-Useful, never required: the page, what you tried and what happened, your
-browser, operating system and assistive technology, a screenshot.
+Useful, never required: the page address, the problem, steps to reproduce,
+severity, your browser and device, any assistive technology, and screenshots or
+recordings.
 
 Replies aim to arrive within the Response time in [section 1](#1-project-information).
 
@@ -493,6 +495,15 @@ Rules this repository follows. Values and reasons:
   W3C note, opinion here, gives an example:
   [low vision needs](https://www.w3.org/TR/low-vision-needs/), high contrast
   against light sensitivity.
+  Choices made:
+  - A dark page against a light one: dark is the default, for readers
+    sensitive to light; Light Mode in the header, which is remembered, is
+    for readers who need a light page.
+  - High contrast against light sensitivity: text keeps 7:1 in both modes;
+    the dark default carries the light-sensitive need.
+  - Capitals against dyslexia: uppercase only on headings, labels and
+    buttons of a few words, never on running text
+    ([why](ARCHITECTURE.md#rejected-findings)).
 - **Scripts.** Never hold content back behind a script. What a page says is in
   its HTML; a script only adds to it. Tested for navigation
   (`tests/no-script.spec.ts`) and the talk slides (`tests/slideshow.spec.ts`).
