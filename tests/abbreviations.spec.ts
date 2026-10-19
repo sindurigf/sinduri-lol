@@ -172,6 +172,11 @@ const NAMES = [
   'ACCESSIBILITY.md',
   'A11Y.md',
   'LICENSE-photos',
+  'GOV.UK Design System',
+  'OWASP Foundation',
+  'OWASP Secure Headers Project',
+  'Understanding WCAG 2.2',
+  'W3C Web Accessibility Initiative',
 ];
 
 /*
