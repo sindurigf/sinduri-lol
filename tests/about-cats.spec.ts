@@ -1046,7 +1046,7 @@ const rudraClimbing = async (page: Page, width: number) => {
 const rudraFloor = (page: Page) =>
   page.evaluate((gap) => {
     const spot = document.getElementById('cat-spot-rudra')!;
-    const band = spot.querySelector('.cat-svg')!.getBoundingClientRect();
+    const band = spot.getBoundingClientRect();
     const [x, y] = (
       /translate\(([-\d.]+) ([-\d.]+)\)/.exec(
         spot.querySelector('.cat-hit')?.getAttribute('transform') ?? '',
