@@ -182,7 +182,7 @@ Where to look:
 
 Drupal is a project that closely follows all six pillars.
 
-<ol class="pillar-wall">
+<ol class="pillar-wall" role="list">
 <li><strong>Governance</strong><p>A Drupal Association board with member-elected seats, a Code of Conduct, and a Community Working Group that handles code of conduct reports.</p></li>
 <li><strong>Contributor Experience</strong><p>First-time contributor workshops at almost every Drupal event, issues tagged Novice, and a welcoming and active Slack workspace for support.</p></li>
 <li><strong>Recognition</strong><p>Contribution credit for people and companies, for code, reviews, testing, documentation, design and accessibility reviews, triage and case studies.</p></li>
