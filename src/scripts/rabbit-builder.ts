@@ -15,6 +15,8 @@ const RABBIT_ASPECT = 192 / 102;
 /* The rabbit stands on the wall, in the empty gap above it: never taller than that gap, nor than this. */
 const RABBIT_MAX_PX = 48;
 const RABBIT_MIN_PX = 16;
+/* Kept clear above the rabbit: a heading's glyphs reach past its box. */
+const RABBIT_CLEARANCE_PX = 8;
 const PUSH_STAGGER_MS = 260;
 /* Caps the stagger, so a jump that reveals many walls still lands them all within 5 s (SC 2.2.2). */
 const PUSH_STAGGER_STEPS = 3;
@@ -83,7 +85,7 @@ const planPush = (wall: HTMLElement): PushPlan => {
 };
 
 const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
-  const height = Math.min(plan.above, RABBIT_MAX_PX);
+  const height = Math.min(plan.above - RABBIT_CLEARANCE_PX, RABBIT_MAX_PX);
   if (!tuft || height < RABBIT_MIN_PX) return null;
   const width = height * RABBIT_ASPECT;
   const drawing = tuft.cloneNode(true) as SVGSVGElement;
