@@ -137,13 +137,14 @@ test.describe('post-figure', NODE, () => {
     });
   }
 
-  test('a Creative Commons photo credits its source, license and changes', () => {
+  test('a Creative Commons photo credit links its source and short license', () => {
     const photo: LicensedPhoto = {
       photographer: 'Karl Hepworth',
       title: 'A Fixture Photo',
       source: 'https://photos.example/fixture',
       sourceName: 'Photos Example',
       license: 'Creative Commons Attribution 4.0',
+      licenseShort: 'CC BY 4.0',
       licenseHref: 'https://creativecommons.org/licenses/by/4.0/',
       changes: 'cropped',
     };
@@ -156,22 +157,33 @@ test.describe('post-figure', NODE, () => {
       node.type === 'text'
         ? String(node.value)
         : (node.children ?? []).map(textOf).join('');
-    expect(
-      nodes.map(textOf).join(''),
-      'the caption does not name the source, license and changes',
-    ).toBe(
-      'Photo: Karl Hepworth (A Fixture Photo on Photos Example, Creative Commons Attribution 4.0, cropped)',
+    const caption = nodes.map(textOf).join('');
+    const [name, license] = nodes.filter((node) => node.tagName === 'a');
+
+    expect(caption, 'the caption does not open with "Photo: "').toMatch(
+      /^Photo: /,
     );
-    expect(
-      nodes
-        .filter((node) => node.tagName === 'a')
-        .map((a) => a.properties?.href),
-      'the photographer, source and license are not all linked',
-    ).toEqual([
-      PHOTOGRAPHERS['Karl Hepworth'],
+    expect(name?.properties?.href, 'the name does not link the photo').toBe(
       photo.source,
+    );
+    expect(textOf(name!)).toBe(photo.photographer);
+    expect(license?.properties?.href, 'the license is not linked').toBe(
       photo.licenseHref,
-    ]);
+    );
+    expect(textOf(license!), 'the license link is not its short name').toBe(
+      photo.licenseShort,
+    );
+    for (const dropped of [photo.title, photo.sourceName, photo.changes]) {
+      expect(caption, `the caption still says "${dropped}"`).not.toContain(
+        dropped,
+      );
+    }
+  });
+
+  test('a Creative Commons photo credited to someone else fails the build', () => {
+    expect(() =>
+      captionChildren('Photo: Klaus Purer', 'drupal-lecture-hall.jpg'),
+    ).toThrow(/LICENSED_PHOTOS names/);
   });
 
   test('a photo not in LICENSED_PHOTOS gets no license text', () => {
