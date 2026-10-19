@@ -416,13 +416,14 @@ in `wrangler.jsonc`).
 - Credits: `src/lib/credits.ts`, in order of preference (personal site,
   Drupal.org, LinkedIn). Captions and `/credits` read from it. A Markdown
   image title "Photo: name" links `PHOTOGRAPHERS`, "Screenshot: name" links
-  `SCREENSHOT_SOURCES`; a `LICENSED_PHOTOS` file links the name to its
-  `source` and adds its short license
+  `SCREENSHOT_SOURCES`; a `LICENSED_PHOTOS` file is credited by
+  `licensedCaption`, with its short license
   ([Photo credits](docs/STYLEGUIDE.md#photo-credits)).
 - A `LICENSED_PHOTOS` entry, keyed by file name without the extension:
-  `photographer`, `title`, `source`, `sourceName` (Flickr, Wikimedia Commons),
-  `license` (spelled out), `licenseShort` ("CC BY 2.0"), `licenseHref` and
-  `changes`. Only `/credits` shows the title, `sourceName` and `changes`.
+  `photographer`, `title`, `titleInCaption`, `source`, `sourceName` (Flickr,
+  Wikimedia Commons), `license` (spelled out), `licenseShort` ("CC BY 2.0"),
+  `licenseHref` and `changes`. Captions show the title only with
+  `titleInCaption`; only `/credits` shows `sourceName` and `changes`.
 - **Video** goes in `public/videos/` (none published). Encode AV1 WebM, H.264
   MP4 fallback, WebP poster, WebVTT captions; max 25 MiB a file.
   - Workers static assets answer `Range` with a full `200`; Safari and iOS need
