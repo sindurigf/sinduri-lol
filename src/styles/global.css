@@ -560,9 +560,6 @@
   --border-width-sticker: 4px;
   --size-tuft: 220px;
   --size-tuft-md: 266px;
-  /* The building rabbit beside a brick, and riding on one (builder.css). */
-  --size-builder-rabbit: 7.5rem;
-  --size-builder-rabbit-ride: 5rem;
   /*
    * Header row above `md`: equal outer tracks center the nav. A token because
    * components allow no arbitrary values.

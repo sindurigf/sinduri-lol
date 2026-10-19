@@ -1,15 +1,17 @@
 /*
- * The rabbit builds the walls: src/scripts/rabbit-builder.ts marks each brick
+ * The rabbit builds the walls: src/scripts/rabbit-builder.ts marks each wall
  * below the fold `data-build="waiting"`, then `"push"` when it scrolls in. The
  * page is complete without script, under reduced motion and in print.
  */
 @layer components {
   :root {
-    --build-push: 1300ms;
-    --build-hop: 1900ms;
-    --build-stride: 200ms;
+    /* Read by the script to start the rabbit's run when the push ends. */
+    --build-push: 1100ms;
+    --build-run: 700ms;
+    --build-stride: 180ms;
     --build-tumble: 2200ms;
     --build-kick: 500ms;
+    --build-push-ease: cubic-bezier(0.2, 0.7, 0.3, 1);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -17,35 +19,36 @@
       opacity: 0;
     }
 
+    /*
+     * The wall slides out of its own slot: the clip moves with it, so nothing
+     * shows left of where it will rest and it never crosses its neighbors.
+     * --push is the wall's width; the clip spares the throw.
+     */
     [data-build='push'] {
-      position: relative;
-      z-index: 1;
-      animation: build-push var(--build-push) cubic-bezier(0.25, 0.6, 0.3, 1)
-        both;
+      animation: build-push var(--build-push) var(--build-push-ease) both;
     }
 
-    /* Leaves before the push ends: no rabbit rests over text. */
+    [data-build-host] {
+      position: relative;
+    }
+
+    /*
+     * Stands in the host brick's bottom padding, where no text is, and keeps
+     * its place on screen while the wall slides past under it.
+     */
     .builder-rabbit {
       position: absolute;
-      right: 100%;
-      bottom: 0;
-      width: var(--size-builder-rabbit);
       pointer-events: none;
-      animation: build-hop-off var(--build-hop) ease-out both;
+      animation:
+        build-hold var(--build-push) var(--build-push-ease) both,
+        build-run var(--build-run) ease-in both;
       /* Bricks remap gold to ink inside; the rabbit keeps the footer's colors. */
       --color-gold: var(--color-block-gold);
     }
 
-    /* Top right: headings and text start on the left. */
-    .builder-rabbit-ride {
-      right: var(--block-edge);
-      bottom: 100%;
-      width: var(--size-builder-rabbit-ride);
-      animation-name: build-ride-off;
-    }
-
     .builder-rabbit .footer-tuft {
       width: 100%;
+      transform-origin: 50% 100%;
       animation: build-stride var(--build-stride) ease-in-out 6;
     }
 
@@ -67,67 +70,71 @@
     }
   }
 
+  /* In the footer row its bottom sits on the page's end: lifted like the copyright, its focus ring fits. */
+  @media (width >= 48rem) {
+    .knock-down {
+      margin-bottom: --spacing(6);
+    }
+  }
+
   @media print {
     [data-build] {
       opacity: 1;
       animation: none;
     }
+
+    .builder-rabbit {
+      display: none;
+    }
   }
 
   @keyframes build-push {
     0% {
-      translate: -115vw 0;
+      translate: calc(var(--push) * -1) 0;
+      clip-path: inset(
+        0 calc(var(--hard-throw) * -1) calc(var(--hard-throw) * -1) var(--push)
+      );
     }
-    70% {
-      translate: --spacing(2.5) 0;
+    99% {
+      translate: 0 0;
+      clip-path: inset(
+        0 calc(var(--hard-throw) * -1) calc(var(--hard-throw) * -1) 0
+      );
     }
-    80% {
-      translate: --spacing(-1) 0;
+    100% {
+      translate: 0 0;
+      clip-path: none;
+    }
+  }
+
+  /* The wall's slide undone, so the rabbit stays put while the wall moves. */
+  @keyframes build-hold {
+    0% {
+      translate: var(--push) 0;
     }
     100% {
       translate: 0 0;
     }
   }
 
-  @keyframes build-hop-off {
-    0%,
+  /* Along the padding strip and out, never up into the text. */
+  @keyframes build-run {
+    0% {
+      transform: translateX(0);
+      opacity: 1;
+    }
     70% {
-      translate: 0 0;
-      opacity: 1;
-    }
-    80% {
-      translate: --spacing(-10) --spacing(-17.5);
-      opacity: 1;
-    }
-    90% {
-      translate: --spacing(-22.5) --spacing(-2.5);
       opacity: 1;
     }
     100% {
-      translate: --spacing(-32.5) --spacing(-10);
-      opacity: 0;
-    }
-  }
-
-  @keyframes build-ride-off {
-    0%,
-    70% {
-      translate: 0 0;
-      opacity: 1;
-    }
-    85% {
-      translate: --spacing(5) --spacing(-12.5);
-      opacity: 1;
-    }
-    100% {
-      translate: --spacing(10) --spacing(-7.5);
+      transform: translateX(var(--run));
       opacity: 0;
     }
   }
 
   @keyframes build-stride {
     50% {
-      translate: 0 --spacing(-2);
+      scale: 1.06 0.9;
     }
   }
 

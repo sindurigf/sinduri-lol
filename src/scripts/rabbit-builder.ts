@@ -1,26 +1,33 @@
 /*
- * The footer rabbit pushes each brick below the fold into place as it scrolls
- * in, and Knock It Down tumbles what is on screen. Styles: builder.css.
- * Nothing moves under reduced motion, and a focused brick stops at once.
+ * The footer rabbit pushes each wall below the fold out of its slot as it
+ * scrolls in, and Knock It Down tumbles what is on screen. Styles: builder.css.
+ * Nothing moves under reduced motion, and a focused wall lands at once.
  */
 const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)');
-const BRICKS = 'main :is(.card-block > *, .card:not(.card-block *))';
-const TUMBLERS = `${BRICKS}, main h2, footer :is(.footer-name, .footer-sticker)`;
+const WALLS = 'main :is(.card-block, .card:not(.card-block *))';
+const TUMBLERS =
+  'main :is(.card-block > *, .card:not(.card-block *), h2), footer :is(.footer-name, .footer-sticker)';
 /* Walls the About cats stand on: they read brick positions while they play. */
 const CAT_BAND = 'section:has(.cat-perch)';
 /* The rabbit without its grass, cropped to its body and throw. */
 const RABBIT_VIEW_BOX = '-96 -94 192 102';
-const RABBIT_EXITS = new Set(['build-hop-off', 'build-ride-off']);
+const RABBIT_ASPECT = 192 / 102;
+/* Share of the wall's bottom padding the rabbit stands in, so it never reaches text. */
+const RABBIT_FILL = 0.8;
 const PUSH_STAGGER_MS = 260;
-/* Caps the stagger, so a jump that reveals many bricks still lands them all within 5 s (SC 2.2.2). */
+/* Caps the stagger, so a jump that reveals many walls still lands them all within 5 s (SC 2.2.2). */
 const PUSH_STAGGER_STEPS = 3;
 const TUMBLE_STAGGER_MS = 50;
 const TUMBLE_STAGGER_STEPS = 20;
 const TUMBLE_DRIFT_PX = 200;
 const TUMBLE_TURN_DEG = 140;
+const KNOCK_LABEL = 'Knock It Down';
 
 const tuft = document.querySelector<SVGSVGElement>('footer .footer-tuft');
-const KNOCK_LABEL = 'Knock It Down';
+const pushMs = (): number =>
+  parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue('--build-push'),
+  );
 
 /* Made here, not in the markup: without script or under reduced motion it would do nothing. */
 const makeKnock = (): HTMLButtonElement => {
@@ -33,18 +40,54 @@ const makeKnock = (): HTMLButtonElement => {
 
 const knock = makeKnock();
 
-const settle = (brick: HTMLElement): void => {
-  brick.removeAttribute('data-build');
-  brick.style.removeProperty('animation-delay');
-  brick.querySelector(':scope > .builder-rabbit')?.remove();
+const settle = (element: HTMLElement): void => {
+  element.removeAttribute('data-build');
+  element.style.removeProperty('animation-delay');
+  element.style.removeProperty('--push');
+  element.querySelectorAll<HTMLElement>('[data-build-host]').forEach((host) => {
+    delete host.dataset.buildHost;
+  });
+  element.querySelector('.builder-rabbit')?.remove();
   /* Here, not on animationend: a brick landed early by focus or a press cancels its animation. */
   if (!document.querySelector('[data-build="tumble"]')) {
     delete document.documentElement.dataset.tumbling;
   }
 };
 
-const makeRabbit = (delayMs: number): HTMLElement | null => {
-  if (!tuft) return null;
+/* The brick whose bottom padding the rabbit stands in: a card's own, or a wall's first. */
+const hostOf = (wall: HTMLElement): HTMLElement | null => {
+  const first = wall.matches('.card')
+    ? wall
+    : (wall.firstElementChild as HTMLElement | null);
+  return first?.querySelector<HTMLElement>('.card') ?? first;
+};
+
+interface PushPlan {
+  readonly wall: HTMLElement;
+  readonly width: number;
+  readonly host: HTMLElement | null;
+  readonly paddingLeft: number;
+  readonly paddingBottom: number;
+  readonly room: number;
+}
+
+const planPush = (wall: HTMLElement): PushPlan => {
+  const host = hostOf(wall);
+  const style = host ? getComputedStyle(host) : null;
+  return {
+    wall,
+    width: wall.getBoundingClientRect().width,
+    host,
+    paddingLeft: parseFloat(style?.paddingLeft ?? '0'),
+    paddingBottom: parseFloat(style?.paddingBottom ?? '0'),
+    room: host?.clientWidth ?? 0,
+  };
+};
+
+const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
+  if (!tuft || !plan.host) return null;
+  const height = plan.paddingBottom * RABBIT_FILL;
+  const width = height * RABBIT_ASPECT;
   const drawing = tuft.cloneNode(true) as SVGSVGElement;
   drawing.querySelectorAll('.tuft-back, .tuft-front').forEach((grass) => {
     grass.remove();
@@ -53,90 +96,106 @@ const makeRabbit = (delayMs: number): HTMLElement | null => {
   const rabbit = document.createElement('span');
   rabbit.className = 'builder-rabbit';
   rabbit.setAttribute('aria-hidden', 'true');
-  rabbit.style.animationDelay = `${delayMs}ms`;
+  Object.assign(rabbit.style, {
+    left: `${plan.paddingLeft}px`,
+    bottom: `${(plan.paddingBottom - height) / 2}px`,
+    width: `${width}px`,
+    animationDelay: `${delayMs}ms, ${delayMs + pushMs()}ms`,
+  });
+  rabbit.style.setProperty('--push', `${plan.width}px`);
+  rabbit.style.setProperty(
+    '--run',
+    `${Math.max(0, plan.room - plan.paddingLeft * 2 - width)}px`,
+  );
   rabbit.append(drawing);
   return rabbit;
 };
 
-const push = (brick: HTMLElement, delayMs: number): void => {
-  const room = brick.getBoundingClientRect().left;
-  brick.dataset.build = 'push';
-  brick.style.animationDelay = `${delayMs}ms`;
-  const rabbit = makeRabbit(delayMs);
-  if (!rabbit) return;
-  rabbit.addEventListener('animationend', (event) => {
-    if (RABBIT_EXITS.has(event.animationName)) settle(brick);
-  });
-  brick.append(rabbit);
-  /* With no room beside the brick on screen, the rabbit rides on top of it instead. */
-  if (room < rabbit.getBoundingClientRect().width) {
-    rabbit.classList.add('builder-rabbit-ride');
+const push = (plan: PushPlan, delayMs: number): void => {
+  const { wall, host } = plan;
+  if (wall.dataset.build !== 'waiting') return;
+  wall.style.setProperty('--push', `${plan.width}px`);
+  wall.style.animationDelay = `${delayMs}ms`;
+  wall.dataset.build = 'push';
+  const rabbit = makeRabbit(plan, delayMs);
+  if (!rabbit || !host) {
+    wall.addEventListener('animationend', () => settle(wall), { once: true });
+    return;
   }
+  host.dataset.buildHost = '';
+  rabbit.addEventListener('animationend', (event) => {
+    if (event.animationName === 'build-run') settle(wall);
+  });
+  host.append(rabbit);
 };
 
-const bricks = [...document.querySelectorAll<HTMLElement>(BRICKS)].filter(
-  (brick) => !brick.closest(CAT_BAND),
+const walls = [...document.querySelectorAll<HTMLElement>(WALLS)].filter(
+  (wall) => !wall.closest(CAT_BAND),
 );
 
 const arm = (): IntersectionObserver => {
-  const observer = new IntersectionObserver((entries) => {
-    entries
+  const watcher = new IntersectionObserver((entries) => {
+    const plans = entries
       .filter((entry) => entry.isIntersecting)
-      .forEach((entry, index) => {
-        observer.unobserve(entry.target);
-        push(
-          entry.target as HTMLElement,
-          Math.min(index, PUSH_STAGGER_STEPS) * PUSH_STAGGER_MS,
-        );
-      });
-  });
-  bricks
-    .filter((brick) => brick.getBoundingClientRect().top > innerHeight)
-    .forEach((brick) => {
-      brick.dataset.build = 'waiting';
-      observer.observe(brick);
+      .map((entry) => planPush(entry.target as HTMLElement));
+    plans.forEach((plan, index) => {
+      watcher.unobserve(plan.wall);
+      push(plan, Math.min(index, PUSH_STAGGER_STEPS) * PUSH_STAGGER_MS);
     });
-  return observer;
+  });
+  walls
+    .filter((wall) => wall.getBoundingClientRect().top > innerHeight)
+    .forEach((wall) => {
+      wall.dataset.build = 'waiting';
+      watcher.observe(wall);
+    });
+  return watcher;
 };
 
-const tumble = (): void => {
-  tuft?.setAttribute('data-build', 'kick');
-  tuft?.addEventListener(
-    'animationend',
-    () => tuft.removeAttribute('data-build'),
-    {
-      once: true,
-    },
+const outermost = (elements: readonly HTMLElement[]): HTMLElement[] =>
+  elements.filter(
+    (element) =>
+      !elements.some((outer) => outer !== element && outer.contains(element)),
   );
-  const tumblers = [...document.querySelectorAll<HTMLElement>(TUMBLERS)];
-  tumblers
-    .filter(
-      (brick) =>
-        !tumblers.some((outer) => outer !== brick && outer.contains(brick)),
-    )
-    .filter((brick) => {
-      const { top, bottom } = brick.getBoundingClientRect();
-      return bottom > 0 && top < innerHeight && !brick.contains(knock);
-    })
-    .forEach((brick, index) => {
-      settle(brick);
-      brick.style.setProperty(
-        '--tumble-x',
-        `${Math.round((Math.random() - 0.5) * TUMBLE_DRIFT_PX)}px`,
-      );
-      brick.style.setProperty(
-        '--tumble-turn',
-        `${Math.round((Math.random() - 0.5) * TUMBLE_TURN_DEG)}deg`,
-      );
-      brick.style.animationDelay = `${Math.min(index, TUMBLE_STAGGER_STEPS) * TUMBLE_STAGGER_MS}ms`;
-      brick.dataset.build = 'tumble';
-      const land = (event: AnimationEvent): void => {
-        if (event.animationName !== 'build-tumble') return;
-        brick.removeEventListener('animationend', land);
-        settle(brick);
-      };
-      brick.addEventListener('animationend', land);
+
+const tumble = (): void => {
+  const run = new AbortController();
+  const onScreen = outermost([
+    ...document.querySelectorAll<HTMLElement>(TUMBLERS),
+  ]).filter((brick) => {
+    const { top, bottom } = brick.getBoundingClientRect();
+    return bottom > 0 && top < innerHeight && !brick.contains(knock);
+  });
+
+  tuft?.setAttribute('data-build', 'kick');
+  for (const type of ['animationend', 'animationcancel']) {
+    tuft?.addEventListener(type, () => tuft.removeAttribute('data-build'), {
+      once: true,
+      signal: run.signal,
     });
+  }
+
+  onScreen.forEach((brick, index) => {
+    settle(brick);
+    brick.style.setProperty(
+      '--tumble-x',
+      `${Math.round((Math.random() - 0.5) * TUMBLE_DRIFT_PX)}px`,
+    );
+    brick.style.setProperty(
+      '--tumble-turn',
+      `${Math.round((Math.random() - 0.5) * TUMBLE_TURN_DEG)}deg`,
+    );
+    brick.style.animationDelay = `${Math.min(index, TUMBLE_STAGGER_STEPS) * TUMBLE_STAGGER_MS}ms`;
+    brick.dataset.build = 'tumble';
+    const land = (event: AnimationEvent): void => {
+      if (event.target !== brick) return;
+      brick.removeEventListener('animationend', land);
+      brick.removeEventListener('animationcancel', land);
+      settle(brick);
+    };
+    brick.addEventListener('animationend', land, { signal: run.signal });
+    brick.addEventListener('animationcancel', land, { signal: run.signal });
+  });
   if (document.querySelector('[data-build="tumble"]')) {
     document.documentElement.dataset.tumbling = '';
   }
@@ -160,15 +219,15 @@ const stopBuilding = (): void => {
 
 knock.addEventListener('click', tumble);
 
-/* A brick that takes focus or a press lands at once, so a target never moves under it. */
+/* A wall that takes focus or a press lands at once, so a target never moves under it. */
 const landNow = (event: Event): void => {
-  const brick =
+  const moving =
     event.target instanceof Element
       ? event.target.closest<HTMLElement>('[data-build]')
       : null;
-  if (!brick) return;
-  observer?.unobserve(brick);
-  settle(brick);
+  if (!moving) return;
+  observer?.unobserve(moving);
+  settle(moving);
 };
 document.addEventListener('focusin', landNow);
 document.addEventListener('pointerdown', landNow);
