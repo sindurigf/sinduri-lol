@@ -137,26 +137,31 @@ test.describe('post-figure', NODE, () => {
     });
   }
 
-  test('a Creative Commons photo credit links its source and short license', () => {
-    const photo: LicensedPhoto = {
-      photographer: 'Karl Hepworth',
-      title: 'A Fixture Photo',
-      source: 'https://photos.example/fixture',
-      sourceName: 'Photos Example',
-      license: 'Creative Commons Attribution 4.0',
-      licenseShort: 'CC BY 4.0',
-      licenseHref: 'https://creativecommons.org/licenses/by/4.0/',
-      changes: 'cropped',
-    };
-    const nodes: Node[] = captionChildren(
-      'Photo: Karl Hepworth',
+  const CC_FIXTURE: LicensedPhoto = {
+    photographer: 'Karl Hepworth',
+    title: 'A Fixture Photo',
+    titleInCaption: false,
+    source: 'https://photos.example/fixture',
+    sourceName: 'Photos Example',
+    license: 'Creative Commons Attribution 4.0',
+    licenseShort: 'CC BY 4.0',
+    licenseHref: 'https://creativecommons.org/licenses/by/4.0/',
+    changes: 'cropped',
+  };
+  const ccCaption = (photo: LicensedPhoto): Node[] =>
+    captionChildren(
+      `Photo: ${photo.photographer}`,
       '../../assets/photos/cc-fixture.jpg',
       { 'cc-fixture': photo },
     );
-    const textOf = (node: Node): string =>
-      node.type === 'text'
-        ? String(node.value)
-        : (node.children ?? []).map(textOf).join('');
+  const textOf = (node: Node): string =>
+    node.type === 'text'
+      ? String(node.value)
+      : (node.children ?? []).map(textOf).join('');
+
+  test('a Creative Commons photo credit links its source and short license', () => {
+    const photo = CC_FIXTURE;
+    const nodes = ccCaption(photo);
     const caption = nodes.map(textOf).join('');
     const [name, license] = nodes.filter((node) => node.tagName === 'a');
 
@@ -178,6 +183,30 @@ test.describe('post-figure', NODE, () => {
         dropped,
       );
     }
+  });
+
+  test('a Creative Commons photo whose license asks for the title links title, name and license', () => {
+    const photo: LicensedPhoto = { ...CC_FIXTURE, titleInCaption: true };
+    const nodes = ccCaption(photo);
+    const links = nodes.filter((node) => node.tagName === 'a');
+    const linkTo = (href: string) =>
+      links.find((node) => node.properties?.href === href);
+
+    expect(nodes.map(textOf).join(''), 'the caption is out of order').toBe(
+      `Photo: ${photo.title} by ${photo.photographer} (${photo.licenseShort})`,
+    );
+    expect(
+      textOf(linkTo(photo.source)!),
+      'the title does not link the photo',
+    ).toBe(photo.title);
+    expect(
+      textOf(linkTo(PHOTOGRAPHERS[photo.photographer])!),
+      'the name does not link the photographer',
+    ).toBe(photo.photographer);
+    expect(
+      textOf(linkTo(photo.licenseHref)!),
+      'the license link is not its short name',
+    ).toBe(photo.licenseShort);
   });
 
   test('a Creative Commons photo credited to someone else fails the build', () => {
