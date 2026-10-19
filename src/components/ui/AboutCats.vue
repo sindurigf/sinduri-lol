@@ -268,10 +268,10 @@ const showSpot = (node: Element, on: boolean): void => {
 const SAME_FLOOR = 1;
 
 /** The topmost brick edge under each stretch of a band, read from the laid-out wall, so a raised brick is a step. */
-const ledgesUnder = (svg: SVGSVGElement): Ledge[] => {
-  const band = svg.getBoundingClientRect();
+const ledgesUnder = (spot: Element): Ledge[] => {
+  const band = spot.getBoundingClientRect();
   const bricks = [
-    ...(svg
+    ...(spot
       .closest('.cat-perch')
       ?.querySelectorAll(':scope > .card, :scope > .card-block > .card') ?? []),
   ].map((node) => node.getBoundingClientRect());
@@ -303,10 +303,16 @@ const layout = (): void => {
   for (const cat of props.cats) {
     const svg = svgs.get(cat.id);
     if (!svg) continue;
+    const spot = svg.closest('.cat-spot');
+    if (!spot) continue;
     const width = svg.clientWidth;
-    const height = svg.clientHeight;
-    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    sizes.set(cat.id, { width, height, ledges: ledgesUnder(svg) });
+    const height = spot.clientHeight;
+    const ledges = ledgesUnder(spot);
+    const below = Math.max(0, ...ledges.map((l) => l.drop));
+    /* WebKit hit-tests an SVG's drawing only inside its box, so the box reaches the lowest brick. */
+    svg.style.setProperty('--cat-below', `${below}px`);
+    svg.setAttribute('viewBox', `0 0 ${width} ${height + below}`);
+    sizes.set(cat.id, { width, height, ledges });
   }
   colony.layout(sizes);
 };
