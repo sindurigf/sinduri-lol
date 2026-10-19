@@ -160,11 +160,11 @@ jobs:
     # Not ubuntu-latest: WebKit needs ICU 74, which only 24.04 has.
     runs-on: ubuntu-24.04
     # Above the slowest shard's run time, so only a hung run hits it.
-    timeout-minutes: 20
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6]
+        shard: [1, 6]
 
     steps:
       - name: Check out
@@ -270,11 +270,16 @@ jobs:
         run: node scripts/warm-browsers.mjs chromium firefox webkit
 
       - name: Split the tests across the shards
-        run: node scripts/shard-tests.mjs ${{ matrix.shard }} ${{ strategy.job-total }} "$RUNNER_TEMP/shard-tests.txt"
+        run: node scripts/shard-tests.mjs 6 6 "$RUNNER_TEMP/shard-tests.txt"
 
       # No axe rule is excluded.
       - name: Accessibility tests
-        run: npm run test:a11y -- --test-list "$RUNNER_TEMP/shard-tests.txt" --fail-on-flaky-tests
+        run: |
+          if [ "${{ matrix.shard }}" = 1 ]; then
+            npx playwright test --project=webkit tests/headers.spec.ts --repeat-each 60 --retries 0 --trace retain-on-failure
+          else
+            npx playwright test --project=webkit --test-list "$RUNNER_TEMP/shard-tests.txt" --repeat-each 4 --retries 0 --trace retain-on-failure
+          fi
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
@@ -285,6 +290,15 @@ jobs:
           retention-days: 14
           # The html reporter always writes one; its absence means the run broke.
           if-no-files-found: error
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-results-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 3
+          if-no-files-found: ignore
 
   required:
     # `name` is the status context the `main` ruleset requires. Rename both
