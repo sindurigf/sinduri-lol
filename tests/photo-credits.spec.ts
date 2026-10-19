@@ -20,7 +20,7 @@ const SHOWN: readonly {
   /** About credits a whole strip of photos in one line. */
   prefix: string;
 }[] = [
-  { route: '/brand/photos', photo: 'drupal-lecture-hall', prefix: 'Photo: ' },
+  { route: '/brand', photo: 'drupal-lecture-hall', prefix: 'Photo: ' },
   {
     route: '/blog/open-source-is-not-just-code',
     photo: 'drupal-lecture-hall',

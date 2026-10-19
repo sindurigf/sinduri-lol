@@ -24,7 +24,7 @@ const BLOCK_ROUTES = [
   '/accessibility',
   '/blog/five-years-in-drupal',
   '/talks/open-source-is-not-just-code',
-  '/brand/cards',
+  '/brand',
 ];
 /* A few links per page cover each block kind in reasonable time. */
 const LINKS_PER_PAGE = 6;
