@@ -150,7 +150,11 @@ view (development server only, never published), and forks.
   `/about` a sleep control (SC 2.2.2). Under `prefers-reduced-motion: reduce`
   the hero field is drawn once and held, the cats sit still on the brick
   under them, and a pressed
-  control does not move into its shadow (SC 2.3.3); nothing else animates
+  control does not move into its shadow (SC 2.3.3). On pages with brick
+  walls, the footer rabbit pushes each brick below the fold into place, and
+  Knock It Down in the footer tumbles what is on screen and rebuilds it; each
+  move ends within 5 s, a focused or pressed brick lands at once, and under
+  reduced motion neither runs and the button is not offered; nothing else animates
   ([STYLEGUIDE Motion](docs/STYLEGUIDE.md#motion)).
 - **Forced colors.** Every non-link control keeps a painted border or opaque
   background, except the last row of a cat's trick list (set in the CSS; no test opens the list in forced colors); links are distinct
@@ -288,6 +292,7 @@ merge.
 | `tests/motion.spec.ts`              | 2.2.2, 2.3.3                                                     | Hero field pauses; nothing moves under reduced motion                                                                                                                                                                                                                                                |
 | `tests/press.spec.ts`               | 1.4.11, 2.3.3                                                    | A press is drawn; a hover lift keeps the pointer and its ring clears the grown shadow; under reduced motion or without a hovering pointer nothing moves                                                                                                                                              |
 | `tests/about-cats.spec.ts`          | 1.4.1, 1.4.3, 1.4.10, 1.4.11, 2.2.2, 2.4.11, 2.5.5               | Cat buttons, card dialog, focus return, sleep controls, trick lists, reduced motion; a moving cat never scrolls the page; on a stepped wall a cat stands on, and is clickable on, the brick under it                                                                                                 |
+| `tests/rabbit-builder.spec.ts`      | 2.2.2, 2.3.3, 2.4.11, 2.5.5                                      | A brick lands within 5 s and rests in place; focus lands it at once; the rabbit is hidden from assistive technology; reduced motion, print and no script show the whole wall; Knock It Down works by keyboard, keeps focus, is 44px and ends within 5 s                                              |
 | `tests/headings.spec.ts`            | 1.3.1, 2.4.6                                                     | One `h1`, no skipped level, no heading under 19px                                                                                                                                                                                                                                                    |
 | `tests/structure.spec.ts`           | 1.3.1, 2.4.1, 2.4.6                                              | The accessibility tree: one banner, main and contentinfo in order, named unique landmarks, one `h1` opening main, an `h2` opening each region, the home link named for the site                                                                                                                      |
 | `tests/titles.spec.ts`              | 2.4.2                                                            | Titles distinct and descriptive                                                                                                                                                                                                                                                                      |

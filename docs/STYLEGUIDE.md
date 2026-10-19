@@ -1060,7 +1060,8 @@ Enforced by `tests/footer.spec.ts`.
 - `nav` "About this site": the links in `POLICY_LINKS` in `Footer.astro`
 - `nav` "Social": seven sticker links, each an `aria-hidden` icon and a
   visually hidden name
-- the copyright and the `aria-hidden` tuft
+- the copyright and the `aria-hidden` tuft, with Knock It Down between them
+  on pages with brick walls when motion is allowed ([Motion](#motion))
 
 ### Footer layout
 
@@ -1202,6 +1203,19 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   button. The state lives in the accessible name ("Play the hero animation" /
   "Pause the hero animation"), no `aria-pressed`.
 - `HeroField` loads `client:load`.
+- The rabbit builder (`src/scripts/rabbit-builder.ts`,
+  `src/styles/components/builder.css`) runs only on pages that render
+  `RabbitBuilder.astro` or import the script: pages with brick walls, not
+  `/about`, whose walls the cats stand on, and not `/contact`, whose form
+  must hold still. A brick below the fold waits unseen, then slides in
+  pushed by the footer rabbit, which rides on top where no room is beside
+  it and hops off before the push ends. Bricks on screen at load never move.
+- Knock It Down is made by that script and placed before the footer tuft;
+  it tumbles the bricks, headings and footer stickers on screen and rebuilds
+  them in `--build-tumble`. Focus stays on the button.
+- Every build move ends within 5 s (SC 2.2.2). A brick that takes focus or a
+  press lands at once. Under reduced motion nothing waits and the button is
+  not made; print shows every brick (`tests/rabbit-builder.spec.ts`).
 - The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
   first on screen, play along it (games like the yarn and the fly carry them,
   leaps move them on), and sit still under reduced motion. Each cat's button
