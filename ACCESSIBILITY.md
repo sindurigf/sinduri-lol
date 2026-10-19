@@ -72,15 +72,15 @@ In scope:
 Not in scope: third-party sites linked from the footer, the talk presenter
 view (development server only, never published), and forks.
 
-| Environment      | Support                                                                                                                             |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Browsers         | Chrome and Edge 120, Firefox 128, Safari and iOS Safari 17 ([ARCHITECTURE.md](ARCHITECTURE.md#browser-support))                     |
-| Engines tested   | Chromium and Firefox locally and in CI; WebKit in CI and through Docker (`npm run test:webkit`)                                     |
-| Color modes      | Dark by default. With JavaScript, light follows `prefers-color-scheme: light`, can be set with the header switch, and is remembered |
-| Forced colors    | Windows High Contrast (`forced-colors: active`)                                                                                     |
-| No JavaScript    | Navigation and the contact form work; the page stays dark and the light-mode switch is hidden; the hero field stays blank           |
-| Zoom and spacing | 400% zoom at 1280px (320px reflow), SC 1.4.12 text spacing                                                                          |
-| Screen readers   | None tested. See [gap 2](#7-known-gaps)                                                                                             |
+| Environment      | Support                                                                                                              |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Browsers         | Chrome and Edge 120, Firefox 128, Safari and iOS Safari 17 ([ARCHITECTURE.md](ARCHITECTURE.md#browser-support))      |
+| Engines tested   | Chromium and Firefox locally and in CI; WebKit in CI and through Docker (`npm run test:webkit`)                      |
+| Color modes      | Dark by default. With JavaScript, the Theme menu offers System (follows the device), Light and Dark (remembered)     |
+| Forced colors    | Windows High Contrast (`forced-colors: active`)                                                                      |
+| No JavaScript    | Navigation and the contact form work; the page stays dark and the theme switch is hidden; the hero field stays blank |
+| Zoom and spacing | 400% zoom at 1280px (320px reflow), SC 1.4.12 text spacing                                                           |
+| Screen readers   | None tested. See [gap 2](#7-known-gaps)                                                                              |
 
 ## 4. What the site supports
 
@@ -148,7 +148,8 @@ view (development server only, never published), and forks.
   without doubling it for a screen reader.
 - **Motion.** The hero field on `/` has a pause control and each cat on
   `/about` a sleep control (SC 2.2.2). Under `prefers-reduced-motion: reduce`
-  the hero field is drawn once and held, the cats sit still, and a pressed
+  the hero field is drawn once and held, the cats sit still on the brick
+  under them, and a pressed
   control does not move into its shadow (SC 2.3.3); nothing else animates
   ([STYLEGUIDE Motion](docs/STYLEGUIDE.md#motion)).
 - **Forced colors.** Every non-link control keeps a painted border or opaque
@@ -240,10 +241,11 @@ with a 4px ink edge. Inside, the color tokens are remapped, so text is ink at
 
 ### Light mode
 
-With JavaScript, `<main>`, the header and the footer turn light on
-`prefers-color-scheme: light` or the header switch, and the choice is
-remembered; without it the page stays dark and the switch is hidden. Every
-text color clears 7:1 on white:
+With JavaScript, `<main>`, the header and the footer turn light when the
+header's Theme menu is on Light, or on System (the default) while
+`prefers-color-scheme` is `light`; System follows a device change at once.
+Light and Dark are remembered. Without JavaScript the page stays dark and the
+switch is hidden. Every text color clears 7:1 on white:
 [Light mode](docs/STYLEGUIDE.md#light-mode).
 
 ## 6. How it is tested
@@ -257,7 +259,7 @@ merge.
 | Check                               | WCAG                                                             | Notes                                                                                                                                                                                                                                                                                                |
 | ----------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tests/a11y.spec.ts`                | 2.2 A and AA                                                     | axe on every route, at 320px, menu open, open states; decides `incomplete` contrast                                                                                                                                                                                                                  |
-| `tests/light-mode.spec.ts`          | 2.2 A and AA, 1.4.11, 4.1.2                                      | axe in light mode on every route and at 320px; control edges at 3:1; the switch keeps its name, takes Enter and Space, holds across a reload and applies before `<body>`                                                                                                                             |
+| `tests/light-mode.spec.ts`          | 2.2 A and AA, 1.4.11, 2.1.1, 2.4.7, 2.5.5, 4.1.2                 | axe in light mode on every route and at 320px; control edges at 3:1; Theme menu: its names, keys and Escape, choices across a reload, System following the device live, on screen at 320 and 1280px, its ring and forced colors; the theme set before `<body>`                                       |
 | `tests/gold-surface.spec.ts`        | 1.4.3, 1.4.11                                                    | Text on gold and control edges on every gold section; the `/contact` ring at 305px                                                                                                                                                                                                                   |
 | `tests/gold-link.spec.ts`           | 1.4.1, 1.4.3                                                     | Links on gold at rest and under the pointer                                                                                                                                                                                                                                                          |
 | `tests/blocks.spec.ts`              | 1.4.3, 1.4.6, 1.4.11, 2.4.7, 1.4.10                              | Every block's fill or edge 3:1 and its text 7:1, dark and light; links in blocks through hover and focus, ring inside the block; no sideways scroll at 1280, 390, 305; forced colors keep block edges                                                                                                |
@@ -272,7 +274,7 @@ merge.
 | `tests/link-purpose.spec.ts`        | 2.4.9                                                            | One link name, one destination, on every route; hidden text keeps the visible words first                                                                                                                                                                                                            |
 | `tests/unusual-words.spec.ts`       | 3.1.3                                                            | Each listed term a `<dfn>` at first use, defined in its sentence; every `<dfn>` listed; replaced jargon stays out; `/404` links its idioms                                                                                                                                                           |
 | `tests/abbreviations.spec.ts`       | 3.1.4, 1.4.13                                                    | First use of each listed abbreviation described by its expansion, which opens without JavaScript; focus and tap show it, Escape and a second tap hide it, the pointer can cross onto it, it opens with no gap to cross and inside 320px; no unlisted abbreviation on functional pages; no "min read" |
-| `tests/photo-credits.spec.ts`       | 3.1.4                                                            | A Creative Commons photo outside `/credits`: "Photo: " first, the name linked to the photo's page, the short license linked to its deed                                                                                                                                                              |
+| `tests/photo-credits.spec.ts`       | 2.4.9, 3.1.4                                                     | A Creative Commons photo outside `/credits`: "Photo: " first, the title (where the license asks for it) or else the name linked to the photo's page, the short license linked to its deed                                                                                                            |
 | `tests/text-resize.spec.ts`         | 1.4.4                                                            | Lowest page zoom, up to 500%, at which each viewport-sized text token reaches 2x, at four widths                                                                                                                                                                                                     |
 | `tests/target-size.spec.ts`         | 2.5.5                                                            | Every target's 44px square, on pages and in open dialogs, at 305px and 1280px                                                                                                                                                                                                                        |
 | `tests/reflow.spec.ts`              | 1.4.10, 1.4.12                                                   | No sideways scroll; content box; heading word fit                                                                                                                                                                                                                                                    |
@@ -285,7 +287,7 @@ merge.
 | `tests/forced-colors.spec.ts`       | 1.4.11, 2.4.7                                                    | Forced colors, listings sampled; every focus stop on /; not WebKit                                                                                                                                                                                                                                   |
 | `tests/motion.spec.ts`              | 2.2.2, 2.3.3                                                     | Hero field pauses; nothing moves under reduced motion                                                                                                                                                                                                                                                |
 | `tests/press.spec.ts`               | 2.3.3                                                            | A press is drawn; under reduced motion it drops the shadow without moving                                                                                                                                                                                                                            |
-| `tests/about-cats.spec.ts`          | 1.4.1, 1.4.3, 1.4.10, 1.4.11, 2.2.2, 2.4.11, 2.5.5               | Cat buttons, card dialog, focus return, sleep controls, trick lists, reduced motion; a moving cat never scrolls the page                                                                                                                                                                             |
+| `tests/about-cats.spec.ts`          | 1.4.1, 1.4.3, 1.4.10, 1.4.11, 2.2.2, 2.4.11, 2.5.5               | Cat buttons, card dialog, focus return, sleep controls, trick lists, reduced motion; a moving cat never scrolls the page; on a stepped wall a cat stands on, and is clickable on, the brick under it                                                                                                 |
 | `tests/headings.spec.ts`            | 1.3.1, 2.4.6                                                     | One `h1`, no skipped level, no heading under 19px                                                                                                                                                                                                                                                    |
 | `tests/structure.spec.ts`           | 1.3.1, 2.4.1, 2.4.6                                              | The accessibility tree: one banner, main and contentinfo in order, named unique landmarks, one `h1` opening main, an `h2` opening each region, the home link named for the site                                                                                                                      |
 | `tests/titles.spec.ts`              | 2.4.2                                                            | Titles distinct and descriptive                                                                                                                                                                                                                                                                      |
@@ -497,9 +499,9 @@ Rules this repository follows. Values and reasons:
   [low vision needs](https://www.w3.org/TR/low-vision-needs/), high contrast
   against light sensitivity.
   Choices made:
-  - A dark page against a light one: dark is the default, for readers
-    sensitive to light; Light Mode in the header, which is remembered, is
-    for readers who need a light page.
+  - A dark page against a light one: the Theme menu in the header offers
+    System, Light and Dark. System, the default, follows the device and is dark
+    when the device states no preference; a choice is remembered.
   - High contrast against light sensitivity: text keeps 7:1 in both modes;
     the dark default carries the light-sensitive need.
   - Capitals against dyslexia: uppercase only on headings, labels and

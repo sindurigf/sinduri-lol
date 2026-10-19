@@ -101,9 +101,20 @@ Dark is the default. Colors and rules:
   every slide. Its hash is in `script-src`.
   It sits in `<head>`, not beside the switch, so nothing paints in the wrong
   theme first.
-- `src/components/ThemeSwitch.astro` is a `<button aria-pressed>` named "Light
-  Mode"; `src/scripts/theme-switch.ts` wires it and a press saves the choice.
-- Without JavaScript the page is dark and the switch hidden.
+- Three choices: System (the default, nothing stored), Light and Dark (stored
+  as `light` or `dark` under `THEME_STORAGE_KEY` in `src/lib/theme.ts`).
+  `data-theme` always holds the resolved `light` or `dark`.
+- `src/components/ThemeSwitch.astro` is a 44px `<button popovertarget>` named
+  "Theme" showing the theme in use, and a popover with a "Theme" `<fieldset>`
+  of three native radios. Its `id` prop names the popover and the radio group,
+  so two on a page do not clash.
+- `src/scripts/theme-switch.ts` applies a choice at once, removes the key for
+  System, keeps every menu's radios in step, and follows a
+  `prefers-color-scheme` change while System is chosen. It places the popover
+  beside its button, toward the larger side of the viewport, and closes it
+  when focus leaves.
+- Without JavaScript the page is dark and the switch hidden; without popovers
+  the switch is hidden and the page follows the system.
 - `HeroField.vue` (through `use-hero-field.ts`) reads its palette from its own element and rebuilds when a
   `MutationObserver` sees `data-theme` change. Its ground is `hero-ground`.
   A `(resolution)` media query resizes its canvases when only the pixel ratio
@@ -416,13 +427,14 @@ in `wrangler.jsonc`).
 - Credits: `src/lib/credits.ts`, in order of preference (personal site,
   Drupal.org, LinkedIn). Captions and `/credits` read from it. A Markdown
   image title "Photo: name" links `PHOTOGRAPHERS`, "Screenshot: name" links
-  `SCREENSHOT_SOURCES`; a `LICENSED_PHOTOS` file links the name to its
-  `source` and adds its short license
+  `SCREENSHOT_SOURCES`; a `LICENSED_PHOTOS` file is credited by
+  `licensedCaption`, with its short license
   ([Photo credits](docs/STYLEGUIDE.md#photo-credits)).
 - A `LICENSED_PHOTOS` entry, keyed by file name without the extension:
-  `photographer`, `title`, `source`, `sourceName` (Flickr, Wikimedia Commons),
-  `license` (spelled out), `licenseShort` ("CC BY 2.0"), `licenseHref` and
-  `changes`. Only `/credits` shows the title, `sourceName` and `changes`.
+  `photographer`, `title`, `titleInCaption`, `source`, `sourceName` (Flickr,
+  Wikimedia Commons), `license` (spelled out), `licenseShort` ("CC BY 2.0"),
+  `licenseHref` and `changes`. Captions show the title only with
+  `titleInCaption`; only `/credits` shows `sourceName` and `changes`.
 - **Video** goes in `public/videos/` (none published). Encode AV1 WebM, H.264
   MP4 fallback, WebP poster, WebVTT captions; max 25 MiB a file.
   - Workers static assets answer `Range` with a full `200`; Safari and iOS need
