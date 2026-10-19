@@ -5,9 +5,9 @@ const flip = (button: HTMLButtonElement): void => {
   const glyph = button.querySelector<HTMLElement>('[data-glyph]');
   const { onLabel, onGlyph, offLabel, offGlyph } = button.dataset;
   if (!label || !glyph || !onLabel || !onGlyph || !offLabel || !offGlyph) {
-    throw new Error('brand-examples: a toggle is missing its labels or glyph.');
+    throw new Error('brand-examples: a toggle lacks its labels.');
   }
-  const on = label.textContent?.trim() === onLabel;
+  const on = label.textContent === onLabel;
   label.textContent = on ? offLabel : onLabel;
   glyph.textContent = on ? offGlyph : onGlyph;
 };
