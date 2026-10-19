@@ -12,11 +12,12 @@ const CAT_BAND = 'section:has(.cat-perch)';
 const RABBIT_VIEW_BOX = '-96 -94 192 102';
 const RABBIT_EXITS = new Set(['build-hop-off', 'build-ride-off']);
 const PUSH_STAGGER_MS = 260;
+/* Caps the stagger, so a jump that reveals many bricks still lands them all within 5 s (SC 2.2.2). */
+const PUSH_STAGGER_STEPS = 3;
 const TUMBLE_STAGGER_MS = 50;
+const TUMBLE_STAGGER_STEPS = 20;
 const TUMBLE_DRIFT_PX = 200;
 const TUMBLE_TURN_DEG = 140;
-/* Starts a push once a brick is this far into the viewport. */
-const ENTER_MARGIN = '0px 0px -12% 0px';
 
 const tuft = document.querySelector<SVGSVGElement>('footer .footer-tuft');
 const KNOCK_LABEL = 'Knock It Down';
@@ -74,17 +75,17 @@ const bricks = [...document.querySelectorAll<HTMLElement>(BRICKS)].filter(
 );
 
 const arm = (): IntersectionObserver => {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries
-        .filter((entry) => entry.isIntersecting)
-        .forEach((entry, index) => {
-          observer.unobserve(entry.target);
-          push(entry.target as HTMLElement, index * PUSH_STAGGER_MS);
-        });
-    },
-    { rootMargin: ENTER_MARGIN },
-  );
+  const observer = new IntersectionObserver((entries) => {
+    entries
+      .filter((entry) => entry.isIntersecting)
+      .forEach((entry, index) => {
+        observer.unobserve(entry.target);
+        push(
+          entry.target as HTMLElement,
+          Math.min(index, PUSH_STAGGER_STEPS) * PUSH_STAGGER_MS,
+        );
+      });
+  });
   bricks
     .filter((brick) => brick.getBoundingClientRect().top > innerHeight)
     .forEach((brick) => {
@@ -95,6 +96,7 @@ const arm = (): IntersectionObserver => {
 };
 
 const tumble = (): void => {
+  document.documentElement.dataset.tumbling = '';
   tuft?.setAttribute('data-build', 'kick');
   tuft?.addEventListener(
     'animationend',
@@ -123,12 +125,15 @@ const tumble = (): void => {
         '--tumble-turn',
         `${Math.round((Math.random() - 0.5) * TUMBLE_TURN_DEG)}deg`,
       );
-      brick.style.animationDelay = `${index * TUMBLE_STAGGER_MS}ms`;
+      brick.style.animationDelay = `${Math.min(index, TUMBLE_STAGGER_STEPS) * TUMBLE_STAGGER_MS}ms`;
       brick.dataset.build = 'tumble';
       const land = (event: AnimationEvent): void => {
         if (event.animationName !== 'build-tumble') return;
         brick.removeEventListener('animationend', land);
         settle(brick);
+        if (!document.querySelector('[data-build="tumble"]')) {
+          delete document.documentElement.dataset.tumbling;
+        }
       };
       brick.addEventListener('animationend', land);
     });
@@ -146,6 +151,7 @@ const stopBuilding = (): void => {
   observer?.disconnect();
   observer = null;
   document.querySelectorAll<HTMLElement>('[data-build]').forEach(settle);
+  delete document.documentElement.dataset.tumbling;
   knock.remove();
 };
 

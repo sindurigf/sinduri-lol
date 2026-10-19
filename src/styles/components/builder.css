@@ -49,6 +49,11 @@
       animation: build-stride var(--build-stride) ease-in-out 6;
     }
 
+    /* A falling brick never widens or lengthens the page (SC 1.4.10); clip keeps sticky working. */
+    [data-tumbling] :is(main, footer) {
+      overflow: clip;
+    }
+
     [data-build='tumble'] {
       animation: build-tumble var(--build-tumble) cubic-bezier(0.45, 0, 0.3, 1)
         both;

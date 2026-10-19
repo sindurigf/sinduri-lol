@@ -1,6 +1,6 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
-import { DESKTOP_VIEWPORT, MIN_TARGET } from './wcag';
+import { DESKTOP_VIEWPORT, MIN_TARGET, REFLOW_VIEWPORT } from './wcag';
 
 /**
  * The building rabbit and Knock It Down (src/scripts/rabbit-builder.ts):
@@ -162,4 +162,56 @@ test('without JavaScript Knock It Down is not offered', async ({
   await expect(page.getByRole('button', { name: KNOCK_NAME })).toBeHidden();
   await expect(page.locator(BUILDING)).toHaveCount(0);
   await context.close();
+});
+
+test('a jump that reveals every brick at once lands them all within five seconds', async ({
+  page,
+}) => {
+  await gotoSettled(page, '/blog');
+  await expect(page.locator(WAITING).first()).toBeAttached();
+  const tall = await page.evaluate(() => document.documentElement.scrollHeight);
+  await page.setViewportSize({ width: DESKTOP_VIEWPORT.width, height: tall });
+
+  await expect(
+    page.locator(WAITING),
+    'a revealed brick never started',
+  ).toHaveCount(0);
+  await expectAtRest(
+    page,
+    'bricks revealed together still move after five seconds',
+  );
+});
+
+test('a tumble at 320px never widens or lengthens the page', async ({
+  page,
+}) => {
+  await page.setViewportSize(REFLOW_VIEWPORT);
+  await gotoSettled(page, ROUTE);
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+  const knock = page.getByRole('button', { name: KNOCK_NAME });
+  await expect(knock).toBeVisible();
+  await expectAtRest(page, 'the page was still building before the press');
+  const before = await page.evaluate(
+    () => document.documentElement.scrollHeight,
+  );
+
+  await knock.click();
+  const samples = await page.evaluate(async (ms) => {
+    const seen: { width: number; client: number; height: number }[] = [];
+    const end = performance.now() + ms;
+    while (performance.now() < end) {
+      const root = document.documentElement;
+      seen.push({
+        width: root.scrollWidth,
+        client: root.clientWidth,
+        height: root.scrollHeight,
+      });
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+    return seen;
+  }, MOTION_LIMIT_MS);
+  expect(
+    samples.filter((s) => s.width > s.client || s.height !== before),
+    'a falling brick widened or lengthened the page (SC 1.4.10)',
+  ).toEqual([]);
 });
