@@ -46,16 +46,35 @@
   }
 
   /*
-   * The logo tile's press: its shadow is a markup utility. Only the tile moves,
-   * so the link keeps the pointer.
+   * The logo tile's press, as the controls' in buttons-nav.css with the mark's
+   * 8px throw. Only the tile moves, so the link keeps the pointer.
    */
+  .logo-link .logo-tile {
+    box-shadow: var(--lift-mark) var(--lift-mark) 0 var(--color-bunny);
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition-property: translate, box-shadow;
+      transition-duration: var(--press-travel);
+      transition-timing-function: linear;
+    }
+  }
+
   .logo-link:active .logo-tile {
-    @apply shadow-none;
+    box-shadow: 0 0 0 var(--color-bunny);
+  }
+
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) {
+    .logo-link:hover:not(:active) .logo-tile {
+      translate: calc(var(--press-lift) * -1) calc(var(--press-lift) * -1);
+      box-shadow: calc(var(--lift-mark) + var(--press-lift))
+        calc(var(--lift-mark) + var(--press-lift)) 0 var(--color-bunny);
+    }
   }
 
   @media (prefers-reduced-motion: no-preference) {
     .logo-link:active .logo-tile {
-      @apply translate-x-2 translate-y-2;
+      translate: var(--lift-mark) var(--lift-mark);
+      transition-duration: 0s;
     }
   }
 
