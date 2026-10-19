@@ -7,9 +7,6 @@ const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)');
 const WALLS = 'main :is(.card-block, .card:not(.card-block *))';
 const TUMBLERS =
   'main :is(.card-block > *, .card:not(.card-block *), h2), footer :is(.footer-name, .footer-sticker)';
-/* The rabbit without its grass, cropped to its body and throw. */
-const RABBIT_VIEW_BOX = '-96 -94 192 102';
-const RABBIT_ASPECT = 192 / 102;
 /* The rabbit stands on the wall, in the empty gap above it: never taller than that gap, nor than this. */
 const RABBIT_MAX_PX = 48;
 const RABBIT_MIN_PX = 16;
@@ -27,8 +24,8 @@ const KNOCK_LABEL = 'Knock It Down';
 const tuft = document.querySelector<SVGSVGElement>('footer .footer-tuft');
 
 /* Made here, not in the markup: without script or under reduced motion it would do nothing. */
+/* Outside any form, so no `type`: it never submits. */
 const knock = Object.assign(document.createElement('button'), {
-  type: 'button',
   className: 'knock-down btn-secondary',
   textContent: KNOCK_LABEL,
 });
@@ -103,12 +100,15 @@ const planPush = (wall: HTMLElement): PushPlan => {
 const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
   const height = Math.min(plan.room - RABBIT_CLEARANCE_PX, RABBIT_MAX_PX);
   if (!tuft || height < RABBIT_MIN_PX) return null;
-  const width = height * RABBIT_ASPECT;
+  /* The rabbit's own box, kept beside its drawing in Footer.astro. */
+  const crop = tuft.dataset.rabbitBox!;
+  const [, , boxWidth, boxHeight] = crop.split(' ').map(Number);
+  const width = (height * boxWidth!) / boxHeight!;
   const drawing = tuft.cloneNode(true) as SVGSVGElement;
-  drawing.querySelectorAll('.tuft-back, .tuft-front').forEach((grass) => {
-    grass.remove();
-  });
-  drawing.setAttribute('viewBox', RABBIT_VIEW_BOX);
+  drawing
+    .querySelectorAll('.tuft-back, .tuft-front')
+    .forEach((grass) => grass.remove());
+  drawing.setAttribute('viewBox', crop);
   const rabbit = document.createElement('span');
   rabbit.className = 'builder-rabbit';
   rabbit.setAttribute('aria-hidden', 'true');

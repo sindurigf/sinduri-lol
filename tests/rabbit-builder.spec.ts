@@ -81,6 +81,15 @@ test('the rabbit is hidden from assistive technology', async ({ page }) => {
     });
   }).toPass({ timeout: MOTION_LIMIT_MS * 2 });
   await expect(rabbit).toHaveAttribute('aria-hidden', 'true');
+  const drawn = await rabbit.evaluate((element) => {
+    const art = element.querySelector('svg')!;
+    const box = art.getBBox();
+    const shown = art.getBoundingClientRect();
+    return (
+      box.width > 0 && box.height > 0 && shown.width > 0 && shown.height > 0
+    );
+  });
+  expect(drawn, 'the cloned rabbit draws nothing').toBe(true);
 });
 
 test('a brick that takes keyboard focus lands at once and stays landed', async ({
