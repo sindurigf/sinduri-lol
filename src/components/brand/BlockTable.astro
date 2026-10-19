@@ -64,26 +64,16 @@ const { group, mode } = Astro.props;
               <span
                 class:list={[
                   'block-ratio text-body font-black',
-                  cell.kind === 'text' ? cell.paintClass : 'text-text',
+                  cell.labelClass,
                 ]}
               >
                 {cell.ratio}:1
               </span>
-              <span
-                class:list={[
-                  'block-verdict text-label',
-                  cell.kind === 'text' ? cell.paintClass : 'text-text',
-                ]}
-              >
+              <span class:list={['block-verdict text-label', cell.labelClass]}>
                 {cell.verdict}
               </span>
               {cell.note && (
-                <span
-                  class:list={[
-                    'block-note text-label',
-                    cell.kind === 'text' ? cell.paintClass : 'text-text',
-                  ]}
-                >
+                <span class:list={['block-note text-label', cell.labelClass]}>
                   {cell.note}
                 </span>
               )}

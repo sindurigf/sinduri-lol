@@ -25,9 +25,12 @@ const headingId = `${section.anchor}-heading`;
       {section.heading ?? section.title}
     </h2>
     {/* After the heading in the page's order, so the region opens on its h2; first on screen. */}
-    <p class="label order-first text-subtle">{section.group}</p>
-    <p class="mt-6 max-w-measure text-standfirst text-subtle">{section.lead}</p>
-    <p class="mt-4 lg:hidden">
+    <div class="label order-first text-subtle">{section.group}</div>
+    {/* Not a paragraph: a short line at standfirst size reads to WAVE as a heading. */}
+    <div class="mt-6 max-w-measure text-standfirst text-subtle">
+      {section.lead}
+    </div>
+    <p class="mt-6 lg:hidden">
       <a href="#brand-menu" class="link inline-flex min-h-target items-center">
         Back to Sections
       </a>
