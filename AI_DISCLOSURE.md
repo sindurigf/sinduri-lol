@@ -33,7 +33,8 @@ How AI tooling was used to build this site.
 - No AI runs on the site, and no visitor data is sent to a model.
 - AI-made and listed under
   [Made with AI on `/credits/`](https://sinduri.lol/credits/#ai):
-  - the hopping bunny in the homepage hero (`src/lib/hero-field-hare.ts`);
+  - the hopping bunny in the homepage hero (`src/lib/hero-field-hare.ts`),
+    and its stills shown without JavaScript (`src/assets/hero-still-*.webp`);
   - the drawn, animated cats on `/about/`, their sleep, wake and trick-list
     icons (`src/components/ui/AboutCats.vue`) and their trick icons
     (`src/lib/about-cats-tricks.json`). The cat photos are real.
