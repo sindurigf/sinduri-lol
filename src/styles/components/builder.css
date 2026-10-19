@@ -31,16 +31,10 @@
       position: relative;
     }
 
-    /*
-     * Stands on the wall's left end, in the empty gap above it, and keeps its
-     * place on screen while the wall slides out under it.
-     */
+    /* Stands on the wall's left end, in the empty gap above it, while the wall comes out under it. */
     .builder-rabbit {
       position: absolute;
-      bottom: calc(100% + var(--lift));
-      left: 0;
       pointer-events: none;
-      animation: build-hold var(--build-push) var(--build-push-ease) both;
       /* Bricks remap gold to ink inside; the rabbit keeps the footer's colors. */
       --color-gold: var(--color-block-gold);
     }
@@ -58,6 +52,8 @@
     /* A falling brick never widens or lengthens the page (SC 1.4.10); clip keeps sticky working. */
     [data-tumbling] :is(main, footer) {
       overflow: clip;
+      /* Focus rings near an edge still paint; scrolling is unaffected. */
+      overflow-clip-margin: --spacing(4);
     }
 
     [data-build='tumble'] {
@@ -95,30 +91,18 @@
     0% {
       translate: calc(var(--push) * -1) 0;
       clip-path: inset(
-        calc(var(--above) * -1) calc(var(--hard-throw) * -1)
-          calc(var(--hard-throw) * -1) var(--push)
+        0 calc(var(--hard-throw) * -1) calc(var(--hard-throw) * -1) var(--push)
       );
     }
     99% {
       translate: 0 0;
       clip-path: inset(
-        calc(var(--above) * -1) calc(var(--hard-throw) * -1)
-          calc(var(--hard-throw) * -1) 0
+        0 calc(var(--hard-throw) * -1) calc(var(--hard-throw) * -1) 0
       );
     }
     100% {
       translate: 0 0;
       clip-path: none;
-    }
-  }
-
-  /* The wall's slide undone, so the rabbit stays put while the wall moves. */
-  @keyframes build-hold {
-    0% {
-      translate: var(--push) 0;
-    }
-    100% {
-      translate: 0 0;
     }
   }
 

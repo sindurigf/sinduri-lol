@@ -7,8 +7,6 @@ const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)');
 const WALLS = 'main :is(.card-block, .card:not(.card-block *))';
 const TUMBLERS =
   'main :is(.card-block > *, .card:not(.card-block *), h2), footer :is(.footer-name, .footer-sticker)';
-/* Walls the About cats stand on: they read brick positions while they play. */
-const CAT_BAND = 'section:has(.cat-perch)';
 /* The rabbit without its grass, cropped to its body and throw. */
 const RABBIT_VIEW_BOX = '-96 -94 192 102';
 const RABBIT_ASPECT = 192 / 102;
@@ -29,22 +27,21 @@ const KNOCK_LABEL = 'Knock It Down';
 const tuft = document.querySelector<SVGSVGElement>('footer .footer-tuft');
 
 /* Made here, not in the markup: without script or under reduced motion it would do nothing. */
-const makeKnock = (): HTMLButtonElement => {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'knock-down btn-secondary';
-  button.textContent = KNOCK_LABEL;
-  return button;
-};
+const knock = Object.assign(document.createElement('button'), {
+  type: 'button',
+  className: 'knock-down btn-secondary',
+  textContent: KNOCK_LABEL,
+});
 
-const knock = makeKnock();
+/* Each wall's rabbit: kept outside the wall, so the wall's own clip and moves never touch it. */
+const rabbits = new WeakMap<HTMLElement, HTMLElement>();
 
 const settle = (element: HTMLElement): void => {
   element.removeAttribute('data-build');
   element.style.removeProperty('animation-delay');
   element.style.removeProperty('--push');
-  element.style.removeProperty('--above');
-  element.querySelector('.builder-rabbit')?.remove();
+  rabbits.get(element)?.remove();
+  rabbits.delete(element);
   /* Here, not on animationend: a brick landed early by focus or a press cancels its animation. */
   if (!document.querySelector('[data-build="tumble"]')) {
     delete document.documentElement.dataset.tumbling;
@@ -53,21 +50,39 @@ const settle = (element: HTMLElement): void => {
 
 interface PushPlan {
   readonly wall: HTMLElement;
+  /* Where the rabbit goes: the wall's nearest ancestor that may hold a span. */
+  readonly host: HTMLElement;
   readonly width: number;
-  /* In px: how far the wall's own parts, a hung label say, rise above its top; and the empty gap over them. */
-  readonly lift: number;
-  readonly above: number;
+  /* In px, inside the host: the wall's left edge, the top it stands on, and the empty gap above. */
+  readonly left: number;
+  readonly floor: number;
+  readonly room: number;
 }
 
-/* The nearest box above the wall in the flow, or null at the top of the page. */
-const boxAbove = (wall: HTMLElement): Element | null => {
-  let node: Element | null = wall;
-  while (node && !node.previousElementSibling) node = node.parentElement;
-  return node?.previousElementSibling ?? null;
-};
+/* The lowest bottom of anything painted above `top` across the wall's width: what the rabbit must clear. */
+const ceilingOver = (wall: HTMLElement, box: DOMRect, top: number): number =>
+  Math.max(
+    0,
+    ...[...document.querySelectorAll('main *')]
+      .filter((other) => !wall.contains(other) && !other.contains(wall))
+      .map((other) => other.getBoundingClientRect())
+      .filter(
+        (other) =>
+          other.width > 1 &&
+          other.height > 1 &&
+          other.top < top &&
+          other.left < box.right &&
+          other.right > box.left,
+      )
+      .map((other) => other.bottom),
+  );
 
 const planPush = (wall: HTMLElement): PushPlan => {
   const box = wall.getBoundingClientRect();
+  let host = wall.parentElement!;
+  while (host.matches('ul, ol, dl')) host = host.parentElement!;
+  const frame = host.getBoundingClientRect();
+  /* A wall's own parts, a hung label say, can rise above its top. */
   const top = Math.min(
     box.top,
     ...[...wall.querySelectorAll('*')]
@@ -75,17 +90,18 @@ const planPush = (wall: HTMLElement): PushPlan => {
       .filter((part) => part.width > 1 && part.height > 1)
       .map((part) => part.top),
   );
-  const over = boxAbove(wall)?.getBoundingClientRect();
   return {
     wall,
+    host,
     width: box.width,
-    lift: box.top - top,
-    above: over ? top - over.bottom : 0,
+    left: box.left - frame.left,
+    floor: top - frame.top,
+    room: top - ceilingOver(wall, box, top),
   };
 };
 
 const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
-  const height = Math.min(plan.above - RABBIT_CLEARANCE_PX, RABBIT_MAX_PX);
+  const height = Math.min(plan.room - RABBIT_CLEARANCE_PX, RABBIT_MAX_PX);
   if (!tuft || height < RABBIT_MIN_PX) return null;
   const width = height * RABBIT_ASPECT;
   const drawing = tuft.cloneNode(true) as SVGSVGElement;
@@ -97,11 +113,11 @@ const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
   rabbit.className = 'builder-rabbit';
   rabbit.setAttribute('aria-hidden', 'true');
   Object.assign(rabbit.style, {
+    left: `${plan.left}px`,
+    top: `${plan.floor - height}px`,
     width: `${width}px`,
     animationDelay: `${delayMs}ms`,
   });
-  rabbit.style.setProperty('--push', `${plan.width}px`);
-  rabbit.style.setProperty('--lift', `${plan.lift}px`);
   rabbit.style.setProperty('--run', `${plan.width - width}px`);
   rabbit.append(drawing);
   return rabbit;
@@ -111,20 +127,26 @@ const push = (plan: PushPlan, delayMs: number): void => {
   const { wall } = plan;
   if (wall.dataset.build !== 'waiting') return;
   wall.style.setProperty('--push', `${plan.width}px`);
-  wall.style.setProperty('--above', `${plan.lift + plan.above}px`);
   wall.style.animationDelay = `${delayMs}ms`;
   wall.dataset.build = 'push';
   const rabbit = makeRabbit(plan, delayMs);
-  /* The push lands, then the rabbit runs off; the wall rests once it is gone. */
   wall.addEventListener('animationend', (event) => {
-    if (event.animationName === 'build-push') rabbit?.classList.add('run');
-    if (!rabbit || event.animationName === 'build-run') settle(wall);
+    if (event.target !== wall || event.animationName !== 'build-push') return;
+    if (rabbit) rabbit.classList.add('run');
+    else settle(wall);
   });
-  if (rabbit) wall.append(rabbit);
+  if (!rabbit) return;
+  rabbits.set(wall, rabbit);
+  /* The wall rests once its rabbit has gone. */
+  rabbit.addEventListener('animationend', (event) => {
+    if (event.animationName === 'build-run') settle(wall);
+  });
+  plan.host.append(rabbit);
 };
 
+/* Outermost walls only: a wall inside another builds with it. */
 const walls = [...document.querySelectorAll<HTMLElement>(WALLS)].filter(
-  (wall) => !wall.closest(CAT_BAND),
+  (wall) => !wall.parentElement?.closest(WALLS),
 );
 
 const arm = (): IntersectionObserver => {
@@ -152,8 +174,13 @@ const outermost = (elements: readonly HTMLElement[]): HTMLElement[] =>
       !elements.some((outer) => outer !== element && outer.contains(element)),
   );
 
+/* One per tumble: a new press drops the last one's listeners. */
+let tumbleRun = new AbortController();
+
 const tumble = (): void => {
-  const run = new AbortController();
+  tumbleRun.abort();
+  tumbleRun = new AbortController();
+  const run = tumbleRun;
   const onScreen = outermost([
     ...document.querySelectorAll<HTMLElement>(TUMBLERS),
   ]).filter((brick) => {
@@ -161,34 +188,37 @@ const tumble = (): void => {
     return bottom > 0 && top < innerHeight && !brick.contains(knock);
   });
 
+  /* A cancelled kick is cleared by stopBuilding, which settles every [data-build]. */
   tuft?.setAttribute('data-build', 'kick');
-  for (const type of ['animationend', 'animationcancel']) {
-    tuft?.addEventListener(type, () => tuft.removeAttribute('data-build'), {
+  tuft?.addEventListener(
+    'animationend',
+    () => tuft.removeAttribute('data-build'),
+    {
       once: true,
       signal: run.signal,
-    });
-  }
+    },
+  );
 
   onScreen.forEach((brick, index) => {
     settle(brick);
     brick.style.setProperty(
       '--tumble-x',
-      `${Math.round((Math.random() - 0.5) * TUMBLE_DRIFT_PX)}px`,
+      `${(Math.random() - 0.5) * TUMBLE_DRIFT_PX}px`,
     );
     brick.style.setProperty(
       '--tumble-turn',
-      `${Math.round((Math.random() - 0.5) * TUMBLE_TURN_DEG)}deg`,
+      `${(Math.random() - 0.5) * TUMBLE_TURN_DEG}deg`,
     );
     brick.style.animationDelay = `${Math.min(index, TUMBLE_STAGGER_STEPS) * TUMBLE_STAGGER_MS}ms`;
     brick.dataset.build = 'tumble';
-    const land = (event: AnimationEvent): void => {
-      if (event.target !== brick) return;
-      brick.removeEventListener('animationend', land);
-      brick.removeEventListener('animationcancel', land);
-      settle(brick);
-    };
-    brick.addEventListener('animationend', land, { signal: run.signal });
-    brick.addEventListener('animationcancel', land, { signal: run.signal });
+    /* A cancelled tumble needs no listener: focus, a press or stopBuilding already settled it. */
+    brick.addEventListener(
+      'animationend',
+      (event) => {
+        if (event.target === brick) settle(brick);
+      },
+      { signal: run.signal },
+    );
   });
   if (document.querySelector('[data-build="tumble"]')) {
     document.documentElement.dataset.tumbling = '';
@@ -219,9 +249,8 @@ const landNow = (event: Event): void => {
     event.target instanceof Element
       ? event.target.closest<HTMLElement>('[data-build]')
       : null;
-  if (!moving) return;
-  observer?.unobserve(moving);
-  settle(moving);
+  /* Still observed: a later entry finds it no longer waiting and leaves it. */
+  if (moving) settle(moving);
 };
 document.addEventListener('focusin', landNow);
 document.addEventListener('pointerdown', landNow);

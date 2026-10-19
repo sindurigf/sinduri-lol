@@ -1205,12 +1205,16 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 - `HeroField` loads `client:load`.
 - The rabbit builder (`src/scripts/rabbit-builder.ts`,
   `src/styles/components/builder.css`) runs only on pages that render
-  `RabbitBuilder.astro` or import the script: pages with brick walls, not
+  `RabbitBuilder.astro` or import the script: /, /career and the blog
+  listings, not
   `/about`, whose walls the cats stand on, not `/contact`, whose form
-  must hold still, and not `/brand/cards`, a still reference. A wall below the fold waits unseen, then slides out of
+  must hold still, not `/brand/cards`, a still reference, and not `/credits`, whose walls
+  have no gap above them for the rabbit. A wall below the fold waits unseen, then slides out of
   its own slot, clipped to it, so it never crosses a neighbor or widens the
   page. The footer rabbit stands on the wall's left end, in the empty gap
-  above it (no rabbit where there is none), then runs along the top and fades. Walls on screen at load never
+  between the wall and anything painted above it across its width (no
+  rabbit where there is none), then runs along the top and fades. A wall
+  inside another builds with it. Walls on screen at load never
   move.
 - Knock It Down is made by that script and placed before the footer tuft;
   it tumbles the bricks, headings and footer stickers on screen and rebuilds

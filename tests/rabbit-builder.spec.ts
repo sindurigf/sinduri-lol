@@ -83,19 +83,21 @@ test('the rabbit is hidden from assistive technology', async ({ page }) => {
   await expect(rabbit).toHaveAttribute('aria-hidden', 'true');
 });
 
-test('a brick that takes keyboard focus lands at once', async ({ page }) => {
+test('a brick that takes keyboard focus lands at once and stays landed', async ({
+  page,
+}) => {
   await gotoSettled(page, ROUTE);
   const brick = await lastWaitingBrick(page);
-  await brick.getByRole('link').first().focus();
-
-  await expect(
-    brick,
-    'the focused brick is still waiting or moving',
-  ).not.toHaveAttribute('data-build');
-  /* A frame later, so an observer entry already queued cannot re-arm it unseen. */
+  /* Focused before it is on screen; scrolling it in then hands the observer an entry for a landed wall. */
   const after = await brick.evaluate(async (element) => {
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-    await new Promise((resolve) => requestAnimationFrame(resolve));
+    element
+      .querySelector<HTMLElement>('a, button')
+      ?.focus({ preventScroll: true });
+    element.scrollIntoView({ block: 'center' });
+    for (let i = 0; i < 3; i += 1) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
     return {
       build: element.getAttribute('data-build'),
       opacity: getComputedStyle(element).opacity,
@@ -105,6 +107,45 @@ test('a brick that takes keyboard focus lands at once', async ({ page }) => {
     build: null,
     opacity: '1',
   });
+});
+
+test('nested walls build as one, and nothing waits or moves after a jump', async ({
+  page,
+}) => {
+  await gotoSettled(page, ROUTE);
+  expect(
+    await page.evaluate(
+      () =>
+        document.querySelectorAll(
+          '[data-build] [data-build], [data-build] .builder-rabbit',
+        ).length,
+    ),
+    'a wall inside a wall was armed on its own',
+  ).toBe(0);
+  for (const jump of [
+    () =>
+      page.evaluate(() => document.querySelector('footer')!.scrollIntoView()),
+    () => page.evaluate(() => scrollTo(0, 0)),
+  ]) {
+    await jump();
+    await page.waitForTimeout(MOTION_LIMIT_MS);
+    await expect(
+      page.locator(MOVING),
+      'a wall still moves after five seconds',
+    ).toHaveCount(0);
+  }
+  await page.evaluate(async () => {
+    for (let y = 0; y < document.documentElement.scrollHeight; y += 300) {
+      scrollTo(0, y);
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+  });
+  await page.waitForTimeout(MOTION_LIMIT_MS);
+  await expect(page.locator(MOVING)).toHaveCount(0);
+  await expect(
+    page.locator(WAITING),
+    'a wall scrolled past fast still waits unseen',
+  ).toHaveCount(0);
 });
 
 test('reduced motion builds nothing and hides Knock It Down', async ({
@@ -318,11 +359,24 @@ const sampleBuilds = (page: Page) =>
         if (root.scrollWidth > root.clientWidth) {
           wide.push(root.scrollWidth - root.clientWidth);
         }
+        const painted = [...document.querySelectorAll('main *')].filter(
+          (part) =>
+            !part.closest('.builder-rabbit') &&
+            !part.closest('[data-build="push"]') &&
+            ['IMG', 'PICTURE', 'svg', 'CANVAS'].includes(part.tagName),
+        );
         for (const rabbit of document.querySelectorAll('.builder-rabbit')) {
           if (Number(getComputedStyle(rabbit).opacity) === 0) continue;
           rabbitFrames += 1;
           const box = rabbit.getBoundingClientRect();
+          for (const part of painted) {
+            if (overlaps(box, part.getBoundingClientRect())) {
+              covered.push(`<${part.tagName.toLowerCase()}>`);
+            }
+          }
           for (const text of texts) {
+            /* A building wall is clipped to its own box, which no rabbit stands in. */
+            if (text.parentElement?.closest('[data-build="push"]')) continue;
             const range = document.createRange();
             range.selectNodeContents(text);
             for (const rect of range.getClientRects()) {
@@ -360,7 +414,7 @@ for (const route of ['/', '/career', '/blog', '/credits']) {
         ).toBeGreaterThan(0);
       }
       expect(wide, 'a build widened the page (SC 1.4.10)').toEqual([]);
-      expect(covered, 'a rabbit crossed this text').toEqual([]);
+      expect(covered, 'a rabbit crossed this text or picture').toEqual([]);
     });
   }
 }
