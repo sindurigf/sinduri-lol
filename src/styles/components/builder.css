@@ -5,7 +5,6 @@
  */
 @layer components {
   :root {
-    /* Read by the script to start the rabbit's run when the push ends. */
     --build-push: 1100ms;
     --build-run: 700ms;
     --build-stride: 180ms;
@@ -28,7 +27,7 @@
       animation: build-push var(--build-push) var(--build-push-ease) both;
     }
 
-    [data-build-host] {
+    :has(> .builder-rabbit) {
       position: relative;
     }
 
@@ -39,11 +38,13 @@
     .builder-rabbit {
       position: absolute;
       pointer-events: none;
-      animation:
-        build-hold var(--build-push) var(--build-push-ease) both,
-        build-run var(--build-run) ease-in both;
+      animation: build-hold var(--build-push) var(--build-push-ease) both;
       /* Bricks remap gold to ink inside; the rabbit keeps the footer's colors. */
       --color-gold: var(--color-block-gold);
+    }
+
+    .builder-rabbit.run {
+      animation: build-run var(--build-run) ease-in both;
     }
 
     .builder-rabbit .footer-tuft {

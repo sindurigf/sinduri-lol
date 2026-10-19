@@ -1206,8 +1206,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 - The rabbit builder (`src/scripts/rabbit-builder.ts`,
   `src/styles/components/builder.css`) runs only on pages that render
   `RabbitBuilder.astro` or import the script: pages with brick walls, not
-  `/about`, whose walls the cats stand on, and not `/contact`, whose form
-  must hold still. A wall below the fold waits unseen, then slides out of
+  `/about`, whose walls the cats stand on, not `/contact`, whose form
+  must hold still, and not `/brand/cards`, a still reference. A wall below the fold waits unseen, then slides out of
   its own slot, clipped to it, so it never crosses a neighbor or widens the
   page. The footer rabbit stands in its first brick's bottom padding, where
   no text is, then runs along it and fades. Walls on screen at load never

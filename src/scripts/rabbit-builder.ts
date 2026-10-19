@@ -24,10 +24,6 @@ const TUMBLE_TURN_DEG = 140;
 const KNOCK_LABEL = 'Knock It Down';
 
 const tuft = document.querySelector<SVGSVGElement>('footer .footer-tuft');
-const pushMs = (): number =>
-  parseFloat(
-    getComputedStyle(document.documentElement).getPropertyValue('--build-push'),
-  );
 
 /* Made here, not in the markup: without script or under reduced motion it would do nothing. */
 const makeKnock = (): HTMLButtonElement => {
@@ -44,9 +40,6 @@ const settle = (element: HTMLElement): void => {
   element.removeAttribute('data-build');
   element.style.removeProperty('animation-delay');
   element.style.removeProperty('--push');
-  element.querySelectorAll<HTMLElement>('[data-build-host]').forEach((host) => {
-    delete host.dataset.buildHost;
-  });
   element.querySelector('.builder-rabbit')?.remove();
   /* Here, not on animationend: a brick landed early by focus or a press cancels its animation. */
   if (!document.querySelector('[data-build="tumble"]')) {
@@ -66,8 +59,9 @@ interface PushPlan {
   readonly wall: HTMLElement;
   readonly width: number;
   readonly host: HTMLElement | null;
-  readonly paddingLeft: number;
-  readonly paddingBottom: number;
+  /* The host's left and bottom padding and its inner width, in px. */
+  readonly left: number;
+  readonly bottom: number;
   readonly room: number;
 }
 
@@ -78,15 +72,15 @@ const planPush = (wall: HTMLElement): PushPlan => {
     wall,
     width: wall.getBoundingClientRect().width,
     host,
-    paddingLeft: parseFloat(style?.paddingLeft ?? '0'),
-    paddingBottom: parseFloat(style?.paddingBottom ?? '0'),
+    left: parseFloat(style?.paddingLeft ?? '0'),
+    bottom: parseFloat(style?.paddingBottom ?? '0'),
     room: host?.clientWidth ?? 0,
   };
 };
 
 const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
   if (!tuft || !plan.host) return null;
-  const height = plan.paddingBottom * RABBIT_FILL;
+  const height = plan.bottom * RABBIT_FILL;
   const width = height * RABBIT_ASPECT;
   const drawing = tuft.cloneNode(true) as SVGSVGElement;
   drawing.querySelectorAll('.tuft-back, .tuft-front').forEach((grass) => {
@@ -97,15 +91,15 @@ const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
   rabbit.className = 'builder-rabbit';
   rabbit.setAttribute('aria-hidden', 'true');
   Object.assign(rabbit.style, {
-    left: `${plan.paddingLeft}px`,
-    bottom: `${(plan.paddingBottom - height) / 2}px`,
+    left: `${plan.left}px`,
+    bottom: `${(plan.bottom - height) / 2}px`,
     width: `${width}px`,
-    animationDelay: `${delayMs}ms, ${delayMs + pushMs()}ms`,
+    animationDelay: `${delayMs}ms`,
   });
   rabbit.style.setProperty('--push', `${plan.width}px`);
   rabbit.style.setProperty(
     '--run',
-    `${Math.max(0, plan.room - plan.paddingLeft * 2 - width)}px`,
+    `${Math.max(0, plan.room - plan.left * 2 - width)}px`,
   );
   rabbit.append(drawing);
   return rabbit;
@@ -118,15 +112,12 @@ const push = (plan: PushPlan, delayMs: number): void => {
   wall.style.animationDelay = `${delayMs}ms`;
   wall.dataset.build = 'push';
   const rabbit = makeRabbit(plan, delayMs);
-  if (!rabbit || !host) {
-    wall.addEventListener('animationend', () => settle(wall), { once: true });
-    return;
-  }
-  host.dataset.buildHost = '';
-  rabbit.addEventListener('animationend', (event) => {
-    if (event.animationName === 'build-run') settle(wall);
+  /* The push lands, then the rabbit runs off; the wall rests once it is gone. */
+  wall.addEventListener('animationend', (event) => {
+    if (event.animationName === 'build-push') rabbit?.classList.add('run');
+    if (!rabbit || event.animationName === 'build-run') settle(wall);
   });
-  host.append(rabbit);
+  if (rabbit) host?.append(rabbit);
 };
 
 const walls = [...document.querySelectorAll<HTMLElement>(WALLS)].filter(
