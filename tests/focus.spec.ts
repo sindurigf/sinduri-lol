@@ -301,7 +301,12 @@ const walkFor = async (page: Page, colorScheme: (typeof SCHEMES)[number]) => {
 
   /* Backward: the direction that lands controls under the sticky header. */
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await page.locator('footer a').last().focus();
+  await page
+    .locator('footer')
+    .locator(FOCUSABLE_SELECTOR)
+    .filter({ visible: true })
+    .last()
+    .focus();
   const backward = await walk(page, 'Shift+Tab');
   const backwardCoverage = await walkCoverage(page, FOCUSABLE_SELECTOR);
 
