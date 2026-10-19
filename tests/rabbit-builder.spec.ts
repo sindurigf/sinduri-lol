@@ -15,8 +15,9 @@ const KNOCK_NAME = 'Knock It Down';
 
 const WAITING = '[data-build="waiting"]';
 const BUILDING = '[data-build]';
+/* A resting rabbit stays on its wall; only one that is building or reacting moves. */
 const MOVING =
-  ':is([data-build="push"], [data-build="tumble"], .builder-rabbit)';
+  ':is([data-build="push"], [data-build="tumble"], .builder-rabbit:not(.resting), .builder-rabbit.hop, .builder-rabbit.scramble)';
 
 test.use({ viewport: DESKTOP_VIEWPORT });
 
@@ -427,3 +428,34 @@ for (const route of ['/', '/career', '/blog', '/credits']) {
     });
   }
 }
+
+test('pointing at or focusing into a built wall makes its rabbit hop, briefly', async ({
+  page,
+}) => {
+  await gotoSettled(page, ROUTE);
+  const rabbit = page.locator('.builder-rabbit.resting').first();
+  await expect(async () => {
+    await page.evaluate(() => scrollBy(0, innerHeight / 2));
+    await expect(rabbit).toBeAttached({ timeout: 2_000 });
+  }, 'no rabbit came to rest on a wall').toPass({
+    timeout: MOTION_LIMIT_MS * 3,
+  });
+  await rabbit.scrollIntoViewIfNeeded();
+  /* Its wall is the one right under its feet. */
+  const found = await rabbit.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const wall = document
+      .elementFromPoint(box.left + box.width / 2, box.bottom + 12)
+      ?.closest('.card-block, .card');
+    wall?.setAttribute('data-testid', 'hop-wall');
+    return Boolean(wall);
+  });
+  expect(found, 'no wall under the resting rabbit').toBe(true);
+  await page.getByTestId('hop-wall').hover();
+  await expect(rabbit).toHaveClass(/hop/);
+  await expect(rabbit, 'the hop never ended').not.toHaveClass(/hop/, {
+    timeout: MOTION_LIMIT_MS,
+  });
+  await page.getByTestId('hop-wall').locator('a, button').first().focus();
+  await expect(rabbit, 'focus gives no hop').toHaveClass(/hop/);
+});

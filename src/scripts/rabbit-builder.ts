@@ -31,13 +31,13 @@ const knock = Object.assign(document.createElement('button'), {
 });
 
 /* Each wall's rabbit: kept outside the wall, so the wall's own clip and moves never touch it. */
-const rabbits = new WeakMap<HTMLElement, HTMLElement>();
+const rabbits = new WeakMap<HTMLElement, HTMLElement[]>();
 
 const settle = (element: HTMLElement): void => {
   element.removeAttribute('data-build');
   element.style.removeProperty('animation-delay');
   element.style.removeProperty('--push');
-  rabbits.get(element)?.remove();
+  rabbits.get(element)?.forEach((rabbit) => rabbit.remove());
   rabbits.delete(element);
   /* Here, not on animationend: a brick landed early by focus or a press cancels its animation. */
   if (!document.querySelector('[data-build="tumble"]')) {
@@ -123,6 +123,27 @@ const makeRabbit = (plan: PushPlan, delayMs: number): HTMLElement | null => {
   return rabbit;
 };
 
+/*
+ * Once a wall is built its rabbit stays on it. Pointing at the wall or
+ * focusing into it makes the rabbit hop: the same reaction for mouse and keyboard.
+ */
+const residents = new Map<HTMLElement, HTMLElement>();
+
+const settleIn = (wall: HTMLElement, rabbit: HTMLElement): void => {
+  residents.set(wall, rabbit);
+  rabbit.classList.add('resting');
+  const hop = (): void => {
+    rabbit.classList.remove('hop');
+    void rabbit.offsetWidth;
+    rabbit.classList.add('hop');
+  };
+  wall.addEventListener('pointerenter', hop);
+  wall.addEventListener('focusin', hop);
+  rabbit.addEventListener('animationend', () =>
+    rabbit.classList.remove('hop', 'scramble'),
+  );
+};
+
 const push = (plan: PushPlan, delayMs: number): void => {
   const { wall } = plan;
   if (wall.dataset.build !== 'waiting') return;
@@ -132,15 +153,12 @@ const push = (plan: PushPlan, delayMs: number): void => {
   const rabbit = makeRabbit(plan, delayMs);
   wall.addEventListener('animationend', (event) => {
     if (event.target !== wall || event.animationName !== 'build-push') return;
-    if (rabbit) rabbit.classList.add('run');
-    else settle(wall);
+    rabbits.delete(wall);
+    settle(wall);
+    if (rabbit) settleIn(wall, rabbit);
   });
   if (!rabbit) return;
-  rabbits.set(wall, rabbit);
-  /* The wall rests once its rabbit has gone. */
-  rabbit.addEventListener('animationend', (event) => {
-    if (event.animationName === 'build-run') settle(wall);
-  });
+  rabbits.set(wall, [rabbit]);
   plan.host.append(rabbit);
 };
 
@@ -223,12 +241,26 @@ const tumble = (): void => {
   if (document.querySelector('[data-build="tumble"]')) {
     document.documentElement.dataset.tumbling = '';
   }
+  /* The resting rabbits scramble while their walls come down and go back up. */
+  document.querySelectorAll('.builder-rabbit.resting').forEach((rabbit) => {
+    rabbit.classList.add('scramble');
+  });
 };
 
 let observer: IntersectionObserver | null = null;
 
 const startBuilding = (): void => {
   if (REDUCED_MOTION.matches) return;
+  /* Walls already on screen get their rabbit sitting there from the start. */
+  walls
+    .filter((wall) => wall.getBoundingClientRect().top <= innerHeight)
+    .map(planPush)
+    .forEach((plan) => {
+      const rabbit = makeRabbit(plan, 0);
+      if (!rabbit) return;
+      plan.host.append(rabbit);
+      settleIn(plan.wall, rabbit);
+    });
   observer = arm();
   tuft?.before(knock);
 };
@@ -238,6 +270,9 @@ const stopBuilding = (): void => {
   observer = null;
   document.querySelectorAll<HTMLElement>('[data-build]').forEach(settle);
   delete document.documentElement.dataset.tumbling;
+  document
+    .querySelectorAll('.builder-rabbit')
+    .forEach((rabbit) => rabbit.remove());
   knock.remove();
 };
 
@@ -258,6 +293,28 @@ document.addEventListener('pointerdown', landNow);
 REDUCED_MOTION.addEventListener('change', () => {
   if (REDUCED_MOTION.matches) stopBuilding();
   else if (!observer) startBuilding();
+});
+
+/* A resting rabbit follows its wall when the layout changes; it leaves where the gap closes. */
+let reflow = 0;
+addEventListener('resize', () => {
+  cancelAnimationFrame(reflow);
+  reflow = requestAnimationFrame(() => {
+    const plans = [...residents.keys()].map(planPush);
+    plans.forEach((plan) => {
+      const placed = makeRabbit(plan, 0);
+      const rabbit = residents.get(plan.wall)!;
+      if (!placed) {
+        rabbit.remove();
+        residents.delete(plan.wall);
+        return;
+      }
+      for (const key of ['left', 'top', 'width'] as const) {
+        rabbit.style[key] = placed.style[key];
+      }
+      rabbit.style.setProperty('--run', placed.style.getPropertyValue('--run'));
+    });
+  });
 });
 
 startBuilding();

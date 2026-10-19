@@ -49,6 +49,19 @@
       animation: build-stride var(--build-stride) ease-in-out 6;
     }
 
+    .builder-rabbit.resting,
+    .builder-rabbit.resting .footer-tuft {
+      animation: none;
+    }
+
+    .builder-rabbit.hop .footer-tuft {
+      animation: build-hop calc(var(--build-run) * 0.8) ease-out;
+    }
+
+    .builder-rabbit.scramble {
+      animation: build-scramble var(--build-tumble) ease-in-out;
+    }
+
     /* A falling brick never widens or lengthens the page (SC 1.4.10); clip keeps sticky working. */
     [data-tumbling] :is(main, footer) {
       overflow: clip;
@@ -118,6 +131,36 @@
     100% {
       transform: translateX(var(--run));
       opacity: 0;
+    }
+  }
+
+  /* Up only into the clearance kept above the rabbit. */
+  @keyframes build-hop {
+    30% {
+      scale: 1.1 0.85;
+    }
+    55% {
+      translate: 0 --spacing(-1.5);
+      scale: 0.92 1.08;
+    }
+    80% {
+      translate: 0 0;
+      scale: 1.05 0.95;
+    }
+  }
+
+  @keyframes build-scramble {
+    20% {
+      transform: translateX(calc(var(--run) * 0.5));
+    }
+    40% {
+      transform: translateX(calc(var(--run) * 0.15));
+    }
+    60% {
+      transform: translateX(calc(var(--run) * 0.7));
+    }
+    80% {
+      transform: translateX(calc(var(--run) * 0.25));
     }
   }
 
