@@ -53,7 +53,7 @@ status is still "Target only. No claim that the site meets it."
 | 2.5.5 Target Size (Enhanced)         | Every pointer target outside a sentence has a 44 by 44px area of its own, never shared: controls are drawn at `--spacing-target` (44px); header nav bricks are 44px tall; breadcrumb links get a pointer area wider than their drawn box (`.hit-target`); footer links are 44px rows. `tests/target-size.spec.ts` hit-tests every target at 305px and 1280px on every page, listings sampled, in the open cat card and photo viewer, and in the open menu at 305px. An open trick list is not hit-tested.                                                                                                                                                                                                           |
 | 2.5.6 Concurrent Input Mechanisms    | No input is turned off because another one was detected.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | 3.1.3 Unusual Words                  | On functional pages (statement, privacy, credits, brand), jargon is written in plain words, or defined in the sentence of its first use and marked with `<dfn>` (G112, H54). `/404` links its Star Wars lines to their explanation on `/credits` (G55). Posts, About, Career and the contact page's greeting are the owner's copy and are not checked.                                                                                                                                                                                                                                                                                                                                                              |
-| 3.1.4 Abbreviations                  | On functional pages (statement, privacy, credits, brand), each abbreviation's first use is a `<button popovertarget>` around an `<abbr>`, described by its expansion (`aria-describedby`). A tap or Enter opens the expansion with no script, and Escape or a press elsewhere closes it; a script adds hover and focus and places it under the abbreviation. A browser without popovers reads the expansion inline in brackets, and the script removes the button there. Posts, About and Career are the owner's copy and are not checked.                                                                                                                                                                          |
+| 3.1.4 Abbreviations                  | On functional pages (statement, privacy, credits, brand), each abbreviation's first use is a `<button popovertarget>` around an `<abbr>`, described by its expansion (`aria-describedby`). A tap or Enter opens the expansion with no script, and Escape or a press elsewhere closes it; a script adds hover and focus and places it under the abbreviation. A browser without popovers reads the expansion inline in brackets, and the script removes the button there. A Creative Commons license in a photo caption ("CC BY 2.0") is instead a link to its deed, which names it in full (G55). Posts, About and Career are the owner's copy and are not checked.                                                 |
 | 3.2.5 Change on Request              | No new windows, automatic refresh or navigation by script.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 axe's `wcag2aaa` rules are not run.
@@ -272,6 +272,7 @@ merge.
 | `tests/link-purpose.spec.ts`        | 2.4.9                                                            | One link name, one destination, on every route; hidden text keeps the visible words first                                                                                                                                                                                                            |
 | `tests/unusual-words.spec.ts`       | 3.1.3                                                            | Each listed term a `<dfn>` at first use, defined in its sentence; every `<dfn>` listed; replaced jargon stays out; `/404` links its idioms                                                                                                                                                           |
 | `tests/abbreviations.spec.ts`       | 3.1.4, 1.4.13                                                    | First use of each listed abbreviation described by its expansion, which opens without JavaScript; focus and tap show it, Escape and a second tap hide it, the pointer can cross onto it, it opens with no gap to cross and inside 320px; no unlisted abbreviation on functional pages; no "min read" |
+| `tests/photo-credits.spec.ts`       | 3.1.4                                                            | A Creative Commons photo outside `/credits`: "Photo: " first, the name linked to the photo's page, the short license linked to its deed                                                                                                                                                              |
 | `tests/text-resize.spec.ts`         | 1.4.4                                                            | Lowest page zoom, up to 500%, at which each viewport-sized text token reaches 2x, at four widths                                                                                                                                                                                                     |
 | `tests/target-size.spec.ts`         | 2.5.5                                                            | Every target's 44px square, on pages and in open dialogs, at 305px and 1280px                                                                                                                                                                                                                        |
 | `tests/reflow.spec.ts`              | 1.4.10, 1.4.12                                                   | No sideways scroll; content box; heading word fit                                                                                                                                                                                                                                                    |
@@ -290,6 +291,8 @@ merge.
 | `tests/titles.spec.ts`              | 2.4.2                                                            | Titles distinct and descriptive                                                                                                                                                                                                                                                                      |
 | `tests/site-language.spec.ts`       | 3.1.1, 3.1.2                                                     | One declared language everywhere; every Latin phrase in `lang="la"`                                                                                                                                                                                                                                  |
 | `tests/alt-text.spec.ts`            | 1.1.1                                                            | Every image named or decorative on purpose                                                                                                                                                                                                                                                           |
+| `tests/card-click.spec.ts`          | best practice (Intopia Card)                                     | A blog card follows its title link on a click and keeps its teaser selectable on a drag                                                                                                                                                                                                              |
+| `tests/list-semantics.spec.ts`      | 1.3.1                                                            | Every list drawn without markers outside `<nav>` carries `role="list"`, which Safari needs to keep it a list                                                                                                                                                                                         |
 | `tests/failed-images.spec.ts`       | 1.1.1                                                            | A failed photo shows its alt text; its name is exposed once, with and without JavaScript                                                                                                                                                                                                             |
 | `tests/print.spec.ts`               | 1.3.1, 1.3.2                                                     | On paper the talk prints one slide per page, the cover included, and a post prints its In This Post list open                                                                                                                                                                                        |
 | `tests/contact.spec.ts`             | 3.3.1, 3.3.2, 3.3.3, 3.3.5, 3.3.6, 2.4.12                        | 422 and 503 in a browser: input kept, `aria-invalid`, summary links, hints beside errors, no focus covered; honeypot, rate limit                                                                                                                                                                     |
@@ -421,11 +424,13 @@ links. Not automated:
 If something on this site blocks you, report it. You do not need to know the
 WCAG criterion or say anything about yourself.
 
-- **Public:** <https://github.com/sindurigf/sinduri-lol/issues>
+- **Public:** <https://github.com/sindurigf/sinduri-lol/issues/new?template=accessibility.yml>,
+  a short form with every field optional
 - **Private:** <lol@sinduri.lol>
 
-Useful, never required: the page, what you tried and what happened, your
-browser, operating system and assistive technology, a screenshot.
+Useful, never required: the page address, the problem, steps to reproduce,
+severity, your browser and device, any assistive technology, and screenshots or
+recordings.
 
 Replies aim to arrive within the Response time in [section 1](#1-project-information).
 
@@ -491,12 +496,23 @@ Rules this repository follows. Values and reasons:
   W3C note, opinion here, gives an example:
   [low vision needs](https://www.w3.org/TR/low-vision-needs/), high contrast
   against light sensitivity.
+  Choices made:
+  - A dark page against a light one: dark is the default, for readers
+    sensitive to light; Light Mode in the header, which is remembered, is
+    for readers who need a light page.
+  - High contrast against light sensitivity: text keeps 7:1 in both modes;
+    the dark default carries the light-sensitive need.
+  - Capitals against dyslexia: uppercase only on headings, labels and
+    buttons of a few words, never on running text
+    ([why](ARCHITECTURE.md#rejected-findings)).
 - **Scripts.** Never hold content back behind a script. What a page says is in
   its HTML; a script only adds to it. Tested for navigation and the About
   cats' names and lines (`tests/no-script.spec.ts`) and the talk slides
   (`tests/slideshow.spec.ts`).
-- **Sources.** WCAG and its Understanding documents are normative. Mark any
-  other source cited here, an article, checklist or tool, as opinion.
+- **Sources.** WCAG 2.2 and the specifications it relies on (HTML, WAI-ARIA,
+  CSS) are normative; the Understanding documents are informative W3C
+  guidance. Mark any other source cited here, an article, checklist or tool, as
+  opinion.
 - **Unusual words.** On a functional page, write jargon in plain words. Where
   the term is needed, define it in the sentence of its first use, mark it with
   `<dfn>`, and list it in `tests/unusual-words.spec.ts`.
