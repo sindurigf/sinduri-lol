@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from './test';
 import { gotoSettled } from './settle';
 import { AAA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { hoveredTextBelowAaa } from './hover-contrast';
-import { BRAND_SAMPLED_ROUTES } from './routes';
+import { ROUTES } from './routes';
 import { DESKTOP_VIEWPORT, PHONE_VIEWPORT, SUBPIXEL_TOLERANCE } from './wcag';
 
 type Look = { paint: string; text: number | null };
@@ -97,7 +97,7 @@ for (const scheme of ['dark', 'light'] as const) {
 test.describe('dark mode reaches AAA contrast under the pointer (SC 1.4.6)', () => {
   test.use({ colorScheme: 'dark' });
 
-  for (const route of BRAND_SAMPLED_ROUTES) {
+  for (const route of ROUTES) {
     test(`${route}: hovered text is at least 7:1, large text included`, async ({
       page,
     }) => {
