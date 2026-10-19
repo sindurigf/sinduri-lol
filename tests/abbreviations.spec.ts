@@ -176,7 +176,7 @@ const NAMES = [
   'OWASP Foundation',
   'OWASP Secure Headers Project',
   'Understanding WCAG 2.2',
-  'W3C Web Accessibility Initiative',
+  'W3C',
 ];
 
 /*
