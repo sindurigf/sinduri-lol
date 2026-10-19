@@ -1207,13 +1207,15 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   `src/styles/components/builder.css`) runs only on pages that render
   `RabbitBuilder.astro` or import the script: pages with brick walls, not
   `/about`, whose walls the cats stand on, and not `/contact`, whose form
-  must hold still. A brick below the fold waits unseen, then slides in
-  pushed by the footer rabbit, which rides on top where no room is beside
-  it and hops off before the push ends. Bricks on screen at load never move.
+  must hold still. A wall below the fold waits unseen, then slides out of
+  its own slot, clipped to it, so it never crosses a neighbor or widens the
+  page. The footer rabbit stands in its first brick's bottom padding, where
+  no text is, then runs along it and fades. Walls on screen at load never
+  move.
 - Knock It Down is made by that script and placed before the footer tuft;
   it tumbles the bricks, headings and footer stickers on screen and rebuilds
   them in `--build-tumble`. Focus stays on the button.
-- Every build move ends within 5 s (SC 2.2.2). A brick that takes focus or a
+- Every build move ends within 5 s (SC 2.2.2). A wall that takes focus or a
   press lands at once. Under reduced motion nothing waits and the button is
   not made; print shows every brick (`tests/rabbit-builder.spec.ts`).
 - The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
