@@ -10,6 +10,7 @@ import { ariaCurrent } from '../lib/nav';
 import { BLOG_PATH, categoryHref, indexPageHref } from '../lib/paths';
 import BlogCard from './BlogCard.astro';
 import { packRows, wallClasses } from '../lib/wall';
+import RabbitBuilder from './RabbitBuilder.astro';
 
 /*
  * The filter is links to built routes, not a Vue island: filtering is
@@ -173,3 +174,5 @@ const EMPTY_BLOG = {
     </ul>
   </nav>
 ) : null}
+
+<RabbitBuilder />

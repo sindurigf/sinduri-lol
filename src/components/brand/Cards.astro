@@ -4,6 +4,7 @@ import ComponentRow from './ComponentRow.astro';
 import StandardText from './StandardText.astro';
 import { cardProps, getSortedPosts } from '../../lib/blog';
 import { accessibilityFacts } from '../../lib/accessibility-facts';
+import RabbitBuilder from '../RabbitBuilder.astro';
 
 /* A site may have no posts yet; the post card row waits for one. */
 const [post] = await getSortedPosts();
@@ -81,3 +82,5 @@ const { targetStandard, conformanceStatus } = accessibilityFacts;
     </dl>
   </ComponentRow>
 </ul>
+
+<RabbitBuilder />

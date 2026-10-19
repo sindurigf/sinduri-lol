@@ -12,6 +12,7 @@ import {
   THANKS,
 } from '../lib/credits';
 import { wallClasses } from '../lib/wall';
+import RabbitBuilder from '../components/RabbitBuilder.astro';
 
 /* Keep in step with package.json, wrangler.jsonc, src/assets/social-icons.svg and AI_DISCLOSURE.md. */
 const BUILT_WITH = [
@@ -415,4 +416,5 @@ const TOOLS_WALL = wallClasses({ lg: [[0, 1], [2], [3]] }, 4);
     actionHref="/contact/"
     actionLabel="Get in Touch"
   />
+  <RabbitBuilder />
 </BaseLayout>

@@ -8,6 +8,7 @@ import PageHero from '../components/PageHero.astro';
 import Section from '../components/Section.astro';
 import { JOURNEY_POST_HREF } from '../lib/paths';
 import { wallClasses } from '../lib/wall';
+import RabbitBuilder from '../components/RabbitBuilder.astro';
 
 /*
  * Every claim comes from the published CV or five-years-in-drupal.md; lines
@@ -294,4 +295,5 @@ const pairWall = (count: number) =>
     actionHref="/about/"
     actionLabel="Learn More About Me"
   />
+  <RabbitBuilder />
 </BaseLayout>

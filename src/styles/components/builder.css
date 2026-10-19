@@ -1,0 +1,160 @@
+/*
+ * The rabbit builds the walls: src/scripts/rabbit-builder.ts marks each brick
+ * below the fold `data-build="waiting"`, then `"push"` when it scrolls in. The
+ * page is complete without script, under reduced motion and in print.
+ */
+@layer components {
+  :root {
+    --build-push: 1300ms;
+    --build-hop: 1900ms;
+    --build-stride: 200ms;
+    --build-tumble: 2200ms;
+    --build-kick: 500ms;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-build='waiting'] {
+      opacity: 0;
+    }
+
+    [data-build='push'] {
+      position: relative;
+      z-index: 1;
+      animation: build-push var(--build-push) cubic-bezier(0.25, 0.6, 0.3, 1)
+        both;
+    }
+
+    /* Leaves before the push ends: no rabbit rests over text. */
+    .builder-rabbit {
+      position: absolute;
+      right: 100%;
+      bottom: 0;
+      width: var(--size-builder-rabbit);
+      pointer-events: none;
+      animation: build-hop-off var(--build-hop) ease-out both;
+      /* Bricks remap gold to ink inside; the rabbit keeps the footer's colors. */
+      --color-gold: var(--color-block-gold);
+    }
+
+    /* Top right: headings and text start on the left. */
+    .builder-rabbit-ride {
+      right: var(--block-edge);
+      bottom: 100%;
+      width: var(--size-builder-rabbit-ride);
+      animation-name: build-ride-off;
+    }
+
+    .builder-rabbit .footer-tuft {
+      width: 100%;
+      animation: build-stride var(--build-stride) ease-in-out 6;
+    }
+
+    [data-build='tumble'] {
+      animation: build-tumble var(--build-tumble) cubic-bezier(0.45, 0, 0.3, 1)
+        both;
+    }
+
+    .footer-tuft[data-build='kick'] .hare,
+    .footer-tuft[data-build='kick'] .hare-shadow {
+      animation: build-kick var(--build-kick) ease-out;
+      transform-box: fill-box;
+      transform-origin: 50% 100%;
+    }
+  }
+
+  @media print {
+    [data-build] {
+      opacity: 1;
+      animation: none;
+    }
+  }
+
+  @keyframes build-push {
+    0% {
+      translate: -115vw 0;
+    }
+    70% {
+      translate: --spacing(2.5) 0;
+    }
+    80% {
+      translate: --spacing(-1) 0;
+    }
+    100% {
+      translate: 0 0;
+    }
+  }
+
+  @keyframes build-hop-off {
+    0%,
+    70% {
+      translate: 0 0;
+      opacity: 1;
+    }
+    80% {
+      translate: --spacing(-10) --spacing(-17.5);
+      opacity: 1;
+    }
+    90% {
+      translate: --spacing(-22.5) --spacing(-2.5);
+      opacity: 1;
+    }
+    100% {
+      translate: --spacing(-32.5) --spacing(-10);
+      opacity: 0;
+    }
+  }
+
+  @keyframes build-ride-off {
+    0%,
+    70% {
+      translate: 0 0;
+      opacity: 1;
+    }
+    85% {
+      translate: --spacing(5) --spacing(-12.5);
+      opacity: 1;
+    }
+    100% {
+      translate: --spacing(10) --spacing(-7.5);
+      opacity: 0;
+    }
+  }
+
+  @keyframes build-stride {
+    50% {
+      translate: 0 --spacing(-2);
+    }
+  }
+
+  /* --tumble-x and --tumble-turn are set per brick by the script. */
+  @keyframes build-tumble {
+    0% {
+      translate: 0 0;
+      rotate: 0deg;
+    }
+    45%,
+    62% {
+      translate: var(--tumble-x) 70vh;
+      rotate: var(--tumble-turn);
+    }
+    88% {
+      translate: 0 --spacing(-3);
+      rotate: 0deg;
+    }
+    100% {
+      translate: 0 0;
+      rotate: 0deg;
+    }
+  }
+
+  @keyframes build-kick {
+    30% {
+      translate: --spacing(-1.5) --spacing(-2.5);
+      rotate: -12deg;
+    }
+    60% {
+      translate: 0 0;
+      rotate: 6deg;
+    }
+  }
+}
