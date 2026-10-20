@@ -5,6 +5,15 @@
     @apply flex min-h-target items-center text-subtle hover:text-cyan;
   }
 
+  /* Drawn as a link, but a button: forced colors need its edge (tests/forced-colors.spec.ts). */
+  @media (forced-colors: active) {
+    .drush-trigger {
+      @apply border-4 px-2;
+
+      border-color: ButtonText;
+    }
+  }
+
   .drush-dialog .cat-card {
     @apply w-96 max-w-full;
   }
