@@ -25,6 +25,10 @@ const SERVED_AS_IS = new Map([
       'rendered on demand.',
   ],
   [
+    'hero-rabbit.webp',
+    'the hero canvas draws its frames with drawImage; it is a WebP atlas already.',
+  ],
+  [
     'hero-still-short.webp',
     'layout.css links it as the hero background under `scripting: none`; ' +
       'scripts/make-hero-still.mjs writes it as WebP already.',
