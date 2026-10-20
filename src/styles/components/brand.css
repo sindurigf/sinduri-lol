@@ -29,22 +29,37 @@
   }
 
   /*
-   * Sticky only where the whole list fits under the header, so it never needs
-   * a scroll of its own: on a shorter screen it stays in the flow and each
-   * section carries a link back to it (`.brand-back`).
+   * From `lg` the list sticks under the header and scrolls inside itself when
+   * a screen is shorter than it. On a screen under 30rem tall (a landscape
+   * phone, 200% or 400% zoom) it stays in the flow, so it never covers
+   * content (SC 1.4.10, 2.4.11) and each section links back to it
+   * (`.brand-back`). The jumped-to link is the gold block, but with no script
+   * it can sit out of view in a short list.
    */
   .brand-menu {
     @apply self-start;
 
-    @variant menu-fits {
+    @media (width >= 64rem) {
       position: sticky;
       top: calc(var(--spacing-header) + --spacing(6));
+      max-height: calc(100dvh - var(--spacing-header) - --spacing(12));
+      overflow-y: auto;
+
+      @variant short {
+        position: static;
+        max-height: none;
+        overflow-y: visible;
+      }
     }
   }
 
   .brand-back {
-    @variant menu-fits {
+    @media (width >= 64rem) {
       display: none;
+
+      @variant short {
+        display: block;
+      }
     }
   }
 

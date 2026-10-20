@@ -21,13 +21,14 @@ const NARROW = 390;
 const WIDE = 1280;
 const HEIGHT = 900;
 const ROOT_FONT_PX = 16;
-/* The screen height where the sections list is sticky: `menu-fits` in global.css. */
-const MENU_FITS_HEIGHT =
+/* The screen height under which the sections list stays in the flow: `short` in global.css. */
+const SHORT_HEIGHT =
   Number(
-    /@custom-variant menu-fits[^;]*height >= ([\d.]+)rem/.exec(
+    /@custom-variant short \(@media \(height < ([\d.]+)rem\)\)/.exec(
       readFileSync('src/styles/global.css', 'utf8'),
     )?.[1],
   ) * ROOT_FONT_PX;
+const LAPTOP_HEIGHT = 800;
 /* Far enough down that the sticky list has stuck. */
 const SCROLLED = 3000;
 const THEMES = ['dark', 'light'] as const;
@@ -303,38 +304,67 @@ test.describe('/brand', () => {
     }
   });
 
-  test('the menu stays in the flow unless the whole list fits under the header', async ({
+  test('the sections list sticks under the header, clear of the content, with a focused last link in view', async ({
     page,
   }) => {
+    await page.setViewportSize({ width: WIDE, height: LAPTOP_HEIGHT });
+    await gotoSettled(page, BRAND_PATH);
     const menu = page.getByRole('navigation', { name: 'Brand sections' });
     expect(
-      MENU_FITS_HEIGHT,
-      'global.css has no menu-fits variant',
-    ).toBeGreaterThan(0);
+      await menu.evaluate((el) => getComputedStyle(el).position),
+      'the sections list is not sticky on a laptop screen',
+    ).toBe('sticky');
+    const header = (await page.locator('header').first().boundingBox())!;
+    const content = page.locator('.brand-content');
+    for (const y of [SCROLLED, SCROLLED * 2]) {
+      await page.evaluate((to) => window.scrollTo(0, to), y);
+      const box = (await menu.boundingBox())!;
+      expect(
+        box.y,
+        `the list slides under the header at scroll ${y}`,
+      ).toBeGreaterThanOrEqual(header.y + header.height);
+      expect(
+        box.y + box.height,
+        `the list runs past the screen at scroll ${y}`,
+      ).toBeLessThanOrEqual(LAPTOP_HEIGHT);
+      const column = (await content.boundingBox())!;
+      expect(
+        box.x + box.width,
+        `the list overlaps the content at scroll ${y}`,
+      ).toBeLessThanOrEqual(column.x);
+    }
+    const last = menu
+      .locator('a.brand-menu-link')
+      .locator('visible=true')
+      .last();
+    await last.focus();
+    const link = (await last.boundingBox())!;
+    const list = (await menu.boundingBox())!;
+    expect(
+      link.y,
+      'a focused last link is hidden above the list or the header',
+    ).toBeGreaterThanOrEqual(Math.max(list.y, header.y + header.height) - 0.5);
+    expect(
+      link.y + link.height,
+      'a focused last link is cut off at the bottom of the list or the screen',
+    ).toBeLessThanOrEqual(Math.min(list.y + list.height, LAPTOP_HEIGHT) + 0.5);
+  });
+
+  test('the sections list stays in the flow on a screen under the short height', async ({
+    page,
+  }) => {
+    expect(SHORT_HEIGHT, 'global.css has no short variant').toBeGreaterThan(0);
+    const menu = page.getByRole('navigation', { name: 'Brand sections' });
     for (const [height, sticky] of [
-      [HEIGHT, false],
-      [MENU_FITS_HEIGHT - 1, false],
-      [MENU_FITS_HEIGHT, true],
+      [SHORT_HEIGHT - 1, false],
+      [SHORT_HEIGHT, true],
     ] as const) {
       await page.setViewportSize({ width: WIDE, height });
       await gotoSettled(page, BRAND_PATH);
-      const list = menu.locator('.hidden.lg\\:block');
       expect(
         await menu.evaluate((el) => getComputedStyle(el).position),
-        `the menu is ${sticky ? 'not ' : ''}sticky at ${height}px tall`,
+        `the list is ${sticky ? 'not ' : ''}sticky at ${height}px tall`,
       ).toBe(sticky ? 'sticky' : 'static');
-      expect(
-        await menu.evaluate((el) => el.scrollHeight - el.clientHeight),
-        `the menu scrolls inside itself at ${height}px tall`,
-      ).toBeLessThanOrEqual(0);
-      if (sticky) {
-        await page.evaluate((y) => window.scrollTo(0, y), SCROLLED);
-        const box = await list.boundingBox();
-        expect(
-          box!.y + box!.height,
-          'the sticky list reaches below the viewport',
-        ).toBeLessThanOrEqual(height);
-      }
     }
   });
 
