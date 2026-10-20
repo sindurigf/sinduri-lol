@@ -35,8 +35,9 @@ const STICKER = { edge: 1, rim: 1.2, rimEdge: 1, throw: 3, line: 0.2 };
 
 /* Favicon grid: 64 units, the tile and the jump drawn to the icon's edges. */
 const ICON = 64;
-const ICON_TILE = { x: 2.5, y: 22, size: 38, rx: 10, throw: 4, edge: 5 };
-const ICON_POSE = { box: [12, 0, 52, 54], rotate: -12, halo: 4 };
+const ICON_POSE = { box: [2, 1, 52, 54], rotate: -12 };
+/* The die-cut sticker, outward from the shape: ink line, white rim; then a pink and an ink throw. */
+const ICON_STICKER = { edge: 1, rim: 3, pinkThrow: 4, inkThrow: 7 };
 /* Opaque app icons on gold: artwork scale, and the maskable safe zone. */
 const APP_SCALE = 0.8;
 const MASKABLE_SCALE = 0.62;
@@ -210,9 +211,11 @@ function iconArtwork({ precise }) {
   m.f = cy - m.b * mx - m.g * my;
   const path = (d) => (precise ? bake(d, m) : compact(d, m));
   const unit = precise ? 1 : FINE;
-  const t = ICON_TILE;
-  const tile = `<rect x="${t.x + t.throw}" y="${t.y + t.throw}" width="${t.size}" height="${t.size}" rx="${t.rx}" fill="${PINK}"/><rect x="${t.x}" y="${t.y}" width="${t.size}" height="${t.size}" rx="${t.rx}" fill="${GOLD}" stroke="${INK}" stroke-width="${t.edge}"/>`;
-  return `${precise ? tile : `<g transform="scale(${FINE})">${tile}</g>`}<defs><path id="r" d="${path(TRACE.sil)}"/></defs><use href="#r" fill="${INK}" stroke="${INK}" stroke-width="${ICON_POSE.halo * 2 * unit}" stroke-linejoin="round"/><use href="#r" fill="${WHITE}"/>${fill(path(largest(TRACE.pink)), EAR)}${fill(path(largest(TRACE.eye)), INK)}`;
+  const { edge, rim, pinkThrow, inkThrow } = ICON_STICKER;
+  const outer = 2 * (edge + rim) * unit;
+  const use = (color, width, off = 0) =>
+    `<use href="#r" fill="${color}" stroke="${color}" stroke-width="${width}" stroke-linejoin="round"${off ? ` x="${off * unit}" y="${off * unit}"` : ''}/>`;
+  return `<defs><path id="r" d="${path(TRACE.sil)}"/></defs>${use(INK, outer, inkThrow)}${use(PINK, outer, pinkThrow)}${use(WHITE, outer)}${use(INK, 2 * edge * unit)}<use href="#r" fill="${WHITE}"/>${fill(path(largest(TRACE.pink)), EAR)}${fill(path(largest(TRACE.eye)), INK)}`;
 }
 
 const svg = (viewBox, body) =>
