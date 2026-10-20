@@ -1,14 +1,30 @@
 ---
+import { Image } from 'astro:assets';
+import bunnyFooter from '../assets/bunny-footer.webp';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
+import Section from '../components/Section.astro';
 import '../styles/components/starfield.css';
+import '../styles/components/rabbit-chase.css';
+import { DENSITIES } from '../lib/image-densities';
 import { BLOG_PATH } from '../lib/paths';
+import { chasePages } from '../lib/chase-pages';
+import { sitePages } from '../lib/site-pages';
 
 /*
  * Served with status 404 via `not_found_handling: "404-page"` in wrangler.jsonc.
  * noCanonical: it answers every dead URL. noindex: /404 itself is a route that
  * answers 200, and would otherwise be indexable.
  */
+
+/* CSS px: --size-rabbit-runner, the rabbit on its trail. */
+const RABBIT_HEIGHT = 72;
+
+/* `<` escaped, so no title can close the data block. */
+const pagesJson = JSON.stringify(chasePages(await sitePages())).replace(
+  /</g,
+  '\\u003c',
+);
 ---
 
 <BaseLayout
@@ -55,4 +71,39 @@ import { BLOG_PATH } from '../lib/paths';
       </li>
     </ul>
   </PageHero>
+
+  {/* Shown by src/scripts/rabbit-chase.ts; without JavaScript the links above are the way out. */}
+  <div id="rabbit-chase" hidden>
+    <Section id="follow" title="Follow the White Rabbit">
+      {/* A <div>: a short <p> this size trips WAVE's "Possible heading" (tests/wave-alerts.spec.ts). */}
+      <div class="rabbit-line" data-line></div>
+      <nav aria-label="Breadcrumb" class="rabbit-trail">
+        <ol role="list" data-trail>
+          <li class="rabbit-stop label" data-here>
+            <span>Here</span>
+            <Image
+              src={bunnyFooter}
+              alt=""
+              height={RABBIT_HEIGHT}
+              densities={DENSITIES}
+              class="rabbit-runner"
+              data-runner
+            />
+          </li>
+        </ol>
+      </nav>
+      <div class="rabbit-actions">
+        <button type="button" class="btn-primary" data-follow>
+          Follow the Rabbit
+        </button>
+        <p data-result hidden></p>
+      </div>
+      <p class="sr-only" aria-live="polite" data-status></p>
+      <script type="application/json" id="chase-pages" set:html={pagesJson} />
+    </Section>
+  </div>
 </BaseLayout>
+
+<script>
+  import '../scripts/rabbit-chase';
+</script>

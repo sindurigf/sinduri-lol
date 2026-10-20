@@ -581,6 +581,9 @@
   --size-footer-rabbit: clamp(96px, 12vw, 160px);
   /* How far the rabbit's box drops below the type's top: the cap gap (0.04em) and the image's rim and throw (9%). */
   --footer-rabbit-sink: calc(0.04em + var(--size-footer-rabbit) * 0.09);
+  /* The 404 rabbit on its trail, and one hop from the last stop to the new one. */
+  --size-rabbit-runner: 72px;
+  --duration-rabbit-hop: 400ms;
   /*
    * Header row above `md`: equal outer tracks center the nav. A token because
    * components allow no arbitrary values.

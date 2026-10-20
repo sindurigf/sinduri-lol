@@ -117,8 +117,10 @@ test.describe('breadcrumbs', NODE, () => {
 
   test('pages outside the blog carry neither', () => {
     const pages = builtHtml();
+    /* /404's trail is the rabbit's way to the page the address meant, which the visitor builds; tests/rabbit-chase.spec.ts covers it. */
     const others = ROUTES.filter(
-      (route) => route === '/blog' || !route.startsWith('/blog'),
+      (route) =>
+        route !== '/404' && (route === '/blog' || !route.startsWith('/blog')),
     );
     expect(
       others.length,

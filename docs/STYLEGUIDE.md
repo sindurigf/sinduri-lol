@@ -728,7 +728,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
 | Blog index             | Hero, Listing, Close                                           |
 | Blog category, tag     | Hero, Listing                                                  |
 | Post                   | Article header, Reading (contents box from 1280px), Tags nav   |
-| 404                    | Hero (starfield) only                                          |
+| 404                    | Hero (starfield), then the White Rabbit (JavaScript only)      |
 | Brand                  | Hero (full), Facts, Brand (sections list), Close               |
 
 - Contact ends on its gold surface, not a closing row: the band is its call to

@@ -1,0 +1,89 @@
+@reference '../global.css';
+
+@layer components {
+  /* The 404 page's White Rabbit; src/scripts/rabbit-chase.ts unhides it and adds a stop per hop. */
+  .rabbit-line {
+    font-size: var(--text-post-teaser);
+    line-height: var(--text-post-teaser--line-height);
+
+    @apply text-pink-text italic text-pretty;
+  }
+
+  .rabbit-trail {
+    margin-top: --spacing(8);
+  }
+
+  /* Room above every row for the rabbit standing on a stop in it. */
+  .rabbit-trail ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--size-rabbit-runner) --spacing(6);
+    padding-top: var(--size-rabbit-runner);
+  }
+
+  .rabbit-stop {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: var(--spacing-target);
+
+    @apply text-subtle;
+  }
+
+  .rabbit-stop + .rabbit-stop::before {
+    content: '›' / '';
+    margin-right: --spacing(6);
+
+    @apply text-subtle;
+  }
+
+  .rabbit-stop a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--spacing-target);
+
+    @apply text-text underline;
+  }
+
+  .rabbit-stop a:hover {
+    @apply text-cyan;
+  }
+
+  /* Stands on the stop it reached, over its last word, turned to face along the trail. */
+  .rabbit-runner {
+    position: absolute;
+    right: 0;
+    bottom: 100%;
+    width: auto;
+    height: var(--size-rabbit-runner);
+    scale: -1 1;
+    pointer-events: none;
+    animation: rabbit-hop var(--duration-rabbit-hop) ease-out both;
+  }
+
+  .rabbit-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: --spacing(6);
+    margin-top: --spacing(8);
+  }
+
+  @keyframes rabbit-hop {
+    from {
+      translate: calc(var(--size-rabbit-runner) * -1) 0;
+    }
+
+    50% {
+      translate: calc(var(--size-rabbit-runner) * -0.5)
+        calc(var(--size-rabbit-runner) * -0.5);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rabbit-runner {
+      animation: none;
+    }
+  }
+}

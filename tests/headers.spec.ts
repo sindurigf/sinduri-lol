@@ -257,4 +257,23 @@ test.describe('security headers', () => {
       [],
     );
   });
+
+  test('the 404 rabbit runs and hops under the policy', async ({ page }) => {
+    const violations = await collectViolations(page);
+
+    await page.goto(`${policy().origin}/blgo`);
+    const follow = page.getByRole('button', { name: 'Follow the Rabbit' });
+    await expect(
+      follow,
+      'the chase did not start; the policy may have blocked src/scripts/rabbit-chase.ts or its data block',
+    ).toBeVisible();
+    await follow.click();
+    await expect(
+      page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link'),
+    ).not.toHaveCount(0);
+
+    expect(violations, 'the browser refused something under the CSP').toEqual(
+      [],
+    );
+  });
 });
