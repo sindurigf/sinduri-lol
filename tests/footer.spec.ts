@@ -10,7 +10,7 @@ import { ENGINE_INVARIANT } from './tags';
 
 /**
  * The footer: Lepus Ridet with the profiles as sticker tiles under it, the
- * pages and the policies, and a copyright line with the gold hare in its tuft.
+ * pages and the policies, and a copyright line with the gold bunny in its tuft.
  * A rule engine sees none of the geometry, so what covers what is measured.
  */
 

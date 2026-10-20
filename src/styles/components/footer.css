@@ -158,8 +158,8 @@
   }
 
   /*
-   * 266x102 viewBox, 220px wide on a phone, 1:1 from `md`; the hare's ground
-   * sits 8 units up, on the footer's bottom edge. Gold with gold-text lines.
+   * 266x118 viewBox, 220px wide on a phone, 1:1 from `md`; the ground sits 8
+   * units up, on the footer's bottom edge.
    */
   .footer-tuft {
     display: block;
@@ -167,35 +167,49 @@
     max-width: 100%;
     height: auto;
     overflow: visible;
+    /* Rabbit viewBox units. The closed-eye line stays just over half the edge so it reads as a line, not a second outline. */
+    --rabbit-edge-width: 6;
+    --rabbit-line-width: 3.4;
   }
 
   .footer-tuft .tuft-back {
     fill: var(--color-border);
   }
 
-  .footer-tuft .tuft-front {
-    fill: var(--color-subtle);
+  /* The sticker rabbit: one ink edge round all its parts, gold fill, pink throw. */
+  .footer-tuft .rabbit-edge {
+    fill: var(--color-gold-text);
+    stroke: var(--color-gold-text);
+    stroke-width: var(--rabbit-edge-width);
   }
 
-  .footer-tuft .hare-shadow {
+  /* After the edge, which it outranks: the throw is the edge's shape in pink. */
+  .footer-tuft .rabbit-throw .rabbit-edge {
+    fill: var(--color-pink);
+    stroke: var(--color-pink);
+  }
+
+  .footer-tuft .rabbit-body {
+    fill: var(--color-gold);
+  }
+
+  .footer-tuft .rabbit-ink {
+    fill: var(--color-gold-text);
+  }
+
+  .footer-tuft .rabbit-line {
+    fill: none;
+    stroke: var(--color-gold-text);
+    stroke-width: var(--rabbit-line-width);
+    stroke-linecap: round;
+  }
+
+  .footer-tuft .rabbit-ear {
     fill: var(--color-pink);
   }
 
-  .footer-tuft .hare {
-    fill: var(--color-gold);
-    stroke: var(--color-gold-text);
-    stroke-width: 1.9;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .footer-tuft .hare-line {
-    fill: none;
-  }
-
-  .footer-tuft .hare-nose {
-    fill: var(--color-gold-text);
-    stroke: none;
+  .footer-tuft .rabbit-shine {
+    fill: var(--color-light-ground);
   }
 
   /*
@@ -303,17 +317,20 @@
 
   @media (forced-colors: active) {
     .footer-tuft .tuft-back,
-    .footer-tuft .tuft-front,
-    .footer-tuft .hare-nose {
+    .footer-tuft :is(.rabbit-edge, .rabbit-ink) {
       fill: CanvasText;
-    }
-
-    .footer-tuft .hare {
-      fill: Canvas;
       stroke: CanvasText;
     }
 
-    .footer-tuft .hare-shadow {
+    .footer-tuft .rabbit-line {
+      stroke: CanvasText;
+    }
+
+    .footer-tuft .rabbit-body {
+      fill: Canvas;
+    }
+
+    .footer-tuft :is(.rabbit-throw, .rabbit-ear, .rabbit-shine) {
       display: none;
     }
 
