@@ -311,7 +311,7 @@ Commits, copy rules and process: [AGENTS.md](AGENTS.md).
 ### Text size
 
 `--text-scale` (Drink Me and Eat Me) is a unitless number on the root,
-multiplied into `--text-lead`, `--text-standfirst`, `--text-body` and
+multiplied into `--text-lead`, `--text-standfirst`, `--text-post-teaser`, `--text-body` and
 `--text-label` in `global.css`. Scaling the root font size was rejected: media
 queries ignore it, so layouts overflowed at widths such as 768px.
 `tests/reading-tab.spec.ts` holds the no-sideways-scroll rule at 320, 390 and

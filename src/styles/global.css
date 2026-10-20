@@ -284,7 +284,9 @@
   --text-post-title: 2rem;
   --text-post-title--line-height: 1.06;
   /* The post teaser beside the title on its slab, read as a standfirst. */
-  --text-post-teaser: clamp(1.3125rem, 2vw, 1.625rem);
+  --text-post-teaser: calc(
+    clamp(1.3125rem, 2vw, 1.625rem) * var(--text-scale, 1)
+  );
   --text-post-teaser--line-height: var(--leading-paragraph);
   /* Under the post title, over the h3 at 0.8 or less (tests/headings.spec.ts). */
   --text-post-h2: 1.75rem;
@@ -310,7 +312,7 @@
   /* Display text that is not a heading: links, values and stats at h3's old fluid size. */
   --text-display: clamp(1.25rem, 2.6vw, 2rem);
   --text-display--line-height: 1.1;
-  /* --text-scale (Drink Me and Eat Me) multiplies the reading sizes only: lead, standfirst, body and label. */
+  /* --text-scale (Drink Me and Eat Me) multiplies the reading sizes only: lead, standfirst, post teaser, body and label. */
   /* A lead or card paragraph: fixed, under the 28px h2 (SC 1.4.4 at 200% zoom). */
   --text-lead: calc(1.5rem * var(--text-scale, 1));
   --text-lead--line-height: var(--leading-paragraph);
