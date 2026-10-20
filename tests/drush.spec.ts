@@ -61,6 +61,9 @@ test('under reduced motion drush cr only answers', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await gotoSettled(page, ROUTE);
   await typeAnywhere(page, 'drush');
+  await expect(
+    dialogOf(page).getByRole('textbox', { name: 'Command' }),
+  ).toBeFocused();
   await page.keyboard.type('cr');
   await page.keyboard.press('Enter');
   await expect(dialogOf(page).getByRole('status')).toHaveText(CLEARED);
