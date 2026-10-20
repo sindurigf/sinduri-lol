@@ -254,8 +254,9 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
 - A whole gold section (hero slab, gold band) is also a `.gold-column`.
 - Exception: the footer name band (register row 11) is a `block-gold` fill
   with `gold-text` type and a `fill-edge` top, not `.surface-gold`. It holds
-  the name and the rabbit and never a control, so there is nothing for
-  `.surface-gold` to repaint.
+  the name and the rabbit, so there is nothing for `.surface-gold` to repaint.
+  Its one control is Tickle the Rabbit, a button over the rabbit on the band's
+  edge (see [Footer](#footer)); `tests/footer.spec.ts` keeps it the only one.
 - Keep the link underline: `gold-link` is 1.01 against `gold-text`, so the
   underline carries SC 1.4.1.
 - `gold-btn-label` sits only on `.btn-gold-primary`'s `#131313` fill (18.58),
@@ -1088,6 +1089,14 @@ Enforced by `tests/footer.spec.ts`.
 - the copyright
 - the name "Lepus Ridet" (`div lang="la"`, not a heading) as display type on a
   gold band, the rabbit (`alt=""`) standing on its last letter
+- Tickle the Rabbit (`src/scripts/rabbit-tickle.ts`, loaded on demand): an
+  empty button with that `aria-label` over the rabbit, which stays a plain
+  image; hidden without JavaScript and on talk decks. A press plays a short
+  giggle-hop and the name laughs once, untimed; a polite status says "The
+  rabbit giggles." (placeholder copy). Under reduced motion the rabbit blinks
+  once and nothing moves. Its ring is two-tone because its box crosses the
+  page ground and the band: a `gold-text` outline, the band's ring color,
+  between two cyan bands (`box-shadow`) that meet the ground.
 
 ### Text size
 
@@ -1318,6 +1327,9 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 - A hard shadow is not a focus indicator.
 - One exception: the header logo link inverts to an ink block instead of a
   ring ([Navigation](#navigation)).
+- Tickle the Rabbit straddles the page ground and the gold name band, so its
+  `gold-text` ring sits between two cyan bands: cyan meets the ground, ink
+  stands out from the cyan on the gold ([Footer](#footer)).
 - `html` `scroll-padding-bottom` is the ring's width, gap, the largest lift and
   `--scroll-rounding` (1px), so a control scrolled to the bottom edge keeps its
   whole ring on screen.
