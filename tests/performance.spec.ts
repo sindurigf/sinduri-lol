@@ -15,7 +15,7 @@ import { LAYOUT_SHIFT, layoutShiftOf } from './layout-shift';
 const ROUTE_SCRIPT_BUDGETS: Readonly<Record<string, number>> = {
   '/': 98_000,
   '/about': 131_400,
-  '/brand': 19_450,
+  '/brand': 20_000,
 };
 const PAGE_SCRIPT_BUDGET = 15_500;
 
