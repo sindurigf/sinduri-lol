@@ -269,6 +269,37 @@
     @apply block;
   }
 
+  /* A pick turns the moon on its side, a grin that fades in and out (the Cheshire Cat). */
+  @media (prefers-reduced-motion: no-preference) {
+    :root .theme-switch.grin .theme-switch-sun {
+      @apply hidden;
+    }
+
+    :root .theme-switch.grin .theme-switch-moon {
+      @apply block;
+
+      animation: grin var(--grin-time) ease-in-out forwards;
+    }
+  }
+
+  @keyframes grin {
+    0% {
+      opacity: 0;
+      rotate: 0deg;
+    }
+
+    20%,
+    85% {
+      opacity: 1;
+      rotate: -45deg;
+    }
+
+    100% {
+      opacity: 0;
+      rotate: -45deg;
+    }
+  }
+
   /*
    * Forced colors drop the gold fill, so the box takes a ButtonText border.
    * SVGs back to `auto`: Chromium defaults inline SVG to

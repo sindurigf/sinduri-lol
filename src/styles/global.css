@@ -524,6 +524,8 @@
   --press-edge: 4px;
   /* A lift or release slides at an even speed in this time; a press lands at once. */
   --press-travel: 80ms;
+  /* After a theme pick the moon stays turned into a grin this long, then the glyph is back. */
+  --grin-time: 4200ms;
   /* Layout lands on fractions of a pixel, scrolling on whole ones. */
   --scroll-rounding: 1px;
 

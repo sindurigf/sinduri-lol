@@ -1,15 +1,19 @@
 ---
 import { THEME_CHOICES } from '../lib/theme';
 import TextSizeGroup from './TextSizeGroup.astro';
+/* `?worker&url`: a separate file, so a slide deck can leave it out and keep its script budget. */
+import themeGrin from '../scripts/theme-grin.ts?worker&url';
 
 interface Props {
   /** The popover's id and the radios' name: unique per page. */
   id?: string;
   /** Adds the text size group below the theme choices: the control where no edge tab fits. */
   textSize?: boolean;
+  /** The moon turns into a grin after a pick. */
+  grin?: boolean;
 }
 
-const { id = 'theme-menu', textSize = false } = Astro.props;
+const { id = 'theme-menu', textSize = false, grin = true } = Astro.props;
 ---
 
 {/* Shows the theme in use; hidden without JavaScript or popovers. */}
@@ -69,3 +73,4 @@ const { id = 'theme-menu', textSize = false } = Astro.props;
 <script>
   import '../scripts/theme-switch';
 </script>
+{grin && <script is:inline type="module" src={themeGrin}></script>}
