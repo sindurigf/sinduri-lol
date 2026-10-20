@@ -576,9 +576,7 @@
   --footer-rabbit-sink: calc(0.04em + var(--size-footer-rabbit) * 0.09);
   /* The 404 rabbit on its trail, and one hop from the last stop to the new one. */
   --size-rabbit-runner: 72px;
-  --duration-rabbit-hop: 400ms;
   /* The 404 crossroads' pocket watch. */
-  --size-watch-face: 24px;
   /*
    * Header row above `md`: equal outer tracks center the nav. A token because
    * components allow no arbitrary values.

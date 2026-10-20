@@ -1,24 +1,15 @@
 /*
- * The 404 page's Cheshire crossroads: from Home, each fork offers the pages one
- * level down as signs; the reader picks a way, can climb back, and ends on a real
- * page. The sign toward the page the address most likely meant is marked as the
- * White Rabbit's way. Untimed (SC 2.2.1); the data comes from #chase-pages.
+ * The 404 page's crossroads: the site's sections as signs, and the pages down
+ * the chosen one as links. The White Rabbit's way, toward the page the address
+ * most likely meant, starts chosen. The data comes from #chase-pages.
  */
 import { rankPages } from '../lib/page-match';
 import type { ChasePage } from '../lib/chase-pages';
 
-/* Carroll's text, Project Gutenberg #11, chapter VI; the last line is said at a dead end. */
-const CAT_LINES = [
-  '“Would you tell me, please, which way I ought to go from here?”',
-  '“That depends a good deal on where you want to get to,” said the Cat.',
-  '“Then it doesn’t matter which way you go,” said the Cat.',
-  '“Oh, you’re sure to do that,” said the Cat, “if you only walk long enough.”',
-] as const;
-const DEAD_END =
-  '“Oh, you can’t help that,” said the Cat: “we’re all mad here.”';
-
-/* Degrees the watch hand turns per hop: decoration, never a timer. */
-const HAND_STEP = 60;
+/* Carroll's text, Project Gutenberg #11, chapter VI. */
+const CAT_LINE =
+  '“That depends a good deal on where you want to get to,” said the Cat.';
+const RABBIT_PICK = 'White Rabbit’s pick';
 
 const make = <K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -48,114 +39,90 @@ const start = (): void => {
         other.trail.at(-2) === index,
     );
   };
+  const sections = childrenOf(home);
   const best = rankPages(
     pages.filter((page) => page !== home),
     location.pathname,
   )[0];
-  const rabbitWay = new Set(best?.trail ?? []);
+  const onRabbitWay = (page: ChasePage): boolean =>
+    best?.trail.includes(pages.indexOf(page)) ?? false;
+  let chosen = sections.find(onRabbitWay) ?? sections[0];
+  if (!chosen) return;
 
-  const watch = make('div', 'crossroads-watch label');
-  const face = make('span', 'crossroads-watch-face');
-  face.setAttribute('aria-hidden', 'true');
-  const hops = make('span');
-  watch.append(face, hops);
-  const cat = make('div', 'crossroads-cat');
-  const trail = make('nav', 'crossroads-trail');
-  trail.setAttribute('aria-label', 'Breadcrumb');
-  const crumbs = make('ol', 'label');
-  crumbs.setAttribute('role', 'list');
-  trail.append(crumbs);
+  const cat = make('p', 'crossroads-cat', CAT_LINE);
+  const signsLabel = make('p', 'crossroads-heading label', 'Sections');
+  signsLabel.id = 'crossroads-signs-label';
   const signs = make('ul', 'crossroads-signs');
   signs.setAttribute('role', 'list');
-  const stops = make('div', 'actions');
+  signs.setAttribute('aria-labelledby', signsLabel.id);
+  const pole = make('div', 'crossroads-pole');
+  pole.setAttribute('aria-hidden', 'true');
+  const pagesLabel = make('p', 'crossroads-heading label');
+  pagesLabel.id = 'crossroads-pages-label';
+  const links = make('ul', 'crossroads-pages');
+  links.setAttribute('role', 'list');
+  links.setAttribute('aria-labelledby', pagesLabel.id);
   const status = make('p', 'sr-only');
   status.setAttribute('aria-live', 'polite');
 
-  const path: ChasePage[] = [home];
-
-  const draw = (): void => {
-    const here = path.at(-1)!;
-    const next = childrenOf(here);
-    const steps = path.length - 1;
-    hops.textContent = `${steps} ${steps === 1 ? 'hop' : 'hops'}`;
-    face.style.setProperty('--hand', `${steps * HAND_STEP}deg`);
-    cat.textContent = next.length
-      ? CAT_LINES[steps % CAT_LINES.length]!
-      : DEAD_END;
-
-    crumbs.replaceChildren(
-      ...path.map((page, index) => {
-        const item = make('li', 'crossroads-crumb');
-        if (index > 0) {
-          const separator = make('span', undefined, '/');
-          separator.setAttribute('aria-hidden', 'true');
-          item.append(separator);
-        }
-        const link = make('a', 'link hit-target inline-block', page.title);
-        link.href = page.path;
-        if (index === path.length - 1) {
-          link.setAttribute('aria-current', 'location');
-          item.append(link, runner);
-        } else {
-          item.append(link);
-        }
-        return item;
-      }),
-    );
-    runner.hidden = false;
-
-    signs.replaceChildren(
-      ...next.map((page) => {
+  const drawPages = (): void => {
+    const down = [chosen!, ...childrenOf(chosen!)];
+    pagesLabel.textContent = `Down the ${chosen!.title} Way`;
+    links.replaceChildren(
+      ...down.map((page) => {
         const item = make('li');
-        const sign = make('button', 'crossroads-sign label', page.title);
-        sign.type = 'button';
-        if (rabbitWay.has(pages.indexOf(page))) {
-          sign.classList.add('crossroads-sign-rabbit');
-          sign.append(
-            make('span', 'sr-only', ' (the White Rabbit went this way)'),
-          );
+        const link = make('a', 'crossroads-page link', page.title);
+        link.href = page.path;
+        if (page === best) {
+          link.classList.add('crossroads-page-rabbit');
+          link.append(make('span', 'crossroads-pick label', RABBIT_PICK));
         }
-        sign.addEventListener('click', () => {
-          path.push(page);
-          draw();
-          status.textContent = childrenOf(page).length
-            ? `${page.title}. Which way from here?`
-            : `${page.title}. The end of this way.`;
-          (signs.querySelector('button') ?? stops.querySelector('a'))?.focus();
-        });
-        item.append(sign);
+        item.append(link);
         return item;
       }),
     );
-    signs.hidden = next.length === 0;
-
-    const actions: HTMLElement[] = [];
-    if (here !== home || next.length === 0) {
-      const go = make(
-        'a',
-        next.length ? 'btn-secondary' : 'btn-primary',
-        `Go to ${here.title}`,
+    for (const sign of signs.querySelectorAll('button')) {
+      sign.setAttribute(
+        'aria-pressed',
+        String(sign.dataset.path === chosen!.path),
       );
-      go.href = here.path;
-      actions.push(go);
     }
-    if (path.length > 1) {
-      const back = make('button', 'btn-secondary', 'Climb Back Up');
-      back.type = 'button';
-      back.addEventListener('click', () => {
-        path.pop();
-        draw();
-        status.textContent = `Back at ${path.at(-1)!.title}.`;
-        signs.querySelector('button')?.focus();
-      });
-      actions.push(back);
-    }
-    stops.replaceChildren(...actions);
   };
 
+  signs.append(
+    ...sections.map((section) => {
+      const item = make('li', 'crossroads-sign-row');
+      const sign = make('button', 'crossroads-sign label', section.title);
+      sign.type = 'button';
+      sign.dataset.path = section.path;
+      sign.addEventListener('click', () => {
+        chosen = section;
+        drawPages();
+        const count = links.children.length;
+        status.textContent = `${count} ${count === 1 ? 'page' : 'pages'} down the ${section.title} way.`;
+      });
+      item.append(sign);
+      if (onRabbitWay(section)) {
+        sign.append(
+          make('span', 'sr-only', ' (the White Rabbit went this way)'),
+        );
+        runner.hidden = false;
+        item.append(runner);
+      }
+      return item;
+    }),
+  );
+
+  const signsColumn = make('div', 'crossroads-column');
+  signsColumn.append(signsLabel, signs);
+  const pagesColumn = make('div', 'crossroads-column');
+  pagesColumn.append(pagesLabel, links);
+  const map = make('div', 'crossroads-map');
+  map.append(signsColumn, pole, pagesColumn);
+
+  drawPages();
   root.querySelector('[data-fallback]')?.remove();
-  root.prepend(watch, cat, trail, signs, stops, status);
-  draw();
+  root.prepend(cat, map, status);
 };
 
 start();
