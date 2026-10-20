@@ -332,9 +332,6 @@ it stays out of the per-page script budgets (`tests/performance.spec.ts`).
 - A feature file finds its trigger and listens at top level:
   `trigger.addEventListener('on-demand', ...)`, and ends with `export {};` so
   TypeScript treats it as a module.
-- `data-on-demand-keys="<word>"` on a trigger also fires it when the word is
-  typed outside a form field, without Ctrl, Alt or Meta.
-- SC 2.1.4: `localStorage` `on-demand-keys` set to `off` turns key words off.
 
 Rejected:
 

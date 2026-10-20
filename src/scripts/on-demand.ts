@@ -1,21 +1,6 @@
 /* Contract and rejected alternatives: ARCHITECTURE.md "Scripts loaded on demand". */
-import { KEYS_OFF, KEYS_STORAGE_KEY } from '../lib/on-demand';
-
-const KEY_BUFFER_LENGTH = 16;
-const TYPING_TARGETS = 'input,textarea,select,[contenteditable]';
-
 const triggers = document.querySelectorAll<HTMLElement>('[data-on-demand]');
 const loads = new Map<string, Promise<unknown>>();
-let typed = '';
-
-/* SC 2.1.4: a stored "off" turns the typed words off. */
-const keysOn = (): boolean => {
-  try {
-    return localStorage.getItem(KEYS_STORAGE_KEY) !== KEYS_OFF;
-  } catch {
-    return true;
-  }
-};
 
 const run = (trigger: HTMLElement): void => {
   const url = trigger.dataset.onDemand!;
@@ -37,25 +22,6 @@ addEventListener('click', (event) => {
     '[data-on-demand]',
   );
   if (trigger) run(trigger);
-});
-
-addEventListener('keydown', (event) => {
-  if (
-    event.ctrlKey ||
-    event.altKey ||
-    event.metaKey ||
-    (event.target as Element).closest(TYPING_TARGETS)
-  ) {
-    return;
-  }
-  typed = (typed + event.key).slice(-KEY_BUFFER_LENGTH);
-  for (const trigger of triggers) {
-    const word = trigger.dataset.onDemandKeys;
-    if (word && typed.endsWith(word) && keysOn()) {
-      typed = '';
-      run(trigger);
-    }
-  }
 });
 
 export {};

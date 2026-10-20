@@ -42,8 +42,6 @@ const DISCLOSED_STORAGE = {
     join('src', 'layouts', 'BaseLayout.astro'),
     join('src', 'scripts', 'theme-switch.ts'),
     join('src', 'scripts', 'text-size.ts'),
-    /* Reads on-demand-keys, the typed shortcuts' off switch (SC 2.1.4). */
-    join('src', 'scripts', 'on-demand.ts'),
   ],
   api: 'localStorage',
 };
