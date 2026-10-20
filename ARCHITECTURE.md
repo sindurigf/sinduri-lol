@@ -319,11 +319,11 @@ queries ignore it, so layouts overflowed at widths such as 768px.
 
 ### Scripts loaded on demand
 
-`src/scripts/on-demand.ts` loads a footer feature's code on its first use, so
+`src/scripts/on-demand.ts` loads a feature's code on its first use, so
 it stays out of the per-page script budgets (`tests/performance.spec.ts`).
 
-- `FEATURES` in `Footer.astro` maps a name to a `?worker&url` file. It renders
-  the registry only when there are entries, and never under `/talks/`.
+- A feature is a `?worker&url` file. `Footer.astro` renders the registry on
+  every page except under `/talks/`.
 - A trigger is `[data-on-demand="<feature file URL>"]`, shipped `hidden`; the
   registry unhides it. Without JavaScript nothing shows.
 - First click imports the file, then dispatches an `on-demand` event on the
@@ -396,7 +396,8 @@ in `wrangler.jsonc`).
   `/_astro/`, cached immutably. Unimported files are not emitted.
 - `public/images/`: stable URLs for outside consumers (Open Graph images).
 - `artwork/`: source artwork the build never reads (the Lepus Ridet badge,
-  the `favicon.ico` frames, the traced logo rabbit). Nothing in it ships.
+  the `favicon.ico` frames, the traced logo rabbit and its share-card copy).
+  Nothing in it ships.
 
 | Path                           | Artwork   | Goes on              | Used by                                      |
 | ------------------------------ | --------- | -------------------- | -------------------------------------------- |
@@ -411,16 +412,18 @@ in `wrangler.jsonc`).
 | `-dark`, `#111111`  | 1.04         | 1.08         | **18.88**    | **11.50**    |
 | `-white`, `#FFFFFF` | **19.68**    | **17.40**    | 1.00         | 1.64         |
 
-- `og-default.png`: 1200x630. Gold panel with the name and the tagline in two
-  lines, `background` strip with the line bunny tile, Lepus and Ridet stickers on
-  the seam. `npm run og` (`scripts/make-og.mjs`) draws it in Chromium with
+- `og-default.png`: 1200x630. All gold: the name, the joined Lepus Ridet
+  sticker and the tagline in two lines, and the header logo scaled 7x, whole
+  inside the card. `npm run og` (`scripts/make-og.mjs`) draws it in Chromium with
   Lexend and the site tokens. PNG in `public/` because scrapers need a stable
   URL and format.
 - `public/images/og/<route>.jpg`: every other page's card, drawn by the same
-  script from the built page: the page title on gold, and on the strip the
-  first photo in `<main>`, whole, or the line bunny tile when there is none.
-- The cards keep the line bunny tile, the header's former logo, on purpose;
-  the header logo is the jumping rabbit (`scripts/make-logo.mjs`).
+  script from the built page: the page title and the sticker on gold, and on
+  the right the first photo in `<main>`, whole, or the header logo when there
+  is none. A title shrinks until it fits three lines and the sticker clears the
+  domain line.
+- The logo's rabbit is `artwork/logo-rabbit-og.png`, which
+  `scripts/make-logo.mjs` renders from the header rabbit's box at 14x.
   `OG_PHOTO_CHOICES` in `src/lib/og-cards.ts` holds the owner's exceptions.
   `cards.json` records each card's title, photo and alt; `tests/seo.spec.ts`
   fails when a page's title or first photo no longer matches its card.

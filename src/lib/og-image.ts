@@ -20,7 +20,7 @@ export const DEFAULT_OG_IMAGE: OgImage = {
   src: '/images/og-default.png',
   width: CARD_WIDTH,
   height: CARD_HEIGHT,
-  alt: 'Sinduri Guntupalli, open source enthusiast and positivity advocate, beside a line drawing of a bunny.',
+  alt: 'Sinduri Guntupalli, open source enthusiast and positivity advocate, beside a drawing of a rabbit jumping over a gold tile.',
 };
 
 /* Imported, not read from disk: the Worker renders /contact/send/ with no public/ to read. */

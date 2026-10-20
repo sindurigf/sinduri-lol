@@ -30,7 +30,7 @@ const bodyPx = (page: Page) =>
 const tab = (page: Page) => page.locator('[data-reading-tab]');
 const panel = (page: Page) => page.locator('#reading-tab-panel');
 const openTab = async (page: Page) => {
-  await tab(page).locator('.reading-tab-summary').click();
+  await tab(page).locator('.reading-tab-button').click();
   await expect(
     tab(page).getByRole('button', { name: /Drink Me/ }),
   ).toBeVisible();
@@ -254,10 +254,10 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
   }) => {
     await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
     await gotoSettled(page, '/about/');
-    const summary = tab(page).locator('.reading-tab-summary');
-    await expect(summary).toHaveAccessibleName('Aa Text Size');
+    const button = tab(page).locator('.reading-tab-button');
+    await expect(button).toHaveAccessibleName('Aa Text Size');
     await openTab(page);
-    await expect(summary).toHaveAttribute('aria-expanded', 'true');
+    await expect(button).toHaveAttribute('aria-expanded', 'true');
     const buttons = panel(page).getByRole('button');
     await expect(buttons).toHaveCount(3);
     await expect(buttons.nth(0)).toHaveAccessibleName('Drink Me');
@@ -269,7 +269,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
       'Back to 100 percent',
     );
     for (const box of await Promise.all([
-      summary.boundingBox(),
+      button.boundingBox(),
       ...(await buttons.all()).map((b) => b.boundingBox()),
     ])) {
       expect(Math.min(box!.width, box!.height)).toBeGreaterThanOrEqual(44);
@@ -279,13 +279,13 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     ).toBeVisible();
   });
 
-  test('the keyboard opens the reading tab and Escape closes it and returns focus to the summary (SC 2.1.1, 2.4.3)', async ({
+  test('the keyboard opens the reading tab and Escape closes it and returns focus to the button (SC 2.1.1, 2.4.3)', async ({
     page,
   }) => {
     await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
     await gotoSettled(page, '/about/');
-    const summary = tab(page).locator('.reading-tab-summary');
-    await summary.focus();
+    const button = tab(page).locator('.reading-tab-button');
+    await button.focus();
     await page.keyboard.press('Enter');
     await expect(panel(page)).toBeVisible();
     await page.keyboard.press('Tab');
@@ -294,7 +294,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     ).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(panel(page)).toBeHidden();
-    await expect(summary).toBeFocused();
+    await expect(button).toBeFocused();
   });
 
   test('a press outside the reading tab closes it and leaves focus where the press put it (SC 2.4.3)', async ({
@@ -305,7 +305,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     await openTab(page);
     await page.mouse.click(40, 400);
     await expect(panel(page)).toBeHidden();
-    await expect(tab(page).locator('.reading-tab-summary')).not.toBeFocused();
+    await expect(tab(page).locator('.reading-tab-button')).not.toBeFocused();
   });
 
   test('a press outside closes the tab while its script is still loading', async ({
@@ -318,7 +318,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     });
     await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
     await gotoSettled(page, '/about/');
-    await tab(page).locator('.reading-tab-summary').click();
+    await tab(page).locator('.reading-tab-button').click();
     await expect(panel(page)).toBeVisible();
     await page.mouse.click(40, 400);
     await expect(panel(page)).toBeHidden({ timeout: 500 });

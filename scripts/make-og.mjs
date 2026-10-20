@@ -2,8 +2,8 @@
 /*
  * Renders the sharing images in Chromium with Lexend and the site tokens:
  * public/images/og-default.png, the name card, and one card per built page
- * (src/lib/og-cards.ts): the page title on gold, the page's first photo or
- * the line bunny tile on a `background` strip. Run after `npm run build`.
+ * (src/lib/og-cards.ts): the page title on gold, the Lepus Ridet sticker under
+ * it, and the page's first photo or the header logo. Run after `npm run build`.
  *
  *   npm run build && npm run og
  */
@@ -29,7 +29,8 @@ const SITE_CARD = 'public/images/og-default.png';
 const DIST = 'dist/client';
 const FONT =
   'node_modules/@fontsource-variable/lexend/files/lexend-latin-wght-normal.woff2';
-const MARK = 'src/assets/bunny-dark.png';
+/* scripts/make-logo.mjs renders it from the same box as the header's rabbit. */
+const LOGO_RABBIT = 'artwork/logo-rabbit-og.png';
 const JPEG_QUALITY = 85;
 
 /* The 1.91:1 large-card crop; src/lib/og-image.ts declares the same size. */
@@ -37,29 +38,42 @@ const WIDTH = 1200;
 const HEIGHT = 630;
 const TAGLINE = ['Open source enthusiast', 'Positivity advocate'];
 /** A page title shrinks from this size until it fits the gold panel in three lines. */
-const TITLE_SIZE = { max: 96, min: 48, step: 2, maxHeight: 260 };
+const TITLE_SIZE = { max: 96, min: 48, step: 2, maxHeight: 260, clearance: 24 };
 
-/* The line bunny tile, the header's former logo, kept on the cards on purpose: 48px scaled up, proportions kept. */
+/* The header logo, scaled up: tile, edge, radius, shadow and rabbit keep their proportions. */
 const TILE_SCALE = 7;
 const TILE = {
   size: 48 * TILE_SCALE,
   edge: 4 * TILE_SCALE,
   radius: 14 * TILE_SCALE,
   shadow: 8 * TILE_SCALE,
-  mark: 24 * TILE_SCALE,
 };
-const STRIP_LEFT = 700;
-/* Whole, centered on the strip with its shadow: link previews crop the edges. */
-const TILE_LEFT =
-  STRIP_LEFT + (WIDTH - STRIP_LEFT - TILE.size - TILE.shadow) / 2;
-const TILE_TOP = (HEIGHT - TILE.size - TILE.shadow) / 2;
+/* The rabbit's box from the tile's padding box, as `--logo-rabbit-*` in global.css. */
+const pxToken = (name) => {
+  const found = new RegExp(`^\\s*${name}:\\s*(-?\\d+)px;`, 'm').exec(
+    readFileSync('src/styles/global.css', 'utf8'),
+  );
+  if (!found) throw new Error(`make-og: global.css defines no ${name} in px.`);
+  return Number(found[1]) * TILE_SCALE;
+};
+const RABBIT = {
+  left: pxToken('--logo-rabbit-left'),
+  top: pxToken('--logo-rabbit-top'),
+  width: pxToken('--logo-rabbit-width'),
+  height: pxToken('--logo-rabbit-height'),
+};
+/* The gold card's right part, where the logo or a photo sits. */
+const ART_LEFT = 700;
+/* Whole, with the rabbit's ears and the shadow inside the card: link previews crop the edges. */
+const TILE_LEFT = 745;
+const TILE_TOP = 165;
 /*
  * Two places a whole photo fits clear of the stickers: tall beside them, or
  * wide between them. A photo takes whichever shows it larger.
  */
 const PHOTO_BOXES = [
-  { left: STRIP_LEFT + 130, top: 60, width: 310, height: 500 },
-  { left: STRIP_LEFT + 40, top: 150, width: 400, height: 330 },
+  { left: ART_LEFT + 130, top: 60, width: 310, height: 500 },
+  { left: ART_LEFT + 40, top: 150, width: 400, height: 330 },
 ];
 const PHOTO_EDGE = 4;
 const PHOTO_SHADOW = 10;
@@ -78,7 +92,7 @@ const dataUri = (path, type) =>
   `data:${type};base64,${readFileSync(path).toString('base64')}`;
 
 const tileMarkup = () =>
-  `<div class="tile"><img alt="" src="${dataUri(MARK, 'image/png')}"></div>`;
+  `<div class="tile"><img alt="" src="${dataUri(LOGO_RABBIT, 'image/png')}"></div>`;
 const photoMarkup = (path) =>
   `<div class="photo"><img alt="" src="${dataUri(path, imageMime(path))}"></div>`;
 
@@ -86,26 +100,24 @@ const page = (art) => `<!doctype html><html><head><meta charset="utf-8"><style>
 @font-face{font-family:'Lexend Variable';src:url(${dataUri(FONT, 'font/woff2')}) format('woff2');font-weight:100 900}
 html,body{margin:0}
 .og{position:relative;width:${WIDTH}px;height:${HEIGHT}px;overflow:hidden;background:${TOKENS.gold};font-family:'Lexend Variable';color:${TOKENS.goldText}}
-.strip{position:absolute;inset:0 0 0 ${STRIP_LEFT}px;background:${TOKENS.background}}
-.text{position:absolute;left:80px;top:0;bottom:62px;width:${STRIP_LEFT - 110}px;display:flex;flex-direction:column}
-.name{margin-top:150px;font-size:80px;font-weight:900;line-height:.94;text-transform:uppercase;letter-spacing:.01em}
+.text{position:absolute;left:80px;top:0;bottom:62px;width:${ART_LEFT - 110}px;display:flex;flex-direction:column}
+.name{margin-top:96px;font-size:80px;font-weight:900;line-height:.94;text-transform:uppercase;letter-spacing:.01em}
 .eyebrow{margin-top:120px;font-size:26px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
 .title{margin-top:24px;font-weight:900;line-height:.98;text-transform:uppercase;letter-spacing:.01em}
-.tag{margin-top:40px;font-size:30px;line-height:1.35}
+.tag{margin-top:30px;font-size:30px;line-height:1.35}
 .domain{margin-top:auto;font-size:24px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
 .tile{position:absolute;left:${TILE_LEFT}px;top:${TILE_TOP}px;box-sizing:border-box;width:${TILE.size}px;height:${TILE.size}px;display:grid;place-items:center;background:${TOKENS.gold};border:${TILE.edge}px solid ${TOKENS.fillEdge};border-radius:${TILE.radius}px;box-shadow:${TILE.shadow}px ${TILE.shadow}px 0 ${TOKENS.bunny};rotate:5deg}
-.tile img{height:${TILE.mark}px}
+.tile img{position:absolute;left:${RABBIT.left}px;top:${RABBIT.top}px;width:${RABBIT.width}px;height:${RABBIT.height}px}
 .photo{position:absolute;display:flex;align-items:center;justify-content:center}
 .photo img{box-sizing:border-box;border:${PHOTO_EDGE}px solid ${TOKENS.fillEdge};box-shadow:${PHOTO_SHADOW}px ${PHOTO_SHADOW}px 0 ${TOKENS.pink};rotate:2deg}
-.sticker{position:absolute;padding:14px 28px;background:${TOKENS.background};font-size:44px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;box-shadow:10px 10px 0 ${TOKENS.pink};rotate:-3deg}
-.lepus{left:${STRIP_LEFT - 120}px;top:40px;color:${TOKENS.gold}}
-.ridet{left:${STRIP_LEFT - 158}px;top:500px;color:${TOKENS.pinkText}}
+.sticker{display:inline-flex;align-self:flex-start;margin-top:34px;rotate:-3deg;box-shadow:10px 10px 0 ${TOKENS.pink}}
+.sticker span{padding:14px 26px;background:${TOKENS.background};font-size:40px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+.sticker span+span{border-left:4px solid ${TOKENS.gold}}
+.lepus{color:${TOKENS.gold}}
+.ridet{color:${TOKENS.pinkText}}
 </style></head><body><div class="og">
-<div class="strip"></div>
 ${art}
-<div class="sticker lepus">Lepus</div>
-<div class="sticker ridet">Ridet</div>
-<div class="text"><div class="name"></div><div class="eyebrow"></div><div class="title"></div><div class="tag"></div><div class="domain"></div></div>
+<div class="text"><div class="name"></div><div class="eyebrow"></div><div class="title"></div><div class="sticker" lang="la"><span class="lepus">Lepus</span><span class="ridet">Ridet</span></div><div class="tag"></div><div class="domain"></div></div>
 </div></body></html>`;
 
 /* textContent, not markup: page titles never become HTML. */
@@ -151,13 +163,19 @@ const fill = (tab, copy) =>
         image.style.height = `${best.height - edge}px`;
       }
 
+      /* The sticker sits under the title and must stay clear of the domain line. */
+      const crowded = () =>
+        document.querySelector('.sticker').getBoundingClientRect().bottom +
+          size.clearance >
+        document.querySelector('.domain').getBoundingClientRect().top;
       const title = document.querySelector('.title');
       if (title) {
         let px = size.max;
         title.style.fontSize = `${px}px`;
         while (
           (title.scrollWidth > title.clientWidth ||
-            title.getBoundingClientRect().height > size.maxHeight) &&
+            title.getBoundingClientRect().height > size.maxHeight ||
+            crowded()) &&
           px > size.min
         ) {
           px -= size.step;
@@ -167,7 +185,8 @@ const fill = (tab, copy) =>
       const fitted = document.querySelector('.title, .name');
       return (
         fitted.scrollWidth <= fitted.clientWidth &&
-        fitted.getBoundingClientRect().height <= size.maxHeight
+        fitted.getBoundingClientRect().height <= size.maxHeight &&
+        !crowded()
       );
     },
     { copy, size: TITLE_SIZE, boxes: PHOTO_BOXES, edge: PHOTO_EDGE },
@@ -218,7 +237,7 @@ const cardFor = (route, html) => {
 
 const altFor = ({ title, photo, photoAlt }) =>
   photo === null
-    ? `${title}, ${SITE_NAME}, beside a line drawing of a bunny.`
+    ? `${title}, ${SITE_NAME}, beside a drawing of a rabbit jumping over a gold tile.`
     : `${title}, ${SITE_NAME}${photoAlt ? `, beside a photo: ${photoAlt}` : `, beside a photo of ${PERSON_NAME}.`}`;
 
 const browser = await chromium.launch();
