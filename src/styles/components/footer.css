@@ -14,22 +14,10 @@
     justify-items: center;
   }
 
-  .footer-name {
-    font-size: var(--text-footer-name);
-    line-height: var(--text-footer-name--line-height);
-    letter-spacing: var(--tracking-title);
-    text-align: center;
-
-    @apply font-black uppercase text-text;
-  }
-
   /* Phone: one full-width row per link. */
   .footer-pages,
   .footer-policies {
     justify-self: stretch;
-  }
-
-  .footer-pages {
     margin-top: --spacing(8);
   }
 
@@ -46,10 +34,6 @@
     text-decoration: underline;
     text-decoration-thickness: var(--underline-thin);
     text-underline-offset: var(--underline-offset);
-  }
-
-  .footer-social {
-    margin-top: --spacing(8);
   }
 
   /*
@@ -141,15 +125,11 @@
     --tilt: -3deg;
   }
 
-  .footer-base {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: --spacing(4);
-    margin-top: --spacing(8);
-  }
-
+  /* Shrink-wrapped and clear of the rabbit, which stands up to its own height above the band. */
   .footer-copyright {
+    display: block;
+    width: fit-content;
+    margin: --spacing(8) auto var(--size-footer-rabbit);
     font-size: var(--text-copyright);
     line-height: var(--text-copyright--line-height);
     text-align: center;
@@ -158,107 +138,68 @@
   }
 
   /*
-   * 266x118 viewBox, 220px wide on a phone, 1:1 from `md`; the ground sits 8
-   * units up, on the footer's bottom edge.
+   * The name as display type on a gold band at the page's end; the rabbit sits
+   * on its last letter. The band is the container the type is sized by. A gold
+   * block, not `.surface-gold`: it holds one word in ink and no controls.
    */
-  .footer-tuft {
-    display: block;
-    width: var(--size-tuft);
-    max-width: 100%;
-    height: auto;
-    overflow: visible;
-    /* Rabbit viewBox units. The closed-eye line stays just over half the edge so it reads as a line, not a second outline. */
-    --rabbit-edge-width: 6;
-    --rabbit-line-width: 3.4;
-  }
-
-  .footer-tuft .tuft-back {
-    fill: var(--color-border);
-  }
-
-  /* The sticker rabbit: one ink edge round all its parts, gold fill, pink throw. */
-  .footer-tuft .rabbit-edge {
-    fill: var(--color-gold-text);
-    stroke: var(--color-gold-text);
-    stroke-width: var(--rabbit-edge-width);
-  }
-
-  /* After the edge, which it outranks: the throw is the edge's shape in pink. */
-  .footer-tuft .rabbit-throw .rabbit-edge {
-    fill: var(--color-pink);
-    stroke: var(--color-pink);
-  }
-
-  .footer-tuft .rabbit-body {
-    fill: var(--color-gold);
-  }
-
-  .footer-tuft .rabbit-ink {
-    fill: var(--color-gold-text);
-  }
-
-  .footer-tuft .rabbit-line {
-    fill: none;
-    stroke: var(--color-gold-text);
-    stroke-width: var(--rabbit-line-width);
-    stroke-linecap: round;
-  }
-
-  .footer-tuft .rabbit-ear {
-    fill: var(--color-pink);
-  }
-
-  .footer-tuft .rabbit-shine {
-    fill: var(--color-light-ground);
+  .footer-name {
+    position: relative;
+    container-type: inline-size;
+    padding: --spacing(4) --spacing(6) --spacing(3);
+    border-top: var(--block-edge) solid var(--color-fill-edge);
+    background-color: var(--color-block-gold);
+    color: var(--color-gold-text);
   }
 
   /*
-   * Source order is name, pages, policies, stickers, and reads the same
-   * row-major. `space-between` equalizes the gaps; the column gap is a floor,
-   * kept small so the row fits at the md breakpoint.
+   * Shrink-wrapped to its widest line (min-content: one word a line below
+   * 48rem), so the rabbit's `right: 0` lands on the first line's last letter.
+   */
+  .footer-name-text {
+    position: relative;
+    display: inline-block;
+    width: min-content;
+    font-size: var(--text-footer-name-fluid);
+    line-height: var(--text-footer-name--line-height);
+
+    @apply font-black uppercase;
+  }
+
+  /* Feet on the cap line. */
+  .footer-rabbit {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% - var(--footer-rabbit-sink));
+    width: auto;
+    height: var(--size-footer-rabbit);
+    pointer-events: none;
+  }
+
+  /*
+   * Source order is stickers, pages, policies, and reads the same row-major.
+   * `space-between` equalizes the gaps; the column gap is a floor, kept small
+   * so the row fits at the md breakpoint.
    */
   @media (width >= 48rem) {
     .footer-top {
       grid-template-columns: repeat(3, auto);
-      grid-template-rows: auto 1fr;
       justify-content: space-between;
       justify-items: start;
       align-items: start;
       column-gap: --spacing(8);
     }
 
-    .footer-name {
-      grid-column: 1;
-      grid-row: 1;
-      text-align: left;
-    }
-
     .footer-pages,
     .footer-policies {
-      grid-row: 1 / span 2;
       justify-self: start;
       margin-top: 0;
       padding-top: --spacing(2);
-    }
-
-    .footer-pages {
-      grid-column: 2;
-    }
-
-    .footer-policies {
-      grid-column: 3;
     }
 
     /* Rows stay --spacing-target tall; the padding insets the label. */
     .footer-pages a,
     .footer-policies a {
       padding-block: --spacing(2);
-    }
-
-    .footer-social {
-      grid-column: 1;
-      grid-row: 2;
-      margin-top: --spacing(6);
     }
 
     .footer-stickers {
@@ -271,19 +212,14 @@
       left: 0;
     }
 
-    .footer-base {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: flex-end;
-    }
-
     .footer-copyright {
-      padding-bottom: --spacing(6);
+      margin-inline: 0;
       text-align: left;
     }
 
-    .footer-tuft {
-      width: var(--size-tuft-md);
+    .footer-name-text {
+      width: max-content;
+      font-size: var(--text-footer-name-fluid-md);
     }
   }
 
@@ -306,34 +242,14 @@
   /*
    * Forced colors: SVGs back to `auto` from Chromium's `preserve-parent-color`
    * (tests/forced-colors.spec.ts); icons get LinkText because `auto` does not
-   * force `fill`. The tuft drops its shadow.
+   * force `fill`.
    */
-  .footer-tuft,
-  .footer-tuft *,
   .footer-sticker svg,
   .footer-sticker svg * {
     forced-color-adjust: auto;
   }
 
   @media (forced-colors: active) {
-    .footer-tuft .tuft-back,
-    .footer-tuft :is(.rabbit-edge, .rabbit-ink) {
-      fill: CanvasText;
-      stroke: CanvasText;
-    }
-
-    .footer-tuft .rabbit-line {
-      stroke: CanvasText;
-    }
-
-    .footer-tuft .rabbit-body {
-      fill: Canvas;
-    }
-
-    .footer-tuft :is(.rabbit-throw, .rabbit-ear, .rabbit-shine) {
-      display: none;
-    }
-
     .footer-sticker svg {
       fill: LinkText;
     }

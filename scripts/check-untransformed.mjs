@@ -29,6 +29,10 @@ const SERVED_AS_IS = new Map([
     'the hero canvas draws its frames with drawImage; it is a WebP atlas already.',
   ],
   [
+    'bunny-footer.webp',
+    'the runtime image endpoint reads it for /contact/send/, which renders the footer on demand.',
+  ],
+  [
     'hero-still-short.webp',
     'layout.css links it as the hero background under `scripting: none`; ' +
       'scripts/make-hero-still.mjs writes it as WebP already.',
