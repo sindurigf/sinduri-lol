@@ -107,7 +107,7 @@ dialog
   .querySelector('[data-drush-close]')!
   .addEventListener('click', () => dialog.close());
 
-const open = (lines?: readonly string[]): void => {
+const openDialog = (lines?: readonly string[]): void => {
   if (!dialog.open) dialog.showModal();
   if (lines) show(lines);
   input.focus();
@@ -122,7 +122,7 @@ let handled = '';
 const check = (): void => {
   if (flags.drushOpen !== undefined) {
     delete flags.drushOpen;
-    open();
+    openDialog();
   }
   const typed = flags.drushTyped ?? '';
   const command = Object.keys(OUTPUT).find((name) => typed.endsWith(name));
@@ -138,7 +138,7 @@ const check = (): void => {
     });
   } else {
     input.value = command;
-    open(run(command));
+    openDialog(run(command));
   }
 };
 document.addEventListener('drush', check);
