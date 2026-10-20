@@ -252,6 +252,10 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
   with the ink edge (`/career`); a linked chip keeps its dark fill with a
   `gold-text` edge.
 - A whole gold section (hero slab, gold band) is also a `.gold-column`.
+- Exception: the footer name band (register row 11) is a `block-gold` fill
+  with `gold-text` type and a `fill-edge` top, not `.surface-gold`. It holds
+  the name and the rabbit and never a control, so there is nothing for
+  `.surface-gold` to repaint.
 - Keep the link underline: `gold-link` is 1.01 against `gold-text`, so the
   underline carries SC 1.4.1.
 - `gold-btn-label` sits only on `.btn-gold-primary`'s `#131313` fill (18.58),
@@ -361,7 +365,7 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 | `text-slide-title-frame`  | 26     | 65     | 1           | 900    | Slide title in full screen, by frame  |
 | `text-slide-number-frame` | 72     | 160    | 1           | 900    | Part number in full screen, by frame  |
 | `text-copyright`          | 20     | 20     | 1.2         | 900    | Footer copyright                      |
-| `text-footer-name`        | 40     | fills  | 0.82        | 900    | Footer name band, sized to its width  |
+| `text-footer-name`        | fills  | fills  | 0.82        | 900    | Footer name band, sized to its width  |
 | `text-section-number`     | 21     | 28     | 1           | 900    | Category glyph tile                   |
 | `text-quote-mark`         | 64     | 144    | 0.75        | 900    | About kindness quote mark             |
 
@@ -402,7 +406,7 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 - The talk cover keeps the fluid `text-deck-cover`; the deck has its own
   rule ([ACCESSIBILITY.md](../ACCESSIBILITY.md) gap 7).
 - Posts use `text-post-*`. Do not raise them to the page scale.
-- The footer name fills its band by container width (`--text-footer-name-fluid`, `-md`), two lines below 48rem, one from 48rem; 40px is the floor.
+- The footer name fills its band by container width (`--text-footer-name-fluid`, `-md`), two lines below 48rem, one from 48rem; it has no rem floor, so a larger default font never pushes it past the band.
 - Tracking: `--tracking-heading` -0.05em on h1 and h2, `--tracking-title`
   -0.02em on h3, post and slide titles, `--tracking-label`
   0.1em on labels and buttons.

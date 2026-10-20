@@ -18,10 +18,6 @@
   .footer-pages,
   .footer-policies {
     justify-self: stretch;
-  }
-
-  .footer-pages,
-  .footer-policies {
     margin-top: --spacing(8);
   }
 
@@ -155,11 +151,15 @@
     color: var(--color-gold-text);
   }
 
-  /* Shrink-wrapped, so the rabbit's `right: 0` lands on the last letter. */
+  /*
+   * Shrink-wrapped to its widest line (min-content: one word a line below
+   * 48rem), so the rabbit's `right: 0` lands on the first line's last letter.
+   */
   .footer-name-text {
     position: relative;
     display: inline-block;
-    font-size: max(var(--text-footer-name), var(--text-footer-name-fluid));
+    width: min-content;
+    font-size: var(--text-footer-name-fluid);
     line-height: var(--text-footer-name--line-height);
 
     @apply font-black uppercase;
@@ -218,7 +218,8 @@
     }
 
     .footer-name-text {
-      font-size: max(var(--text-footer-name), var(--text-footer-name-fluid-md));
+      width: max-content;
+      font-size: var(--text-footer-name-fluid-md);
     }
   }
 

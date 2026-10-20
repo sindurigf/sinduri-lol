@@ -367,7 +367,6 @@
    * "Lepus Ridet" in the footer, one line in the 288px phone box: 32px
    * uppercase Lexend 900 is about 250px wide.
    */
-  --text-footer-name: 2.5rem;
   --text-footer-name--line-height: 0.82;
   /*
    * Fills the band: its width less padding over the name's width in em, plus
