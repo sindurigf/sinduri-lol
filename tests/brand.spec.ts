@@ -5,7 +5,11 @@ import { contrastRows, ratio } from '../scripts/contrast-table.mjs';
 import { ENGINE_INVARIANT, NODE } from './tags';
 import { builtHtml } from './routes';
 import { readFileSync } from 'node:fs';
-import { BRAND_PATH, BRAND_SECTIONS } from '../src/lib/brand-sections';
+import {
+  BRAND_PATH,
+  BRAND_SECTIONS,
+  groupSize,
+} from '../src/lib/brand-sections';
 import { roles } from '../src/lib/brand-roles';
 
 /*
@@ -300,6 +304,29 @@ test.describe('/brand', () => {
       await context.close();
     });
   }
+
+  test('the fact strip counts the Foundations and Components sections by group', async ({
+    page,
+  }) => {
+    await gotoSettled(page, BRAND_PATH);
+    const facts = await page
+      .locator('.fact-strip')
+      .first()
+      .evaluate((dl) =>
+        Object.fromEntries(
+          [...dl.querySelectorAll('dt')].map((dt) => [
+            dt.textContent?.trim(),
+            dt.nextElementSibling?.textContent?.trim(),
+          ]),
+        ),
+      );
+    expect(facts.Foundations).toBe(String(groupSize('Foundations')));
+    expect(facts.Components).toBe(String(groupSize('Components')));
+    expect(
+      Object.keys(facts),
+      'a fact still counts all sections',
+    ).not.toContain('Sections');
+  });
 
   test('each section heading is named for the section alone', async ({
     page,
