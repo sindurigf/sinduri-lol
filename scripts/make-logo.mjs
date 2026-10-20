@@ -128,7 +128,7 @@ function iconArtwork() {
   const t = ICON_TILE;
   return `<rect x="${t.x + t.throw}" y="${t.y + t.throw}" width="${t.size}" height="${t.size}" rx="${t.rx}" fill="${PINK}"/>
 <rect x="${t.x}" y="${t.y}" width="${t.size}" height="${t.size}" rx="${t.rx}" fill="${GOLD}" stroke="${INK}" stroke-width="${t.edge}"/>
-<path id="r" d="${sil}" fill="${INK}" stroke="${INK}" stroke-width="${ICON_POSE.halo * 2}" stroke-linejoin="round"/><use href="#r" fill="${WHITE}" stroke="none"/>${fill(bake(largest(TRACE.pink), m), EAR)}${fill(bake(largest(TRACE.eye), m), INK)}`;
+<defs><path id="r" d="${sil}"/></defs><use href="#r" fill="${INK}" stroke="${INK}" stroke-width="${ICON_POSE.halo * 2}" stroke-linejoin="round"/><use href="#r" fill="${WHITE}"/>${fill(bake(largest(TRACE.pink), m), EAR)}${fill(bake(largest(TRACE.eye), m), INK)}`;
 }
 
 const svg = (viewBox, body) =>
