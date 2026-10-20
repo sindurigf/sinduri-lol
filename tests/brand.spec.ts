@@ -1,12 +1,12 @@
 import { expect, test, type Locator, type Page } from './test';
 import { gotoSettled } from './settle';
 import { PAGE_HELPERS } from './contrast';
-import { contrastRows } from '../scripts/contrast-table.mjs';
+import { contrastRows, ratio } from '../scripts/contrast-table.mjs';
 import { ENGINE_INVARIANT, NODE } from './tags';
 import { builtHtml } from './routes';
 import { readFileSync } from 'node:fs';
 import { BRAND_PATH, BRAND_SECTIONS } from '../src/lib/brand-sections';
-import { blockGroups } from '../src/lib/brand-blocks';
+import { roles } from '../src/lib/brand-roles';
 
 /*
  * /brand states the design system's facts; these tests hold them to the CSS the
@@ -203,108 +203,90 @@ test.describe('/brand', () => {
   }
 
   for (const theme of THEMES) {
-    test(`on a ${theme} page each color block states the ratio of the colors it paints (SC 1.4.3, 1.4.6, 1.4.11)`, async ({
+    test(`on a ${theme} page each color role states its swatches' hex and the ratio of its pair (SC 1.4.3, 1.4.6, 1.4.11)`, async ({
       browser,
     }) => {
       const { context, page } = await pageInTheme(browser, theme, BRAND_PATH);
-      let measured = 0;
-      for (const group of blockGroups) {
+      const sizes = new Set<string>();
+      const toHex = (css: string) =>
+        `#${(css.match(/\d+/g) ?? [])
+          .slice(0, 3)
+          .map((v) => Number(v).toString(16).padStart(2, '0'))
+          .join('')}`.toUpperCase();
+      for (const role of roles) {
         for (const mode of THEMES) {
-          const cells = await half(page, group.id, mode)
-            .locator('td')
-            .evaluateAll((tds) =>
-              tds.map((td) => {
-                const cell = td.querySelector<HTMLElement>('.block-cell')!;
-                const sample = td.querySelector<HTMLElement>(
-                  '.block-sample, .block-edge',
-                )!;
-                const text = sample.classList.contains('block-sample');
-                const style = getComputedStyle(sample);
-                return {
-                  pair: td.getAttribute('data-pair') ?? '',
-                  text,
-                  stated: td.querySelector('.block-ratio')!.textContent!,
-                  verdict: td.querySelector('.block-verdict')!.textContent!,
-                  fg: text ? style.color : style.borderTopColor,
-                  bg: getComputedStyle(cell).backgroundColor,
-                };
-              }),
-            );
+          const shown = half(page, role.id, mode);
+          const rows = await shown.locator('.role-token').evaluateAll((items) =>
+            items.map((li) => {
+              const swatch = li.querySelector<HTMLElement>('.role-swatch')!;
+              const box = swatch.getBoundingClientRect();
+              return {
+                token: li.getAttribute('data-token') ?? '',
+                stated:
+                  li.querySelector('.role-hex')?.textContent?.trim() ?? '',
+                paints: getComputedStyle(swatch).backgroundColor,
+                size: `${Math.round(box.width)}x${Math.round(box.height)}`,
+              };
+            }),
+          );
           expect(
-            cells.length,
-            `${group.id} ${mode} half draws no block`,
-          ).toBeGreaterThan(0);
-          const result = (await page.evaluate(`(() => {
-            ${PAGE_HELPERS}
-            return ${JSON.stringify(cells)}.map((c) => ratio(parse(c.fg), parse(c.bg)).toFixed(${RATIO_DIGITS}));
-          })()`)) as string[];
-          const wrong = cells.flatMap((cell, i) => {
-            const need = cell.text ? 7 : 3;
-            const label = `${group.id} ${mode} ${cell.pair}`;
-            return [
-              ...(cell.stated === `${result[i]}:1`
-                ? []
-                : [`${label}: states ${cell.stated}, paints ${result[i]}:1`]),
-              ...(Number(result[i]) >= need
-                ? []
-                : [`${label}: paints ${result[i]}:1, under ${need}`]),
-              ...(cell.verdict === (cell.text ? 'AAA' : '3:1 pass')
-                ? []
-                : [`${label}: says ${cell.verdict}`]),
-            ];
-          });
+            rows.map((row) => row.token),
+            `${role.id} lists other tokens than src/lib/brand-roles.ts`,
+          ).toEqual(role.tokens.map((token) => token.token));
+          const hex = await resolveTokens(
+            shown,
+            rows.map((row) => row.token),
+          );
+          const wrong = rows.flatMap((row) => [
+            ...(hex[row.token] === row.stated.toUpperCase()
+              ? []
+              : [
+                  `${role.id} ${mode} ${row.token}: states ${row.stated}, the token is ${hex[row.token]}`,
+                ]),
+            ...(toHex(row.paints) === row.stated.toUpperCase()
+              ? []
+              : [
+                  `${role.id} ${mode} ${row.token}: states ${row.stated}, the swatch paints ${toHex(row.paints)}`,
+                ]),
+          ]);
           expect(
             wrong,
-            `a ${mode} block differs from the colors it paints`,
+            'a stated hex differs from its token or swatch',
           ).toEqual([]);
-          measured += cells.length;
-        }
-      }
-      expect(measured, 'no color block was measured').toBeGreaterThan(0);
-      await context.close();
-    });
-  }
+          for (const row of rows) sizes.add(row.size);
 
-  for (const theme of THEMES) {
-    test(`on a ${theme} page each color row states the hex of its token, and each table is captioned in words`, async ({
-      browser,
-    }) => {
-      const { context, page } = await pageInTheme(browser, theme, BRAND_PATH);
-      const partName = (id: string) =>
-        BRAND_SECTIONS.flatMap((s) => s.parts).find((p) => p.id === id)!.name;
-      for (const group of blockGroups) {
-        for (const mode of THEMES) {
-          const shown = half(page, group.id, mode);
-          await expect(
-            shown.locator('caption'),
-            `${group.id} ${mode} caption runs its words together`,
-          ).toHaveText(
-            `${partName(group.id)}, ${mode} mode: the ratio of each pair`,
-          );
-          const rows = await shown
-            .locator('tbody th[scope="row"]')
-            .evaluateAll((ths) =>
-              ths.map((th) => ({
-                token: th.getAttribute('data-token') ?? '',
-                stated:
-                  th.querySelector('.block-hex')?.textContent?.trim() ?? '',
-              })),
-            );
-          expect(rows.length, `${group.id} ${mode} has no row`).toBeGreaterThan(
-            0,
-          );
-          const hex = await resolveTokens(shown, [
-            ...new Set(rows.map((row) => row.token)),
-          ]);
-          const wrong = rows
-            .filter((row) => hex[row.token] !== row.stated.toUpperCase())
-            .map(
-              (row) =>
-                `${group.id} ${mode} ${row.token}: states ${row.stated}, the half paints ${hex[row.token]}`,
-            );
-          expect(wrong, 'a stated hex differs from its token').toEqual([]);
+          const read = await shown.locator('.role-read').evaluate((p) => ({
+            fg: (p as HTMLElement).dataset.fg ?? '',
+            bg: (p as HTMLElement).dataset.bg ?? '',
+            kind: (p as HTMLElement).dataset.kind ?? '',
+            stated: p.querySelector('.role-ratio')?.textContent ?? '',
+            verdict: p.querySelector('.role-verdict')?.textContent ?? '',
+          }));
+          const pair = await resolveTokens(shown, [read.fg, read.bg]);
+          const value = ratio(pair[read.fg]!, pair[read.bg]!) as number;
+          const text = read.kind === 'text';
+          expect(
+            read.stated,
+            `${role.id} ${mode}: ${read.fg} on ${read.bg} states another ratio than its colors give`,
+          ).toBe(`${value.toFixed(RATIO_DIGITS)}:1`);
+          expect(
+            value,
+            `${role.id} ${mode}: ${read.fg} on ${read.bg} is under its target`,
+          ).toBeGreaterThanOrEqual(text ? 7 : 3);
+          expect(
+            read.verdict,
+            `${role.id} ${mode} states the wrong verdict`,
+          ).toBe(text ? 'AAA' : '3:1 pass');
+          expect(
+            await shown.locator('.role-read').innerText(),
+            `${role.id} ${mode}: the reading line runs its words together`,
+          ).toMatch(/^[a-z][a-z -]+: \d+\.\d\d:1, (AAA|3:1 pass)\.$/);
         }
       }
+      expect(
+        [...sizes],
+        'the swatches come in more than one size',
+      ).toHaveLength(1);
       await context.close();
     });
   }

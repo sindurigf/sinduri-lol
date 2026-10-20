@@ -736,10 +736,10 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
   so a dark block on the dark page or a light one on the light page never
   vanishes; blocks that touch share one edge (`tests/brand.spec.ts`). A part whose facts differ by mode, such
   as contrast, fills both halves live.
-- A part drawn as blocks (Color) puts each pair on its real ground and states
-  the ratio of its two colors, computed from the tokens by
-  `src/lib/brand-blocks.ts`. A text pair under 7 or an edge under 3 fails the
-  build.
+- Color is one part per role: its tokens as rows of one swatch size and shape,
+  then the one pair the role is read on, with the ratio computed from the
+  tokens by `src/lib/brand-roles.ts`. A text pair under 7 or an edge under 3,
+  for any text color on either ground, fails the build.
 - Each section is an id'd anchor; the retired `/brand/<section>/` routes
   redirect to it in `public/_redirects`, and the old single page's part ids
   are kept, so any old `/brand/#id` link still lands.

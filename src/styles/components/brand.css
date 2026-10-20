@@ -186,99 +186,33 @@
     }
   }
 
-  /*
-   * Pairs on their real ground. The table keeps row and column headers for
-   * assistive technology; below `sm` each row becomes a short grid so the cells
-   * keep their width.
-   */
-  .block-table {
-    @apply w-full table-fixed border-separate border-spacing-x-0
-      border-spacing-y-3;
+  /* One swatch size and shape for every color: only the fill differs. */
+  .role-swatch {
+    @apply block size-12 shrink-0 border-4 border-text;
   }
 
-  .block-table th {
-    @apply text-left align-middle;
+  .role-list {
+    @apply space-y-6;
   }
 
-  .block-table th:first-child {
-    @apply w-1/4 pr-4;
+  .role-token {
+    @apply flex items-start gap-6;
   }
 
-  .block-table td {
-    @apply p-0;
-  }
-
-  .block-cell {
-    @apply flex flex-col items-start gap-1 p-card-tight;
-  }
-
-  .block-edge {
-    @apply block size-8 border-4;
-  }
-
-  .block-hex {
+  .role-hex {
     @apply font-mono;
   }
 
-  .block-sample {
-    @apply leading-none;
+  .role-read {
+    @apply max-w-measure;
   }
 
-  .block-ratio {
-    @apply mt-2;
+  .role-ratio {
+    @apply font-mono;
   }
 
-  .block-verdict {
-    @apply font-normal;
-  }
-
-  .block-note {
-    @apply mt-2 font-normal;
-  }
-
-  @media (width < 40rem) {
-    .block-table :is(thead, tbody, tr, th, td) {
-      display: block;
-    }
-
-    .block-table tr {
-      display: grid;
-      grid-template-columns: repeat(var(--block-cols), minmax(0, 1fr));
-    }
-
-    .block-table[data-cols='1'] {
-      --block-cols: 1;
-    }
-
-    .block-table[data-cols='2'] {
-      --block-cols: 2;
-    }
-
-    .block-table[data-cols='3'] {
-      --block-cols: 3;
-    }
-
-    .block-table th[scope='row'] {
-      @apply w-auto pb-2 pr-0;
-
-      grid-column: 1 / -1;
-    }
-
-    .block-table td[colspan='2'] {
-      grid-column: span 2;
-    }
-
-    .block-table thead {
-      @apply mb-3;
-    }
-
-    .block-table thead th:first-child {
-      @apply sr-only;
-    }
-
-    .block-cell {
-      @apply p-3;
-    }
+  .role-verdict {
+    @apply font-black text-text;
   }
 
   /* An example whose control only works with a script is replaced by a note, like the header's menu trigger. */
