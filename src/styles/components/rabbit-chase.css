@@ -179,9 +179,29 @@
     left: 100%;
   }
 
+  /* System colors keep the chosen sign and the rabbit's pick apart from the rest. */
   @media (forced-colors: active) {
     :is(.crossroads-sign, .crossroads-page) {
       clip-path: none;
+      border-color: CanvasText;
+      background-color: Canvas;
+      color: LinkText;
+    }
+
+    .crossroads-sign {
+      color: ButtonText;
+    }
+
+    /* Text sits on a Canvas backplate here, so the cue is the edge and an underline. */
+    :is(.crossroads-sign[aria-pressed='true'], .crossroads-page-rabbit) {
+      border-color: Highlight;
+      color: Highlight;
+      text-decoration: underline;
+    }
+
+    /* A border keeps its color in forced colors; a background does not. */
+    .crossroads-pole {
+      border-left: var(--spacing-pole) solid CanvasText;
     }
   }
 }
