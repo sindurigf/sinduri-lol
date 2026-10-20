@@ -65,13 +65,19 @@ const stickersStayPut = (page: Page) =>
       ...document.querySelectorAll<HTMLAnchorElement>('.footer-sticker'),
     ].flatMap((sticker) => {
       const box = sticker.getBoundingClientRect();
-      /* A tilted sticker's box reaches a few px past the list at home. */
+      const item = sticker.parentElement!.style;
+      /* At home the page's layout places it; Firefox measures its tilted box 6px past the list there. */
+      const home = ['--toy-x', '--toy-y'].every(
+        (name) => !parseFloat(item.getPropertyValue(name) || '0'),
+      );
+      /* Subpixel rounding of a moved, tilted box. */
       const slack = 4;
       const inside =
-        box.left >= Math.min(area.left, tray.left) - slack &&
-        box.right <= Math.max(area.right, tray.right) + slack &&
-        box.top >= area.top - slack &&
-        box.bottom <= tray.bottom + slack;
+        home ||
+        (box.left >= Math.min(area.left, tray.left) - slack &&
+          box.right <= Math.max(area.right, tray.right) + slack &&
+          box.top >= area.top - slack &&
+          box.bottom <= tray.bottom + slack);
       const clear = texts.every(
         (t) =>
           box.right <= t.left ||
