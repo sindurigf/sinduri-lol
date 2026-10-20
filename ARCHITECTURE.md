@@ -366,13 +366,14 @@ in `wrangler.jsonc`).
   the `favicon.ico` frames, the traced logo rabbit and its share-card copy).
   Nothing in it ships.
 
-| Path                           | Artwork   | Goes on              | Used by                                      |
-| ------------------------------ | --------- | -------------------- | -------------------------------------------- |
-| `src/assets/bunny-dark.png`    | `#111111` | Gold, light surfaces | `Roundel.astro`, About                       |
-| `src/assets/logo-rabbit.png`   | Sticker   | The logo tile        | `Header.astro` logo tile                     |
-| `artwork/badge-white.png`      | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge               |
-| `public/images/og-default.png` | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
-| `public/images/og/*.jpg`       | Composite | n/a                  | `BaseLayout.astro`, every other page         |
+| Path                            | Artwork   | Goes on              | Used by                                      |
+| ------------------------------- | --------- | -------------------- | -------------------------------------------- |
+| `src/assets/bunny-dark.png`     | `#111111` | Gold, light surfaces | About                                        |
+| `src/assets/roundel-rabbit.png` | Sticker   | Hero slab edge       | `Roundel.astro`                              |
+| `src/assets/logo-rabbit.png`    | Sticker   | The logo tile        | `Header.astro` logo tile                     |
+| `artwork/badge-white.png`       | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge               |
+| `public/images/og-default.png`  | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
+| `public/images/og/*.jpg`        | Composite | n/a                  | `BaseLayout.astro`, every other page         |
 
 | Artwork             | on `#0B0B0B` | on `#1A1A1A` | on `#FFFFFF` | on `#FFC000` |
 | ------------------- | ------------ | ------------ | ------------ | ------------ |
@@ -459,8 +460,9 @@ in `wrangler.jsonc`).
 
 ### The favicon set
 
-- One source: `scripts/make-logo.mjs` renders the logo rabbit and every icon
-  from `artwork/rabbit-jump.json` (the jumping rabbit, traced) in Chromium.
+- One source: `scripts/make-logo.mjs` renders the logo rabbit, the roundel
+  rabbit and every icon from `artwork/rabbit-jump.json` (the jumping rabbit,
+  traced) in Chromium.
 - Logo (`src/assets/logo-rabbit.png`): the hairline die-cut rabbit with an ink
   throw, jumping the tile's top-right corner. The script prints its box;
   `--logo-rabbit-*` in `global.css` must match.

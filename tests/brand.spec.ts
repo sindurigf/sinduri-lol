@@ -793,7 +793,7 @@ test.describe('/brand', () => {
               [...document.querySelectorAll<HTMLElement>(selector)]
                 .filter((el) => el.checkVisibility() && !el.closest('[inert]'))
                 .map((el) => ({ el, box: el.getBoundingClientRect() }));
-            const roundels = boxes('main .hero-roundel');
+            const roundels = boxes('main .hero-roundel img');
             const controls = boxes(
               'main :is(summary, a[href], button, input, select, textarea, [tabindex])',
             );

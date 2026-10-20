@@ -100,7 +100,7 @@ blur, uppercase headings, tilted marks.
 | `surface`    | `#1A1A1A` | Inputs and controls off a block                            |
 | `border`     | `#FFC000` | Every boundary on the page: the gold edge                  |
 | `card-edge`  | none      | Card and plain slab edge; `#131313` in light mode          |
-| `fill-edge`  | `#131313` | Edge of a gold or light fill: buttons, roundel, logo tile  |
+| `fill-edge`  | `#131313` | Edge of a gold or light fill: buttons, logo tile           |
 | `text`       | `#E5E2E1` | Words                                                      |
 | `subtle`     | `#9EB6C7` | Captions, meta, helper text                                |
 | `gold`       | `#FFC000` | The accent, only where the style guide allows              |
@@ -501,10 +501,11 @@ with a comment beside it.
 
 - `--spacing-roundel` is `2 × --spacing-section − 56px`: 56px on a phone,
   128px from about 1150px.
-- Derived so the disc keeps at least 24px to the hero's last line and 32px to
-  the next content; it is lifted `--spacing(1)` above the edge to split the
-  space 24 and 32.
-- `--spacing-roundel-mark` is half the disc.
+- Derived so the roundel's box keeps at least 24px to the hero's last line and
+  32px to the next content; it is lifted `--spacing(1)` above the edge to split
+  the space 24 and 32.
+- The rabbit art bleeds an eighth past each side of the box; the tests measure
+  the drawn image, not the box.
 - `tests/page-hero.spec.ts` checks the roundel and the photo cover no text at
   320, 640, 768, 1023, 1024 and 1280px.
 
@@ -514,8 +515,7 @@ with a comment beside it.
   panel, popover, form field, gold area, table, topic tile, the
   `/accessibility` fact-strip rules, a prose `hr` and blockquote: the `edge`,
   `edge-t`, `edge-b` and `edge-l` utilities. Photos, controls, chips, the theme
-  switch, stickers and code blocks keep `border-4`. The roundel keeps
-  an 8px edge, a logo mark. No rule between sections.
+  switch, stickers and code blocks keep `border-4`. No rule between sections.
 - The default border color is `border`, set in the base layer (Tailwind 4
   defaults to `currentColor`); `gold-border` inside `.surface-gold`.
 - Each ground has one edge role. Dark page: `border` (gold). A block,
@@ -536,7 +536,7 @@ with a comment beside it.
 | `shadow-hard-cyan-object`   | A hovered linked card, in place of pink; a contact link brick fills cyan instead, its ring inside in ink              |
 | `shadow-hard-gold-border-4` | A card on gold                                                                                                        |
 | `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                       |
-| `shadow-hard-bunny-8`       | The logo tile, the roundel, the homepage stickers                                                                     |
+| `shadow-hard-bunny-8`       | The logo tile, the homepage stickers                                                                                  |
 | `shadow-hard-bunny-12`      | The line bunny tile on `/about`                                                                                       |
 
 - `bunny` is `pink`'s hex but stays pink in light mode, where `pink` turns
@@ -545,7 +545,7 @@ with a comment beside it.
 - Radius is 0 everywhere (base layer). `rounded-nav` (14px): the logo tile
   (`Header.astro`), the line bunny tile on the Lepus Ridet panel on `/about` and the Star
   Trek thumbnail on `/about`, square so the photo is not cropped. `rounded-full`:
-  the roundel. No pills; any other rounded corner is a bug.
+  no current use. No pills; any other rounded corner is a bug.
 
 ## Components
 
@@ -843,15 +843,16 @@ roundel.**
 - `PageHero` renders the roundel whenever it has no `image`. There is no prop.
 - About and every post with a `cover` have a photo, so no roundel.
 - The homepage is not a PageHero and has no roundel on its window.
-- `variant="hero"`: a gold disc of `--spacing-roundel` with a `gold-text` ring
-  (4px, 8px from `lg`), `bunny` 8px shadow, 3deg tilt. The page variant's 8px
-  ring is `fill-edge`, so it holds on a gold band.
+- The roundel is the jumping rabbit with no disc: flat white, a thick ink edge
+  and a hard `bunny` throw, drawn into `src/assets/roundel-rabbit.png` by
+  `scripts/make-logo.mjs`, tilted 3deg. `variant="hero"` sizes its box by
+  `--spacing-roundel`; the page variant is 96px, 128px from `lg`.
 - Its center sits `--spacing(1)` above the slab's bottom edge; its right side
   on the column's text edge (`.hero-roundel`).
 - On a plain tier it straddles the dark slab's bottom edge too, and is never
-  left off. The slab's bottom padding is half the disc plus 24px; the text
-  under it starts 32px past the disc's lower half.
-- The disc sets a slab's minimum bottom padding: half the disc plus its lift
+  left off. The slab's bottom padding is half the box plus 24px; the text
+  under it starts 32px past the box's lower half.
+- The roundel sets a slab's minimum bottom padding: half its box plus its lift
   plus 24px, 92px at 1280. Only `--spacing-section` clears it, so a thin slab
   is thin at the top only.
 - `tests/page-hero.spec.ts` lists each route's tier and holds it to the build:
@@ -870,8 +871,8 @@ roundel.**
 | Chip label                  | `text` on `surface`             | 13.51 | 4.5        |
 | Focus ring                  | `gold-text` on gold             | 11.32 | 3          |
 | Photo border                | `gold-text` on gold             | 11.32 | decoration |
-| Roundel ring on the slab    | `gold-text` on gold             | 11.32 | decoration |
-| Roundel disc off the slab   | gold on `background`            | 11.99 | decoration |
+| Roundel rabbit edge         | `fill-edge` on gold             | 11.32 | decoration |
+| Roundel rabbit off the slab | white fill on `background`      | 19.68 | decoration |
 | Photo and chip shadows      | pink on gold                    | 2.31  | decoration |
 
 - Pink never delimits anything on the slab: every control has its fill or a

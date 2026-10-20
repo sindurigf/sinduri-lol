@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /*
- * Renders the logo rabbit, its large copy for the share cards and every
- * favicon from one traced drawing,
+ * Renders the logo rabbit, its large copy for the share cards, the roundel
+ * rabbit and every favicon from one traced drawing,
  * artwork/rabbit-jump.json (the jumping rabbit, Canva AI traced with
  * Potrace), in Chromium with the site tokens.
  *
@@ -46,6 +46,12 @@ const ICON_STICKER = { rim: 4, pinkThrow: 4, inkThrow: 7 };
 const APP_SCALE = 0.8;
 const MASKABLE_SCALE = 0.62;
 
+/* The hero roundel: the rabbit with a thick ink edge and a hard pink throw, in a 100-unit box. */
+const ROUNDEL = { h: 88, rotate: -12, rim: 5, throw: 8, line: 0.6 };
+/* The art bleeds an eighth past each side of the box, as the image's wrapper does in Roundel.astro. */
+const ROUNDEL_BLEED = 100 / 8;
+const ROUNDEL_PX = 400;
+
 const SPECK = 35;
 const subpaths = (d) =>
   d
@@ -87,6 +93,16 @@ const placement = ({ h, rotate, left, bottom }) => {
 
 const fill = (d, color, stroke = 0) =>
   `<path d="${d}" fill="${color}"${stroke ? ` stroke="${color}" stroke-width="${stroke}" stroke-linejoin="round"` : ''}/>`;
+
+function roundelArt() {
+  const b = bbox(TRACE.sil);
+  const k = ROUNDEL.h / (b.y1 - b.y0);
+  const u = 1 / k;
+  const transform = `translate(50 50) rotate(${ROUNDEL.rotate}) scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
+  const edge = `<path d="${TRACE.sil}" fill="COLOR" stroke="COLOR" stroke-width="${2 * ROUNDEL.rim * u}" stroke-linejoin="miter" stroke-miterlimit="2"/>`;
+  return `<g transform="translate(${ROUNDEL.throw} ${ROUNDEL.throw})"><g transform="${transform}">${edge.replaceAll('COLOR', PINK)}</g></g>
+<g transform="${transform}">${edge.replaceAll('COLOR', INK)}${fill(TRACE.sil, WHITE)}${fill(largest(TRACE.pink), EAR)}${fill(line, INK, ROUNDEL.line * u)}${fill(largest(TRACE.eye), INK)}</g>`;
+}
 
 function sticker() {
   const { k, transform } = placement({
@@ -326,6 +342,29 @@ const ogLogo = await raster(
   box.height * OG_LOGO_SCALE,
 );
 writeFileSync('artwork/logo-rabbit-og.png', Buffer.from(ogLogo.png, 'base64'));
+
+const roundelSide = 100 + 2 * ROUNDEL_BLEED;
+const roundel = await raster(
+  svg(
+    `${-ROUNDEL_BLEED} ${-ROUNDEL_BLEED} ${roundelSide} ${roundelSide}`,
+    roundelArt(),
+  ),
+  ROUNDEL_PX,
+  ROUNDEL_PX,
+);
+const edgeRows = [0, ROUNDEL_PX - 1];
+const touches = roundel.alpha.some((a, i) => {
+  const [x, y] = [i % ROUNDEL_PX, Math.floor(i / ROUNDEL_PX)];
+  return a > 0 && (edgeRows.includes(x) || edgeRows.includes(y));
+});
+if (touches)
+  throw new Error(
+    'The roundel rabbit reaches its bleed edge; widen ROUNDEL_BLEED.',
+  );
+writeFileSync(
+  'src/assets/roundel-rabbit.png',
+  Buffer.from(roundel.png, 'base64'),
+);
 
 const png = async (source, size) =>
   Buffer.from((await raster(source, size, size)).png, 'base64');

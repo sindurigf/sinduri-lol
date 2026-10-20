@@ -107,7 +107,7 @@ export const BRAND_SECTIONS: readonly BrandSection[] = [
     anchor: 'shadows',
     title: 'Borders and Shadows',
     group: 'Foundations',
-    lead: 'Borders are gold on the dark page and ink on gold fills and in light mode. Cards and blocks have a 4px ink edge. Borders are 6px on panels and fields and 4px on controls and photos; the roundel keeps its 8px edge. Shadows are solid offset copies of the shape, with no blur. Corners are square.',
+    lead: 'Borders are gold on the dark page and ink on gold fills and in light mode. Cards and blocks have a 4px ink edge. Borders are 6px on panels and fields and 4px on controls and photos. Shadows are solid offset copies of the shape, with no blur. Corners are square.',
     rule: 'Hard shadows, no blur, square cards.',
     description:
       'Borders, hard shadows and square corners: the width of each edge, every shadow and what casts it.',

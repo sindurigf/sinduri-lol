@@ -20,9 +20,9 @@ const TALKS = join(ROOT, 'src/content/talks');
  */
 const SERVED_AS_IS = new Map([
   [
-    'bunny-dark.png',
-    'the runtime image endpoint reads it for /contact/send/, the one route ' +
-      'rendered on demand.',
+    'roundel-rabbit.png',
+    'the runtime image endpoint reads it for /contact/send/, which renders ' +
+      'the page hero on demand.',
   ],
   [
     'logo-rabbit.png',
