@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /*
- * Renders the logo rabbit and every favicon from one traced drawing,
+ * Renders the logo rabbit, its large copy for the share cards and every
+ * favicon from one traced drawing,
  * artwork/rabbit-jump.json (the jumping rabbit, Canva AI traced with
  * Potrace), in Chromium with the site tokens.
  *
@@ -27,6 +28,8 @@ const TRACE = JSON.parse(readFileSync('artwork/rabbit-jump.json', 'utf8'));
 const TILE = 48;
 const BORDER = 4;
 const LOGO_SCALE = 2;
+/* The share cards draw the tile at 7x (TILE_SCALE in scripts/make-og.mjs); this renders the rabbit at 2x of that. */
+const OG_LOGO_SCALE = 14;
 
 /* In tile px, inside the border: the rabbit's height, tilt and where its box sits. */
 const LOGO_POSE = { h: 52, rotate: -12, left: 10, bottom: 36 };
@@ -317,6 +320,12 @@ const logo = await raster(
   box.height * LOGO_SCALE,
 );
 writeFileSync('src/assets/logo-rabbit.png', Buffer.from(logo.png, 'base64'));
+const ogLogo = await raster(
+  svg(`${box.left} ${box.top} ${box.width} ${box.height}`, sticker()),
+  box.width * OG_LOGO_SCALE,
+  box.height * OG_LOGO_SCALE,
+);
+writeFileSync('artwork/logo-rabbit-og.png', Buffer.from(ogLogo.png, 'base64'));
 
 const png = async (source, size) =>
   Buffer.from((await raster(source, size, size)).png, 'base64');
