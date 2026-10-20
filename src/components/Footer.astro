@@ -6,10 +6,12 @@ import {
   SOCIAL_PROFILES,
   profileLinkName,
 } from '../lib/profiles';
-import { SITE_NAME } from '../lib/site';
 import { TALKS_PATH } from '../lib/paths';
+import { SITE_NAME } from '../lib/site';
 /* Hashed under /_astro/ and cached once, instead of inline on every page. */
 import socialIcons from '../assets/social-icons.svg?url';
+/* `?worker&url`: a separate file, so no Vite preload helper, loaded by src under Trusted Types. */
+import onDemandRegistry from '../scripts/on-demand.ts?worker&url';
 import toyLoader from '../scripts/toy-loader.ts?worker&url';
 import toyApp from '../scripts/toy.ts?worker&url';
 
@@ -33,7 +35,13 @@ const POLICY_LINKS = [
 
 const current = (href: string) => ariaCurrent(Astro.url.pathname, href);
 
-/* A slide deck keeps its script budget for the deck: no toys there. */
+/* Feature name to its `?worker&url` file; its trigger carries the file as `data-on-demand`. */
+const FEATURES: Record<string, string> = {};
+
+/* A slide deck keeps its script budget for the deck. */
+const onDemand =
+  Object.keys(FEATURES).length > 0 &&
+  !Astro.url.pathname.startsWith(TALKS_PATH);
 const toys = !Astro.url.pathname.startsWith(TALKS_PATH);
 
 /* The year of first publication, not the build year: a build date goes stale. */
@@ -123,6 +131,10 @@ const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
           )}
         </nav>
       </div>
+
+      {onDemand && (
+        <script is:inline type="module" src={onDemandRegistry}></script>
+      )}
 
       <div class="footer-base">
         <small class="footer-copyright">{copyright}</small>
