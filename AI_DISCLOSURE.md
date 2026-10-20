@@ -36,7 +36,8 @@ How AI tooling was used to build this site.
   - the hopping bunny in the homepage hero, drawn with Canva AI and traced
     with Potrace (`src/assets/hero-rabbit.webp`, `src/lib/hero-field-rabbit.ts`),
     and its stills shown without JavaScript (`src/assets/hero-still-*.webp`);
-  - the sticker bunny in the footer (`src/components/Footer.astro`);
+  - the sticker bunny in the footer, drawn with Canva AI and traced with
+    Potrace (`src/assets/bunny-footer.webp`);
   - the drawn, animated cats on `/about/`, their sleep, wake and trick-list
     icons (`src/components/ui/AboutCats.vue`) and their trick icons
     (`src/lib/about-cats-tricks.json`). The cat photos are real.

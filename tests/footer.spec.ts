@@ -9,8 +9,8 @@ import { gotoSettled } from './settle';
 import { ENGINE_INVARIANT } from './tags';
 
 /**
- * The footer: Lepus Ridet with the profiles as sticker tiles under it, the
- * pages and the policies, and a copyright line with the gold bunny in its tuft.
+ * The footer: the profiles as sticker tiles, the pages and the policies, the
+ * copyright, then Lepus Ridet as display type on a gold band with the rabbit on it.
  * A rule engine sees none of the geometry, so what covers what is measured.
  */
 
@@ -102,12 +102,11 @@ test.describe('the footer', () => {
   test('the phone stack follows source order', async ({ page }) => {
     const tops = await page.evaluate(() =>
       [
-        '.footer-name',
+        '.footer-stickers',
         '.footer-pages',
         '.footer-policies',
-        '.footer-stickers',
         '.footer-copyright',
-        '.footer-tuft',
+        '.footer-name',
       ].map(
         (selector) =>
           (document.querySelector(selector) as Element).getBoundingClientRect()
@@ -151,12 +150,14 @@ for (const width of WIDTHS) {
       );
     });
 
-    test('the tuft is decoration and sits clear of the text', async ({
+    test('the rabbit is decoration and sits clear of the text', async ({
       page,
     }) => {
       const m = await page.evaluate(() => {
-        const tuft = document.querySelector('.footer-tuft') as SVGElement;
-        const box = tuft.getBoundingClientRect();
+        const rabbit = document.querySelector(
+          '.footer-rabbit',
+        ) as HTMLImageElement;
+        const box = rabbit.getBoundingClientRect();
         const overlapping = [
           ...document.querySelectorAll('footer a, .footer-copyright'),
         ]
@@ -171,15 +172,15 @@ for (const width of WIDTHS) {
           })
           .map((el) => el.textContent?.trim() || el.outerHTML.slice(0, 60));
         return {
-          hidden: tuft.getAttribute('aria-hidden'),
-          focusable: tuft.querySelectorAll('[tabindex], a').length,
+          alt: rabbit.getAttribute('alt'),
+          inLink: rabbit.closest('a, button') !== null,
           overlapping,
         };
       });
 
-      expect(m.hidden, '.footer-tuft must be aria-hidden').toBe('true');
-      expect(m.focusable, 'something focusable inside the tuft').toBe(0);
-      expect(m.overlapping, 'text the tuft is drawn over').toEqual([]);
+      expect(m.alt, 'the footer rabbit needs an empty alt').toBe('');
+      expect(m.inLink, 'the footer rabbit sits inside a control').toBe(false);
+      expect(m.overlapping, 'text the rabbit is drawn over').toEqual([]);
     });
   });
 }
@@ -200,14 +201,17 @@ for (const colorScheme of ['dark', 'light'] as const) {
         const footer = document.querySelector('footer');
         const ground = effectiveBackground(footer);
         const page = effectiveBackground(document.querySelector('main'));
-        const words = [...footer.querySelectorAll('a, small, .footer-name')]
+        const name = document.querySelector('.footer-name');
+        const nameRatio = ratio(parse(getComputedStyle(name).color), effectiveBackground(name));
+        const words = [...footer.querySelectorAll('a, small')]
           .filter((el) => el.checkVisibility() && el.textContent.trim() && !el.closest('.footer-sticker'))
           .map((el) => ({ text: el.textContent.trim().slice(0, 20), ratio: ratio(parse(getComputedStyle(el).color), ground) }));
         const tiles = [...footer.querySelectorAll('.footer-sticker')]
           .map((tile) => ratio(parse(getComputedStyle(tile).backgroundColor), ground));
-        return { same: ground && page && ratio(ground, page) < 1.01, words, tiles };
+        return { same: ground && page && ratio(ground, page) < 1.01, words, tiles, nameRatio };
       })()`)) as {
         same: boolean;
+        nameRatio: number;
         words: { text: string; ratio: number }[];
         tiles: number[];
       };
@@ -221,6 +225,10 @@ for (const colorScheme of ['dark', 'light'] as const) {
           `"${word.text}" on the footer (SC 1.4.6)`,
         ).toBeGreaterThanOrEqual(AAA_TEXT);
       }
+      expect(
+        found.nameRatio,
+        'Lepus Ridet on its gold band (SC 1.4.6)',
+      ).toBeGreaterThanOrEqual(AAA_TEXT);
       for (const tile of found.tiles) {
         expect(
           tile,

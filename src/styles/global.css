@@ -367,8 +367,14 @@
    * "Lepus Ridet" in the footer, one line in the 288px phone box: 32px
    * uppercase Lexend 900 is about 250px wide.
    */
-  --text-footer-name: clamp(2rem, 3vw, 2.5rem);
-  --text-footer-name--line-height: 1;
+  --text-footer-name: 2.5rem;
+  --text-footer-name--line-height: 0.82;
+  /*
+   * Fills the band: its width less padding over the name's width in em, plus
+   * room for SC 1.4.12 letter spacing. Two lines (RIDET, 3.49em), one from md (7.22em).
+   */
+  --text-footer-name-fluid: calc((100cqi - 3rem) / 4.2);
+  --text-footer-name-fluid-md: calc((100cqi - 3rem) / 7.6);
   /* The glyph in a homepage category tile; colors in src/lib/categories.ts. */
   --text-section-number: clamp(1.3125rem, 2.4vw, 1.75rem);
   --text-section-number--line-height: 1;
@@ -551,15 +557,16 @@
 
   /*
    * Footer profile tiles (48px, 56px from `lg`, each past SC 2.5.5's 44px),
-   * icon, edge, and tuft (266px from `md`). Size tokens, so no utilities are
+   * icon, edge, and the rabbit on the name. Size tokens, so no utilities are
    * generated.
    */
   --size-sticker: 48px;
   --size-sticker-lg: 56px;
   --size-sticker-icon: 22px;
   --border-width-sticker: 4px;
-  --size-tuft: 220px;
-  --size-tuft-md: 266px;
+  --size-footer-rabbit: clamp(96px, 12vw, 160px);
+  /* How far the rabbit's box drops below the type's top: the cap gap (0.04em) and the image's rim and throw (9%). */
+  --footer-rabbit-sink: calc(0.04em + var(--size-footer-rabbit) * 0.09);
   /*
    * Header row above `md`: equal outer tracks center the nav. A token because
    * components allow no arbitrary values.

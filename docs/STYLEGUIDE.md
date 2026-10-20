@@ -41,7 +41,8 @@ blur, uppercase headings, tilted marks.
 | 1b  | Ground, thin slab: `/contact/sent`, both posts                                                                                     | 3 routes                               |
 | 1c  | Ground, mid-page: a `Section surface="gold"`, the kindness quote, `/contact`'s closing band                                        | `/career`, `/about`, `/`, `/contact`   |
 | 2   | The primary action: `.nav-cta`, `.btn-primary`                                                                                     | 11 routes, 4 routes                    |
-| 3   | The bunny marks: the logo tile and its copies, the roundel, the footer bunny, the homepage sticker                                 | 11 routes, 9 routes                    |
+| 3   | The bunny marks: the logo tile and its copies, the roundel, the homepage sticker                                                   | 11 routes, 9 routes                    |
+| 11  | The footer name band: "Lepus Ridet" in ink on a `block-gold` band at every page's end, the rabbit standing on it                   | every route                            |
 | 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                                                  | `/about`, `/accessibility`, `/contact` |
 | 4a  | A talk slide's label, bold words, part number and lead-in term before a colon; its text links, still underlined                    | `/talks/<deck>/`                       |
 | 5   | Category: the blog label and the homepage glyph tiles, ink-edged on gold                                                           | 3 routes                               |
@@ -55,6 +56,8 @@ blur, uppercase headings, tilted marks.
   vanishes on the dark page and a light one adds a third color. Gold reads as
   structure there (10.60 or more on both dark grounds), and inside gold every edge
   is ink.
+- 11 closes every page the way the header (10) opens it: the site's own name
+  in ink on gold.
 - 4a's lead-in terms and links make a projected slide's key words readable at
   a glance; light mode turns them ink, like bold words.
 - A use with a replacement takes it: a `/career` date is `subtle`; the
@@ -358,7 +361,7 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 | `text-slide-title-frame`  | 26     | 65     | 1           | 900    | Slide title in full screen, by frame  |
 | `text-slide-number-frame` | 72     | 160    | 1           | 900    | Part number in full screen, by frame  |
 | `text-copyright`          | 20     | 20     | 1.2         | 900    | Footer copyright                      |
-| `text-footer-name`        | 32     | 40     | 1           | 900    | Footer name                           |
+| `text-footer-name`        | 40     | fills  | 0.82        | 900    | Footer name band, sized to its width  |
 | `text-section-number`     | 21     | 28     | 1           | 900    | Category glyph tile                   |
 | `text-quote-mark`         | 64     | 144    | 0.75        | 900    | About kindness quote mark             |
 
@@ -399,9 +402,9 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 - The talk cover keeps the fluid `text-deck-cover`; the deck has its own
   rule ([ACCESSIBILITY.md](../ACCESSIBILITY.md) gap 7).
 - Posts use `text-post-*`. Do not raise them to the page scale.
-- The footer name's 32px floor keeps "Lepus Ridet" on one line at 288px.
+- The footer name fills its band by container width (`--text-footer-name-fluid`, `-md`), two lines below 48rem, one from 48rem; 40px is the floor.
 - Tracking: `--tracking-heading` -0.05em on h1 and h2, `--tracking-title`
-  -0.02em on h3, post and slide titles and the footer name, `--tracking-label`
+  -0.02em on h3, post and slide titles, `--tracking-label`
   0.1em on labels and buttons.
 - The standfirst is `max-w-2xl`, `--spacing` step 8 under the title.
 
@@ -1069,30 +1072,31 @@ Enforced by `tests/footer.spec.ts`.
 
 `<footer class="page-gutter">`, outside `<main>`, no headings:
 
-- the name "Lepus Ridet" (`div lang="la"`, not a heading)
-- `nav` "Site": Home, About, Career, Blog
-- `nav` "About this site": the links in `POLICY_LINKS` in `Footer.astro`
 - `nav` "Social": seven sticker links, each an `aria-hidden` icon and a
   visually hidden name
-- the copyright and the `aria-hidden` tuft
+- `nav` "Site": Home, About, Career, Blog
+- `nav` "About this site": the links in `POLICY_LINKS` in `Footer.astro`
+- the copyright
+- the name "Lepus Ridet" (`div lang="la"`, not a heading) as display type on a
+  gold band, the rabbit (`alt=""`) standing on its last letter
 
 ### Footer layout
 
-| Width       | Layout                                                                                                                                |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| below 48rem | one centered column in source order; the stickers a 4-column grid, the last three offset by `--spacing(8)`; copyright over the tuft   |
-| from 48rem  | three columns, name and stickers, Site, About this site, `column-gap` `--spacing(8)`; the copyright and tuft in one row, ends aligned |
-| from 64rem  | inset `--spacing(8)` either side; stickers `--size-sticker-lg`                                                                        |
+| Width       | Layout                                                                                                                            |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| below 48rem | one centered column in source order; the stickers a 4-column grid, the last three offset by `--spacing(8)`; the name on two lines |
+| from 48rem  | three columns, stickers, Site, About this site, `column-gap` `--spacing(8)`; the copyright left; the name on one line             |
+| from 64rem  | inset `--spacing(8)` either side; stickers `--size-sticker-lg`                                                                    |
 
 ### Footer spacing
 
-| Relationship                | Value                                                                     |
-| --------------------------- | ------------------------------------------------------------------------- |
-| Last section to footer      | that section's `--spacing-section`, then the footer's `--spacing(12)` top |
-| Name to page links (phone)  | `--spacing(8)`                                                            |
-| Stickers to copyright       | `--spacing(8)` at every width                                             |
-| Between stickers            | `--spacing(6)`; `--spacing(4)` at 48rem; `--spacing(6)` at 64rem          |
-| Copyright to the page's end | `--spacing(6)` from 48rem; the tuft sits on the edge below it             |
+| Relationship                   | Value                                                                     |
+| ------------------------------ | ------------------------------------------------------------------------- |
+| Last section to footer         | that section's `--spacing-section`, then the footer's `--spacing(12)` top |
+| Between the nav groups (phone) | `--spacing(8)`                                                            |
+| Stickers to copyright          | `--spacing(8)` at every width                                             |
+| Between stickers               | `--spacing(6)`; `--spacing(4)` at 48rem; `--spacing(6)` at 64rem          |
+| Copyright to the name band     | `--size-footer-rabbit`, room for the rabbit standing on the band          |
 
 No rule or divider joins the footer to the page.
 
@@ -1109,8 +1113,8 @@ No rule or divider joins the footer to the page.
 - One colorway, the `.badge` inversion: `text` fill, `background` glyph
   (15.28). Not cycled by `nth-child`.
 - Sizes are `@theme` tokens: `--size-sticker`, `--size-sticker-lg`,
-  `--size-sticker-icon` (22px), `--border-width-sticker`, `--size-tuft` (220px),
-  `--size-tuft-md` (266px).
+  `--size-sticker-icon` (22px), `--border-width-sticker`, `--size-footer-rabbit`
+  (96px to 160px).
 
 ## Navigation
 
