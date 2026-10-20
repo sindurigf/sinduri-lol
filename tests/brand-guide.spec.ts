@@ -589,4 +589,17 @@ test.describe('/brand guide', () => {
       expect(ratios.ringWidth).toBeGreaterThanOrEqual(4);
     });
   }
+
+  test('loading /brand logs no console errors or warnings in any engine (code quality)', async ({
+    page,
+  }) => {
+    const logged: string[] = [];
+    page.on('console', (message) => {
+      if (['error', 'warning'].includes(message.type()))
+        logged.push(message.text());
+    });
+    page.on('pageerror', (error) => logged.push(error.message));
+    await gotoSettled(page, BRAND_PATH);
+    expect(logged).toEqual([]);
+  });
 });
