@@ -13,41 +13,24 @@
     margin-top: --spacing(8);
   }
 
-  /* Room above every row for the rabbit standing on a stop in it. */
+  /* Breadcrumbs.astro's trail, with room above every row for the rabbit standing on a stop in it. */
   .rabbit-trail ol {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
-    gap: var(--size-rabbit-runner) --spacing(6);
+    gap: var(--size-rabbit-runner) --spacing(2);
     padding-top: var(--size-rabbit-runner);
+
+    @apply text-subtle;
   }
 
+  /* Separator and link stay on one line; a long title wraps inside its link. */
   .rabbit-stop {
     position: relative;
     display: flex;
     align-items: center;
+    gap: --spacing(2);
     min-height: var(--spacing-target);
-
-    @apply text-subtle;
-  }
-
-  .rabbit-stop + .rabbit-stop::before {
-    content: '›' / '';
-    margin-right: --spacing(6);
-
-    @apply text-subtle;
-  }
-
-  .rabbit-stop a {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--spacing-target);
-
-    @apply text-text underline;
-  }
-
-  .rabbit-stop a:hover {
-    @apply text-cyan;
   }
 
   /* Stands on the stop it reached, over its last word, turned to face along the trail. */

@@ -48,12 +48,17 @@ const start = (): void => {
   follow.addEventListener('click', () => {
     const page = route[hops]!;
     hops += 1;
+    /* The same crumb as src/components/Breadcrumbs.astro: an aria-hidden "/" kept with its link. */
     const stop = document.createElement('li');
-    stop.className = 'rabbit-stop label';
+    stop.className = 'rabbit-stop';
+    const separator = document.createElement('span');
+    separator.setAttribute('aria-hidden', 'true');
+    separator.textContent = '/';
     const link = document.createElement('a');
     link.href = page.path;
+    link.className = 'link hit-target inline-block';
     link.textContent = page.title;
-    stop.append(link, runner);
+    stop.append(separator, link, runner);
     trail.append(stop);
 
     if (hops < route.length) {

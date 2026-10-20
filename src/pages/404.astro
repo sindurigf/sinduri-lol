@@ -78,9 +78,9 @@ const pagesJson = JSON.stringify(chasePages(await sitePages())).replace(
       {/* A <div>: a short <p> this size trips WAVE's "Possible heading" (tests/wave-alerts.spec.ts). */}
       <div class="rabbit-line" data-line></div>
       <nav aria-label="Breadcrumb" class="rabbit-trail">
-        <ol role="list" data-trail>
-          <li class="rabbit-stop label" data-here>
-            <span>Here</span>
+        <ol role="list" class="label" data-trail>
+          <li class="rabbit-stop" data-here>
+            <span>You Are Here</span>
             <Image
               src={bunnyFooter}
               alt=""
