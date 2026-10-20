@@ -1226,14 +1226,14 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   shows that still frame as a WebP (`npm run hero-still` after a change to the
   field).
 - `HeroField` loads `client:load`.
-- The Drush easter egg (`src/scripts/drush.ts`, `drush.css`): typing
-  `drush cr` outside a field makes each brick on screen jump and land back in
-  place within a second, and a polite status line reads the result. Other
-  commands open the Drush dialog, which Try a Command in the footer also
-  opens. Every command is a sequence of keys (SC 2.1.4); under reduced motion
-  nothing moves (`tests/drush.spec.ts`). Its copy is a placeholder.
-  Every page loads only `drush-loader.ts`; it loads `drush.ts` once `drush `
-  is typed or Try a Command is pressed.
+- The Drush easter egg (`src/scripts/drush.ts`, `drush.css`): typing `drush`
+  outside a field, or Try a Command in the footer, opens the Drush dialog.
+  `drush cr` there makes each brick on screen jump and land back in place
+  within a second. The typed word is a sequence of keys, never one key, and
+  Open When I Type drush in the dialog turns it off on every page (SC 2.1.4).
+  Under reduced motion nothing moves (`tests/drush.spec.ts`). `drush.ts` is
+  [loaded on demand](../ARCHITECTURE.md#scripts-loaded-on-demand). Its copy is
+  a placeholder.
 - The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
   first on screen, play along it (games like the yarn and the fly carry them,
   leaps move them on), and sit still under reduced motion. Each cat's button

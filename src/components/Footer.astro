@@ -15,7 +15,6 @@ import { SITE_NAME } from '../lib/site';
 import socialIcons from '../assets/social-icons.svg?url';
 /* `?worker&url`: a separate file, so no Vite preload helper, loaded by src under Trusted Types. */
 import onDemandRegistry from '../scripts/on-demand.ts?worker&url';
-import drushLoader from '../scripts/drush-loader.ts?worker&url';
 import drushApp from '../scripts/drush.ts?worker&url';
 
 /* Source order is the reading order at every width; no CSS `order`. */
@@ -39,7 +38,7 @@ const POLICY_LINKS = [
 const current = (href: string) => ariaCurrent(Astro.url.pathname, href);
 
 /* Feature name to its `?worker&url` file; its trigger carries the file as `data-on-demand`. */
-const FEATURES: Record<string, string> = {};
+const FEATURES: Record<string, string> = { drush: drushApp };
 
 /* A slide deck keeps its script budget for the deck. */
 const onDemand =
@@ -117,16 +116,17 @@ const RABBIT_HEIGHT = 160;
 
       <small class="footer-copyright">{copyright}</small>
 
-      {/* Shown by src/scripts/drush-loader.ts, which loads data-drush-app on intent. */}
-      <script
-        is:inline
-        type="module"
-        src={drushLoader}
-        data-drush-app={drushApp}
-      ></script>
-      <button type="button" class="drush-trigger label" hidden>
-        Try a Command
-      </button>
+      {onDemand && (
+        <button
+          type="button"
+          class="drush-trigger label"
+          data-on-demand={FEATURES.drush}
+          data-on-demand-keys="drush"
+          hidden
+        >
+          Try a Command
+        </button>
+      )}
     </div>
 
     {/* A <div>: a <p> trips WAVE's "Possible heading" (tests/wave-alerts.spec.ts). */}

@@ -1,8 +1,7 @@
 /*
- * A Drush easter egg: typing a command anywhere outside a field runs it, and
- * Try a Command in the footer offers the same commands in a dialog. Every
- * command is a sequence of keys, never one key (SC 2.1.4). Loaded on intent
- * by drush-loader.ts.
+ * A Drush easter egg: typing drush outside a field, or Try a Command in the
+ * footer, opens a dialog that runs a few commands. The typed word is a
+ * sequence, never one key, and the dialog turns it off (SC 2.1.4).
  */
 const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)');
 const SHUFFLE_MS = 900;
@@ -23,12 +22,11 @@ const OUTPUT: Readonly<Record<string, readonly string[]>> = {
   'drush uli': ['Logged in as Friend. Welcome back!'],
 };
 const NOT_FOUND = 'Command not found. Try drush cr.';
+/* Must match what src/scripts/on-demand.ts reads before it acts on a typed word. */
+const KEYS_STORAGE_KEY = 'on-demand-keys';
+const KEYS_OFF = 'off';
 
-const announcer = Object.assign(document.createElement('p'), {
-  className: 'sr-only',
-});
-announcer.setAttribute('role', 'status');
-document.body.append(announcer);
+const trigger = document.querySelector<HTMLButtonElement>('.drush-trigger')!;
 
 /* Each brick on screen jumps and lands back in place: transforms only, never in the reading order. */
 const shuffle = (): void => {
@@ -101,6 +99,11 @@ const closeButton = el(
   { type: 'button', className: 'btn-secondary cat-close mt-4' },
   'Close',
 );
+const keysButton = el(
+  'button',
+  { type: 'button', className: 'btn-secondary cat-close mt-4' },
+  'Open When I Type drush',
+);
 const dialog = el(
   'dialog',
   { className: 'cat-dialog drush-dialog' },
@@ -112,6 +115,7 @@ const dialog = el(
     form,
     suggestions,
     output,
+    keysButton,
     closeButton,
   ),
 );
@@ -147,41 +151,32 @@ form.addEventListener('submit', (event) => {
 });
 closeButton.addEventListener('click', () => dialog.close());
 
-const openDialog = (lines?: readonly string[]): void => {
+const keysOn = (): boolean => {
+  try {
+    return localStorage.getItem(KEYS_STORAGE_KEY) !== KEYS_OFF;
+  } catch {
+    return true;
+  }
+};
+keysButton.setAttribute('aria-pressed', String(keysOn()));
+keysButton.addEventListener('click', () => {
+  const on = !keysOn();
+  try {
+    if (on) localStorage.removeItem(KEYS_STORAGE_KEY);
+    else localStorage.setItem(KEYS_STORAGE_KEY, KEYS_OFF);
+  } catch (error) {
+    reportError(error);
+    return;
+  }
+  keysButton.setAttribute('aria-pressed', String(on));
+});
+
+const openDialog = (): void => {
   if (!dialog.open) dialog.showModal();
-  if (lines) show(lines);
   input.focus();
+  input.setSelectionRange(input.value.length, input.value.length);
 };
 
-/*
- * The loader (drush-loader.ts) keeps the typed keys in data-drush-typed and
- * asks for the dialog with data-drush-open, then fires `drush` once this runs.
- */
-const flags = document.documentElement.dataset;
-let handled = '';
-const check = (): void => {
-  if (flags.drushOpen !== undefined) {
-    delete flags.drushOpen;
-    openDialog();
-  }
-  const typed = flags.drushTyped ?? '';
-  const command = Object.keys(OUTPUT).find((name) => typed.endsWith(name));
-  if (!command || typed === handled) return;
-  handled = typed;
-  flags.drushTyped = '';
-  if (command === 'drush cr') {
-    run(command);
-    /* Cleared first, so the same line is announced again on a second run. */
-    announcer.textContent = '';
-    requestAnimationFrame(() => {
-      announcer.textContent = OUTPUT[command]![0]!;
-    });
-  } else {
-    input.value = command;
-    openDialog(run(command));
-  }
-};
-document.addEventListener('drush', check);
-check();
+trigger.addEventListener('on-demand', openDialog);
 
 export {};

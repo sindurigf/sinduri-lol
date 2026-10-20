@@ -214,6 +214,10 @@ test.describe('security headers', () => {
     await page.keyboard.press('Escape');
     await page.goto(`${policy().origin}/`);
     await waitForHydration(page);
+    /* Drush loads its script on the first press. */
+    await page.getByRole('button', { name: 'Try a Command' }).click();
+    await expect(page.getByRole('dialog', { name: 'Drush' })).toBeVisible();
+    await page.keyboard.press('Escape');
     await fontsSettled(page);
 
     expect(violations, 'the browser refused something under the CSP').toEqual(
