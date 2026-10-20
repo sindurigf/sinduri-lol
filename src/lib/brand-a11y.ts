@@ -1,4 +1,4 @@
-/* What each /brand part keeps for accessibility, by part id. Draft copy until the owner approves it. */
+/* What each /brand part keeps for accessibility, by part id. */
 export const PART_ACCESSIBILITY: Readonly<Record<string, string>> = {
   'primary-button':
     '4px focus ring, 44px target, and unavailable stays focusable with aria-disabled.',
