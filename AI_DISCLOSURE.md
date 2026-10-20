@@ -37,9 +37,6 @@ How AI tooling was used to build this site.
     with Potrace (`src/assets/hero-rabbit.webp`, `src/lib/hero-field-rabbit.ts`),
     and its stills shown without JavaScript (`src/assets/hero-still-*.webp`);
   - the sticker bunny in the footer (`src/components/Footer.astro`);
-  - the bunny logo, made with Canva AI and Claude, and its copies: the
-    roundel, the site icons and the share images (`src/assets/bunny-dark.png`,
-    `public/favicon*`, `public/*-icon*`, `public/images/og/`);
   - the drawn, animated cats on `/about/`, their sleep, wake and trick-list
     icons (`src/components/ui/AboutCats.vue`) and their trick icons
     (`src/lib/about-cats-tricks.json`). The cat photos are real.
