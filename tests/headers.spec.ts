@@ -29,10 +29,10 @@ const ASSET_TIMEOUT_MS = 10_000;
  */
 const declaredAssets = (): string[][] => {
   /* Without the JSON-LD block: it names the Person's image, which no browser fetches. */
-  const html = readFileSync(join(DIST_DIR, 'index.html'), 'utf8').replace(
-    LD_JSON,
-    '',
-  );
+  /* Nor data-* values: a script loaded on demand is named there, not fetched. */
+  const html = readFileSync(join(DIST_DIR, 'index.html'), 'utf8')
+    .replace(LD_JSON, '')
+    .replace(/\sdata-[\w-]+="[^"]*"/g, '');
   const paths = (text: string): string[] => [
     ...new Set(
       [...text.matchAll(/\/_astro\/[A-Za-z0-9._-]+/g)].map((m) => m[0]),
@@ -214,6 +214,10 @@ test.describe('security headers', () => {
     await page.keyboard.press('Escape');
     await page.goto(`${policy().origin}/`);
     await waitForHydration(page);
+    /* The toy footer loads its script on the first press. */
+    const toy = page.getByRole('button', { name: 'Play With the Stickers' });
+    await toy.click();
+    await expect(toy).toHaveAttribute('aria-pressed', 'true');
     await fontsSettled(page);
 
     expect(violations, 'the browser refused something under the CSP').toEqual(
