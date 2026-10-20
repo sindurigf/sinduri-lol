@@ -5,6 +5,7 @@ import PageHero from '../../components/PageHero.astro';
 import { CONTACT_EMAIL, CONTACT_MAILTO } from '../../lib/contact';
 import { RETENTION_DAYS } from '../../lib/contact-form';
 import { JOURNEY_POST_HREF } from '../../lib/paths';
+import { RIDDLE } from '../../lib/riddle';
 
 /*
  * Prerendered, so success is a static asset with public/_headers applied.
@@ -35,6 +36,21 @@ import { JOURNEY_POST_HREF } from '../../lib/paths';
           you send the form. If you need to add something, write to{' '}
           <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>.
         </p>
+
+        <details class="mt-8 max-w-measure">
+          <summary class="post-contents-summary">
+            <span>{RIDDLE.question}</span>
+            <span class="post-contents-marker" aria-hidden="true"></span>
+          </summary>
+          <div class="mt-6 text-body text-text text-pretty">
+            <p>{RIDDLE.lead}</p>
+            <blockquote class="mt-4">
+              <p>&ldquo;{RIDDLE.answer}&rdquo;</p>
+              <footer class="mt-2 text-subtle">{RIDDLE.source}</footer>
+            </blockquote>
+            <p class="mt-4 text-subtle">{RIDDLE.note}</p>
+          </div>
+        </details>
       </div>
     </div>
   </section>
