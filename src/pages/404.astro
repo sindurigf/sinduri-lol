@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import '../styles/components/starfield.css';
+import '../styles/components/lost-page.css';
 import { BLOG_PATH } from '../lib/paths';
 
 /*
@@ -55,4 +56,27 @@ import { BLOG_PATH } from '../lib/paths';
       </li>
     </ul>
   </PageHero>
+
+  {/* Placeholder copy. Shown by src/scripts/lost-page.ts: without it there is nothing to play. */}
+  <section
+    data-lost-game
+    class="band py-section"
+    aria-labelledby="lost-title"
+    hidden
+  >
+    <div class="mx-auto max-w-page">
+      <h2 id="lost-title" class="text-h2 text-text">
+        Help Find This Page
+      </h2>
+      <p class="lost-status" role="status"></p>
+      <ul class="lost-bricks" role="list"></ul>
+      <button type="button" data-lost-again class="btn-secondary mt-6" hidden>
+        Play Again
+      </button>
+    </div>
+  </section>
 </BaseLayout>
+
+<script>
+  import '../scripts/lost-page';
+</script>

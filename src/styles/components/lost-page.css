@@ -1,0 +1,57 @@
+/* The 404 game: src/scripts/lost-page.ts. */
+@reference '../global.css';
+
+@layer components {
+  :root {
+    --lost-lift: 320ms;
+  }
+
+  .lost-bricks {
+    @apply mt-6 flex flex-wrap gap-0;
+  }
+
+  /* Joined bricks: each a 44px target at least (SC 2.5.5); a looked-at brick lifts. */
+  .lost-brick {
+    @apply lift-control grid size-14 place-items-center sm:size-20 border-4 border-fill-edge
+      bg-block-gold text-h3 font-black text-gold-text shadow-hard-pink-4;
+
+    margin-left: calc(var(--block-edge) * -1);
+  }
+
+  .lost-bricks li:first-child .lost-brick {
+    margin-left: 0;
+  }
+
+  .lost-brick:not([aria-disabled='true']):hover {
+    @apply bg-cyan;
+  }
+
+  .lost-brick[data-looked] {
+    @apply bg-block-light text-subtle shadow-none;
+  }
+
+  .lost-brick[data-found] {
+    @apply bg-block-gold;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .lost-brick[data-looked] {
+      animation: lost-lift var(--lost-lift) ease-out both;
+    }
+  }
+
+  .lost-rabbit {
+    @apply size-11 sm:size-16;
+  }
+
+  .lost-status {
+    @apply mt-6 max-w-2xl text-body text-text text-pretty;
+  }
+
+  @keyframes lost-lift {
+    40% {
+      translate: 0 --spacing(-4);
+      rotate: -4deg;
+    }
+  }
+}

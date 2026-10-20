@@ -1211,6 +1211,12 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   shows that still frame as a WebP (`npm run hero-still` after a change to the
   field).
 - `HeroField` loads `client:load`.
+- The 404 game (`src/scripts/lost-page.ts`, `lost-page.css`, only on the 404
+  page): the missing page hides behind one of five bricks; each look is a
+  turn with a warm or cold hint in a polite status line, and the footer
+  rabbit appears behind the right brick. A looked-at brick lifts once; under
+  reduced motion it does not. Without script the game is not shown
+  (`tests/lost-page.spec.ts`). Its copy is a placeholder.
 - The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
   first on screen, play along it (games like the yarn and the fly carry them,
   leaps move them on), and sit still under reduced motion. Each cat's button
