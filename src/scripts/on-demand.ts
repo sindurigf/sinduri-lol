@@ -1,4 +1,6 @@
 /* Contract and rejected alternatives: ARCHITECTURE.md "Scripts loaded on demand". */
+import { KEYS_OFF, KEYS_STORAGE_KEY } from '../lib/on-demand';
+
 const KEY_BUFFER_LENGTH = 16;
 const TYPING_TARGETS = 'input,textarea,select,[contenteditable]';
 
@@ -9,7 +11,7 @@ let typed = '';
 /* SC 2.1.4: a stored "off" turns the typed words off. */
 const keysOn = (): boolean => {
   try {
-    return localStorage.getItem('on-demand-keys') !== 'off';
+    return localStorage.getItem(KEYS_STORAGE_KEY) !== KEYS_OFF;
   } catch {
     return true;
   }

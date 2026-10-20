@@ -53,18 +53,19 @@
     width: var(--logo-rabbit-width);
     max-width: none;
     height: var(--logo-rabbit-height);
+    transform-origin: 50% 100%;
 
     @media (prefers-reduced-motion: no-preference) {
-      transition-property: translate;
-      transition-duration: var(--press-travel);
-      transition-timing-function: linear;
+      transition-property: translate, scale;
+      transition-duration: var(--logo-rabbit-spring-time);
+      transition-timing-function: var(--ease-spring);
     }
   }
 
   /*
    * The logo tile's press, as the controls' in buttons-nav.css with the mark's
    * 8px throw. Only the tile moves, so the link keeps the pointer. The tile is
-   * the rabbit's springboard: pressed down, it sends the rabbit up.
+   * the rabbit's springboard: pressed, the rabbit crouches with it; released, it springs.
    */
   .logo-link .logo-tile {
     box-shadow: var(--lift-mark) var(--lift-mark) 0 var(--color-bunny);
@@ -99,9 +100,10 @@
     }
 
     .logo-link:active .logo-rabbit {
-      translate: calc(var(--lift-mark) * -1)
-        calc((var(--lift-mark) + var(--logo-rabbit-hop)) * -1);
-      transition-duration: 0s;
+      translate: 0 var(--logo-rabbit-crouch);
+      scale: 1 var(--logo-rabbit-squash);
+      transition-duration: var(--logo-rabbit-crouch-time);
+      transition-timing-function: ease-out;
     }
   }
 

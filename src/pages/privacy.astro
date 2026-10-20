@@ -8,6 +8,7 @@ import { UMAMI_HOST_URL } from '../lib/analytics';
 import { formatPostDate } from '../lib/post-date';
 import { SITE_NAME } from '../lib/site';
 import { THEME_STORAGE_KEY } from '../lib/theme';
+import { KEYS_STORAGE_KEY } from '../lib/on-demand';
 import {
   D1_RESTORE_WINDOW_DAYS,
   UMAMI_RETENTION_MONTHS,
@@ -73,7 +74,10 @@ const UMAMI_HOST = new URL(UMAMI_HOST_URL).host;
             Nothing else is stored in your browser. The{' '}
             <dfn>analytics script</dfn>, the code that counts visits, reads one
             local storage setting, named umami.disabled, which is Umami's own
-            off switch, and writes nothing.
+            off switch, and writes nothing. The typed shortcuts in the footer
+            read one more setting, named <code>{KEYS_STORAGE_KEY}</code>, and
+            stay off while it is there. It also stays in your browser, and
+            clearing this site's data in your browser removes it.
           </li>
           <li>
             <strong>Nothing loaded from other websites.</strong> Every file a
