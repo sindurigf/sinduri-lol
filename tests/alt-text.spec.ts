@@ -4,12 +4,12 @@ import { NODE } from './tags';
 
 /**
  * Alt text rules axe cannot judge: every <img> has an `alt` (Astro writes an
- * empty one as a bare `alt`), only the bunny mark is empty, a filled one is not
+ * empty one as a bare `alt`), only the bunny mark and the footer rabbit are empty, a filled one is not
  * a filename or "image/photo/picture/logo", and an inline <svg> is hidden or named.
  */
 
-/** The one image the site draws for decoration. */
-const DECORATIVE = /bunny-dark/;
+/** The images the site draws for decoration. */
+const DECORATIVE = /bunny-(dark|footer)/;
 
 const SUPPLIED_BY_THE_READER = /\b(image|photo|picture|logo)\b/i;
 const FILENAME = /\.(webp|avif|jpe?g|png|gif|svg)\b/i;
