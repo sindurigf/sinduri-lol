@@ -3,7 +3,7 @@
  * Renders the sharing images in Chromium with Lexend and the site tokens:
  * public/images/og-default.png, the name card, and one card per built page
  * (src/lib/og-cards.ts): the page title on gold, the page's first photo or
- * the logo tile on a `background` strip. Run after `npm run build`.
+ * the line bunny tile on a `background` strip. Run after `npm run build`.
  *
  *   npm run build && npm run og
  */
@@ -39,7 +39,7 @@ const TAGLINE = ['Open source enthusiast', 'Positivity advocate'];
 /** A page title shrinks from this size until it fits the gold panel in three lines. */
 const TITLE_SIZE = { max: 96, min: 48, step: 2, maxHeight: 260 };
 
-/* The header's 48px logo tile, scaled up: edge, radius, shadow and mark keep its proportions. */
+/* The line bunny tile, the header's former logo, kept on the cards on purpose: 48px scaled up, proportions kept. */
 const TILE_SCALE = 7;
 const TILE = {
   size: 48 * TILE_SCALE,
@@ -218,7 +218,7 @@ const cardFor = (route, html) => {
 
 const altFor = ({ title, photo, photoAlt }) =>
   photo === null
-    ? `${title}, ${SITE_NAME}, beside the ${SITE_NAME} bunny logo.`
+    ? `${title}, ${SITE_NAME}, beside a line drawing of a bunny.`
     : `${title}, ${SITE_NAME}${photoAlt ? `, beside a photo: ${photoAlt}` : `, beside a photo of ${PERSON_NAME}.`}`;
 
 const browser = await chromium.launch();
