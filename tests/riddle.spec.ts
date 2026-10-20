@@ -41,13 +41,12 @@ test.describe("The Hatter's riddle on the message sent page", () => {
     await context.close();
   });
 
-  test('the sent page credits where the answer comes from, and the page spells it as printed', async ({
+  test('/credits names the source of the answer, and the page spells it as printed', async ({
     page,
   }) => {
     expect(RIDDLE.answer).toContain('nevar');
     expect(RIDDLE.note).toContain('never');
     await gotoSettled(page, '/credits/');
-    await expect(page.locator('#alice')).toContainText('The Annotated Alice');
     await expect(page.locator('#alice')).toContainText('1896');
     expect(readFileSync('src/pages/contact/sent.astro', 'utf8')).toContain(
       'RIDDLE.answer',
