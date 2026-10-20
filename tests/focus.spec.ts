@@ -44,6 +44,8 @@ interface Stop {
   /** Probe points under the sticky header. */
   underHeader: number;
   hasRing: boolean;
+  /** An opaque focus fill at 3:1 or more on the ground behind it: the logo's ink block. */
+  hasBlock: boolean;
   outline: string;
   outlineStyle: string;
   /** Ring pixels painted, after any clipping ancestor (SC 2.4.13). */
@@ -193,11 +195,19 @@ const readFocused = (page: Page): Promise<Stop> =>
     const { covered, probed, by, underHeader } = probeCover(el, rect);
 
     const hasRing =
-      style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0;
+      style.outlineStyle !== 'none' &&
+      parseFloat(style.outlineWidth) > 0 &&
+      parse(style.outlineColor).a > 0;
 
     const { ringRatio, ringBehind } = hasRing
       ? ringContrast(el, style)
       : { ringRatio: null, ringBehind: null };
+
+    const fill = parse(style.backgroundColor);
+    const hasBlock =
+      !hasRing &&
+      fill.a === 1 &&
+      ratio(fill, effectiveBackground(el.parentElement)) >= ${NON_TEXT};
 
     const { area, perimeter } = hasRing
       ? ringArea(el, style)
@@ -211,6 +221,7 @@ const readFocused = (page: Page): Promise<Stop> =>
       by,
       underHeader,
       hasRing,
+      hasBlock,
       outline:
         style.outlineStyle + ' ' + style.outlineWidth + ' ' + style.outlineColor,
       outlineStyle: style.outlineStyle,
@@ -355,9 +366,9 @@ const expectNoneUnderHeader = (route: string, width: number, stops: Stop[]) => {
   ).toEqual([]);
 };
 
-/* SC 2.4.7: every stop has an indicator. */
+/* SC 2.4.7: every stop has an indicator, a ring or the logo's whole-box fill. */
 const expectAllMarked = (route: string, width: number, stops: Stop[]) => {
-  const unmarked = stops.filter((s) => !s.hasRing);
+  const unmarked = stops.filter((s) => !s.hasRing && !s.hasBlock);
   expect(
     unmarked,
     `${route} at ${width}px has focused control(s) with no focus indicator (SC 2.4.7):\n${report(unmarked)}`,

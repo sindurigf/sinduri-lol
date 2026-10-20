@@ -495,6 +495,16 @@
   --lift-object: var(--hard-throw);
   /* The logo tile keeps its 8px bunny shadow, so its ring clears 8px. */
   --lift-mark: 8px;
+  /* The logo rabbit's box from the tile's padding box, as scripts/make-logo.mjs prints it. */
+  --logo-rabbit-left: 4px;
+  --logo-rabbit-top: -19px;
+  --logo-rabbit-width: 47px;
+  --logo-rabbit-height: 64px;
+  /* The logo link's focus block reaches this far past the tile and the name. */
+  --logo-focus-pad: 8px;
+  /* How far the rabbit springs up off the tile: hovered, and while the tile is pressed. */
+  --logo-rabbit-hover-hop: 3px;
+  --logo-rabbit-hop: 8px;
   /* A pressable rises this far off its throw under the pointer. */
   --press-lift: 2px;
   /* A pressable's `border-4`; its hit strip reaches past it. */

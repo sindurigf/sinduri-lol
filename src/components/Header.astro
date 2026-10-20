@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets';
-import bunnyDark from '../assets/bunny-dark.png';
+import logoRabbit from '../assets/logo-rabbit.png';
 import {
   CTA,
   HEADER_LINKS,
@@ -13,8 +13,8 @@ import { SITE_NAME } from '../lib/site';
 import NavList from './NavList.astro';
 import ThemeSwitch from './ThemeSwitch.astro';
 
-/* Drawn height, `h-6` in px; tests/image-size.spec.ts fails if they drift. */
-const MARK_HEIGHT = 24;
+/* The rabbit's drawn height in px: `--logo-rabbit-height`, as scripts/make-logo.mjs prints it. */
+const RABBIT_HEIGHT = 64;
 
 const currentPath = Astro.url.pathname;
 
@@ -36,14 +36,14 @@ const current = (href: string) => ariaCurrent(currentPath, href);
       aria-current={current(HOME_HREF)}
       class="logo-link flex min-w-0 items-center gap-4 max-xs:gap-2 lg:justify-self-start"
     >
-      <span class="logo-tile flex h-12 w-12 rotate-3 items-center justify-center rounded-nav border-4 border-fill-edge bg-block-gold">
+      <span class="logo-tile relative flex h-12 w-12 rotate-3 items-center justify-center rounded-nav border-4 border-fill-edge bg-block-gold">
         <Image
-          src={bunnyDark}
+          src={logoRabbit}
           alt=""
-          height={MARK_HEIGHT}
+          height={RABBIT_HEIGHT}
           densities={DENSITIES}
           loading="eager"
-          class="h-6 w-auto"
+          class="logo-rabbit"
         />
       </span>
       {/*

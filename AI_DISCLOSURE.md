@@ -2,11 +2,11 @@
 
 How AI tooling was used to build this site.
 
-| Item  | Detail                                                                                                                                                                               |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Model | Claude (Anthropic)                                                                                                                                                                   |
-| Tools | Claude Code; Stitch (Google) and Claude Design (Anthropic) for design; Canva AI for the hero rabbit drawings                                                                         |
-| Scope | Code, tests, docs, functional microcopy, the `/accessibility` and `/privacy` text, the About cat drawings, the home page hero bunny, the footer bunny, and editing my editorial copy |
+| Item  | Detail                                                                                                                                                                                                        |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Model | Claude (Anthropic)                                                                                                                                                                                            |
+| Tools | Claude Code; Stitch (Google) and Claude Design (Anthropic) for design; Canva AI for the rabbit drawings and the logo                                                                                          |
+| Scope | Code, tests, docs, functional microcopy, the `/accessibility` and `/privacy` text, the About cat drawings, the home page hero bunny, the footer bunny, the logo and site icons, and editing my editorial copy |
 
 ## Review
 
@@ -38,6 +38,11 @@ How AI tooling was used to build this site.
     and its stills shown without JavaScript (`src/assets/hero-still-*.webp`);
   - the sticker bunny in the footer, drawn with Canva AI and traced with
     Potrace (`src/assets/bunny-footer.webp`);
+  - the jumping bunny in the header logo and every favicon and app icon, the
+    same Canva AI rabbit traced with Potrace (`artwork/rabbit-jump.json`,
+    `scripts/make-logo.mjs`);
+  - the line bunny on the roundel, the `/about/` tile and the share images
+    (`src/assets/bunny-dark.png`);
   - the drawn, animated cats on `/about/`, their sleep, wake and trick-list
     icons (`src/components/ui/AboutCats.vue`) and their trick icons
     (`src/lib/about-cats-tricks.json`). The cat photos are real.
