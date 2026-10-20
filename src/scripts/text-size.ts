@@ -75,6 +75,8 @@ const run = (trigger: HTMLButtonElement): void => {
   } catch {}
 };
 
-document.addEventListener('on-demand:text-size', (event) =>
-  run((event as CustomEvent<HTMLButtonElement>).detail),
-);
+for (const trigger of document.querySelectorAll<HTMLButtonElement>(
+  '[data-size-action]',
+)) {
+  trigger.addEventListener('on-demand', () => run(trigger));
+}

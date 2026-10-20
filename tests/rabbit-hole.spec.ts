@@ -26,7 +26,7 @@ const bodyPx = (page: Page) =>
     ),
   );
 
-const curiouser = (page: Page) => page.locator('[data-on-demand="curiouser"]');
+const curiouser = (page: Page) => page.locator('[data-curiouser]');
 const landing = (page: Page) => page.locator('[data-curiouser-result] a');
 
 const sidewaysPx = (page: Page) =>

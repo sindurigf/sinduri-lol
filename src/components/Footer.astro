@@ -39,17 +39,14 @@ const POLICY_LINKS = [
 
 const current = (href: string) => ariaCurrent(Astro.url.pathname, href);
 
-/* Feature name to its `?worker&url` file; a `data-on-demand="<name>"` trigger loads it. */
-const FEATURES: Record<string, string> = {
+/* Feature name to its `?worker&url` file; its trigger carries the file as `data-on-demand`. */
+const FEATURES = {
   curiouser: curiouserFeature,
-  'text-size': textSizeFeature,
+  textSize: textSizeFeature,
 };
 
 /* A slide deck keeps its script budget for the deck, and gets no footer controls. */
 const onDemand = !Astro.url.pathname.startsWith(TALKS_PATH);
-const featureAttributes = Object.fromEntries(
-  Object.entries(FEATURES).map(([name, url]) => [`data-feature-${name}`, url]),
-);
 
 /* The year of first publication, not the build year: a build date goes stale. */
 const FIRST_PUBLISHED = 2026;
@@ -146,7 +143,8 @@ const RABBIT_HEIGHT = 160;
                 type="button"
                 class="label text-text hover:text-cyan"
                 hidden
-                data-on-demand="curiouser"
+                data-curiouser
+                data-on-demand={FEATURES.curiouser}
                 data-go-class="footer-go label text-text hover:text-cyan"
               >
                 Curiouser
@@ -176,7 +174,7 @@ const RABBIT_HEIGHT = 160;
                   type="button"
                   class="label text-text hover:text-cyan"
                   hidden
-                  data-on-demand="text-size"
+                  data-on-demand={FEATURES.textSize}
                   data-size-action="smaller"
                 >
                   Drink Me
@@ -185,7 +183,7 @@ const RABBIT_HEIGHT = 160;
                   type="button"
                   class="label text-text hover:text-cyan"
                   hidden
-                  data-on-demand="text-size"
+                  data-on-demand={FEATURES.textSize}
                   data-size-action="larger"
                 >
                   Eat Me
@@ -194,7 +192,7 @@ const RABBIT_HEIGHT = 160;
                   type="button"
                   class="label text-text hover:text-cyan"
                   hidden
-                  data-on-demand="text-size"
+                  data-on-demand={FEATURES.textSize}
                   data-size-action="reset"
                 >
                   Just Right
@@ -211,13 +209,7 @@ const RABBIT_HEIGHT = 160;
       </div>
 
       {onDemand && (
-        <script
-          is:inline
-          type="module"
-          src={onDemandRegistry}
-          data-on-demand-registry
-          {...featureAttributes}
-        ></script>
+        <script is:inline type="module" src={onDemandRegistry}></script>
       )}
 
       <small class="footer-copyright">{copyright}</small>

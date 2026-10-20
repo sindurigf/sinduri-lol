@@ -315,15 +315,14 @@ it stays out of the per-page script budgets (`tests/performance.spec.ts`).
 
 - `FEATURES` in `Footer.astro` maps a name to a `?worker&url` file. It renders
   the registry only when there are entries, and never under `/talks/`.
-- The registry's script tag carries one `data-feature-<name>` URL per feature.
-- A trigger is `[data-on-demand="<name>"]`, shipped `hidden`; the registry
-  unhides it. Without JavaScript nothing shows.
-- First click imports the file, then dispatches `on-demand:<name>` on
-  `document` with the trigger as `detail`; later clicks only dispatch. A
-  failed import is reported with `reportError` and retried on the next click.
-- A feature file listens at top level:
-  `document.addEventListener('on-demand:<name>', ...)`, and ends with
-  `export {};` so TypeScript treats it as a module.
+- A trigger is `[data-on-demand="<feature file URL>"]`, shipped `hidden`; the
+  registry unhides it. Without JavaScript nothing shows.
+- First click imports the file, then dispatches an `on-demand` event on the
+  trigger; later clicks only dispatch. A failed import is reported with
+  `reportError` and retried on the next click.
+- A feature file finds its trigger and listens at top level:
+  `trigger.addEventListener('on-demand', ...)`, and ends with `export {};` so
+  TypeScript treats it as a module.
 - `data-on-demand-keys="<word>"` on a trigger also fires it when the word is
   typed outside a form field, without Ctrl, Alt or Meta.
 - SC 2.1.4: `localStorage` `on-demand-keys` set to `off` turns key words off.

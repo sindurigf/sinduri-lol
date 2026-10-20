@@ -83,6 +83,8 @@ const run = (trigger: HTMLButtonElement): void => {
   tick();
 };
 
-document.addEventListener('on-demand:curiouser', (event) =>
-  run((event as CustomEvent<HTMLButtonElement>).detail),
-);
+for (const trigger of document.querySelectorAll<HTMLButtonElement>(
+  '[data-curiouser]',
+)) {
+  trigger.addEventListener('on-demand', () => run(trigger));
+}
