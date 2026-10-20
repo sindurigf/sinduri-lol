@@ -1,10 +1,12 @@
 /*
  * On every page, so kept small: it watches for `drush ` typed outside a field
- * and shows Try a Command in the footer, then loads drush.ts. `?worker&url`
- * builds drush.ts as its own file, loaded by a plain script tag: no preload
- * helper in this chunk.
+ * and shows Try a Command in the footer, then imports drush.ts. Both are built
+ * with `?worker&url` (Footer.astro): a main-bundle import() would pull in
+ * Vite's 1.7 KB preload helper, and a script element's src is blocked by the
+ * site's Trusted Types CSP.
  */
-import src from './drush.ts?worker&url';
+const src = document.querySelector<HTMLScriptElement>('script[data-drush-app]')!
+  .dataset.drushApp!;
 
 const flags = document.documentElement.dataset;
 const PREFIX = 'drush ';
@@ -17,9 +19,7 @@ const wake = (): void => {
     return;
   }
   flags.drushLoaded = '';
-  document.head.append(
-    Object.assign(document.createElement('script'), { src }),
-  );
+  void import(/* @vite-ignore */ src);
 };
 
 document.addEventListener('keydown', (event) => {
@@ -42,3 +42,5 @@ trigger.onclick = () => {
   flags.drushOpen = '';
   wake();
 };
+
+export {};

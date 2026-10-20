@@ -57,25 +57,67 @@ const run = (command: string): readonly string[] => {
   return OUTPUT[typed] ?? [NOT_FOUND];
 };
 
-const dialog = document.createElement('dialog');
-dialog.className = 'cat-dialog drush-dialog';
+/* Built node by node: the site's CSP (Trusted Types) blocks HTML strings. */
+const el = <K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  props: Partial<HTMLElementTagNameMap[K]> & Record<string, unknown> = {},
+  ...children: (Node | string)[]
+): HTMLElementTagNameMap[K] => {
+  const node = Object.assign(document.createElement(tag), props);
+  node.append(...children);
+  return node;
+};
+
+const input = el('input', {
+  id: 'drush-input',
+  className: 'field-control',
+  name: 'command',
+  autocomplete: 'off',
+  spellcheck: false,
+  value: 'drush ',
+});
+const output = el('output', { className: 'drush-output' });
+output.htmlFor.add('drush-input');
+output.setAttribute('role', 'status');
+const suggestions = el('ul', { className: 'drush-suggestions' });
+suggestions.setAttribute('role', 'list');
+const form = el(
+  'form',
+  { className: 'drush-form', method: 'dialog' },
+  el(
+    'label',
+    { className: 'field-label mt-4 block', htmlFor: 'drush-input' },
+    'Command',
+  ),
+  input,
+  el(
+    'button',
+    { type: 'submit', className: 'btn-secondary cat-close mt-4' },
+    'Run',
+  ),
+);
+const closeButton = el(
+  'button',
+  { type: 'button', className: 'btn-secondary cat-close mt-4' },
+  'Close',
+);
+const dialog = el(
+  'dialog',
+  { className: 'cat-dialog drush-dialog' },
+  el(
+    'div',
+    { className: 'cat-card' },
+    el('h2', { id: 'drush-title', className: 'text-h3 font-black' }, 'Drush'),
+    el('p', { className: 'mt-2 text-body' }, 'Type a command, or pick one.'),
+    form,
+    suggestions,
+    output,
+    closeButton,
+  ),
+);
 dialog.setAttribute('aria-labelledby', 'drush-title');
-dialog.innerHTML = `<div class="cat-card">
-  <h2 id="drush-title" class="text-h3 font-black">Drush</h2>
-  <p class="mt-2 text-body">Type a command, or pick one.</p>
-  <form class="drush-form" method="dialog">
-    <label class="field-label mt-4 block" for="drush-input">Command</label>
-    <input id="drush-input" class="field-control" name="command" autocomplete="off" spellcheck="false" value="drush ">
-    <button type="submit" class="btn-secondary cat-close mt-4">Run</button>
-  </form>
-  <ul class="drush-suggestions" role="list"></ul>
-  <output class="drush-output" for="drush-input" role="status"></output>
-  <button type="button" class="btn-secondary cat-close mt-4" data-drush-close>Close</button>
-</div>`;
 document.body.append(dialog);
 
-const input = dialog.querySelector<HTMLInputElement>('#drush-input')!;
-const output = dialog.querySelector<HTMLOutputElement>('.drush-output')!;
 const show = (lines: readonly string[]): void => {
   output.replaceChildren(
     ...lines.map((line) =>
@@ -96,16 +138,14 @@ for (const command of Object.keys(OUTPUT)) {
     show(run(command));
   });
   item.append(pick);
-  dialog.querySelector('.drush-suggestions')!.append(item);
+  suggestions.append(item);
 }
 
-dialog.querySelector('form')!.addEventListener('submit', (event) => {
+form.addEventListener('submit', (event) => {
   event.preventDefault();
   show(run(input.value));
 });
-dialog
-  .querySelector('[data-drush-close]')!
-  .addEventListener('click', () => dialog.close());
+closeButton.addEventListener('click', () => dialog.close());
 
 const openDialog = (lines?: readonly string[]): void => {
   if (!dialog.open) dialog.showModal();
@@ -143,3 +183,5 @@ const check = (): void => {
 };
 document.addEventListener('drush', check);
 check();
+
+export {};

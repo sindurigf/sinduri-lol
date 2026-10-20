@@ -1,4 +1,5 @@
-import { expect, test } from './test';
+import { readFileSync } from 'node:fs';
+import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 
 /**
@@ -123,4 +124,50 @@ test('typing drush status anywhere opens the dialog with its output', async ({
   const dialog = page.getByRole('dialog', { name: 'Drush' });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole('status')).toContainText('Cats: 3');
+});
+
+/* WebKit applies upgrade-insecure-requests on loopback and then loads nothing over http. */
+const UPGRADE_INSECURE = /;?\s*upgrade-insecure-requests/;
+
+/* Serves `path` with the CSP the site ships (Trusted Types included) and collects what it blocks. */
+const withShippedCsp = async (page: Page, path: string) => {
+  const csp = /Content-Security-Policy: (.+)/.exec(
+    readFileSync('public/_headers', 'utf8'),
+  )?.[1];
+  expect(csp, 'public/_headers has no Content-Security-Policy').toBeTruthy();
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.addInitScript(() => {
+    document.addEventListener('securitypolicyviolation', (event) =>
+      console.error(`csp: ${event.violatedDirective}`),
+    );
+  });
+  page.on('console', (message) => {
+    if (message.text().startsWith('csp:')) errors.push(message.text());
+  });
+  await page.route(`**${path}`, async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({
+      response,
+      headers: {
+        ...response.headers(),
+        'content-security-policy': csp!.replace(UPGRADE_INSECURE, ''),
+      },
+    });
+  });
+  return errors;
+};
+
+test('the commands run under the CSP the site ships (Trusted Types)', async ({
+  page,
+}) => {
+  const errors = await withShippedCsp(page, '/');
+  await gotoSettled(page, ROUTE);
+  await typeAnywhere(page, 'drush cr');
+  await expect(
+    page.getByRole('status').filter({ hasText: STATUS }),
+  ).toBeAttached();
+  await page.getByRole('button', { name: 'Try a Command' }).click();
+  await expect(page.getByRole('dialog', { name: 'Drush' })).toBeVisible();
+  expect(errors, 'the shipped CSP blocked or broke the easter egg').toEqual([]);
 });
