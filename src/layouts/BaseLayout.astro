@@ -22,6 +22,7 @@ import { pageOgImage } from '../lib/og-image';
 import { personImageUrl } from '../lib/person-image';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import ReadingTab from '../components/ReadingTab.astro';
 import { SITE_FEED_PATH, SITEMAP_PATH } from '../lib/paths';
 import {
   BING_SITE_VERIFICATION,
@@ -269,6 +270,7 @@ const articleData = article && {
       <slot />
     </main>
     <Footer />
+    <ReadingTab />
     <script>
       import '../scripts/track-clicks';
       import '../scripts/failed-images';

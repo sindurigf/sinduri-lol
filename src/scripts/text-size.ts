@@ -80,3 +80,13 @@ for (const trigger of document.querySelectorAll<HTMLButtonElement>(
 )) {
   trigger.addEventListener('on-demand', () => run(trigger));
 }
+
+/* Escape closes the reading tab and returns focus to its summary. */
+document.addEventListener('keydown', (event) => {
+  const tab = document.querySelector<HTMLDetailsElement>(
+    '[data-reading-tab][open]',
+  );
+  if (event.key !== 'Escape' || !tab) return;
+  tab.open = false;
+  tab.querySelector('summary')?.focus();
+});

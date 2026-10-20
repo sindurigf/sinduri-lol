@@ -10,14 +10,11 @@ import {
   profileLinkName,
 } from '../lib/profiles';
 import { TALKS_PATH } from '../lib/paths';
-import { curiouserPages } from '../lib/curiouser-pages';
 import { SITE_NAME } from '../lib/site';
 /* Hashed under /_astro/ and cached once, instead of inline on every page. */
 import socialIcons from '../assets/social-icons.svg?url';
 /* `?worker&url`: a separate file, so no Vite preload helper, loaded by src under Trusted Types. */
 import onDemandRegistry from '../scripts/on-demand.ts?worker&url';
-import curiouserFeature from '../scripts/curiouser.ts?worker&url';
-import textSizeFeature from '../scripts/text-size.ts?worker&url';
 
 /* Source order is the reading order at every width; no CSS `order`. */
 
@@ -39,12 +36,6 @@ const POLICY_LINKS = [
 
 const current = (href: string) => ariaCurrent(Astro.url.pathname, href);
 
-/* Feature name to its `?worker&url` file; its trigger carries the file as `data-on-demand`. */
-const FEATURES = {
-  curiouser: curiouserFeature,
-  textSize: textSizeFeature,
-};
-
 /* A slide deck keeps its script budget for the deck, and gets no footer controls. */
 const onDemand = !Astro.url.pathname.startsWith(TALKS_PATH);
 
@@ -53,11 +44,6 @@ const FIRST_PUBLISHED = 2026;
 
 /* Not inline: Astro drops the space between two expressions on separate lines. */
 const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
-
-/* [title, href] pairs; the script leaves out the page it is on. */
-const curiouserJson = JSON.stringify(
-  curiouserPages().map(({ title, href }) => [title, href]),
-);
 
 /* CSS px: the rabbit's display height at its largest (--size-footer-rabbit). */
 const RABBIT_HEIGHT = 160;
@@ -116,76 +102,6 @@ const RABBIT_HEIGHT = 160;
             ))}
           </ul>
         </nav>
-      </div>
-
-      <div class="footer-extras">
-        {onDemand && (
-          <div class="footer-controls">
-            <div
-              class="footer-curiouser"
-              data-curiouser-scope
-              data-pages={curiouserJson}
-            >
-              <button
-                type="button"
-                class="label text-text hover:text-cyan"
-                hidden
-                data-curiouser
-                data-on-demand={FEATURES.curiouser}
-                data-go-class="footer-go label text-text hover:text-cyan"
-              >
-                Curiouser
-              </button>
-              <span class="footer-reel" data-curiouser-result></span>
-              <span class="sr-only" role="status" data-curiouser-status></span>
-            </div>
-
-            {
-              <div
-                class="footer-size js-only"
-                role="group"
-                aria-labelledby="footer-size-label"
-                data-text-size="site"
-              >
-                <span id="footer-size-label" class="label text-subtle">
-                  Text Size
-                </span>
-                <button
-                  type="button"
-                  class="label text-text hover:text-cyan"
-                  hidden
-                  data-on-demand={FEATURES.textSize}
-                  data-size-action="smaller"
-                >
-                  Drink Me
-                </button>
-                <button
-                  type="button"
-                  class="label text-text hover:text-cyan"
-                  hidden
-                  data-on-demand={FEATURES.textSize}
-                  data-size-action="larger"
-                >
-                  Eat Me
-                </button>
-                <button
-                  type="button"
-                  class="label text-text hover:text-cyan"
-                  hidden
-                  data-on-demand={FEATURES.textSize}
-                  data-size-action="reset"
-                >
-                  Just Right
-                </button>
-                <span
-                  class="footer-size-status"
-                  role="status"
-                  data-size-status
-                ></span>
-              </div>
-            }
-          </div>
-        )}
       </div>
 
       {onDemand && (

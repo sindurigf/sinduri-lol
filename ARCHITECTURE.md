@@ -314,8 +314,8 @@ Commits, copy rules and process: [AGENTS.md](AGENTS.md).
 multiplied into `--text-lead`, `--text-standfirst`, `--text-body` and
 `--text-label` in `global.css`. Scaling the root font size was rejected: media
 queries ignore it, so layouts overflowed at widths such as 768px.
-`tests/rabbit-hole.spec.ts` holds the no-sideways-scroll rule at 320, 390 and
-1280px.
+`tests/reading-tab.spec.ts` holds the no-sideways-scroll rule at 320, 390 and
+1280px. The control is the reading tab (`ReadingTab.astro`).
 
 ### Scripts loaded on demand
 

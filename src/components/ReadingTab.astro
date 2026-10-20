@@ -1,0 +1,52 @@
+---
+import { TALKS_PATH } from '../lib/paths';
+import textSizeFeature from '../scripts/text-size.ts?worker&url';
+
+/* The text size control: a tab on the page's right edge that opens a panel of Drink Me, Eat Me and Just Right. */
+const show = !Astro.url.pathname.startsWith(TALKS_PATH);
+const BUTTONS = [
+  { action: 'smaller', label: 'Drink Me', hint: 'Smaller text' },
+  { action: 'larger', label: 'Eat Me', hint: 'Larger text' },
+  { action: 'reset', label: 'Just Right', hint: 'Back to 100 percent' },
+] as const;
+---
+
+{show && (
+  <details
+    class="reading-tab js-only"
+    hidden
+    data-reading-tab
+    data-text-size="site"
+    data-on-demand={textSizeFeature}
+  >
+    <summary class="reading-tab-summary" data-on-demand={textSizeFeature}>
+      Aa<span class="sr-only"> Text Size</span>
+    </summary>
+    <div
+      class="reading-tab-panel"
+      role="group"
+      aria-labelledby="reading-tab-label"
+    >
+      <span id="reading-tab-label" class="label text-subtle">
+        Text Size
+      </span>
+      {BUTTONS.map(({ action, label, hint }) => (
+        <>
+          <button
+            type="button"
+            class="reading-tab-button"
+            data-on-demand={textSizeFeature}
+            data-size-action={action}
+            aria-describedby={`reading-tab-hint-${action}`}
+          >
+            {label}
+          </button>
+          <span id={`reading-tab-hint-${action}`} hidden>
+            {hint}
+          </span>
+        </>
+      ))}
+      <span class="reading-tab-status" role="status" data-size-status />
+    </div>
+  </details>
+)}

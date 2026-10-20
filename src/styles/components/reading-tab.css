@@ -1,0 +1,77 @@
+@layer components {
+  /*
+   * A tab on the right edge, at mid-height; its panel opens to the left. Its
+   * rings are drawn inside, since the tab touches the screen edge and a ring
+   * outside it would be cut off.
+   */
+  .reading-tab {
+    @apply fixed z-40;
+
+    inset-block-start: 50%;
+    inset-inline-end: 0;
+    translate: 0 -50%;
+
+    &[open] {
+      display: flex;
+      flex-direction: row-reverse;
+    }
+
+    @media print {
+      display: none;
+    }
+  }
+
+  /*
+   * Keyboard focus in the page moves the tab out of the way, so it never hides
+   * a focused control (SC 2.4.11, 2.4.12); it is back when focus leaves, and
+   * shown while it or its panel holds focus.
+   */
+  body:has(main :focus-visible) .reading-tab:not(:focus-within) {
+    translate: 100% -50%;
+    visibility: hidden;
+  }
+
+  .reading-tab-summary {
+    @apply flex min-h-14 min-w-target cursor-pointer list-none items-center justify-center border-4 border-e-0 border-border bg-surface px-2 text-label font-black text-text;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &:hover {
+      @apply bg-cyan text-background;
+    }
+
+    &:focus-visible {
+      outline-offset: calc(-1 * (var(--focus-width) + var(--focus-gap)));
+    }
+  }
+
+  .reading-tab:not([open]) .reading-tab-panel {
+    display: none;
+  }
+
+  .reading-tab-panel {
+    @apply flex max-w-56 flex-col gap-2 border-4 border-border bg-surface p-3;
+  }
+
+  .reading-tab-button {
+    @apply flex min-h-target min-w-target items-center border-4 border-border bg-surface px-3 text-left text-label font-black uppercase tracking-label text-text;
+
+    &:hover {
+      @apply bg-cyan text-background;
+    }
+
+    &:focus-visible {
+      outline-offset: calc(-1 * (var(--focus-width) + var(--focus-gap)));
+    }
+
+    &[aria-disabled='true'] {
+      @apply border-dashed text-subtle;
+    }
+  }
+
+  .reading-tab-status {
+    @apply text-label text-subtle;
+  }
+}

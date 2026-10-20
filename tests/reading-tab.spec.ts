@@ -5,9 +5,8 @@ import { serveUnderShippedCsp } from './csp';
 import { NODE } from './tags';
 import { TEXT_SCALE_KEY, TEXT_SCALE_STEPS } from '../src/lib/text-scale';
 
-const CURIOUSER_TRIES = 25;
 const WIDE_ROUTES = ['/', '/about/', '/blog/', '/credits/', '/career/'];
-const SCRIPTS = ['src/scripts/curiouser.ts', 'src/scripts/text-size.ts'];
+const SCRIPTS = ['src/scripts/text-size.ts'];
 
 /** The requested scale as the root holds it: '' (100%), '1.25' ... '2'. */
 const rootSize = (page: Page) =>
@@ -23,8 +22,13 @@ const bodyPx = (page: Page) =>
     ),
   );
 
-const curiouser = (page: Page) => page.locator('[data-curiouser]');
-const landing = (page: Page) => page.locator('[data-curiouser-result] a');
+const tab = (page: Page) => page.locator('[data-reading-tab]');
+const openTab = async (page: Page) => {
+  await tab(page).locator('summary').click();
+  await expect(
+    tab(page).getByRole('button', { name: /Drink Me/ }),
+  ).toBeVisible();
+};
 
 const sidewaysPx = (page: Page) =>
   page.evaluate(
@@ -33,61 +37,24 @@ const sidewaysPx = (page: Page) =>
       document.documentElement.clientWidth,
   );
 
-test.describe('Curiouser and Drink Me, Eat Me', () => {
-  test('without a script Curiouser and the size buttons are not drawn', async ({
-    browser,
-  }) => {
+test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
+  test('without a script the reading tab is not drawn', async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
     await page.goto('/about/');
     await expect(
-      curiouser(page),
-      'a dead button shows without a script',
-    ).toBeHidden();
-    await expect(
-      page.locator('.footer-size'),
-      'a size control shows without a script',
+      page.locator('[data-reading-tab]'),
+      'the reading tab shows without a script',
     ).toBeHidden();
     await context.close();
   });
 
-  test('Curiouser never lands on the page it is on', async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await gotoSettled(page, '/about/');
-    for (let i = 0; i < CURIOUSER_TRIES; i += 1) {
-      await curiouser(page).click();
-      await expect(landing(page)).toBeVisible();
-      expect(await landing(page).getAttribute('href')).not.toBe('/about/');
-    }
-  });
-
-  test('a slide deck has no Curiouser or size buttons, to keep its script budget', async ({
+  test('a slide deck has no reading tab, to keep its script budget', async ({
     page,
   }) => {
     await gotoSettled(page, '/talks/open-source-is-not-just-code/');
+    await expect(page.locator('[data-reading-tab]')).toHaveCount(0);
     await expect(page.locator('[data-on-demand]')).toHaveCount(0);
-  });
-
-  test('the reel runs, then lands and offers the link', async ({ page }) => {
-    await gotoSettled(page, '/about/');
-    await curiouser(page).click();
-    await expect(page.locator('[data-curiouser-result] span')).not.toHaveText(
-      '',
-    );
-    await expect(landing(page)).toBeVisible({ timeout: 4000 });
-    await expect(landing(page)).toHaveText(/^Go to /);
-  });
-
-  test('with reduced motion Curiouser lands at once, with no reel', async ({
-    page,
-  }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await gotoSettled(page, '/about/');
-    await curiouser(page).click();
-    await expect(landing(page)).toBeVisible({ timeout: 300 });
-    await expect(page.locator('[data-curiouser-status]')).toContainText(
-      'Landed on',
-    );
   });
 
   test('Drink Me and Eat Me step the text size, stop at the ends and say so, and the size is remembered', async ({
@@ -96,11 +63,12 @@ test.describe('Curiouser and Drink Me, Eat Me', () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await gotoSettled(page, '/about/');
     const base = await bodyPx(page);
-    const group = page.locator('[data-text-size="site"]');
+    const group = tab(page);
+    await openTab(page);
     const status = group.locator('[data-size-status]');
-    const drink = group.getByRole('button', { name: 'Drink Me' });
-    const eat = group.getByRole('button', { name: 'Eat Me' });
-    const right = group.getByRole('button', { name: 'Just Right' });
+    const drink = group.getByRole('button', { name: /^Drink Me/ });
+    const eat = group.getByRole('button', { name: /^Eat Me/ });
+    const right = group.getByRole('button', { name: /^Just Right/ });
     await expect(right).toBeVisible();
     for (const size of TEXT_SCALE_STEPS.filter((step) => step > 100)) {
       await eat.click();
@@ -114,6 +82,7 @@ test.describe('Curiouser and Drink Me, Eat Me', () => {
     expect(await rootSize(page), 'Eat Me went past the top step').toBe('2');
     await page.reload();
     expect(await rootSize(page), 'the size was not remembered').toBe('2');
+    await openTab(page);
     await right.click();
     await expect.poll(() => rootSize(page)).toBe('');
     expect(await bodyPx(page)).toBeCloseTo(base, 1);
@@ -157,8 +126,9 @@ test.describe('Curiouser and Drink Me, Eat Me', () => {
   }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await gotoSettled(page, '/credits/');
-    const group = page.locator('[data-text-size="site"]');
-    const eat = group.getByRole('button', { name: 'Eat Me' });
+    const group = tab(page);
+    await openTab(page);
+    const eat = group.getByRole('button', { name: /^Eat Me/ });
     for (let i = 0; i < TEXT_SCALE_STEPS.length; i += 1) {
       await eat.click({ force: true });
     }
@@ -168,6 +138,103 @@ test.describe('Curiouser and Drink Me, Eat Me', () => {
     await expect(eat).toHaveAttribute('aria-disabled', 'true');
     expect(await sidewaysPx(page)).toBeLessThanOrEqual(0);
     await page.evaluate((key) => localStorage.removeItem(key), TEXT_SCALE_KEY);
+  });
+
+  test('the reading tab is a native disclosure with a named summary, three named buttons and 44px targets (SC 2.5.3, 2.5.5, 4.1.2)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await gotoSettled(page, '/about/');
+    const summary = tab(page).locator('summary');
+    await expect(summary).toHaveAccessibleName('Aa Text Size');
+    await openTab(page);
+    const buttons = tab(page).getByRole('button');
+    await expect(buttons).toHaveCount(3);
+    await expect(buttons.nth(0)).toHaveAccessibleName('Drink Me');
+    await expect(buttons.nth(0)).toHaveAccessibleDescription('Smaller text');
+    await expect(buttons.nth(1)).toHaveAccessibleName('Eat Me');
+    await expect(buttons.nth(1)).toHaveAccessibleDescription('Larger text');
+    await expect(buttons.nth(2)).toHaveAccessibleName('Just Right');
+    await expect(buttons.nth(2)).toHaveAccessibleDescription(
+      'Back to 100 percent',
+    );
+    for (const box of await Promise.all([
+      summary.boundingBox(),
+      ...(await buttons.all()).map((b) => b.boundingBox()),
+    ])) {
+      expect(Math.min(box!.width, box!.height)).toBeGreaterThanOrEqual(44);
+    }
+    await expect(
+      tab(page).getByRole('group', { name: 'Text Size' }),
+    ).toBeVisible();
+  });
+
+  test('the keyboard opens the reading tab and Escape closes it and returns focus to the summary (SC 2.1.1, 2.4.3)', async ({
+    page,
+  }) => {
+    await gotoSettled(page, '/about/');
+    const summary = tab(page).locator('summary');
+    await summary.focus();
+    await page.keyboard.press('Enter');
+    await expect(tab(page)).toHaveAttribute('open', '');
+    await page.keyboard.press('Tab');
+    await expect(
+      tab(page).getByRole('button', { name: /^Drink Me/ }),
+    ).toBeFocused();
+    /* The key handler arrives with the script the first press loads. */
+    await expect(async () => {
+      await page.keyboard.press('Escape');
+      await expect(tab(page)).not.toHaveAttribute('open', '', { timeout: 300 });
+    }).toPass();
+    await expect(summary).toBeFocused();
+  });
+
+  test('a control under the tab that takes keyboard focus is never hidden by it (SC 2.4.11, 2.4.12)', async ({
+    page,
+  }) => {
+    for (const width of [320, 390, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      for (const route of WIDE_ROUTES) {
+        await gotoSettled(page, route);
+        await page.keyboard.press('Tab');
+        const hidden = await page.evaluate(() => {
+          const tabEl = document.querySelector('[data-reading-tab]')!;
+          const meets = (a: DOMRect, b: DOMRect) =>
+            a.left < b.right &&
+            a.right > b.left &&
+            a.top < b.bottom &&
+            a.bottom > b.top;
+          const under = [
+            ...document.querySelectorAll<HTMLElement>('main a, main button'),
+          ].filter((el) => {
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && meets(r, tabEl.getBoundingClientRect());
+          });
+          const out: string[] = [];
+          for (const el of under) {
+            el.focus();
+            const shown = getComputedStyle(tabEl).visibility !== 'hidden';
+            if (
+              shown &&
+              meets(el.getBoundingClientRect(), tabEl.getBoundingClientRect())
+            ) {
+              out.push(el.textContent?.trim().slice(0, 30) ?? '');
+            }
+          }
+          return out;
+        });
+        expect(
+          hidden,
+          `${route} at ${width}px: the tab covers a focused control`,
+        ).toEqual([]);
+      }
+    }
+  });
+
+  test('the reading tab is not printed', async ({ page }) => {
+    await gotoSettled(page, '/about/');
+    await page.emulateMedia({ media: 'print' });
+    await expect(tab(page)).toBeHidden();
   });
 
   test(
@@ -185,12 +252,11 @@ test.describe('Curiouser and Drink Me, Eat Me', () => {
   }) => {
     const problems = await serveUnderShippedCsp(page);
     await gotoSettled(page, '/about/');
-    await curiouser(page).click();
-    await expect(landing(page)).toBeVisible({ timeout: 4000 });
-    await page.getByRole('button', { name: 'Eat Me' }).click();
+    await openTab(page);
+    await page.getByRole('button', { name: /^Eat Me/ }).click();
     await expect.poll(() => rootSize(page)).toBe('1.25');
-    await page.getByRole('button', { name: 'Drink Me' }).click();
-    await page.getByRole('button', { name: 'Drink Me' }).click();
+    await page.getByRole('button', { name: /^Drink Me/ }).click();
+    await page.getByRole('button', { name: /^Drink Me/ }).click();
     await expect.poll(() => rootSize(page)).toBe('0.75');
     expect(problems, 'a violation or script error').toEqual([]);
   });

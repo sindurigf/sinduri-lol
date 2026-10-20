@@ -1084,25 +1084,30 @@ Enforced by `tests/footer.spec.ts`.
   visually hidden name
 - `nav` "Site": Home, About, Career, Blog
 - `nav` "About this site": the links in `POLICY_LINKS` in `Footer.astro`
-- the extras row (`div.footer-extras`): `div.footer-controls` with Curiouser
-  and the text size buttons Drink Me, Eat Me and Just Right; both load on
-  demand, so without a script they stay hidden; slide decks get no controls
 - the copyright
 - the name "Lepus Ridet" (`div lang="la"`, not a heading) as display type on a
   gold band, the rabbit (`alt=""`) standing on its last letter
 
-### Curiouser and the text size
+### The reading tab
 
-- Curiouser (`src/scripts/curiouser.ts`): a reel of real titles slows and
-  lands on a page that is not the current one; a link then goes there. Under
-  reduced motion it lands at once. The page list is one `data-pages`
-  attribute, built from `src/lib/curiouser-pages.ts`.
-- Drink Me, Eat Me and Just Right (`src/scripts/text-size.ts`) step
-  `--text-scale` 75 to 200 percent. It multiplies the reading tokens (lead,
-  standfirst, body, label) in `global.css`, not the root size, so spacing and
-  breakpoints stay and browser zoom still applies. A step the page cannot hold
-  without sideways scroll is taken back (SC 1.4.10). The size is remembered;
-  the head script in `BaseLayout.astro` applies it before first paint.
+`src/components/ReadingTab.astro`, `src/styles/components/reading-tab.css`,
+`src/scripts/text-size.ts`. Enforced by `tests/reading-tab.spec.ts`.
+
+- A native `details` fixed to the right edge at mid-height; the `summary`
+  shows "Aa" and is named "Aa Text Size". Its panel holds a group "Text Size"
+  with three buttons, each 44px at least: Drink Me (smaller), Eat Me (larger)
+  and Just Right (100 percent), named like "Drink Me, smaller text", and a
+  polite status. Escape closes it and returns focus to the summary.
+- The buttons step `--text-scale` 75 to 200 percent. It multiplies the reading
+  tokens (lead, standfirst, body, label) in `global.css`, not the root size, so
+  spacing and breakpoints stay and browser zoom still applies. A step the page
+  cannot hold without sideways scroll is taken back (SC 1.4.10). The size is
+  remembered; the head script in `BaseLayout.astro` applies it before first
+  paint.
+- While a control in `main` has keyboard focus the tab slides out of the way,
+  so it never hides a focused control (SC 2.4.11, 2.4.12). Closed, it covers a
+  44px by 56px area of the right edge at mid-height.
+- Hidden without a script, on talk decks and in print. Rings are drawn inside.
 
 ### Footer layout
 

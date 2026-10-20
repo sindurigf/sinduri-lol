@@ -36,69 +36,6 @@
     text-underline-offset: var(--underline-offset);
   }
 
-  /* Curiouser and the text size buttons: a wrapping row between the columns and the copyright. */
-  .footer-extras {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: --spacing(2) --spacing(8);
-    margin-top: --spacing(8);
-  }
-
-  .footer-controls,
-  .footer-curiouser,
-  .footer-size {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    column-gap: --spacing(4);
-  }
-
-  .footer-controls {
-    gap: --spacing(2) --spacing(8);
-  }
-
-  .footer-extras :is(a, button) {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--spacing-target);
-    min-width: var(--spacing-target);
-  }
-
-  .footer-reel,
-  .footer-size-status {
-    @apply text-body text-subtle;
-  }
-
-  /* A text button keeps a drawn edge in forced colors, where a bare label would have none. */
-  .footer-extras button {
-    @apply border-4 border-transparent;
-
-    @media (forced-colors: active) {
-      border-color: ButtonText;
-    }
-  }
-
-  .footer-go {
-    text-decoration: underline;
-    text-decoration-thickness: var(--underline-thin);
-    text-underline-offset: var(--underline-offset);
-  }
-
-  /* Underlined, so a text button reads as pressable without color (SC 1.4.1); unavailable goes dashed and subtle. */
-  .footer-size button {
-    padding-inline: --spacing(2);
-    text-decoration: underline;
-    text-decoration-thickness: var(--underline-thin);
-    text-underline-offset: var(--underline-offset);
-
-    &[aria-disabled='true'] {
-      color: var(--color-subtle);
-      text-decoration-style: dashed;
-    }
-  }
-
   /*
    * Phone: rows of four and three, the second offset by half a tile and gap.
    * Offset the row, not its first tile. Padding keeps tilt and shadow
@@ -273,10 +210,6 @@
 
     .footer-stickers li:nth-child(n + 5) {
       left: 0;
-    }
-
-    .footer-extras {
-      justify-content: flex-start;
     }
 
     .footer-copyright {
