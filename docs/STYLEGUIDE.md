@@ -1222,8 +1222,9 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   404 page): each press of Sniff Around adds the next real page whose address
   is closest to the mistyped one (`src/lib/page-match.ts`, against
   `src/lib/site-pages.ts` inlined as JSON), best first, at most three, above
-  the Home and Blog quick links; each find is announced. Without script only
-  the quick links show; under reduced motion the rabbit stays still
+  the Home and Blog quick links (a find that is one moves up); each find is
+  announced and focus moves to the last find when the trail ends. Without
+  script only the heading and the quick links show; under reduced motion the rabbit stays still
   (`tests/lost-page.spec.ts`). Its copy is a placeholder.
 - The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
   first on screen, play along it (games like the yarn and the fly carry them,

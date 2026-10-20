@@ -16,6 +16,7 @@ const COPY = {
 };
 
 const game = document.querySelector<HTMLElement>('[data-lost-game]');
+const play = game?.querySelector<HTMLElement>('[data-lost-play]');
 const sniff = game?.querySelector<HTMLButtonElement>('[data-lost-sniff]');
 const finds = game?.querySelector<HTMLElement>('[data-lost-finds]');
 const statusLine = game?.querySelector<HTMLElement>('.lost-status');
@@ -38,7 +39,13 @@ const rabbit = (): SVGSVGElement | null => {
 if (game && sniff && finds && statusLine && data) {
   const pages = JSON.parse(data) as MatchablePage[];
   const trail = rankPages(pages, location.pathname).slice(0, FINDS);
-  const quick = finds.firstElementChild;
+  /* Sniff Around goes away when the trail ends; focus moves to the last find, not to the page body (SC 2.4.3). */
+  const finish = (): void => {
+    [...finds.querySelectorAll<HTMLAnchorElement>('[data-found] a')]
+      .at(-1)
+      ?.focus();
+    sniff.hidden = true;
+  };
   let shown = 0;
 
   const art = rabbit();
@@ -48,18 +55,34 @@ if (game && sniff && finds && statusLine && data) {
     const page = trail[shown];
     if (!page) {
       statusLine.textContent = shown ? COPY.done : COPY.none;
-      sniff.hidden = true;
+      if (shown) finish();
+      else {
+        finds.querySelector('a')?.focus();
+        sniff.hidden = true;
+      }
       return;
     }
     shown += 1;
-    const item = document.createElement('li');
+    /* A find that is already a quick link moves up instead of showing twice. */
+    const listed = [
+      ...finds.querySelectorAll<HTMLElement>('li:not([data-found])'),
+    ].find(
+      (item) => item.querySelector('a')?.getAttribute('href') === page.path,
+    );
+    const item = listed ?? document.createElement('li');
     item.dataset.found = '';
-    const link = Object.assign(document.createElement('a'), {
-      href: page.path,
-      textContent: page.title,
-    });
-    item.append(link);
-    finds.insertBefore(item, quick);
+    if (!listed) {
+      item.append(
+        Object.assign(document.createElement('a'), {
+          href: page.path,
+          textContent: page.title,
+        }),
+      );
+    }
+    const firstQuick = [...finds.children].find(
+      (child) => !child.hasAttribute('data-found'),
+    );
+    finds.insertBefore(item, firstQuick ?? null);
     statusLine.textContent = COPY.found(page.title);
     spot?.toggleAttribute('data-sniffing', true);
     spot?.addEventListener(
@@ -70,11 +93,11 @@ if (game && sniff && finds && statusLine && data) {
       },
     );
     if (shown === trail.length) {
-      sniff.hidden = true;
       statusLine.textContent = `${COPY.found(page.title)} ${COPY.done}`;
+      finish();
     } else {
       sniff.textContent = COPY.more;
     }
   });
-  sniff.hidden = false;
+  if (play) play.hidden = false;
 }

@@ -61,20 +61,23 @@ const pages = await sitePages();
     </ul>
   </PageHero>
 
-  {/* Placeholder copy. Without script the quick links are the whole section. */}
+  {/* Placeholder copy. Without script only the heading and the quick links show. */}
   <section data-lost-game class="band py-section" aria-labelledby="lost-title">
     <div class="mx-auto max-w-page">
       <h2 id="lost-title" class="text-h2 text-text">
-        Sniff Out the Page
+        Find Your Way
       </h2>
-      <p class="lost-intro">
-        The rabbit can sniff out where you meant to go. Or take a quick way out.
-      </p>
-      <div class="lost-sniff-row">
-        <button type="button" class="btn-primary" data-lost-sniff hidden>
-          Sniff Around
-        </button>
-        <span data-lost-rabbit aria-hidden="true"></span>
+      <div data-lost-play hidden>
+        <p class="lost-intro">
+          The rabbit can sniff out where you meant to go. Or take a quick way
+          out below.
+        </p>
+        <div class="lost-sniff-row">
+          <button type="button" class="btn-primary" data-lost-sniff>
+            Sniff Around
+          </button>
+          <span data-lost-rabbit aria-hidden="true"></span>
+        </div>
       </div>
       <p class="lost-status" role="status"></p>
       <ul class="lost-finds" role="list" data-lost-finds>

@@ -14,7 +14,7 @@ import { wallClasses } from '../lib/wall';
  * from the post are marked. Change the PDF and this page together: no test
  * compares their text. A slot neither source fills gets fewer items, not new copy.
  */
-const CV_HREF = '/sinduri-guntupalli-cv.pdf';
+const CV_HREF = CV_PATH;
 const PUBLIC_DIR = 'public';
 const BYTES_PER_KB = 1024;
 
@@ -133,6 +133,7 @@ const OPEN_SOURCE_PAIRS = Array.from(
 );
 const pairWall = (count: number) =>
   wallClasses({ sm: [[...Array(count).keys()]] }, count);
+import { CV_PATH } from '../lib/paths';
 ---
 
 <BaseLayout

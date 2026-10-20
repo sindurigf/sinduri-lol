@@ -7,6 +7,7 @@ import {
   CAREER_PATH,
   CONTACT_PATH,
   CREDITS_PATH,
+  CV_PATH,
   PRIVACY_PATH,
   categoryHref,
   postHref,
@@ -34,6 +35,7 @@ export const sitePages = async (): Promise<SitePage[]> => {
     { title: 'Accessibility', path: ACCESSIBILITY_PATH },
     { title: 'Privacy', path: PRIVACY_PATH },
     { title: 'Credits', path: CREDITS_PATH },
+    { title: 'CV', path: CV_PATH },
     ...(await getCategoriesWithPosts()).map((category) => ({
       title: categoryLabel(category),
       path: categoryHref(category),

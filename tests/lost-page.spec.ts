@@ -34,6 +34,14 @@ test('a mistyped address is sniffed out to the real page, best match first', asy
   }
   await expect(sniff, 'Sniff Around never finished').toBeHidden();
   await expect(
+    page.locator('[data-lost-finds] [data-found] a').last(),
+    'focus fell to the page when Sniff Around went away',
+  ).toBeFocused();
+  await expect(
+    page.locator('[data-lost-finds]').getByRole('link', { name: 'Blog' }),
+    'a find shows twice',
+  ).toHaveCount(1);
+  await expect(
     page.locator('[data-lost-finds]').getByRole('link', { name: 'Home' }),
   ).toBeVisible();
 });
@@ -57,6 +65,7 @@ test('without JavaScript the quick links stand alone', async ({
   const page = await context.newPage();
   await page.goto(TYPO);
   await expect(page.locator('[data-lost-sniff]')).toBeHidden();
+  await expect(page.getByText('The rabbit can sniff')).toBeHidden();
   await expect(page.locator('[data-lost-finds]').getByRole('link')).toHaveCount(
     2,
   );
