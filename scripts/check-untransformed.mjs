@@ -25,6 +25,11 @@ const SERVED_AS_IS = new Map([
       'rendered on demand.',
   ],
   [
+    'logo-rabbit.png',
+    'the runtime image endpoint reads it for /contact/send/, which renders ' +
+      'the header on demand.',
+  ],
+  [
     'hero-rabbit.webp',
     'the hero canvas draws its frames with drawImage; it is a WebP atlas already.',
   ],

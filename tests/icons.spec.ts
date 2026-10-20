@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from './test';
 import { builtPages, DIST_DIR, ROUTES } from './routes';
@@ -11,6 +11,8 @@ import { NODE } from './tags';
  */
 
 const MANIFEST_ROUTE = '/site.webmanifest';
+/* Every page links favicon.svg; scripts/make-logo.mjs thins its curves to stay under this. */
+const FAVICON_SVG_BYTES = 4096;
 
 interface Size {
   width: number;
@@ -142,6 +144,14 @@ test.describe('the favicon set', NODE, () => {
       }
     }
     expect(rasters, 'no raster icon declares its sizes').toBeGreaterThan(0);
+  });
+
+  test('favicon.svg stays within its byte budget', () => {
+    const bytes = statSync(distFile('/favicon.svg')).size;
+    expect(
+      bytes,
+      `favicon.svg is ${bytes} B, over ${FAVICON_SVG_BYTES}: thin its paths in scripts/make-logo.mjs.`,
+    ).toBeLessThanOrEqual(FAVICON_SVG_BYTES);
   });
 
   test('favicon.ico carries every size it declares', () => {
