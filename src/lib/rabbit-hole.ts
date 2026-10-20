@@ -14,6 +14,7 @@ import { postLinks, talkLinks, type PageLink } from './site-pages';
 /** Lewis Carroll, Alice's Adventures in Wonderland (1865), chapters 1 and 2: public domain. */
 export const FALL_QUOTE =
   'Down, down, down. Would the fall never come to an end?';
+export const QUOTE_SOURCE = 'Lewis Carroll, Alice’s Adventures in Wonderland';
 export const CURIOUSER_QUOTE = 'Curiouser and curiouser!';
 
 export const LEPUS_RIDET_MEANING = 'the hare laughs';

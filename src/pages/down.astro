@@ -4,7 +4,12 @@ import PageHero from '../components/PageHero.astro';
 import Section from '../components/Section.astro';
 import { CONTACT_PATH } from '../lib/paths';
 import textSizeFeature from '../scripts/text-size.ts?worker&url';
-import { CURIOUSER_QUOTE, FALL_QUOTE, shelves } from '../lib/rabbit-hole';
+import {
+  CURIOUSER_QUOTE,
+  FALL_QUOTE,
+  QUOTE_SOURCE,
+  shelves,
+} from '../lib/rabbit-hole';
 
 /*
  * The shelves are the site's own content, read at build time. Everything is a
@@ -32,7 +37,10 @@ const SHELF =
         The Fall
       </h2>
       <blockquote class="mt-head max-w-measure text-lead text-subtle">
-        <p>&ldquo;{FALL_QUOTE}&rdquo;</p>
+        &ldquo;{FALL_QUOTE}&rdquo;
+        <cite class="mt-3 block text-body not-italic">
+          {QUOTE_SOURCE}, chapter 1
+        </cite>
       </blockquote>
       <ol role="list" class="mt-section space-y-section">
         {items.map((shelf, i) => (
@@ -56,7 +64,10 @@ const SHELF =
         ))}
       </ol>
       <blockquote class="mt-section max-w-measure text-lead text-subtle">
-        <p>&ldquo;{CURIOUSER_QUOTE}&rdquo;</p>
+        &ldquo;{CURIOUSER_QUOTE}&rdquo;
+        <cite class="mt-3 block text-body not-italic">
+          {QUOTE_SOURCE}, chapter 2
+        </cite>
       </blockquote>
     </div>
   </section>
@@ -72,10 +83,10 @@ const SHELF =
       aria-labelledby="door-size-label"
       data-text-size="page"
     >
-      <p id="door-size-label" class="label text-gold-text">
+      <div id="door-size-label" class="label text-gold-text">
         Text Size
-      </p>
-      <p class="mt-4 flex flex-wrap items-center gap-6">
+      </div>
+      <div class="mt-4 flex flex-wrap items-center gap-6">
         <button
           type="button"
           class="btn-gold-secondary"
@@ -103,7 +114,7 @@ const SHELF =
         >
           Just Right
         </button>
-      </p>
+      </div>
       <p
         class="mt-4 text-body text-gold-text"
         role="status"

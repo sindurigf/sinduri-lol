@@ -132,6 +132,8 @@ for (const width of WIDTHS) {
         for (const link of document.querySelectorAll('footer a')) {
           link.scrollIntoView({ block: 'center' });
           const box = link.getBoundingClientRect();
+          /* A link that is not drawn, such as the no-script fallback, covers nothing. */
+          if (box.width === 0 && box.height === 0) continue;
           const hit = document.elementFromPoint(
             box.left + box.width / 2,
             box.top + box.height / 2,

@@ -77,6 +77,15 @@
     @apply text-body text-subtle;
   }
 
+  /* A text button keeps a drawn edge in forced colors, where a bare label would have none. */
+  .footer-extras button {
+    @apply border-4 border-transparent;
+
+    @media (forced-colors: active) {
+      border-color: ButtonText;
+    }
+  }
+
   .footer-go {
     text-decoration: underline;
     text-decoration-thickness: var(--underline-thin);

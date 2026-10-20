@@ -56,7 +56,10 @@ const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
 
 /* /down/ has the same size buttons at its door, scoped to that page. */
 const sizeControls = Astro.url.pathname !== DOWN_PATH;
-const curiouserLinks = await curiouserPages();
+/* [title, href] pairs; the script leaves out the page it is on. */
+const curiouserJson = JSON.stringify(
+  (await curiouserPages()).map(({ title, href }) => [title, href]),
+);
 
 /* CSS px: the rabbit's display height at its largest (--size-footer-rabbit). */
 const RABBIT_HEIGHT = 160;
@@ -118,7 +121,7 @@ const RABBIT_HEIGHT = 160;
       </div>
 
       <div class="footer-extras">
-        <ul class="footer-links">
+        <ul role="list" class="footer-links">
           <li>
             <a
               href={DOWN_PATH}
@@ -132,9 +135,13 @@ const RABBIT_HEIGHT = 160;
 
         {onDemand && (
           <div class="footer-controls">
-            <div class="footer-curiouser" data-curiouser-scope>
+            <div
+              class="footer-curiouser"
+              data-curiouser-scope
+              data-pages={curiouserJson}
+            >
               <a
-                href={DOWN_PATH}
+                href={`${DOWN_PATH}#fall-heading`}
                 class="footer-curiouser-link label text-text hover:text-cyan"
               >
                 Curiouser
@@ -151,13 +158,6 @@ const RABBIT_HEIGHT = 160;
               </button>
               <span class="footer-reel" data-curiouser-result></span>
               <span class="sr-only" role="status" data-curiouser-status></span>
-              <ul hidden data-curiouser-pages>
-                {curiouserLinks.map((page) => (
-                  <li>
-                    <a href={page.href}>{page.title}</a>
-                  </li>
-                ))}
-              </ul>
             </div>
 
             {sizeControls && (

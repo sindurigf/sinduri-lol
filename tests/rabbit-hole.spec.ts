@@ -85,7 +85,7 @@ test.describe('the rabbit hole', () => {
     await page.goto('/about/');
     await expect(page.locator('.footer-curiouser-link')).toHaveAttribute(
       'href',
-      DOWN,
+      `${DOWN}#fall-heading`,
     );
     await expect(
       curiouser(page),
@@ -151,20 +151,20 @@ test.describe('the rabbit hole', () => {
     for (const size of TEXT_SCALE_STEPS.filter((step) => step > 100)) {
       await eat.click();
       await expect(status).toHaveText(`Text is ${size}%.`);
-      expect(await rootSize(page)).toBe(String(size / 100));
+      await expect.poll(() => rootSize(page)).toBe(String(size / 100));
       expect(await bodyPx(page)).toBeCloseTo((size / 100) * base, 1);
     }
     await expect(eat).toHaveAttribute('aria-disabled', 'true');
-    await eat.click();
+    await eat.click({ force: true });
     await expect(status).toContainText('already the largest');
     expect(await rootSize(page), 'Eat Me went past the top step').toBe('2');
     await page.reload();
     expect(await rootSize(page), 'the size was not remembered').toBe('2');
     await right.click();
-    expect(await rootSize(page)).toBe('');
+    await expect.poll(() => rootSize(page)).toBe('');
     expect(await bodyPx(page)).toBeCloseTo(base, 1);
     await expect(right).toHaveAttribute('aria-disabled', 'true');
-    for (let i = 0; i < 3; i += 1) await drink.click();
+    for (let i = 0; i < 3; i += 1) await drink.click({ force: true });
     await expect(status).toContainText('already the smallest');
     expect(await rootSize(page), 'Drink Me went below the lowest step').toBe(
       '0.75',
@@ -205,7 +205,8 @@ test.describe('the rabbit hole', () => {
     await gotoSettled(page, '/credits/');
     const group = page.locator('[data-text-size="site"]');
     const eat = group.getByRole('button', { name: 'Eat Me' });
-    for (let i = 0; i < TEXT_SCALE_STEPS.length; i += 1) await eat.click();
+    for (let i = 0; i < TEXT_SCALE_STEPS.length; i += 1)
+      await eat.click({ force: true });
     await expect(group.locator('[data-size-status]')).toContainText(
       'the most this page fits',
     );
@@ -224,7 +225,7 @@ test.describe('the rabbit hole', () => {
       'the footer control shows on /down/',
     ).toHaveCount(0);
     await page.locator('#door').getByRole('button', { name: 'Eat Me' }).click();
-    expect(await rootSize(page)).toBe('1.25');
+    await expect.poll(() => rootSize(page)).toBe('1.25');
     await gotoSettled(page, '/about/');
     expect(await rootSize(page), 'the door size leaked to another page').toBe(
       '',
@@ -249,14 +250,14 @@ test.describe('the rabbit hole', () => {
     await curiouser(page).click();
     await expect(landing(page)).toBeVisible({ timeout: 4000 });
     await page.getByRole('button', { name: 'Eat Me' }).click();
-    expect(await rootSize(page)).toBe('1.25');
+    await expect.poll(() => rootSize(page)).toBe('1.25');
     await page.getByRole('button', { name: 'Just Right' }).click();
     await gotoSettled(page, DOWN);
     await page
       .locator('#door')
       .getByRole('button', { name: 'Drink Me' })
       .click();
-    expect(await rootSize(page)).toBe('0.75');
+    await expect.poll(() => rootSize(page)).toBe('0.75');
     expect(problems, 'a violation or script error').toEqual([]);
   });
 

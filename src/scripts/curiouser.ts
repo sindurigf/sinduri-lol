@@ -16,10 +16,21 @@ interface Scope {
 
 const scopes = new WeakMap<Element, Scope>();
 
-const pagesOf = (scope: Element): Page[] =>
-  [
-    ...scope.querySelectorAll<HTMLAnchorElement>('[data-curiouser-pages] a'),
-  ].map((link) => [link.textContent ?? '', link.pathname] as const);
+const pagesOf = (scope: HTMLElement): Page[] => {
+  const data: unknown = JSON.parse(scope.dataset.pages ?? 'null');
+  if (
+    !Array.isArray(data) ||
+    !data.every(
+      (page) =>
+        Array.isArray(page) &&
+        typeof page[0] === 'string' &&
+        typeof page[1] === 'string',
+    )
+  ) {
+    throw new Error('curiouser: data-pages is not a list of [title, href].');
+  }
+  return data as Page[];
+};
 
 const setUp = (scope: Element, trigger: HTMLElement): Scope => {
   const result = scope.querySelector<HTMLElement>('[data-curiouser-result]');
@@ -39,7 +50,7 @@ const setUp = (scope: Element, trigger: HTMLElement): Scope => {
 export {};
 
 const run = (trigger: HTMLButtonElement): void => {
-  const scope = trigger.closest('[data-curiouser-scope]');
+  const scope = trigger.closest<HTMLElement>('[data-curiouser-scope]');
   if (!scope) throw new Error('curiouser: the button has no scope.');
   const state = scopes.get(scope) ?? setUp(scope, trigger);
   scopes.set(scope, state);
