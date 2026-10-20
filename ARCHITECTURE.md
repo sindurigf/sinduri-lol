@@ -461,10 +461,10 @@ in `wrangler.jsonc`).
 - Logo (`src/assets/logo-rabbit.png`): the hairline die-cut rabbit with an ink
   throw, jumping the tile's top-right corner. The script prints its box;
   `--logo-rabbit-*` in `global.css` must match.
-- Tab icons (`favicon.*`, `artwork/favicon-*`): a small gold tile with its
-  `bunny` shadow and the rabbit over its corner, edge to edge on a transparent
-  ground. The rabbit is one flat white shape with a thick ink edge: ink reads on
-  light tabs, white on dark.
+- Tab icons (`favicon.*`, `artwork/favicon-*`): the logo's jumping rabbit
+  alone as the original die-cut sticker, on a transparent ground: thin ink
+  line, wide white rim, a `bunny` throw and an ink throw behind it. The white
+  rim reads on dark tabs, the ink throw on light tabs.
 - App icons (`apple-touch-icon`, `android-chrome-*`, `maskable-icon`): the same
   artwork on a full-bleed `#FFC000` square.
 
