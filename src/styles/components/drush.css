@@ -1,0 +1,28 @@
+/* The Drush easter egg: src/scripts/drush.ts. */
+@layer components {
+  /* Reads like the footer's links, with their 44px row (SC 2.5.5). */
+  .drush-trigger {
+    @apply flex min-h-target items-center text-subtle hover:text-cyan;
+  }
+
+  .drush-dialog .cat-card {
+    @apply w-96 max-w-full;
+  }
+
+  .drush-suggestions {
+    @apply mt-4 flex flex-wrap gap-3;
+  }
+
+  .drush-chip,
+  .drush-dialog .field-control {
+    @apply font-mono normal-case tracking-normal;
+  }
+
+  .drush-output {
+    @apply mt-4 block font-mono text-body text-text;
+  }
+
+  .drush-output span {
+    @apply block;
+  }
+}
