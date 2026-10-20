@@ -72,14 +72,14 @@ const UMAMI_HOST = new URL(UMAMI_HOST_URL).host;
             a small store of settings in your browser, under the name{' '}
             <code>{THEME_STORAGE_KEY}</code>. The next page then opens the same
             way. Choosing System deletes it. When you press Drink Me or Eat Me
-            in the Text Size tab, the text size is kept the same way, under the
-            name <code>{TEXT_SCALE_KEY}</code>, and Just Right deletes it. Both
-            stay in your browser. Nothing else is stored in your browser. The{' '}
-            <dfn>analytics script</dfn>, the code that counts visits, reads one
-            local storage setting, named umami.disabled, which is Umami's own
-            off switch, and writes nothing. The typed shortcuts in the footer
-            read one more setting, named <code>{KEYS_STORAGE_KEY}</code>, and
-            stay off while it is there. It also stays in your browser, and
+            in the Text Size controls, the text size is kept the same way, under
+            the name <code>{TEXT_SCALE_KEY}</code>, and Just Right deletes it.
+            Both stay in your browser. Nothing else is stored in your browser.
+            The <dfn>analytics script</dfn>, the code that counts visits, reads
+            one local storage setting, named umami.disabled, which is Umami's
+            own off switch, and writes nothing. The typed shortcuts in the
+            footer read one more setting, named <code>{KEYS_STORAGE_KEY}</code>,
+            and stay off while it is there. It also stays in your browser, and
             clearing this site's data in your browser removes it.
           </li>
           <li>

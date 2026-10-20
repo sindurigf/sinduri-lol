@@ -1,19 +1,25 @@
 @layer components {
   /*
-   * A tab on the right edge, at mid-height; its panel opens to the left. Its
-   * rings are drawn inside, since the tab touches the screen edge and a ring
-   * outside it would be cut off.
+   * Text size control. From the `tab` width the page leaves a free gutter and
+   * the control is a tab on the right edge, at mid-height, with its panel
+   * opening to the left. Narrower, the same group sits in the mobile menu and,
+   * from `md`, in the theme popover. Rings are drawn inside the controls that
+   * touch an edge, where a ring outside would be cut off.
    */
   .reading-tab {
-    @apply fixed z-40;
+    @apply fixed z-40 hidden;
 
     inset-block-start: 50%;
     inset-inline-end: 0;
     translate: 0 -50%;
 
-    &[open] {
-      display: flex;
-      flex-direction: row-reverse;
+    @variant tab {
+      @apply block;
+
+      &[open] {
+        display: flex;
+        flex-direction: row-reverse;
+      }
     }
 
     @media print {
@@ -52,10 +58,29 @@
   }
 
   .reading-tab-panel {
-    @apply flex max-w-56 flex-col gap-2 border-4 border-border bg-surface p-3;
+    @apply max-w-56 border-4 border-border bg-surface p-3;
   }
 
-  .reading-tab-button {
+  /* The group: a label, three buttons and a status in a column. */
+  .text-size-group {
+    @apply flex flex-col gap-2;
+  }
+
+  /* In the theme popover from `md` up to where the edge tab takes over. */
+  .popover-text-size {
+    @apply mt-4 max-md:hidden;
+
+    @variant tab {
+      display: none;
+    }
+  }
+
+  /* At the foot of the mobile menu, above Close. */
+  .menu-text-size {
+    @apply mt-12;
+  }
+
+  .text-size-button {
     @apply flex min-h-target min-w-target items-center border-4 border-border bg-surface px-3 text-left text-label font-black uppercase tracking-label text-text;
 
     &:hover:not([aria-disabled='true']) {
@@ -71,7 +96,7 @@
     }
   }
 
-  .reading-tab-status {
+  .text-size-status {
     @apply text-label text-subtle;
   }
 }

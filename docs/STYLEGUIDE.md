@@ -1089,26 +1089,30 @@ Enforced by `tests/footer.spec.ts`.
 - the name "Lepus Ridet" (`div lang="la"`, not a heading) as display type on a
   gold band, the rabbit (`alt=""`) standing on its last letter
 
-### The reading tab
+### Text size
 
-`src/components/ReadingTab.astro`, `src/styles/components/reading-tab.css`,
-`src/scripts/text-size.ts`. Enforced by `tests/reading-tab.spec.ts`.
+`src/components/TextSizeGroup.astro`, `ReadingTab.astro`,
+`src/styles/components/reading-tab.css`, `src/scripts/text-size.ts`. Enforced
+by `tests/reading-tab.spec.ts`.
 
-- A native `details` fixed to the right edge at mid-height; the `summary`
-  shows "Aa" and is named "Aa Text Size". Its panel holds a group "Text Size"
-  with three buttons, each 44px at least: Drink Me (smaller), Eat Me (larger)
-  and Just Right (100 percent), named like "Drink Me, smaller text", and a
-  polite status. Escape closes it and returns focus to the summary.
+- One group, "Text Size": Drink Me (smaller), Eat Me (larger) and Just Right
+  (100 percent), each 44px at least, hints as descriptions, and a polite
+  status. Hidden without a script, and absent on talk decks and in print.
+- Where it sits depends on the width. From 86rem (the `tab` variant) the page
+  leaves a free gutter beside its 80rem column, and the control is an edge tab
+  in it: a native `details` named "Aa Text Size", fixed to the right at
+  mid-height, with the group in its panel; Escape closes it and returns focus
+  to the summary. Narrower, there is no floating control: the group is at the
+  foot of the mobile menu below `md` and in the theme popover from `md`.
+  A test asserts the tab covers no link, button or text at rest.
+- While a control in `main` has keyboard focus the tab slides out of the way
+  (SC 2.4.11, 2.4.12).
 - The buttons step `--text-scale` 75 to 200 percent. It multiplies the reading
   tokens (lead, standfirst, body, label) in `global.css`, not the root size, so
   spacing and breakpoints stay and browser zoom still applies. A step the page
   cannot hold without sideways scroll is taken back (SC 1.4.10). The size is
   remembered; the head script in `BaseLayout.astro` applies it before first
   paint.
-- While a control in `main` has keyboard focus the tab slides out of the way,
-  so it never hides a focused control (SC 2.4.11, 2.4.12). Closed, it covers a
-  44px by 56px area of the right edge at mid-height.
-- Hidden without a script, on talk decks and in print. Rings are drawn inside.
 
 ### Footer layout
 

@@ -6,6 +6,10 @@ import { NODE } from './tags';
 import { TEXT_SCALE_KEY, TEXT_SCALE_STEPS } from '../src/lib/text-scale';
 
 const WIDE_ROUTES = ['/', '/about/', '/blog/', '/credits/', '/career/'];
+/** From 86rem the page leaves a free gutter and the control is the edge tab (the `tab` variant in global.css). */
+const TAB_WIDTH = 1376;
+const TAB_WIDTHS = [TAB_WIDTH, 1440, 1920];
+const BELOW_TAB_WIDTHS = [1375, 1280, 1024, 768, 390, 320];
 const SCRIPTS = ['src/scripts/text-size.ts'];
 
 /** The requested scale as the root holds it: '' (100%), '1.25' ... '2'. */
@@ -53,14 +57,14 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     page,
   }) => {
     await gotoSettled(page, '/talks/open-source-is-not-just-code/');
-    await expect(page.locator('[data-reading-tab]')).toHaveCount(0);
+    await expect(page.locator('[data-text-size]')).toHaveCount(0);
     await expect(page.locator('[data-on-demand]')).toHaveCount(0);
   });
 
   test('Drink Me and Eat Me step the text size, stop at the ends and say so, and the size is remembered', async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.setViewportSize({ width: TAB_WIDTH, height: 900 });
     await gotoSettled(page, '/about/');
     const base = await bodyPx(page);
     const group = tab(page);
@@ -126,8 +130,8 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
   }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await gotoSettled(page, '/credits/');
-    const group = tab(page);
-    await openTab(page);
+    await page.getByRole('button', { name: 'Menu' }).click();
+    const group = page.locator('.menu-text-size');
     const eat = group.getByRole('button', { name: /^Eat Me/ });
     for (let i = 0; i < TEXT_SCALE_STEPS.length; i += 1) {
       await eat.click({ force: true });
@@ -140,10 +144,113 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     await page.evaluate((key) => localStorage.removeItem(key), TEXT_SCALE_KEY);
   });
 
+  for (const [width, how] of [
+    [390, 'the mobile menu'],
+    [1024, 'the theme popover'],
+  ] as const) {
+    test(`below the tab width the control is in ${how}, with the same three buttons at ${width}px (SC 2.5.5)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await gotoSettled(page, '/about/');
+      await expect(
+        tab(page),
+        'the edge tab shows below its width',
+      ).toBeHidden();
+      await page
+        .getByRole('button', { name: width < 768 ? 'Menu' : 'Theme' })
+        .click();
+      const group = page
+        .getByRole('group', { name: 'Text Size' })
+        .locator('visible=true');
+      await expect(group).toHaveCount(1);
+      const buttons = group.getByRole('button');
+      await expect(buttons).toHaveCount(3);
+      await expect(buttons.nth(0)).toHaveAccessibleName('Drink Me');
+      await expect(buttons.nth(1)).toHaveAccessibleName('Eat Me');
+      await expect(buttons.nth(2)).toHaveAccessibleName('Just Right');
+      for (const box of await Promise.all(
+        (await buttons.all()).map((b) => b.boundingBox()),
+      )) {
+        expect(Math.min(box!.width, box!.height)).toBeGreaterThanOrEqual(44);
+      }
+      await buttons.nth(1).click();
+      await expect(group.locator('[data-size-status]')).toHaveText(
+        'Text is 125%.',
+      );
+      await expect.poll(() => rootSize(page)).toBe('1.25');
+    });
+  }
+
+  test('the edge tab covers no link, button or text at rest where it shows, and not at all below (SC 1.4.10, 2.4.11)', async ({
+    page,
+  }) => {
+    for (const width of BELOW_TAB_WIDTHS) {
+      await page.setViewportSize({ width, height: 800 });
+      await gotoSettled(page, '/about/');
+      await expect(tab(page), `the tab shows at ${width}px`).toBeHidden();
+    }
+    for (const width of TAB_WIDTHS) {
+      await page.setViewportSize({ width, height: 800 });
+      for (const route of [
+        ...WIDE_ROUTES,
+        '/brand/',
+        '/blog/five-years-in-drupal/',
+      ]) {
+        await gotoSettled(page, route);
+        const covered = await page.evaluate(() => {
+          const t = document
+            .querySelector('[data-reading-tab]')!
+            .getBoundingClientRect();
+          const meets = (r: DOMRect) =>
+            r.width > 0 &&
+            r.height > 0 &&
+            r.left < t.right &&
+            r.right > t.left &&
+            r.top < t.bottom &&
+            r.bottom > t.top;
+          const found: string[] = [];
+          for (const el of document.querySelectorAll(
+            'a, button, summary, input, select',
+          )) {
+            if (
+              !el.closest('[data-reading-tab]') &&
+              meets(el.getBoundingClientRect())
+            ) {
+              found.push(`control "${el.textContent?.trim().slice(0, 25)}"`);
+            }
+          }
+          const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+          );
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            if (
+              !node.textContent?.trim() ||
+              node.parentElement?.closest(
+                '[data-reading-tab], script, style, [hidden]',
+              )
+            )
+              continue;
+            const range = document.createRange();
+            range.selectNodeContents(node);
+            if ([...range.getClientRects()].some(meets))
+              found.push(`text "${node.textContent.trim().slice(0, 25)}"`);
+          }
+          return found;
+        });
+        expect(
+          covered,
+          `${route} at ${width}px: the tab covers these at rest`,
+        ).toEqual([]);
+      }
+    }
+  });
+
   test('the reading tab is a native disclosure with a named summary, three named buttons and 44px targets (SC 2.5.3, 2.5.5, 4.1.2)', async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 390, height: 800 });
+    await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
     await gotoSettled(page, '/about/');
     const summary = tab(page).locator('summary');
     await expect(summary).toHaveAccessibleName('Aa Text Size');
@@ -172,6 +279,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
   test('the keyboard opens the reading tab and Escape closes it and returns focus to the summary (SC 2.1.1, 2.4.3)', async ({
     page,
   }) => {
+    await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
     await gotoSettled(page, '/about/');
     const summary = tab(page).locator('summary');
     await summary.focus();
@@ -192,7 +300,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
   test('a control under the tab that takes keyboard focus is never hidden by it (SC 2.4.11, 2.4.12)', async ({
     page,
   }) => {
-    for (const width of [320, 390, 1280]) {
+    for (const width of TAB_WIDTHS) {
       await page.setViewportSize({ width, height: 800 });
       for (const route of WIDE_ROUTES) {
         await gotoSettled(page, route);
@@ -232,6 +340,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
   });
 
   test('the reading tab is not printed', async ({ page }) => {
+    await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
     await gotoSettled(page, '/about/');
     await page.emulateMedia({ media: 'print' });
     await expect(tab(page)).toBeHidden();
@@ -251,6 +360,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     page,
   }) => {
     const problems = await serveUnderShippedCsp(page);
+    await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
     await gotoSettled(page, '/about/');
     await openTab(page);
     await page.getByRole('button', { name: /^Eat Me/ }).click();
