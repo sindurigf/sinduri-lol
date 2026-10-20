@@ -134,7 +134,10 @@
     margin-top: calc(var(--spacing-section) * 2);
   }
 
+  /* The corner the code leaves free: the button with its Copied label, about 145px with text spacing, plus the pre's 16px padding. */
   .brand-code-frame {
+    --copy-reach: calc(var(--spacing-target) + --spacing(32));
+
     @apply relative mt-2;
   }
 
@@ -167,6 +170,11 @@
       outline-offset: calc(-1 * (var(--focus-width) + var(--focus-gap)));
     }
 
+    /* The ring is cyan, as is the hover fill: it turns to the page ground. */
+    &:hover:focus-visible {
+      outline-color: var(--color-background);
+    }
+
     @media (forced-colors: active) {
       border-color: ButtonText;
     }
@@ -192,6 +200,10 @@
   :root[data-theme='light'] main .copy-button:hover {
     background-color: var(--dark-cyan);
     color: var(--color-light-ink);
+
+    &:focus-visible {
+      outline-color: var(--color-light-ink);
+    }
   }
 
   .brand-menu .field-control::placeholder {
@@ -205,7 +217,7 @@
     &::before {
       content: '';
       float: right;
-      width: calc(var(--spacing-target) + --spacing(20));
+      width: var(--copy-reach);
       height: var(--spacing-target);
     }
   }

@@ -363,6 +363,25 @@ test.describe('/brand guide', () => {
         await frames.nth(i).locator('.copy-button').click();
       }
       expect(await overlaps(), 'the Copied label covers code text').toEqual([]);
+      const short = await page.evaluate(() =>
+        [...document.querySelectorAll('.brand-code-frame')].flatMap((frame) => {
+          const pre = frame.querySelector('pre')!;
+          const reach = parseFloat(getComputedStyle(pre, '::before').width);
+          const pad = parseFloat(getComputedStyle(pre).paddingRight);
+          const width = frame
+            .querySelector('.copy-button')!
+            .getBoundingClientRect().width;
+          return width > reach - pad
+            ? [
+                `${pre.getAttribute('data-copy')}: button ${width}px, room ${reach - pad}px`,
+              ]
+            : [];
+        }),
+      );
+      expect(
+        short,
+        'the corner float is narrower than the button with its label',
+      ).toEqual([]);
     });
   }
 
@@ -517,11 +536,12 @@ test.describe('/brand guide', () => {
       document.addEventListener('DOMContentLoaded', () => {
         const log: string[] = [];
         Object.defineProperty(window, '__announced', { value: log });
-        new MutationObserver(() => {
-          const text = document.querySelector(
-            'body > [role="status"]',
-          )?.textContent;
-          if (text) log.push(text);
+        new MutationObserver((records) => {
+          for (const record of records) {
+            const target = record.target as Element;
+            if (!target.matches?.('body > [role="status"]')) continue;
+            log.push(record.addedNodes[0]?.textContent ?? '');
+          }
         }).observe(document.body, {
           childList: true,
           subtree: true,
@@ -550,9 +570,9 @@ test.describe('/brand guide', () => {
       () => (window as never as { __announced: string[] }).__announced,
     );
     expect(
-      announced.filter((text) => text === 'Copied').length,
-      'the second copy was not announced',
-    ).toBeGreaterThanOrEqual(2);
+      announced.join('|'),
+      'the status did not clear between two copies',
+    ).toContain('Copied||Copied');
     await context.close();
   });
 
@@ -602,4 +622,28 @@ test.describe('/brand guide', () => {
     await gotoSettled(page, BRAND_PATH);
     expect(logged).toEqual([]);
   });
+
+  for (const theme of ['dark', 'light'] as const) {
+    test(`on a ${theme} page the Copy ring stays at 3:1 against the hover fill when hovered and keyboard-focused (SC 1.4.11)`, async ({
+      page,
+    }) => {
+      await gotoSettled(page, BRAND_PATH);
+      await page.evaluate((t) => {
+        document.documentElement.dataset.theme = t;
+      }, theme);
+      const button = page.locator('.copy-button').first();
+      await button.scrollIntoViewIfNeeded();
+      await page.keyboard.press('Tab');
+      await button.focus();
+      await page.keyboard.press('Shift+Tab');
+      await page.keyboard.press('Tab');
+      await button.hover();
+      const measured = (await page.evaluate(`(() => {
+        ${PAGE_HELPERS}
+        const b = getComputedStyle(document.querySelector('.copy-button:focus-visible'));
+        return ratio(parse(b.outlineColor), parse(b.backgroundColor));
+      })()`)) as number;
+      expect(measured).toBeGreaterThanOrEqual(3);
+    });
+  }
 });
