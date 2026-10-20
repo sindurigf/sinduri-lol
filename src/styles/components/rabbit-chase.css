@@ -104,8 +104,10 @@
     background-color: var(--color-block-gold);
   }
 
+  /* Light mode's cyan is a text color, so the fill keeps the dark one under ink. */
   .crossroads-sign:hover {
-    background-color: var(--color-cyan);
+    background-color: var(--dark-cyan);
+    color: var(--color-block-ink);
   }
 
   @keyframes rabbit-hop {

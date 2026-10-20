@@ -54,7 +54,7 @@ const start = (): void => {
   )[0];
   const rabbitWay = new Set(best?.trail ?? []);
 
-  const watch = make('p', 'crossroads-watch label');
+  const watch = make('div', 'crossroads-watch label');
   const face = make('span', 'crossroads-watch-face');
   face.setAttribute('aria-hidden', 'true');
   const hops = make('span');
