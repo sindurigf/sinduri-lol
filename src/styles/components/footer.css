@@ -181,8 +181,7 @@
   .footer-tuft .rabbit-edge {
     fill: var(--color-gold-text);
     stroke: var(--color-gold-text);
-    stroke-width: 9;
-    stroke-linejoin: round;
+    stroke-width: 6;
   }
 
   /* After the edge, which it outranks: the throw is the edge's shape in pink. */
@@ -195,20 +194,12 @@
     fill: var(--color-gold);
   }
 
-  .footer-tuft .rabbit-tail {
-    fill: var(--color-light-ground);
-    stroke: var(--color-gold-text);
-    stroke-width: 4;
-  }
-
-  .footer-tuft :is(.rabbit-eye, .rabbit-nose) {
+  .footer-tuft .rabbit-ink {
     fill: var(--color-gold-text);
   }
 
-  .footer-tuft .rabbit-nose {
-    stroke: var(--color-gold-text);
-    stroke-width: 1.4;
-    stroke-linejoin: round;
+  .footer-tuft .rabbit-ear {
+    fill: var(--color-pink);
   }
 
   .footer-tuft .rabbit-shine {
@@ -321,20 +312,16 @@
   @media (forced-colors: active) {
     .footer-tuft .tuft-back,
     .footer-tuft .tuft-front,
-    .footer-tuft :is(.rabbit-edge, .rabbit-eye, .rabbit-nose) {
+    .footer-tuft :is(.rabbit-edge, .rabbit-ink) {
       fill: CanvasText;
       stroke: CanvasText;
     }
 
-    .footer-tuft :is(.rabbit-body, .rabbit-tail) {
+    .footer-tuft .rabbit-body {
       fill: Canvas;
     }
 
-    .footer-tuft .rabbit-tail {
-      stroke: CanvasText;
-    }
-
-    .footer-tuft :is(.rabbit-throw, .rabbit-shine) {
+    .footer-tuft :is(.rabbit-throw, .rabbit-ear, .rabbit-shine) {
       display: none;
     }
 
