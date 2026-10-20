@@ -9,6 +9,7 @@ import {
   BLOG_PATH,
   CAREER_PATH,
   CONTACT_PATH,
+  DOWN_PATH,
   CREDITS_PATH,
   markdownSourcePath,
   postHref,
@@ -55,6 +56,11 @@ const ROUTE_NOTES: { path: string; label: string; note: string }[] = [
     note: 'The blog index, newest first.',
   },
   { path: CONTACT_PATH, label: 'Contact', note: 'How to get in touch.' },
+  {
+    path: DOWN_PATH,
+    label: 'Down the Rabbit Hole',
+    note: 'A page to fall through: posts, a talk, a fact and the credits on shelves, and a door to Contact.',
+  },
   {
     path: BRAND_PATH,
     label: 'Brand',

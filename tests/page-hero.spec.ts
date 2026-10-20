@@ -24,6 +24,7 @@ const FULL_ROUTES = [
   '/blog',
   '/credits',
   '/brand',
+  '/down',
 ] as const;
 const THIN_ROUTES = ['/contact/sent'];
 const PLAIN_ROUTES = HERO_ROUTES.filter(

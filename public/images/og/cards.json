@@ -27,7 +27,7 @@
   "/blog/open-source-is-not-just-code": {
     "title": "Open Source Is Not Just Code",
     "photo": "/_astro/mentoring-table.BlT0bjAS_2dcWLX.webp",
-    "alt": "Open Source Is Not Just Code, sinduri.lol, beside a photo: Sinduri writing on sticky notes at the Drupal mentoring table at DrupalCon Rotterdam, beside a sign that reads Many tiny drops make an ocean."
+    "alt": "Open Source Is Not Just Code, sinduri.lol, beside a photo: Sinduri at the Drupal mentoring table at DrupalCon Rotterdam."
   },
   "/blog/professional-journey": {
     "title": "Professional Journey",
@@ -98,6 +98,11 @@
     "title": "Credits",
     "photo": null,
     "alt": "Credits, sinduri.lol, beside the sinduri.lol bunny logo."
+  },
+  "/down": {
+    "title": "Down the Rabbit Hole",
+    "photo": null,
+    "alt": "Down the Rabbit Hole, sinduri.lol, beside the sinduri.lol bunny logo."
   },
   "/privacy": {
     "title": "Privacy",
