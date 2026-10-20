@@ -312,8 +312,13 @@ const walkFor = async (page: Page, colorScheme: (typeof SCHEMES)[number]) => {
 
   /* Backward: the direction that lands controls under the sticky header. */
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  /* The no-script fallback link is not drawn when scripts run; the footer ends in buttons. */
-  await page.locator('footer a:visible, footer button:visible').last().focus();
+  /* The no-script fallback link is not rendered when scripts run; the footer ends in buttons. */
+  const last = await page.evaluateHandle(() =>
+    [...document.querySelectorAll('footer a, footer button')]
+      .filter((control) => control.checkVisibility())
+      .at(-1),
+  );
+  await last.asElement()!.focus();
   const backward = await walk(page, 'Shift+Tab');
   const backwardCoverage = await walkCoverage(page, FOCUSABLE_SELECTOR);
 
