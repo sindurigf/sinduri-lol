@@ -304,12 +304,25 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
     await gotoSettled(page, '/about/');
     await openTab(page);
-    /* The dismissal arrives with the script the first press loads. */
-    await expect(async () => {
-      await page.mouse.click(40, 400);
-      await expect(tab(page)).not.toHaveAttribute('open', '', { timeout: 300 });
-    }).toPass();
+    await page.mouse.click(40, 400);
+    await expect(tab(page)).not.toHaveAttribute('open', '');
     await expect(tab(page).locator('summary')).not.toBeFocused();
+  });
+
+  test('a press outside closes the tab while its script is still loading', async ({
+    page,
+  }) => {
+    const SLOW_MS = 1500;
+    await page.route(/text-size-[\w-]+\.js/, async (route) => {
+      await new Promise((done) => setTimeout(done, SLOW_MS));
+      await route.continue();
+    });
+    await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
+    await gotoSettled(page, '/about/');
+    await tab(page).locator('summary').click();
+    await expect(tab(page)).toHaveAttribute('open', '');
+    await page.mouse.click(40, 400);
+    await expect(tab(page)).not.toHaveAttribute('open', '', { timeout: 500 });
   });
 
   test('Tab past the last button closes the reading tab (SC 2.4.11)', async ({

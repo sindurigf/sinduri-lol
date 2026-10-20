@@ -94,12 +94,6 @@ document.addEventListener('keydown', (event) => {
 const openTab = (): HTMLDetailsElement | null =>
   document.querySelector<HTMLDetailsElement>('[data-reading-tab][open]');
 
-/* A press outside the tab closes it and leaves focus where the press put it. */
-document.addEventListener('pointerdown', (event) => {
-  const tab = openTab();
-  if (tab && !tab.contains(event.target as Node)) tab.open = false;
-});
-
 /* Safari does not focus a pressed button, so a missing target closes the tab only after Tab. */
 let tabbing = false;
 document.addEventListener('keydown', (event) => {
