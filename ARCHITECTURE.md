@@ -308,6 +308,34 @@ Commits, copy rules and process: [AGENTS.md](AGENTS.md).
 - Internal links end with `/`; production 307s the unslashed form.
   `tests/seo.spec.ts`.
 
+### Scripts loaded on demand
+
+`src/scripts/on-demand.ts` loads a footer feature's code on its first use, so
+it stays out of the per-page script budgets (`tests/performance.spec.ts`).
+
+- `FEATURES` in `Footer.astro` maps a name to a `?worker&url` file. It renders
+  the registry only when there are entries, and never under `/talks/`.
+- The registry's script tag carries one `data-feature-<name>` URL per feature.
+- A trigger is `[data-on-demand="<name>"]`, shipped `hidden`; the registry
+  unhides it. Without JavaScript nothing shows.
+- First click imports the file, then dispatches `on-demand:<name>` on
+  `document` with the trigger as `detail`; later clicks only dispatch. A
+  failed import is reported with `reportError` and retried on the next click.
+- A feature file listens at top level:
+  `document.addEventListener('on-demand:<name>', ...)`, and ends with
+  `export {};` so TypeScript treats it as a module.
+- `data-on-demand-keys="<word>"` on a trigger also fires it when the word is
+  typed outside a form field, without Ctrl, Alt or Meta.
+- SC 2.1.4: `localStorage` `on-demand-keys` set to `off` turns key words off.
+
+Rejected:
+
+- Main-bundle `import()`: Vite adds its preload helper to the page bundle.
+- `script.src`: blocked by the Trusted Types CSP.
+- `build.modulePreload: false`: changes the preloads of every page.
+- Nested `?worker&url` in a worker-built file: emits into `dist/server` (404).
+- Exporting a function from a feature: the IIFE worker build drops exports.
+
 ### Tests
 
 - A green check is evidence only once it has been shown to fail on its defect
@@ -398,7 +426,8 @@ in `wrangler.jsonc`).
 - Footer links: seven sticker tiles with Simple Icons (CC0) paths, one
   `<symbol>` per link label in `src/assets/social-icons.svg`. The footer bunny
   is an inline `aria-hidden` SVG colored from `components/footer.css`. The
-  footer runs no JavaScript.
+  footer runs JavaScript only for features
+  [loaded on demand](#scripts-loaded-on-demand).
 
 ### Photos and video
 
