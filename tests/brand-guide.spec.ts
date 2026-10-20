@@ -139,31 +139,47 @@ test.describe('/brand guide', () => {
     expect(pairs.every((p) => p.hidden === 'true' && p.words > 0)).toBe(true);
   });
 
-  test('typing in the filter narrows the sections list and says how many remain, clearing restores it (SC 3.3.2, 4.1.3)', async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await gotoSettled(page, BRAND_PATH);
-    const wide = page.locator('[data-menu-wide]');
-    const links = wide.locator('a.brand-menu-link');
-    const filter = wide.getByLabel('Filter');
-    await expect(links.locator('visible=true')).toHaveCount(
-      BRAND_SECTIONS.length,
-    );
-    await filter.fill('color');
-    await expect(links.locator('visible=true')).toHaveCount(1);
-    await expect(wide.getByRole('status')).toHaveText('1 section');
-    await filter.fill('');
-    await expect(links.locator('visible=true')).toHaveCount(
-      BRAND_SECTIONS.length,
-    );
-    await expect(wide.getByRole('status')).toHaveText(
-      `${BRAND_SECTIONS.length} sections`,
-    );
-    await filter.fill('zzz');
-    await expect(links.locator('visible=true')).toHaveCount(0);
-    await expect(wide.getByRole('status')).toHaveText('0 sections');
-  });
+  for (const width of [1280, 390] as const) {
+    test(`at ${width}px the search finds sections by token, hex, rule and partial word, counts them and clears on Escape (SC 3.3.2, 4.1.3)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await gotoSettled(page, BRAND_PATH);
+      if (width === 390) await page.locator('#brand-menu summary').click();
+      const box = page
+        .locator('#brand-menu [data-menu-list]')
+        .nth(width === 390 ? 0 : 1);
+      const search = box.getByLabel('Search');
+      await expect(search).toHaveAttribute('type', 'search');
+      await expect(search).toHaveAttribute('placeholder', /token/i);
+      const links = box.locator('a.brand-menu-link');
+      const shown = () => links.locator('visible=true');
+      await expect(shown()).toHaveCount(BRAND_SECTIONS.length);
+      const status = box.getByRole('status');
+
+      await search.fill('colo');
+      await expect(shown()).not.toHaveCount(BRAND_SECTIONS.length);
+      await expect(shown().first()).toBeVisible();
+      await expect(status).toHaveText(/^\d+ matches?$/);
+
+      await search.fill('#ffc000');
+      expect(
+        await shown().count(),
+        'a hex value finds no section',
+      ).toBeGreaterThan(0);
+      await search.fill('cólór');
+      await expect(shown().filter({ hasText: 'Color' })).toHaveCount(1);
+      await search.fill('pause');
+      await expect(shown().filter({ hasText: 'Motion' })).toHaveCount(1);
+      await search.fill('zzzz');
+      await expect(shown()).toHaveCount(0);
+      await expect(status).toContainText('No matches. Try');
+      await search.press('Escape');
+      await expect(search).toHaveValue('');
+      await expect(shown()).toHaveCount(BRAND_SECTIONS.length);
+      await expect(status).toHaveText('');
+    });
+  }
 
   test('each code block has a Copy button that names what it copies, copies it and says so (SC 2.5.5, 4.1.3)', async ({
     browser,
