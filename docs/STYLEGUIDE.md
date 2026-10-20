@@ -1211,6 +1211,13 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   shows that still frame as a WebP (`npm run hero-still` after a change to the
   field).
 - `HeroField` loads `client:load`.
+- The toy footer (`src/scripts/toy-loader.ts`, `toy.ts`, `toy.css`): Play
+  With the Stickers turns the social stickers into toys to drag, toss and
+  stack inside their list and an empty tray under it, never over text; Tab to
+  one and move it with the arrow keys (Shift for bigger steps). Play mode stops
+  their links; Put Them Back and Stop Playing restore them. Under reduced
+  motion nothing is tossed (`tests/toy-footer.spec.ts`). Every page loads only
+  the loader; `toy.ts` loads on the first press. Its copy is a placeholder.
 - The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
   first on screen, play along it (games like the yarn and the fly carry them,
   leaps move them on), and sit still under reduced motion. Each cat's button

@@ -1,0 +1,22 @@
+/* The toy footer: src/scripts/toy.ts. */
+@layer components {
+  .footer-stickers > li {
+    position: relative;
+    translate: var(--toy-x, 0px) var(--toy-y, 0px);
+  }
+
+  footer[data-toy] .footer-sticker {
+    cursor: grab;
+    touch-action: none;
+  }
+
+  /* An empty floor under the stickers to toss them onto; it holds no text. */
+  .toy-tray {
+    @apply mt-6 h-40 w-full border-4 border-border;
+  }
+
+  .toy-toggle,
+  .toy-reset {
+    @apply mt-6;
+  }
+}
