@@ -5,9 +5,10 @@
     translate: var(--toy-x, 0px) var(--toy-y, 0px);
   }
 
+  /* A touch drag moves the sticker instead of the page; pinch zoom still works. */
   footer[data-toy] .footer-sticker {
     cursor: grab;
-    touch-action: none;
+    touch-action: pinch-zoom;
   }
 
   /* An empty floor under the stickers to toss them onto; it holds no text. */
