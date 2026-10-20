@@ -396,7 +396,7 @@ in `wrangler.jsonc`).
 - A `.vue` component cannot reach `astro:assets`: call `getImage()` in Astro
   and pass the result as a prop.
 - Footer links: seven sticker tiles with Simple Icons (CC0) paths, one
-  `<symbol>` per link label in `src/assets/social-icons.svg`. The footer hare
+  `<symbol>` per link label in `src/assets/social-icons.svg`. The footer bunny
   is an inline `aria-hidden` SVG colored from `components/footer.css`. The
   footer runs no JavaScript.
 

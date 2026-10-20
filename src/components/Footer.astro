@@ -101,10 +101,10 @@ const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
       <div class="footer-base">
         <small class="footer-copyright">{copyright}</small>
 
-        {/* Origin at the hare's middle on the ground; viewBox cropped to the drawing. */}
+        {/* Origin at the rabbit's middle on the ground; the rabbit is its own svg, mid-binky above the grass. */}
         <svg
           class="footer-tuft"
-          viewBox="-142 -94 266 102"
+          viewBox="-142 -110 266 118"
           aria-hidden="true"
           focusable="false"
         >
@@ -116,67 +116,251 @@ const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
             <path d="M95.62 0Q100.22 -28.05 115.6 -51Q111.86 -25.5 104.97 0Z"></path>
             <path d="M110.92 0Q112.45 -18.7 120.7 -34Q122.57 -17 120.27 0Z"></path>
           </g>
-          <g class="hare-shadow" transform="translate(6 6) scale(1.7)">
-            <circle cx="-47" cy="-13" r="7"></circle>
-            <path d="M36 0C38-24 16-36-12-37C-36-38-52-24-48 0Z"></path>
-            <ellipse cx="42" cy="-3" rx="9" ry="3.6"></ellipse>
+          <svg
+            x="-74"
+            y="-112"
+            width="150"
+            height="118"
+            preserveAspectRatio="xMidYMax meet"
+            viewBox="-78 -158 122 172"
+          >
+            <g class="rabbit-throw" transform="translate(3.6 3.6)">
+              <ellipse
+                class="rabbit-edge"
+                cx="-44.8"
+                cy="-4"
+                rx="15.6"
+                ry="5.5"
+                transform="translate(0 -22) rotate(-20 -37 0) rotate(30.4 -44.8 -4)"
+              ></ellipse>
+              <ellipse
+                class="rabbit-edge"
+                cx="-52.8"
+                cy="-10"
+                rx="14"
+                ry="5.5"
+                transform="translate(0 -22) rotate(-20 -37 0) rotate(48.4 -52.8 -10)"
+              ></ellipse>
+              <ellipse
+                class="rabbit-edge"
+                cx="16.4"
+                cy="-104.3"
+                rx="7"
+                ry="23.5"
+                transform="translate(0 -22) rotate(-20 -37 0) rotate(-14 24.4 -61.6) rotate(-64 16.4 -80.8)"
+              ></ellipse>
+              <ellipse
+                class="rabbit-edge"
+                cx="-14"
+                cy="-27.6"
+                rx="38.4"
+                ry="27.6"
+                transform="translate(0 -22) rotate(-20 -37 0)"
+              ></ellipse>
+              <ellipse
+                class="rabbit-edge"
+                cx="-7.2"
+                cy="-26"
+                rx="36.4"
+                ry="25.6"
+                transform="translate(0 -22) rotate(-20 -37 0)"
+              ></ellipse>
+              <ellipse
+                class="rabbit-edge"
+                cx="24.4"
+                cy="-61.6"
+                rx="25.6"
+                ry="25.6"
+                transform="translate(0 -22) rotate(-20 -37 0)"
+              ></ellipse>
+              <ellipse
+                class="rabbit-edge"
+                cx="-50.8"
+                cy="-32.4"
+                rx="10"
+                ry="10"
+                transform="translate(0 -22) rotate(-20 -37 0)"
+              ></ellipse>
+              <ellipse
+                class="rabbit-edge"
+                cx="28.4"
+                cy="-108.4"
+                rx="7.5"
+                ry="25"
+                transform="translate(0 -22) rotate(-20 -37 0) rotate(-14 24.4 -61.6) rotate(-24 28.4 -83.4)"
+              ></ellipse>
+              <ellipse
+                class="rabbit-edge"
+                cx="26.4"
+                cy="-4.5"
+                rx="9"
+                ry="5"
+                transform="translate(0 -22) rotate(-20 -37 0) rotate(-30 26.4 -4.5)"
+              ></ellipse>
+            </g>
             <ellipse
-              cx="34"
-              cy="-19"
-              rx="16"
-              ry="13"
-              transform="rotate(-8.6 34 -19)"
-            ></ellipse>
-            <ellipse
-              cx="8"
-              cy="-38"
-              rx="26"
+              class="rabbit-edge"
+              cx="-44.8"
+              cy="-4"
+              rx="15.6"
               ry="5.5"
-              transform="rotate(9.2 8 -38)"
+              transform="translate(0 -22) rotate(-20 -37 0) rotate(30.4 -44.8 -4)"
             ></ellipse>
             <ellipse
-              cx="4"
-              cy="-44"
-              rx="24"
-              ry="5"
-              transform="rotate(12.6 4 -44)"
-            ></ellipse>
-          </g>
-          <g class="hare" transform="scale(1.7)">
-            <ellipse
-              cx="4"
-              cy="-44"
-              rx="24"
-              ry="5"
-              transform="rotate(12.6 4 -44)"
-            ></ellipse>
-            <circle cx="-47" cy="-13" r="7"></circle>
-            <path d="M36 0C38-24 16-36-12-37C-36-38-52-24-48 0Z"></path>
-            <path class="hare-line" d="M-8-3Q-6-26-28-29"></path>
-            <ellipse cx="42" cy="-3" rx="9" ry="3.6"></ellipse>
-            <ellipse
-              cx="34"
-              cy="-19"
-              rx="16"
-              ry="13"
-              transform="rotate(-8.6 34 -19)"
-            ></ellipse>
-            <ellipse
-              cx="8"
-              cy="-38"
-              rx="26"
+              class="rabbit-edge"
+              cx="-52.8"
+              cy="-10"
+              rx="14"
               ry="5.5"
-              transform="rotate(9.2 8 -38)"
+              transform="translate(0 -22) rotate(-20 -37 0) rotate(48.4 -52.8 -10)"
             ></ellipse>
-            <path class="hare-line" d="M28-34.5Q10-37.5-12-41"></path>
-            <path class="hare-line" d="M37.5-19.5Q40.5-24 43.5-19.5"></path>
-            <circle class="hare-nose" cx="49" cy="-16" r="1.6"></circle>
-          </g>
-          <g class="tuft-front">
-            <path d="M-63.75 0Q-65.79 -11.22 -66.3 -20.4Q-58.31 -10.2 -55.25 0Z"></path>
-            <path d="M-12.75 0Q-11.22 -8.42 -3.4 -15.3Q-1.96 -7.65 -4.25 0Z"></path>
-            <path d="M38.25 0Q40.8 -10.29 51 -18.7Q50.58 -9.35 46.75 0Z"></path>
-          </g>
+            <ellipse
+              class="rabbit-edge"
+              cx="16.4"
+              cy="-104.3"
+              rx="7"
+              ry="23.5"
+              transform="translate(0 -22) rotate(-20 -37 0) rotate(-14 24.4 -61.6) rotate(-64 16.4 -80.8)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-body"
+              cx="-44.8"
+              cy="-4"
+              rx="15.6"
+              ry="5.5"
+              transform="translate(0 -22) rotate(-20 -37 0) rotate(30.4 -44.8 -4)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-body"
+              cx="-52.8"
+              cy="-10"
+              rx="14"
+              ry="5.5"
+              transform="translate(0 -22) rotate(-20 -37 0) rotate(48.4 -52.8 -10)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-body"
+              cx="16.4"
+              cy="-104.3"
+              rx="7"
+              ry="23.5"
+              transform="translate(0 -22) rotate(-20 -37 0) rotate(-14 24.4 -61.6) rotate(-64 16.4 -80.8)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-edge"
+              cx="-14"
+              cy="-27.6"
+              rx="38.4"
+              ry="27.6"
+              transform="translate(0 -22) rotate(-20 -37 0)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-edge"
+              cx="-7.2"
+              cy="-26"
+              rx="36.4"
+              ry="25.6"
+              transform="translate(0 -22) rotate(-20 -37 0)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-edge"
+              cx="24.4"
+              cy="-61.6"
+              rx="25.6"
+              ry="25.6"
+              transform="translate(0 -22) rotate(-20 -37 0)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-body"
+              cx="-14"
+              cy="-27.6"
+              rx="38.4"
+              ry="27.6"
+              transform="translate(0 -22) rotate(-20 -37 0)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-body"
+              cx="-7.2"
+              cy="-26"
+              rx="36.4"
+              ry="25.6"
+              transform="translate(0 -22) rotate(-20 -37 0)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-body"
+              cx="24.4"
+              cy="-61.6"
+              rx="25.6"
+              ry="25.6"
+              transform="translate(0 -22) rotate(-20 -37 0)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-edge"
+              cx="-50.8"
+              cy="-32.4"
+              rx="10"
+              ry="10"
+              transform="translate(0 -22) rotate(-20 -37 0)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-body"
+              cx="-50.8"
+              cy="-32.4"
+              rx="10"
+              ry="10"
+              transform="translate(0 -22) rotate(-20 -37 0)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-edge"
+              cx="28.4"
+              cy="-108.4"
+              rx="7.5"
+              ry="25"
+              transform="translate(0 -22) rotate(-20 -37 0) rotate(-14 24.4 -61.6) rotate(-24 28.4 -83.4)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-body"
+              cx="28.4"
+              cy="-108.4"
+              rx="7.5"
+              ry="25"
+              transform="translate(0 -22) rotate(-20 -37 0) rotate(-14 24.4 -61.6) rotate(-24 28.4 -83.4)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-edge"
+              cx="26.4"
+              cy="-4.5"
+              rx="9"
+              ry="5"
+              transform="translate(0 -22) rotate(-20 -37 0) rotate(-30 26.4 -4.5)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-body"
+              cx="26.4"
+              cy="-4.5"
+              rx="9"
+              ry="5"
+              transform="translate(0 -22) rotate(-20 -37 0) rotate(-30 26.4 -4.5)"
+            ></ellipse>
+            <ellipse
+              class="rabbit-ear"
+              cx="28.4"
+              cy="-108.4"
+              rx="3"
+              ry="15"
+              transform="translate(0 -22) rotate(-20 -37 0) rotate(-14 24.4 -61.6) rotate(-24 28.4 -83.4)"
+            ></ellipse>
+            <path
+              class="rabbit-line"
+              d="M27.7 -66.5 Q35.2 -78.5 42.7 -66.5"
+              transform="translate(0 -22) rotate(-20 -37 0) rotate(-14 24.4 -61.6)"
+            ></path>
+            <path
+              class="rabbit-ink"
+              d="M43.5 -60Q46.3 -61.2 49.1 -60Q48.9 -57 46.3 -56.4Q43.7 -57 43.5 -60Z"
+              transform="translate(0 -22) rotate(-20 -37 0) rotate(-14 24.4 -61.6) rotate(-30 46.3 -58.6)"
+            ></path>
+          </svg>
         </svg>
       </div>
     </div>
