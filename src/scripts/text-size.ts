@@ -103,6 +103,13 @@ if (tab && invoker && panel) {
   sync();
   panel.addEventListener('toggle', sync);
 
+  /* Firefox keeps focus on the last button when Tab leaves the page, so no focusout arrives. */
+  panel.addEventListener('keydown', (event) => {
+    const last = panel.querySelector('[data-size-action="reset"]');
+    if (event.key === 'Tab' && !event.shiftKey && event.target === last)
+      panel.hidePopover();
+  });
+
   /* Left open behind the next control, it would cover it (SC 2.4.11). */
   tab.addEventListener('focusout', (event) => {
     const next = event.relatedTarget;
