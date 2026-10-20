@@ -415,13 +415,15 @@ in `wrangler.jsonc`).
 | `-white`, `#FFFFFF` | **19.68**    | **17.40**    | 1.00         | 1.64         |
 
 - `og-default.png`: 1200x630. Gold panel with the name and the tagline in two
-  lines, `background` strip with the logo tile, Lepus and Ridet stickers on
+  lines, `background` strip with the line bunny tile, Lepus and Ridet stickers on
   the seam. `npm run og` (`scripts/make-og.mjs`) draws it in Chromium with
   Lexend and the site tokens. PNG in `public/` because scrapers need a stable
   URL and format.
 - `public/images/og/<route>.jpg`: every other page's card, drawn by the same
   script from the built page: the page title on gold, and on the strip the
-  first photo in `<main>`, whole, or the logo tile when there is none.
+  first photo in `<main>`, whole, or the line bunny tile when there is none.
+- The cards keep the line bunny tile, the header's former logo, on purpose;
+  the header logo is the jumping rabbit (`scripts/make-logo.mjs`).
   `OG_PHOTO_CHOICES` in `src/lib/og-cards.ts` holds the owner's exceptions.
   `cards.json` records each card's title, photo and alt; `tests/seo.spec.ts`
   fails when a page's title or first photo no longer matches its card.
@@ -435,7 +437,7 @@ in `wrangler.jsonc`).
 - Footer links: seven sticker tiles with Simple Icons (CC0) paths, one
   `<symbol>` per link label in `src/assets/social-icons.svg`. The footer rabbit
   is `src/assets/bunny-footer.webp` with `alt=""`, standing on the name band:
-  the Looking Up pose of Canva sheet 6 (Soft E), traced with Potrace and
+  the Looking Up pose of a Canva sheet, traced with Potrace and
   exported as a die-cut sticker; sources and scripts are kept outside the repo.
   The footer runs JavaScript only for features
   [loaded on demand](#scripts-loaded-on-demand).

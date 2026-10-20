@@ -326,7 +326,7 @@
     @apply px-4 shadow-hard-pink-object sm:px-6;
   }
 
-  /* The tile's shadow sits inside the link; the side padding is the focus block's margin round the tile and name. */
+  /* The tile's shadow sits inside the link; the side padding is the focus block's margin around the tile and name. */
   .header-slab .logo-link {
     /* Only the start bleeds: a negative end margin lets the theme switch slide over the block at 320px. */
     margin-inline-start: calc(var(--logo-focus-pad) * -1);

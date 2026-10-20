@@ -136,8 +136,9 @@ Setup: `gsettings set org.gnome.desktop.interface enable-animations false`.
 
 ## 5. Focus indicator visibility
 
-The ring is 4px cyan at a 4px offset plus the element's shadow (4px, or 8px for the logo tile);
-`#131313` on gold. Look, do not measure.
+The ring is 4px cyan at a 4px offset plus the element's shadow (4px, or 8px for
+the contact cards); `#131313` on gold. The header logo has no ring: focused, it
+turns into an ink block with a gold name. Look, do not measure.
 
 - [ ] On `#0B0B0B`: header links, footer. → SC 1.4.11, 2.4.7
 - [ ] On a gold and a light block: a link in a card. → SC 1.4.11, 2.4.7
@@ -145,8 +146,12 @@ The ring is 4px cyan at a 4px offset plus the element's shadow (4px, or 8px for 
       tilt, and never touches the next chip. → SC 1.4.11, 2.4.7
 - [ ] Current nav item and current chip: the ring reads as separate from the
       block. → SC 1.4.11, 2.4.7
-- [ ] Logo and contact cards (8px shadow, ring 12px out): the ring still
-      reads as belonging to the control. → SC 1.4.11, 2.4.7
+- [ ] Contact cards (8px shadow, ring 12px out): the ring still reads as
+      belonging to the control. → SC 1.4.11, 2.4.7
+- [ ] Header logo, dark and light: focused, the link is an ink block with a
+      gold name, the rabbit uncut. → SC 1.4.11, 2.4.7, 2.4.13
+- [ ] Header logo in Windows High Contrast (forced colors): focused, a solid
+      ring shows around the link. → SC 2.4.7
 - [ ] Gold skip link and "Get in Touch": the ring is on the dark ground, never
       on gold. → SC 1.4.11
 - [ ] On a gold slab or band: the `#131313` ring is visible. → SC 1.4.11
