@@ -23,12 +23,8 @@ const start = (): void => {
   const root = document.getElementById('crossroads');
   const data = document.getElementById('chase-pages');
   const pagesColumn = root?.querySelector<HTMLElement>('[data-pending]');
-  const pagesLabel = document.getElementById('crossroads-pages-label');
-  const links = root?.querySelector('.crossroads-pages');
   const status = root?.querySelector('[aria-live]');
-  if (!root || !data || !pagesColumn || !pagesLabel || !links || !status) {
-    return;
-  }
+  if (!root || !data || !pagesColumn || !status) return;
   const pages = JSON.parse(data.textContent ?? '[]') as ChasePage[];
   const home = pages.find((page) => page.trail.length === 1);
   if (!home) return;
@@ -55,6 +51,13 @@ const start = (): void => {
   });
   let chosen = signs.find(({ section }) => onRabbitWay(section)) ?? signs[0];
   if (!chosen) return;
+
+  const pagesLabel = make('div', 'crossroads-heading label');
+  pagesLabel.id = 'crossroads-pages-label';
+  const links = make('ul', 'crossroads-pages');
+  links.setAttribute('role', 'list');
+  links.setAttribute('aria-labelledby', pagesLabel.id);
+  pagesColumn.append(pagesLabel, links);
 
   /* A #fragment of a page is listed only when it is the rabbit's pick, so no list outgrows the signs. */
   const draw = (): void => {
