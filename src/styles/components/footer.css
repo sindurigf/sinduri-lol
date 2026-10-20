@@ -167,6 +167,9 @@
     max-width: 100%;
     height: auto;
     overflow: visible;
+    /* Rabbit viewBox units. The closed-eye line stays just over half the edge so it reads as a line, not a second outline. */
+    --rabbit-edge-width: 6;
+    --rabbit-line-width: 3.4;
   }
 
   .footer-tuft .tuft-back {
@@ -177,7 +180,7 @@
   .footer-tuft .rabbit-edge {
     fill: var(--color-gold-text);
     stroke: var(--color-gold-text);
-    stroke-width: 6;
+    stroke-width: var(--rabbit-edge-width);
   }
 
   /* After the edge, which it outranks: the throw is the edge's shape in pink. */
@@ -197,7 +200,7 @@
   .footer-tuft .rabbit-line {
     fill: none;
     stroke: var(--color-gold-text);
-    stroke-width: 3.4;
+    stroke-width: var(--rabbit-line-width);
     stroke-linecap: round;
   }
 
