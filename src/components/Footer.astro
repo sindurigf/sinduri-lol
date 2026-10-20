@@ -33,16 +33,13 @@ const POLICY_LINKS = [
 
 const current = (href: string) => ariaCurrent(Astro.url.pathname, href);
 
-/* Feature name to its `?worker&url` file; a `data-on-demand="<name>"` trigger loads it. */
+/* Feature name to its `?worker&url` file; its trigger carries the file as `data-on-demand`. */
 const FEATURES: Record<string, string> = {};
 
 /* A slide deck keeps its script budget for the deck. */
 const onDemand =
   Object.keys(FEATURES).length > 0 &&
   !Astro.url.pathname.startsWith(TALKS_PATH);
-const featureAttributes = Object.fromEntries(
-  Object.entries(FEATURES).map(([name, url]) => [`data-feature-${name}`, url]),
-);
 
 /* The year of first publication, not the build year: a build date goes stale. */
 const FIRST_PUBLISHED = 2026;
@@ -113,13 +110,7 @@ const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
       </div>
 
       {onDemand && (
-        <script
-          is:inline
-          type="module"
-          src={onDemandRegistry}
-          data-on-demand-registry
-          {...featureAttributes}
-        ></script>
+        <script is:inline type="module" src={onDemandRegistry}></script>
       )}
 
       <div class="footer-base">
