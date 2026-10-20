@@ -12,10 +12,6 @@ export interface HeroPalette {
   readonly subtle: string;
   /** `--color-gold-bud`. */
   readonly bud: string;
-  /** `--color-hero-ground`. Must be opaque: it hides limbs behind the body. */
-  readonly background: string;
-  /** `--color-light-ground`: the highlight in the bunny's eye. */
-  readonly shine: string;
   /*
    * Edges keep their hue: canvas gradients interpolate unpremultiplied, so
    * `transparent` would gray them.
@@ -78,9 +74,6 @@ export const HARE_DEPTH = 2.45;
 
 /** Apparent size to hare drawing scale: the comp's 1.167 at HARE_DEPTH. */
 export const HARE_UNIT = 1.167 / (REFERENCE_PROJECTION / HARE_DEPTH);
-
-/** Hare drawing units. */
-export const FOOT_Y = 20;
 
 export interface Stem {
   readonly z: number;

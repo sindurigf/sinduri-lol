@@ -669,9 +669,9 @@ evidence.
 - **Add a `BreadcrumbList` to the talk page:** pages outside `/blog` carry no
   breadcrumbs (`tests/breadcrumbs.spec.ts`); the link to the talk's post
   covers the way back.
-- **Name the numbers in `hero-field-hare.ts`, and the bud, head and shadow
-  ellipses in `hero-field.ts`, as constants:** they are drawing coordinates,
-  geometry in the hare's own units, not tuning values.
+- **Name the frame numbers in `hero-field-rabbit.ts`, and the bud, head and
+  shadow ellipses in `hero-field.ts`, as constants:** they are pixel rects in
+  the rabbit atlas and drawing coordinates, not tuning values.
 - **Move every `href` in page markup into `paths.ts`:** a route used by code
   (redirects, nav, sitemap, `llms.txt`) is a constant there; a link in prose
   stays markup, and `tests/internal-links.spec.ts` fails on a broken one.
