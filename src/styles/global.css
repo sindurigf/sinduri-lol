@@ -495,6 +495,8 @@
   --logo-rabbit-top: -19px;
   --logo-rabbit-width: 47px;
   --logo-rabbit-height: 64px;
+  /* The logo link's focus block reaches this far past the tile and the name. */
+  --logo-focus-pad: 8px;
   /* How far the rabbit springs up off the tile: hovered, and while the tile is pressed. */
   --logo-rabbit-hover-hop: 3px;
   --logo-rabbit-hop: 8px;

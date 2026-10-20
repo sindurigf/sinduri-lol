@@ -326,15 +326,28 @@
     @apply px-4 shadow-hard-pink-object sm:px-6;
   }
 
-  /* The tile's shadow sits inside the link, so the plain ring clears it and stays on the gold. */
+  /* The tile's shadow sits inside the link; the side padding is the focus block's margin round the tile and name. */
   .header-slab .logo-link {
-    isolation: isolate;
-    padding-block-end: var(--lift-mark);
+    /* Only the start bleeds: a negative end margin lets the theme switch slide over the block at 320px. */
+    margin-inline-start: calc(var(--logo-focus-pad) * -1);
+    padding: 0 var(--logo-focus-pad) var(--lift-mark);
   }
 
-  /* Under the link's own layer, so the ring paints over the rabbit that jumps past the tile. */
-  .header-slab .logo-tile {
-    z-index: -1;
+  /*
+   * The rabbit jumps higher than the bar leaves room for a ring around it, so
+   * focus inverts the link to an ink block instead (SC 2.4.13 by area).
+   * Forced colors drop the fill, so the ring comes back there.
+   */
+  .header-slab .logo-link:focus-visible {
+    /* The name's `text-gold-text` utility outranks this layer, so the token is swapped instead. */
+    --color-gold-text: var(--color-block-gold);
+
+    outline-color: transparent;
+    background-color: var(--color-block-ink);
+
+    @media (forced-colors: active) {
+      outline-color: CanvasText;
+    }
   }
 
   .header-slab :is(dialog, .theme-menu) {

@@ -1,13 +1,13 @@
 import { expect, test } from './test';
 import { gotoSettled } from './settle';
-import { NON_TEXT, PAGE_HELPERS } from './contrast';
+import { AAA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { DESKTOP_VIEWPORT, PHONE_VIEWPORT } from './wcag';
 
 /*
  * The header's joined bricks draw their focus ring inside the brick
  * (docs/STYLEGUIDE.md "Focus"), so the ring must read against the brick's own
  * fill, at rest and hovered, and stay clear of its label (SC 1.4.11, 2.4.13).
- * The logo link's ring sits outside it, on the gold bar.
+ * The logo link has no ring: focused, it turns into an ink block on the bar.
  */
 
 /* A route with a current header link, so a gold brick is walked too. */
@@ -21,6 +21,11 @@ const SLIM_SCROLL = 900;
 interface Stop {
   name: string;
   ratio: number;
+  block: number;
+  /** The focused box's area, and a 2px perimeter of it (SC 2.4.13). */
+  blockArea: number;
+  perimeter: number;
+  label: number;
   brick: boolean;
   inside: boolean;
   onBar: boolean;
@@ -54,13 +59,16 @@ const readStop = `(() => {
     range.selectNodeContents(node);
     text.push(...range.getClientRects());
   }
-  /* The logo rabbit jumps past the tile, higher than the bar leaves room for; the ring paints over it. */
-  const marks = [...text, ...[...el.querySelectorAll('svg, img:not(.logo-rabbit), .logo-tile')].map((n) => n.getBoundingClientRect())]
+  const marks = [...text, ...[...el.querySelectorAll('svg, img, .logo-tile')].map((n) => n.getBoundingClientRect())]
     .filter((r) => r.width > 0 && r.height > 0);
   const clear = marks.every((r) => r.left >= inner.left - 0.5 && r.right <= inner.right + 0.5 && r.top >= inner.top - 0.5 && r.bottom <= inner.bottom + 0.5);
   return {
     name: (el.getAttribute('aria-label') || el.textContent || el.tagName).trim().slice(0, 30),
     ratio: ratio(ring, fill),
+    block: ratio(parse(s.backgroundColor), effectiveBackground(slab)),
+    blockArea: box.width * box.height,
+    perimeter: 4 * (box.width + box.height),
+    label: [...el.querySelectorAll('.label')].map((n) => ratio(parse(getComputedStyle(n).color), parse(s.backgroundColor)))[0] ?? 0,
     brick: Boolean(el.closest('.header-bricks')),
     onBar,
     inside: offset + width <= 0,
@@ -122,13 +130,26 @@ for (const colorScheme of ['dark', 'light'] as const) {
           ).toBeGreaterThan(0);
           for (const stop of stops) {
             const where = `${stop.name}${stop.hover ? ' (hovered)' : ''}`;
-            expect(stop.onBar, `${where}: the ring leaves the bar`).toBe(true);
-            if (stop.brick) {
+            if (!stop.brick) {
               expect(
-                stop.inside,
-                `${where}: the ring is not drawn inside the brick`,
-              ).toBe(true);
+                stop.block,
+                `${where}: the focus block is under ${NON_TEXT}:1 on the bar`,
+              ).toBeGreaterThanOrEqual(NON_TEXT);
+              expect(
+                stop.blockArea,
+                `${where}: the focus block is smaller than a 2px perimeter`,
+              ).toBeGreaterThanOrEqual(stop.perimeter);
+              expect(
+                stop.label,
+                `${where}: the name is under ${AAA_TEXT}:1 on the focus block`,
+              ).toBeGreaterThanOrEqual(AAA_TEXT);
+              continue;
             }
+            expect(stop.onBar, `${where}: the ring leaves the bar`).toBe(true);
+            expect(
+              stop.inside,
+              `${where}: the ring is not drawn inside the brick`,
+            ).toBe(true);
             expect(
               stop.ratio,
               `${where}: the ring is under ${NON_TEXT}:1 on the brick's fill`,
@@ -143,3 +164,43 @@ for (const colorScheme of ['dark', 'light'] as const) {
     }
   }
 }
+
+/* Forced colors drop the ink block, so the logo's transparent ring must be painted there instead. */
+test.describe('the logo link in forced colors', () => {
+  test.use({ viewport: DESKTOP_VIEWPORT });
+
+  test('draws a solid ring at least 2px wide when focused', async ({
+    page,
+    browserName,
+  }) => {
+    test.skip(
+      browserName === 'webkit',
+      'webkit reports forced-colors as active but paints the author palette (bug 225281)',
+    );
+    await page.emulateMedia({ forcedColors: 'active' });
+    await gotoSettled(page, ROUTE);
+    for (let i = 0; i < MAX_STOPS; i += 1) {
+      await page.keyboard.press('Tab');
+      if (
+        await page.evaluate(() =>
+          document.activeElement?.matches('.header-slab .logo-link'),
+        )
+      )
+        break;
+    }
+    const ring = await page.evaluate(`(() => {
+      ${PAGE_HELPERS}
+      const el = document.activeElement;
+      if (!el || !el.matches('.header-slab .logo-link')) return null;
+      const s = getComputedStyle(el);
+      return { style: s.outlineStyle, width: parseFloat(s.outlineWidth), alpha: parse(s.outlineColor).a };
+    })()`);
+    expect(ring, 'the walk never reached the logo link').not.toBeNull();
+    expect(ring, 'the logo ring is not painted in forced colors').toEqual({
+      style: 'solid',
+      width: expect.any(Number),
+      alpha: 1,
+    });
+    expect((ring as { width: number }).width).toBeGreaterThanOrEqual(2);
+  });
+});
