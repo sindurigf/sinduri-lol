@@ -499,9 +499,9 @@ in `wrangler.jsonc`).
   throw, jumping the tile's top-right corner. The script prints its box;
   `--logo-rabbit-*` in `global.css` must match.
 - Tab icons (`favicon.*`, `artwork/favicon-*`): the logo's jumping rabbit
-  alone as the original die-cut sticker, on a transparent ground: thin ink
-  line, wide white rim, a `bunny` throw and an ink throw behind it. The white
-  rim reads on dark tabs, the ink throw on light tabs.
+  alone, on a transparent ground: a gold body, a white ear, a thick ink rim,
+  then a `bunny` throw and an ink throw. Gold reads on dark tabs, the ink rim
+  on light tabs.
 - App icons (`apple-touch-icon`, `android-chrome-*`, `maskable-icon`): the same
   artwork on a full-bleed `#FFC000` square.
 
@@ -519,8 +519,9 @@ in `wrangler.jsonc`).
 | `public/maskable-icon-512x512.png`  | 512          | `purpose: maskable`, mark inside the 80% safe zone   |
 
 - The icons drop the rabbit's inner lines: they turn to mush below 48px.
-- `favicon.svg` is a thinned copy, curves flattened and rounded on a 256 grid,
-  under 4 KB (`tests/icons.spec.ts`); the PNGs keep the full curves.
+- `favicon.svg` is a thinned copy: the outline flattened, thinned and redrawn
+  as smooth curves on a 256 grid, under 4 KB (`tests/icons.spec.ts`); the PNGs
+  keep the full curves.
 - `favicon.ico` holds the 16, 32 and 48 frames as PNGs.
 
 ```sh

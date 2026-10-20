@@ -35,9 +35,10 @@ const STICKER = { edge: 1, rim: 1.2, rimEdge: 1, throw: 3, line: 0.2 };
 
 /* Favicon grid: 64 units, the tile and the jump drawn to the icon's edges. */
 const ICON = 64;
-const ICON_POSE = { box: [2, 1, 52, 54], rotate: -12 };
-/* The die-cut sticker, outward from the shape: ink line, white rim; then a pink and an ink throw. */
-const ICON_STICKER = { edge: 1, rim: 3, pinkThrow: 4, inkThrow: 7 };
+/* In 64 units: the box leaves room for the rim on every side and the throws to the bottom right. */
+const ICON_POSE = { box: [5, 4, 47, 48], rotate: -12 };
+/* The tab icon: a gold rabbit, white ear, a 4-unit ink rim, then a pink and an ink throw. */
+const ICON_STICKER = { rim: 4, pinkThrow: 4, inkThrow: 7 };
 /* Opaque app icons on gold: artwork scale, and the maskable safe zone. */
 const APP_SCALE = 0.8;
 const MASKABLE_SCALE = 0.62;
@@ -112,7 +113,7 @@ function bake(d, { a, b, c, e, f, g }) {
 /* favicon.svg: curves flattened, thinned and rounded to whole units of a grid FINE times the icon's. */
 const FINE = 4;
 const CURVE_STEPS = 6;
-const THIN = 0.6;
+const THIN = 1;
 
 const flatten = (d, { a, b, c, e, f, g }) => {
   const at = (x, y) => [(a * x + c * y + e) * FINE, (b * x + g * y + f) * FINE];
@@ -184,13 +185,26 @@ const thinRing = (ring) => {
   return [...thin(ring.slice(0, at + 1)).slice(0, -1), ...thin(ring.slice(at))];
 };
 
+/* Catmull-Rom through the kept points, so the thinned outline stays round instead of faceted. */
+const smooth = (ring) => {
+  const n = ring.length;
+  const p = (i) => ring[(i + n) % n];
+  const r = (v) => Math.round(v);
+  let d = `M${ring[0].join(' ')}`;
+  for (let i = 0; i < n; i += 1) {
+    const [a, b, c, e] = [p(i - 1), p(i), p(i + 1), p(i + 2)];
+    d += `C${r(b[0] + (c[0] - a[0]) / 6)} ${r(b[1] + (c[1] - a[1]) / 6)} ${r(c[0] - (e[0] - b[0]) / 6)} ${r(c[1] - (e[1] - b[1]) / 6)} ${c.join(' ')}`;
+  }
+  return `${d}Z`;
+};
+
 const compact = (d, m) =>
   flatten(d, m)
     .map((ring) =>
       thinRing(ring).map(([x, y]) => [Math.round(x), Math.round(y)]),
     )
     .filter((ring) => ring.length > 2)
-    .map((ring) => `M${ring.map((p) => p.join(' ')).join('L')}Z`)
+    .map(smooth)
     .join('');
 
 function iconArtwork({ precise }) {
@@ -211,11 +225,11 @@ function iconArtwork({ precise }) {
   m.f = cy - m.b * mx - m.g * my;
   const path = (d) => (precise ? bake(d, m) : compact(d, m));
   const unit = precise ? 1 : FINE;
-  const { edge, rim, pinkThrow, inkThrow } = ICON_STICKER;
-  const outer = 2 * (edge + rim) * unit;
+  const { rim, pinkThrow, inkThrow } = ICON_STICKER;
+  const outer = 2 * rim * unit;
   const use = (color, width, off = 0) =>
     `<use href="#r" fill="${color}" stroke="${color}" stroke-width="${width}" stroke-linejoin="round"${off ? ` x="${off * unit}" y="${off * unit}"` : ''}/>`;
-  return `<defs><path id="r" d="${path(TRACE.sil)}"/></defs>${use(INK, outer, inkThrow)}${use(PINK, outer, pinkThrow)}${use(WHITE, outer)}${use(INK, 2 * edge * unit)}<use href="#r" fill="${WHITE}"/>${fill(path(largest(TRACE.pink)), EAR)}${fill(path(largest(TRACE.eye)), INK)}`;
+  return `<defs><path id="r" d="${path(TRACE.sil)}"/></defs>${use(INK, outer, inkThrow)}${use(PINK, outer, pinkThrow)}${use(INK, outer)}<use href="#r" fill="${GOLD}"/>${fill(path(largest(TRACE.pink)), WHITE)}${fill(path(largest(TRACE.eye)), INK)}`;
 }
 
 const svg = (viewBox, body) =>
