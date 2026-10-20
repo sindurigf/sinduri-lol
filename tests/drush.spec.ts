@@ -1,5 +1,6 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
+import { timedScan } from './axe';
 
 /**
  * The Drush easter egg (src/scripts/drush.ts), loaded on demand: a typed
@@ -114,12 +115,11 @@ test('the typed word can be turned off, and stays off on the next page', async (
 }) => {
   await gotoSettled(page, ROUTE);
   await page.getByRole('button', { name: 'Try a Command' }).click();
-  const off = dialogOf(page).getByRole('button', {
-    name: 'Open When I Type drush',
+  const keys = dialogOf(page).getByRole('checkbox', {
+    name: 'Open This When I Type drush',
   });
-  await expect(off).toHaveAttribute('aria-pressed', 'true');
-  await off.click();
-  await expect(off).toHaveAttribute('aria-pressed', 'false');
+  await expect(keys).toBeChecked();
+  await keys.uncheck();
   await page.keyboard.press('Escape');
 
   await gotoSettled(page, '/about');
@@ -127,5 +127,49 @@ test('the typed word can be turned off, and stays off on the next page', async (
   await page.keyboard.type('drush');
   await expect(dialogOf(page)).toBeHidden();
   await page.getByRole('button', { name: 'Try a Command' }).click();
-  await expect(dialogOf(page)).toBeVisible();
+  await expect(keys).not.toBeChecked();
 });
+
+for (const width of [390, 1280]) {
+  test(`at ${width}px the dialog is modal, padded, inside the viewport and passes axe`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await gotoSettled(page, ROUTE);
+    await page.getByRole('button', { name: 'Try a Command' }).click();
+    const dialog = dialogOf(page);
+    await expect(dialog).toBeVisible();
+    const layout = await dialog.evaluate((node) => {
+      const box = node.getBoundingClientRect();
+      const card = node.firstElementChild!;
+      return {
+        modal: node.matches(':modal'),
+        backdrop: getComputedStyle(node, '::backdrop').backgroundColor,
+        /* A point outside the card lands on the dialog's backdrop, not the page. */
+        cornerHit: document.elementFromPoint(1, 1) === node,
+        padding: parseFloat(getComputedStyle(card).paddingTop),
+        inside:
+          box.left >= 0 &&
+          box.top >= 0 &&
+          box.right <= innerWidth &&
+          box.bottom <= innerHeight,
+        centered: Math.abs(box.left - (innerWidth - box.right)) <= 2,
+      };
+    });
+    expect(layout.modal, 'the dialog opened without showModal()').toBe(true);
+    expect(layout.backdrop, 'the dialog has no backdrop').not.toBe(
+      'rgba(0, 0, 0, 0)',
+    );
+    expect(layout.cornerHit, 'the page behind the dialog takes clicks').toBe(
+      true,
+    );
+    expect(layout.padding, 'the dialog card has no padding').toBeGreaterThan(0);
+    expect(layout.inside, 'the dialog runs past the viewport').toBe(true);
+    expect(layout.centered, 'the dialog is not centered').toBe(true);
+    const { violations } = await timedScan(page, 'Drush dialog');
+    expect(
+      violations.map((v) => `${v.id}: ${v.nodes.length} node(s)`),
+      'axe found WCAG 2.2 AA violations with the Drush dialog open',
+    ).toEqual([]);
+  });
+}

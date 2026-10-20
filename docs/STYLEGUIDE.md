@@ -1236,7 +1236,7 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   outside a field, or Try a Command in the footer, opens the Drush dialog.
   `drush cr` there makes each brick on screen jump and land back in place
   within a second. The typed word is a sequence of keys, never one key, and
-  Open When I Type drush in the dialog turns it off on every page (SC 2.1.4).
+  Open This When I Type drush in the dialog turns it off on every page (SC 2.1.4).
   Under reduced motion nothing moves (`tests/drush.spec.ts`). `drush.ts` is
   [loaded on demand](../ARCHITECTURE.md#scripts-loaded-on-demand). Its copy is
   a placeholder.
