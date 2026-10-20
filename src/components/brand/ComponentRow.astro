@@ -7,7 +7,7 @@
  * by mode, such as contrast ratios.
  */
 import { brandPartName } from '../../lib/brand-sections';
-import { inertCopy } from './mirror';
+import { inertCopy, sourceOf } from './mirror';
 
 interface Props {
   /* A part id from src/lib/brand-sections.ts, which holds its name. */
@@ -58,4 +58,10 @@ const ownLight = Astro.slots.has('light')
       </div>
     )}
   </div>
+  {ownLight === null && (
+    <div class="mt-6">
+      <div class="label text-subtle">HTML</div>
+      <pre class="brand-code"><code set:html={sourceOf(example)} /></pre>
+    </div>
+  )}
 </li>

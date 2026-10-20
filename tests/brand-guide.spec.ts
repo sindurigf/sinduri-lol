@@ -58,4 +58,39 @@ test.describe('/brand guide', () => {
     expect(pressSample.shadow).toBe(pressed.shadow);
     expect(pressSample.translate).toBe(pressed.translate);
   });
+
+  test('each example shows its HTML under it and the code never scrolls sideways at 320px (SC 1.4.10, 2.1.1)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await gotoSettled(page, BRAND_PATH);
+    const blocks = await page
+      .locator('li[data-component]')
+      .evaluateAll((rows) =>
+        rows.flatMap((row) => {
+          const code = row.querySelector<HTMLElement>('pre.brand-code');
+          if (!code) return [];
+          const label = code.previousElementSibling;
+          return [
+            {
+              part: row.getAttribute('data-component'),
+              label: label?.textContent?.trim(),
+              text: code.textContent ?? '',
+              scrolls: code.scrollWidth > code.clientWidth,
+              scoped: /data-astro/.test(code.textContent ?? ''),
+            },
+          ];
+        }),
+      );
+    expect(blocks.length, 'no example shows its HTML').toBeGreaterThan(0);
+    const wrong = blocks.flatMap((b) => [
+      ...(b.label === 'HTML'
+        ? []
+        : [`${b.part}: the code has no visible label`]),
+      ...(b.text.includes('<') ? [] : [`${b.part}: the code shows no markup`]),
+      ...(b.scrolls ? [`${b.part}: the code scrolls sideways`] : []),
+      ...(b.scoped ? [`${b.part}: the code shows build attributes`] : []),
+    ]);
+    expect(wrong).toEqual([]);
+  });
 });
