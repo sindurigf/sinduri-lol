@@ -134,6 +134,10 @@
     margin-top: calc(var(--spacing-section) * 2);
   }
 
+  .brand-guide {
+    @apply mb-section;
+  }
+
   .brand-parts {
     @apply mt-section space-y-section;
   }
