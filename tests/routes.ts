@@ -84,7 +84,6 @@ const PAGE_ROUTES = [
   '/privacy',
   '/credits',
   '/brand',
-  '/down',
 ];
 
 interface PostSummary {

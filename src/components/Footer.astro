@@ -9,8 +9,8 @@ import {
   SOCIAL_PROFILES,
   profileLinkName,
 } from '../lib/profiles';
-import { DOWN_PATH, TALKS_PATH } from '../lib/paths';
-import { curiouserPages } from '../lib/rabbit-hole';
+import { TALKS_PATH } from '../lib/paths';
+import { curiouserPages } from '../lib/curiouser-pages';
 import { SITE_NAME } from '../lib/site';
 /* Hashed under /_astro/ and cached once, instead of inline on every page. */
 import socialIcons from '../assets/social-icons.svg?url';
@@ -54,11 +54,9 @@ const FIRST_PUBLISHED = 2026;
 /* Not inline: Astro drops the space between two expressions on separate lines. */
 const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
 
-/* /down/ has the same size buttons at its door, scoped to that page. */
-const sizeControls = Astro.url.pathname !== DOWN_PATH;
 /* [title, href] pairs; the script leaves out the page it is on. */
 const curiouserJson = JSON.stringify(
-  (await curiouserPages()).map(({ title, href }) => [title, href]),
+  curiouserPages().map(({ title, href }) => [title, href]),
 );
 
 /* CSS px: the rabbit's display height at its largest (--size-footer-rabbit). */
@@ -121,18 +119,6 @@ const RABBIT_HEIGHT = 160;
       </div>
 
       <div class="footer-extras">
-        <ul role="list" class="footer-links">
-          <li>
-            <a
-              href={DOWN_PATH}
-              aria-current={current(DOWN_PATH)}
-              class="label text-text hover:text-cyan"
-            >
-              Down the Rabbit Hole
-            </a>
-          </li>
-        </ul>
-
         {onDemand && (
           <div class="footer-controls">
             <div
@@ -140,12 +126,6 @@ const RABBIT_HEIGHT = 160;
               data-curiouser-scope
               data-pages={curiouserJson}
             >
-              <a
-                href={`${DOWN_PATH}#fall-heading`}
-                class="footer-curiouser-link label text-text hover:text-cyan"
-              >
-                Curiouser
-              </a>
               <button
                 type="button"
                 class="label text-text hover:text-cyan"
@@ -160,7 +140,7 @@ const RABBIT_HEIGHT = 160;
               <span class="sr-only" role="status" data-curiouser-status></span>
             </div>
 
-            {sizeControls && (
+            {
               <div
                 class="footer-size js-only"
                 role="group"
@@ -203,7 +183,7 @@ const RABBIT_HEIGHT = 160;
                   data-size-status
                 ></span>
               </div>
-            )}
+            }
           </div>
         )}
       </div>

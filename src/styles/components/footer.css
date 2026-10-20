@@ -36,7 +36,7 @@
     text-underline-offset: var(--underline-offset);
   }
 
-  /* The rabbit hole link and the two controls: a wrapping row between the columns and the copyright. */
+  /* Curiouser and the text size buttons: a wrapping row between the columns and the copyright. */
   .footer-extras {
     display: flex;
     flex-wrap: wrap;
@@ -46,7 +46,6 @@
     margin-top: --spacing(8);
   }
 
-  .footer-links,
   .footer-controls,
   .footer-curiouser,
   .footer-size {
@@ -65,11 +64,6 @@
     align-items: center;
     min-height: var(--spacing-target);
     min-width: var(--spacing-target);
-  }
-
-  /* With a script the button takes the link's place, so the two never show together. */
-  :root.js .footer-curiouser-link {
-    display: none;
   }
 
   .footer-reel,

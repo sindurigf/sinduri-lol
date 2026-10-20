@@ -10,7 +10,6 @@ import PhotoTile from '../components/PhotoTile.astro';
 import PhotoViewer from '../components/PhotoViewer.astro';
 import Section from '../components/Section.astro';
 import AboutCats from '../components/ui/AboutCats.vue';
-import { LEPUS_RIDET_MEANING } from '../lib/rabbit-hole';
 import '../styles/components/about-cats.css';
 import type { CatInfo } from '../lib/about-cats';
 import { THANKS } from '../lib/credits';
@@ -305,7 +304,7 @@ const catInfo: CatInfo[] = await Promise.all(
           <span lang="la">Lepus Ridet</span>
         </h2>
         <p class="mt-3 text-body text-text text-pretty">
-          Latin for &ldquo;{LEPUS_RIDET_MEANING}&rdquo;
+          Latin for &ldquo;the hare laughs&rdquo;
         </p>
       </div>
     </div>

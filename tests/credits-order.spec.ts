@@ -11,7 +11,7 @@ const SECTIONS = [
   { heading: 'Design Tools' },
   { heading: 'Built and Tested With' },
   { heading: 'The 404 Page', id: 'not-found' },
-  { heading: 'The Rabbit Hole', id: 'rabbit-hole' },
+  { heading: 'Drink Me and Eat Me', id: 'alice' },
   { heading: 'Made with AI', id: 'ai' },
 ] as const;
 

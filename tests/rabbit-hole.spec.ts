@@ -2,14 +2,11 @@ import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { serveUnderShippedCsp } from './csp';
-import { PUBLISHED_POST_ROUTES } from './routes';
 import { NODE } from './tags';
 import { TEXT_SCALE_KEY, TEXT_SCALE_STEPS } from '../src/lib/text-scale';
 
-const DOWN = '/down/';
-const TARGET_PX = 44;
 const CURIOUSER_TRIES = 25;
-const WIDE_ROUTES = ['/', '/about/', '/blog/', '/credits/', '/career/', DOWN];
+const WIDE_ROUTES = ['/', '/about/', '/blog/', '/credits/', '/career/'];
 const SCRIPTS = ['src/scripts/curiouser.ts', 'src/scripts/text-size.ts'];
 
 /** The requested scale as the root holds it: '' (100%), '1.25' ... '2'. */
@@ -36,57 +33,13 @@ const sidewaysPx = (page: Page) =>
       document.documentElement.clientWidth,
   );
 
-test.describe('the rabbit hole', () => {
-  test('/down/ shelves come from the site content and the door leads to Contact', async ({
-    page,
-  }) => {
-    await gotoSettled(page, DOWN);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Down the Rabbit Hole',
-    );
-    const hrefs = await page
-      .locator('#fall-heading ~ ol a')
-      .evaluateAll((links) => links.map((a) => a.getAttribute('href')));
-    for (const route of PUBLISHED_POST_ROUTES) {
-      expect(hrefs, `${route} is not on a shelf`).toContain(`${route}/`);
-    }
-    expect(hrefs).toContain('/about/');
-    expect(hrefs).toContain('/credits/');
-    expect(hrefs.some((href) => href?.startsWith('/talks/'))).toBe(true);
-    await expect(
-      page.locator('#door').getByRole('link', { name: /Knock/ }),
-    ).toHaveAttribute('href', '/contact/');
-  });
-
-  test('every shelf link and door control is at least 44px', async ({
-    page,
-  }) => {
-    await gotoSettled(page, DOWN);
-    const small = await page.evaluate(
-      (target) =>
-        [
-          ...document.querySelectorAll('main ol a, #door a, #door button'),
-        ].flatMap((el) => {
-          const box = el.getBoundingClientRect();
-          return box.height < target || box.width < target
-            ? [el.textContent?.trim()]
-            : [];
-        }),
-      TARGET_PX,
-    );
-    expect(small).toEqual([]);
-  });
-
-  test('without a script Curiouser is a plain link to /down/ and nothing dead shows', async ({
+test.describe('Curiouser and Drink Me, Eat Me', () => {
+  test('without a script Curiouser and the size buttons are not drawn', async ({
     browser,
   }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
     await page.goto('/about/');
-    await expect(page.locator('.footer-curiouser-link')).toHaveAttribute(
-      'href',
-      `${DOWN}#fall-heading`,
-    );
     await expect(
       curiouser(page),
       'a dead button shows without a script',
@@ -95,24 +48,25 @@ test.describe('the rabbit hole', () => {
       page.locator('.footer-size'),
       'a size control shows without a script',
     ).toBeHidden();
-    await page.goto(DOWN);
-    await expect(page.locator('#door [data-text-size]')).toBeHidden();
     await context.close();
   });
 
-  for (const path of ['/about/', DOWN]) {
-    test(`Curiouser never lands on ${path}, the page it is on`, async ({
-      page,
-    }) => {
-      await page.emulateMedia({ reducedMotion: 'reduce' });
-      await gotoSettled(page, path);
-      for (let i = 0; i < CURIOUSER_TRIES; i += 1) {
-        await curiouser(page).click();
-        await expect(landing(page)).toBeVisible();
-        expect(await landing(page).getAttribute('href')).not.toBe(path);
-      }
-    });
-  }
+  test('Curiouser never lands on the page it is on', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await gotoSettled(page, '/about/');
+    for (let i = 0; i < CURIOUSER_TRIES; i += 1) {
+      await curiouser(page).click();
+      await expect(landing(page)).toBeVisible();
+      expect(await landing(page).getAttribute('href')).not.toBe('/about/');
+    }
+  });
+
+  test('a slide deck has no Curiouser or size buttons, to keep its script budget', async ({
+    page,
+  }) => {
+    await gotoSettled(page, '/talks/open-source-is-not-just-code/');
+    await expect(page.locator('[data-on-demand]')).toHaveCount(0);
+  });
 
   test('the reel runs, then lands and offers the link', async ({ page }) => {
     await gotoSettled(page, '/about/');
@@ -205,31 +159,15 @@ test.describe('the rabbit hole', () => {
     await gotoSettled(page, '/credits/');
     const group = page.locator('[data-text-size="site"]');
     const eat = group.getByRole('button', { name: 'Eat Me' });
-    for (let i = 0; i < TEXT_SCALE_STEPS.length; i += 1)
+    for (let i = 0; i < TEXT_SCALE_STEPS.length; i += 1) {
       await eat.click({ force: true });
+    }
     await expect(group.locator('[data-size-status]')).toContainText(
       'the most this page fits',
     );
     await expect(eat).toHaveAttribute('aria-disabled', 'true');
     expect(await sidewaysPx(page)).toBeLessThanOrEqual(0);
     await page.evaluate((key) => localStorage.removeItem(key), TEXT_SCALE_KEY);
-  });
-
-  test('on /down/ the door scales the page only and nothing is remembered', async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await gotoSettled(page, DOWN);
-    await expect(
-      page.locator('[data-text-size="site"]'),
-      'the footer control shows on /down/',
-    ).toHaveCount(0);
-    await page.locator('#door').getByRole('button', { name: 'Eat Me' }).click();
-    await expect.poll(() => rootSize(page)).toBe('1.25');
-    await gotoSettled(page, '/about/');
-    expect(await rootSize(page), 'the door size leaked to another page').toBe(
-      '',
-    );
   });
 
   test(
@@ -251,12 +189,8 @@ test.describe('the rabbit hole', () => {
     await expect(landing(page)).toBeVisible({ timeout: 4000 });
     await page.getByRole('button', { name: 'Eat Me' }).click();
     await expect.poll(() => rootSize(page)).toBe('1.25');
-    await page.getByRole('button', { name: 'Just Right' }).click();
-    await gotoSettled(page, DOWN);
-    await page
-      .locator('#door')
-      .getByRole('button', { name: 'Drink Me' })
-      .click();
+    await page.getByRole('button', { name: 'Drink Me' }).click();
+    await page.getByRole('button', { name: 'Drink Me' }).click();
     await expect.poll(() => rootSize(page)).toBe('0.75');
     expect(problems, 'a violation or script error').toEqual([]);
   });
