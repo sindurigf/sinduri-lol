@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 
@@ -161,4 +162,38 @@ test('without JavaScript there is no toy button', async ({
     page.getByRole('button', { name: 'Play With the Stickers' }),
   ).toBeHidden();
   await context.close();
+});
+
+/* WebKit applies upgrade-insecure-requests on loopback and then loads nothing over http. */
+const UPGRADE_INSECURE = /;?\s*upgrade-insecure-requests/;
+
+test('play mode starts under the CSP the site ships (Trusted Types)', async ({
+  page,
+}) => {
+  const csp = /Content-Security-Policy: (.+)/.exec(
+    readFileSync('public/_headers', 'utf8'),
+  )?.[1];
+  expect(csp, 'public/_headers has no Content-Security-Policy').toBeTruthy();
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.addInitScript(() => {
+    document.addEventListener('securitypolicyviolation', (event) =>
+      console.error(`csp: ${event.violatedDirective}`),
+    );
+  });
+  page.on('console', (message) => {
+    if (message.text().startsWith('csp:')) errors.push(message.text());
+  });
+  await page.route(`**${ROUTE}`, async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({
+      response,
+      headers: {
+        ...response.headers(),
+        'content-security-policy': csp!.replace(UPGRADE_INSECURE, ''),
+      },
+    });
+  });
+  await start(page);
+  expect(errors, 'the shipped CSP blocked or broke the toy').toEqual([]);
 });

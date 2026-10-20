@@ -9,6 +9,8 @@ import {
 import { SITE_NAME } from '../lib/site';
 /* Hashed under /_astro/ and cached once, instead of inline on every page. */
 import socialIcons from '../assets/social-icons.svg?url';
+import toyLoader from '../scripts/toy-loader.ts?worker&url';
+import toyApp from '../scripts/toy.ts?worker&url';
 
 /* Source order is the reading order at every width; no CSS `order`. */
 
@@ -95,7 +97,13 @@ const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
               </li>
             ))}
           </ul>
-          {/* Placeholder copy. Shown by src/scripts/toy-loader.ts. */}
+          {/* Placeholder copy. Shown by src/scripts/toy-loader.ts, which loads data-toy-app on its first press. */}
+          <script
+            is:inline
+            type="module"
+            src={toyLoader}
+            data-toy-app={toyApp}
+          ></script>
           <button
             type="button"
             class="toy-toggle btn-secondary"

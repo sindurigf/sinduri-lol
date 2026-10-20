@@ -1224,7 +1224,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   one and move it with the arrow keys (Shift for bigger steps). Play mode stops
   their links; Put Them Back and Stop Playing restore them. Under reduced
   motion nothing is tossed (`tests/toy-footer.spec.ts`). Every page loads only
-  the loader; `toy.ts` loads on the first press. Its copy is a placeholder.
+  `toy-loader.ts`, which imports `toy.ts` on the first press; both are built
+  with `?worker&url` and loaded from the footer markup. Its copy is a placeholder.
 - The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
   first on screen, play along it (games like the yarn and the fly carry them,
   leaps move them on), and sit still under reduced motion. Each cat's button
