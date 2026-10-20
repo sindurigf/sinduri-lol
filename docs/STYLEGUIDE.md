@@ -1102,7 +1102,7 @@ by `tests/reading-tab.spec.ts`.
   leaves a free gutter beside its 80rem column, and the control is an edge tab
   in it: a `popover` button named "Aa Text Size", fixed to the right at
   mid-height, with the group in its panel; Escape closes it and returns focus
-  to the summary. Narrower, there is no floating control: the group is at the
+  to the button; a press outside or Tab out closes it. Narrower, there is no floating control: the group is at the
   foot of the mobile menu below `md` and in the theme popover from `md`.
   A test asserts the tab covers no link, button or text at rest.
 - While a control in `main` has keyboard focus the tab slides out of the way

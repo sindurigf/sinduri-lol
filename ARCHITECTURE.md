@@ -319,11 +319,11 @@ queries ignore it, so layouts overflowed at widths such as 768px.
 
 ### Scripts loaded on demand
 
-`src/scripts/on-demand.ts` loads a footer feature's code on its first use, so
+`src/scripts/on-demand.ts` loads a feature's code on its first use, so
 it stays out of the per-page script budgets (`tests/performance.spec.ts`).
 
-- `FEATURES` in `Footer.astro` maps a name to a `?worker&url` file. It renders
-  the registry only when there are entries, and never under `/talks/`.
+- A feature is a `?worker&url` file. `Footer.astro` renders the registry on
+  every page except under `/talks/`.
 - A trigger is `[data-on-demand="<feature file URL>"]`, shipped `hidden`; the
   registry unhides it. Without JavaScript nothing shows.
 - First click imports the file, then dispatches an `on-demand` event on the

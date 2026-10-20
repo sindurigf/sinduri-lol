@@ -1,12 +1,10 @@
-/* Drink Me and Eat Me: step --text-scale. A group is "site" (remembered) or "page" (forgotten on navigation). */
+/* Drink Me, Eat Me and Just Right: step --text-scale and remember the size. */
 import {
   TEXT_SCALE_DEFAULT,
   TEXT_SCALE_KEY,
   TEXT_SCALE_PROPERTY,
   TEXT_SCALE_STEPS,
 } from '../lib/text-scale';
-
-export {};
 
 type Action = 'smaller' | 'larger' | 'reset';
 
@@ -68,7 +66,6 @@ const run = (trigger: HTMLButtonElement): void => {
       ? `Text is already the ${action === 'larger' ? 'largest' : 'smallest'} size, ${percent}%.`
       : `Text is ${percent}%.`;
 
-  if (group.dataset.textSize !== 'site') return;
   try {
     if (percent === TEXT_SCALE_DEFAULT) localStorage.removeItem(TEXT_SCALE_KEY);
     else localStorage.setItem(TEXT_SCALE_KEY, String(percent));
@@ -82,7 +79,7 @@ for (const trigger of document.querySelectorAll<HTMLButtonElement>(
 }
 
 const tab = document.querySelector<HTMLElement>('[data-reading-tab]');
-const invoker = tab?.querySelector<HTMLElement>('.reading-tab-summary');
+const invoker = tab?.querySelector<HTMLElement>('.reading-tab-button');
 const panel = tab?.querySelector<HTMLElement>('[popover]');
 
 /* Safari does not focus a pressed button, so a missing target closes the tab only after Tab. */
