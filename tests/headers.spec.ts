@@ -258,20 +258,18 @@ test.describe('security headers', () => {
     );
   });
 
-  test('the 404 crossroads runs under the policy', async ({ page }) => {
+  test('the 404 signpost runs under the policy', async ({ page }) => {
     const violations = await collectViolations(page);
 
     await page.goto(`${policy().origin}/blgo`);
-    const sign = page
-      .getByRole('button', { name: 'Blog', exact: false })
-      .first();
+    const sign = page.getByRole('button', { name: 'Career', exact: true });
     await expect(
       sign,
-      'the crossroads did not start; the policy may have blocked src/scripts/rabbit-chase.ts or its data block',
+      'the signpost did not start; the policy may have blocked src/scripts/rabbit-chase.ts or its data block',
     ).toBeVisible();
     await sign.click();
     await expect(
-      page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link'),
+      page.getByRole('list', { name: 'Down the Career Way' }).getByRole('link'),
     ).not.toHaveCount(0);
 
     expect(violations, 'the browser refused something under the CSP').toEqual(

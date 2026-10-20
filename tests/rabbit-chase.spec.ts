@@ -38,71 +38,75 @@ test.describe('the crossroads map', NODE, () => {
 });
 
 const ADDRESS = '/blgo/five-yaers-in-drupal';
-const rabbitSign = (page: import('@playwright/test').Page) =>
-  page.getByRole('button', { name: /the White Rabbit went this way/ });
+const pagesList = (page: import('@playwright/test').Page) =>
+  page.getByRole('list', { name: /^Down the .* Way$/ });
 
-test.describe('the Cheshire crossroads on a 404', () => {
-  test('the White Rabbit marks the way to the page a misspelled address meant', async ({
+test.describe('the 404 signpost', () => {
+  test('the White Rabbit’s section starts chosen and its pick is the page a misspelled address meant', async ({
     page,
   }) => {
     await page.goto(ADDRESS, { waitUntil: 'networkidle' });
-    await expect(rabbitSign(page), 'no sign marks the rabbit’s way').toHaveText(
-      /^Blog/,
-    );
-    await rabbitSign(page).click();
-    await expect(rabbitSign(page)).toHaveText(/^Five Years in Drupal/);
-    await rabbitSign(page).click();
+    await expect(
+      page.getByRole('button', { pressed: true }),
+      'the rabbit’s section is not chosen first',
+    ).toHaveAccessibleName(/^Blog \(the White Rabbit went this way\)$/);
+    const pick = page.getByRole('link', { name: /White Rabbit’s pick/ });
+    await expect(pick).toHaveAccessibleName(/^Five Years in Drupal/);
+    await expect(pick).toHaveAttribute('href', '/blog/five-years-in-drupal/');
+  });
 
-    const trail = page.getByRole('navigation', { name: 'Breadcrumb' });
-    await expect(trail.getByRole('link')).toHaveText([
-      'Home',
-      'Blog',
-      /^Five Years in Drupal/,
+  test('choosing a section lists its pages, announces it and keeps focus on the sign', async ({
+    page,
+  }) => {
+    await page.goto(ADDRESS, { waitUntil: 'networkidle' });
+    const career = page.getByRole('button', { name: 'Career', exact: true });
+    await career.focus();
+    await page.keyboard.press('Enter');
+    await expect(career).toHaveAttribute('aria-pressed', 'true');
+    await expect(career, 'focus left the sign').toBeFocused();
+    await expect(pagesList(page)).toHaveAccessibleName('Down the Career Way');
+    await expect(pagesList(page).getByRole('link')).toHaveText([
+      'Career',
+      'CV',
     ]);
-    const go = page.getByRole('link', { name: /^Go to Five Years in Drupal/ });
-    await expect(go, 'focus did not move to the end of the way').toBeFocused();
-    await expect(go).toHaveAttribute('href', '/blog/five-years-in-drupal/');
     await expect(page.locator('#crossroads [aria-live="polite"]')).toHaveText(
-      /The end of this way/,
+      '2 pages down the Career way.',
     );
-    await expect(page.locator('.crossroads-watch')).toHaveText(/2 hops/);
+    await expect(
+      page.getByRole('button', { pressed: true }),
+      'more than one section is chosen',
+    ).toHaveCount(1);
   });
 
-  test('any sign can be taken, focus moves to the next fork, and Climb Back Up returns', async ({
-    page,
-  }) => {
-    await page.goto(ADDRESS, { waitUntil: 'networkidle' });
-    await page.getByRole('button', { name: 'Brand', exact: true }).click();
-    await expect(
-      page.locator('.crossroads-sign').first(),
-      'focus did not move to the first sign of the new fork',
-    ).toBeFocused();
-    await expect(page.getByRole('link', { name: 'Go to Brand' })).toBeVisible();
-    await page.getByRole('button', { name: 'Climb Back Up' }).click();
-    await expect(
-      page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link'),
-    ).toHaveText(['Home']);
-  });
-
-  test('every sign is a native button at least 44px tall', async ({ page }) => {
-    await page.goto(ADDRESS, { waitUntil: 'networkidle' });
-    const heights = await page
-      .locator('.crossroads-sign')
-      .evaluateAll((signs) =>
-        signs.map((sign) => [
-          sign.tagName,
-          sign.getBoundingClientRect().height,
-        ]),
+  for (const width of [390, 1280]) {
+    test(`at ${width}px every sign and page is at least 44px tall and the page does not scroll sideways`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(ADDRESS, { waitUntil: 'networkidle' });
+      const heights = await page
+        .locator('.crossroads-sign, .crossroads-page')
+        .evaluateAll((targets) =>
+          targets.map((target) => target.getBoundingClientRect().height),
+        );
+      expect(heights.length, 'no signs drawn').toBeGreaterThan(2);
+      for (const height of heights) {
+        expect(
+          height,
+          'a target under 44px tall (SC 2.5.5)',
+        ).toBeGreaterThanOrEqual(44);
+      }
+      const overflow = await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth -
+          document.documentElement.clientWidth,
       );
-    expect(heights.length, 'no signs at the first fork').toBeGreaterThan(1);
-    for (const [tag, height] of heights) {
-      expect(tag).toBe('BUTTON');
       expect(
-        height as number,
-        'a sign under 44px tall (SC 2.5.5)',
-      ).toBeGreaterThanOrEqual(44);
-    }
-  });
+        overflow,
+        'the signpost makes the page scroll sideways',
+      ).toBeLessThanOrEqual(0);
+    });
+  }
 });
 
 test.describe('without JavaScript', () => {

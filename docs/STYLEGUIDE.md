@@ -728,7 +728,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
 | Blog index             | Hero, Listing, Close                                                    |
 | Blog category, tag     | Hero, Listing                                                           |
 | Post                   | Article header, Reading (contents box from 1280px), Tags nav            |
-| 404                    | Hero, then the Cheshire crossroads (main page links without JavaScript) |
+| 404                    | Hero with the signpost in its slab (main page links without JavaScript) |
 | Brand                  | Hero (full), Facts, Brand (sections list), Close                        |
 
 - Contact ends on its gold surface, not a closing row: the band is its call to
@@ -807,6 +807,8 @@ tier and takes its padding.
   `h1`.
 - Breadcrumbs go in the `eyebrow` slot above the `h1`, as a named `nav`,
   with `tone="gold"` on a slab.
+- The plain tier's `slab` slot puts content inside the slab under the `h1`;
+  `/404` holds its standfirst and signpost there.
 - The photo is a `<figure>`; its credit, if any, a `figcaption`.
 - The roundel is decoration: `alt=""`, no role, no focus.
 

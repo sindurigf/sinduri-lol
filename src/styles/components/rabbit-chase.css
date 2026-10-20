@@ -15,13 +15,19 @@
     @apply text-text italic text-pretty;
   }
 
-  /* Left arm: sections pointing back. Right arm: pages down the chosen one. Stacked on a phone. */
+  /*
+   * From 48rem: sections point back on the left arm, pages point on along the
+   * right. On a phone the post runs down the left edge and both hang off it.
+   */
   .crossroads-map {
     position: relative;
     display: grid;
-    gap: --spacing(10);
+    gap: --spacing(8);
+    padding-left: calc(var(--spacing-pole) + --spacing(3));
+    padding-bottom: var(--size-rabbit-runner);
 
     @media (width >= 48rem) {
+      padding: 0;
       grid-template-columns:
         minmax(0, var(--container-rail)) var(--spacing-pole)
         minmax(0, var(--container-measure));
@@ -31,13 +37,16 @@
   }
 
   .crossroads-pole {
-    display: none;
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: var(--spacing-pole);
+    background-color: var(--color-block-ink);
 
     @media (width >= 48rem) {
-      display: block;
       position: relative;
       z-index: 1;
-      background-color: var(--color-block-ink);
+      width: auto;
     }
   }
 
@@ -57,10 +66,24 @@
     }
   }
 
-  .crossroads-signs,
+  .crossroads-signs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: --spacing(2);
+
+    @media (width >= 48rem) {
+      display: grid;
+      gap: --spacing(3);
+    }
+  }
+
   .crossroads-pages {
     display: grid;
-    gap: --spacing(3);
+    gap: --spacing(2);
+
+    @media (width >= 48rem) {
+      gap: --spacing(3);
+    }
   }
 
   .crossroads-column {
@@ -78,7 +101,6 @@
   .crossroads-sign,
   .crossroads-page {
     display: block;
-    width: 100%;
     min-height: var(--spacing-target);
     padding-block: --spacing(3);
     border: var(--border-width-sticker) solid var(--color-block-ink);
@@ -87,14 +109,27 @@
   }
 
   .crossroads-sign {
-    padding-inline: --spacing(4) --spacing(10);
-    clip-path: polygon(0 0, 92% 0, 100% 50%, 92% 100%, 0 100%);
+    padding-inline: --spacing(3) --spacing(7);
+    clip-path: polygon(
+      0 0,
+      calc(100% - var(--size-sign-point)) 0,
+      100% 50%,
+      calc(100% - var(--size-sign-point)) 100%,
+      0 100%
+    );
     text-align: left;
     cursor: pointer;
 
     @media (width >= 48rem) {
+      width: 100%;
       padding-inline: --spacing(10) --spacing(4);
-      clip-path: polygon(8% 0, 100% 0, 100% 100%, 8% 100%, 0 50%);
+      clip-path: polygon(
+        var(--size-sign-point) 0,
+        100% 0,
+        100% 100%,
+        var(--size-sign-point) 100%,
+        0 50%
+      );
       text-align: right;
     }
   }
@@ -106,7 +141,13 @@
 
   .crossroads-page {
     padding-inline: --spacing(4) --spacing(10);
-    clip-path: polygon(0 0, 94% 0, 100% 50%, 94% 100%, 0 100%);
+    clip-path: polygon(
+      0 0,
+      calc(100% - var(--size-sign-point)) 0,
+      100% 50%,
+      calc(100% - var(--size-sign-point)) 100%,
+      0 100%
+    );
     font-size: var(--text-body);
     text-decoration: none;
   }
@@ -133,7 +174,6 @@
     max-width: none;
     height: var(--size-rabbit-runner);
     pointer-events: none;
-
     position: absolute;
     bottom: 0;
     left: 100%;

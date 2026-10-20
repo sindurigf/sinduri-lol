@@ -50,14 +50,14 @@ const start = (): void => {
   if (!chosen) return;
 
   const cat = make('p', 'crossroads-cat', CAT_LINE);
-  const signsLabel = make('p', 'crossroads-heading label', 'Sections');
+  const signsLabel = make('div', 'crossroads-heading label', 'Sections');
   signsLabel.id = 'crossroads-signs-label';
   const signs = make('ul', 'crossroads-signs');
   signs.setAttribute('role', 'list');
   signs.setAttribute('aria-labelledby', signsLabel.id);
   const pole = make('div', 'crossroads-pole');
   pole.setAttribute('aria-hidden', 'true');
-  const pagesLabel = make('p', 'crossroads-heading label');
+  const pagesLabel = make('div', 'crossroads-heading label');
   pagesLabel.id = 'crossroads-pages-label';
   const links = make('ul', 'crossroads-pages');
   links.setAttribute('role', 'list');
