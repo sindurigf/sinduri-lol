@@ -90,3 +90,29 @@ document.addEventListener('keydown', (event) => {
   tab.open = false;
   tab.querySelector('summary')?.focus();
 });
+
+const openTab = (): HTMLDetailsElement | null =>
+  document.querySelector<HTMLDetailsElement>('[data-reading-tab][open]');
+
+/* A press outside the tab closes it and leaves focus where the press put it. */
+document.addEventListener('pointerdown', (event) => {
+  const tab = openTab();
+  if (tab && !tab.contains(event.target as Node)) tab.open = false;
+});
+
+/* Safari does not focus a pressed button, so a missing target closes the tab only after Tab. */
+let tabbing = false;
+document.addEventListener('keydown', (event) => {
+  tabbing = event.key === 'Tab';
+});
+document.addEventListener('pointerdown', () => {
+  tabbing = false;
+});
+
+/* Left open behind the next control, it would cover it (SC 2.4.11). */
+document.addEventListener('focusout', (event) => {
+  const tab = openTab();
+  const next = event.relatedTarget;
+  if (!tab || !tab.contains(event.target as Node)) return;
+  if (next instanceof Node ? !tab.contains(next) : tabbing) tab.open = false;
+});

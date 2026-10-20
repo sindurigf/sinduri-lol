@@ -3,6 +3,7 @@ import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { serveUnderShippedCsp } from './csp';
 import { NODE } from './tags';
+import { timedScan } from './axe';
 import { TEXT_SCALE_KEY, TEXT_SCALE_STEPS } from '../src/lib/text-scale';
 
 const WIDE_ROUTES = ['/', '/about/', '/blog/', '/credits/', '/career/'];
@@ -295,6 +296,184 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
       await expect(tab(page)).not.toHaveAttribute('open', '', { timeout: 300 });
     }).toPass();
     await expect(summary).toBeFocused();
+  });
+
+  test('a press outside the reading tab closes it and leaves focus where the press put it (SC 2.4.3)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
+    await gotoSettled(page, '/about/');
+    await openTab(page);
+    /* The dismissal arrives with the script the first press loads. */
+    await expect(async () => {
+      await page.mouse.click(40, 400);
+      await expect(tab(page)).not.toHaveAttribute('open', '', { timeout: 300 });
+    }).toPass();
+    await expect(tab(page).locator('summary')).not.toBeFocused();
+  });
+
+  test('Tab past the last button closes the reading tab (SC 2.4.11)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
+    await gotoSettled(page, '/about/');
+    await openTab(page);
+    await expect(async () => {
+      await page.keyboard.press('Escape');
+      await expect(tab(page)).not.toHaveAttribute('open', '', { timeout: 300 });
+    }).toPass();
+    await openTab(page);
+    const last = tab(page).getByRole('button', { name: /^Just Right/ });
+    await last.focus();
+    await page.keyboard.press('Tab');
+    await expect(tab(page)).not.toHaveAttribute('open', '');
+    await expect(last).toBeHidden();
+  });
+
+  test('the Theme menu group closes on an outside press, Escape and Tab out', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1024, height: 800 });
+    await gotoSettled(page, '/about/');
+    const theme = page.getByRole('button', { name: 'Theme' });
+    const menu = page.locator('#theme-menu');
+    await theme.click();
+    await expect(menu).toBeVisible();
+    await page.mouse.click(10, 600);
+    await expect(menu).toBeHidden();
+    await theme.click();
+    await expect(menu).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+    await theme.click();
+    await menu.getByRole('button', { name: /^Just Right/ }).focus();
+    await page.keyboard.press('Tab');
+    await expect(menu).toBeHidden();
+  });
+
+  test('the mobile menu group closes with the menu on Escape', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await gotoSettled(page, '/about/');
+    const trigger = page.getByRole('button', { name: 'Menu' });
+    const dialog = page.locator('.mobile-menu dialog');
+    await trigger.click();
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+  });
+
+  const OPEN_STATES = [
+    {
+      name: 'the edge tab',
+      width: TAB_WIDTH,
+      open: async (page: Page) => openTab(page),
+      scope: (page: Page) => tab(page),
+    },
+    {
+      name: 'the Theme menu',
+      width: 1024,
+      open: async (page: Page) => {
+        await page.getByRole('button', { name: 'Theme' }).click();
+      },
+      scope: (page: Page) => page.locator('#theme-menu'),
+    },
+    {
+      name: 'the mobile menu',
+      width: 390,
+      open: async (page: Page) => {
+        await page.getByRole('button', { name: 'Menu' }).click();
+      },
+      scope: (page: Page) => page.locator('.mobile-menu dialog'),
+    },
+  ];
+
+  for (const state of OPEN_STATES) {
+    test(`${state.name} open: axe finds nothing and the buttons are named (WCAG 2.2 AA)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: state.width, height: 800 });
+      await gotoSettled(page, '/about/');
+      await state.open(page);
+      const group = state.scope(page).getByRole('group', { name: 'Text Size' });
+      await expect(group).toBeVisible();
+      await expect(group.getByRole('button')).toHaveCount(3);
+      const results = await timedScan(page, `${state.name} open`);
+      expect(
+        results.violations.map((v) => `${v.id}: ${v.nodes[0]?.target}`),
+        `${state.name} open has axe violations`,
+      ).toEqual([]);
+    });
+
+    test(`${state.name} open in forced colors: every button keeps a visible boundary (SC 1.4.11)`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ forcedColors: 'active' });
+      await page.setViewportSize({ width: state.width, height: 800 });
+      await gotoSettled(page, '/about/');
+      await state.open(page);
+      const buttons = state
+        .scope(page)
+        .getByRole('group', { name: 'Text Size' })
+        .getByRole('button');
+      for (const button of await buttons.all()) {
+        const edge = await button.evaluate((el) => {
+          const style = getComputedStyle(el);
+          return {
+            width: parseFloat(style.borderTopWidth),
+            style: style.borderTopStyle,
+          };
+        });
+        expect(
+          edge.width,
+          'a forced-colors button needs a border',
+        ).toBeGreaterThan(0);
+        expect(edge.style).not.toBe('none');
+      }
+    });
+  }
+
+  test('reduced motion: the tab neither animates nor transitions', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
+    await gotoSettled(page, '/about/');
+    await openTab(page);
+    const longest = await tab(page).evaluate((el) =>
+      Math.max(
+        ...[el, ...el.querySelectorAll('*')].flatMap((node) => {
+          const style = getComputedStyle(node);
+          const seconds = (list: string) =>
+            list.split(',').map((part) => parseFloat(part));
+          return [
+            ...seconds(style.transitionDuration),
+            ...seconds(style.animationDuration),
+          ];
+        }),
+      ),
+    );
+    /* The site's reduced-motion rule leaves 0.00001s, not 0. */
+    expect(longest).toBeLessThanOrEqual(0.001);
+  });
+
+  test('400% zoom: the group reaches every size without sideways scroll', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 256 });
+    await gotoSettled(page, '/about/');
+    await page.getByRole('button', { name: 'Menu' }).click();
+    const group = page
+      .locator('.mobile-menu dialog')
+      .getByRole('group', { name: 'Text Size' });
+    await group.getByRole('button', { name: /^Eat Me/ }).click();
+    await expect(group.getByRole('status')).not.toHaveText('');
+    expect(await sidewaysPx(page)).toBeLessThanOrEqual(0);
+    for (const button of await group.getByRole('button').all()) {
+      await button.scrollIntoViewIfNeeded();
+      await expect(button).toBeInViewport();
+    }
   });
 
   test('a control under the tab that takes keyboard focus is never hidden by it (SC 2.4.11, 2.4.12)', async ({
