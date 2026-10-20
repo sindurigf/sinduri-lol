@@ -22,8 +22,9 @@
     margin-left: 0;
   }
 
+  /* The site's button hover: cyan fill, page-ground text (SC 1.4.6 in both modes). */
   .lost-brick:not([aria-disabled='true']):hover {
-    @apply bg-cyan;
+    @apply bg-cyan text-background;
   }
 
   .lost-brick[data-looked] {

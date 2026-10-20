@@ -10,7 +10,6 @@ const again = game?.querySelector<HTMLButtonElement>('[data-lost-again]');
 const rabbitArt = document.querySelector<SVGSVGElement>(
   'footer .footer-tuft > svg',
 );
-const BRICK_COUNT = 5;
 
 /* Placeholder copy: Sinduri rewrites every line below in her voice. */
 const COPY = {
@@ -40,49 +39,54 @@ const rabbit = (): SVGSVGElement | null => {
   return art;
 };
 
+/* The bricks are in the page's markup; a deal resets them and hides the page again. */
+const bricks = [...(row?.querySelectorAll<HTMLButtonElement>('button') ?? [])];
+let hidden = 0;
+let turns = 0;
+let over = false;
+
 const deal = (): void => {
-  if (!row) return;
-  const hidden = Math.floor(Math.random() * BRICK_COUNT) + 1;
-  let turns = 0;
-  let over = false;
-  row.replaceChildren();
-  for (let n = 1; n <= BRICK_COUNT; n += 1) {
-    const item = document.createElement('li');
-    const brick = Object.assign(document.createElement('button'), {
-      type: 'button',
-      className: 'lost-brick',
-      textContent: String(n),
-    });
+  hidden = Math.floor(Math.random() * bricks.length) + 1;
+  turns = 0;
+  over = false;
+  bricks.forEach((brick, index) => {
+    const n = index + 1;
+    brick.replaceChildren(String(n));
     brick.setAttribute('aria-label', COPY.brick(n));
-    brick.addEventListener('click', () => {
-      if (over || brick.getAttribute('aria-disabled') === 'true') return;
-      turns += 1;
-      brick.setAttribute('aria-disabled', 'true');
-      brick.dataset.looked = '';
-      if (n === hidden) {
-        over = true;
-        brick.dataset.found = '';
-        brick.setAttribute('aria-label', COPY.found(n, turns));
-        const art = rabbit();
-        if (art) brick.replaceChildren(art);
-        say(COPY.found(n, turns));
-        again?.removeAttribute('hidden');
-        return;
-      }
-      brick.setAttribute('aria-label', COPY.empty(n));
-      say(Math.abs(n - hidden) === 1 ? COPY.warm(n) : COPY.cold(n));
-    });
-    item.append(brick);
-    row.append(item);
-  }
+    brick.removeAttribute('aria-disabled');
+    delete brick.dataset.looked;
+    delete brick.dataset.found;
+  });
   say(COPY.start);
   again?.setAttribute('hidden', '');
 };
 
+bricks.forEach((brick, index) => {
+  const n = index + 1;
+  brick.addEventListener('click', () => {
+    if (over || brick.getAttribute('aria-disabled') === 'true') return;
+    turns += 1;
+    brick.setAttribute('aria-disabled', 'true');
+    brick.dataset.looked = '';
+    if (n === hidden) {
+      over = true;
+      brick.dataset.found = '';
+      brick.setAttribute('aria-label', COPY.found(n, turns));
+      const art = rabbit();
+      if (art) brick.replaceChildren(art);
+      say(COPY.found(n, turns));
+      again?.removeAttribute('hidden');
+      return;
+    }
+    brick.setAttribute('aria-label', COPY.empty(n));
+    say(Math.abs(n - hidden) === 1 ? COPY.warm(n) : COPY.cold(n));
+  });
+});
+
 if (game) {
   again?.addEventListener('click', () => {
     deal();
-    row?.querySelector('button')?.focus();
+    bricks[0]?.focus();
   });
   deal();
   game.hidden = false;

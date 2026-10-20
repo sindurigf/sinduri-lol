@@ -5,6 +5,9 @@ import '../styles/components/starfield.css';
 import '../styles/components/lost-page.css';
 import { BLOG_PATH } from '../lib/paths';
 
+/* The 404 game's bricks; src/scripts/lost-page.ts hides the page behind one. */
+const BRICKS = [1, 2, 3, 4, 5];
+
 /*
  * Served with status 404 via `not_found_handling: "404-page"` in wrangler.jsonc.
  * noCanonical: it answers every dead URL. noindex: /404 itself is a route that
@@ -69,7 +72,19 @@ import { BLOG_PATH } from '../lib/paths';
         Help Find This Page
       </h2>
       <p class="lost-status" role="status"></p>
-      <ul class="lost-bricks" role="list"></ul>
+      <ul class="lost-bricks" role="list">
+        {BRICKS.map((n) => (
+          <li>
+            <button
+              type="button"
+              class="lost-brick"
+              aria-label={`Look behind brick ${n}`}
+            >
+              {n}
+            </button>
+          </li>
+        ))}
+      </ul>
       <button type="button" data-lost-again class="btn-secondary mt-6" hidden>
         Play Again
       </button>
