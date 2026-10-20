@@ -15,11 +15,6 @@
 
     @variant tab {
       @apply block;
-
-      &[open] {
-        display: flex;
-        flex-direction: row-reverse;
-      }
     }
 
     @media print {
@@ -38,11 +33,7 @@
   }
 
   .reading-tab-summary {
-    @apply flex min-h-14 min-w-target cursor-pointer list-none items-center justify-center border-4 border-e-0 border-border bg-surface px-2 text-label font-black text-text;
-
-    &::-webkit-details-marker {
-      display: none;
-    }
+    @apply flex min-h-14 w-target cursor-pointer items-center justify-center border-4 border-e-0 border-border bg-surface text-label font-black text-text;
 
     &:hover {
       @apply bg-cyan text-background;
@@ -53,12 +44,14 @@
     }
   }
 
-  .reading-tab:not([open]) .reading-tab-panel {
-    display: none;
-  }
-
+  /* A popover sits in the top layer, so it is placed against the tab's own width, not its wrapper. */
   .reading-tab-panel {
-    @apply max-w-56 border-4 border-border bg-surface p-3;
+    @apply fixed m-0 max-w-56 border-4 border-border bg-surface p-3 text-text;
+
+    inset: auto;
+    inset-block-start: 50%;
+    inset-inline-end: var(--spacing-target);
+    translate: 0 -50%;
   }
 
   /* The group: a label, three buttons and a status in a column. */

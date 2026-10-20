@@ -329,7 +329,6 @@ it stays out of the per-page script budgets (`tests/performance.spec.ts`).
 - First click imports the file, then dispatches an `on-demand` event on the
   trigger; later clicks only dispatch. A failed import is reported with
   `reportError` and retried on the next click.
-- A `details[data-light-dismiss]` closes on a press outside it from the registry itself, so a press during the first import still dismisses it.
 - A feature file finds its trigger and listens at top level:
   `trigger.addEventListener('on-demand', ...)`, and ends with `export {};` so
   TypeScript treats it as a module.

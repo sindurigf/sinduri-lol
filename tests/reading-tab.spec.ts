@@ -28,8 +28,9 @@ const bodyPx = (page: Page) =>
   );
 
 const tab = (page: Page) => page.locator('[data-reading-tab]');
+const panel = (page: Page) => page.locator('#reading-tab-panel');
 const openTab = async (page: Page) => {
-  await tab(page).locator('summary').click();
+  await tab(page).locator('.reading-tab-summary').click();
   await expect(
     tab(page).getByRole('button', { name: /Drink Me/ }),
   ).toBeVisible();
@@ -212,7 +213,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
             r.bottom > t.top;
           const found: string[] = [];
           for (const el of document.querySelectorAll(
-            'a, button, summary, input, select',
+            'a, button, input, select',
           )) {
             if (
               !el.closest('[data-reading-tab]') &&
@@ -248,15 +249,16 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     }
   });
 
-  test('the reading tab is a native disclosure with a named summary, three named buttons and 44px targets (SC 2.5.3, 2.5.5, 4.1.2)', async ({
+  test('the reading tab is a popover with a named button, three named buttons and 44px targets (SC 2.5.3, 2.5.5, 4.1.2)', async ({
     page,
   }) => {
     await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
     await gotoSettled(page, '/about/');
-    const summary = tab(page).locator('summary');
+    const summary = tab(page).locator('.reading-tab-summary');
     await expect(summary).toHaveAccessibleName('Aa Text Size');
     await openTab(page);
-    const buttons = tab(page).getByRole('button');
+    await expect(summary).toHaveAttribute('aria-expanded', 'true');
+    const buttons = panel(page).getByRole('button');
     await expect(buttons).toHaveCount(3);
     await expect(buttons.nth(0)).toHaveAccessibleName('Drink Me');
     await expect(buttons.nth(0)).toHaveAccessibleDescription('Smaller text');
@@ -282,19 +284,16 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
   }) => {
     await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
     await gotoSettled(page, '/about/');
-    const summary = tab(page).locator('summary');
+    const summary = tab(page).locator('.reading-tab-summary');
     await summary.focus();
     await page.keyboard.press('Enter');
-    await expect(tab(page)).toHaveAttribute('open', '');
+    await expect(panel(page)).toBeVisible();
     await page.keyboard.press('Tab');
     await expect(
       tab(page).getByRole('button', { name: /^Drink Me/ }),
     ).toBeFocused();
-    /* The key handler arrives with the script the first press loads. */
-    await expect(async () => {
-      await page.keyboard.press('Escape');
-      await expect(tab(page)).not.toHaveAttribute('open', '', { timeout: 300 });
-    }).toPass();
+    await page.keyboard.press('Escape');
+    await expect(panel(page)).toBeHidden();
     await expect(summary).toBeFocused();
   });
 
@@ -305,8 +304,8 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     await gotoSettled(page, '/about/');
     await openTab(page);
     await page.mouse.click(40, 400);
-    await expect(tab(page)).not.toHaveAttribute('open', '');
-    await expect(tab(page).locator('summary')).not.toBeFocused();
+    await expect(panel(page)).toBeHidden();
+    await expect(tab(page).locator('.reading-tab-summary')).not.toBeFocused();
   });
 
   test('a press outside closes the tab while its script is still loading', async ({
@@ -319,10 +318,10 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     });
     await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
     await gotoSettled(page, '/about/');
-    await tab(page).locator('summary').click();
-    await expect(tab(page)).toHaveAttribute('open', '');
+    await tab(page).locator('.reading-tab-summary').click();
+    await expect(panel(page)).toBeVisible();
     await page.mouse.click(40, 400);
-    await expect(tab(page)).not.toHaveAttribute('open', '', { timeout: 500 });
+    await expect(panel(page)).toBeHidden({ timeout: 500 });
   });
 
   test('Tab past the last button closes the reading tab (SC 2.4.11)', async ({
@@ -331,15 +330,13 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
     await gotoSettled(page, '/about/');
     await openTab(page);
-    await expect(async () => {
-      await page.keyboard.press('Escape');
-      await expect(tab(page)).not.toHaveAttribute('open', '', { timeout: 300 });
-    }).toPass();
+    await page.keyboard.press('Escape');
+    await expect(panel(page)).toBeHidden();
     await openTab(page);
     const last = tab(page).getByRole('button', { name: /^Just Right/ });
     await last.focus();
     await page.keyboard.press('Tab');
-    await expect(tab(page)).not.toHaveAttribute('open', '');
+    await expect(panel(page)).toBeHidden();
     await expect(last).toBeHidden();
   });
 

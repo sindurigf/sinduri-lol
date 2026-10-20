@@ -8,16 +8,22 @@ const show = !Astro.url.pathname.startsWith(TALKS_PATH);
 ---
 
 {show && (
-  <details
+  <div
     class="reading-tab js-only"
     hidden
     data-reading-tab
-    data-light-dismiss
     data-on-demand={textSizeFeature}
   >
-    <summary class="reading-tab-summary" data-on-demand={textSizeFeature}>
+    <button
+      type="button"
+      class="reading-tab-summary"
+      popovertarget="reading-tab-panel"
+      data-on-demand={textSizeFeature}
+    >
       Aa<span class="sr-only"> Text Size</span>
-    </summary>
-    <TextSizeGroup idPrefix="reading-tab" class="reading-tab-panel" />
-  </details>
+    </button>
+    <div id="reading-tab-panel" class="reading-tab-panel" popover>
+      <TextSizeGroup idPrefix="reading-tab" />
+    </div>
+  </div>
 )}

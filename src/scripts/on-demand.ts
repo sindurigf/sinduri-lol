@@ -39,14 +39,6 @@ addEventListener('click', (event) => {
   if (trigger) run(trigger);
 });
 
-/* Eager, so a press right after the first open still closes it, before its feature has loaded. */
-addEventListener('pointerdown', (event) => {
-  for (const open of document.querySelectorAll<HTMLDetailsElement>(
-    'details[open][data-light-dismiss]',
-  ))
-    if (!open.contains(event.target as Node)) open.open = false;
-});
-
 addEventListener('keydown', (event) => {
   if (
     event.ctrlKey ||

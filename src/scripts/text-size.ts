@@ -81,18 +81,9 @@ for (const trigger of document.querySelectorAll<HTMLButtonElement>(
   trigger.addEventListener('on-demand', () => run(trigger));
 }
 
-/* Escape closes the reading tab and returns focus to its summary. */
-document.addEventListener('keydown', (event) => {
-  const tab = document.querySelector<HTMLDetailsElement>(
-    '[data-reading-tab][open]',
-  );
-  if (event.key !== 'Escape' || !tab) return;
-  tab.open = false;
-  tab.querySelector('summary')?.focus();
-});
-
-const openTab = (): HTMLDetailsElement | null =>
-  document.querySelector<HTMLDetailsElement>('[data-reading-tab][open]');
+const tab = document.querySelector<HTMLElement>('[data-reading-tab]');
+const invoker = tab?.querySelector<HTMLElement>('.reading-tab-summary');
+const panel = tab?.querySelector<HTMLElement>('[popover]');
 
 /* Safari does not focus a pressed button, so a missing target closes the tab only after Tab. */
 let tabbing = false;
@@ -103,10 +94,22 @@ document.addEventListener('pointerdown', () => {
   tabbing = false;
 });
 
-/* Left open behind the next control, it would cover it (SC 2.4.11). */
-document.addEventListener('focusout', (event) => {
-  const tab = openTab();
-  const next = event.relatedTarget;
-  if (!tab || !tab.contains(event.target as Node)) return;
-  if (next instanceof Node ? !tab.contains(next) : tabbing) tab.open = false;
-});
+if (tab && invoker && panel) {
+  const sync = (): void =>
+    invoker.setAttribute(
+      'aria-expanded',
+      String(panel.matches(':popover-open')),
+    );
+  sync();
+  panel.addEventListener('toggle', sync);
+
+  /* Left open behind the next control, it would cover it (SC 2.4.11). */
+  tab.addEventListener('focusout', (event) => {
+    const next = event.relatedTarget;
+    if (next instanceof Node ? !tab.contains(next) : tabbing) {
+      if (panel.matches(':popover-open')) panel.hidePopover();
+    }
+  });
+}
+
+export {};

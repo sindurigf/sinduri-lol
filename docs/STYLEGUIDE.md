@@ -1100,7 +1100,7 @@ by `tests/reading-tab.spec.ts`.
   status. Hidden without a script, and absent on talk decks and in print.
 - Where it sits depends on the width. From 86rem (the `tab` variant) the page
   leaves a free gutter beside its 80rem column, and the control is an edge tab
-  in it: a native `details` named "Aa Text Size", fixed to the right at
+  in it: a `popover` button named "Aa Text Size", fixed to the right at
   mid-height, with the group in its panel; Escape closes it and returns focus
   to the summary. Narrower, there is no floating control: the group is at the
   foot of the mobile menu below `md` and in the theme popover from `md`.
