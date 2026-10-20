@@ -90,32 +90,34 @@ const form = el(
   input,
   el(
     'button',
-    { type: 'submit', className: 'btn-secondary cat-close mt-4' },
+    { type: 'submit', className: 'btn-secondary drush-button mt-4' },
     'Run',
   ),
 );
 const closeButton = el(
   'button',
-  { type: 'button', className: 'btn-secondary cat-close mt-4' },
+  { type: 'button', className: 'btn-secondary drush-button mt-4' },
   'Close',
 );
-const keysButton = el(
-  'button',
-  { type: 'button', className: 'btn-secondary cat-close mt-4' },
-  'Open When I Type drush',
+const keysBox = el('input', { type: 'checkbox', id: 'drush-keys' });
+const keysSwitch = el(
+  'label',
+  { className: 'drush-keys', htmlFor: 'drush-keys' },
+  keysBox,
+  'Open This When I Type drush',
 );
 const dialog = el(
   'dialog',
-  { className: 'cat-dialog drush-dialog' },
+  { className: 'drush-dialog' },
   el(
     'div',
-    { className: 'cat-card' },
+    { className: 'drush-card' },
     el('h2', { id: 'drush-title', className: 'text-h3 font-black' }, 'Drush'),
     el('p', { className: 'mt-2 text-body' }, 'Type a command, or pick one.'),
     form,
     suggestions,
     output,
-    keysButton,
+    keysSwitch,
     closeButton,
   ),
 );
@@ -134,7 +136,7 @@ for (const command of Object.keys(OUTPUT)) {
   const item = document.createElement('li');
   const pick = Object.assign(document.createElement('button'), {
     type: 'button',
-    className: 'btn-secondary cat-close drush-chip',
+    className: 'btn-secondary drush-button drush-chip',
     textContent: command,
   });
   pick.addEventListener('click', () => {
@@ -158,17 +160,15 @@ const keysOn = (): boolean => {
     return true;
   }
 };
-keysButton.setAttribute('aria-pressed', String(keysOn()));
-keysButton.addEventListener('click', () => {
-  const on = !keysOn();
+keysBox.checked = keysOn();
+keysBox.addEventListener('change', () => {
   try {
-    if (on) localStorage.removeItem(KEYS_STORAGE_KEY);
+    if (keysBox.checked) localStorage.removeItem(KEYS_STORAGE_KEY);
     else localStorage.setItem(KEYS_STORAGE_KEY, KEYS_OFF);
   } catch (error) {
+    keysBox.checked = keysOn();
     reportError(error);
-    return;
   }
-  keysButton.setAttribute('aria-pressed', String(on));
 });
 
 const openDialog = (): void => {

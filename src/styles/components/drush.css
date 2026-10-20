@@ -14,8 +14,35 @@
     }
   }
 
-  .drush-dialog .cat-card {
-    @apply w-96 max-w-full;
+  /*
+   * Global, unlike about-cats.css, because the dialog opens on any page. It
+   * scrolls when the viewport is short (SC 1.4.10); its padding is the card's shadow.
+   */
+  .drush-dialog {
+    @apply m-auto overflow-y-auto border-0 bg-transparent p-0 pr-1 pb-1
+      text-text;
+  }
+
+  .drush-dialog::backdrop {
+    @apply bg-background/60;
+  }
+
+  .drush-card {
+    @apply edge w-96 max-w-full border-border bg-surface p-4
+      shadow-hard-pink-object;
+  }
+
+  /* The site button, small: still a 44px target (SC 2.5.5). */
+  .drush-button {
+    @apply min-h-target px-3 py-1;
+  }
+
+  .drush-keys {
+    @apply mt-4 flex min-h-target cursor-pointer items-center gap-3 text-body;
+  }
+
+  .drush-keys input {
+    @apply size-6 shrink-0 accent-gold;
   }
 
   .drush-suggestions {
