@@ -243,6 +243,27 @@
     }
   }
 
+  /* Hover and press drawn at rest, so a still row shows each state (buttons-nav.css, light-mode.css). */
+  .state-hover:not([aria-disabled='true']) {
+    @apply bg-cyan text-background;
+  }
+
+  :is(:root[data-theme='light'] main, main .mode-light)
+    .state-hover:not([aria-disabled='true'], .mode-dark *) {
+    background-color: var(--dark-cyan);
+    color: var(--color-light-ink);
+  }
+
+  /* Doubled class: outweighs the press rule in buttons-nav.css. */
+  :is(.btn-primary, .btn-secondary).state-pressed.state-pressed:not(
+      [aria-disabled='true']
+    ) {
+    box-shadow:
+      var(--press-ring, 0 0 transparent),
+      0 0 0 var(--press-throw-color);
+    translate: var(--press-throw) var(--press-throw);
+  }
+
   /* The focus ring drawn at rest, so a still sample shows it (base.css :focus-visible). */
   .focus-sample {
     outline: var(--focus-width) solid var(--color-cyan);

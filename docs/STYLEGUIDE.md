@@ -735,6 +735,8 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
   - A section: number and name, lead, then parts. A part: h3 name, use, rule, and a stage.
   - Stage: the live example on the dark ground beside an inert, `aria-hidden` copy on the light one (`mirror.ts`).
   - Each half wears the page's 4px edge, so dark on the dark page or light on the light page stays visible; halves that touch share one edge (`tests/brand.spec.ts`).
+  - The guide above the first section says how to read the page.
+  - Button parts show rest, hover, focus, pressed and unavailable side by side (`StateRow.astro`, `.state-*` in `brand.css`), drawn from the real CSS.
 - Color is one part per role in `src/lib/brand-roles.ts`.
   - Tokens are rows of one swatch size: fills as fills, text colors as "Aa", cyan unpainted.
   - Each role ends in the one pair it is read on; the ratio is computed from the tokens.
