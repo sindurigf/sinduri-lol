@@ -19,10 +19,10 @@ interface AtlasFrame {
 
 /* Must match the atlas layout the frames were packed with. */
 export const RABBIT_FRAMES: Readonly<Record<RabbitPose, AtlasFrame>> = {
-  sit: { x: 0, y: 0, w: 239, h: 366, footX: 119, footY: 328 },
-  look: { x: 243, y: 0, w: 244, h: 303, footX: 122, footY: 264 },
-  crouch: { x: 491, y: 0, w: 266, h: 296, footX: 133, footY: 258 },
-  leap: { x: 761, y: 0, w: 298, h: 287, footX: 149, footY: 248 },
+  sit: { x: 0, y: 0, w: 207, h: 335, footX: 103, footY: 312 },
+  look: { x: 211, y: 0, w: 213, h: 271, footX: 106, footY: 249 },
+  crouch: { x: 428, y: 0, w: 234, h: 265, footX: 117, footY: 242 },
+  leap: { x: 666, y: 0, w: 267, h: 255, footX: 133, footY: 233 },
 };
 
 /** Atlas pixels per drawing unit; sets the rabbit's size, about 90 units tall sitting. */
