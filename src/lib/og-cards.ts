@@ -12,7 +12,7 @@ export const SITE_CARD_ROUTES: readonly string[] = ['/'];
 
 /**
  * The owner's picks where a page's first photo is not its card's: `null`
- * keeps the logo tile, a path names a photo under src/assets/.
+ * keeps the line bunny tile, a path names a photo under src/assets/.
  */
 export const OG_PHOTO_CHOICES: Readonly<Record<string, string | null>> = {
   /* Its sample photos are specimens, not the page's subject. */
@@ -22,7 +22,7 @@ export const OG_PHOTO_CHOICES: Readonly<Record<string, string | null>> = {
 
 export interface OgCard {
   title: string;
-  /** The built photo URL, hash included, so a new photo shows as stale; null for the logo tile. */
+  /** The built photo URL, hash included, so a new photo shows as stale; null for the line bunny tile. */
   photo: string | null;
   alt: string;
 }
@@ -36,7 +36,7 @@ export interface FirstPhoto {
 
 const MAIN = /<main\b[\s\S]*?<\/main>/;
 const IMG = /<img\b[^>]*>/g;
-/* The bunny mark and the badge are the logo, never a page's photo. */
+/* The bunny marks and the badge are site art, never a page's photo. */
 const LOGO_ART = /\/(?:bunny|badge)-/;
 
 /** The entities Astro writes into attributes, decoded. */
