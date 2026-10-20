@@ -71,7 +71,7 @@ const start = (): void => {
     links.replaceChildren(
       ...down.map((page) => {
         const item = make('li');
-        const link = make('a', 'crossroads-page link', page.title);
+        const link = make('a', 'crossroads-page', page.title);
         link.href = page.path;
         if (page === best) {
           link.classList.add('crossroads-page-rabbit');
@@ -106,8 +106,6 @@ const start = (): void => {
         sign.append(
           make('span', 'sr-only', ' (the White Rabbit went this way)'),
         );
-        runner.hidden = false;
-        item.append(runner);
       }
       return item;
     }),
@@ -120,6 +118,8 @@ const start = (): void => {
   const map = make('div', 'crossroads-map');
   map.append(signsColumn, pole, pagesColumn);
 
+  runner.hidden = false;
+  pole.append(runner);
   drawPages();
   root.querySelector('[data-fallback]')?.remove();
   root.prepend(cat, map, status);

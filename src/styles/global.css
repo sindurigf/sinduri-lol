@@ -618,6 +618,7 @@
 
   /* SC 2.5.5 target size. Keep equal to MIN_TARGET in tests/wcag.ts. */
   --spacing-target: 44px;
+  --spacing-pole: 16px;
 
   /*
    * Menu bars in a 24x16 box; they end at 17px, so they are absolutely
