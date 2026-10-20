@@ -32,6 +32,10 @@
     @apply mt-6 h-40 w-full border-4 border-border;
   }
 
+  .toy-tray-hint {
+    @apply mt-2 text-body text-subtle;
+  }
+
   .toy-toggle,
   .toy-reset {
     @apply mt-6;

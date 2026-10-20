@@ -217,6 +217,10 @@ test('taps alone pick a sticker up and drop it in the tray', async ({
   await expect(page.locator('.footer-stickers > li').nth(3)).toHaveAttribute(
     'data-held',
   );
+  await expect(
+    page.getByText('The box above is the tray'),
+    'the empty tray has no visible hint',
+  ).toBeVisible();
   const tray = (await page.locator('.toy-tray').boundingBox())!;
   await page.mouse.click(tray.x + tray.width - 40, tray.y + tray.height / 2);
   expect(await offset(page, 3), 'the tap on the tray moved nothing').not.toBe(

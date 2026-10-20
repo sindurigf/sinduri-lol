@@ -22,6 +22,7 @@ const KEYS: Readonly<Record<string, readonly [number, number]>> = {
 /* Placeholder copy: Sinduri rewrites every line below in her voice. */
 const COPY = {
   reset: 'Put Them Back',
+  tray: 'The box above is the tray: drag or drop stickers in it.',
   on: 'Play mode on. Drag a sticker, tap one and then the tray, or Tab to one and use the arrow keys.',
   off: 'Play mode off. The stickers are back and their links work again.',
   back: 'The stickers are back in place.',
@@ -45,6 +46,12 @@ const tray = Object.assign(document.createElement('div'), {
   className: 'toy-tray',
 });
 tray.setAttribute('aria-hidden', 'true');
+/* Under the tray, out of the play area: a sticker never covers text. COPY.on says the same aloud. */
+const trayHint = Object.assign(document.createElement('p'), {
+  className: 'toy-tray-hint',
+  textContent: COPY.tray,
+});
+trayHint.setAttribute('aria-hidden', 'true');
 const paused = Object.assign(document.createElement('p'), {
   id: 'toy-paused',
   className: 'sr-only',
@@ -235,10 +242,11 @@ const setPlaying = (on: boolean): void => {
     }
   });
   if (on) {
-    list.after(tray, reset, paused);
+    list.after(tray, trayHint, reset, paused);
   } else {
     hold(null);
     putBack();
+    trayHint.remove();
     tray.remove();
     reset.remove();
     paused.remove();
