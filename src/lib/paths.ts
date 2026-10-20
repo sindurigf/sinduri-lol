@@ -9,6 +9,7 @@ export const ACCESSIBILITY_PATH = '/accessibility/';
 export const PRIVACY_PATH = '/privacy/';
 export const CREDITS_PATH = '/credits/';
 export const DOWN_PATH = '/down/';
+export const TALKS_PATH = '/talks/';
 export const SITEMAP_PATH = '/sitemap-index.xml';
 export const SITE_FEED_PATH = '/rss.xml';
 

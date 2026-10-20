@@ -9,14 +9,15 @@ import {
   SOCIAL_PROFILES,
   profileLinkName,
 } from '../lib/profiles';
-import { SITE_NAME } from '../lib/site';
-import { DOWN_PATH } from '../lib/paths';
+import { DOWN_PATH, TALKS_PATH } from '../lib/paths';
 import { curiouserPages } from '../lib/rabbit-hole';
-import onDemand from '../scripts/on-demand.ts?worker&url';
-import curiouserFeature from '../scripts/curiouser.ts?worker&url';
-import textSizeFeature from '../scripts/text-size.ts?worker&url';
+import { SITE_NAME } from '../lib/site';
 /* Hashed under /_astro/ and cached once, instead of inline on every page. */
 import socialIcons from '../assets/social-icons.svg?url';
+/* `?worker&url`: a separate file, so no Vite preload helper, loaded by src under Trusted Types. */
+import onDemandRegistry from '../scripts/on-demand.ts?worker&url';
+import curiouserFeature from '../scripts/curiouser.ts?worker&url';
+import textSizeFeature from '../scripts/text-size.ts?worker&url';
 
 /* Source order is the reading order at every width; no CSS `order`. */
 
@@ -37,6 +38,18 @@ const POLICY_LINKS = [
 ] as const;
 
 const current = (href: string) => ariaCurrent(Astro.url.pathname, href);
+
+/* Feature name to its `?worker&url` file; a `data-on-demand="<name>"` trigger loads it. */
+const FEATURES: Record<string, string> = {
+  curiouser: curiouserFeature,
+  'text-size': textSizeFeature,
+};
+
+/* A slide deck keeps its script budget for the deck, and gets no footer controls. */
+const onDemand = !Astro.url.pathname.startsWith(TALKS_PATH);
+const featureAttributes = Object.fromEntries(
+  Object.entries(FEATURES).map(([name, url]) => [`data-feature-${name}`, url]),
+);
 
 /* The year of first publication, not the build year: a build date goes stale. */
 const FIRST_PUBLISHED = 2026;
@@ -120,80 +133,92 @@ const RABBIT_HEIGHT = 160;
           </li>
         </ul>
 
-        <div class="footer-controls">
-          <div class="footer-curiouser" data-curiouser-scope>
-            <a
-              href={DOWN_PATH}
-              class="footer-curiouser-link label text-text hover:text-cyan"
-            >
-              Curiouser
-            </a>
-            <button
-              type="button"
-              class="label text-text hover:text-cyan"
-              hidden
-              data-on-demand="curiouser"
-              data-go-class="footer-go label text-text hover:text-cyan"
-            >
-              Curiouser
-            </button>
-            <span class="footer-reel" data-curiouser-result></span>
-            <span class="sr-only" role="status" data-curiouser-status></span>
-            <ul hidden data-curiouser-pages>
-              {curiouserLinks.map((page) => (
-                <li>
-                  <a href={page.href}>{page.title}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {sizeControls && (
-            <div
-              class="footer-size js-only"
-              role="group"
-              aria-labelledby="footer-size-label"
-              data-text-size="site"
-            >
-              <span id="footer-size-label" class="label text-subtle">
-                Text Size
-              </span>
+        {onDemand && (
+          <div class="footer-controls">
+            <div class="footer-curiouser" data-curiouser-scope>
+              <a
+                href={DOWN_PATH}
+                class="footer-curiouser-link label text-text hover:text-cyan"
+              >
+                Curiouser
+              </a>
               <button
                 type="button"
                 class="label text-text hover:text-cyan"
                 hidden
-                data-on-demand="text-size"
-                data-size-action="smaller"
+                data-on-demand="curiouser"
+                data-go-class="footer-go label text-text hover:text-cyan"
               >
-                Drink Me
+                Curiouser
               </button>
-              <button
-                type="button"
-                class="label text-text hover:text-cyan"
-                hidden
-                data-on-demand="text-size"
-                data-size-action="larger"
-              >
-                Eat Me
-              </button>
-              <button
-                type="button"
-                class="label text-text hover:text-cyan"
-                hidden
-                data-on-demand="text-size"
-                data-size-action="reset"
-              >
-                Just Right
-              </button>
-              <span
-                class="footer-size-status"
-                role="status"
-                data-size-status
-              ></span>
+              <span class="footer-reel" data-curiouser-result></span>
+              <span class="sr-only" role="status" data-curiouser-status></span>
+              <ul hidden data-curiouser-pages>
+                {curiouserLinks.map((page) => (
+                  <li>
+                    <a href={page.href}>{page.title}</a>
+                  </li>
+                ))}
+              </ul>
             </div>
-          )}
-        </div>
+
+            {sizeControls && (
+              <div
+                class="footer-size js-only"
+                role="group"
+                aria-labelledby="footer-size-label"
+                data-text-size="site"
+              >
+                <span id="footer-size-label" class="label text-subtle">
+                  Text Size
+                </span>
+                <button
+                  type="button"
+                  class="label text-text hover:text-cyan"
+                  hidden
+                  data-on-demand="text-size"
+                  data-size-action="smaller"
+                >
+                  Drink Me
+                </button>
+                <button
+                  type="button"
+                  class="label text-text hover:text-cyan"
+                  hidden
+                  data-on-demand="text-size"
+                  data-size-action="larger"
+                >
+                  Eat Me
+                </button>
+                <button
+                  type="button"
+                  class="label text-text hover:text-cyan"
+                  hidden
+                  data-on-demand="text-size"
+                  data-size-action="reset"
+                >
+                  Just Right
+                </button>
+                <span
+                  class="footer-size-status"
+                  role="status"
+                  data-size-status
+                ></span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {onDemand && (
+        <script
+          is:inline
+          type="module"
+          src={onDemandRegistry}
+          data-on-demand-registry
+          {...featureAttributes}
+        ></script>
+      )}
 
       <small class="footer-copyright">{copyright}</small>
     </div>
@@ -213,11 +238,3 @@ const RABBIT_HEIGHT = 160;
     </div>
   </div>
 </footer>
-
-<script
-  is:inline
-  type="module"
-  src={onDemand}
-  data-on-demand-curiouser={curiouserFeature}
-  data-on-demand-text-size={textSizeFeature}
-></script>
