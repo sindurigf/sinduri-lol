@@ -71,7 +71,7 @@ test.describe('/brand guide', () => {
         rows.flatMap((row) => {
           const code = row.querySelector<HTMLElement>('pre.brand-code');
           if (!code) return [];
-          const label = code.previousElementSibling;
+          const label = code.previousElementSibling?.querySelector('.label');
           return [
             {
               part: row.getAttribute('data-component'),
@@ -163,5 +163,57 @@ test.describe('/brand guide', () => {
     await filter.fill('zzz');
     await expect(links.locator('visible=true')).toHaveCount(0);
     await expect(wide.getByRole('status')).toHaveText('0 sections');
+  });
+
+  test('each code block has a Copy button that names what it copies, copies it and says so (SC 2.5.5, 4.1.3)', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      permissions: ['clipboard-read', 'clipboard-write'],
+    });
+    const page = await context.newPage();
+    await gotoSettled(page, BRAND_PATH);
+    const code = page.locator('pre.brand-code').first();
+    const button = page.getByRole('button', {
+      name: 'Copy HTML for Page Ground',
+    });
+    await expect(button).toHaveCount(1);
+    await button.scrollIntoViewIfNeeded();
+    const box = (await button.boundingBox())!;
+    expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
+    await button.click();
+    await expect(page.getByRole('status').last()).toHaveText('Copied');
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+      await code.textContent(),
+    );
+    await context.close();
+  });
+
+  test('a refused copy says so and leaves the code selected (SC 3.3.1, 4.1.3)', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', { value: undefined });
+    });
+    await gotoSettled(page, BRAND_PATH);
+    const code = page.locator('pre.brand-code').first();
+    await page
+      .getByRole('button', { name: 'Copy HTML for Page Ground' })
+      .click();
+    await expect(page.getByRole('status').last()).toHaveText(
+      'Copy failed, the code is selected',
+    );
+    expect(await page.evaluate(() => getSelection()?.toString())).toBe(
+      await code.textContent(),
+    );
+  });
+
+  test('without a script no Copy button is drawn', async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto(BRAND_PATH);
+    await expect(page.locator('pre.brand-code').first()).toBeVisible();
+    await expect(page.locator('.copy-button')).toHaveCount(0);
+    await context.close();
   });
 });
