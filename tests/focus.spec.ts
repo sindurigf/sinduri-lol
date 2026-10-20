@@ -44,7 +44,7 @@ interface Stop {
   /** Probe points under the sticky header. */
   underHeader: number;
   hasRing: boolean;
-  /** An opaque focus fill at 3:1 or more on the ground behind it: the logo's ink block. */
+  /** The header logo link's ink block: its focus fill, 3:1 or more on the bar. No other stop may go without a ring. */
   hasBlock: boolean;
   outline: string;
   outlineStyle: string;
@@ -206,6 +206,7 @@ const readFocused = (page: Page): Promise<Stop> =>
     const fill = parse(style.backgroundColor);
     const hasBlock =
       !hasRing &&
+      el.matches('.header-slab .logo-link') &&
       fill.a === 1 &&
       ratio(fill, effectiveBackground(el.parentElement)) >= ${NON_TEXT};
 
