@@ -118,4 +118,24 @@ test.describe('/brand guide', () => {
     );
     expect(Object.fromEntries(shown)).toEqual(PART_ACCESSIBILITY);
   });
+
+  test("each do and don't pair names both sides in words and hides its samples (SC 1.4.1)", async ({
+    page,
+  }) => {
+    await gotoSettled(page, BRAND_PATH);
+    const pairs = await page
+      .locator('[data-example] .brand-pair')
+      .evaluateAll((all) =>
+        all.map((el) => ({
+          label: el.querySelector('.label')?.textContent?.trim(),
+          hidden: el
+            .querySelector('.brand-pair-sample')
+            ?.getAttribute('aria-hidden'),
+          words:
+            el.querySelector('p:last-child')?.textContent?.trim().length ?? 0,
+        })),
+      );
+    expect(pairs.map((p) => p.label)).toEqual(['Do', "Don't", 'Do', "Don't"]);
+    expect(pairs.every((p) => p.hidden === 'true' && p.words > 0)).toBe(true);
+  });
 });

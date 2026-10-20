@@ -737,6 +737,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
   - Each half wears the page's 4px edge, so dark on the dark page or light on the light page stays visible; halves that touch share one edge (`tests/brand.spec.ts`).
   - The guide above the first section says how to read the page.
   - A part lists what it keeps for accessibility from `src/lib/brand-a11y.ts`; the lines are draft copy.
+  - Two rules show as a Do and Don't pair: one primary per section, and cyan only on hover and focus (`DoDont.astro`).
   - Each part with a live example shows its HTML under it, wrapped, never scrolling (`sourceOf` in `mirror.ts`).
   - Button parts show rest, hover, focus, pressed and unavailable side by side (`StateRow.astro`, `.state-*` in `brand.css`), drawn from the real CSS.
 - Color is one part per role in `src/lib/brand-roles.ts`.

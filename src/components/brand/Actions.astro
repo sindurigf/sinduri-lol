@@ -1,5 +1,6 @@
 ---
 import ComponentRow from './ComponentRow.astro';
+import DoDont from './DoDont.astro';
 import StateRow from './StateRow.astro';
 
 const META = 'text-body text-subtle';
@@ -20,6 +21,21 @@ const META = 'text-body text-subtle';
         Unavailable is aria-disabled: dashed edge, no shadow, still reachable by
         keyboard.
       </p>
+      <div class="mt-8">
+        <DoDont
+          doText="One primary in a section, with a secondary beside it."
+          dontText="Two primaries side by side: nothing stands out."
+        >
+          <p slot="do" class="flex flex-wrap gap-6">
+            <span class="btn-primary">Save</span>
+            <span class="btn-secondary">Cancel</span>
+          </p>
+          <p slot="dont" class="flex flex-wrap gap-6">
+            <span class="btn-primary">Save</span>
+            <span class="btn-primary">Send</span>
+          </p>
+        </DoDont>
+      </div>
     </Fragment>
   </ComponentRow>
 

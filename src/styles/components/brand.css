@@ -138,6 +138,14 @@
     @apply mt-2 whitespace-break-spaces border-4 border-border bg-surface p-4 font-mono text-label text-text wrap-anywhere;
   }
 
+  .brand-pair {
+    @apply min-w-0 flex-1 basis-60 space-y-4 border-4 border-border p-4;
+  }
+
+  .brand-pair-sample {
+    @apply min-h-16;
+  }
+
   .brand-guide {
     @apply mb-section;
   }
