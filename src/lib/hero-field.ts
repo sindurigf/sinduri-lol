@@ -64,7 +64,7 @@ import {
   random,
   stemPoint,
 } from './hero-field-scene';
-import { drawHare, hopFrame } from './hero-field-hare';
+import { drawRabbit, rabbitAir, rabbitPose } from './hero-field-rabbit';
 import type {
   HeroField,
   HeroPalette,
@@ -499,9 +499,8 @@ const drawHareShadow = (
   ctx.filter = `blur(${(air * SHADOW_BLUR * scene.hareScale).toFixed(2)}px)`;
   ctx.fillStyle = palette.border;
   ctx.beginPath();
-  /* Centered under the feet, which sit 2 units ahead of the drawing origin. */
   ctx.ellipse(
-    x + 2 * scene.hareScale,
+    x,
     scene.hareRoot + 1.2 * scene.hareScale,
     30 * scene.hareScale * shrink,
     3.6 * scene.hareScale * shrink,
@@ -597,15 +596,26 @@ const drawBack = (
 const drawMid = (
   ctx: CanvasRenderingContext2D,
   palette: HeroPalette,
+  atlas: CanvasImageSource | null,
   state: FieldState,
   seconds: number,
 ): void => {
   const here = routeAt(state, seconds);
-  const frame = hopFrame(here.cycle, here.sit, seconds);
+  const air = rabbitAir(here);
   const { hareRoot, hareScale } = state.scene;
 
-  drawHareShadow(ctx, palette, state.scene, here.x, frame.air);
-  drawHare(ctx, here.x, hareRoot, hareScale, frame, here.hop, palette);
+  if (atlas) {
+    drawHareShadow(ctx, palette, state.scene, here.x, air);
+    drawRabbit(
+      ctx,
+      atlas,
+      here.x,
+      hareRoot,
+      hareScale,
+      rabbitPose(here, seconds),
+      air * here.hop,
+    );
+  }
 
   paintWhere(
     ctx,
@@ -616,7 +626,11 @@ const drawMid = (
   );
 };
 
-export const createHeroField = (palette: HeroPalette): HeroField => {
+/* `atlas` is the decoded src/assets/hero-rabbit.webp; null draws the field without the rabbit. */
+export const createHeroField = (
+  palette: HeroPalette,
+  atlas: CanvasImageSource | null,
+): HeroField => {
   const state: FieldState = {
     /* A draw before the first layout must not divide by zero. */
     scene: sceneFor(REFERENCE_WIDTH, REFERENCE_HEIGHT),
@@ -635,7 +649,7 @@ export const createHeroField = (palette: HeroPalette): HeroField => {
     },
     step: (seconds, delta) => stepSprings(state, seconds, delta),
     back: (ctx, seconds) => drawBack(ctx, palette, state, seconds),
-    mid: (ctx, seconds) => drawMid(ctx, palette, state, seconds),
+    mid: (ctx, seconds) => drawMid(ctx, palette, atlas, state, seconds),
     nearBlur: () => NEAR_BLUR * state.scene.world,
     near: (ctx, seconds) =>
       paintWhere(ctx, palette, state, seconds, (z) => z < FRONT_DEPTH),

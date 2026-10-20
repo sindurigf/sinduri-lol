@@ -623,6 +623,9 @@ An Astro upgrade can change a hash; the island then silently fails to hydrate
 Review findings investigated and rejected. Do not re-raise without new
 evidence.
 
+- **Keep `/brand` swatch colors in forced colors with `forced-color-adjust: none`:**
+  `tests/forced-colors.spec.ts` holds the site rule that forced colors replaces
+  every color; a swatch there is a bordered box.
 - **Delete the video byte-range pipeline as dead code:** the next
   published video would not play in Safari and iOS, which need `206`.
 - **Route `/llms.txt` through `getSortedPosts`:** it drops placeholder
@@ -666,9 +669,9 @@ evidence.
 - **Add a `BreadcrumbList` to the talk page:** pages outside `/blog` carry no
   breadcrumbs (`tests/breadcrumbs.spec.ts`); the link to the talk's post
   covers the way back.
-- **Name the numbers in `hero-field-hare.ts`, and the bud, head and shadow
-  ellipses in `hero-field.ts`, as constants:** they are drawing coordinates,
-  geometry in the hare's own units, not tuning values.
+- **Name the frame numbers in `hero-field-rabbit.ts`, and the bud, head and
+  shadow ellipses in `hero-field.ts`, as constants:** they are pixel rects in
+  the rabbit atlas and drawing coordinates, not tuning values.
 - **Move every `href` in page markup into `paths.ts`:** a route used by code
   (redirects, nav, sitemap, `llms.txt`) is a constant there; a link in prose
   stays markup, and `tests/internal-links.spec.ts` fails on a broken one.

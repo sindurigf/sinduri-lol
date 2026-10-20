@@ -3,6 +3,7 @@ import { NEXT_FRAME, useMotionLoop } from './use-motion-loop';
 import { createHeroField } from '../lib/hero-field';
 import { MAX_PIXEL_RATIO } from '../lib/image-densities';
 import type { HeroField, HeroPalette } from '../lib/hero-field-scene';
+import heroRabbit from '../assets/hero-rabbit.webp';
 import type { Ref } from 'vue';
 
 /*
@@ -48,6 +49,7 @@ export const useHeroField = (): HeroFieldState => {
   const paused = ref(false);
 
   let field: HeroField | null = null;
+  let atlas: HTMLImageElement | null = null;
   let elapsed = 0;
   let lastStep = 0;
   let ratio = 1;
@@ -72,8 +74,6 @@ export const useHeroField = (): HeroFieldState => {
       border: read('--color-gold-border'),
       subtle: read('--color-gold-muted'),
       bud: read('--color-gold-bud'),
-      background: read('--color-hero-ground'),
-      shine: read('--color-light-ground'),
       veil: read('--color-hero-veil'),
       veilEdge: read('--color-hero-veil-edge'),
       floor: read('--color-hero-floor'),
@@ -227,8 +227,23 @@ export const useHeroField = (): HeroFieldState => {
   const onThemeChange = (): void => {
     const palette = readPalette();
     if (!palette) return;
-    field = createHeroField(palette);
+    field = createHeroField(palette, atlas);
     relayout();
+  };
+
+  /* The field draws without the rabbit until the atlas decodes, then rebuilds with it. */
+  const loadAtlas = (): void => {
+    const image = new Image();
+    image.src = heroRabbit.src;
+    image
+      .decode()
+      .then(() => {
+        atlas = image;
+        onThemeChange();
+      })
+      .catch((error: unknown) => {
+        console.error('The hero rabbit image did not load.', error);
+      });
   };
 
   const toggle = (): void => {
@@ -241,7 +256,8 @@ export const useHeroField = (): HeroFieldState => {
     const palette = readPalette();
     if (!palette) return;
 
-    field = createHeroField(palette);
+    field = createHeroField(palette, atlas);
+    loadAtlas();
 
     mounted.value = true;
     elapsed = reducedMotion.value ? STILL_SECONDS : 0;
