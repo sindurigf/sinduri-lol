@@ -1217,6 +1217,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   commands open the Drush dialog, which Try a Command in the footer also
   opens. Every command is a sequence of keys (SC 2.1.4); under reduced motion
   nothing moves (`tests/drush.spec.ts`). Its copy is a placeholder.
+  Every page loads only `drush-loader.ts`; it loads `drush.ts` once `drush `
+  is typed or Try a Command is pressed.
 - The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
   first on screen, play along it (games like the yarn and the fly carry them,
   leaps move them on), and sit still under reduced motion. Each cat's button

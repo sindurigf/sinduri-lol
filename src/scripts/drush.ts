@@ -1,10 +1,10 @@
 /*
  * A Drush easter egg: typing a command anywhere outside a field runs it, and
  * Try a Command in the footer offers the same commands in a dialog. Every
- * command is a sequence of keys, never one key (SC 2.1.4).
+ * command is a sequence of keys, never one key (SC 2.1.4). Loaded on intent
+ * by drush-loader.ts.
  */
 const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)');
-const TYPED_MAX = 24;
 const SHUFFLE_MS = 900;
 const SHUFFLE_DRIFT_PX = 24;
 const SHUFFLE_TURN_DEG = 6;
@@ -113,29 +113,22 @@ const open = (lines?: readonly string[]): void => {
   input.focus();
 };
 
-const trigger = Object.assign(document.createElement('button'), {
-  type: 'button',
-  className: 'drush-trigger label',
-  textContent: 'Try a Command',
-});
-trigger.addEventListener('click', () => open());
-document.querySelector('footer .footer-copyright')?.after(trigger);
-
-const FIELD =
-  'input, textarea, select, [contenteditable]:not([contenteditable="false"])';
-let typed = '';
-document.addEventListener('keydown', (event) => {
-  if (event.ctrlKey || event.metaKey || event.altKey || event.key.length !== 1)
-    return;
-  if (
-    event.target instanceof Element &&
-    event.target.closest(`${FIELD}, dialog`)
-  )
-    return;
-  typed = (typed + event.key.toLowerCase()).slice(-TYPED_MAX);
+/*
+ * The loader (drush-loader.ts) keeps the typed keys in data-drush-typed and
+ * asks for the dialog with data-drush-open, then fires `drush` once this runs.
+ */
+const flags = document.documentElement.dataset;
+let handled = '';
+const check = (): void => {
+  if (flags.drushOpen !== undefined) {
+    delete flags.drushOpen;
+    open();
+  }
+  const typed = flags.drushTyped ?? '';
   const command = Object.keys(OUTPUT).find((name) => typed.endsWith(name));
-  if (!command) return;
-  typed = '';
+  if (!command || typed === handled) return;
+  handled = typed;
+  flags.drushTyped = '';
   if (command === 'drush cr') {
     run(command);
     /* Cleared first, so the same line is announced again on a second run. */
@@ -147,4 +140,6 @@ document.addEventListener('keydown', (event) => {
     input.value = command;
     open(run(command));
   }
-});
+};
+document.addEventListener('drush', check);
+check();

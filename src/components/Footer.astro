@@ -101,6 +101,11 @@ const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
       <div class="footer-base">
         <small class="footer-copyright">{copyright}</small>
 
+        {/* Shown by src/scripts/drush-loader.ts. */}
+        <button type="button" class="drush-trigger label" hidden>
+          Try a Command
+        </button>
+
         {/* Origin at the rabbit's middle on the ground; the rabbit is its own svg, mid-binky above the grass. */}
         <svg
           class="footer-tuft"
