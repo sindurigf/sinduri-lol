@@ -904,7 +904,8 @@ text-gold-muted` under the standfirst. Color
 - The logo tile keeps its `bunny` shadow. The die-cut rabbit jumps its
   top-right corner and casts an ink throw, so the corner never doubles the pink.
 - The tile is the rabbit's springboard: hovered, the rabbit rises 3px; pressed,
-  the tile drops into its shadow and the rabbit springs 8px up. Not under
+  the tile drops into its shadow and the rabbit crouches with it; released, the
+  rabbit springs past its spot and settles (`--ease-spring`). Not under
   reduced motion.
 - The sticky header covers the top of the slab on scroll; nothing on the slab
   is fixed.

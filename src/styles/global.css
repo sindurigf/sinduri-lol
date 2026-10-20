@@ -502,9 +502,14 @@
   --logo-rabbit-height: 64px;
   /* The logo link's focus block reaches this far past the tile and the name. */
   --logo-focus-pad: 8px;
-  /* How far the rabbit springs up off the tile: hovered, and while the tile is pressed. */
+  /* The logo rabbit: rises when hovered; crouches with the pressed tile, then springs past its spot on release. */
   --logo-rabbit-hover-hop: 3px;
-  --logo-rabbit-hop: 8px;
+  --logo-rabbit-crouch: 4px;
+  --logo-rabbit-squash: 0.88;
+  --logo-rabbit-crouch-time: 60ms;
+  --logo-rabbit-spring-time: 320ms;
+  /* Overshoots its end value, so a return to rest goes past it and settles back. */
+  --ease-spring: cubic-bezier(0.3, 2.2, 0.5, 1);
   /* A pressable rises this far off its throw under the pointer. */
   --press-lift: 2px;
   /* A pressable's `border-4`; its hit strip reaches past it. */
