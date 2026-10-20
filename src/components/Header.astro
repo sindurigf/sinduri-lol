@@ -1,6 +1,4 @@
 ---
-import { Image } from 'astro:assets';
-import bunnyDark from '../assets/bunny-dark.png';
 import {
   CTA,
   HEADER_LINKS,
@@ -8,13 +6,10 @@ import {
   NAV_LINKS,
   ariaCurrent,
 } from '../lib/nav';
-import { DENSITIES } from '../lib/image-densities';
 import { SITE_NAME } from '../lib/site';
 import NavList from './NavList.astro';
+import RabbitMark from './RabbitMark.astro';
 import ThemeSwitch from './ThemeSwitch.astro';
-
-/* Drawn height, `h-6` in px; tests/image-size.spec.ts fails if they drift. */
-const MARK_HEIGHT = 24;
 
 const currentPath = Astro.url.pathname;
 
@@ -36,15 +31,8 @@ const current = (href: string) => ariaCurrent(currentPath, href);
       aria-current={current(HOME_HREF)}
       class="logo-link flex min-w-0 items-center gap-4 max-xs:gap-2 lg:justify-self-start"
     >
-      <span class="logo-tile flex h-12 w-12 rotate-3 items-center justify-center rounded-nav border-4 border-fill-edge bg-block-gold">
-        <Image
-          src={bunnyDark}
-          alt=""
-          height={MARK_HEIGHT}
-          densities={DENSITIES}
-          loading="eager"
-          class="h-6 w-auto"
-        />
+      <span class="logo-tile rabbit-tile flex h-12 w-12 rotate-3 items-center justify-center rounded-nav border-4 border-fill-edge">
+        <RabbitMark class="h-8 w-auto" />
       </span>
       {/*
         Untracked below xs so it fits at 305px; under SC 1.4.12 spacing it

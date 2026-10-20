@@ -1,0 +1,57 @@
+@layer components {
+  /* The knockout logo: the rabbit in gold on an ink tile; edge and throw merge into one gold shape. */
+  .rabbit-tile {
+    background-color: var(--color-gold-text);
+  }
+
+  .rabbit-mark {
+    display: block;
+    overflow: visible;
+    --rabbit-edge-width: 6;
+  }
+
+  .rabbit-mark :is(.rabbit-edge, .rabbit-throw .rabbit-edge) {
+    fill: var(--color-block-gold);
+    stroke: var(--color-block-gold);
+    stroke-width: var(--rabbit-edge-width);
+  }
+
+  .rabbit-mark .rabbit-body {
+    fill: var(--color-block-gold);
+  }
+
+  .rabbit-mark :is(.rabbit-ink, .rabbit-ear) {
+    fill: var(--color-gold-text);
+  }
+
+  .rabbit-mark .rabbit-shine {
+    fill: var(--color-light-ground);
+  }
+
+  .rabbit-mark .rabbit-line {
+    fill: none;
+    stroke: var(--color-gold-text);
+    stroke-linecap: round;
+  }
+
+  @media (forced-colors: active) {
+    /* SVG defaults to preserve-parent-color; `auto` lets the system colors below apply. */
+    .rabbit-mark,
+    .rabbit-mark * {
+      forced-color-adjust: auto;
+    }
+
+    .rabbit-mark :is(.rabbit-edge, .rabbit-body, .rabbit-throw .rabbit-edge) {
+      fill: CanvasText;
+      stroke: CanvasText;
+    }
+
+    .rabbit-mark :is(.rabbit-ink, .rabbit-ear, .rabbit-shine) {
+      fill: Canvas;
+    }
+
+    .rabbit-tile {
+      background-color: Canvas;
+    }
+  }
+}

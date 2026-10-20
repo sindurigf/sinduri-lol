@@ -86,10 +86,8 @@ for (const route of SAMPLED_ROUTES) {
 
     const { ratio, images } = await measureImages(page);
 
-    expect(
-      images.length,
-      'no image is drawn on this page, though the header mark is on every route.',
-    ).toBeGreaterThan(0);
+    // The header mark is inline SVG: a page without photos has no image to measure.
+    await expect(page.locator('header .rabbit-mark')).toBeVisible();
 
     for (const image of images) expectServedAtDrawnSize(image, ratio);
   });

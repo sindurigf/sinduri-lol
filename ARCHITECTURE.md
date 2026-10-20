@@ -365,12 +365,12 @@ in `wrangler.jsonc`).
 - `artwork/`: source artwork the build never reads (the Lepus Ridet badge,
   the `favicon.ico` frames). Nothing in it ships.
 
-| Path                           | Artwork   | Goes on              | Used by                                          |
-| ------------------------------ | --------- | -------------------- | ------------------------------------------------ |
-| `src/assets/bunny-dark.png`    | `#111111` | Gold, light surfaces | `Header.astro` logo tile, `Roundel.astro`, About |
-| `artwork/badge-white.png`      | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge                   |
-| `public/images/og-default.png` | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404     |
-| `public/images/og/*.jpg`       | Composite | n/a                  | `BaseLayout.astro`, every other page             |
+| Path                           | Artwork   | Goes on              | Used by                                      |
+| ------------------------------ | --------- | -------------------- | -------------------------------------------- |
+| `src/assets/bunny-dark.png`    | `#111111` | Gold, light surfaces | `scripts/make-og.mjs` sharing cards          |
+| `artwork/badge-white.png`      | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge               |
+| `public/images/og-default.png` | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
+| `public/images/og/*.jpg`       | Composite | n/a                  | `BaseLayout.astro`, every other page         |
 
 | Artwork             | on `#0B0B0B` | on `#1A1A1A` | on `#FFFFFF` | on `#FFC000` |
 | ------------------- | ------------ | ------------ | ------------ | ------------ |
@@ -451,26 +451,27 @@ in `wrangler.jsonc`).
 
 ### The favicon set
 
+- The logo is `RabbitMark.astro`: the approved sitting rabbit in gold on an
+  ink tile (knockout), inline SVG, colors in `rabbit-mark.css`.
 - Tab icons (`favicon.*`, `artwork/favicon-*`): the header logo tile, with its
-  `fill-edge` ring, 3deg tilt and `bunny` shadow, on a transparent ground.
-- App icons (`apple-touch-icon`, `android-chrome-*`, `maskable-icon`): the mark
-  on a full-bleed `#FFC000` square.
+  ring, 3deg tilt and `bunny` shadow, on a transparent ground.
+- App icons (`apple-touch-icon`, `android-chrome-*`, `maskable-icon`): the
+  gold rabbit on a full-bleed `#131313` square.
 
 | Path                                | Size         | Notes                                                |
 | ----------------------------------- | ------------ | ---------------------------------------------------- |
 | `public/favicon.svg`                | vector       | Primary icon for modern browsers; source of the rest |
 | `public/favicon.ico`                | 16 / 32 / 48 | Legacy fallback, three frames                        |
-| `artwork/favicon-16x16.png`         | 16           | `favicon.ico` frame; filled silhouette               |
-| `artwork/favicon-32x32.png`         | 32           | `favicon.ico` frame; filled silhouette               |
-| `artwork/favicon-48x48.png`         | 48           | `favicon.ico` frame; line art                        |
-| `public/favicon-96x96.png`          | 96           | Line art, linked from the head                       |
+| `artwork/favicon-16x16.png`         | 16           | `favicon.ico` frame                                  |
+| `artwork/favicon-32x32.png`         | 32           | `favicon.ico` frame                                  |
+| `artwork/favicon-48x48.png`         | 48           | `favicon.ico` frame                                  |
+| `public/favicon-96x96.png`          | 96           | Linked from the head                                 |
 | `public/apple-touch-icon.png`       | 180          | Full-bleed; iOS rounds it, do not pre-round          |
 | `public/android-chrome-192x192.png` | 192          | PWA icon, from the manifest                          |
 | `public/android-chrome-512x512.png` | 512          | PWA icon, from the manifest                          |
 | `public/maskable-icon-512x512.png`  | 512          | `purpose: maskable`, mark inside the 80% safe zone   |
 
-- 16 and 32 are a filled silhouette at 1.25x the line art's size: line art
-  turns to mush below 48px. Do not downscale the 96.
+- Every size is the same knockout: the gold silhouette reads at 16px.
 - Render the PNGs from `favicon.svg` in Chromium so the tilt and radius match
   the browser's.
 - `favicon.ico` must hold 16, 32 and 48:
@@ -482,8 +483,6 @@ identify public/favicon.ico   # must report three frames
 ```
 
 - `tests/icons.spec.ts` checks every `sizes` attribute against the bytes.
-- Do not use the RealFaviconGenerator pack: its `.ico` is a light mark on
-  `#131313`, mismatching the gold PNGs.
 - No light-scheme variants.
 
 ### The web app manifest
