@@ -1218,11 +1218,12 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   shows that still frame as a WebP (`npm run hero-still` after a change to the
   field).
 - `HeroField` loads `client:load`.
-- The 404 game (`src/scripts/lost-page.ts`, `lost-page.css`, only on the 404
-  page): the missing page hides behind one of five bricks; each look is a
-  turn with a warm or cold hint in a polite status line, and the footer
-  rabbit appears behind the right brick. A looked-at brick lifts once; under
-  reduced motion it does not. Without script the game is not shown
+- The 404 finder (`src/scripts/lost-page.ts`, `lost-page.css`, only on the
+  404 page): each press of Sniff Around adds the next real page whose address
+  is closest to the mistyped one (`src/lib/page-match.ts`, against
+  `src/lib/site-pages.ts` inlined as JSON), best first, at most three, above
+  the Home and Blog quick links; each find is announced. Without script only
+  the quick links show; under reduced motion the rabbit stays still
   (`tests/lost-page.spec.ts`). Its copy is a placeholder.
 - The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
   first on screen, play along it (games like the yarn and the fly carry them,

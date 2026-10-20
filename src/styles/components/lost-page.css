@@ -1,58 +1,49 @@
-/* The 404 game: src/scripts/lost-page.ts. */
+/* The 404 page's finder: src/scripts/lost-page.ts. */
 @reference '../global.css';
 
 @layer components {
   :root {
-    --lost-lift: 320ms;
+    --lost-sniff: 480ms;
   }
 
-  .lost-bricks {
-    @apply mt-6 flex flex-wrap gap-0;
+  .lost-intro,
+  .lost-status {
+    @apply mt-4 max-w-2xl text-body text-text text-pretty;
   }
 
-  /* Joined bricks: each a 44px target at least (SC 2.5.5); a looked-at brick lifts. */
-  .lost-brick {
-    @apply lift-control grid size-14 place-items-center sm:size-20 border-4 border-fill-edge
-      bg-block-gold text-h3 font-black text-gold-text shadow-hard-pink-4;
-
-    margin-left: calc(var(--block-edge) * -1);
-  }
-
-  .lost-bricks li:first-child .lost-brick {
-    margin-left: 0;
-  }
-
-  /* The site's button hover: cyan fill, page-ground text (SC 1.4.6 in both modes). */
-  .lost-brick:not([aria-disabled='true']):hover {
-    @apply bg-cyan text-background;
-  }
-
-  .lost-brick[data-looked] {
-    @apply bg-block-light text-subtle shadow-none;
-  }
-
-  .lost-brick[data-found] {
-    @apply bg-block-gold;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .lost-brick[data-looked] {
-      animation: lost-lift var(--lost-lift) ease-out both;
-    }
+  .lost-sniff-row {
+    @apply mt-6 flex items-end gap-6;
   }
 
   .lost-rabbit {
-    @apply size-11 sm:size-16;
+    @apply h-16 w-auto overflow-visible;
   }
 
-  .lost-status {
-    @apply mt-6 max-w-2xl text-body text-text text-pretty;
+  /* Each find a row link, 44px tall (SC 2.5.5); found pages come first. */
+  .lost-finds {
+    @apply mt-6 flex max-w-2xl flex-col;
   }
 
-  @keyframes lost-lift {
-    40% {
-      translate: 0 --spacing(-4);
-      rotate: -4deg;
+  .lost-finds a {
+    @apply flex min-h-target items-center text-body font-black text-text underline;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-lost-rabbit][data-sniffing] .lost-rabbit {
+      animation: lost-sniff var(--lost-sniff) ease-in-out;
+      transform-origin: 50% 100%;
+    }
+  }
+
+  @keyframes lost-sniff {
+    25% {
+      rotate: -6deg;
+    }
+    50% {
+      rotate: 4deg;
+    }
+    75% {
+      rotate: -3deg;
     }
   }
 }

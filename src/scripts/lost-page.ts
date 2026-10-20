@@ -1,32 +1,29 @@
 /*
- * The 404 game: the missing page hides behind one of a row of bricks. Each
- * look is a turn, so it plays the same by keyboard, screen reader or pointer,
- * and under reduced motion only the lift is dropped. The rabbit is the footer's.
+ * The 404 page's rabbit sniffs out the page the address meant: each press of
+ * Sniff Around adds the next closest real page, best first, above the quick
+ * links. Nothing is timed; each find is announced. The rabbit is the footer's.
  */
-const game = document.querySelector<HTMLElement>('[data-lost-game]');
-const row = game?.querySelector<HTMLElement>('.lost-bricks');
-const statusLine = game?.querySelector<HTMLElement>('.lost-status');
-const again = game?.querySelector<HTMLButtonElement>('[data-lost-again]');
-const rabbitArt = document.querySelector<SVGSVGElement>(
-  'footer .footer-tuft > svg',
-);
+import { rankPages, type MatchablePage } from '../lib/page-match';
+
+const FINDS = 3;
 
 /* Placeholder copy: Sinduri rewrites every line below in her voice. */
 const COPY = {
-  start:
-    'The rabbit hid this page behind one of these bricks. Can you find it?',
-  warm: (n: number) =>
-    `Not behind brick ${n}. Warm: it is right next to this one.`,
-  cold: (n: number) => `Not behind brick ${n}. Cold: try further along.`,
-  found: (n: number, turns: number) =>
-    `Found it behind brick ${n} in ${turns} ${turns === 1 ? 'look' : 'looks'}! It was a typo all along.`,
-  brick: (n: number) => `Look behind brick ${n}`,
-  empty: (n: number) => `Brick ${n}, nothing here`,
+  found: (title: string) => `Found a trail: ${title}.`,
+  more: 'Sniff Around Again',
+  done: 'That is every trail the rabbit could find. The quick links are below them.',
+  none: 'No trail here. Try one of the quick links.',
 };
 
-const say = (text: string): void => {
-  if (statusLine) statusLine.textContent = text;
-};
+const game = document.querySelector<HTMLElement>('[data-lost-game]');
+const sniff = game?.querySelector<HTMLButtonElement>('[data-lost-sniff]');
+const finds = game?.querySelector<HTMLElement>('[data-lost-finds]');
+const statusLine = game?.querySelector<HTMLElement>('.lost-status');
+const spot = game?.querySelector<HTMLElement>('[data-lost-rabbit]');
+const data = document.getElementById('lost-pages')?.textContent;
+const rabbitArt = document.querySelector<SVGSVGElement>(
+  'footer .footer-tuft > svg',
+);
 
 /* The footer's rabbit drawing, in a footer-tuft svg so its styles apply. */
 const rabbit = (): SVGSVGElement | null => {
@@ -34,60 +31,50 @@ const rabbit = (): SVGSVGElement | null => {
   const art = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   art.setAttribute('class', 'footer-tuft lost-rabbit');
   art.setAttribute('viewBox', rabbitArt.getAttribute('viewBox') ?? '');
-  art.setAttribute('aria-hidden', 'true');
   art.append(...[...rabbitArt.childNodes].map((node) => node.cloneNode(true)));
   return art;
 };
 
-/* The bricks are in the page's markup; a deal resets them and hides the page again. */
-const bricks = [...(row?.querySelectorAll<HTMLButtonElement>('button') ?? [])];
-let hidden = 0;
-let turns = 0;
-let over = false;
+if (game && sniff && finds && statusLine && data) {
+  const pages = JSON.parse(data) as MatchablePage[];
+  const trail = rankPages(pages, location.pathname).slice(0, FINDS);
+  const quick = finds.firstElementChild;
+  let shown = 0;
 
-const deal = (): void => {
-  hidden = Math.floor(Math.random() * bricks.length) + 1;
-  turns = 0;
-  over = false;
-  bricks.forEach((brick, index) => {
-    const n = index + 1;
-    brick.replaceChildren(String(n));
-    brick.setAttribute('aria-label', COPY.brick(n));
-    brick.removeAttribute('aria-disabled');
-    delete brick.dataset.looked;
-    delete brick.dataset.found;
-  });
-  say(COPY.start);
-  again?.setAttribute('hidden', '');
-};
+  const art = rabbit();
+  if (art && spot) spot.append(art);
 
-bricks.forEach((brick, index) => {
-  const n = index + 1;
-  brick.addEventListener('click', () => {
-    if (over || brick.getAttribute('aria-disabled') === 'true') return;
-    turns += 1;
-    brick.setAttribute('aria-disabled', 'true');
-    brick.dataset.looked = '';
-    if (n === hidden) {
-      over = true;
-      brick.dataset.found = '';
-      brick.setAttribute('aria-label', COPY.found(n, turns));
-      const art = rabbit();
-      if (art) brick.replaceChildren(art);
-      say(COPY.found(n, turns));
-      again?.removeAttribute('hidden');
+  sniff.addEventListener('click', () => {
+    const page = trail[shown];
+    if (!page) {
+      statusLine.textContent = shown ? COPY.done : COPY.none;
+      sniff.hidden = true;
       return;
     }
-    brick.setAttribute('aria-label', COPY.empty(n));
-    say(Math.abs(n - hidden) === 1 ? COPY.warm(n) : COPY.cold(n));
+    shown += 1;
+    const item = document.createElement('li');
+    item.dataset.found = '';
+    const link = Object.assign(document.createElement('a'), {
+      href: page.path,
+      textContent: page.title,
+    });
+    item.append(link);
+    finds.insertBefore(item, quick);
+    statusLine.textContent = COPY.found(page.title);
+    spot?.toggleAttribute('data-sniffing', true);
+    spot?.addEventListener(
+      'animationend',
+      () => spot.removeAttribute('data-sniffing'),
+      {
+        once: true,
+      },
+    );
+    if (shown === trail.length) {
+      sniff.hidden = true;
+      statusLine.textContent = `${COPY.found(page.title)} ${COPY.done}`;
+    } else {
+      sniff.textContent = COPY.more;
+    }
   });
-});
-
-if (game) {
-  again?.addEventListener('click', () => {
-    deal();
-    bricks[0]?.focus();
-  });
-  deal();
-  game.hidden = false;
+  sniff.hidden = false;
 }

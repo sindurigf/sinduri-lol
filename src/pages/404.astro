@@ -4,9 +4,10 @@ import PageHero from '../components/PageHero.astro';
 import '../styles/components/starfield.css';
 import '../styles/components/lost-page.css';
 import { BLOG_PATH } from '../lib/paths';
+import { sitePages } from '../lib/site-pages';
 
-/* The 404 game's bricks; src/scripts/lost-page.ts hides the page behind one. */
-const BRICKS = [1, 2, 3, 4, 5];
+/* What src/scripts/lost-page.ts matches the mistyped address against. */
+const pages = await sitePages();
 
 /*
  * Served with status 404 via `not_found_handling: "404-page"` in wrangler.jsonc.
@@ -60,36 +61,41 @@ const BRICKS = [1, 2, 3, 4, 5];
     </ul>
   </PageHero>
 
-  {/* Placeholder copy. Shown by src/scripts/lost-page.ts: without it there is nothing to play. */}
-  <section
-    data-lost-game
-    class="band py-section"
-    aria-labelledby="lost-title"
-    hidden
-  >
+  {/* Placeholder copy. Without script the quick links are the whole section. */}
+  <section data-lost-game class="band py-section" aria-labelledby="lost-title">
     <div class="mx-auto max-w-page">
       <h2 id="lost-title" class="text-h2 text-text">
-        Help Find This Page
+        Sniff Out the Page
       </h2>
+      <p class="lost-intro">
+        The rabbit can sniff out where you meant to go. Or take a quick way out.
+      </p>
+      <div class="lost-sniff-row">
+        <button type="button" class="btn-primary" data-lost-sniff hidden>
+          Sniff Around
+        </button>
+        <span
+          class="lost-rabbit-spot"
+          data-lost-rabbit
+          aria-hidden="true"
+        ></span>
+      </div>
       <p class="lost-status" role="status"></p>
-      <ul class="lost-bricks" role="list">
-        {BRICKS.map((n) => (
-          <li>
-            <button
-              type="button"
-              class="lost-brick"
-              aria-label={`Look behind brick ${n}`}
-            >
-              {n}
-            </button>
-          </li>
-        ))}
+      <ul class="lost-finds" role="list" data-lost-finds>
+        <li>
+          <a href="/">Home</a>
+        </li>
+        <li>
+          <a href={BLOG_PATH}>Blog</a>
+        </li>
       </ul>
-      <button type="button" data-lost-again class="btn-secondary mt-6" hidden>
-        Play Again
-      </button>
     </div>
   </section>
+  <script
+    type="application/json"
+    id="lost-pages"
+    set:html={JSON.stringify(pages).replaceAll('<', '\\u003c')}
+  />
 </BaseLayout>
 
 <script>

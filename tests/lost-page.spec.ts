@@ -1,82 +1,52 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from './test';
 import { gotoSettled } from './settle';
-import { MIN_TARGET } from './wcag';
 
 /**
- * The 404 game (src/scripts/lost-page.ts): turn-based, so it plays by keyboard
- * and screen reader (SC 2.1.1, 4.1.3); its bricks are 44px targets (SC 2.5.5);
- * reduced motion drops the lift (SC 2.3.3); without script it is not offered.
+ * The 404 finder (src/scripts/lost-page.ts): a mistyped address leads to the
+ * real page, best match first (function); every find is announced (SC 4.1.3);
+ * the quick links are there from the start and without script (SC 2.1.1);
+ * reduced motion keeps the rabbit still (SC 2.3.3); it runs under the CSP the
+ * site ships.
  */
 
-const ROUTE = '/404';
-const BRICKS = 5;
+const TYPO = '/blgo/';
+/* WebKit applies upgrade-insecure-requests on loopback and then loads nothing over http. */
+const UPGRADE_INSECURE = /;?\s*upgrade-insecure-requests/;
+const SNIFFS_MAX = 5;
 
-const playToTheEnd = async (page: import('./test').Page) => {
-  const status = page.locator('[data-lost-game]').getByRole('status');
-  for (let n = 1; n <= BRICKS; n += 1) {
-    const brick = page.getByRole('button', { name: `Look behind brick ${n}` });
-    await brick.focus();
-    await page.keyboard.press('Enter');
-    if ((await status.textContent())?.includes('Found it')) return n;
-    await expect(status).toContainText(`Not behind brick ${n}`);
-    await expect(
-      page.getByRole('button', { name: `Brick ${n}, nothing here` }),
-    ).toHaveAttribute('aria-disabled', 'true');
-  }
-  throw new Error('the page was behind no brick');
-};
-
-test('the game plays by keyboard to the end, with every turn announced', async ({
+test('a mistyped address is sniffed out to the real page, best match first', async ({
   page,
 }) => {
-  await gotoSettled(page, ROUTE);
+  await gotoSettled(page, TYPO);
+  const sniff = page.locator('[data-lost-sniff]');
+  await sniff.click();
+  const finds = page.locator('[data-lost-finds] li');
+  await expect(finds.first().getByRole('link')).toHaveAttribute(
+    'href',
+    '/blog/',
+  );
+  await expect(page.locator('.lost-status')).toContainText(
+    'Found a trail: Blog',
+  );
+  for (let i = 0; i < SNIFFS_MAX && (await sniff.isVisible()); i += 1) {
+    await sniff.click();
+  }
+  await expect(sniff, 'Sniff Around never finished').toBeHidden();
   await expect(
-    page.getByRole('heading', { name: 'Help Find This Page' }),
+    page.locator('[data-lost-finds]').getByRole('link', { name: 'Home' }),
   ).toBeVisible();
-  for (let n = 1; n <= BRICKS; n += 1) {
-    const box = await page
-      .getByRole('button', { name: `Look behind brick ${n}` })
-      .boundingBox();
-    expect(Math.min(box!.width, box!.height)).toBeGreaterThanOrEqual(
-      MIN_TARGET,
-    );
-  }
-  const found = await playToTheEnd(page);
-  await expect(
-    page.locator('[data-lost-game]').getByRole('status'),
-  ).toContainText(`behind brick ${found}`);
-  const art = page.locator('.lost-brick[data-found] svg');
-  expect(
-    await art.evaluate((svg) => {
-      const box = (svg as SVGSVGElement).getBBox();
-      return box.width > 0 && box.height > 0;
-    }),
-    'the found brick shows no rabbit',
-  ).toBe(true);
-
-  const again = page.getByRole('button', { name: 'Play Again' });
-  await again.focus();
-  await page.keyboard.press('Enter');
-  await expect(
-    page.getByRole('button', { name: 'Look behind brick 1' }),
-  ).toBeFocused();
-  await expect(again).toBeHidden();
 });
 
-test('under reduced motion a looked-at brick does not move', async ({
-  page,
-}) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await gotoSettled(page, ROUTE);
-  await page.getByRole('button', { name: 'Look behind brick 1' }).click();
-  expect(
-    await page
-      .locator('.lost-brick[data-looked]')
-      .evaluate((brick) => getComputedStyle(brick).animationName),
-  ).toBe('none');
+test('a mistyped post address finds the post', async ({ page }) => {
+  await gotoSettled(page, '/blog/five-years-drupal/');
+  await page.locator('[data-lost-sniff]').click();
+  await expect(
+    page.locator('[data-lost-finds] li').first().getByRole('link'),
+  ).toHaveAttribute('href', '/blog/five-years-in-drupal/');
 });
 
-test('without JavaScript the game is not offered', async ({
+test('without JavaScript the quick links stand alone', async ({
   browser,
   baseURL,
 }) => {
@@ -85,7 +55,54 @@ test('without JavaScript the game is not offered', async ({
     javaScriptEnabled: false,
   });
   const page = await context.newPage();
-  await page.goto(ROUTE);
-  await expect(page.locator('[data-lost-game]')).toBeHidden();
+  await page.goto(TYPO);
+  await expect(page.locator('[data-lost-sniff]')).toBeHidden();
+  await expect(page.locator('[data-lost-finds]').getByRole('link')).toHaveCount(
+    2,
+  );
   await context.close();
+});
+
+test('under reduced motion the rabbit does not move', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await gotoSettled(page, TYPO);
+  await page.locator('[data-lost-sniff]').click();
+  expect(
+    await page
+      .locator('.lost-rabbit')
+      .evaluate((art) => getComputedStyle(art).animationName),
+  ).toBe('none');
+});
+
+test('the finder runs under the CSP the site ships (Trusted Types)', async ({
+  page,
+}) => {
+  const csp = /Content-Security-Policy: (.+)/.exec(
+    readFileSync('public/_headers', 'utf8'),
+  )?.[1];
+  expect(csp, 'public/_headers has no Content-Security-Policy').toBeTruthy();
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.addInitScript(() => {
+    document.addEventListener('securitypolicyviolation', (event) =>
+      console.error(`csp: ${event.violatedDirective}`),
+    );
+  });
+  page.on('console', (message) => {
+    if (message.text().startsWith('csp:')) errors.push(message.text());
+  });
+  await page.route(`**${TYPO}`, async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({
+      response,
+      headers: {
+        ...response.headers(),
+        'content-security-policy': csp!.replace(UPGRADE_INSECURE, ''),
+      },
+    });
+  });
+  await gotoSettled(page, TYPO);
+  await page.locator('[data-lost-sniff]').click();
+  await expect(page.locator('[data-lost-finds] [data-found]')).toHaveCount(1);
+  expect(errors, 'the shipped CSP blocked or broke the finder').toEqual([]);
 });
