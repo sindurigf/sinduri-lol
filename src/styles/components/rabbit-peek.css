@@ -1,0 +1,54 @@
+@layer components {
+  /*
+   * Sits on the section's bottom edge, in its bottom padding: the face stays
+   * a 24px gap clear of the content above it (tests/rabbit-peek.spec.ts).
+   */
+  .rabbit-peek {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    height: calc(var(--spacing-section) - --spacing(6));
+    width: auto;
+    translate: -50% 0;
+    pointer-events: none;
+    --rabbit-edge-width: 6;
+  }
+
+  .rabbit-peek .rabbit-edge {
+    fill: var(--color-gold-text);
+    stroke: var(--color-gold-text);
+    stroke-width: var(--rabbit-edge-width);
+  }
+
+  .rabbit-peek .rabbit-throw .rabbit-edge {
+    fill: var(--color-pink);
+    stroke: var(--color-pink);
+  }
+
+  .rabbit-peek .rabbit-body {
+    fill: var(--color-gold);
+  }
+
+  .rabbit-peek .rabbit-ink {
+    fill: var(--color-gold-text);
+  }
+
+  .rabbit-peek .rabbit-ear {
+    fill: var(--color-pink);
+  }
+
+  .rabbit-peek .rabbit-shine {
+    fill: var(--color-light-ground);
+  }
+
+  .rabbit-peek,
+  .rabbit-peek * {
+    forced-color-adjust: auto;
+  }
+
+  @media (forced-colors: active) {
+    .rabbit-peek {
+      display: none;
+    }
+  }
+}

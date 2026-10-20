@@ -1,4 +1,6 @@
 ---
+import RabbitPeek from './RabbitPeek.astro';
+
 /*
  * Use the `title` slot for a heading that needs markup. `panel` wraps the
  * whole section in one card. `headless` leaves the heading to the default
@@ -12,6 +14,8 @@ interface Props {
   headless?: boolean;
   /* In a gold section, `text-text` and `text-gold` fail SC 1.4.3; tests/gold-surface.spec.ts catches them. */
   surface?: 'page' | 'gold';
+  /* The rabbit peeking up from the section's bottom edge, in its empty bottom padding. */
+  peek?: boolean;
   class?: string;
 }
 
@@ -22,6 +26,7 @@ const {
   panel = false,
   headless = false,
   surface = 'page',
+  peek = false,
   class: className = '',
 } = Astro.props;
 
@@ -34,7 +39,12 @@ const headingId = id ? `${id}-heading` : undefined;
 <section
   id={id}
   aria-labelledby={headingId}
-  class:list={['band py-section', gold && 'surface-gold', className]}
+  class:list={[
+    'band py-section',
+    gold && 'surface-gold',
+    peek && 'relative',
+    className,
+  ]}
 >
   <div class="mx-auto max-w-page">
     {headless ? (
@@ -63,4 +73,5 @@ const headingId = id ? `${id}-heading` : undefined;
       </>
     )}
   </div>
+  {peek && <RabbitPeek />}
 </section>

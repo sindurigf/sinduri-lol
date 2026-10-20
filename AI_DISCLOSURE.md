@@ -36,6 +36,8 @@ How AI tooling was used to build this site.
   - the hopping bunny in the homepage hero (`src/lib/hero-field-hare.ts`),
     and its stills shown without JavaScript (`src/assets/hero-still-*.webp`);
   - the sticker bunny in the footer (`src/components/Footer.astro`);
+  - the rabbit peeking up from the homepage's Featured Posts section
+    (`src/components/RabbitPeek.astro`);
   - the drawn, animated cats on `/about/`, their sleep, wake and trick-list
     icons (`src/components/ui/AboutCats.vue`) and their trick icons
     (`src/lib/about-cats-tricks.json`). The cat photos are real.
