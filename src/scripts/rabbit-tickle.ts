@@ -1,7 +1,6 @@
 /* Tickle the Rabbit: the footer rabbit giggles and the name band laughs. Motion lives in footer.css; this only restarts it. */
 export {};
 
-/* Placeholder copy: Sinduri rewrites it in her voice. */
 const GIGGLES = 'The rabbit giggles.';
 
 const button = document.querySelector<HTMLButtonElement>(

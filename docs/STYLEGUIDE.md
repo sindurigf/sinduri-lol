@@ -1093,7 +1093,7 @@ Enforced by `tests/footer.spec.ts`.
   empty button with that `aria-label` over the rabbit, which stays a plain
   image; hidden without JavaScript and on talk decks. A press plays a short
   giggle-hop and the name laughs once, untimed; a polite status says "The
-  rabbit giggles." (placeholder copy). Under reduced motion the rabbit blinks
+  rabbit giggles." Under reduced motion the rabbit blinks
   once and nothing moves. Its ring is two-tone because its box crosses the
   page ground and the band: a `gold-text` outline, the band's ring color,
   between two cyan bands (`box-shadow`) that meet the ground.
