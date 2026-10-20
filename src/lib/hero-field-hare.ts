@@ -1,58 +1,45 @@
-/* Pure. Paths are in the bunny's own drawing units, independent of the box; y grows down, ground at 0. */
-import { FOOT_Y } from './hero-field-scene';
+/* Pure. Shapes are in the bunny's own drawing units, independent of the box; y grows down, ground at 0. */
 import type { HeroPalette } from './hero-field-scene';
 
-type Point = readonly [number, number];
+/* An ellipse [cx, cy, rx, ry] turned by rotations applied in order, each [degrees, about x, about y]. */
+type Turn = readonly [deg: number, x: number, y: number];
+interface Oval {
+  readonly at: readonly [number, number, number, number];
+  readonly turns: readonly Turn[];
+}
 
-const LINE = 2.1;
+/* Drawing units to the field's hare units, so the bunny keeps the size and shadow the scene was tuned for. */
+const UNIT = 0.8;
+const OFFSET_X = 10;
+/* The field's existing line weight (2.1, grown both ways) in drawing units. */
+const EDGE = (2 * 2.1) / UNIT;
+const EAR_LINE = EDGE / 2;
+const EYE_LINE = 3.4;
 
-/* Body outline: eight cubic curves, closing back on the first point. */
-const BODY: readonly Point[] = [
-  [47, -17],
-  [46, -28],
-  [37, -35],
-  [29, -33],
-  [22, -31],
-  [19, -22],
-  [12, -22],
-  [0, -24],
-  [-16, -30],
-  [-26, -24],
-  [-34, -19],
-  [-37, -6],
-  [-34, 3],
-  [-31, 10],
-  [-24, 14],
-  [-15, 15],
-  [-3, 16],
-  [9, 15],
-  [18, 10],
-  [25, 7],
-  [29, 0],
-  [31, -6],
-  [38, -8],
-  [47, -11],
+/* The approved build: two body ovals, a round head, ears, a puff tail, one hind foot and one paw. */
+const BODY: readonly (readonly [number, number, number, number])[] = [
+  [-14, -27.6, 38.4, 27.6],
+  [-7.2, -26, 36.4, 25.6],
 ];
+const HEAD = { x: 24.4, y: -61.6, r: 25.6 } as const;
+const EAR = { length: 50, width: 15 } as const;
+const TAIL = { x: -50.8, y: -32.4, r: 10 } as const;
+const HIND = { x: -44.8, y: -4, rx: 15.6, ry: 5.5, deg: -3.6 } as const;
+const PAW = { x: 26.4, y: -4.5, rx: 9, ry: 5 } as const;
+const EYE = 7.5;
+const PIVOT_X = BODY[0]![0] - BODY[0]![2] * 0.6;
 
-/* Sitting tilts the body back about the bottom of the haunch, so the rump stays down. */
-const PIVOT: Point = [-24, 14];
-const SIT_TILT = -0.28;
-const SIT_SETTLE = 6;
-const HIP: Point = [-21, 10];
-const SHOULDER: Point = [19, 8];
-const FOOT = { length: 25, thickness: 6.4 } as const;
-const PAW = { length: 7.5, thickness: 4.6 } as const;
-const TAIL = {
-  at: [-34, -17] as Point,
-  ring: 3.4,
-  petals: 5,
-  petalScale: 1.35,
+/* Rest pose and the binky at the top of a hop; a hop blends between them by `air`. */
+const REST = { tilt: -5, head: -7, ears: -4 } as const;
+const BINKY = {
+  tilt: -20,
+  head: -14,
+  ears: -38,
+  kick: 34,
+  secondKick: 52,
+  paw: -30,
 } as const;
-const EYE: Point = [34, -25];
-const EYE_RADIUS = 3.3;
-const NOSE: Point = [46, -17];
-const EAR_LENGTH = 1.12;
-const EAR_LIFT = 0.3;
+const RAD = 180 / Math.PI;
 
 interface HopFrame {
   readonly cycle: number;
@@ -93,357 +80,226 @@ export const hopFrame = (
   };
 };
 
-/* Hind leg per hop phase: [cycle, hock dx, hock dy from the hip, foot angle (0 toes forward, PI toes back), foot length share]. */
-type HindKey = readonly [
-  cycle: number,
-  dx: number,
-  dy: number,
-  angle: number,
-  share: number,
-];
-type ForeKey = readonly [cycle: number, dx: number, dy: number];
+/* hopFrame's ear angles without the velocity sway: the binky blend already lays the ears back, so only the twitch is added. */
+const EAR_NEAR_REST = -0.92;
+const EAR_FAR_REST = -1.2;
+const EAR_NEAR_SWAY = 0.32;
+const EAR_FAR_SWAY = 0.26;
 
-const HIND_KEYS: readonly HindKey[] = [
-  [0, -1, 8, 0, 1],
-  [0.1, -10, 11, Math.PI - 0.3, 1],
-  [0.28, -18, -1, Math.PI + 0.35, 1],
-  [0.48, -17, -1, Math.PI + 0.3, 0.95],
-  [0.62, -6, 6, Math.PI - 0.75, 0.55],
-  [0.74, 3, 8, 1.2, 0.6],
-  [0.87, 10, 9, 0.25, 0.9],
-  [0.95, 9, 8, 0, 1],
-  [1, -1, 8, 0, 1],
-];
-/* Foreleg per hop phase: [cycle, paw dx, paw dy from the shoulder]. */
-const FORE_KEYS: readonly ForeKey[] = [
-  [0, 1, 20],
-  [0.1, -4, 14],
-  [0.32, 12, 10],
-  [0.6, 11, 11],
-  [0.82, 5, 18],
-  [1, 1, 20],
-];
-const SHIN_REACH = 20;
-const FORE_REACH = 19;
-const FORE_THICKNESS = 4.2;
-/* The far legs sit higher and behind, smaller, and a step later in the hop. */
-const FAR = {
-  scale: 0.85,
-  hip: [-3, -5] as Point,
-  shoulder: [-3, -3.5] as Point,
-  hindLag: 0.03,
-  foreLag: 0.04,
-} as const;
-const FOOT_GROUND = -FOOT.thickness / 2;
-const PAW_GROUND = -PAW.thickness / 2;
+const oval = (
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  turns: readonly Turn[],
+): Oval => ({ at: [cx, cy, rx, ry], turns });
 
-const smooth = (t: number): number => t * t * (3 - 2 * t);
-const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
-
-/* Smoothstep between the keys either side of `cycle`; every field, the cycle too, is interpolated. */
-const sample = <K extends readonly number[]>(
-  keys: readonly K[],
-  cycle: number,
-): K => {
-  for (let i = 1; i < keys.length; i++) {
-    const a = keys[i - 1];
-    const b = keys[i];
-    if (cycle <= b[0]) {
-      const t = smooth((cycle - a[0]) / (b[0] - a[0]));
-      const mixed: readonly number[] = a.map((v, j) => lerp(v, b[j], t));
-      return mixed as K;
-    }
-  }
-  return keys[keys.length - 1];
-};
-
-/* `to`, or the point `max` from `from` on the way to it. */
-const reach = (from: Point, to: Point, max: number): Point => {
-  const d = Math.hypot(to[0] - from[0], to[1] - from[1]);
-  return d <= max
-    ? to
-    : [
-        from[0] + ((to[0] - from[0]) * max) / d,
-        from[1] + ((to[1] - from[1]) * max) / d,
-      ];
-};
-
-const tiltOf = (frame: HopFrame): number => frame.pitch + frame.sit * SIT_TILT;
-
-/* Body units to ground units: squash, then tilt about the pivot, then lift. */
-const bodyToGround = (frame: HopFrame, lift: number): ((p: Point) => Point) => {
-  const a = tiltOf(frame);
-  const c = Math.cos(a);
-  const s = Math.sin(a);
-  return ([x, y]) => {
-    const px = x - PIVOT[0];
-    const py = (y - PIVOT[1]) * frame.squash;
-    return [
-      PIVOT[0] + px * c - py * s,
-      PIVOT[1] - FOOT_Y - lift + px * s + py * c,
-    ];
-  };
-};
-
-const capsule = (
+const applyTurns = (
   ctx: CanvasRenderingContext2D,
-  [x, y]: Point,
-  angle: number,
-  length: number,
-  thickness: number,
+  turns: readonly Turn[],
 ): void => {
-  const r = thickness / 2;
+  for (const [deg, x, y] of turns) {
+    ctx.translate(x, y);
+    ctx.rotate(deg / RAD);
+    ctx.translate(-x, -y);
+  }
+};
+
+const traceOval = (
+  ctx: CanvasRenderingContext2D,
+  { at, turns }: Oval,
+): void => {
   ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
+  applyTurns(ctx, turns);
   ctx.beginPath();
-  ctx.moveTo(0, -r);
-  ctx.lineTo(length - r, -r);
-  ctx.arc(length - r, 0, r, -Math.PI / 2, Math.PI / 2);
-  ctx.lineTo(0, r);
-  ctx.arc(0, 0, r, Math.PI / 2, -Math.PI / 2);
-  ctx.closePath();
+  ctx.ellipse(at[0], at[1], at[2], at[3], 0, 0, Math.PI * 2);
   ctx.restore();
 };
 
-const bar = (
+/* Ink grown by half the edge, then the fill on top: one outline round every shape in the group. */
+const paintGroup = (
   ctx: CanvasRenderingContext2D,
-  from: Point,
-  to: Point,
-  thickness: number,
-): void =>
-  capsule(
-    ctx,
-    from,
-    Math.atan2(to[1] - from[1], to[0] - from[0]),
-    Math.hypot(to[0] - from[0], to[1] - from[1]) + thickness / 2,
-    thickness,
-  );
-
-/* Closed Catmull-Rom spline as cubic Beziers: round corners, no straight runs. */
-const closedSpline = (
-  ctx: CanvasRenderingContext2D,
-  points: readonly Point[],
+  shapes: readonly Oval[],
+  ink: string,
+  fill: string,
 ): void => {
-  const n = points.length;
-  const at = (i: number): Point => points[(i + n) % n]!;
-  ctx.beginPath();
-  ctx.moveTo(...points[0]!);
-  for (let i = 0; i < n; i++) {
-    const [p0, p1, p2, p3] = [at(i - 1), at(i), at(i + 1), at(i + 2)];
-    ctx.bezierCurveTo(
-      p1[0] + (p2[0] - p0[0]) / 6,
-      p1[1] + (p2[1] - p0[1]) / 6,
-      p2[0] - (p3[0] - p1[0]) / 6,
-      p2[1] - (p3[1] - p1[1]) / 6,
-      p2[0],
-      p2[1],
-    );
+  ctx.fillStyle = ink;
+  ctx.strokeStyle = ink;
+  ctx.lineWidth = EDGE;
+  for (const shape of shapes) {
+    traceOval(ctx, shape);
+    ctx.fill();
+    ctx.stroke();
   }
+  ctx.fillStyle = fill;
+  for (const shape of shapes) {
+    traceOval(ctx, shape);
+    ctx.fill();
+  }
+};
+
+interface Pose {
+  readonly lift: number;
+  readonly tilt: number;
+  readonly head: number;
+  readonly earNear: number;
+  readonly earFar: number;
+  readonly air: number;
+  readonly eyesOpen: boolean;
+}
+
+const poseOf = (frame: HopFrame, hop: number): Pose => {
+  const a = frame.air;
+  const blend = (rest: number, binky: number): number =>
+    rest + (binky - rest) * a;
+  const velocity = Math.cos(frame.cycle * Math.PI);
+  const twitchNear = frame.earNear - EAR_NEAR_REST + velocity * EAR_NEAR_SWAY;
+  const twitchFar = frame.earFar - EAR_FAR_REST + velocity * EAR_FAR_SWAY;
+  return {
+    lift: (a * hop) / UNIT,
+    tilt: blend(REST.tilt, BINKY.tilt) + frame.pitch * RAD * 0.5,
+    head: blend(REST.head, BINKY.head),
+    earNear: blend(REST.ears, BINKY.ears) + twitchNear * RAD,
+    earFar: blend(REST.ears, BINKY.ears) + twitchFar * RAD,
+    air: a,
+    eyesOpen: frame.sit > 0.3,
+  };
+};
+
+const shapesOf = (p: Pose) => {
+  const body: Turn = [p.tilt, PIVOT_X, 0];
+  const head: Turn = [p.head, HEAD.x, HEAD.y];
+  const fx = HEAD.x - 8;
+  const fy = HEAD.y - HEAD.r * 0.75;
+  const nx = HEAD.x + 4;
+  const ny = HEAD.y - HEAD.r * 0.85;
+  /* Feet stay planted at rest and join the body's tilt as the hop lifts them. */
+  const footTilt: Turn = [p.tilt * p.air, PIVOT_X, 0];
+  const nearEar: Turn = [14 + p.earNear, nx, ny];
+  return {
+    back: [
+      ...(p.air > 0.02
+        ? [
+            oval(
+              HIND.x - 8 * p.air,
+              HIND.y - 6 * p.air,
+              HIND.rx * 0.9,
+              HIND.ry,
+              [
+                footTilt,
+                [
+                  HIND.deg + BINKY.secondKick * p.air,
+                  HIND.x - 8 * p.air,
+                  HIND.y - 6 * p.air,
+                ],
+              ],
+            ),
+          ]
+        : []),
+      oval(HIND.x, HIND.y, HIND.rx, HIND.ry, [
+        footTilt,
+        [HIND.deg + BINKY.kick * p.air, HIND.x, HIND.y],
+      ]),
+      oval(fx, fy - EAR.length * 0.47, EAR.width * 0.47, EAR.length * 0.47, [
+        body,
+        head,
+        [-26 + p.earFar, fx, fy],
+      ]),
+    ],
+    body: [
+      ...BODY.map(([x, y, rx, ry]) => oval(x, y, rx, ry, [body])),
+      oval(HEAD.x, HEAD.y, HEAD.r, HEAD.r, [body]),
+    ],
+    tail: [oval(TAIL.x, TAIL.y, TAIL.r, TAIL.r, [body])],
+    front: [
+      oval(nx, ny - EAR.length / 2, EAR.width / 2, EAR.length / 2, [
+        body,
+        head,
+        nearEar,
+      ]),
+      oval(PAW.x, PAW.y, PAW.rx, PAW.ry, [
+        footTilt,
+        [BINKY.paw * p.air, PAW.x, PAW.y],
+      ]),
+    ],
+    innerEar: oval(nx, ny - EAR.length / 2, EAR.width * 0.2, EAR.length * 0.3, [
+      body,
+      head,
+      nearEar,
+    ]),
+    faceTurns: [body, head] as readonly Turn[],
+  };
+};
+
+/* Four-point sparkle: quadratic curves pulled in to the center. */
+const traceStar = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+): void => {
+  const k = s * 0.18;
+  ctx.beginPath();
+  ctx.moveTo(x, y - s);
+  ctx.quadraticCurveTo(x + k, y - k, x + s, y);
+  ctx.quadraticCurveTo(x + k, y + k, x, y + s);
+  ctx.quadraticCurveTo(x - k, y + k, x - s, y);
+  ctx.quadraticCurveTo(x - k, y - k, x, y - s);
   ctx.closePath();
 };
 
-type Shape = (ctx: CanvasRenderingContext2D) => void;
-
-/* Hind leg: thigh from the haunch to the hock, then the long foot; the toes never dip below the ground. */
-const hindLeg = (
-  hip: Point,
-  cycle: number,
-  sitting: boolean,
-  scale: number,
-  far: boolean,
-): Shape[] => {
-  const [, dx, dy, footAngle, share] = sitting
-    ? HIND_KEYS[0]
-    : sample(HIND_KEYS, cycle);
-  const raised = reach(hip, [hip[0] + dx, hip[1] + dy], SHIN_REACH * scale);
-  const hock: Point = [raised[0], Math.min(raised[1], FOOT_GROUND)];
-  const length = FOOT.length * scale * share;
-  const thickness = FOOT.thickness * scale;
-  let angle = footAngle;
-  if (hock[1] + Math.sin(angle) * length > FOOT_GROUND) {
-    const lift = Math.min(1, Math.max(-1, (FOOT_GROUND - hock[1]) / length));
-    angle = Math.cos(angle) < 0 ? Math.PI - Math.asin(lift) : Math.asin(lift);
-  }
-  const shapes: Shape[] = [];
-  const span = Math.hypot(hock[0] - hip[0], hock[1] - hip[1]);
-  if (!sitting && !far && span > 1) {
-    const d: Point = [(hock[0] - hip[0]) / span, (hock[1] - hip[1]) / span];
-    const n: Point = [-d[1], d[0]];
-    const r = thickness / 2;
-    const thigh: Point[] = [
-      [hip[0] + n[0] * 8, hip[1] + n[1] * 8],
-      [hip[0] - d[0] * 3, hip[1] - d[1] * 3],
-      [hip[0] - n[0] * 8, hip[1] - n[1] * 8],
-      [hock[0] - n[0] * r, hock[1] - n[1] * r],
-      [hock[0] + d[0] * r * 0.6, hock[1] + d[1] * r * 0.6],
-      [hock[0] + n[0] * r, hock[1] + n[1] * r],
-    ];
-    shapes.push((ctx) => closedSpline(ctx, thigh));
-  } else if (span > 4) {
-    shapes.push((ctx) => bar(ctx, hip, hock, thickness * 0.9));
-  }
-  shapes.push((ctx) => capsule(ctx, hock, angle, length, thickness));
-  /* A flat foot meets the belly at a sharp angle; fill the wedge so the outline has no ink sliver. */
-  if (!far && Math.cos(angle) > 0.9 && hock[1] >= FOOT_GROUND - 1) {
-    const top = FOOT_GROUND - thickness / 2;
-    const toe = hock[0] + length;
-    const wedge: Point[] = [
-      hip,
-      [hock[0], top],
-      [toe - 5, top],
-      [toe - 10, top - 8],
-    ];
-    shapes.push((ctx) => closedSpline(ctx, wedge));
-  }
-  return shapes;
-};
-
-/* Foreleg: slim, with a small paw; it reaches the ground first when the shoulder is low enough. */
-const foreLeg = (
-  shoulder: Point,
-  cycle: number,
-  sitting: boolean,
-  scale: number,
-): Shape[] => {
-  const [, dx, dy] = sitting ? FORE_KEYS[0] : sample(FORE_KEYS, cycle);
-  const reached = reach(
-    shoulder,
-    [shoulder[0] + dx, shoulder[1] + dy],
-    FORE_REACH * scale,
-  );
-  const paw: Point = [reached[0], Math.min(reached[1], PAW_GROUND)];
-  const grounded = paw[1] >= PAW_GROUND - 0.5;
-  const leg = Math.atan2(paw[1] - shoulder[1], paw[0] - shoulder[0]);
-  return [
-    (ctx) => bar(ctx, shoulder, paw, FORE_THICKNESS * scale),
-    (ctx) =>
-      capsule(
-        ctx,
-        [paw[0] - 1.5, paw[1]],
-        grounded ? 0 : leg - 1.1,
-        PAW.length * scale,
-        PAW.thickness * scale,
-      ),
-  ];
-};
-
-/* Every closed shape in ground units; each group is drawn twice (ink grown, then fill) for one clean outline. */
-const silhouette = (
-  frame: HopFrame,
-  hop: number,
-): { near: Shape[]; far: Shape[]; g: (p: Point) => Point } => {
-  const sitting = frame.sit > 0.05;
-  const g = bodyToGround(frame, frame.air * hop - frame.sit * SIT_SETTLE);
-  const body = BODY.map(g);
-  const hip = g(HIP);
-  const shoulder = g(SHOULDER);
-  const near: Shape[] = [
-    (ctx) => {
-      ctx.beginPath();
-      ctx.moveTo(...body[0]!);
-      for (let i = 1; i < body.length; i += 3) {
-        ctx.bezierCurveTo(
-          ...body[i]!,
-          ...body[i + 1]!,
-          ...(body[i + 2] ?? body[0]!),
-        );
-      }
-      ctx.closePath();
-    },
-    ...hindLeg(hip, frame.cycle, sitting, 1, false),
-    ...foreLeg(shoulder, frame.cycle, sitting, 1),
-  ];
-  const far: Shape[] = sitting
-    ? []
-    : [
-        ...hindLeg(
-          [hip[0] + FAR.hip[0], hip[1] + FAR.hip[1]],
-          Math.max(0, frame.cycle - FAR.hindLag),
-          false,
-          FAR.scale,
-          true,
-        ),
-        ...foreLeg(
-          [shoulder[0] + FAR.shoulder[0], shoulder[1] + FAR.shoulder[1]],
-          Math.max(0, frame.cycle - FAR.foreLag),
-          false,
-          FAR.scale,
-        ),
-      ];
-  return { near, far, g };
-};
-
-/* Ears behind the head, each with its inner line. */
-const drawEars = (
+const drawFace = (
   ctx: CanvasRenderingContext2D,
-  frame: HopFrame,
-  g: (p: Point) => Point,
+  turns: readonly Turn[],
+  eyesOpen: boolean,
   palette: HeroPalette,
 ): void => {
-  const tilt = tiltOf(frame);
-  for (const [ex, ey, angle, width, length] of [
-    [24, -27, frame.earFar, 5.2, 27],
-    [26, -28, frame.earNear, 6, 31],
-  ] as const) {
-    const l = length * EAR_LENGTH;
-    ctx.save();
-    ctx.translate(...g([ex + 3, ey - 6]));
-    ctx.rotate(angle + EAR_LIFT + tilt);
-    ctx.scale(1, frame.squash);
-    ctx.fillStyle = palette.background;
-    ctx.strokeStyle = palette.border;
-    ctx.lineWidth = LINE;
+  const ex = HEAD.x + HEAD.r * 0.42;
+  const ey = HEAD.y - HEAD.r * 0.28;
+  ctx.save();
+  applyTurns(ctx, turns);
+  if (eyesOpen) {
+    ctx.fillStyle = palette.border;
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.bezierCurveTo(-width, -l * 0.34, -width * 0.78, -l * 0.84, 0, -l);
-    ctx.bezierCurveTo(width * 0.78, -l * 0.84, width, -l * 0.34, 0, 0);
-    ctx.closePath();
+    ctx.ellipse(ex, ey - EYE * 0.15, EYE * 0.86, EYE * 1.12, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.stroke();
+    ctx.fillStyle = palette.shine;
     ctx.beginPath();
-    ctx.moveTo(0, -3);
-    ctx.quadraticCurveTo(width * 0.3, -l * 0.55, 0, -l * 0.82);
+    ctx.arc(ex + EYE * 0.28, ey - EYE * 0.6, EYE * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+    traceStar(ctx, ex - EYE * 0.3, ey + EYE * 0.3, EYE * 0.34);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(ex + EYE * 0.4, ey + EYE * 0.42, EYE * 0.13, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.strokeStyle = palette.border;
+    ctx.lineWidth = EYE_LINE;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(ex - EYE, ey + EYE * 0.3);
+    ctx.quadraticCurveTo(ex, ey - EYE * 1.3, ex + EYE, ey + EYE * 0.3);
     ctx.stroke();
-    ctx.restore();
   }
-};
-
-/* Five-petal tail: a core and a ring of overlapping circles, inked as one shape so the edge is scalloped. */
-const drawTail = (
-  ctx: CanvasRenderingContext2D,
-  frame: HopFrame,
-  g: (p: Point) => Point,
-  palette: HeroPalette,
-): void => {
-  const tilt = tiltOf(frame);
-  const [cx, cy] = g(TAIL.at);
-  const petal = TAIL.ring * Math.sin(Math.PI / TAIL.petals) * TAIL.petalScale;
-  const circles: [number, number, number][] = [[cx, cy, TAIL.ring]];
-  for (let i = 0; i < TAIL.petals; i++) {
-    const a = tilt + (i / TAIL.petals) * Math.PI * 2;
-    circles.push([
-      cx + Math.cos(a) * TAIL.ring,
-      cy + Math.sin(a) * TAIL.ring,
-      petal,
-    ]);
-  }
-  for (const [color, grow] of [
-    [palette.border, LINE],
-    [palette.background, 0],
-  ] as const) {
-    ctx.fillStyle = color;
-    for (const [x, y, r] of circles) {
-      ctx.beginPath();
-      ctx.arc(x, y, r + grow, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
+  /* Tipped heart nose: a rounded triangle turned up at the front. */
+  const nx = HEAD.x + HEAD.r - 2.5 - 1.2;
+  const ny = HEAD.y + 3;
+  ctx.translate(nx, ny);
+  ctx.rotate(-30 / RAD);
+  ctx.fillStyle = palette.border;
+  ctx.beginPath();
+  ctx.moveTo(-2.8, -1.4);
+  ctx.quadraticCurveTo(0, -2.6, 2.8, -1.4);
+  ctx.quadraticCurveTo(2.6, 1.6, 0, 2.2);
+  ctx.quadraticCurveTo(-2.6, 1.6, -2.8, -1.4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
 };
 
 /*
- * `hop` is the arc height in drawing units. Every closed shape fills with the
- * hero ground, so stems behind never show through the body.
+ * `hop` is the arc height in field units. The body fill is opaque, so stems
+ * behind never show through.
  */
 export const drawHare = (
   ctx: CanvasRenderingContext2D,
@@ -454,53 +310,34 @@ export const drawHare = (
   hop: number,
   palette: HeroPalette,
 ): void => {
-  const { near, far, g } = silhouette(frame, hop);
+  const pose = poseOf(frame, hop);
+  const s = shapesOf(pose);
   ctx.save();
   ctx.translate(x, ground);
-  ctx.scale(scale, scale);
+  /* A resting bunny keeps its full height; the landing squash is for hops only. */
+  const squash = frame.sit > 0.05 ? 1 : frame.squash;
+  ctx.scale(scale * UNIT, scale * UNIT * squash);
+  ctx.translate(OFFSET_X, -pose.lift);
   ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
 
-  drawEars(ctx, frame, g, palette);
-
-  for (const group of [far, near]) {
-    ctx.fillStyle = palette.border;
-    ctx.strokeStyle = palette.border;
-    ctx.lineWidth = LINE * 2;
-    for (const shape of group) {
-      shape(ctx);
-      ctx.fill();
-      ctx.stroke();
-    }
-    ctx.fillStyle = palette.background;
-    for (const shape of group) {
-      shape(ctx);
-      ctx.fill();
-    }
+  paintGroup(ctx, s.back, palette.border, palette.background);
+  paintGroup(ctx, s.body, palette.border, palette.background);
+  for (const shape of [...s.tail, ...s.front]) {
+    paintGroup(ctx, [shape], palette.border, palette.background);
   }
-
-  drawTail(ctx, frame, g, palette);
-
-  const [ex, ey] = g(EYE);
-  ctx.fillStyle = palette.border;
+  /* Inner ear as a line down the near ear, like the field's other line work. */
+  ctx.save();
+  applyTurns(ctx, s.innerEar.turns);
+  const [ix, iy, , iry] = s.innerEar.at;
+  ctx.strokeStyle = palette.border;
+  ctx.lineWidth = EAR_LINE;
+  ctx.lineCap = 'round';
   ctx.beginPath();
-  ctx.arc(ex, ey, EYE_RADIUS, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = palette.shine;
-  ctx.beginPath();
-  ctx.arc(
-    ex + EYE_RADIUS * 0.35,
-    ey - EYE_RADIUS * 0.38,
-    EYE_RADIUS * 0.34,
-    0,
-    Math.PI * 2,
-  );
-  ctx.fill();
-  const [nx, ny] = g(NOSE);
-  ctx.fillStyle = palette.border;
-  ctx.beginPath();
-  ctx.arc(nx, ny, 1.5, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.moveTo(ix, iy + iry);
+  ctx.quadraticCurveTo(ix + EAR.width * 0.12, iy, ix, iy - iry);
+  ctx.stroke();
+  ctx.restore();
+  drawFace(ctx, s.faceTurns, pose.eyesOpen, palette);
 
   ctx.restore();
 };

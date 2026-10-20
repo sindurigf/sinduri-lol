@@ -79,9 +79,6 @@ export const HARE_DEPTH = 2.45;
 /** Apparent size to hare drawing scale: the comp's 1.167 at HARE_DEPTH. */
 export const HARE_UNIT = 1.167 / (REFERENCE_PROJECTION / HARE_DEPTH);
 
-/** Hare drawing units. */
-export const FOOT_Y = 20;
-
 export interface Stem {
   readonly z: number;
   /** `1 / z`. Drives opacity only, so fading does not change with the frame. */
