@@ -738,6 +738,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
   - The guide above the first section says how to read the page.
   - A part lists what it keeps for accessibility from `src/lib/brand-a11y.ts`; the lines are draft copy.
   - Two rules show as a Do and Don't pair: one primary per section, and cyan only on hover and focus (`DoDont.astro`).
+  - With a script, a Filter field above the wide sections list narrows it by name (`brand-filter.ts`); it adds script to the `/brand` budget.
   - Each part with a live example shows its HTML under it, wrapped, never scrolling (`sourceOf` in `mirror.ts`).
   - Button parts show rest, hover, focus, pressed and unavailable side by side (`StateRow.astro`, `.state-*` in `brand.css`), drawn from the real CSS.
 - Color is one part per role in `src/lib/brand-roles.ts`.

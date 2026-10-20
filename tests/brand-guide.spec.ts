@@ -1,6 +1,6 @@
 import { expect, test } from './test';
 import { gotoSettled } from './settle';
-import { BRAND_PATH } from '../src/lib/brand-sections';
+import { BRAND_PATH, BRAND_SECTIONS } from '../src/lib/brand-sections';
 import { PART_ACCESSIBILITY } from '../src/lib/brand-a11y';
 
 test.describe('/brand guide', () => {
@@ -137,5 +137,31 @@ test.describe('/brand guide', () => {
       );
     expect(pairs.map((p) => p.label)).toEqual(['Do', "Don't", 'Do', "Don't"]);
     expect(pairs.every((p) => p.hidden === 'true' && p.words > 0)).toBe(true);
+  });
+
+  test('typing in the filter narrows the sections list and says how many remain, clearing restores it (SC 3.3.2, 4.1.3)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await gotoSettled(page, BRAND_PATH);
+    const wide = page.locator('[data-menu-wide]');
+    const links = wide.locator('a.brand-menu-link');
+    const filter = wide.getByLabel('Filter');
+    await expect(links.locator('visible=true')).toHaveCount(
+      BRAND_SECTIONS.length,
+    );
+    await filter.fill('color');
+    await expect(links.locator('visible=true')).toHaveCount(1);
+    await expect(wide.getByRole('status')).toHaveText('1 section');
+    await filter.fill('');
+    await expect(links.locator('visible=true')).toHaveCount(
+      BRAND_SECTIONS.length,
+    );
+    await expect(wide.getByRole('status')).toHaveText(
+      `${BRAND_SECTIONS.length} sections`,
+    );
+    await filter.fill('zzz');
+    await expect(links.locator('visible=true')).toHaveCount(0);
+    await expect(wide.getByRole('status')).toHaveText('0 sections');
   });
 });

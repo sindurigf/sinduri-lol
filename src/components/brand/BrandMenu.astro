@@ -43,7 +43,26 @@ import {
         {list}
       </details>
     ) : (
-      <div class="hidden lg:block">{list}</div>
+      <div class="hidden lg:block" data-menu-wide>
+        <div class="needs-script mb-6">
+          <label class="field-label" for="menu-filter">
+            Filter
+          </label>
+          <input
+            class="field-control"
+            id="menu-filter"
+            type="search"
+            autocomplete="off"
+            data-menu-filter
+          />
+          <div class="sr-only" role="status" data-menu-status />
+        </div>
+        {list}
+      </div>
     );
   })}
 </nav>
+
+<script>
+  import '../../scripts/brand-filter';
+</script>
