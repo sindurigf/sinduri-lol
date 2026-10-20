@@ -1250,6 +1250,10 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 - Controls lift off their shadow under a hovering pointer and press into it at
   once ([Control states](#control-states)); no movement under reduced motion.
 - No marquee.
+- After a theme pick the Theme button's moon turns on its side as a grin for
+  `--grin-time`, then the glyph returns (`theme-grin.ts`, `.grin` in
+  `buttons-nav.css`). It is the moon already drawn, hidden from assistive
+  technology, not loaded on slide decks, and absent under reduced motion.
 - Pattern (`src/components/ui/HeroField.vue`, its logic in
   `src/composables/use-hero-field.ts`): start the animation on mount,
   never in server HTML. Under reduced motion render one still frame and no
