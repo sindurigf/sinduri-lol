@@ -12,7 +12,6 @@ import { SITE_NAME } from '../lib/site';
 import socialIcons from '../assets/social-icons.svg?url';
 /* `?worker&url`: a separate file, so no Vite preload helper, loaded by src under Trusted Types. */
 import onDemandRegistry from '../scripts/on-demand.ts?worker&url';
-import toyLoader from '../scripts/toy-loader.ts?worker&url';
 import toyApp from '../scripts/toy.ts?worker&url';
 
 /* Source order is the reading order at every width; no CSS `order`. */
@@ -36,13 +35,12 @@ const POLICY_LINKS = [
 const current = (href: string) => ariaCurrent(Astro.url.pathname, href);
 
 /* Feature name to its `?worker&url` file; its trigger carries the file as `data-on-demand`. */
-const FEATURES: Record<string, string> = {};
+const FEATURES: Record<string, string> = { toy: toyApp };
 
 /* A slide deck keeps its script budget for the deck. */
 const onDemand =
   Object.keys(FEATURES).length > 0 &&
   !Astro.url.pathname.startsWith(TALKS_PATH);
-const toys = !Astro.url.pathname.startsWith(TALKS_PATH);
 
 /* The year of first publication, not the build year: a build date goes stale. */
 const FIRST_PUBLISHED = 2026;
@@ -109,25 +107,18 @@ const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
               </li>
             ))}
           </ul>
-          {toys && (
-            <>
-              {/* Placeholder copy. Shown by src/scripts/toy-loader.ts, which loads data-toy-app on its first press. */}
-              <script
-                is:inline
-                type="module"
-                src={toyLoader}
-                data-toy-app={toyApp}
-              ></script>
-              <button
-                type="button"
-                class="toy-toggle btn-secondary"
-                data-toy-toggle
-                aria-pressed="false"
-                hidden
-              >
-                Play With the Stickers
-              </button>
-            </>
+          {/* Placeholder copy. */}
+          {onDemand && (
+            <button
+              type="button"
+              class="toy-toggle btn-secondary"
+              data-on-demand={FEATURES.toy}
+              data-toy-toggle
+              aria-pressed="false"
+              hidden
+            >
+              Play With the Stickers
+            </button>
           )}
         </nav>
       </div>

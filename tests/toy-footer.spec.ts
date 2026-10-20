@@ -190,13 +190,13 @@ test('without JavaScript there is no toy button', async ({
 });
 
 test(
-  'a talk deck ships neither the toy button nor its loader (script budget)',
+  'a talk deck ships neither the toy button nor the on-demand registry (script budget)',
   ENGINE_INVARIANT,
   async ({ request }) => {
     for (const route of TALK_ROUTES) {
       const html = await (await request.get(`${route}/`)).text();
       expect(html, `${route} ships the toy footer`).not.toMatch(
-        /data-toy-(app|toggle)/,
+        /data-on-demand|data-toy-toggle/,
       );
     }
   },

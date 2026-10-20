@@ -1218,17 +1218,15 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   shows that still frame as a WebP (`npm run hero-still` after a change to the
   field).
 - `HeroField` loads `client:load`.
-- The toy footer (`src/scripts/toy-loader.ts`, `toy.ts`, `toy.css`): Play
+- The toy footer (`src/scripts/toy.ts`, `toy.css`): Play
   With the Stickers turns the social stickers into toys to drag, toss and
   stack inside their list and an empty tray under it, never over text; Tab to
   one and move it with the arrow keys (Shift for bigger steps), or tap one and
   then the tray to drop it there (SC 2.5.7). Play mode stops
   their links; Put Them Back and Stop Playing restore them. Under reduced
-  motion nothing is tossed (`tests/toy-footer.spec.ts`). Every page loads only
-  `toy-loader.ts`, which imports `toy.ts` on the first press; both are built
-  with `?worker&url` and loaded from the footer markup. Talk decks
-  (`TALKS_PATH`) render neither, for their script budget. Its copy is a
-  placeholder.
+  motion nothing is tossed (`tests/toy-footer.spec.ts`). `toy.ts` is
+  [loaded on demand](../ARCHITECTURE.md#scripts-loaded-on-demand) on the first
+  press of Play With the Stickers. Its copy is a placeholder.
 - The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
   first on screen, play along it (games like the yarn and the fly carry them,
   leaps move them on), and sit still under reduced motion. Each cat's button

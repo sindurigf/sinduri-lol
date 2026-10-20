@@ -246,7 +246,6 @@ const setPlaying = (on: boolean): void => {
   say(on ? COPY.on : COPY.off);
 };
 
-toggle.addEventListener('click', () => setPlaying(!playing));
-setPlaying(true);
+toggle.addEventListener('on-demand', () => setPlaying(!playing));
 
 export {};
