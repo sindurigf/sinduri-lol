@@ -49,3 +49,21 @@ export const chasePages = (pages: readonly SitePage[]): ChasePage[] => {
     trail: trailOf(page.path),
   }));
 };
+
+/* The pages one step below `page` on its trail. */
+export const childrenOf = (
+  pages: readonly ChasePage[],
+  page: ChasePage,
+): ChasePage[] => {
+  const index = pages.indexOf(page);
+  return pages.filter(
+    (other) =>
+      other.trail.length === page.trail.length + 1 &&
+      other.trail.at(-2) === index,
+  );
+};
+
+export const sectionsOf = (pages: readonly ChasePage[]): ChasePage[] => {
+  const home = pages.find((page) => page.trail.length === 1);
+  return home ? childrenOf(pages, home) : [];
+};

@@ -4,9 +4,8 @@ import bunnyFooter from '../assets/bunny-footer.webp';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import '../styles/components/rabbit-chase.css';
-import { chasePages } from '../lib/chase-pages';
+import { chasePages, sectionsOf } from '../lib/chase-pages';
 import { DENSITIES } from '../lib/image-densities';
-import { ABOUT_PATH, BLOG_PATH, CAREER_PATH } from '../lib/paths';
 import { sitePages } from '../lib/site-pages';
 
 /*
@@ -18,19 +17,14 @@ import { sitePages } from '../lib/site-pages';
 /* CSS px: --size-rabbit-runner, the rabbit at the crossroads. */
 const RABBIT_HEIGHT = 72;
 
-/* Without JavaScript these are the way out; src/scripts/rabbit-chase.ts replaces them with the crossroads. */
-const MAIN_PAGES = [
-  { href: '/', label: 'Home' },
-  { href: ABOUT_PATH, label: 'About' },
-  { href: CAREER_PATH, label: 'Career' },
-  { href: BLOG_PATH, label: 'Blog' },
-] as const;
-
+const pages = chasePages(await sitePages());
 /* `<` escaped, so no title can close the data block. */
-const pagesJson = JSON.stringify(chasePages(await sitePages())).replace(
-  /</g,
-  '\\u003c',
-);
+const pagesJson = JSON.stringify(pages).replace(/</g, '\\u003c');
+const sections = sectionsOf(pages);
+
+/* Carroll's text, Project Gutenberg #11, chapter VI. */
+const CAT_LINE =
+  '“That depends a good deal on where you want to get to,” said the Cat.';
 ---
 
 <BaseLayout
@@ -55,30 +49,54 @@ const pagesJson = JSON.stringify(chasePages(await sitePages())).replace(
       <a href="/contact/">tell me about the broken link</a>.
     </p>
 
+    {/* Without JavaScript the signs are links; src/scripts/rabbit-chase.ts makes them choose a way. */}
     <div id="crossroads" slot="slab" class="crossroads mt-head">
-      <nav aria-label="Main pages" data-fallback>
-        <ul role="list" class="actions">
-          {MAIN_PAGES.map((page, index) => (
-            <li>
-              <a
-                href={page.href}
-                class={index === 0 ? 'btn-primary' : 'btn-secondary'}
-              >
-                {page.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <Image
-        src={bunnyFooter}
-        alt=""
-        height={RABBIT_HEIGHT}
-        densities={DENSITIES}
-        class="crossroads-rabbit"
-        data-runner
-        hidden
-      />
+      <p class="crossroads-cat">{CAT_LINE}</p>
+      <div class="crossroads-map">
+        <div class="crossroads-column">
+          <div id="crossroads-signs-label" class="crossroads-heading label">
+            Sections
+          </div>
+          <ul
+            role="list"
+            class="crossroads-signs"
+            aria-labelledby="crossroads-signs-label"
+          >
+            {sections.map((section) => (
+              <li>
+                <a
+                  href={section.path}
+                  class="crossroads-sign label"
+                  data-path={section.path}
+                >
+                  {section.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div class="crossroads-pole" aria-hidden="true">
+          <Image
+            src={bunnyFooter}
+            alt=""
+            height={RABBIT_HEIGHT}
+            densities={DENSITIES}
+            class="crossroads-rabbit"
+          />
+        </div>
+        <div class="crossroads-column" data-pending>
+          <div
+            id="crossroads-pages-label"
+            class="crossroads-heading label"
+          ></div>
+          <ul
+            role="list"
+            class="crossroads-pages"
+            aria-labelledby="crossroads-pages-label"
+          ></ul>
+        </div>
+      </div>
+      <p class="sr-only" aria-live="polite"></p>
       <script type="application/json" id="chase-pages" set:html={pagesJson} />
     </div>
   </PageHero>
