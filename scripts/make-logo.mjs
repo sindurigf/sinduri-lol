@@ -101,7 +101,7 @@ function roundelArt() {
   const transform = `translate(50 50) rotate(${ROUNDEL.rotate}) scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
   const edge = `<path d="${TRACE.sil}" fill="COLOR" stroke="COLOR" stroke-width="${2 * ROUNDEL.rim * u}" stroke-linejoin="miter" stroke-miterlimit="2"/>`;
   return `<g transform="translate(${ROUNDEL.throw} ${ROUNDEL.throw})"><g transform="${transform}">${edge.replaceAll('COLOR', PINK)}</g></g>
-<g transform="${transform}">${edge.replaceAll('COLOR', INK)}${fill(TRACE.sil, WHITE)}${fill(largest(TRACE.pink), EAR)}${fill(line, INK, ROUNDEL.line * u)}${fill(largest(TRACE.eye), INK)}</g>`;
+<g transform="${transform}">${edge.replaceAll('COLOR', INK)}${fill(TRACE.sil, WHITE)}${fill(TRACE.pink, EAR)}${fill(line, INK, ROUNDEL.line * u)}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
 }
 
 function sticker() {
