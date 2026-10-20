@@ -258,16 +258,18 @@ test.describe('security headers', () => {
     );
   });
 
-  test('the 404 rabbit runs and hops under the policy', async ({ page }) => {
+  test('the 404 crossroads runs under the policy', async ({ page }) => {
     const violations = await collectViolations(page);
 
     await page.goto(`${policy().origin}/blgo`);
-    const follow = page.getByRole('button', { name: 'Follow the Rabbit' });
+    const sign = page
+      .getByRole('button', { name: 'Blog', exact: false })
+      .first();
     await expect(
-      follow,
-      'the chase did not start; the policy may have blocked src/scripts/rabbit-chase.ts or its data block',
+      sign,
+      'the crossroads did not start; the policy may have blocked src/scripts/rabbit-chase.ts or its data block',
     ).toBeVisible();
-    await follow.click();
+    await sign.click();
     await expect(
       page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link'),
     ).not.toHaveCount(0);

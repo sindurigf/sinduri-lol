@@ -409,14 +409,13 @@ Setup: Firefox, 1280px, `/404` (preview serves it with 200;
 - [ ] `Orca+Slash` reads the window title, which includes "Page Not Found". → SC 2.4.2
 - [ ] One heading, the `h1`. Its name starts with a hidden "Page Not Found:"
       (`hiddenPrefix` in `404.astro`), so the phrase is heard in the title and
-      again in the heading, then "These are not the droids you are looking
-      for." Judge whether the heading alone makes the reason clear. → SC 1.3.1, 2.4.6
+      again in the heading, then "Which Way From Here?" Judge whether the heading alone makes the reason clear. → SC 1.3.1, 2.4.6
 - [ ] `G` finds no image: the header mark and the roundel both have
       `alt=""`. → SC 1.1.1
-- [ ] "Episode 404" reads as text. Record how "404" is spoken.
-- [ ] Four links: "explain the Star Wars lines" and "tell me about the broken
-      link" in the body, then "Go to the Homepage" and "Read the Blog" (a list
-      of two). Judge the two body links hardest. → SC 2.4.4, 1.3.1
+- [ ] "tell me about the broken link" is the one body link. → SC 2.4.4
+- [ ] Take two signs with `Enter`. Each move is announced, focus lands on the
+      next fork's first sign, and the White Rabbit's sign says so in its name.
+      "Climb Back Up" returns one fork. → SC 4.1.3, 2.4.3, 1.4.1
 
 Heard: `________________________`
 
@@ -663,8 +662,6 @@ nobody listed.
 - [ ] Read `/accessibility`, `/privacy`, `/credits`, `/brand` and `/contact`:
       every word of jargon or idiom is plain, or defined in the sentence where
       it first appears. → SC 3.1.3
-- [ ] On `/404`, the link to the credits explains the Star Wars lines.
-      → SC 3.1.3
 
 ## 10. Exploratory tools
 

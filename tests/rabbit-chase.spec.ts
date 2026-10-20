@@ -2,7 +2,7 @@ import { expect, test } from './test';
 import { chasePages } from '../src/lib/chase-pages';
 import { NODE } from './tags';
 
-/* The 404 page's White Rabbit: it guides a lost reader, hop by hop along a real breadcrumb, to the page the address meant. */
+/* The 404 page's Cheshire crossroads: the reader chooses each way through the site, the White Rabbit marks the likely one. */
 
 const PAGES = [
   { title: 'Home', path: '/' },
@@ -10,13 +10,12 @@ const PAGES = [
   { title: 'Brand', path: '/brand/' },
   { title: 'Color', path: '/brand/#color' },
   { title: 'Blog', path: '/blog/' },
-  { title: 'Open Source', path: '/blog/open-source/' },
   { title: 'A Post', path: '/blog/a-post/' },
   { title: 'CV', path: '/sinduri-guntupalli-cv.pdf' },
   { title: 'A Talk', path: '/talks/a-talk/' },
 ];
 
-test.describe('the rabbit map', NODE, () => {
+test.describe('the crossroads map', NODE, () => {
   test('each page trails from Home through the pages above it', () => {
     const map = chasePages(PAGES);
     const trailOf = (path: string) =>
@@ -38,83 +37,85 @@ test.describe('the rabbit map', NODE, () => {
   });
 });
 
-const followAll = async (page: import('@playwright/test').Page) => {
-  const follow = page.getByRole('button', { name: 'Follow the Rabbit' });
-  let hops = 0;
-  while ((await follow.isVisible()) && hops < 10) {
-    await follow.click();
-    hops += 1;
-  }
-  return hops;
-};
+const ADDRESS = '/blgo/five-yaers-in-drupal';
+const rabbitSign = (page: import('@playwright/test').Page) =>
+  page.getByRole('button', { name: /the White Rabbit went this way/ });
 
-test.describe('the White Rabbit on a 404', () => {
-  test('hops along the breadcrumb to the page a misspelled address meant, then offers it', async ({
+test.describe('the Cheshire crossroads on a 404', () => {
+  test('the White Rabbit marks the way to the page a misspelled address meant', async ({
     page,
   }) => {
-    await page.goto('/blgo/five-yaers-in-drupal', { waitUntil: 'networkidle' });
-    const trail = page.getByRole('navigation', { name: 'Breadcrumb' });
-    await expect(trail, 'the chase did not start').toBeVisible();
+    await page.goto(ADDRESS, { waitUntil: 'networkidle' });
+    await expect(rabbitSign(page), 'no sign marks the rabbit’s way').toHaveText(
+      /^Blog/,
+    );
+    await rabbitSign(page).click();
+    await expect(rabbitSign(page)).toHaveText(/^Five Years in Drupal/);
+    await rabbitSign(page).click();
 
-    const hops = await followAll(page);
-    expect(hops, 'the rabbit took the wrong number of hops').toBe(3);
+    const trail = page.getByRole('navigation', { name: 'Breadcrumb' });
     await expect(trail.getByRole('link')).toHaveText([
       'Home',
       'Blog',
       /^Five Years in Drupal/,
     ]);
-    await expect(trail.getByRole('link').last()).toHaveAttribute(
-      'aria-current',
-      'location',
-    );
-
     const go = page.getByRole('link', { name: /^Go to Five Years in Drupal/ });
-    await expect(go, 'focus did not move to the result').toBeFocused();
+    await expect(go, 'focus did not move to the end of the way').toBeFocused();
     await expect(go).toHaveAttribute('href', '/blog/five-years-in-drupal/');
-    await expect(page.locator('#rabbit-chase [aria-live="polite"]')).toHaveText(
-      /stops at Five Years in Drupal/,
+    await expect(page.locator('#crossroads [aria-live="polite"]')).toHaveText(
+      /The end of this way/,
     );
+    await expect(page.locator('.crossroads-watch')).toHaveText(/2 hops/);
   });
 
-  test('with no match it tours the main pages and offers the homepage', async ({
+  test('any sign can be taken, focus moves to the next fork, and Climb Back Up returns', async ({
     page,
   }) => {
-    await page.goto(`/xyzzy-${crypto.randomUUID()}`, {
-      waitUntil: 'networkidle',
-    });
-    await followAll(page);
-    const trail = page.getByRole('navigation', { name: 'Breadcrumb' });
-    await expect(trail.getByRole('link').first()).toHaveText('Home');
-    const go = page.locator('#rabbit-chase [data-result] a');
-    await expect(go).toHaveText('Go to the Homepage');
-    await expect(go, 'focus did not move to the result').toBeFocused();
+    await page.goto(ADDRESS, { waitUntil: 'networkidle' });
+    await page.getByRole('button', { name: 'Brand', exact: true }).click();
+    await expect(
+      page.locator('.crossroads-sign').first(),
+      'focus did not move to the first sign of the new fork',
+    ).toBeFocused();
+    await expect(page.getByRole('link', { name: 'Go to Brand' })).toBeVisible();
+    await page.getByRole('button', { name: 'Climb Back Up' }).click();
+    await expect(
+      page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link'),
+    ).toHaveText(['Home']);
   });
 
-  test('the Follow button is a native button at least 44px tall', async ({
-    page,
-  }) => {
-    await page.goto('/blgo', { waitUntil: 'networkidle' });
-    const box = await page
-      .getByRole('button', { name: 'Follow the Rabbit' })
-      .boundingBox();
-    expect(
-      box!.height,
-      'Follow is under 44px tall (SC 2.5.5)',
-    ).toBeGreaterThanOrEqual(44);
+  test('every sign is a native button at least 44px tall', async ({ page }) => {
+    await page.goto(ADDRESS, { waitUntil: 'networkidle' });
+    const heights = await page
+      .locator('.crossroads-sign')
+      .evaluateAll((signs) =>
+        signs.map((sign) => [
+          sign.tagName,
+          sign.getBoundingClientRect().height,
+        ]),
+      );
+    expect(heights.length, 'no signs at the first fork').toBeGreaterThan(1);
+    for (const [tag, height] of heights) {
+      expect(tag).toBe('BUTTON');
+      expect(
+        height as number,
+        'a sign under 44px tall (SC 2.5.5)',
+      ).toBeGreaterThanOrEqual(44);
+    }
   });
 });
 
 test.describe('without JavaScript', () => {
   test.use({ javaScriptEnabled: false });
 
-  test('the chase stays hidden and the plain links lead out', async ({
+  test('the main pages are plain links and no crossroads is drawn', async ({
     page,
   }) => {
-    await page.goto('/blgo');
-    await expect(page.locator('#rabbit-chase')).toBeHidden();
+    await page.goto(ADDRESS);
+    await expect(page.locator('.crossroads-sign')).toHaveCount(0);
     await expect(
-      page.getByRole('link', { name: 'Go to the Homepage' }),
-      'the hero links are the way out without JavaScript',
-    ).toBeVisible();
+      page.getByRole('navigation', { name: 'Main pages' }).getByRole('link'),
+      'the main pages are the way out without JavaScript',
+    ).toHaveText(['Home', 'About', 'Career', 'Blog']);
   });
 });

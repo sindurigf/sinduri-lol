@@ -1,20 +1,58 @@
 @reference '../global.css';
 
 @layer components {
-  /* The 404 page's White Rabbit; src/scripts/rabbit-chase.ts unhides it and adds a stop per hop. */
-  .rabbit-line {
+  /* The 404 page's Cheshire crossroads; src/scripts/rabbit-chase.ts builds it. */
+  .crossroads {
+    display: grid;
+    justify-items: start;
+    gap: --spacing(6);
+  }
+
+  /* A pocket watch that counts hops, never time. */
+  .crossroads-watch {
+    display: inline-flex;
+    align-items: center;
+    gap: --spacing(2);
+    border: var(--border-width-sticker) solid var(--color-border);
+    border-radius: var(--radius-full);
+    padding: --spacing(1) --spacing(4);
+
+    @apply text-text;
+  }
+
+  .crossroads-watch-face {
+    position: relative;
+    width: var(--size-watch-face);
+    height: var(--size-watch-face);
+    border: var(--border-width-sticker) solid var(--color-border);
+    border-radius: var(--radius-full);
+  }
+
+  .crossroads-watch-face::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 50%;
+    width: var(--border-width-sticker);
+    height: 40%;
+    background: var(--color-border);
+    transform-origin: bottom;
+    rotate: var(--hand, 0deg);
+    translate: -50% 0;
+  }
+
+  .crossroads-cat {
+    max-width: var(--container-measure);
+    border-left: var(--block-edge) solid var(--color-border);
+    padding-left: --spacing(4);
     font-size: var(--text-post-teaser);
     line-height: var(--text-post-teaser--line-height);
 
     @apply text-pink-text italic text-pretty;
   }
 
-  .rabbit-trail {
-    margin-top: --spacing(8);
-  }
-
-  /* Breadcrumbs.astro's trail, with room above every row for the rabbit standing on a stop in it. */
-  .rabbit-trail ol {
+  /* Breadcrumbs.astro's trail; room above for the rabbit standing on the last stop. */
+  .crossroads-trail ol {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
@@ -24,17 +62,15 @@
     @apply text-subtle;
   }
 
-  /* Separator and link stay on one line; a long title wraps inside its link. */
-  .rabbit-stop {
+  .crossroads-crumb {
     position: relative;
     display: flex;
     align-items: center;
     gap: --spacing(2);
-    min-height: var(--spacing-target);
   }
 
-  /* Stands on the stop it reached, over its last word, turned to face along the trail. */
-  .rabbit-runner {
+  /* On the stop it reached, over its last word, facing along the trail. */
+  .crossroads-rabbit {
     position: absolute;
     right: 0;
     bottom: 100%;
@@ -45,12 +81,31 @@
     animation: rabbit-hop var(--duration-rabbit-hop) ease-out both;
   }
 
-  .rabbit-actions {
+  /* Signposts: one per way, an arrow-cut light sign with the ink edge. */
+  .crossroads-signs {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: --spacing(6);
-    margin-top: --spacing(8);
+    gap: --spacing(4) --spacing(6);
+  }
+
+  .crossroads-sign {
+    min-height: var(--spacing-target);
+    padding: --spacing(3) --spacing(10) --spacing(3) --spacing(4);
+    border: var(--border-width-sticker) solid var(--color-fill-edge);
+    background-color: var(--color-block-light);
+    color: var(--color-gold-text);
+    clip-path: polygon(0 0, 94% 0, 100% 50%, 94% 100%, 0 100%);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  /* The White Rabbit's way is gold; its name says so too, so color is not the only cue. */
+  .crossroads-sign-rabbit {
+    background-color: var(--color-block-gold);
+  }
+
+  .crossroads-sign:hover {
+    background-color: var(--color-cyan);
   }
 
   @keyframes rabbit-hop {
@@ -65,8 +120,14 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .rabbit-runner {
+    .crossroads-rabbit {
       animation: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .crossroads-sign {
+      clip-path: none;
     }
   }
 }

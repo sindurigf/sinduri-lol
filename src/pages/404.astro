@@ -3,12 +3,10 @@ import { Image } from 'astro:assets';
 import bunnyFooter from '../assets/bunny-footer.webp';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
-import Section from '../components/Section.astro';
-import '../styles/components/starfield.css';
 import '../styles/components/rabbit-chase.css';
-import { DENSITIES } from '../lib/image-densities';
-import { BLOG_PATH } from '../lib/paths';
 import { chasePages } from '../lib/chase-pages';
+import { DENSITIES } from '../lib/image-densities';
+import { ABOUT_PATH, BLOG_PATH, CAREER_PATH } from '../lib/paths';
 import { sitePages } from '../lib/site-pages';
 
 /*
@@ -17,8 +15,16 @@ import { sitePages } from '../lib/site-pages';
  * answers 200, and would otherwise be indexable.
  */
 
-/* CSS px: --size-rabbit-runner, the rabbit on its trail. */
+/* CSS px: --size-rabbit-runner, the rabbit at the crossroads. */
 const RABBIT_HEIGHT = 72;
+
+/* Without JavaScript these are the way out; src/scripts/rabbit-chase.ts replaces them with the crossroads. */
+const MAIN_PAGES = [
+  { href: '/', label: 'Home' },
+  { href: ABOUT_PATH, label: 'About' },
+  { href: CAREER_PATH, label: 'Career' },
+  { href: BLOG_PATH, label: 'Blog' },
+] as const;
 
 /* `<` escaped, so no title can close the data block. */
 const pagesJson = JSON.stringify(chasePages(await sitePages())).replace(
@@ -29,79 +35,53 @@ const pagesJson = JSON.stringify(chasePages(await sitePages())).replace(
 
 <BaseLayout
   title="Page Not Found"
-  description="These are not the droids you are looking for: that address does not lead anywhere on sinduri.lol."
+  description="That address does not lead anywhere on sinduri.lol. Follow the White Rabbit to a page that does."
   noCanonical
   noindex
 >
   <PageHero
-    title="These are not the droids you are looking for."
+    title="Which Way From Here?"
     titleSize="h2"
     hiddenPrefix="Page Not Found:"
     slab="none"
-    starfield
   >
     <span slot="eyebrow" class="badge">
-      Episode 404
+      Page Not Found
     </span>
 
-    <p slot="kicker" class="mb-6 text-post-teaser text-text text-pretty">
-      <span class="star-clear">
-        A long time ago, on a website not so far, far away&hellip;
-      </span>
-    </p>
-
     <p class="standfirst">
-      This page does not exist. It may have moved, or the address has a typo.
-      Nothing is broken on your end, so move along. The credits{' '}
-      <a href="/credits/#not-found">explain the Star Wars lines</a>. If a link
-      on this site brought you here,{' '}
+      This page does not exist, but the White Rabbit knows the way. Nothing is
+      broken on your end. If a link on this site brought you here,{' '}
       <a href="/contact/">tell me about the broken link</a>.
     </p>
 
-    <ul role="list" class="actions mt-head">
-      <li>
-        <a href="/" class="btn-primary">
-          Go to the Homepage
-        </a>
-      </li>
-      <li>
-        <a href={BLOG_PATH} class="btn-secondary">
-          Read the Blog
-        </a>
-      </li>
-    </ul>
-  </PageHero>
-
-  {/* Shown by src/scripts/rabbit-chase.ts; without JavaScript the links above are the way out. */}
-  <div id="rabbit-chase" hidden>
-    <Section id="follow" title="Follow the White Rabbit">
-      {/* A <div>: a short <p> this size trips WAVE's "Possible heading" (tests/wave-alerts.spec.ts). */}
-      <div class="rabbit-line" data-line></div>
-      <nav aria-label="Breadcrumb" class="rabbit-trail">
-        <ol role="list" class="label" data-trail>
-          <li class="rabbit-stop" data-here>
-            <span>You Are Here</span>
-            <Image
-              src={bunnyFooter}
-              alt=""
-              height={RABBIT_HEIGHT}
-              densities={DENSITIES}
-              class="rabbit-runner"
-              data-runner
-            />
-          </li>
-        </ol>
+    <div id="crossroads" class="crossroads mt-head">
+      <nav aria-label="Main pages" data-fallback>
+        <ul role="list" class="actions">
+          {MAIN_PAGES.map((page, index) => (
+            <li>
+              <a
+                href={page.href}
+                class={index === 0 ? 'btn-primary' : 'btn-secondary'}
+              >
+                {page.label}
+              </a>
+            </li>
+          ))}
+        </ul>
       </nav>
-      <div class="rabbit-actions">
-        <button type="button" class="btn-primary" data-follow>
-          Follow the Rabbit
-        </button>
-        <p data-result hidden></p>
-      </div>
-      <p class="sr-only" aria-live="polite" data-status></p>
+      <Image
+        src={bunnyFooter}
+        alt=""
+        height={RABBIT_HEIGHT}
+        densities={DENSITIES}
+        class="crossroads-rabbit"
+        data-runner
+        hidden
+      />
       <script type="application/json" id="chase-pages" set:html={pagesJson} />
-    </Section>
-  </div>
+    </div>
+  </PageHero>
 </BaseLayout>
 
 <script>
