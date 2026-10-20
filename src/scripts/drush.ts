@@ -3,6 +3,8 @@
  * footer, opens a dialog that runs a few commands. The typed word is a
  * sequence, never one key, and the dialog turns it off (SC 2.1.4).
  */
+import { KEYS_OFF, KEYS_STORAGE_KEY } from '../lib/on-demand';
+
 const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)');
 const SHUFFLE_MS = 900;
 const SHUFFLE_DRIFT_PX = 24;
@@ -22,9 +24,6 @@ const OUTPUT: Readonly<Record<string, readonly string[]>> = {
   'drush uli': ['Logged in as Friend. Welcome back!'],
 };
 const NOT_FOUND = 'Command not found. Try drush cr.';
-/* Must match what src/scripts/on-demand.ts reads before it acts on a typed word. */
-const KEYS_STORAGE_KEY = 'on-demand-keys';
-const KEYS_OFF = 'off';
 
 const trigger = document.querySelector<HTMLButtonElement>('.drush-trigger')!;
 
