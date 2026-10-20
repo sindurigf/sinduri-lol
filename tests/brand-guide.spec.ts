@@ -1,6 +1,7 @@
 import { expect, test } from './test';
 import { readFileSync } from 'node:fs';
 import { gotoSettled } from './settle';
+import { PAGE_HELPERS } from './contrast';
 import { BRAND_PATH, BRAND_SECTIONS } from '../src/lib/brand-sections';
 import { PART_ACCESSIBILITY } from '../src/lib/brand-a11y';
 
@@ -251,6 +252,14 @@ test.describe('/brand guide', () => {
     expect(csp, 'public/_headers has no Content-Security-Policy').toBeTruthy();
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
+    await page.addInitScript(() => {
+      document.addEventListener('securitypolicyviolation', (event) =>
+        console.error(`csp: ${event.violatedDirective}`),
+      );
+    });
+    page.on('console', (message) => {
+      if (message.text().startsWith('csp:')) errors.push(message.text());
+    });
     await page.route('**/brand/', async (route) => {
       const response = await route.fetch();
       await route.fulfill({
@@ -283,5 +292,21 @@ test.describe('/brand guide', () => {
       }));
     expect(colors.placeholder).toBe(colors.subtle);
     expect(colors.opacity).toBe('1');
+  });
+
+  test('the current chip shows its marker against the chip in both halves (SC 1.4.11)', async ({
+    page,
+  }) => {
+    await gotoSettled(page, BRAND_PATH);
+    const ratios = (await page.evaluate(`(() => {
+      ${PAGE_HELPERS}
+      return [...document.querySelectorAll('[data-component="chips"] .brand-stage-half')].map((half) => {
+        const chip = half.querySelector('a[aria-current]');
+        const marker = chip.querySelector('span[aria-hidden]');
+        return ratio(parse(getComputedStyle(marker).backgroundColor), parse(getComputedStyle(chip).backgroundColor));
+      });
+    })()`)) as number[];
+    expect(ratios).toHaveLength(2);
+    for (const value of ratios) expect(value).toBeGreaterThanOrEqual(3);
   });
 });
