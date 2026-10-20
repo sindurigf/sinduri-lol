@@ -148,6 +148,8 @@ export default defineConfig({
       /* The on-demand bundle; src/lib/person-image.ts reads it. */
       ssr: { define: { __PRERENDERED__: 'false' } },
     },
+    /* drush-loader.ts adds drush.ts as a classic script: its `?worker&url` build must stay an IIFE. */
+    worker: { format: 'iife' },
     plugins: [tailwindcss(), inlineVueTemplates()],
     define: {
       __VIDEO_SIZES__: JSON.stringify(videoSizes),
