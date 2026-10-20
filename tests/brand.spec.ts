@@ -491,6 +491,73 @@ test.describe('/brand', () => {
     });
   }
 
+  for (const theme of THEMES) {
+    test(`on a ${theme} page every dark and light block wears the page's edge, clear of the ground (SC 1.4.11)`, async ({
+      browser,
+    }) => {
+      const { context, page } = await pageInTheme(browser, theme, BRAND_PATH);
+      const edge = (await resolveTokens(page.locator('main'), ['border']))
+        .border;
+      const halves = await page
+        .locator('.brand-stage-half')
+        .evaluateAll((all) =>
+          all.map((el) => {
+            const style = getComputedStyle(el);
+            return {
+              width: style.borderTopWidth,
+              color: style.borderTopColor,
+              touching: el.previousElementSibling?.matches('.brand-stage-half'),
+              box: el.getBoundingClientRect().toJSON(),
+              before: el.previousElementSibling
+                ?.getBoundingClientRect()
+                .toJSON(),
+            };
+          }),
+        );
+      expect(
+        halves.length,
+        'the page shows no dark or light block',
+      ).toBeGreaterThan(0);
+      const groundHex = (
+        await resolveTokens(page.locator('main'), ['background'])
+      ).background!;
+      const ground = `rgb(${[1, 3, 5].map((i) => parseInt(groundHex.slice(i, i + 2), 16)).join(', ')})`;
+      const measured = (await page.evaluate(`(() => {
+        ${PAGE_HELPERS}
+        const ground = ${JSON.stringify(ground)};
+        return ${JSON.stringify(halves.map((h) => h.color))}.map((c) => ratio(parse(c), parse(ground)));
+      })()`)) as number[];
+      const wrong = halves.flatMap((half, i) => [
+        ...(half.width === '4px' ? [] : [`block ${i}: edge is ${half.width}`]),
+        ...(measured[i]! >= 3
+          ? []
+          : [`block ${i}: edge is ${measured[i]!.toFixed(2)}:1 on the page`]),
+        ...(half.color.startsWith('rgb')
+          ? []
+          : [`block ${i}: edge has no color`]),
+      ]);
+      expect(
+        wrong,
+        'a block has no edge that stands clear of the page',
+      ).toEqual([]);
+      expect(
+        new Set(halves.map((h) => h.color)).size,
+        `the blocks do not share the page's edge ${edge}`,
+      ).toBe(1);
+      for (const [i, half] of halves.entries()) {
+        if (!half.touching || !half.before) continue;
+        const shared =
+          half.box.left - half.before.right === -4 ||
+          half.box.top - half.before.bottom === -4;
+        expect(
+          shared,
+          `block ${i} does not share one edge with the block before it`,
+        ).toBe(true);
+      }
+      await context.close();
+    });
+  }
+
   for (const width of [WIDE, NARROW] as const) {
     test(`the menu lists every section once and links to it, ${width === NARROW ? 'closed' : 'open'} at ${width}px`, async ({
       page,

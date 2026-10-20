@@ -732,7 +732,9 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
   number and name, its lead and the mirror of its picture; each part is an h3
   name, what it is for, its rule, and a stage: the example live on the dark
   ground beside an inert, `aria-hidden` copy on the light one (`mirror.ts`), so
-  nothing is reached or named twice. A part whose facts differ by mode, such
+  nothing is reached or named twice. Each block wears the page's own 4px edge,
+  so a dark block on the dark page or a light one on the light page never
+  vanishes; blocks that touch share one edge (`tests/brand.spec.ts`). A part whose facts differ by mode, such
   as contrast, fills both halves live.
 - A part drawn as blocks (Color) puts each pair on its real ground and states
   the ratio of its two colors, computed from the tokens by
