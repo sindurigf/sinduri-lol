@@ -10,6 +10,11 @@ import {
   profileLinkName,
 } from '../lib/profiles';
 import { SITE_NAME } from '../lib/site';
+import { DOWN_PATH } from '../lib/paths';
+import { curiouserPages } from '../lib/rabbit-hole';
+import onDemand from '../scripts/on-demand.ts?worker&url';
+import curiouserFeature from '../scripts/curiouser.ts?worker&url';
+import textSizeFeature from '../scripts/text-size.ts?worker&url';
 /* Hashed under /_astro/ and cached once, instead of inline on every page. */
 import socialIcons from '../assets/social-icons.svg?url';
 
@@ -38,6 +43,10 @@ const FIRST_PUBLISHED = 2026;
 
 /* Not inline: Astro drops the space between two expressions on separate lines. */
 const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
+
+/* /down/ has the same size buttons at its door, scoped to that page. */
+const sizeControls = Astro.url.pathname !== DOWN_PATH;
+const curiouserLinks = await curiouserPages();
 
 /* CSS px: the rabbit's display height at its largest (--size-footer-rabbit). */
 const RABBIT_HEIGHT = 160;
@@ -98,6 +107,94 @@ const RABBIT_HEIGHT = 160;
         </nav>
       </div>
 
+      <div class="footer-extras">
+        <ul class="footer-links">
+          <li>
+            <a
+              href={DOWN_PATH}
+              aria-current={current(DOWN_PATH)}
+              class="label text-text hover:text-cyan"
+            >
+              Down the Rabbit Hole
+            </a>
+          </li>
+        </ul>
+
+        <div class="footer-controls">
+          <div class="footer-curiouser" data-curiouser-scope>
+            <a
+              href={DOWN_PATH}
+              class="footer-curiouser-link label text-text hover:text-cyan"
+            >
+              Curiouser
+            </a>
+            <button
+              type="button"
+              class="label text-text hover:text-cyan"
+              hidden
+              data-on-demand="curiouser"
+              data-go-class="footer-go label text-text hover:text-cyan"
+            >
+              Curiouser
+            </button>
+            <span class="footer-reel" data-curiouser-result></span>
+            <span class="sr-only" role="status" data-curiouser-status></span>
+            <ul hidden data-curiouser-pages>
+              {curiouserLinks.map((page) => (
+                <li>
+                  <a href={page.href}>{page.title}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {sizeControls && (
+            <div
+              class="footer-size js-only"
+              role="group"
+              aria-labelledby="footer-size-label"
+              data-text-size="site"
+            >
+              <span id="footer-size-label" class="label text-subtle">
+                Text Size
+              </span>
+              <button
+                type="button"
+                class="label text-text hover:text-cyan"
+                hidden
+                data-on-demand="text-size"
+                data-size-action="smaller"
+              >
+                Drink Me
+              </button>
+              <button
+                type="button"
+                class="label text-text hover:text-cyan"
+                hidden
+                data-on-demand="text-size"
+                data-size-action="larger"
+              >
+                Eat Me
+              </button>
+              <button
+                type="button"
+                class="label text-text hover:text-cyan"
+                hidden
+                data-on-demand="text-size"
+                data-size-action="reset"
+              >
+                Just Right
+              </button>
+              <span
+                class="footer-size-status"
+                role="status"
+                data-size-status
+              ></span>
+            </div>
+          )}
+        </div>
+      </div>
+
       <small class="footer-copyright">{copyright}</small>
     </div>
 
@@ -116,3 +213,11 @@ const RABBIT_HEIGHT = 160;
     </div>
   </div>
 </footer>
+
+<script
+  is:inline
+  type="module"
+  src={onDemand}
+  data-on-demand-curiouser={curiouserFeature}
+  data-on-demand-text-size={textSizeFeature}
+></script>

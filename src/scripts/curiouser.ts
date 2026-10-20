@@ -36,8 +36,9 @@ const setUp = (scope: Element, trigger: HTMLElement): Scope => {
   return { reel, go, landed, last: '', busy: false };
 };
 
-/** Runs on each press of the Curiouser button. */
-export default (trigger: HTMLButtonElement): void => {
+export {};
+
+const run = (trigger: HTMLButtonElement): void => {
   const scope = trigger.closest('[data-curiouser-scope]');
   if (!scope) throw new Error('curiouser: the button has no scope.');
   const state = scopes.get(scope) ?? setUp(scope, trigger);
@@ -81,3 +82,7 @@ export default (trigger: HTMLButtonElement): void => {
   };
   tick();
 };
+
+document.addEventListener('on-demand:curiouser', (event) =>
+  run((event as CustomEvent<HTMLButtonElement>).detail),
+);

@@ -4,7 +4,11 @@ import { OG_LOCALE, SITE_LANGUAGE } from '../lib/site-language';
 import { themeColor } from '../lib/theme-color';
 import { DECK_READY_TIMEOUT_MS } from '../lib/deck-ready';
 import { THEME_STORAGE_KEY } from '../lib/theme';
-import { TEXT_SCALE_KEY, TEXT_SCALE_STEPS } from '../lib/text-scale';
+import {
+  TEXT_SCALE_KEY,
+  TEXT_SCALE_PROPERTY,
+  TEXT_SCALE_STEPS,
+} from '../lib/text-scale';
 /* The woff2 global.css's @font-face names; `?url` gives Vite's hashed path to preload. */
 import lexendLatin from '@fontsource-variable/lexend/files/lexend-latin-wght-normal.woff2?url';
 import { structuredDataScript, type ArticleMeta } from '../lib/structured-data';
@@ -111,6 +115,7 @@ const articleData = article && {
         key: THEME_STORAGE_KEY,
         deckTimeout: DECK_READY_TIMEOUT_MS,
         scaleKey: TEXT_SCALE_KEY,
+        scaleProperty: TEXT_SCALE_PROPERTY,
         scaleSteps: TEXT_SCALE_STEPS,
       }}
     >
@@ -139,7 +144,10 @@ const articleData = article && {
       try {
         const scale = Number(localStorage.getItem(scaleKey));
         if (scale !== 100 && scaleSteps.includes(scale))
-          document.documentElement.style.fontSize = `${scale}%`;
+          document.documentElement.style.setProperty(
+            scaleProperty,
+            scale / 100,
+          );
       } catch {}
     </script>
     <title>{documentTitle}</title>
