@@ -901,7 +901,8 @@ text-gold-muted` under the standfirst. Color
 
 - The header is a gold bar on the hero's column, 12px below the top, with the
   logo tile and name at its left end ([Navigation](#navigation)).
-- The logo tile keeps its `bunny` shadow.
+- The logo tile keeps its `bunny` shadow. The die-cut rabbit jumps its
+  top-right corner and casts an ink throw, so the corner never doubles the pink.
 - The sticky header covers the top of the slab on scroll; nothing on the slab
   is fixed.
 

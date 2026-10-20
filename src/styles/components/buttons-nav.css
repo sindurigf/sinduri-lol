@@ -328,7 +328,13 @@
 
   /* The tile's shadow sits inside the link, so the plain ring clears it and stays on the gold. */
   .header-slab .logo-link {
+    isolation: isolate;
     padding-block-end: var(--lift-mark);
+  }
+
+  /* Under the link's own layer, so the ring paints over the rabbit that jumps past the tile. */
+  .header-slab .logo-tile {
+    z-index: -1;
   }
 
   .header-slab :is(dialog, .theme-menu) {

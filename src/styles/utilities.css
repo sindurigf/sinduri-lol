@@ -49,6 +49,16 @@
    * The logo tile's press, as the controls' in buttons-nav.css with the mark's
    * 8px throw. Only the tile moves, so the link keeps the pointer.
    */
+  /* The rabbit jumps the tile's top-right corner, so it overflows the tile and moves with it. */
+  .logo-tile .logo-rabbit {
+    position: absolute;
+    top: var(--logo-rabbit-top);
+    left: var(--logo-rabbit-left);
+    width: var(--logo-rabbit-width);
+    max-width: none;
+    height: var(--logo-rabbit-height);
+  }
+
   .logo-link .logo-tile {
     box-shadow: var(--lift-mark) var(--lift-mark) 0 var(--color-bunny);
 

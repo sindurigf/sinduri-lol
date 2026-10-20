@@ -54,7 +54,8 @@ const readStop = `(() => {
     range.selectNodeContents(node);
     text.push(...range.getClientRects());
   }
-  const marks = [...text, ...[...el.querySelectorAll('svg, img, .logo-tile')].map((n) => n.getBoundingClientRect())]
+  /* The logo rabbit jumps past the tile, higher than the bar leaves room for; the ring paints over it. */
+  const marks = [...text, ...[...el.querySelectorAll('svg, img:not(.logo-rabbit), .logo-tile')].map((n) => n.getBoundingClientRect())]
     .filter((r) => r.width > 0 && r.height > 0);
   const clear = marks.every((r) => r.left >= inner.left - 0.5 && r.right <= inner.right + 0.5 && r.top >= inner.top - 0.5 && r.bottom <= inner.bottom + 0.5);
   return {

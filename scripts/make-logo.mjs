@@ -1,0 +1,269 @@
+#!/usr/bin/env node
+/*
+ * Renders the logo rabbit and every favicon from one traced drawing,
+ * artwork/rabbit-jump.json (the jumping rabbit, Canva AI traced with
+ * Potrace), in Chromium with the site tokens.
+ *
+ *   node scripts/make-logo.mjs
+ *
+ * Prints the rabbit's box in the logo tile; `--logo-rabbit-*` in
+ * src/styles/global.css must match it.
+ */
+
+import { readFileSync, writeFileSync } from 'node:fs';
+import { chromium } from '@playwright/test';
+import { cssColorToken } from '../src/lib/css-token.ts';
+
+const INK = cssColorToken('--color-block-ink');
+const GOLD = cssColorToken('--color-block-gold');
+const PINK = cssColorToken('--color-bunny');
+const WHITE = cssColorToken('--color-light-ground');
+/* Baked into the drawing like the hero atlas; no page sets it. */
+const EAR = '#ff9cc4';
+
+const TRACE = JSON.parse(readFileSync('artwork/rabbit-jump.json', 'utf8'));
+
+/* The header tile, Header.astro: 48px, `border-4`, `rounded-nav`. */
+const TILE = 48;
+const BORDER = 4;
+const LOGO_SCALE = 2;
+
+/* In tile px, inside the border: the rabbit's height, tilt and where its box sits. */
+const LOGO_POSE = { h: 52, rotate: -12, left: 10, bottom: 36 };
+/* Hairline die-cut, as the hero rabbit: ink edge, white rim, ink rim edge, ink throw. */
+const STICKER = { edge: 1, rim: 1.2, rimEdge: 1, throw: 3, line: 0.2 };
+
+/* Favicon grid: 64 units, the tile and the jump drawn to the icon's edges. */
+const ICON = 64;
+const ICON_TILE = { x: 2.5, y: 22, size: 38, rx: 10, throw: 4, edge: 5 };
+const ICON_POSE = { box: [12, 0, 52, 54], rotate: -12, halo: 4 };
+/* Opaque app icons on gold: artwork scale, and the maskable safe zone. */
+const APP_SCALE = 0.8;
+const MASKABLE_SCALE = 0.62;
+
+const SPECK = 35;
+const subpaths = (d) =>
+  d
+    .split(/(?=M)/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+const bbox = (d) => {
+  const n = d.match(/-?\d+(\.\d+)?/g).map(Number);
+  const xs = n.filter((_, i) => i % 2 === 0);
+  const ys = n.filter((_, i) => i % 2 === 1);
+  return {
+    x0: Math.min(...xs),
+    y0: Math.min(...ys),
+    x1: Math.max(...xs),
+    y1: Math.max(...ys),
+  };
+};
+const area = (d) => {
+  const b = bbox(d);
+  return (b.x1 - b.x0) * (b.y1 - b.y0);
+};
+const largest = (d) => subpaths(d).sort((a, b) => area(b) - area(a))[0];
+/* Specks under SPECK trace units are under half a pixel in the header. */
+const line = subpaths(TRACE.line)
+  .filter((p) => {
+    const b = bbox(p);
+    return Math.max(b.x1 - b.x0, b.y1 - b.y0) > SPECK;
+  })
+  .join(' ');
+
+/** Mirrored to face right, scaled to `h`, turned, its box at (left, bottom). */
+const placement = ({ h, rotate, left, bottom }) => {
+  const b = bbox(TRACE.sil);
+  const k = h / (b.y1 - b.y0);
+  const w = (b.x1 - b.x0) * k;
+  const transform = `translate(${left + w / 2} ${bottom - h / 2}) rotate(${rotate}) scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
+  return { k, transform };
+};
+
+const fill = (d, color, stroke = 0) =>
+  `<path d="${d}" fill="${color}"${stroke ? ` stroke="${color}" stroke-width="${stroke}" stroke-linejoin="round"` : ''}/>`;
+
+function sticker() {
+  const { k, transform } = placement({
+    ...LOGO_POSE,
+    left: LOGO_POSE.left + BORDER,
+    bottom: LOGO_POSE.bottom + BORDER,
+  });
+  const u = 1 / k;
+  const outer = (STICKER.edge + 2 * STICKER.rim + 2 * STICKER.rimEdge) * u;
+  return `<g transform="${transform}">
+<g transform="translate(${STICKER.throw * u} ${STICKER.throw * u})">${fill(TRACE.sil, INK, outer)}</g>
+${fill(TRACE.sil, INK, outer)}${fill(TRACE.sil, WHITE, (STICKER.edge + 2 * STICKER.rim) * u)}${fill(TRACE.sil, INK, STICKER.edge * u)}${fill(TRACE.sil, WHITE)}
+${fill(TRACE.pink, EAR)}${fill(line, INK, STICKER.line * u)}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
+}
+
+/* Bakes a transform into absolute M/L/C coordinates, so favicon.svg carries 64-grid numbers. */
+function bake(d, { a, b, c, e, f, g }) {
+  const nums = d.match(/-?\d+(\.\d+)?/g).map(Number);
+  let i = 0;
+  return d.replace(/-?\d+(\.\d+)?\s*,?\s*-?\d+(\.\d+)?/g, () => {
+    const x = nums[i++];
+    const y = nums[i++];
+    return `${(a * x + c * y + e).toFixed(1)} ${(b * x + g * y + f).toFixed(1)}`;
+  });
+}
+
+function iconArtwork() {
+  const s = bbox(TRACE.sil);
+  const [bx, by, bw, bh] = ICON_POSE.box;
+  const k = Math.min(bw / (s.x1 - s.x0), bh / (s.y1 - s.y0));
+  const r = (ICON_POSE.rotate * Math.PI) / 180;
+  const [cx, cy] = [bx + bw / 2, by + bh / 2];
+  const [mx, my] = [(s.x0 + s.x1) / 2, (s.y0 + s.y1) / 2];
+  const sx = -k;
+  const m = {
+    a: Math.cos(r) * sx,
+    b: Math.sin(r) * sx,
+    c: -Math.sin(r) * k,
+    g: Math.cos(r) * k,
+  };
+  m.e = cx - m.a * mx - m.c * my;
+  m.f = cy - m.b * mx - m.g * my;
+  const sil = bake(TRACE.sil, m);
+  const t = ICON_TILE;
+  return `<rect x="${t.x + t.throw}" y="${t.y + t.throw}" width="${t.size}" height="${t.size}" rx="${t.rx}" fill="${PINK}"/>
+<rect x="${t.x}" y="${t.y}" width="${t.size}" height="${t.size}" rx="${t.rx}" fill="${GOLD}" stroke="${INK}" stroke-width="${t.edge}"/>
+<path id="r" d="${sil}" fill="${INK}" stroke="${INK}" stroke-width="${ICON_POSE.halo * 2}" stroke-linejoin="round"/><use href="#r" fill="${WHITE}" stroke="none"/>${fill(bake(largest(TRACE.pink), m), EAR)}${fill(bake(largest(TRACE.eye), m), INK)}`;
+}
+
+const svg = (viewBox, body) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${body}</svg>\n`;
+
+const iconSvg = svg(
+  `0 0 ${ICON} ${ICON}`,
+  `<defs><clipPath id="c"><rect width="${ICON}" height="${ICON}"/></clipPath></defs><g clip-path="url(#c)">${iconArtwork()}</g>`,
+);
+const onGold = (scale) => {
+  const inset = (ICON * (1 - scale)) / 2;
+  return svg(
+    `0 0 ${ICON} ${ICON}`,
+    `<rect width="${ICON}" height="${ICON}" fill="${GOLD}"/><g transform="translate(${inset} ${inset}) scale(${scale})">${iconArtwork()}</g>`,
+  );
+};
+
+const browser = await chromium.launch();
+const page = await browser.newPage();
+
+/** Rasterises `source` at width×height; returns RGBA pixels and a PNG. */
+const raster = (source, width, height) =>
+  page.evaluate(
+    async ({ source, width, height }) => {
+      const url = URL.createObjectURL(
+        new Blob([source], { type: 'image/svg+xml' }),
+      );
+      const image = new Image();
+      image.src = url;
+      await image.decode();
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext('2d');
+      context.drawImage(image, 0, 0, width, height);
+      return {
+        alpha: Array.from(
+          context
+            .getImageData(0, 0, width, height)
+            .data.filter((_, i) => i % 4 === 3),
+        ),
+        png: canvas.toDataURL('image/png').split(',')[1],
+      };
+    },
+    { source, width, height },
+  );
+
+/* Logo rabbit: find its box in tile px around the tile, then render that box. */
+const REACH = 40;
+const span = TILE + 2 * REACH;
+const probe = await raster(
+  svg(`${-REACH} ${-REACH} ${span} ${span}`, sticker()),
+  span,
+  span,
+);
+let [x0, y0, x1, y1] = [span, span, 0, 0];
+probe.alpha.forEach((a, i) => {
+  if (!a) return;
+  const [x, y] = [i % span, Math.floor(i / span)];
+  [x0, y0, x1, y1] = [
+    Math.min(x0, x),
+    Math.min(y0, y),
+    Math.max(x1, x + 1),
+    Math.max(y1, y + 1),
+  ];
+});
+if (x0 === 0 || y0 === 0 || x1 === span || y1 === span) {
+  throw new Error('The logo rabbit reaches the probe edge; raise REACH.');
+}
+const box = {
+  left: x0 - REACH,
+  top: y0 - REACH,
+  width: x1 - x0,
+  height: y1 - y0,
+};
+const logo = await raster(
+  svg(`${box.left} ${box.top} ${box.width} ${box.height}`, sticker()),
+  box.width * LOGO_SCALE,
+  box.height * LOGO_SCALE,
+);
+writeFileSync('src/assets/logo-rabbit.png', Buffer.from(logo.png, 'base64'));
+
+const png = async (source, size) =>
+  Buffer.from((await raster(source, size, size)).png, 'base64');
+
+writeFileSync('public/favicon.svg', iconSvg);
+const frames = [16, 32, 48];
+const framePngs = [];
+for (const size of frames) {
+  const frame = await png(iconSvg, size);
+  framePngs.push(frame);
+  writeFileSync(`artwork/favicon-${size}x${size}.png`, frame);
+}
+writeFileSync('public/favicon-96x96.png', await png(iconSvg, 96));
+writeFileSync('public/apple-touch-icon.png', await png(onGold(APP_SCALE), 180));
+writeFileSync(
+  'public/android-chrome-192x192.png',
+  await png(onGold(APP_SCALE), 192),
+);
+writeFileSync(
+  'public/android-chrome-512x512.png',
+  await png(onGold(APP_SCALE), 512),
+);
+writeFileSync(
+  'public/maskable-icon-512x512.png',
+  await png(onGold(MASKABLE_SCALE), 512),
+);
+await browser.close();
+
+/* ICO with PNG frames: ICONDIR, one 16-byte ICONDIRENTRY per frame, then the PNGs. */
+const HEADER = 6;
+const ENTRY = 16;
+const head = Buffer.alloc(HEADER + ENTRY * frames.length);
+head.writeUInt16LE(0, 0);
+head.writeUInt16LE(1, 2);
+head.writeUInt16LE(frames.length, 4);
+let offset = head.length;
+frames.forEach((size, i) => {
+  const at = HEADER + i * ENTRY;
+  head.writeUInt8(size, at);
+  head.writeUInt8(size, at + 1);
+  head.writeUInt16LE(1, at + 4);
+  head.writeUInt16LE(32, at + 6);
+  head.writeUInt32LE(framePngs[i].length, at + 8);
+  head.writeUInt32LE(offset, at + 12);
+  offset += framePngs[i].length;
+});
+writeFileSync('public/favicon.ico', Buffer.concat([head, ...framePngs]));
+
+/* The box as `--logo-rabbit-*`: offsets from the tile's padding box. */
+console.log(
+  JSON.stringify({
+    left: box.left - BORDER,
+    top: box.top - BORDER,
+    width: box.width,
+    height: box.height,
+  }),
+);

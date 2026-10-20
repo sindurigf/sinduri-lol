@@ -4,12 +4,12 @@ import { NODE } from './tags';
 
 /**
  * Alt text rules axe cannot judge: every <img> has an `alt` (Astro writes an
- * empty one as a bare `alt`), only the bunny mark and the footer rabbit are empty, a filled one is not
+ * empty one as a bare `alt`), only the bunny marks are empty, a filled one is not
  * a filename or "image/photo/picture/logo", and an inline <svg> is hidden or named.
  */
 
 /** The images the site draws for decoration. */
-const DECORATIVE = /bunny-(dark|footer)/;
+const DECORATIVE = /bunny-(dark|footer)|logo-rabbit/;
 
 const SUPPLIED_BY_THE_READER = /\b(image|photo|picture|logo)\b/i;
 const FILENAME = /\.(webp|avif|jpe?g|png|gif|svg)\b/i;
@@ -35,7 +35,7 @@ const auditImages = (html: string): Problem[] => {
       if (!DECORATIVE.test(source)) {
         problems.push({
           image,
-          problem: 'empty alt on an image that is not the bunny mark',
+          problem: 'empty alt on an image that is not a bunny mark',
         });
       }
       continue;
@@ -90,7 +90,7 @@ test('the checker reports every kind of fault', NODE, () => {
   const problems = auditImages(FIXTURE).map((p) => p.problem);
   expect(problems).toEqual([
     'no alt attribute',
-    'empty alt on an image that is not the bunny mark',
+    'empty alt on an image that is not a bunny mark',
     'alt says what a screen reader already says: "A photo of a desk"',
     'alt is a filename: "hare.webp"',
     'an svg that is neither aria-hidden nor named',
