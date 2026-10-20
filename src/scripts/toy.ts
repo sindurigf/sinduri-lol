@@ -1,8 +1,8 @@
 /*
  * The footer stickers as toys: drag, toss and stack them inside their own
- * play area, or Tab to one and move it with the arrow keys. Play mode stops
- * the stickers' links; Stop Playing puts everything back. Under reduced motion
- * a sticker is never tossed, it stays where it is dropped.
+ * play area; tap one to pick it up and tap the tray to drop it (no dragging
+ * needed, SC 2.5.7); or Tab to one and move it with the arrow keys. Play mode
+ * pauses the stickers' links. Under reduced motion nothing is tossed.
  */
 const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)');
 const STEP_PX = 16;
@@ -10,6 +10,8 @@ const BIG_STEP_PX = 48;
 const FRICTION = 0.92;
 const STOP_SPEED = 0.05;
 const TOSS_MAX_MS = 900;
+/* A press that moves less than this is a tap, not a drag. */
+const TAP_PX = 6;
 const KEYS: Readonly<Record<string, readonly [number, number]>> = {
   ArrowLeft: [-1, 0],
   ArrowRight: [1, 0],
@@ -19,12 +21,13 @@ const KEYS: Readonly<Record<string, readonly [number, number]>> = {
 
 /* Placeholder copy: Sinduri rewrites every line below in her voice. */
 const COPY = {
-  start: 'Play With the Stickers',
-  stop: 'Stop Playing',
   reset: 'Put Them Back',
-  on: 'Play mode on. Drag the stickers, or Tab to one and move it with the arrow keys.',
+  on: 'Play mode on. Drag a sticker, tap one and then the tray, or Tab to one and use the arrow keys.',
   off: 'Play mode off. The stickers are back and their links work again.',
   back: 'The stickers are back in place.',
+  paused: 'Play mode: this link is paused.',
+  held: 'Picked up. Tap the tray to drop it.',
+  dropped: 'Dropped.',
 };
 
 const footer = document.querySelector('footer')!;
@@ -42,6 +45,11 @@ const tray = Object.assign(document.createElement('div'), {
   className: 'toy-tray',
 });
 tray.setAttribute('aria-hidden', 'true');
+const paused = Object.assign(document.createElement('p'), {
+  id: 'toy-paused',
+  className: 'sr-only',
+  textContent: COPY.paused,
+});
 const reset = Object.assign(document.createElement('button'), {
   type: 'button',
   className: 'btn-secondary toy-reset',
@@ -50,6 +58,7 @@ const reset = Object.assign(document.createElement('button'), {
 
 let playing = false;
 let top = 1;
+let held: HTMLElement | null = null;
 const spot = new Map<HTMLElement, { x: number; y: number }>();
 
 const place = (item: HTMLElement, x: number, y: number): void => {
@@ -145,8 +154,12 @@ items.forEach((item) => {
         { x: moved.clientX, y: moved.clientY, t: moved.timeStamp },
       ].slice(-4);
     };
-    const drop = (): void => {
+    const drop = (up: PointerEvent): void => {
       sticker.removeEventListener('pointermove', move);
+      if (Math.hypot(up.clientX - from.x, up.clientY - from.y) < TAP_PX) {
+        hold(held === item ? null : item);
+        return;
+      }
       const first = trail[0]!;
       const last = trail.at(-1)!;
       const dt = Math.max(1, last.t - first.t);
@@ -177,6 +190,31 @@ const say = (text: string): void => {
   announcer.textContent = text;
 };
 
+function hold(item: HTMLElement | null): void {
+  held?.removeAttribute('data-held');
+  held = item;
+  if (item) {
+    item.setAttribute('data-held', '');
+    lift(item);
+    say(COPY.held);
+  }
+}
+
+/* A tap on the tray drops the held sticker there, centered on the tap. */
+tray.addEventListener('pointerdown', (event) => {
+  if (!held) return;
+  const box = held.firstElementChild!.getBoundingClientRect();
+  const { x, y } = spot.get(held) ?? { x: 0, y: 0 };
+  const next = clamp(
+    held,
+    x + event.clientX - (box.left + box.width / 2),
+    y + event.clientY - (box.top + box.height / 2),
+  );
+  place(held, next.x, next.y);
+  hold(null);
+  say(COPY.dropped);
+});
+
 reset.addEventListener('click', () => {
   putBack();
   say(COPY.back);
@@ -185,13 +223,25 @@ reset.addEventListener('click', () => {
 const setPlaying = (on: boolean): void => {
   playing = on;
   footer.toggleAttribute('data-toy', on);
-  toggle.textContent = on ? COPY.stop : COPY.start;
+  toggle.setAttribute('aria-pressed', String(on));
+  items.forEach((item) => {
+    const sticker = item.firstElementChild!;
+    if (on) {
+      sticker.setAttribute('aria-disabled', 'true');
+      sticker.setAttribute('aria-describedby', paused.id);
+    } else {
+      sticker.removeAttribute('aria-disabled');
+      sticker.removeAttribute('aria-describedby');
+    }
+  });
   if (on) {
-    list.after(tray, reset);
+    list.after(tray, reset, paused);
   } else {
+    hold(null);
     putBack();
     tray.remove();
     reset.remove();
+    paused.remove();
   }
   say(on ? COPY.on : COPY.off);
 };

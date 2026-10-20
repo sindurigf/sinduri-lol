@@ -9,9 +9,14 @@ const src = document.querySelector<HTMLScriptElement>('script[data-toy-app]')!
 const button = document.querySelector<HTMLButtonElement>('[data-toy-toggle]');
 if (button) {
   button.hidden = false;
-  button.addEventListener('click', () => void import(/* @vite-ignore */ src), {
-    once: true,
-  });
+  /* reportError: the failure reaches the console and window.onerror without a message string. */
+  const load = (): void => {
+    import(src).catch((error: unknown) => {
+      button.addEventListener('click', load, { once: true });
+      reportError(error);
+    });
+  };
+  button.addEventListener('click', load, { once: true });
 }
 
 export {};

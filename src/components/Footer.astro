@@ -7,6 +7,7 @@ import {
   profileLinkName,
 } from '../lib/profiles';
 import { SITE_NAME } from '../lib/site';
+import { TALKS_PATH } from '../lib/paths';
 /* Hashed under /_astro/ and cached once, instead of inline on every page. */
 import socialIcons from '../assets/social-icons.svg?url';
 import toyLoader from '../scripts/toy-loader.ts?worker&url';
@@ -31,6 +32,9 @@ const POLICY_LINKS = [
 ] as const;
 
 const current = (href: string) => ariaCurrent(Astro.url.pathname, href);
+
+/* A slide deck keeps its script budget for the deck: no toys there. */
+const toys = !Astro.url.pathname.startsWith(TALKS_PATH);
 
 /* The year of first publication, not the build year: a build date goes stale. */
 const FIRST_PUBLISHED = 2026;
@@ -97,21 +101,26 @@ const copyright = `© ${FIRST_PUBLISHED} ${SITE_NAME}`;
               </li>
             ))}
           </ul>
-          {/* Placeholder copy. Shown by src/scripts/toy-loader.ts, which loads data-toy-app on its first press. */}
-          <script
-            is:inline
-            type="module"
-            src={toyLoader}
-            data-toy-app={toyApp}
-          ></script>
-          <button
-            type="button"
-            class="toy-toggle btn-secondary"
-            data-toy-toggle
-            hidden
-          >
-            Play With the Stickers
-          </button>
+          {toys && (
+            <>
+              {/* Placeholder copy. Shown by src/scripts/toy-loader.ts, which loads data-toy-app on its first press. */}
+              <script
+                is:inline
+                type="module"
+                src={toyLoader}
+                data-toy-app={toyApp}
+              ></script>
+              <button
+                type="button"
+                class="toy-toggle btn-secondary"
+                data-toy-toggle
+                aria-pressed="false"
+                hidden
+              >
+                Play With the Stickers
+              </button>
+            </>
+          )}
         </nav>
       </div>
 

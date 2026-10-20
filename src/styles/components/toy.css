@@ -1,8 +1,24 @@
 /* The toy footer: src/scripts/toy.ts. */
 @layer components {
+  :root {
+    --toy-wiggle: 500ms;
+  }
+
   .footer-stickers > li {
     position: relative;
     translate: var(--toy-x, 0px) var(--toy-y, 0px);
+  }
+
+  /* A held sticker is raised and outlined, so a tap's pick-up shows. */
+  footer[data-toy] [data-held] .footer-sticker {
+    @apply outline-4 outline-offset-4 outline-cyan;
+  }
+
+  /* Play mode starts with every sticker giving one wiggle: the press shows at once. */
+  @media (prefers-reduced-motion: no-preference) {
+    footer[data-toy] .footer-sticker {
+      animation: toy-wiggle var(--toy-wiggle) ease-in-out;
+    }
   }
 
   /* A touch drag moves the sticker instead of the page; pinch zoom still works. */
@@ -19,5 +35,18 @@
   .toy-toggle,
   .toy-reset {
     @apply mt-6;
+  }
+
+  @keyframes toy-wiggle {
+    25% {
+      rotate: -10deg;
+      scale: 1.1;
+    }
+    50% {
+      rotate: 8deg;
+    }
+    75% {
+      rotate: -4deg;
+    }
   }
 }

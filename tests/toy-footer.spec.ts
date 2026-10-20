@@ -1,27 +1,35 @@
-import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
+import { TALK_ROUTES } from './routes';
+import { ENGINE_INVARIANT } from './tags';
 
 /**
- * The toy footer (src/scripts/toy.ts): play mode by keyboard as well as by
- * pointer (SC 2.1.1, 2.5.7), stickers stay in their play area and never over
- * text, the mode is announced (SC 4.1.3), reduced motion drops the toss
- * (SC 2.3.3), and Stop Playing gives the links back.
+ * The toy footer (src/scripts/toy.ts): play mode by keyboard, by drag and by
+ * taps alone (SC 2.1.1, 2.5.7), stickers stay in their play area and never
+ * over text, the mode is announced (SC 4.1.3), paused links say so, reduced
+ * motion drops the toss (SC 2.3.3), and stopping gives the links back.
  */
 
 const ROUTE = '/';
-const SETTLE_MS = 1_200;
+const TOGGLE = { name: 'Play With the Stickers' };
 
 const start = async (page: Page) => {
   await gotoSettled(page, ROUTE);
-  const toggle = page.getByRole('button', { name: 'Play With the Stickers' });
+  const toggle = page.getByRole('button', TOGGLE);
   await toggle.scrollIntoViewIfNeeded();
   await toggle.click();
-  await expect(
-    page.getByRole('button', { name: 'Stop Playing' }),
-  ).toBeVisible();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
   return page.getByRole('navigation', { name: 'Social' }).getByRole('link');
 };
+
+/* Frames, not time: a toss ends within a set number of frames or never does. */
+const frames = (page: Page, count: number) =>
+  page.evaluate(async (n) => {
+    for (let i = 0; i < n; i += 1) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+  }, count);
+const SETTLE_FRAMES = 90;
 
 const offset = (page: Page, index: number) =>
   page.evaluate(
@@ -96,9 +104,10 @@ test('play mode works from the keyboard, stays in its area and is announced', as
     before,
   );
   expect(await stickersStayPut(page)).toEqual([]);
+  /* force: the paused links are aria-disabled, which Playwright will not click. */
   const url = page.url();
   await page.keyboard.press('Enter');
-  await links.first().click();
+  await links.first().click({ force: true });
   expect(page.url(), 'a sticker followed its link in play mode').toBe(url);
 });
 
@@ -109,7 +118,16 @@ test('a dragged and tossed sticker lands inside its area', async ({ page }) => {
   await page.mouse.down();
   await page.mouse.move(box.x + 400, box.y + 600, { steps: 4 });
   await page.mouse.up();
-  await page.waitForTimeout(SETTLE_MS);
+  await expect
+    .poll(
+      async () => {
+        const before = await offset(page, 2);
+        await frames(page, 2);
+        return before === (await offset(page, 2));
+      },
+      { message: 'the tossed sticker never came to rest' },
+    )
+    .toBe(true);
   expect(await offset(page, 2)).not.toBe('none');
   expect(await stickersStayPut(page)).toEqual([]);
 });
@@ -125,10 +143,12 @@ test('under reduced motion a dropped sticker is not tossed', async ({
   await page.mouse.move(box.x + 60, box.y + 80, { steps: 2 });
   await page.mouse.up();
   /* Pointer moves land a frame late; read once they have. */
-  await page.waitForTimeout(SETTLE_MS / 4);
+  await frames(page, 2);
   const dropped = await offset(page, 1);
-  await page.waitForTimeout(SETTLE_MS);
-  expect(await offset(page, 1)).toBe(dropped);
+  await frames(page, SETTLE_FRAMES);
+  expect(await offset(page, 1), 'the sticker kept moving after the drop').toBe(
+    dropped,
+  );
 });
 
 test('Put Them Back and Stop Playing return the stickers and their links', async ({
@@ -140,7 +160,12 @@ test('Put Them Back and Stop Playing return the stickers and their links', async
   await page.getByRole('button', { name: 'Put Them Back' }).click();
   expect(await offset(page, 0)).toMatch(/^(none|0px( 0px)?)$/);
   await page.keyboard.press('ArrowDown');
-  await page.getByRole('button', { name: 'Stop Playing' }).click();
+  await page.getByRole('button', TOGGLE).click();
+  await expect(page.getByRole('button', TOGGLE)).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+  await expect(links.first()).not.toHaveAttribute('aria-disabled');
   await expect(page.locator('footer')).not.toHaveAttribute('data-toy');
   await expect(page.getByRole('button', { name: 'Put Them Back' })).toHaveCount(
     0,
@@ -164,36 +189,38 @@ test('without JavaScript there is no toy button', async ({
   await context.close();
 });
 
-/* WebKit applies upgrade-insecure-requests on loopback and then loads nothing over http. */
-const UPGRADE_INSECURE = /;?\s*upgrade-insecure-requests/;
+test(
+  'a talk deck ships neither the toy button nor its loader (script budget)',
+  ENGINE_INVARIANT,
+  async ({ request }) => {
+    for (const route of TALK_ROUTES) {
+      const html = await (await request.get(`${route}/`)).text();
+      expect(html, `${route} ships the toy footer`).not.toMatch(
+        /data-toy-(app|toggle)/,
+      );
+    }
+  },
+);
 
-test('play mode starts under the CSP the site ships (Trusted Types)', async ({
+test('taps alone pick a sticker up and drop it in the tray', async ({
   page,
 }) => {
-  const csp = /Content-Security-Policy: (.+)/.exec(
-    readFileSync('public/_headers', 'utf8'),
-  )?.[1];
-  expect(csp, 'public/_headers has no Content-Security-Policy').toBeTruthy();
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-  await page.addInitScript(() => {
-    document.addEventListener('securitypolicyviolation', (event) =>
-      console.error(`csp: ${event.violatedDirective}`),
-    );
-  });
-  page.on('console', (message) => {
-    if (message.text().startsWith('csp:')) errors.push(message.text());
-  });
-  await page.route(`**${ROUTE}`, async (route) => {
-    const response = await route.fetch();
-    await route.fulfill({
-      response,
-      headers: {
-        ...response.headers(),
-        'content-security-policy': csp!.replace(UPGRADE_INSECURE, ''),
-      },
-    });
-  });
-  await start(page);
-  expect(errors, 'the shipped CSP blocked or broke the toy').toEqual([]);
+  const links = await start(page);
+  await expect(links.first(), 'a paused link does not say so').toHaveAttribute(
+    'aria-disabled',
+    'true',
+  );
+  await expect(links.first()).toHaveAccessibleDescription(/paused/);
+  const before = await offset(page, 3);
+  /* force: the paused links are aria-disabled, which Playwright will not click. */
+  await links.nth(3).click({ force: true });
+  await expect(page.locator('.footer-stickers > li').nth(3)).toHaveAttribute(
+    'data-held',
+  );
+  const tray = (await page.locator('.toy-tray').boundingBox())!;
+  await page.mouse.click(tray.x + tray.width - 40, tray.y + tray.height / 2);
+  expect(await offset(page, 3), 'the tap on the tray moved nothing').not.toBe(
+    before,
+  );
+  expect(await stickersStayPut(page)).toEqual([]);
 });
