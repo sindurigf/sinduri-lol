@@ -308,6 +308,15 @@ Commits, copy rules and process: [AGENTS.md](AGENTS.md).
 - Internal links end with `/`; production 307s the unslashed form.
   `tests/seo.spec.ts`.
 
+### Text size
+
+`--text-scale` (Drink Me and Eat Me) is a unitless number on the root,
+multiplied into `--text-lead`, `--text-standfirst`, `--text-body` and
+`--text-label` in `global.css`. Scaling the root font size was rejected: media
+queries ignore it, so layouts overflowed at widths such as 768px.
+`tests/rabbit-hole.spec.ts` holds the no-sideways-scroll rule at 320, 390 and
+1280px.
+
 ### Scripts loaded on demand
 
 `src/scripts/on-demand.ts` loads a footer feature's code on its first use, so

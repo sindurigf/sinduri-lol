@@ -1080,9 +1080,30 @@ Enforced by `tests/footer.spec.ts`.
   visually hidden name
 - `nav` "Site": Home, About, Career, Blog
 - `nav` "About this site": the links in `POLICY_LINKS` in `Footer.astro`
+- the extras row (`div.footer-extras`): the link "Down the Rabbit Hole"
+  (`ul.footer-links`), then `div.footer-controls` with Curiouser and the text
+  size buttons Drink Me, Eat Me and Just Right; both load on demand, so
+  without a script the controls stay hidden and Curiouser is a link to
+  `/down/#fall-heading`; slide decks get no controls
 - the copyright
 - the name "Lepus Ridet" (`div lang="la"`, not a heading) as display type on a
   gold band, the rabbit (`alt=""`) standing on its last letter
+
+### The rabbit hole
+
+- `/down/` (`src/pages/down.astro`): shelves of the site's own content, read
+  from source at build by `src/lib/rabbit-hole.ts`; a Carroll quote above and
+  below; a gold door to Contact. Link names are unique (SC 2.4.9).
+- Curiouser (`src/scripts/curiouser.ts`): a reel of real titles slows and
+  lands on a page that is not the current one; a link then goes there. Under
+  reduced motion it lands at once.
+- Drink Me, Eat Me and Just Right (`src/scripts/text-size.ts`) step
+  `--text-scale` 75 to 200 percent. It multiplies the reading tokens (lead,
+  standfirst, body, label) in `global.css`, not the root size, so spacing and
+  breakpoints stay and browser zoom still applies. A step the page cannot hold
+  without sideways scroll is taken back (SC 1.4.10). The footer group
+  remembers the size; the group at the door on `/down/` does not. The head
+  script in `BaseLayout.astro` applies a saved size before first paint.
 
 ### Footer layout
 
