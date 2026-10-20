@@ -5,7 +5,7 @@ How AI tooling was used to build this site.
 | Item  | Detail                                                                                                                                                                               |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Model | Claude (Anthropic)                                                                                                                                                                   |
-| Tools | Claude Code; Stitch (Google) and Claude Design (Anthropic) for design; Canva AI for the hero rabbit drawings                                                                         |
+| Tools | Claude Code; Stitch (Google) and Claude Design (Anthropic) for design; Canva AI for the rabbit drawings and the logo                                                                 |
 | Scope | Code, tests, docs, functional microcopy, the `/accessibility` and `/privacy` text, the About cat drawings, the home page hero bunny, the footer bunny, and editing my editorial copy |
 
 ## Review
