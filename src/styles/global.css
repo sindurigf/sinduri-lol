@@ -387,7 +387,7 @@
   --tracking-title: -0.02em;
   --tracking-label: 0.1em;
 
-  /* Zero everywhere except the logo tile and its copies. */
+  /* Zero everywhere except the logo tile and the line bunny tile on /about. */
   --radius-nav: 14px;
 
   /*
