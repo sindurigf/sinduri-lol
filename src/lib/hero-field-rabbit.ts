@@ -7,7 +7,7 @@ import type { RoutePoint } from './hero-field-scene';
 
 export type RabbitPose = 'sit' | 'look' | 'crouch' | 'leap';
 
-/** Atlas pixels; the foot is the bottom centre of the rabbit within its frame. */
+/** Atlas pixels; the foot is the bottom center of the rabbit within its frame. */
 interface AtlasFrame {
   readonly x: number;
   readonly y: number;
@@ -50,7 +50,7 @@ export const rabbitPose = (here: RoutePoint, seconds: number): RabbitPose => {
 export const rabbitAir = (here: RoutePoint): number =>
   here.sit > RESTING ? 0 : Math.sin(here.cycle * Math.PI);
 
-/* `hop` is the arc height in drawing units, `scale` CSS pixels per unit. */
+/* `lift` is the height above the ground in drawing units, `scale` CSS pixels per unit. */
 export const drawRabbit = (
   ctx: CanvasRenderingContext2D,
   atlas: CanvasImageSource,
