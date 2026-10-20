@@ -397,7 +397,9 @@ in `wrangler.jsonc`).
   and pass the result as a prop.
 - Footer links: seven sticker tiles with Simple Icons (CC0) paths, one
   `<symbol>` per link label in `src/assets/social-icons.svg`. The footer rabbit
-  is `src/assets/bunny-footer.webp` with `alt=""`, standing on the name band.
+  is `src/assets/bunny-footer.webp` with `alt=""`, standing on the name band:
+  the Looking Up pose of Canva sheet 6 (Soft E), traced with Potrace and
+  exported as a die-cut sticker; sources and scripts are kept outside the repo.
   The footer runs no JavaScript.
 
 ### Photos and video
