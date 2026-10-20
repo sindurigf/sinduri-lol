@@ -1,6 +1,7 @@
 import { expect, test } from './test';
 import { gotoSettled } from './settle';
 import { BRAND_PATH } from '../src/lib/brand-sections';
+import { PART_ACCESSIBILITY } from '../src/lib/brand-a11y';
 
 test.describe('/brand guide', () => {
   test('the page opens with how to use it, before the first section (SC 3.3.5)', async ({
@@ -92,5 +93,29 @@ test.describe('/brand guide', () => {
       ...(b.scoped ? [`${b.part}: the code shows build attributes`] : []),
     ]);
     expect(wrong).toEqual([]);
+  });
+
+  test('every part that has an accessibility line shows it once, after its rule (SC 1.3.1)', async ({
+    page,
+  }) => {
+    await gotoSettled(page, BRAND_PATH);
+    const shown = await page.locator('li[data-component]').evaluateAll((rows) =>
+      rows.flatMap((row) => {
+        const line = [...row.querySelectorAll('p')].find(
+          (p) =>
+            p.firstElementChild?.matches('b') &&
+            p.firstElementChild.textContent === 'Accessibility',
+        );
+        return line
+          ? [
+              [
+                row.getAttribute('data-component'),
+                line.textContent?.slice(13).trim(),
+              ],
+            ]
+          : [];
+      }),
+    );
+    expect(Object.fromEntries(shown)).toEqual(PART_ACCESSIBILITY);
   });
 });
