@@ -106,6 +106,19 @@ const RABBIT_HEIGHT = 160;
                 </a>
               </li>
             ))}
+            {onDemand && (
+              <li>
+                <button
+                  type="button"
+                  class="drush-trigger label"
+                  data-on-demand={FEATURES.drush}
+                  data-on-demand-keys="drush"
+                  hidden
+                >
+                  Try a Command
+                </button>
+              </li>
+            )}
           </ul>
         </nav>
       </div>
@@ -115,18 +128,6 @@ const RABBIT_HEIGHT = 160;
       )}
 
       <small class="footer-copyright">{copyright}</small>
-
-      {onDemand && (
-        <button
-          type="button"
-          class="drush-trigger label"
-          data-on-demand={FEATURES.drush}
-          data-on-demand-keys="drush"
-          hidden
-        >
-          Try a Command
-        </button>
-      )}
     </div>
 
     {/* A <div>: a <p> trips WAVE's "Possible heading" (tests/wave-alerts.spec.ts). */}

@@ -1,5 +1,10 @@
 /* The Drush easter egg: src/scripts/drush.ts. */
 @layer components {
+  /* Until the registry shows the trigger, its list row takes no space. */
+  .footer-policies li:has(> .drush-trigger[hidden]) {
+    @apply hidden;
+  }
+
   /* Reads like the footer's links, with their 44px row (SC 2.5.5). */
   .drush-trigger {
     @apply flex min-h-target items-center text-subtle hover:text-cyan;
