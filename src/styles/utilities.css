@@ -45,10 +45,6 @@
     background-clip: border-box;
   }
 
-  /*
-   * The logo tile's press, as the controls' in buttons-nav.css with the mark's
-   * 8px throw. Only the tile moves, so the link keeps the pointer.
-   */
   /* The rabbit jumps the tile's top-right corner, so it overflows the tile and moves with it. */
   .logo-tile .logo-rabbit {
     position: absolute;
@@ -57,8 +53,19 @@
     width: var(--logo-rabbit-width);
     max-width: none;
     height: var(--logo-rabbit-height);
+
+    @media (prefers-reduced-motion: no-preference) {
+      transition-property: translate;
+      transition-duration: var(--press-travel);
+      transition-timing-function: linear;
+    }
   }
 
+  /*
+   * The logo tile's press, as the controls' in buttons-nav.css with the mark's
+   * 8px throw. Only the tile moves, so the link keeps the pointer. The tile is
+   * the rabbit's springboard: pressed down, it sends the rabbit up.
+   */
   .logo-link .logo-tile {
     box-shadow: var(--lift-mark) var(--lift-mark) 0 var(--color-bunny);
 
@@ -79,11 +86,21 @@
       box-shadow: calc(var(--lift-mark) + var(--press-lift))
         calc(var(--lift-mark) + var(--press-lift)) 0 var(--color-bunny);
     }
+
+    .logo-link:hover:not(:active) .logo-rabbit {
+      translate: 0 calc(var(--logo-rabbit-hover-hop) * -1);
+    }
   }
 
   @media (prefers-reduced-motion: no-preference) {
     .logo-link:active .logo-tile {
       translate: var(--lift-mark) var(--lift-mark);
+      transition-duration: 0s;
+    }
+
+    .logo-link:active .logo-rabbit {
+      translate: calc(var(--lift-mark) * -1)
+        calc((var(--lift-mark) + var(--logo-rabbit-hop)) * -1);
       transition-duration: 0s;
     }
   }
