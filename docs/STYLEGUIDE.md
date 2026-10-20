@@ -740,7 +740,8 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
   - Two rules show as a Do and Don't pair: one primary per section, and cyan only on hover and focus (`DoDont.astro`).
   - With a script, a Search field above each sections list (wide and narrow) shows the sections whose title, group, lead, tokens, hex values, rules or accessibility lines hold every typed word, ignoring case and accents (`brand-filter.ts`). It counts the matches and Escape clears it.
   - Each part with a live example shows its HTML under it, wrapped, never scrolling (`sourceOf` in `mirror.ts`). With a script each block gets a Copy button (`src/scripts/copy.ts`) that names the part, says "Copied" or that the copy failed and selects the code; with none, no button is drawn.
-  - Button parts show rest, hover, focus, pressed and unavailable side by side (`StateRow.astro`, `.state-*` in `brand.css`), drawn from the real CSS.
+  - Button parts show rest, hover, focus, pressed and unavailable side by side (`StateRow.astro`, `.state-*` in `brand.css`), with the real tokens; the lift and the transition are not shown.
+  - A still state sample on `/brand` may show its hover color; `cyan` at rest stays banned everywhere else.
 - Color is one part per role in `src/lib/brand-roles.ts`.
   - Tokens are rows of one swatch size: fills as fills, text colors as "Aa", cyan unpainted.
   - Each role ends in the one pair it is read on; the ratio is computed from the tokens.

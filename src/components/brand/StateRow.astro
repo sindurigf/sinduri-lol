@@ -14,7 +14,11 @@ const STATES = [
 ] as const;
 ---
 
-<ul role="list" class="flex flex-wrap gap-x-8 gap-y-10">
+<ul
+  role="list"
+  aria-label={`${label} states`}
+  class="flex flex-wrap gap-x-8 gap-y-12"
+>
   {STATES.map(({ name, cls }) => (
     <li>
       <span

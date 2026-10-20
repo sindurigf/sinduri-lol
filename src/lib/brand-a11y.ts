@@ -13,7 +13,7 @@ export const PART_ACCESSIBILITY: Readonly<Record<string, string>> = {
     'A description list, so each label stays paired with its value.',
   'pause-control': 'The name says what pressing it will do.',
   'sleep-control': 'The name says what pressing it will do.',
-  'theme-switch': 'Names the theme in use and works like the header switch.',
+  'theme-switch': 'Shows the theme in use; the menu marks the choice.',
   'focus-ring': 'Never removed: 4px with a gap on every control.',
   form: 'Visible labels, required fields said in words, and a submit that is never disabled.',
   'hero-full': "The page's only h1.",

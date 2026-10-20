@@ -13,7 +13,7 @@ export const inertCopy = (html: string): string =>
 
 const INDENT = '  ';
 const VOID_TAG = /^(?:br|hr|img|input|link|meta)$/;
-const ASTRO_SCOPE = /\sdata-astro-cid-[a-z0-9]+(?:="")?/g;
+const ASTRO_SCOPE = /\sdata-astro-cid-\w+(?:="")?/g;
 const ESCAPES: Record<string, string> = {
   '&': '&amp;',
   '<': '&lt;',

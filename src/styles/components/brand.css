@@ -150,8 +150,17 @@
     }
 
     &:hover {
-      @apply bg-block-gold text-gold-text;
+      @apply bg-cyan text-background;
     }
+  }
+
+  :root[data-theme='light'] main .copy-button:hover {
+    background-color: var(--dark-cyan);
+    color: var(--color-light-ink);
+  }
+
+  .brand-menu .field-control::placeholder {
+    @apply text-subtle opacity-100;
   }
 
   .brand-code {

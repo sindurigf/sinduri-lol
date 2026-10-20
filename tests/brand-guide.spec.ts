@@ -1,4 +1,5 @@
 import { expect, test } from './test';
+import { readFileSync } from 'node:fs';
 import { gotoSettled } from './settle';
 import { BRAND_PATH, BRAND_SECTIONS } from '../src/lib/brand-sections';
 import { PART_ACCESSIBILITY } from '../src/lib/brand-a11y';
@@ -182,12 +183,15 @@ test.describe('/brand guide', () => {
   }
 
   test('each code block has a Copy button that names what it copies, copies it and says so (SC 2.5.5, 4.1.3)', async ({
-    browser,
+    page,
   }) => {
-    const context = await browser.newContext({
-      permissions: ['clipboard-read', 'clipboard-write'],
+    await page.addInitScript(() => {
+      const copied: string[] = [];
+      Object.defineProperty(window, '__copied', { value: copied });
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText: async (text: string) => void copied.push(text) },
+      });
     });
-    const page = await context.newPage();
     await gotoSettled(page, BRAND_PATH);
     const code = page.locator('pre.brand-code').first();
     const button = page.getByRole('button', {
@@ -199,10 +203,15 @@ test.describe('/brand guide', () => {
     expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
     await button.click();
     await expect(page.getByRole('status').last()).toHaveText('Copied');
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
-      await code.textContent(),
-    );
-    await context.close();
+    expect(
+      await page.evaluate(
+        () => (window as never as { __copied: string[] }).__copied,
+      ),
+    ).toEqual([await code.textContent()]);
+    await expect(
+      page.getByRole('button', { name: 'Copy HTML for Page Ground' }),
+      'the name changed after the press',
+    ).toHaveCount(1);
   });
 
   test('a refused copy says so and leaves the code selected (SC 3.3.1, 4.1.3)', async ({
@@ -217,7 +226,7 @@ test.describe('/brand guide', () => {
       .getByRole('button', { name: 'Copy HTML for Page Ground' })
       .click();
     await expect(page.getByRole('status').last()).toHaveText(
-      'Copy failed, the code is selected',
+      'Copy failed. The code is selected: press Ctrl+C or Command+C.',
     );
     expect(await page.evaluate(() => getSelection()?.toString())).toBe(
       await code.textContent(),
@@ -231,5 +240,48 @@ test.describe('/brand guide', () => {
     await expect(page.locator('pre.brand-code').first()).toBeVisible();
     await expect(page.locator('.copy-button')).toHaveCount(0);
     await context.close();
+  });
+
+  test('the Copy buttons are drawn under the CSP the site ships, which blocks HTML strings (Trusted Types)', async ({
+    page,
+  }) => {
+    const csp = /Content-Security-Policy: (.+)/.exec(
+      readFileSync('public/_headers', 'utf8'),
+    )?.[1];
+    expect(csp, 'public/_headers has no Content-Security-Policy').toBeTruthy();
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.route('**/brand/', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        headers: { ...response.headers(), 'content-security-policy': csp! },
+      });
+    });
+    await gotoSettled(page, BRAND_PATH);
+    await expect(page.locator('.copy-button').first()).toBeVisible();
+    expect(errors, 'a script threw under the shipped CSP').toEqual([]);
+  });
+
+  test('the search placeholder is subtle text, readable at 7:1 like other subtle text (SC 1.4.6)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await gotoSettled(page, BRAND_PATH);
+    const colors = await page
+      .locator('#brand-menu [data-menu-list]')
+      .nth(1)
+      .evaluate((box) => ({
+        placeholder: getComputedStyle(
+          box.querySelector('input')!,
+          '::placeholder',
+        ).color,
+        opacity: getComputedStyle(box.querySelector('input')!, '::placeholder')
+          .opacity,
+        subtle: getComputedStyle(box.querySelector('[data-menu-status]')!)
+          .color,
+      }));
+    expect(colors.placeholder).toBe(colors.subtle);
+    expect(colors.opacity).toBe('1');
   });
 });
