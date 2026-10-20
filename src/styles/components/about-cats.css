@@ -366,6 +366,69 @@
   .cat-dialog-body {
     @apply w-48 max-w-full md:w-72;
   }
+  /* The laughing rabbit beside Lepus Ridet: the footer bunny's sticker, static and in the flow, so it never covers text. */
+  .about-rabbit {
+    @apply block h-24 w-auto shrink-0 lg:h-32;
+
+    overflow: visible;
+    --rabbit-edge-width: 6;
+    --rabbit-line-width: 3.4;
+  }
+
+  .about-rabbit .rabbit-edge {
+    fill: var(--color-gold-text);
+    stroke: var(--color-gold-text);
+    stroke-width: var(--rabbit-edge-width);
+  }
+
+  .about-rabbit .rabbit-throw .rabbit-edge {
+    fill: var(--color-pink);
+    stroke: var(--color-pink);
+  }
+
+  .about-rabbit .rabbit-body {
+    fill: var(--color-gold);
+  }
+
+  .about-rabbit .rabbit-ink {
+    fill: var(--color-gold-text);
+  }
+
+  .about-rabbit .rabbit-ear {
+    fill: var(--color-pink);
+  }
+
+  .about-rabbit .rabbit-line {
+    fill: none;
+    stroke: var(--color-gold-text);
+    stroke-width: var(--rabbit-line-width);
+    stroke-linecap: round;
+  }
+
+  /* Chromium defaults inline SVG to `preserve-parent-color` (tests/forced-colors.spec.ts). */
+  .about-rabbit,
+  .about-rabbit * {
+    forced-color-adjust: auto;
+  }
+
+  @media (forced-colors: active) {
+    .about-rabbit :is(.rabbit-edge, .rabbit-ink) {
+      fill: CanvasText;
+      stroke: CanvasText;
+    }
+
+    .about-rabbit .rabbit-line {
+      stroke: CanvasText;
+    }
+
+    .about-rabbit .rabbit-body {
+      fill: Canvas;
+    }
+
+    .about-rabbit :is(.rabbit-throw, .rabbit-ear) {
+      display: none;
+    }
+  }
 }
 
 /* The cats as text, only where scripts do not run; tests/no-script.spec.ts. */
