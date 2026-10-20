@@ -134,12 +134,22 @@
     margin-top: calc(var(--spacing-section) * 2);
   }
 
-  .brand-code-head {
-    @apply flex items-center justify-between gap-4;
+  .brand-code-frame {
+    @apply relative mt-2;
+  }
+
+  /* Pinned inside the frame's edge; the pre reserves its corner, so no code runs under it. */
+  .copy-wrap {
+    @apply absolute;
+
+    top: var(--block-edge);
+    right: var(--block-edge);
   }
 
   .copy-button {
-    @apply inline-flex min-h-target min-w-target items-center justify-center gap-2 border-4 border-border bg-surface px-4 text-label font-black uppercase tracking-label text-text;
+    @apply inline-flex min-h-target min-w-target items-center justify-center gap-2 border-4 border-transparent bg-surface px-2 text-label font-black uppercase tracking-label text-text;
+
+    flex-direction: row-reverse;
 
     & svg {
       @apply size-5 shrink-0;
@@ -151,6 +161,31 @@
 
     &:hover {
       @apply bg-cyan text-background;
+    }
+
+    &:focus-visible {
+      outline-offset: calc(-1 * (var(--focus-width) + var(--focus-gap)));
+    }
+
+    @media (forced-colors: active) {
+      border-color: ButtonText;
+    }
+  }
+
+  /* Above the button and touching it, so the pointer can move onto the tip (SC 1.4.13). */
+  .copy-tip {
+    @apply absolute right-0 hidden border-4 border-border bg-surface px-3 py-1 text-label font-black uppercase tracking-label whitespace-nowrap text-text;
+
+    bottom: 100%;
+  }
+
+  .copy-wrap:focus-within:not([data-dismissed], [data-copied]) .copy-tip {
+    display: block;
+  }
+
+  @media (hover: hover) {
+    .copy-wrap:hover:not([data-dismissed], [data-copied]) .copy-tip {
+      display: block;
     }
   }
 
@@ -164,7 +199,15 @@
   }
 
   .brand-code {
-    @apply mt-2 whitespace-break-spaces border-4 border-border bg-surface p-4 font-mono text-label text-text wrap-anywhere;
+    @apply whitespace-break-spaces border-4 border-border bg-surface p-4 font-mono text-label text-text wrap-anywhere;
+
+    /* A float the width of the button and its Copied label, so the top lines wrap around it. */
+    &::before {
+      content: '';
+      float: right;
+      width: calc(var(--spacing-target) + --spacing(20));
+      height: var(--spacing-target);
+    }
   }
 
   .brand-pair {

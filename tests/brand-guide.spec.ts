@@ -73,7 +73,7 @@ test.describe('/brand guide', () => {
         rows.flatMap((row) => {
           const code = row.querySelector<HTMLElement>('pre.brand-code');
           if (!code) return [];
-          const label = code.previousElementSibling?.querySelector('.label');
+          const label = code.parentElement?.previousElementSibling;
           return [
             {
               part: row.getAttribute('data-component'),
@@ -309,4 +309,284 @@ test.describe('/brand guide', () => {
     expect(ratios).toHaveLength(2);
     for (const value of ratios) expect(value).toBeGreaterThanOrEqual(3);
   });
+
+  for (const width of [320, 1280] as const) {
+    test(`at ${width}px the Copy button never covers code text, at rest or after a copy (SC 1.4.10, 1.4.12)`, async ({
+      page,
+    }) => {
+      await page.addInitScript(() => {
+        Object.defineProperty(navigator, 'clipboard', {
+          value: { writeText: async () => undefined },
+        });
+      });
+      await page.setViewportSize({ width, height: 900 });
+      await gotoSettled(page, BRAND_PATH);
+      const frames = page.locator('.brand-code-frame');
+      const count = await frames.count();
+      expect(count).toBeGreaterThan(0);
+      const overlaps = async () =>
+        page.evaluate(() =>
+          [...document.querySelectorAll('.brand-code-frame')].flatMap(
+            (frame) => {
+              const button = frame
+                .querySelector('.copy-button')!
+                .getBoundingClientRect();
+              const range = document.createRange();
+              range.selectNodeContents(frame.querySelector('code')!);
+              return [...range.getClientRects()]
+                .filter(
+                  (r) =>
+                    r.width > 0 &&
+                    r.left < button.right &&
+                    r.right > button.left &&
+                    r.top < button.bottom &&
+                    r.bottom > button.top,
+                )
+                .map(() =>
+                  frame.querySelector('pre')!.getAttribute('data-copy'),
+                );
+            },
+          ),
+        );
+      expect(await overlaps(), 'code text runs under a Copy button').toEqual(
+        [],
+      );
+      await page.addStyleTag({
+        content:
+          '* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; }',
+      });
+      expect(
+        await overlaps(),
+        'text spacing pushes code under a Copy button',
+      ).toEqual([]);
+      for (let i = 0; i < Math.min(count, 6); i += 1) {
+        await frames.nth(i).locator('.copy-button').click();
+      }
+      expect(await overlaps(), 'the Copied label covers code text').toEqual([]);
+    });
+  }
+
+  for (const theme of ['dark', 'light'] as const) {
+    test(`on a ${theme} page the Copy icon is at least 3:1 against the code ground and its name does not change (SC 1.4.11)`, async ({
+      page,
+    }) => {
+      await gotoSettled(page, BRAND_PATH);
+      await page.evaluate((t) => {
+        document.documentElement.dataset.theme = t;
+      }, theme);
+      const ratioOf = (await page.evaluate(`(() => {
+        ${PAGE_HELPERS}
+        const button = document.querySelector('.copy-button');
+        const pre = button.closest('.brand-code-frame').querySelector('pre');
+        return ratio(parse(getComputedStyle(button).color), parse(getComputedStyle(pre).backgroundColor));
+      })()`)) as number;
+      expect(ratioOf).toBeGreaterThanOrEqual(3);
+      const button = page.locator('.copy-button').first();
+      const before = await button.evaluate((el) => el.textContent);
+      await button.focus();
+      const ring = await button.evaluate((el) => {
+        const s = getComputedStyle(el);
+        const frame = el.closest('.brand-code-frame')!.getBoundingClientRect();
+        const box = el.getBoundingClientRect();
+        const reach = parseFloat(s.outlineOffset) + parseFloat(s.outlineWidth);
+        return {
+          offset: parseFloat(s.outlineOffset),
+          inside:
+            box.left - reach >= frame.left && box.top - reach >= frame.top,
+        };
+      });
+      expect(
+        ring.offset,
+        'the ring should be drawn inside the button',
+      ).toBeLessThan(0);
+      expect(ring.inside).toBe(true);
+      expect(before).toContain('Copy HTML for');
+    });
+  }
+
+  test('the Copy tip shows on hover and on focus, stays while the pointer is on it, and Escape hides it without moving focus (SC 1.4.13)', async ({
+    page,
+  }) => {
+    await gotoSettled(page, BRAND_PATH);
+    const wrap = page.locator('.copy-wrap').first();
+    const tip = wrap.locator('.copy-tip');
+    const button = wrap.getByRole('button');
+    await button.scrollIntoViewIfNeeded();
+    await expect(tip).toBeHidden();
+    await button.hover();
+    await expect(tip).toBeVisible();
+    await expect(tip).toHaveText('Copy');
+    const box = (await tip.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(tip, 'the tip vanished under the pointer').toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(tip).toBeHidden();
+    await page.mouse.move(0, 0);
+    await button.hover();
+    await expect(tip, 'the tip did not return after leaving').toBeVisible();
+    await page.mouse.move(0, 0);
+    await button.focus();
+    await expect(tip).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(tip).toBeHidden();
+    expect(
+      await page.evaluate(() =>
+        document.activeElement?.classList.contains('copy-button'),
+      ),
+      'Escape moved focus',
+    ).toBe(true);
+    const overlap = await page.evaluate(() => {
+      const frame = document.querySelector('.copy-wrap')!.parentElement!;
+      const range = document.createRange();
+      range.selectNodeContents(frame.querySelector('code')!);
+      const tipBox = frame.querySelector('.copy-tip')!.getBoundingClientRect();
+      return [...range.getClientRects()].filter(
+        (r) =>
+          r.left < tipBox.right &&
+          r.right > tipBox.left &&
+          r.top < tipBox.bottom &&
+          r.bottom > tipBox.top,
+      ).length;
+    });
+    expect(overlap, 'the tip covers code text').toBe(0);
+  });
+
+  test('in forced colors the Copy button keeps a border and its icon takes the button color (SC 1.4.11)', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ forcedColors: 'active' });
+    await gotoSettled(page, BRAND_PATH);
+    const look = await page
+      .locator('.copy-button')
+      .first()
+      .evaluate((el) => {
+        const s = getComputedStyle(el);
+        const path = getComputedStyle(el.querySelector('path')!);
+        return {
+          border: s.borderTopColor,
+          width: s.borderTopWidth,
+          ground: s.backgroundColor,
+          fill: path.fill,
+        };
+      });
+    expect(look.border).not.toBe('rgba(0, 0, 0, 0)');
+    expect(look.width).not.toBe('0px');
+    expect(look.fill, 'the icon is not drawn').not.toBe('none');
+    expect(look.fill, 'the icon vanishes into the button').not.toBe(
+      look.ground,
+    );
+  });
+
+  for (const reduce of [true, false]) {
+    test(`with reduced motion ${reduce ? 'on the Copy icon swaps instantly' : 'off nothing on the Copy button takes 200 ms or more'} (SC 2.3.3)`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({
+        reducedMotion: reduce ? 'reduce' : 'no-preference',
+      });
+      await gotoSettled(page, BRAND_PATH);
+      const longest = await page
+        .locator('.copy-wrap')
+        .first()
+        .evaluate((el) =>
+          Math.max(
+            ...[el, ...el.querySelectorAll('*')].map((node) => {
+              const s = getComputedStyle(node);
+              return (
+                Math.max(
+                  parseFloat(s.transitionDuration),
+                  parseFloat(s.animationDuration),
+                ) * 1000
+              );
+            }),
+          ),
+        );
+      expect(longest).toBeLessThan(reduce ? 1 : 200);
+    });
+  }
+
+  test('a tap copies, shows the check and the word Copied, resets after two seconds and a second press announces again (SC 2.5.8, 4.1.3)', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ hasTouch: true });
+    const page = await context.newPage();
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText: async () => undefined },
+      });
+      document.addEventListener('DOMContentLoaded', () => {
+        const log: string[] = [];
+        Object.defineProperty(window, '__announced', { value: log });
+        new MutationObserver(() => {
+          const text = document.querySelector(
+            'body > [role="status"]',
+          )?.textContent;
+          if (text) log.push(text);
+        }).observe(document.body, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+        });
+      });
+    });
+    await gotoSettled(page, BRAND_PATH);
+    const wrap = page.locator('.copy-wrap').first();
+    const button = wrap.getByRole('button');
+    await button.scrollIntoViewIfNeeded();
+    const box = (await button.boundingBox())!;
+    expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
+    const shape = () => wrap.locator('path').getAttribute('d');
+    const rest = await shape();
+    await button.tap();
+    await expect(wrap.getByText('Copied', { exact: true })).toBeVisible();
+    expect(await shape(), 'the icon did not become a check').not.toBe(rest);
+    await expect(wrap.getByText('Copied', { exact: true })).toBeHidden({
+      timeout: 3500,
+    });
+    expect(await shape()).toBe(rest);
+    await button.tap();
+    await expect(wrap.getByText('Copied', { exact: true })).toBeVisible();
+    const announced = await page.evaluate(
+      () => (window as never as { __announced: string[] }).__announced,
+    );
+    expect(
+      announced.filter((text) => text === 'Copied').length,
+      'the second copy was not announced',
+    ).toBeGreaterThanOrEqual(2);
+    await context.close();
+  });
+
+  for (const theme of ['dark', 'light'] as const) {
+    test(`on a ${theme} page the Copy tip text reads at 7:1 and its icon and ring at 3:1 (SC 1.4.6, 1.4.11)`, async ({
+      page,
+    }) => {
+      await gotoSettled(page, BRAND_PATH);
+      await page.evaluate((t) => {
+        document.documentElement.dataset.theme = t;
+      }, theme);
+      const button = page.locator('.copy-button').first();
+      await button.scrollIntoViewIfNeeded();
+      await button.focus();
+      await page.keyboard.press('Tab');
+      await page.keyboard.press('Shift+Tab');
+      const ratios = (await page.evaluate(`(() => {
+        ${PAGE_HELPERS}
+        const button = document.querySelector('.copy-button');
+        const tip = button.parentElement.querySelector('.copy-tip');
+        tip.style.display = 'block';
+        const b = getComputedStyle(button);
+        const t = getComputedStyle(tip);
+        return {
+          tip: ratio(parse(t.color), parse(t.backgroundColor)),
+          icon: ratio(parse(b.color), parse(b.backgroundColor)),
+          ring: ratio(parse(b.outlineColor), parse(b.backgroundColor)),
+          ringWidth: parseFloat(b.outlineWidth),
+        };
+      })()`)) as { tip: number; icon: number; ring: number; ringWidth: number };
+      expect(ratios.tip).toBeGreaterThanOrEqual(7);
+      expect(ratios.icon).toBeGreaterThanOrEqual(3);
+      expect(ratios.ring).toBeGreaterThanOrEqual(3);
+      expect(ratios.ringWidth).toBeGreaterThanOrEqual(4);
+    });
+  }
 });
