@@ -97,7 +97,7 @@ ${fill(TRACE.sil, INK, outer)}${fill(TRACE.sil, WHITE, (STICKER.edge + 2 * STICK
 ${fill(TRACE.pink, EAR)}${fill(line, INK, STICKER.line * u)}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
 }
 
-/* Bakes a transform into absolute M/L/C coordinates, so favicon.svg carries 64-grid numbers. */
+/* Bakes a transform into absolute M/L/C coordinates, for the PNG icons. */
 function bake(d, { a, b, c, e, f, g }) {
   const nums = d.match(/-?\d+(\.\d+)?/g).map(Number);
   let i = 0;
@@ -108,7 +108,91 @@ function bake(d, { a, b, c, e, f, g }) {
   });
 }
 
-function iconArtwork() {
+/* favicon.svg: curves flattened, thinned and rounded to whole units of a grid FINE times the icon's. */
+const FINE = 4;
+const CURVE_STEPS = 6;
+const THIN = 0.6;
+
+const flatten = (d, { a, b, c, e, f, g }) => {
+  const at = (x, y) => [(a * x + c * y + e) * FINE, (b * x + g * y + f) * FINE];
+  const rings = [];
+  let ring = null;
+  for (const [, op, args] of d.matchAll(/([MLC])([^MLCZ]*)/g)) {
+    const n = args.match(/-?\d+(\.\d+)?/g).map(Number);
+    if (op === 'M') rings.push((ring = [at(n[0], n[1])]));
+    else if (op === 'L') ring.push(at(n[0], n[1]));
+    else {
+      for (let k = 0; k < n.length; k += 6) {
+        const [p0x, p0y] = ring.at(-1);
+        const [p1, p2, p3] = [
+          at(n[k], n[k + 1]),
+          at(n[k + 2], n[k + 3]),
+          at(n[k + 4], n[k + 5]),
+        ];
+        for (let s = 1; s <= CURVE_STEPS; s += 1) {
+          const t = s / CURVE_STEPS;
+          const u = 1 - t;
+          ring.push([
+            u ** 3 * p0x +
+              3 * u * u * t * p1[0] +
+              3 * u * t * t * p2[0] +
+              t ** 3 * p3[0],
+            u ** 3 * p0y +
+              3 * u * u * t * p1[1] +
+              3 * u * t * t * p2[1] +
+              t ** 3 * p3[1],
+          ]);
+        }
+      }
+    }
+  }
+  return rings;
+};
+
+/* Ramer-Douglas-Peucker: drops points within THIN of the line between kept ones. */
+const thin = (points) => {
+  if (points.length < 3) return points;
+  const [ax, ay] = points[0];
+  const [bx, by] = points.at(-1);
+  const length = Math.hypot(bx - ax, by - ay) || 1;
+  let far = 0;
+  let at = 0;
+  points.forEach(([x, y], i) => {
+    const distance =
+      Math.abs((bx - ax) * (ay - y) - (ax - x) * (by - ay)) / length;
+    if (distance > far) [far, at] = [distance, i];
+  });
+  if (far <= THIN) return [points[0], points.at(-1)];
+  return [
+    ...thin(points.slice(0, at + 1)).slice(0, -1),
+    ...thin(points.slice(at)),
+  ];
+};
+
+/* A closed ring starts and ends on one point, so it is split at the point farthest from it. */
+const thinRing = (ring) => {
+  const [x0, y0] = ring[0];
+  let at = 0;
+  ring.forEach(([x, y], i) => {
+    if (
+      Math.hypot(x - x0, y - y0) >
+      Math.hypot(ring[at][0] - x0, ring[at][1] - y0)
+    )
+      at = i;
+  });
+  return [...thin(ring.slice(0, at + 1)).slice(0, -1), ...thin(ring.slice(at))];
+};
+
+const compact = (d, m) =>
+  flatten(d, m)
+    .map((ring) =>
+      thinRing(ring).map(([x, y]) => [Math.round(x), Math.round(y)]),
+    )
+    .filter((ring) => ring.length > 2)
+    .map((ring) => `M${ring.map((p) => p.join(' ')).join('L')}Z`)
+    .join('');
+
+function iconArtwork({ precise }) {
   const s = bbox(TRACE.sil);
   const [bx, by, bw, bh] = ICON_POSE.box;
   const k = Math.min(bw / (s.x1 - s.x0), bh / (s.y1 - s.y0));
@@ -124,25 +208,31 @@ function iconArtwork() {
   };
   m.e = cx - m.a * mx - m.c * my;
   m.f = cy - m.b * mx - m.g * my;
-  const sil = bake(TRACE.sil, m);
+  const path = (d) => (precise ? bake(d, m) : compact(d, m));
+  const unit = precise ? 1 : FINE;
   const t = ICON_TILE;
-  return `<rect x="${t.x + t.throw}" y="${t.y + t.throw}" width="${t.size}" height="${t.size}" rx="${t.rx}" fill="${PINK}"/>
-<rect x="${t.x}" y="${t.y}" width="${t.size}" height="${t.size}" rx="${t.rx}" fill="${GOLD}" stroke="${INK}" stroke-width="${t.edge}"/>
-<defs><path id="r" d="${sil}"/></defs><use href="#r" fill="${INK}" stroke="${INK}" stroke-width="${ICON_POSE.halo * 2}" stroke-linejoin="round"/><use href="#r" fill="${WHITE}"/>${fill(bake(largest(TRACE.pink), m), EAR)}${fill(bake(largest(TRACE.eye), m), INK)}`;
+  const tile = `<rect x="${t.x + t.throw}" y="${t.y + t.throw}" width="${t.size}" height="${t.size}" rx="${t.rx}" fill="${PINK}"/><rect x="${t.x}" y="${t.y}" width="${t.size}" height="${t.size}" rx="${t.rx}" fill="${GOLD}" stroke="${INK}" stroke-width="${t.edge}"/>`;
+  return `${precise ? tile : `<g transform="scale(${FINE})">${tile}</g>`}<defs><path id="r" d="${path(TRACE.sil)}"/></defs><use href="#r" fill="${INK}" stroke="${INK}" stroke-width="${ICON_POSE.halo * 2 * unit}" stroke-linejoin="round"/><use href="#r" fill="${WHITE}"/>${fill(path(largest(TRACE.pink)), EAR)}${fill(path(largest(TRACE.eye)), INK)}`;
 }
 
 const svg = (viewBox, body) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${body}</svg>\n`;
 
+const SIDE = ICON * FINE;
 const iconSvg = svg(
+  `0 0 ${SIDE} ${SIDE}`,
+  `<defs><clipPath id="c"><rect width="${SIDE}" height="${SIDE}"/></clipPath></defs><g clip-path="url(#c)">${iconArtwork({ precise: false })}</g>`,
+);
+/* The tab PNGs and the 96 keep the full curves; favicon.svg is the small copy. */
+const iconFull = svg(
   `0 0 ${ICON} ${ICON}`,
-  `<defs><clipPath id="c"><rect width="${ICON}" height="${ICON}"/></clipPath></defs><g clip-path="url(#c)">${iconArtwork()}</g>`,
+  `<defs><clipPath id="c"><rect width="${ICON}" height="${ICON}"/></clipPath></defs><g clip-path="url(#c)">${iconArtwork({ precise: true })}</g>`,
 );
 const onGold = (scale) => {
   const inset = (ICON * (1 - scale)) / 2;
   return svg(
     `0 0 ${ICON} ${ICON}`,
-    `<rect width="${ICON}" height="${ICON}" fill="${GOLD}"/><g transform="translate(${inset} ${inset}) scale(${scale})">${iconArtwork()}</g>`,
+    `<rect width="${ICON}" height="${ICON}" fill="${GOLD}"/><g transform="translate(${inset} ${inset}) scale(${scale})">${iconArtwork({ precise: true })}</g>`,
   );
 };
 
@@ -218,11 +308,11 @@ writeFileSync('public/favicon.svg', iconSvg);
 const frames = [16, 32, 48];
 const framePngs = [];
 for (const size of frames) {
-  const frame = await png(iconSvg, size);
+  const frame = await png(iconFull, size);
   framePngs.push(frame);
   writeFileSync(`artwork/favicon-${size}x${size}.png`, frame);
 }
-writeFileSync('public/favicon-96x96.png', await png(iconSvg, 96));
+writeFileSync('public/favicon-96x96.png', await png(iconFull, 96));
 writeFileSync('public/apple-touch-icon.png', await png(onGold(APP_SCALE), 180));
 writeFileSync(
   'public/android-chrome-192x192.png',

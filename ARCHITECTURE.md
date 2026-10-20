@@ -480,6 +480,8 @@ in `wrangler.jsonc`).
 | `public/maskable-icon-512x512.png`  | 512          | `purpose: maskable`, mark inside the 80% safe zone   |
 
 - The icons drop the rabbit's inner lines: they turn to mush below 48px.
+- `favicon.svg` is a thinned copy, curves flattened and rounded on a 256 grid,
+  under 4 KB (`tests/icons.spec.ts`); the PNGs keep the full curves.
 - `favicon.ico` holds the 16, 32 and 48 frames as PNGs.
 
 ```sh
