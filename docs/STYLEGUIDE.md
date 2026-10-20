@@ -901,7 +901,11 @@ text-gold-muted` under the standfirst. Color
 
 - The header is a gold bar on the hero's column, 12px below the top, with the
   logo tile and name at its left end ([Navigation](#navigation)).
-- The logo tile keeps its `bunny` shadow.
+- The logo tile keeps its `bunny` shadow. The die-cut rabbit jumps its
+  top-right corner and casts an ink throw, so the corner never doubles the pink.
+- The tile is the rabbit's springboard: hovered, the rabbit rises 3px; pressed,
+  the tile drops into its shadow and the rabbit springs 8px up. Not under
+  reduced motion.
 - The sticky header covers the top of the slab on scroll; nothing on the slab
   is fixed.
 
@@ -1144,10 +1148,12 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   `block-light` fills and `block-ink` lines; `.site-header` keeps the page's
   values as `--page-*` for the menu dialog.
 - The logo tile and name sit inside the bar with no block, edge or throw of
-  their own. The tile keeps its 8px `bunny` shadow; the link pads it inside
-  its box (`padding-block-end: var(--lift-mark)`), so the ring at the plain
-  4px gap clears it and stays inside the bar, full and slim
-  (`tests/header-bricks.spec.ts`).
+  their own. The tile keeps its 8px `bunny` shadow inside the link's box
+  (`padding-block-end: var(--lift-mark)`).
+- Focused, the logo link turns into a `block-ink` block with a `block-gold`
+  name and no ring: the rabbit jumps higher than the bar leaves room for a
+  ring around it. Its ring is transparent, and `CanvasText` in forced colors
+  (`tests/header-bricks.spec.ts`, `tests/focus.spec.ts`).
 - Nav links, the theme switch and the call to action are joined bricks
   (`.header-bricks`): 44px tall, the target (SC 2.5.5), sharing their 4px
   edges, one `shadow-brick` per row, in `block-ink` in both modes. Each row
@@ -1284,6 +1290,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   `--focus-gap` 4px plus `--lift`. Never style `:focus`; never remove an
   outline; never `outline-offset: 0`.
 - A hard shadow is not a focus indicator.
+- One exception: the header logo link inverts to an ink block instead of a
+  ring ([Navigation](#navigation)).
 - `html` `scroll-padding-bottom` is the ring's width, gap, the largest lift and
   `--scroll-rounding` (1px), so a control scrolled to the bottom edge keeps its
   whole ring on screen.
