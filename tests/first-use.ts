@@ -1,11 +1,9 @@
 import type { Page } from './test';
-import { BRAND_ROUTES } from '../src/lib/brand-sections';
 
 /** Functional pages: their copy is written by whoever builds the UI (AGENTS.md "Copy"). */
 export const FUNCTIONAL_ROUTES = [
   '/accessibility',
   '/brand',
-  ...BRAND_ROUTES,
   '/credits',
   '/privacy',
   '/contact',
@@ -41,6 +39,8 @@ type FirstUse = {
   defining: boolean;
   /** Text of what the nearest `aria-describedby` ancestor points to, or null. */
   description: string | null;
+  /** The use sits in a link to a Creative Commons deed, which names the license in full. */
+  inDeedLink: boolean;
 };
 
 /** The first visible use of `term` in `<main>`, or null when there is none. */
@@ -82,6 +82,8 @@ export const firstUse = (page: Page, term: string): Promise<FirstUse | null> =>
         sentence: sentences.find((sentence) => use.test(sentence)) ?? text,
         defining: dfn?.textContent?.trim() === word,
         description,
+        inDeedLink:
+          parent.closest('a')?.href.includes('creativecommons.org') ?? false,
       };
     }
     return null;

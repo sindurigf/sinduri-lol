@@ -16,6 +16,8 @@ const FIRST_USES: readonly {
   route: string;
   abbreviation: string;
   expansion: string;
+  /** A photo caption's license links to its deed, which names it in full (G55), so its use needs no expansion. */
+  viaDeed?: true;
 }[] = [
   {
     route: '/accessibility',
@@ -79,7 +81,7 @@ const FIRST_USES: readonly {
   },
   { route: '/brand', abbreviation: 'CSS', expansion: 'Cascading Style Sheets' },
   {
-    route: '/brand/text',
+    route: '/brand',
     abbreviation: 'AI',
     expansion: 'artificial intelligence',
   },
@@ -104,44 +106,15 @@ const FIRST_USES: readonly {
     expansion: "the highest of WCAG's three levels",
   },
   {
-    route: '/brand/template',
+    route: '/brand',
     abbreviation: 'CC BY',
     expansion: 'Creative Commons Attribution',
+    viaDeed: true,
   },
   {
-    route: '/brand/template',
+    route: '/brand',
     abbreviation: 'CC0',
     expansion: 'Creative Commons Zero',
-  },
-  {
-    route: '/brand/cards',
-    abbreviation: 'WCAG',
-    expansion: 'Web Content Accessibility Guidelines',
-  },
-  {
-    route: '/brand/cards',
-    abbreviation: 'AA',
-    expansion: "the middle of WCAG's three levels",
-  },
-  {
-    route: '/brand/cards',
-    abbreviation: 'AAA',
-    expansion: "the highest of WCAG's three levels",
-  },
-  {
-    route: '/brand/accessibility',
-    abbreviation: 'WCAG',
-    expansion: 'Web Content Accessibility Guidelines',
-  },
-  {
-    route: '/brand/accessibility',
-    abbreviation: 'AA',
-    expansion: "the middle of WCAG's three levels",
-  },
-  {
-    route: '/brand/accessibility',
-    abbreviation: 'AAA',
-    expansion: "the highest of WCAG's three levels",
   },
   { route: '/privacy', abbreviation: 'IP', expansion: 'Internet Protocol' },
   {
@@ -231,7 +204,7 @@ test.describe('abbreviations are expanded at first use (SC 3.1.4)', () => {
     }) => {
       await gotoSettled(page, route);
 
-      for (const { abbreviation, expansion } of FIRST_USES.filter(
+      for (const { abbreviation, expansion, viaDeed } of FIRST_USES.filter(
         (entry) => entry.route === route,
       )) {
         const use = await firstUse(page, abbreviation);
@@ -239,6 +212,13 @@ test.describe('abbreviations are expanded at first use (SC 3.1.4)', () => {
           use,
           `${abbreviation} no longer appears in ${route}'s <main>; remove its entry.`,
         ).not.toBeNull();
+        if (viaDeed) {
+          expect(
+            use!.inDeedLink,
+            `${route} first uses ${abbreviation} outside a link to its deed.`,
+          ).toBe(true);
+          continue;
+        }
         expect(
           use!.description,
           `${route} first uses ${abbreviation} without "${expansion}" as its description.`,
