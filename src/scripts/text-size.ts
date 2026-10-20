@@ -28,15 +28,26 @@ const run = (trigger: HTMLButtonElement): void => {
     0,
     TEXT_SCALE_STEPS.findLastIndex((size) => size <= now),
   );
-  const index =
+  const wanted =
     action === 'reset'
       ? TEXT_SCALE_STEPS.indexOf(TEXT_SCALE_DEFAULT)
       : Math.min(last, Math.max(0, at + (action === 'larger' ? 1 : -1)));
-  const percent = TEXT_SCALE_STEPS[index]!;
+  const show = (index: number): void => {
+    const percent = TEXT_SCALE_STEPS[index]!;
+    if (percent === TEXT_SCALE_DEFAULT)
+      root.style.removeProperty(TEXT_SCALE_PROPERTY);
+    else root.style.setProperty(TEXT_SCALE_PROPERTY, String(percent / PERCENT));
+  };
 
-  if (percent === TEXT_SCALE_DEFAULT)
-    root.style.removeProperty(TEXT_SCALE_PROPERTY);
-  else root.style.setProperty(TEXT_SCALE_PROPERTY, String(percent / PERCENT));
+  /* A step this page cannot hold without sideways scroll is taken back (SC 1.4.10). */
+  let index = wanted;
+  show(index);
+  while (index > at && root.scrollWidth > root.clientWidth) {
+    index -= 1;
+    show(index);
+  }
+  const fits = index === wanted;
+  const percent = TEXT_SCALE_STEPS[index]!;
 
   for (const button of group.querySelectorAll<HTMLElement>(
     '[data-size-action]',
@@ -45,13 +56,17 @@ const run = (trigger: HTMLButtonElement): void => {
     const unavailable =
       kind === 'reset'
         ? percent === TEXT_SCALE_DEFAULT
-        : index === (kind === 'smaller' ? 0 : last);
+        : kind === 'smaller'
+          ? index === 0
+          : index === last || !fits;
     button.setAttribute('aria-disabled', String(unavailable));
   }
   const stayed = index === at && action !== 'reset';
-  status.textContent = stayed
-    ? `Text is already the ${action === 'larger' ? 'largest' : 'smallest'} size, ${percent}%.`
-    : `Text is ${percent}%.`;
+  status.textContent = !fits
+    ? `Text is ${percent}%. That is the most this page fits.`
+    : stayed
+      ? `Text is already the ${action === 'larger' ? 'largest' : 'smallest'} size, ${percent}%.`
+      : `Text is ${percent}%.`;
 
   if (group.dataset.textSize !== 'site') return;
   try {

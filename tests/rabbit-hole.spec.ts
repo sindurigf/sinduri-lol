@@ -104,14 +104,25 @@ test.describe('the rabbit hole', () => {
     test(`Curiouser never lands on ${path}, the page it is on`, async ({
       page,
     }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
       await gotoSettled(page, path);
       for (let i = 0; i < CURIOUSER_TRIES; i += 1) {
         await curiouser(page).click();
-        await expect(landing(page)).toBeVisible({ timeout: 4000 });
+        await expect(landing(page)).toBeVisible();
         expect(await landing(page).getAttribute('href')).not.toBe(path);
       }
     });
   }
+
+  test('the reel runs, then lands and offers the link', async ({ page }) => {
+    await gotoSettled(page, '/about/');
+    await curiouser(page).click();
+    await expect(page.locator('[data-curiouser-result] span')).not.toHaveText(
+      '',
+    );
+    await expect(landing(page)).toBeVisible({ timeout: 4000 });
+    await expect(landing(page)).toHaveText(/^Go to /);
+  });
 
   test('with reduced motion Curiouser lands at once, with no reel', async ({
     page,
@@ -174,7 +185,9 @@ test.describe('the rabbit hole', () => {
         await page.setViewportSize({ width, height: 800 });
         for (const route of WIDE_ROUTES) {
           await gotoSettled(page, route);
-          expect(await rootSize(page)).toBe(String(saved / 100));
+          expect(Number((await rootSize(page)) || 1)).toBeLessThanOrEqual(
+            saved / 100,
+          );
           const over = await sidewaysPx(page);
           expect(
             over,
@@ -184,6 +197,22 @@ test.describe('the rabbit hole', () => {
       });
     }
   }
+
+  test('a size the page cannot hold is taken back and Eat Me says so', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await gotoSettled(page, '/credits/');
+    const group = page.locator('[data-text-size="site"]');
+    const eat = group.getByRole('button', { name: 'Eat Me' });
+    for (let i = 0; i < TEXT_SCALE_STEPS.length; i += 1) await eat.click();
+    await expect(group.locator('[data-size-status]')).toContainText(
+      'the most this page fits',
+    );
+    await expect(eat).toHaveAttribute('aria-disabled', 'true');
+    expect(await sidewaysPx(page)).toBeLessThanOrEqual(0);
+    await page.evaluate((key) => localStorage.removeItem(key), TEXT_SCALE_KEY);
+  });
 
   test('on /down/ the door scales the page only and nothing is remembered', async ({
     page,

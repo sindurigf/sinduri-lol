@@ -1,8 +1,8 @@
 /* Curiouser: a reel of real titles slows and lands on a page that is not this one; a link then goes there. */
 
-const REEL_STEPS = 9;
-const REEL_BASE_MS = 60;
-const REEL_SLOWING_MS = 7;
+const REEL_STEPS = 7;
+const REEL_BASE_MS = 40;
+const REEL_SLOWING_MS = 5;
 
 type Page = readonly [title: string, href: string];
 

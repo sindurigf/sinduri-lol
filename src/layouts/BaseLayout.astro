@@ -143,11 +143,23 @@ const articleData = article && {
       });
       try {
         const scale = Number(localStorage.getItem(scaleKey));
-        if (scale !== 100 && scaleSteps.includes(scale))
-          document.documentElement.style.setProperty(
-            scaleProperty,
-            scale / 100,
-          );
+        const root = document.documentElement;
+        const setScale = (percent) =>
+          root.style.setProperty(scaleProperty, percent / 100);
+        if (scale > 100 && scaleSteps.includes(scale)) {
+          setScale(scale);
+          /* A size this page cannot hold without sideways scroll steps down to one it can (SC 1.4.10). */
+          addEventListener('load', () => {
+            for (
+              let i = scaleSteps.indexOf(scale);
+              i > 0 &&
+              scaleSteps[i] > 100 &&
+              root.scrollWidth > root.clientWidth;
+              i--
+            )
+              setScale(scaleSteps[i - 1]);
+          });
+        } else if (scale < 100 && scaleSteps.includes(scale)) setScale(scale);
       } catch {}
     </script>
     <title>{documentTitle}</title>
