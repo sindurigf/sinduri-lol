@@ -78,6 +78,13 @@ test.describe('the White Rabbit and the Cheshire Cat', () => {
       'href',
       '/blog/five-years-in-drupal/',
     );
+    await expect(page.locator('[data-follow-title]')).toHaveText(
+      'Five Years in Drupal: A Sinduri Before and a Sinduri After',
+    );
+    await expect(
+      page.locator('[data-follow-title]'),
+      'the title is already in the link name, so it is not read twice',
+    ).toHaveAttribute('aria-hidden', 'true');
   });
 
   test('with no close page, Follow Me leads home', async ({ page }) => {
@@ -95,6 +102,7 @@ test.describe('without JavaScript', () => {
   }) => {
     await page.goto(MISTYPED);
     await expect(followMe(page)).toHaveAttribute('href', '/');
+    await expect(page.locator('[data-follow-title]')).toHaveText('Home');
     const sections = page.getByRole('list', { name: 'Sections' });
     await expect(
       sections,
