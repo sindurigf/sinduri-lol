@@ -6,7 +6,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import CloseRow from '../components/CloseRow.astro';
 import PageHero from '../components/PageHero.astro';
 import Section from '../components/Section.astro';
-import { JOURNEY_POST_HREF } from '../lib/paths';
+import { CV_PATH, JOURNEY_POST_HREF } from '../lib/paths';
 import { wallClasses } from '../lib/wall';
 
 /*
@@ -14,7 +14,7 @@ import { wallClasses } from '../lib/wall';
  * from the post are marked. Change the PDF and this page together: no test
  * compares their text. A slot neither source fills gets fewer items, not new copy.
  */
-const CV_HREF = '/sinduri-guntupalli-cv.pdf';
+const CV_HREF = CV_PATH;
 const PUBLIC_DIR = 'public';
 const BYTES_PER_KB = 1024;
 

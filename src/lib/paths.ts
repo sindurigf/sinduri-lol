@@ -11,6 +11,7 @@ export const CREDITS_PATH = '/credits/';
 export const TALKS_PATH = '/talks/';
 export const SITEMAP_PATH = '/sitemap-index.xml';
 export const SITE_FEED_PATH = '/rss.xml';
+export const CV_PATH = '/sinduri-guntupalli-cv.pdf';
 
 /* Relative to the project root, for the loader and for plain-Node readers. */
 export const BLOG_CONTENT_DIR = './src/content/blog';

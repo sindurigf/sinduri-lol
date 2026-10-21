@@ -36,7 +36,7 @@ How AI tooling was used to build this site.
   - the hopping bunny in the homepage hero, drawn with Canva AI and traced
     with Potrace (`src/assets/hero-rabbit.webp`, `src/lib/hero-field-rabbit.ts`),
     and its stills shown without JavaScript (`src/assets/hero-still-*.webp`);
-  - the sticker bunny in the footer, drawn with Canva AI and traced with
+  - the sticker bunny in the footer and on the 404 page, drawn with Canva AI and traced with
     Potrace (`src/assets/bunny-footer.webp`);
   - the jumping bunny in the header logo, the hero roundel, every favicon and
     app icon and the share images, the same Canva AI rabbit traced with Potrace
