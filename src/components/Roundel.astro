@@ -14,7 +14,12 @@ interface Props {
   variant?: 'page' | 'hero';
 }
 
-const { class: className = '', eager = false, variant = 'page' } = Astro.props;
+/* The box must be positioned to hold the art; a caller's `absolute` replaces the default. */
+const {
+  class: className = 'relative',
+  eager = false,
+  variant = 'page',
+} = Astro.props;
 
 const BOX_CLASS = {
   page: 'size-24 lg:size-32',
@@ -33,7 +38,7 @@ const ART_SIZES = {
 } as const;
 ---
 
-<span class:list={['relative block rotate-3', BOX_CLASS[variant], className]}>
+<span class:list={['block rotate-3', BOX_CLASS[variant], className]}>
   <span class="absolute -inset-1/8">
     <Image
       src={roundelRabbit}
