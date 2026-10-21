@@ -1,0 +1,15 @@
+@reference '../global.css';
+
+@layer components {
+  /* The page Follow Me leads to: two lines held open, so a longer title moves nothing below. */
+  .follow-to {
+    min-height: calc(
+      2 * var(--text-contents) * var(--text-contents--line-height)
+    );
+    margin-top: --spacing(3);
+    font-size: var(--text-contents);
+    line-height: var(--text-contents--line-height);
+
+    @apply text-text;
+  }
+}

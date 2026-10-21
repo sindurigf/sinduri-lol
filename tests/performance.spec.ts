@@ -131,12 +131,14 @@ test.describe('page weight and stability', () => {
         `${MISTYPED} shifted its layout while loading at ${width}px:\n${sources.join('\n')}`,
       ).toBe(0);
 
-      /* Below the fold a shift scores 0, so the label's size is compared with the page without the script. */
+      /* Below the fold a shift scores 0, so the label and title sizes are compared with the page without the script. */
       const followBox = (on: Page) =>
-        on.locator('a[data-follow]').evaluate((link) => {
-          const { width: w, height: h } = link.getBoundingClientRect();
-          return { w, h };
-        });
+        on.locator('a[data-follow], [data-follow-title]').evaluateAll((parts) =>
+          parts.map((part) => {
+            const { width: w, height: h } = part.getBoundingClientRect();
+            return { w, h };
+          }),
+        );
       const before = await browser.newContext({
         javaScriptEnabled: false,
         viewport: { width, height: 900 },
@@ -145,7 +147,7 @@ test.describe('page weight and stability', () => {
       await still.goto(MISTYPED);
       expect(
         await followBox(page),
-        'Follow Me changed size once the script named its page',
+        'Follow Me or the title under it changed size once the script named its page',
       ).toEqual(await followBox(still));
       await before.close();
     });
