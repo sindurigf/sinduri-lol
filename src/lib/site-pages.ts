@@ -1,4 +1,10 @@
-import { getCategoriesWithPosts, getSortedPosts, categoryLabel } from './blog';
+import {
+  categoryLabel,
+  getCategoriesWithPosts,
+  getPostsByTag,
+  getSortedPosts,
+  tagLabel,
+} from './blog';
 import { BRAND_SECTIONS, BRAND_PATH, brandHref } from './brand-sections';
 import {
   ABOUT_PATH,
@@ -9,8 +15,10 @@ import {
   CREDITS_PATH,
   CV_PATH,
   PRIVACY_PATH,
+  SITE_FEED_PATH,
   categoryHref,
   postHref,
+  tagHref,
 } from './paths';
 import { talkDecks } from './talk-deck';
 
@@ -40,6 +48,11 @@ export const sitePages = async (): Promise<SitePage[]> => {
       title: categoryLabel(category),
       path: categoryHref(category),
     })),
+    ...[...(await getPostsByTag()).keys()].map((tag) => ({
+      title: tagLabel(tag),
+      path: tagHref(tag),
+    })),
+    { title: 'RSS Feed', path: SITE_FEED_PATH },
     ...(await getSortedPosts()).map((post) => ({
       title: post.data.title,
       path: postHref(post.id),
