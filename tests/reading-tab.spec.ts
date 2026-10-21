@@ -356,6 +356,8 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     await page.keyboard.press('Escape');
     await expect(menu).toBeHidden();
     await theme.click();
+    /* The menu's toggle event moves focus to the chosen radio; wait for it, or it lands after the Tab. */
+    await expect(menu.locator('input:checked')).toBeFocused();
     await menu.getByRole('button', { name: /^Just Right/ }).focus();
     await page.keyboard.press('Tab');
     await expect(menu).toBeHidden();
@@ -391,10 +393,12 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     await page.mouse.click(20, 700);
     await expect(popover).toBeHidden();
     await aa.click();
+    await expect(popover).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(popover).toBeHidden();
     await expect(aa).toBeFocused();
     await aa.click();
+    await expect(popover).toBeVisible();
     await popover.getByRole('button', { name: /^Just Right/ }).focus();
     await page.keyboard.press('Tab');
     await expect(popover).toBeHidden();
