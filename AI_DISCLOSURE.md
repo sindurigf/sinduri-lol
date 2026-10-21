@@ -38,11 +38,10 @@ How AI tooling was used to build this site.
     and its stills shown without JavaScript (`src/assets/hero-still-*.webp`);
   - the sticker bunny in the footer and on the 404 page, drawn with Canva AI and traced with
     Potrace (`src/assets/bunny-footer.webp`);
-  - the jumping bunny in the header logo, every favicon and app icon and the
-    share images, the same Canva AI rabbit traced with Potrace
+  - the jumping bunny in the header logo, the hero roundel, every favicon and
+    app icon and the share images, the same Canva AI rabbit traced with Potrace
     (`artwork/rabbit-jump.json`, `scripts/make-logo.mjs`, `scripts/make-og.mjs`);
-  - the line bunny on the roundel and the `/about/` tile
-    (`src/assets/bunny-dark.png`);
+  - the line bunny on the `/about/` tile (`src/assets/bunny-dark.png`);
   - the drawn, animated cats on `/about/`, their sleep, wake and trick-list
     icons (`src/components/ui/AboutCats.vue`) and their trick icons
     (`src/lib/about-cats-tricks.json`). The cat photos are real.

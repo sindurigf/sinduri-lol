@@ -1,7 +1,8 @@
 /*
  * Pure. The rabbit is four traced poses in one atlas (src/assets/hero-rabbit.webp),
- * die-cut sticker included; they face left and the route runs right, so it is
- * drawn mirrored. It moves as one piece and swaps poses; it never bends.
+ * die-cut sticker and ink-backed pink block included; they face left and the
+ * route runs right, so it is drawn mirrored. It moves as one piece and swaps
+ * poses; it never bends.
  */
 import type { RoutePoint } from './hero-field-scene';
 

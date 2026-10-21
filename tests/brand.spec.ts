@@ -734,9 +734,9 @@ test.describe('/brand', () => {
     page,
   }) => {
     await gotoSettled(page, BRAND_PATH);
-    const switches = page.locator(`.theme-switch${LIVE}`);
+    const switches = page.locator(`.theme-switch:not(.aa-switch)${LIVE}`);
     await expect(switches).toHaveCount(2);
-    const menus = page.locator(`.theme-menu${LIVE}`);
+    const menus = page.locator(`.theme-menu:not(#text-menu)${LIVE}`);
     const state = () =>
       menus.evaluateAll((all) => ({
         theme: document.documentElement.dataset.theme,
@@ -793,7 +793,7 @@ test.describe('/brand', () => {
               [...document.querySelectorAll<HTMLElement>(selector)]
                 .filter((el) => el.checkVisibility() && !el.closest('[inert]'))
                 .map((el) => ({ el, box: el.getBoundingClientRect() }));
-            const roundels = boxes('main .hero-roundel');
+            const roundels = boxes('main .hero-roundel img');
             const controls = boxes(
               'main :is(summary, a[href], button, input, select, textarea, [tabindex])',
             );

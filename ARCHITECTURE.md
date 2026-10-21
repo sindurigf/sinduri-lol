@@ -325,7 +325,9 @@ it stays out of the per-page script budgets (`tests/performance.spec.ts`).
 - A feature is a `?worker&url` file. `Footer.astro` renders the registry on
   every page except under `/talks/`.
 - A trigger is `[data-on-demand="<feature file URL>"]`, shipped `hidden`; the
-  registry unhides it. Without JavaScript nothing shows.
+  registry unhides it. Without JavaScript nothing shows. A trigger that takes
+  room in the layout is drawn from first paint instead, so nothing moves when
+  the registry runs: the Aa brick, hidden like Theme without `data-theme`.
 - First click imports the file, then dispatches an `on-demand` event on the
   trigger; later clicks only dispatch. A failed import is reported with
   `reportError` and retried on the next click.
@@ -399,13 +401,14 @@ in `wrangler.jsonc`).
   the `favicon.ico` frames, the traced logo rabbit and its share-card copy).
   Nothing in it ships.
 
-| Path                           | Artwork   | Goes on              | Used by                                      |
-| ------------------------------ | --------- | -------------------- | -------------------------------------------- |
-| `src/assets/bunny-dark.png`    | `#111111` | Gold, light surfaces | `Roundel.astro`, About                       |
-| `src/assets/logo-rabbit.png`   | Sticker   | The logo tile        | `Header.astro` logo tile                     |
-| `artwork/badge-white.png`      | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge               |
-| `public/images/og-default.png` | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
-| `public/images/og/*.jpg`       | Composite | n/a                  | `BaseLayout.astro`, every other page         |
+| Path                            | Artwork   | Goes on              | Used by                                      |
+| ------------------------------- | --------- | -------------------- | -------------------------------------------- |
+| `src/assets/bunny-dark.png`     | `#111111` | Gold, light surfaces | About                                        |
+| `src/assets/roundel-rabbit.png` | Sticker   | Hero slab edge       | `Roundel.astro`                              |
+| `src/assets/logo-rabbit.png`    | Sticker   | The logo tile        | `Header.astro` logo tile                     |
+| `artwork/badge-white.png`       | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge               |
+| `public/images/og-default.png`  | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
+| `public/images/og/*.jpg`        | Composite | n/a                  | `BaseLayout.astro`, every other page         |
 
 | Artwork             | on `#0B0B0B` | on `#1A1A1A` | on `#FFFFFF` | on `#FFC000` |
 | ------------------- | ------------ | ------------ | ------------ | ------------ |
@@ -438,7 +441,8 @@ in `wrangler.jsonc`).
   `<symbol>` per link label in `src/assets/social-icons.svg`. The footer rabbit
   is `src/assets/bunny-footer.webp` with `alt=""`, standing on the name band:
   the Looking Up pose of a Canva sheet, traced with Potrace and
-  exported as a die-cut sticker; sources and scripts are kept outside the repo.
+  exported as a die-cut sticker on a pink block behind it, like the roundel;
+  sources and scripts are kept outside the repo.
   The footer runs JavaScript only for features
   [loaded on demand](#scripts-loaded-on-demand).
 
@@ -493,15 +497,16 @@ in `wrangler.jsonc`).
 
 ### The favicon set
 
-- One source: `scripts/make-logo.mjs` renders the logo rabbit and every icon
-  from `artwork/rabbit-jump.json` (the jumping rabbit, traced) in Chromium.
+- One source: `scripts/make-logo.mjs` renders the logo rabbit, the roundel
+  rabbit and every icon from `artwork/rabbit-jump.json` (the jumping rabbit,
+  traced) in Chromium.
 - Logo (`src/assets/logo-rabbit.png`): the hairline die-cut rabbit with an ink
   throw, jumping the tile's top-right corner. The script prints its box;
   `--logo-rabbit-*` in `global.css` must match.
 - Tab icons (`favicon.*`, `artwork/favicon-*`): the logo's jumping rabbit
   alone, on a transparent ground: a gold body, a white ear, a thick ink rim,
-  then a `bunny` throw and an ink throw. Gold reads on dark tabs, the ink rim
-  on light tabs.
+  then a `bunny` block behind the rabbit whose back face has an ink edge. Gold
+  reads on dark tabs, the ink rim on light tabs.
 - App icons (`apple-touch-icon`, `android-chrome-*`, `maskable-icon`): the same
   artwork on a full-bleed `#FFC000` square.
 

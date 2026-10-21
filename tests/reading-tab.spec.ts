@@ -132,8 +132,8 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
   }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await gotoSettled(page, '/credits/');
-    await page.getByRole('button', { name: 'Menu' }).click();
-    const group = page.locator('.menu-text-size');
+    await page.getByRole('button', { name: 'Aa Text Size' }).click();
+    const group = page.locator('#text-menu');
     const eat = group.getByRole('button', { name: /^Eat Me/ });
     for (let i = 0; i < TEXT_SCALE_STEPS.length; i += 1) {
       await eat.click({ force: true });
@@ -147,7 +147,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
   });
 
   for (const [width, how] of [
-    [390, 'the mobile menu'],
+    [390, 'the Aa popover'],
     [1024, 'the theme popover'],
   ] as const) {
     test(`below the tab width the control is in ${how}, with the same three buttons at ${width}px (SC 2.5.5)`, async ({
@@ -160,7 +160,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
         'the edge tab shows below its width',
       ).toBeHidden();
       await page
-        .getByRole('button', { name: width < 768 ? 'Menu' : 'Theme' })
+        .getByRole('button', { name: width < 768 ? 'Aa Text Size' : 'Theme' })
         .click();
       const group = page
         .getByRole('group', { name: 'Text Size' })
@@ -356,22 +356,87 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     await page.keyboard.press('Escape');
     await expect(menu).toBeHidden();
     await theme.click();
+    /* The menu's toggle event moves focus to the chosen radio; wait for it, or it lands after the Tab. */
+    await expect(menu.locator('input:checked')).toBeFocused();
     await menu.getByRole('button', { name: /^Just Right/ }).focus();
     await page.keyboard.press('Tab');
     await expect(menu).toBeHidden();
   });
 
-  test('the mobile menu group closes with the menu on Escape', async ({
+  test('the header holds still when the registry runs: the Aa brick is drawn from first paint (CLS)', async ({
+    browser,
+  }) => {
+    const measure = async (blockRegistry: boolean) => {
+      const context = await browser.newContext({
+        viewport: { width: 390, height: 800 },
+      });
+      const page = await context.newPage();
+      if (blockRegistry)
+        await page.route(/on-demand-[\w-]+\.js/, (route) => route.abort());
+      await gotoSettled(page, '/about/');
+      const box = await page.locator('header div.header-bricks').boundingBox();
+      await context.close();
+      return box;
+    };
+    expect(await measure(false)).toEqual(await measure(true));
+  });
+
+  test('the Aa popover closes on an outside press, Escape and Tab out', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await gotoSettled(page, '/about/');
-    const trigger = page.getByRole('button', { name: 'Menu' });
-    const dialog = page.locator('.mobile-menu dialog');
-    await trigger.click();
-    await expect(dialog).toBeVisible();
+    const aa = page.getByRole('button', { name: 'Aa Text Size' });
+    const popover = page.locator('#text-menu');
+    await aa.click();
+    await expect(popover).toBeVisible();
+    await page.mouse.click(20, 700);
+    await expect(popover).toBeHidden();
+    await aa.click();
+    await expect(popover).toBeVisible();
     await page.keyboard.press('Escape');
-    await expect(dialog).toBeHidden();
+    await expect(popover).toBeHidden();
+    await expect(aa).toBeFocused();
+    await aa.click();
+    await expect(popover).toBeVisible();
+    await popover.getByRole('button', { name: /^Just Right/ }).focus();
+    await page.keyboard.press('Tab');
+    await expect(popover).toBeHidden();
+  });
+
+  test('on a phone the header holds the logo tile, Theme, Aa and Menu without overlap, each 44px, and the link keeps its name (SC 2.5.5, 2.5.3, 4.1.2)', async ({
+    page,
+  }) => {
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 800 });
+      await gotoSettled(page, '/about/');
+      await expect(
+        page.locator('header .logo-link'),
+        `the logo link loses its name at ${width}px`,
+      ).toHaveAccessibleName('sinduri.lol');
+      const boxes = await page
+        .locator(
+          'header .logo-tile, header .theme-switch:visible, header .menu-brick',
+        )
+        .evaluateAll((els) =>
+          els.map((el) => {
+            const r = el.getBoundingClientRect();
+            return { left: r.left, right: r.right, w: r.width, h: r.height };
+          }),
+        );
+      expect(boxes).toHaveLength(4);
+      const sorted = [...boxes].sort((a, b) => a.left - b.left);
+      for (let i = 1; i < sorted.length; i += 1) {
+        expect(
+          sorted[i]!.left,
+          `controls overlap at ${width}px`,
+        ).toBeGreaterThanOrEqual(sorted[i - 1]!.right - 0.5);
+      }
+      for (const box of boxes.slice(1)) {
+        expect(Math.min(box.w, box.h)).toBeGreaterThanOrEqual(44);
+      }
+      expect(await sidewaysPx(page)).toBeLessThanOrEqual(0);
+    }
   });
 
   const OPEN_STATES = [
@@ -390,12 +455,12 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
       scope: (page: Page) => page.locator('#theme-menu'),
     },
     {
-      name: 'the mobile menu',
+      name: 'the Aa popover',
       width: 390,
       open: async (page: Page) => {
-        await page.getByRole('button', { name: 'Menu' }).click();
+        await page.getByRole('button', { name: 'Aa Text Size' }).click();
       },
-      scope: (page: Page) => page.locator('.mobile-menu dialog'),
+      scope: (page: Page) => page.locator('#text-menu'),
     },
   ];
 
@@ -473,9 +538,9 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
   }) => {
     await page.setViewportSize({ width: 320, height: 256 });
     await gotoSettled(page, '/about/');
-    await page.getByRole('button', { name: 'Menu' }).click();
+    await page.getByRole('button', { name: 'Aa Text Size' }).click();
     const group = page
-      .locator('.mobile-menu dialog')
+      .locator('#text-menu')
       .getByRole('group', { name: 'Text Size' });
     await group.getByRole('button', { name: /^Eat Me/ }).click();
     await expect(group.getByRole('status')).not.toHaveText('');

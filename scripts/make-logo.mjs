@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /*
- * Renders the logo rabbit, its large copy for the share cards and every
- * favicon from one traced drawing,
+ * Renders the logo rabbit, its large copy for the share cards, the roundel
+ * rabbit and every favicon from one traced drawing,
  * artwork/rabbit-jump.json (the jumping rabbit, Canva AI traced with
  * Potrace), in Chromium with the site tokens.
  *
@@ -33,18 +33,38 @@ const OG_LOGO_SCALE = 14;
 
 /* In tile px, inside the border: the rabbit's height, tilt and where its box sits. */
 const LOGO_POSE = { h: 52, rotate: -12, left: 10, bottom: 36 };
-/* Hairline die-cut, as the hero rabbit: ink edge, white rim, ink rim edge, ink throw. */
+/* Hairline die-cut: ink edge, white rim, ink rim edge, ink throw. */
 const STICKER = { edge: 1, rim: 1.2, rimEdge: 1, throw: 3, line: 0.2 };
 
 /* Favicon grid: 64 units, the tile and the jump drawn to the icon's edges. */
 const ICON = 64;
-/* In 64 units: the box leaves room for the rim on every side and the throws to the bottom right. */
-const ICON_POSE = { box: [5, 4, 47, 48], rotate: -12 };
-/* The tab icon: a gold rabbit, white ear, a 4-unit ink rim, then a pink and an ink throw. */
-const ICON_STICKER = { rim: 4, pinkThrow: 4, inkThrow: 7 };
+/* In 64 units: the box leaves room for the rim on every side and the block to the bottom left. */
+const ICON_POSE = { box: [11, 4, 46, 45], rotate: -12 };
+/* The tab icon: a gold rabbit, white ear, an ink rim, then a pink block behind it whose back face has an ink edge. */
+const ICON_STICKER = { rim: 4, depth: 6, backEdge: 1.5, steps: 8 };
 /* Opaque app icons on gold: artwork scale, and the maskable safe zone. */
 const APP_SCALE = 0.8;
 const MASKABLE_SCALE = 0.62;
+
+/* The hero roundel in a 100-unit box: a die-cut rim, then a pink block behind the rabbit whose back face has an ink edge. */
+const ROUNDEL = {
+  h: 86,
+  /* The rabbit's center in the box, right of 50 so the drawing and its block sit centered. */
+  cx: 55,
+  rotate: -12,
+  rim: 4.5,
+  edge: 0.7,
+  depth: 6.5,
+  backEdge: 1.5,
+  steps: 24,
+  line: 0.6,
+};
+/* Trace units: the open mouth's box, and its scale about the top of that box; full size reads heavy in the roundel. */
+const MOUTH_BOX = { x0: 280, y0: 1270, x1: 610, y1: 1540 };
+const MOUTH_SCALE = 0.7;
+/* The art bleeds an eighth past each side of the box, as the image's wrapper does in Roundel.astro. */
+const ROUNDEL_BLEED = 100 / 8;
+const ROUNDEL_PX = 400;
 
 const SPECK = 35;
 const subpaths = (d) =>
@@ -87,6 +107,42 @@ const placement = ({ h, rotate, left, bottom }) => {
 
 const fill = (d, color, stroke = 0) =>
   `<path d="${d}" fill="${color}"${stroke ? ` stroke="${color}" stroke-width="${stroke}" stroke-linejoin="round"` : ''}/>`;
+
+const inside = (d, b) => {
+  const q = bbox(d);
+  return q.x0 >= b.x0 && q.y0 >= b.y0 && q.x1 <= b.x1 && q.y1 <= b.y1;
+};
+/** The subpaths outside and inside `box`. */
+const partition = (d, box) => {
+  const parts = subpaths(d);
+  return [
+    parts.filter((p) => !inside(p, box)).join(' '),
+    parts.filter((p) => inside(p, box)).join(' '),
+  ];
+};
+
+function roundelArt() {
+  const b = bbox(TRACE.sil);
+  const k = ROUNDEL.h / (b.y1 - b.y0);
+  const u = 1 / k;
+  const transform = `translate(${ROUNDEL.cx} 50) rotate(${ROUNDEL.rotate}) scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
+  /* The drawing is mirrored, so a positive offset falls down and behind the rabbit. */
+  const grown = (color, width, offset = 0) =>
+    `<path d="${TRACE.sil}" transform="translate(${offset * u} ${offset * u})" fill="${color}" stroke="${color}" stroke-width="${2 * width * u}" stroke-linejoin="round"/>`;
+  const block = Array.from({ length: ROUNDEL.steps }, (_, i) =>
+    grown(
+      PINK,
+      ROUNDEL.rim,
+      (ROUNDEL.depth * (ROUNDEL.steps - i)) / ROUNDEL.steps,
+    ),
+  ).join('');
+  const [face, mouthLine] = partition(line, MOUTH_BOX);
+  const [pink, tongue] = partition(TRACE.pink, MOUTH_BOX);
+  const mx = (MOUTH_BOX.x0 + MOUTH_BOX.x1) / 2;
+  const mouth = `<g transform="translate(${mx} ${MOUTH_BOX.y0}) scale(${MOUTH_SCALE}) translate(${-mx} ${-MOUTH_BOX.y0})">${fill(tongue, EAR)}${fill(mouthLine, INK, ROUNDEL.line * u)}</g>`;
+  return `<g transform="${transform}">${grown(INK, ROUNDEL.rim + ROUNDEL.backEdge, ROUNDEL.depth)}${block}${grown(WHITE, ROUNDEL.rim)}${grown(INK, ROUNDEL.edge)}
+${fill(TRACE.sil, WHITE)}${fill(pink, EAR)}${fill(face, INK, ROUNDEL.line * u)}${mouth}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
+}
 
 function sticker() {
   const { k, transform } = placement({
@@ -228,11 +284,15 @@ function iconArtwork({ precise }) {
   m.f = cy - m.b * mx - m.g * my;
   const path = (d) => (precise ? bake(d, m) : compact(d, m));
   const unit = precise ? 1 : FINE;
-  const { rim, pinkThrow, inkThrow } = ICON_STICKER;
+  const { rim, depth, backEdge, steps } = ICON_STICKER;
   const outer = 2 * rim * unit;
+  /* The rabbit faces right, so the block falls down and to the left, behind it. */
   const use = (color, width, off = 0) =>
-    `<use href="#r" fill="${color}" stroke="${color}" stroke-width="${width}" stroke-linejoin="round"${off ? ` x="${off * unit}" y="${off * unit}"` : ''}/>`;
-  return `<defs><path id="r" d="${path(TRACE.sil)}"/></defs>${use(INK, outer, inkThrow)}${use(PINK, outer, pinkThrow)}${use(INK, outer)}<use href="#r" fill="${GOLD}"/>${fill(path(largest(TRACE.pink)), WHITE)}${fill(path(largest(TRACE.eye)), INK)}`;
+    `<use href="#r" fill="${color}" stroke="${color}" stroke-width="${width}" stroke-linejoin="round"${off ? ` x="${-off * unit}" y="${off * unit}"` : ''}/>`;
+  const block = Array.from({ length: steps }, (_, i) =>
+    use(PINK, outer, (depth * (steps - i)) / steps),
+  ).join('');
+  return `<defs><path id="r" d="${path(TRACE.sil)}"/></defs>${use(INK, 2 * (rim + backEdge) * unit, depth)}${block}${use(INK, outer)}<use href="#r" fill="${GOLD}"/>${fill(path(largest(TRACE.pink)), WHITE)}${fill(path(largest(TRACE.eye)), INK)}`;
 }
 
 const svg = (viewBox, body) =>
@@ -326,6 +386,29 @@ const ogLogo = await raster(
   box.height * OG_LOGO_SCALE,
 );
 writeFileSync('artwork/logo-rabbit-og.png', Buffer.from(ogLogo.png, 'base64'));
+
+const roundelSide = 100 + 2 * ROUNDEL_BLEED;
+const roundel = await raster(
+  svg(
+    `${-ROUNDEL_BLEED} ${-ROUNDEL_BLEED} ${roundelSide} ${roundelSide}`,
+    roundelArt(),
+  ),
+  ROUNDEL_PX,
+  ROUNDEL_PX,
+);
+const edgeRows = [0, ROUNDEL_PX - 1];
+const touches = roundel.alpha.some((a, i) => {
+  const [x, y] = [i % ROUNDEL_PX, Math.floor(i / ROUNDEL_PX)];
+  return a > 0 && (edgeRows.includes(x) || edgeRows.includes(y));
+});
+if (touches)
+  throw new Error(
+    'The roundel rabbit reaches its bleed edge; widen ROUNDEL_BLEED.',
+  );
+writeFileSync(
+  'src/assets/roundel-rabbit.png',
+  Buffer.from(roundel.png, 'base64'),
+);
 
 const png = async (source, size) =>
   Buffer.from((await raster(source, size, size)).png, 'base64');

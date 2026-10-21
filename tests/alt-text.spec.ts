@@ -9,7 +9,7 @@ import { NODE } from './tags';
  */
 
 /** The images the site draws for decoration. */
-const DECORATIVE = /bunny-(dark|footer)|logo-rabbit/;
+const DECORATIVE = /bunny-(dark|footer)|logo-rabbit|roundel-rabbit/;
 
 const SUPPLIED_BY_THE_READER = /\b(image|photo|picture|logo)\b/i;
 const FILENAME = /\.(webp|avif|jpe?g|png|gif|svg)\b/i;

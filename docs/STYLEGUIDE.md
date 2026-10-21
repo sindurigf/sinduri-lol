@@ -100,7 +100,7 @@ blur, uppercase headings, tilted marks.
 | `surface`    | `#1A1A1A` | Inputs and controls off a block                            |
 | `border`     | `#FFC000` | Every boundary on the page: the gold edge                  |
 | `card-edge`  | none      | Card and plain slab edge; `#131313` in light mode          |
-| `fill-edge`  | `#131313` | Edge of a gold or light fill: buttons, roundel, logo tile  |
+| `fill-edge`  | `#131313` | Edge of a gold or light fill: buttons, logo tile           |
 | `text`       | `#E5E2E1` | Words                                                      |
 | `subtle`     | `#9EB6C7` | Captions, meta, helper text                                |
 | `gold`       | `#FFC000` | The accent, only where the style guide allows              |
@@ -501,10 +501,11 @@ with a comment beside it.
 
 - `--spacing-roundel` is `2 × --spacing-section − 56px`: 56px on a phone,
   128px from about 1150px.
-- Derived so the disc keeps at least 24px to the hero's last line and 32px to
-  the next content; it is lifted `--spacing(1)` above the edge to split the
-  space 24 and 32.
-- `--spacing-roundel-mark` is half the disc.
+- Derived so the roundel's box keeps at least 24px to the hero's last line and
+  32px to the next content; it is lifted `--spacing(1)` above the edge to split
+  the space 24 and 32.
+- The rabbit art bleeds an eighth past each side of the box; the tests measure
+  the drawn image, not the box.
 - `tests/page-hero.spec.ts` checks the roundel and the photo cover no text at
   320, 640, 768, 1023, 1024 and 1280px.
 
@@ -514,8 +515,7 @@ with a comment beside it.
   panel, popover, form field, gold area, table, topic tile, the
   `/accessibility` fact-strip rules, a prose `hr` and blockquote: the `edge`,
   `edge-t`, `edge-b` and `edge-l` utilities. Photos, controls, chips, the theme
-  switch, stickers and code blocks keep `border-4`. The roundel keeps
-  an 8px edge, a logo mark. No rule between sections.
+  switch, stickers and code blocks keep `border-4`. No rule between sections.
 - The default border color is `border`, set in the base layer (Tailwind 4
   defaults to `currentColor`); `gold-border` inside `.surface-gold`.
 - Each ground has one edge role. Dark page: `border` (gold). A block,
@@ -536,7 +536,7 @@ with a comment beside it.
 | `shadow-hard-cyan-object`   | A hovered linked card, in place of pink; a contact link brick fills cyan instead, its ring inside in ink              |
 | `shadow-hard-gold-border-4` | A card on gold                                                                                                        |
 | `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                       |
-| `shadow-hard-bunny-8`       | The logo tile, the roundel, the homepage stickers                                                                     |
+| `shadow-hard-bunny-8`       | The logo tile, the homepage stickers                                                                                  |
 | `shadow-hard-bunny-12`      | The line bunny tile on `/about`                                                                                       |
 
 - `bunny` is `pink`'s hex but stays pink in light mode, where `pink` turns
@@ -545,7 +545,7 @@ with a comment beside it.
 - Radius is 0 everywhere (base layer). `rounded-nav` (14px): the logo tile
   (`Header.astro`), the line bunny tile on the Lepus Ridet panel on `/about` and the Star
   Trek thumbnail on `/about`, square so the photo is not cropped. `rounded-full`:
-  the roundel. No pills; any other rounded corner is a bug.
+  no current use. No pills; any other rounded corner is a bug.
 
 ## Components
 
@@ -707,7 +707,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
   at 320px. At 200% zoom a 1280px window is 640 CSS px. Only photo strips
   and wide tables scroll sideways, each in its own region.
 - **Below 305px:** `below-reflow:` (under 19rem) is for 500% zoom only: words
-  break anywhere and the header name is visually hidden. `stickers-wrap:`
+  break anywhere. `stickers-wrap:`
   (under 17.5rem) wraps the footer stickers. Nothing changes from 305px up.
 - **Short windows:** `short:` (under 30rem of height) makes the header static,
   and in the photo viewer the photo takes the viewer's width, up to the
@@ -840,15 +840,17 @@ roundel.**
 - `PageHero` renders the roundel whenever it has no `image`. There is no prop.
 - About and every post with a `cover` have a photo, so no roundel.
 - The homepage is not a PageHero and has no roundel on its window.
-- `variant="hero"`: a gold disc of `--spacing-roundel` with a `gold-text` ring
-  (4px, 8px from `lg`), `bunny` 8px shadow, 3deg tilt. The page variant's 8px
-  ring is `fill-edge`, so it holds on a gold band.
+- The roundel is the jumping rabbit with no disc: a die-cut sticker (white
+  rim, thin ink line) on a `bunny` block that falls behind the rabbit, its back
+  face edged in ink, drawn into `src/assets/roundel-rabbit.png` by
+  `scripts/make-logo.mjs`, tilted 3deg. `variant="hero"` sizes its box by
+  `--spacing-roundel`; the page variant is 96px, 128px from `lg`.
 - Its center sits `--spacing(1)` above the slab's bottom edge; its right side
   on the column's text edge (`.hero-roundel`).
 - On a plain tier it straddles the dark slab's bottom edge too, and is never
-  left off. The slab's bottom padding is half the disc plus 24px; the text
-  under it starts 32px past the disc's lower half.
-- The disc sets a slab's minimum bottom padding: half the disc plus its lift
+  left off. The slab's bottom padding is half the box plus 24px; the text
+  under it starts 32px past the box's lower half.
+- The roundel sets a slab's minimum bottom padding: half its box plus its lift
   plus 24px, 92px at 1280. Only `--spacing-section` clears it, so a thin slab
   is thin at the top only.
 - `tests/page-hero.spec.ts` lists each route's tier and holds it to the build:
@@ -867,8 +869,8 @@ roundel.**
 | Chip label                  | `text` on `surface`             | 13.51 | 4.5        |
 | Focus ring                  | `gold-text` on gold             | 11.32 | 3          |
 | Photo border                | `gold-text` on gold             | 11.32 | decoration |
-| Roundel ring on the slab    | `gold-text` on gold             | 11.32 | decoration |
-| Roundel disc off the slab   | gold on `background`            | 11.99 | decoration |
+| Roundel rabbit back edge    | `block-ink` on gold             | 11.32 | decoration |
+| Roundel rabbit off the slab | white fill on `background`      | 19.68 | decoration |
 | Photo and chip shadows      | pink on gold                    | 2.31  | decoration |
 
 - Pink never delimits anything on the slab: every control has its fill or a
@@ -897,7 +899,7 @@ text-gold-muted` under the standfirst. Color
 ### Header relation
 
 - The header is a gold bar on the hero's column, 12px below the top, with the
-  logo tile and name at its left end ([Navigation](#navigation)).
+  logo tile at its left end, and from 48rem its name too ([Navigation](#navigation)).
 - The logo tile keeps its `bunny` shadow. The die-cut rabbit jumps its
   top-right corner and casts an ink throw, so the corner never doubles the pink.
 - The tile is the rabbit's springboard: hovered, the rabbit rises 3px; pressed,
@@ -1099,8 +1101,9 @@ by `tests/reading-tab.spec.ts`.
   leaves a free gutter beside its 80rem column, and the control is an edge tab
   in it: a `popover` button named "Aa Text Size", fixed to the right at
   mid-height, with the group in its panel; Escape closes it and returns focus
-  to the button; a press outside or Tab out closes it. Narrower, there is no floating control: the group is at the
-  foot of the mobile menu below `md` and in the theme popover from `md`.
+  to the button; a press outside or Tab out closes it. Narrower, below `md` an "Aa" brick beside Theme and Menu opens the group in a
+  popover, and from `md` the group is in the theme popover. Below `md` the
+  header shows only the logo tile, so the four bricks fit at 320px.
   A test asserts the tab covers no link, button or text at rest.
 - While a control in `main` has keyboard focus the tab slides out of the way
   (SC 2.4.11, 2.4.12).
@@ -1157,11 +1160,11 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 
 ### By width
 
-| Width       | Header                                                                                                                              |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| below 48rem | logo link, the theme switch, and the menu button that opens the menu dialog; without JavaScript, a nav row under the header instead |
-| from 48rem  | logo link, the Primary nav (About, Career, Blog), the theme switch, and the call to action                                          |
-| from 64rem  | the same on a three-track grid, the nav centered, wider gaps                                                                        |
+| Width       | Header                                                                                                                                                                                                    |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| below 48rem | the logo tile alone (the link keeps its `aria-label`), the theme switch, the "Aa" text size brick, and the menu button that opens the menu dialog; without JavaScript, a nav row under the header instead |
+| from 48rem  | logo link with its name, the Primary nav (About, Career, Blog), the theme switch, and the call to action                                                                                                  |
+| from 64rem  | the same on a three-track grid, the nav centered, wider gaps                                                                                                                                              |
 
 - Links come from `NAV_LINKS` and `CTA` in `src/lib/nav.ts`; the desktop
   header uses `HEADER_LINKS` (no Home; the logo links to `/`).
@@ -1170,11 +1173,11 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   in light mode). 80px tall in a 104px header. Inside it, bricks take
   `block-light` fills and `block-ink` lines; `.site-header` keeps the page's
   values as `--page-*` for the menu dialog.
-- The logo tile and name sit inside the bar with no block, edge or throw of
-  their own. The tile keeps its 8px `bunny` shadow inside the link's box
+- The logo tile, and from 48rem its name, sit inside the bar with no block, edge
+  or throw of their own. The tile keeps its 8px `bunny` shadow inside the link's box
   (`padding-block-end: var(--lift-mark)`).
 - Focused, the logo link turns into a `block-ink` block with a `block-gold`
-  name and no ring: the rabbit jumps higher than the bar leaves room for a
+  name (from 48rem) and no ring: the rabbit jumps higher than the bar leaves room for a
   ring around it. Its ring is transparent, and `CanvasText` in forced colors
   (`tests/header-bricks.spec.ts`, `tests/focus.spec.ts`).
 - Nav links, the theme switch and the call to action are joined bricks
