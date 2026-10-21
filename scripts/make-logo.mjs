@@ -33,7 +33,7 @@ const OG_LOGO_SCALE = 14;
 
 /* In tile px, inside the border: the rabbit's height, tilt and where its box sits. */
 const LOGO_POSE = { h: 52, rotate: -12, left: 10, bottom: 36 };
-/* Hairline die-cut, as the hero rabbit: ink edge, white rim, ink rim edge, ink throw. */
+/* Hairline die-cut: ink edge, white rim, ink rim edge, ink throw. */
 const STICKER = { edge: 1, rim: 1.2, rimEdge: 1, throw: 3, line: 0.2 };
 
 /* Favicon grid: 64 units, the tile and the jump drawn to the icon's edges. */
