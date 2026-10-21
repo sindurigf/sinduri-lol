@@ -128,7 +128,8 @@ const markOverlaps = (page: Page, mark: string) =>
     return hits;
   }, mark);
 
-const roundelOverlaps = (page: Page) => markOverlaps(page, '.hero-roundel');
+/* The rabbit art bleeds past the roundel's box, so the drawn image is what may not cover text. */
+const roundelOverlaps = (page: Page) => markOverlaps(page, '.hero-roundel img');
 
 /* The phone, `sm`, `md`, both sides of `lg`, and a laptop. */
 const CLEARANCE_WIDTHS = [320, 640, 768, 1023, 1024, 1280] as const;

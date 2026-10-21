@@ -4,12 +4,12 @@ import { NODE } from './tags';
 
 const PRIORITY = /<img\b[^>]*\bfetchpriority="high"[^>]*>/g;
 
-/** The first content image, after the header's logo. */
+/** The first content image, after the header's logo and the decorative rabbits. */
 const firstContentImage = (html: string): string | undefined =>
   html
     .slice(html.indexOf('<main'))
     .match(/<img\b[^>]*>/g)
-    ?.find((tag) => !/bunny-/.test(tag));
+    ?.find((tag) => !/bunny-|roundel-rabbit/.test(tag));
 
 test.describe('image priority', NODE, () => {
   test('no page asks for more than one image first', () => {
