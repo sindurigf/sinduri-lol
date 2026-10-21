@@ -48,7 +48,9 @@ const MASKABLE_SCALE = 0.62;
 
 /* The hero roundel in a 100-unit box: a die-cut rim, then a pink block behind the rabbit whose back face has an ink edge. */
 const ROUNDEL = {
-  h: 82,
+  h: 86,
+  /* The rabbit's center in the box, right of 50 so the drawing and its block sit centered. */
+  cx: 55,
   rotate: -12,
   rim: 4.5,
   edge: 0.7,
@@ -123,7 +125,7 @@ function roundelArt() {
   const b = bbox(TRACE.sil);
   const k = ROUNDEL.h / (b.y1 - b.y0);
   const u = 1 / k;
-  const transform = `translate(50 50) rotate(${ROUNDEL.rotate}) scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
+  const transform = `translate(${ROUNDEL.cx} 50) rotate(${ROUNDEL.rotate}) scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
   /* The drawing is mirrored, so a positive offset falls down and behind the rabbit. */
   const grown = (color, width, offset = 0) =>
     `<path d="${TRACE.sil}" transform="translate(${offset * u} ${offset * u})" fill="${color}" stroke="${color}" stroke-width="${2 * width * u}" stroke-linejoin="round"/>`;
