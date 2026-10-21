@@ -38,10 +38,10 @@ const STICKER = { edge: 1, rim: 1.2, rimEdge: 1, throw: 3, line: 0.2 };
 
 /* Favicon grid: 64 units, the tile and the jump drawn to the icon's edges. */
 const ICON = 64;
-/* In 64 units: the box leaves room for the rim on every side and the throws to the bottom right. */
-const ICON_POSE = { box: [5, 4, 47, 48], rotate: -12 };
-/* The tab icon: a gold rabbit, white ear, a 4-unit ink rim, then a pink and an ink throw. */
-const ICON_STICKER = { rim: 4, pinkThrow: 4, inkThrow: 7 };
+/* In 64 units: the box leaves room for the rim on every side and the block to the bottom left. */
+const ICON_POSE = { box: [11, 4, 46, 45], rotate: -12 };
+/* The tab icon: a gold rabbit, white ear, an ink rim, then a pink block behind it whose back face has an ink edge. */
+const ICON_STICKER = { rim: 4, depth: 6, backEdge: 1.5, steps: 8 };
 /* Opaque app icons on gold: artwork scale, and the maskable safe zone. */
 const APP_SCALE = 0.8;
 const MASKABLE_SCALE = 0.62;
@@ -228,11 +228,15 @@ function iconArtwork({ precise }) {
   m.f = cy - m.b * mx - m.g * my;
   const path = (d) => (precise ? bake(d, m) : compact(d, m));
   const unit = precise ? 1 : FINE;
-  const { rim, pinkThrow, inkThrow } = ICON_STICKER;
+  const { rim, depth, backEdge, steps } = ICON_STICKER;
   const outer = 2 * rim * unit;
+  /* The rabbit faces right, so the block falls down and to the left, behind it. */
   const use = (color, width, off = 0) =>
-    `<use href="#r" fill="${color}" stroke="${color}" stroke-width="${width}" stroke-linejoin="round"${off ? ` x="${off * unit}" y="${off * unit}"` : ''}/>`;
-  return `<defs><path id="r" d="${path(TRACE.sil)}"/></defs>${use(INK, outer, inkThrow)}${use(PINK, outer, pinkThrow)}${use(INK, outer)}<use href="#r" fill="${GOLD}"/>${fill(path(largest(TRACE.pink)), WHITE)}${fill(path(largest(TRACE.eye)), INK)}`;
+    `<use href="#r" fill="${color}" stroke="${color}" stroke-width="${width}" stroke-linejoin="round"${off ? ` x="${-off * unit}" y="${off * unit}"` : ''}/>`;
+  const block = Array.from({ length: steps }, (_, i) =>
+    use(PINK, outer, (depth * (steps - i)) / steps),
+  ).join('');
+  return `<defs><path id="r" d="${path(TRACE.sil)}"/></defs>${use(INK, 2 * (rim + backEdge) * unit, depth)}${block}${use(INK, outer)}<use href="#r" fill="${GOLD}"/>${fill(path(largest(TRACE.pink)), WHITE)}${fill(path(largest(TRACE.eye)), INK)}`;
 }
 
 const svg = (viewBox, body) =>
