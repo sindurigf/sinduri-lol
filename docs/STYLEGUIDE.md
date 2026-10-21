@@ -843,8 +843,9 @@ roundel.**
 - `PageHero` renders the roundel whenever it has no `image`. There is no prop.
 - About and every post with a `cover` have a photo, so no roundel.
 - The homepage is not a PageHero and has no roundel on its window.
-- The roundel is the jumping rabbit with no disc: flat white, a thick ink edge
-  and a hard `bunny` throw, drawn into `src/assets/roundel-rabbit.png` by
+- The roundel is the jumping rabbit with no disc: a die-cut sticker (white
+  rim, thin ink line) on a `bunny` block that falls behind the rabbit, its back
+  face edged in ink, drawn into `src/assets/roundel-rabbit.png` by
   `scripts/make-logo.mjs`, tilted 3deg. `variant="hero"` sizes its box by
   `--spacing-roundel`; the page variant is 96px, 128px from `lg`.
 - Its center sits `--spacing(1)` above the slab's bottom edge; its right side
@@ -871,7 +872,7 @@ roundel.**
 | Chip label                  | `text` on `surface`             | 13.51 | 4.5        |
 | Focus ring                  | `gold-text` on gold             | 11.32 | 3          |
 | Photo border                | `gold-text` on gold             | 11.32 | decoration |
-| Roundel rabbit edge         | `fill-edge` on gold             | 11.32 | decoration |
+| Roundel rabbit back edge    | `fill-edge` on gold             | 11.32 | decoration |
 | Roundel rabbit off the slab | white fill on `background`      | 19.68 | decoration |
 | Photo and chip shadows      | pink on gold                    | 2.31  | decoration |
 

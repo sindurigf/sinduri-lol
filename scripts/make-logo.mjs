@@ -46,8 +46,20 @@ const ICON_STICKER = { rim: 4, pinkThrow: 4, inkThrow: 7 };
 const APP_SCALE = 0.8;
 const MASKABLE_SCALE = 0.62;
 
-/* The hero roundel: the rabbit with a thick ink edge and a hard pink throw, in a 100-unit box. */
-const ROUNDEL = { h: 88, rotate: -12, rim: 5, throw: 8, line: 0.6 };
+/* The hero roundel in a 100-unit box: a die-cut rim, then a pink block behind the rabbit whose back face has an ink edge. */
+const ROUNDEL = {
+  h: 82,
+  rotate: -12,
+  rim: 4.5,
+  edge: 0.7,
+  depth: 6.5,
+  backEdge: 1.5,
+  steps: 24,
+  line: 0.6,
+};
+/* Trace units: the open mouth's box, and its scale about the top of that box; full size reads heavy in the roundel. */
+const MOUTH_BOX = { x0: 280, y0: 1270, x1: 610, y1: 1540 };
+const MOUTH_SCALE = 0.7;
 /* The art bleeds an eighth past each side of the box, as the image's wrapper does in Roundel.astro. */
 const ROUNDEL_BLEED = 100 / 8;
 const ROUNDEL_PX = 400;
@@ -94,14 +106,40 @@ const placement = ({ h, rotate, left, bottom }) => {
 const fill = (d, color, stroke = 0) =>
   `<path d="${d}" fill="${color}"${stroke ? ` stroke="${color}" stroke-width="${stroke}" stroke-linejoin="round"` : ''}/>`;
 
+const inside = (d, b) => {
+  const q = bbox(d);
+  return q.x0 >= b.x0 && q.y0 >= b.y0 && q.x1 <= b.x1 && q.y1 <= b.y1;
+};
+/** The subpaths outside and inside `box`. */
+const partition = (d, box) => {
+  const parts = subpaths(d);
+  return [
+    parts.filter((p) => !inside(p, box)).join(' '),
+    parts.filter((p) => inside(p, box)).join(' '),
+  ];
+};
+
 function roundelArt() {
   const b = bbox(TRACE.sil);
   const k = ROUNDEL.h / (b.y1 - b.y0);
   const u = 1 / k;
   const transform = `translate(50 50) rotate(${ROUNDEL.rotate}) scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
-  const edge = `<path d="${TRACE.sil}" fill="COLOR" stroke="COLOR" stroke-width="${2 * ROUNDEL.rim * u}" stroke-linejoin="miter" stroke-miterlimit="2"/>`;
-  return `<g transform="translate(${ROUNDEL.throw} ${ROUNDEL.throw})"><g transform="${transform}">${edge.replaceAll('COLOR', PINK)}</g></g>
-<g transform="${transform}">${edge.replaceAll('COLOR', INK)}${fill(TRACE.sil, WHITE)}${fill(TRACE.pink, EAR)}${fill(line, INK, ROUNDEL.line * u)}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
+  /* The drawing is mirrored, so a positive offset falls down and behind the rabbit. */
+  const grown = (color, width, offset = 0) =>
+    `<path d="${TRACE.sil}" transform="translate(${offset * u} ${offset * u})" fill="${color}" stroke="${color}" stroke-width="${2 * width * u}" stroke-linejoin="round"/>`;
+  const block = Array.from({ length: ROUNDEL.steps }, (_, i) =>
+    grown(
+      PINK,
+      ROUNDEL.rim,
+      (ROUNDEL.depth * (ROUNDEL.steps - i)) / ROUNDEL.steps,
+    ),
+  ).join('');
+  const [face, mouthLine] = partition(line, MOUTH_BOX);
+  const [pink, tongue] = partition(TRACE.pink, MOUTH_BOX);
+  const mx = (MOUTH_BOX.x0 + MOUTH_BOX.x1) / 2;
+  const mouth = `<g transform="translate(${mx} ${MOUTH_BOX.y0}) scale(${MOUTH_SCALE}) translate(${-mx} ${-MOUTH_BOX.y0})">${fill(tongue, EAR)}${fill(mouthLine, INK, ROUNDEL.line * u)}</g>`;
+  return `<g transform="${transform}">${grown(INK, ROUNDEL.rim + ROUNDEL.backEdge, ROUNDEL.depth)}${block}${grown(WHITE, ROUNDEL.rim)}${grown(INK, ROUNDEL.edge)}
+${fill(TRACE.sil, WHITE)}${fill(pink, EAR)}${fill(face, INK, ROUNDEL.line * u)}${mouth}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
 }
 
 function sticker() {
