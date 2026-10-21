@@ -900,7 +900,7 @@ text-gold-muted` under the standfirst. Color
 ### Header relation
 
 - The header is a gold bar on the hero's column, 12px below the top, with the
-  logo tile and name at its left end ([Navigation](#navigation)).
+  logo tile at its left end, and from 48rem its name too ([Navigation](#navigation)).
 - The logo tile keeps its `bunny` shadow. The die-cut rabbit jumps its
   top-right corner and casts an ink throw, so the corner never doubles the pink.
 - The tile is the rabbit's springboard: hovered, the rabbit rises 3px; pressed,
@@ -1174,11 +1174,11 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   in light mode). 80px tall in a 104px header. Inside it, bricks take
   `block-light` fills and `block-ink` lines; `.site-header` keeps the page's
   values as `--page-*` for the menu dialog.
-- The logo tile and name sit inside the bar with no block, edge or throw of
-  their own. The tile keeps its 8px `bunny` shadow inside the link's box
+- The logo tile, and from 48rem its name, sit inside the bar with no block, edge
+  or throw of their own. The tile keeps its 8px `bunny` shadow inside the link's box
   (`padding-block-end: var(--lift-mark)`).
 - Focused, the logo link turns into a `block-ink` block with a `block-gold`
-  name and no ring: the rabbit jumps higher than the bar leaves room for a
+  name (from 48rem) and no ring: the rabbit jumps higher than the bar leaves room for a
   ring around it. Its ring is transparent, and `CanvasText` in forced colors
   (`tests/header-bricks.spec.ts`, `tests/focus.spec.ts`).
 - Nav links, the theme switch and the call to action are joined bricks
