@@ -716,20 +716,20 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
 
 ### Page compositions
 
-| Page                   | Order (type)                                                          |
-| ---------------------- | --------------------------------------------------------------------- |
-| Home                   | Hero, Surface, Listing, Listing, Close                                |
-| About                  | Hero, Open, Open, Open, Open, Open, Close                             |
-| Career                 | Hero, Panel, Open (with the solid block), Open, Surface, Close        |
-| Contact                | Hero, Open, Surface                                                   |
-| Contact sent           | Hero, Panel, Close                                                    |
-| Credits                | Hero, Open (panels) x4, Close                                         |
-| Privacy, Accessibility | Hero (reading measure), Reading                                       |
-| Blog index             | Hero, Listing, Close                                                  |
-| Blog category, tag     | Hero, Listing                                                         |
-| Post                   | Article header, Reading (contents box from 1280px), Tags nav          |
-| 404                    | Hero with the signpost in its slab (section links without JavaScript) |
-| Brand                  | Hero (full), Facts, Brand (sections list), Close                      |
+| Page                   | Order (type)                                                   |
+| ---------------------- | -------------------------------------------------------------- |
+| Home                   | Hero, Surface, Listing, Listing, Close                         |
+| About                  | Hero, Open, Open, Open, Open, Open, Close                      |
+| Career                 | Hero, Panel, Open (with the solid block), Open, Surface, Close |
+| Contact                | Hero, Open, Surface                                            |
+| Contact sent           | Hero, Panel, Close                                             |
+| Credits                | Hero, Open (panels) x4, Close                                  |
+| Privacy, Accessibility | Hero (reading measure), Reading                                |
+| Blog index             | Hero, Listing, Close                                           |
+| Blog category, tag     | Hero, Listing                                                  |
+| Post                   | Article header, Reading (contents box from 1280px), Tags nav   |
+| 404                    | Hero, then the White Rabbit and Cheshire Cat cards             |
+| Brand                  | Hero (full), Facts, Brand (sections list), Close               |
 
 - Contact ends on its gold surface, not a closing row: the band is its call to
   action.
@@ -807,8 +807,6 @@ tier and takes its padding.
   `h1`.
 - Breadcrumbs go in the `eyebrow` slot above the `h1`, as a named `nav`,
   with `tone="gold"` on a slab.
-- The plain tier's `slab` slot puts content inside the slab under the `h1`;
-  `/404` holds its standfirst and signpost there.
 - The photo is a `<figure>`; its credit, if any, a `figcaption`.
 - The roundel is decoration: `alt=""`, no role, no focus.
 
@@ -1039,19 +1037,19 @@ A heading, a sentence, one way on. Enforced by `tests/empty-states.spec.ts`,
 `tests/contact.spec.ts` (Worker), `tests/contact-sending.spec.ts` and
 `tests/failed-images.spec.ts`.
 
-| State                   | Where                                   | Heading                                                                             | Sentence                                                         | Action                                  | Announced by                       |
-| ----------------------- | --------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------- | ---------------------------------- |
-| Not found               | `/404`                                  | `h1` "Which Way From Here?"                                                         | the page does not exist, and a link to report a broken one       | the White Rabbit's pick on the signpost | the page load                      |
-| Empty category or tag   | not built: pages exist only with a post |                                                                                     |                                                                  |                                         |                                    |
-| Empty blog              | `/blog` with no posts                   | `h2` "No Posts Yet"                                                                 | "Nothing has been published here yet."                           | "Go to the Homepage"                    | the page load                      |
-| Invalid form            | `/contact/send`, 422                    | `h2` "There Is One Problem with This Form" or "There Are N Problems with This Form" | one linked entry per field                                       | each entry moves to its field           | focus on the summary on arrival    |
-| Rate-limited or unsaved | `/contact/send`, 429 or 503             | `h2` "Your Message Was Not Sent"                                                    | the reason, and the email address as the way round it            | the form, still holding what was typed  | focus on the summary on arrival    |
-| Message over the cap    | `/contact/send`, 413                    | `h1` "Message Too Long"                                                             | nothing was sent, the 5000 character limit and the email address | "Back to the Contact Form"              | the page load                      |
-| Offline                 | `/contact`, on submit                   | none: the form stays                                                                | "You are offline, so your message has not been sent…"            | the form, unchanged                     | the form's `role="status"` region  |
-| Sending                 | `/contact`, while the post is in flight | none                                                                                | "Sending your message." and the button reads "Sending"           | a second submit is blocked              | the form's `role="status"` region  |
-| Failed photo            | any `.aspect-frame`                     | none                                                                                | its alt text on the frame                                        | none                                    | not announced: the alt is its name |
-| Loading a photo         | the photo viewer, past 200ms            | none: the previous photo stays                                                      | "Loading photo 4 of 12" in the count                             | the previous photo and its caption      | the viewer's count region          |
-| Photo that never loads  | the photo viewer, on a failed decode    | none                                                                                | "This photo could not be loaded." on the frame                   | the caption still describes it          | the viewer's count region          |
+| State                   | Where                                   | Heading                                                                             | Sentence                                                         | Action                                 | Announced by                       |
+| ----------------------- | --------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------- | -------------------------------------- | ---------------------------------- |
+| Not found               | `/404`                                  | `h1` "I’m Late! This Page Is Gone"                                                  | the page does not exist, and a link to report a broken one       | Follow Me (primary), Or Ask the Cat    | the page load                      |
+| Empty category or tag   | not built: pages exist only with a post |                                                                                     |                                                                  |                                        |                                    |
+| Empty blog              | `/blog` with no posts                   | `h2` "No Posts Yet"                                                                 | "Nothing has been published here yet."                           | "Go to the Homepage"                   | the page load                      |
+| Invalid form            | `/contact/send`, 422                    | `h2` "There Is One Problem with This Form" or "There Are N Problems with This Form" | one linked entry per field                                       | each entry moves to its field          | focus on the summary on arrival    |
+| Rate-limited or unsaved | `/contact/send`, 429 or 503             | `h2` "Your Message Was Not Sent"                                                    | the reason, and the email address as the way round it            | the form, still holding what was typed | focus on the summary on arrival    |
+| Message over the cap    | `/contact/send`, 413                    | `h1` "Message Too Long"                                                             | nothing was sent, the 5000 character limit and the email address | "Back to the Contact Form"             | the page load                      |
+| Offline                 | `/contact`, on submit                   | none: the form stays                                                                | "You are offline, so your message has not been sent…"            | the form, unchanged                    | the form's `role="status"` region  |
+| Sending                 | `/contact`, while the post is in flight | none                                                                                | "Sending your message." and the button reads "Sending"           | a second submit is blocked             | the form's `role="status"` region  |
+| Failed photo            | any `.aspect-frame`                     | none                                                                                | its alt text on the frame                                        | none                                   | not announced: the alt is its name |
+| Loading a photo         | the photo viewer, past 200ms            | none: the previous photo stays                                                      | "Loading photo 4 of 12" in the count                             | the previous photo and its caption     | the viewer's count region          |
+| Photo that never loads  | the photo viewer, on a failed decode    | none                                                                                | "This photo could not be loaded." on the frame                   | the caption still describes it         | the viewer's count region          |
 
 - `.error-summary`: 6px `pink` edge on `surface`, `tabindex="-1"` and
   `autofocus`, no `role="alert"` (focus already announces it; some screen

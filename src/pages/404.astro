@@ -3,9 +3,9 @@ import { Image } from 'astro:assets';
 import bunnyFooter from '../assets/bunny-footer.webp';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
-import '../styles/components/rabbit-chase.css';
-import { chasePages, sectionsOf } from '../lib/chase-pages';
 import { DENSITIES } from '../lib/image-densities';
+import { HEADER_LINKS } from '../lib/nav';
+import { CONTACT_PATH } from '../lib/paths';
 import { sitePages } from '../lib/site-pages';
 
 /*
@@ -14,17 +14,20 @@ import { sitePages } from '../lib/site-pages';
  * answers 200, and would otherwise be indexable.
  */
 
-/* CSS px: --size-rabbit-runner, the rabbit at the crossroads. */
-const RABBIT_HEIGHT = 72;
+/* CSS px: the rabbit beside its line (h-24). */
+const RABBIT_HEIGHT = 96;
 
-const pages = chasePages(await sitePages());
-/* `<` escaped, so no title can close the data block. */
-const pagesJson = JSON.stringify(pages).replace(/</g, '\\u003c');
-const sections = sectionsOf(pages);
-
-/* Carroll's text, Project Gutenberg #11, chapter VI. */
+/* Carroll's text, Project Gutenberg #11: the Rabbit in chapter I, the Cat in chapter VI. */
+const RABBIT_LINE = '“Oh dear! Oh dear! I shall be late!”';
 const CAT_LINE =
   '“That depends a good deal on where you want to get to,” said the Cat.';
+
+const SECTIONS = [...HEADER_LINKS, { href: CONTACT_PATH, label: 'Contact' }];
+
+/* `<` escaped, so no title can close the data block. */
+const pagesJson = JSON.stringify(
+  (await sitePages()).filter((page) => page.path !== '/'),
+).replace(/</g, '\\u003c');
 ---
 
 <BaseLayout
@@ -33,70 +36,74 @@ const CAT_LINE =
   noCanonical
   noindex
 >
-  <PageHero
-    title="Which Way From Here?"
-    titleSize="h2"
-    hiddenPrefix="Page Not Found:"
-    slab="none"
-  >
-    <span slot="eyebrow" class="badge">
-      Page Not Found
-    </span>
-
-    <p slot="slab" class="standfirst">
-      This page does not exist, but the White Rabbit knows the way. Nothing is
-      broken on your end. If a link on this site brought you here,{' '}
-      <a href="/contact/">tell me about the broken link</a>.
+  <PageHero title="I’m Late! This Page Is Gone" slab="none">
+    <p class="standfirst">
+      This page does not exist, and nothing is broken on your end. If a link on
+      this site brought you here,{' '}
+      <a href={CONTACT_PATH}>tell me about the broken link</a>.
     </p>
+  </PageHero>
 
-    {/* Without JavaScript the signs are links; src/scripts/rabbit-chase.ts makes them choose a way. */}
-    <div id="crossroads" slot="slab" class="crossroads mt-head">
-      <p class="crossroads-cat">{CAT_LINE}</p>
-      <div class="crossroads-map">
-        <div class="crossroads-column">
-          <div id="crossroads-signs-label" class="crossroads-heading label">
-            Sections
-          </div>
-          <ul
-            role="list"
-            class="crossroads-signs"
-            aria-labelledby="crossroads-signs-label"
-          >
-            {sections.map((section) => (
-              <li>
-                <a
-                  href={section.path}
-                  class="crossroads-sign label"
-                  data-path={section.path}
-                >
-                  {section.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div class="crossroads-pole" aria-hidden="true">
+  <div class="band py-section">
+    <div class="mx-auto flex max-w-page flex-col gap-head">
+      <div class="card relative pt-card lg:max-w-2xl">
+        <span class="sticker absolute top-0 left-8 -translate-y-1/2 -rotate-3">
+          The White Rabbit
+        </span>
+        {/* <div>s: a large bold <p> trips WAVE's "Possible heading" (tests/wave-alerts.spec.ts). */}
+        <div class="flex items-end gap-6">
           <Image
             src={bunnyFooter}
             alt=""
             height={RABBIT_HEIGHT}
             densities={DENSITIES}
-            class="crossroads-rabbit"
+            class="h-24 w-auto shrink-0"
           />
+          <div class="text-lead font-black text-text text-pretty">
+            {RABBIT_LINE}
+          </div>
         </div>
-        <div class="crossroads-column" data-pending></div>
+        {/* Home without JavaScript; src/scripts/follow-rabbit.ts points it at the page the address meant. */}
+        <p class="mt-6">
+          <a href="/" class="btn-primary" data-follow>
+            Follow Me Home
+          </a>
+        </p>
       </div>
-      <p class="sr-only" aria-live="polite"></p>
-      <script
-        is:inline
-        type="application/json"
-        id="chase-pages"
-        set:html={pagesJson}
-      />
+
+      <div class="card relative pt-card lg:ml-auto lg:max-w-2xl">
+        <span class="sticker absolute top-0 right-8 -translate-y-1/2 rotate-3">
+          The Cheshire Cat
+        </span>
+        <div class="text-lead text-text italic text-pretty">{CAT_LINE}</div>
+        <details class="mt-6">
+          <summary class="btn-secondary cursor-pointer">Or Ask the Cat</summary>
+          <ul
+            role="list"
+            class="mt-6 flex flex-wrap gap-4"
+            aria-label="Sections"
+          >
+            {SECTIONS.map((link) => (
+              <li>
+                <a href={link.href} class="chip">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      </div>
     </div>
-  </PageHero>
+  </div>
+
+  <script
+    is:inline
+    type="application/json"
+    id="site-pages"
+    set:html={pagesJson}
+  />
 </BaseLayout>
 
 <script>
-  import '../scripts/rabbit-chase';
+  import '../scripts/follow-rabbit';
 </script>
