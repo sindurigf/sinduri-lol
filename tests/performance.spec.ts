@@ -112,15 +112,21 @@ test.describe('page weight and stability', () => {
   }
 
   /* The 404 page's script fills in the page a mistyped address meant, after first paint. */
-  const MISTYPED = '/blgo/five-yaers-in-drupal';
-  for (const width of [390, 768, 1024, 1280]) {
-    test(`the 404 page for a mistyped address does not shift at ${width}px`, async ({
+  /* A short title and one long enough to need the clamp at a phone width. */
+  const MISTYPED = [
+    '/blgo/five-yaers-in-drupal',
+    '/blog/open-source-is-not-jst-code',
+  ];
+  for (const [address, width] of MISTYPED.flatMap((typo) =>
+    [390, 768, 1024, 1280].map((w) => [typo, w] as const),
+  )) {
+    test(`the 404 page for ${address} does not shift at ${width}px`, async ({
       page,
       browser,
     }) => {
       await page.setViewportSize({ width, height: 900 });
       await page.addInitScript(LAYOUT_SHIFT);
-      await page.goto(MISTYPED, { waitUntil: 'networkidle' });
+      await page.goto(address, { waitUntil: 'networkidle' });
       await page.waitForFunction(
         () => performance.getEntriesByName('first-contentful-paint').length > 0,
       );
@@ -128,7 +134,7 @@ test.describe('page weight and stability', () => {
       const { shift, sources } = await layoutShiftOf(page);
       expect(
         shift,
-        `${MISTYPED} shifted its layout while loading at ${width}px:\n${sources.join('\n')}`,
+        `${address} shifted its layout while loading at ${width}px:\n${sources.join('\n')}`,
       ).toBe(0);
 
       /* Below the fold a shift scores 0, so the label and title sizes are compared with the page without the script. */
@@ -144,7 +150,7 @@ test.describe('page weight and stability', () => {
         viewport: { width, height: 900 },
       });
       const still = await before.newPage();
-      await still.goto(MISTYPED);
+      await still.goto(address);
       expect(
         await followBox(page),
         'Follow Me or the title under it changed size once the script named its page',
