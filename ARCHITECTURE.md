@@ -406,7 +406,8 @@ in `wrangler.jsonc`).
   `<symbol>` per link label in `src/assets/social-icons.svg`. The footer rabbit
   is `src/assets/bunny-footer.webp` with `alt=""`, standing on the name band:
   the Looking Up pose of a Canva sheet, traced with Potrace and
-  exported as a die-cut sticker; sources and scripts are kept outside the repo.
+  exported as a die-cut sticker on a pink block behind it, like the roundel;
+  sources and scripts are kept outside the repo.
   The footer runs no JavaScript.
 
 ### Photos and video
