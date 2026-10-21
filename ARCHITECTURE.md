@@ -500,8 +500,8 @@ in `wrangler.jsonc`).
   `--logo-rabbit-*` in `global.css` must match.
 - Tab icons (`favicon.*`, `artwork/favicon-*`): the logo's jumping rabbit
   alone, on a transparent ground: a gold body, a white ear, a thick ink rim,
-  then a `bunny` throw and an ink throw. Gold reads on dark tabs, the ink rim
-  on light tabs.
+  then a `bunny` block behind the rabbit whose back face has an ink edge. Gold
+  reads on dark tabs, the ink rim on light tabs.
 - App icons (`apple-touch-icon`, `android-chrome-*`, `maskable-icon`): the same
   artwork on a full-bleed `#FFC000` square.
 
