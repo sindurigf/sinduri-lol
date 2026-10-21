@@ -141,10 +141,19 @@ const FOCUS_AREA = `
     /* Padding boxes of ancestors that clip; html and body hand overflow to the viewport. */
     const clipOf = (el) => {
       let clip = { left: -Infinity, top: -Infinity, right: Infinity, bottom: Infinity };
-      for (let node = el.parentElement; node && node !== document.body; node = node.parentElement) {
+      for (let node = el; node && node !== document.body; node = node.parentElement) {
         const s = getComputedStyle(node);
-        if (s.overflowX === 'visible' && s.overflowY === 'visible') continue;
         const r = node.getBoundingClientRect();
+        /* A clip-path cuts at the border box at most, the element's own outline included. */
+        if (s.clipPath !== 'none') {
+          clip = {
+            left: Math.max(clip.left, r.left),
+            top: Math.max(clip.top, r.top),
+            right: Math.min(clip.right, r.right),
+            bottom: Math.min(clip.bottom, r.bottom),
+          };
+        }
+        if (node === el || (s.overflowX === 'visible' && s.overflowY === 'visible')) continue;
         clip = {
           left: Math.max(clip.left, r.left + parseFloat(s.borderLeftWidth)),
           top: Math.max(clip.top, r.top + parseFloat(s.borderTopWidth)),

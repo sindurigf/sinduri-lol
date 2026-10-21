@@ -103,64 +103,71 @@
     }
   }
 
+  /*
+   * The arrow is cut on a ::before layer, not the control itself, because a
+   * clip-path on the control would cut its focus ring too (SC 2.4.7).
+   */
   .crossroads-sign,
   .crossroads-page {
-    display: block;
-    min-height: var(--spacing-target);
-    padding-block: --spacing(3);
-    border: var(--border-width-sticker) solid var(--color-block-ink);
-    background-color: var(--color-block-ink);
-    color: var(--color-block-light);
-  }
-
-  .crossroads-sign {
-    padding-inline: --spacing(3) --spacing(7);
-    clip-path: polygon(
+    --sign-fill: var(--color-block-ink);
+    --sign-shape: polygon(
       0 0,
       calc(100% - var(--size-sign-point)) 0,
       100% 50%,
       calc(100% - var(--size-sign-point)) 100%,
       0 100%
     );
+
+    position: relative;
+    isolation: isolate;
+    display: block;
+    min-height: var(--spacing-target);
+    padding-block: --spacing(4);
+    border: 0;
+    background: none;
+    color: var(--color-block-light);
+  }
+
+  :is(.crossroads-sign, .crossroads-page)::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--sign-fill);
+    clip-path: var(--sign-shape);
+  }
+
+  .crossroads-sign {
+    padding-inline: --spacing(3) --spacing(7);
     text-align: left;
     text-decoration: none;
     cursor: pointer;
 
     @media (width >= 48rem) {
-      width: 100%;
-      padding-inline: --spacing(10) --spacing(4);
-      clip-path: polygon(
+      --sign-shape: polygon(
         var(--size-sign-point) 0,
         100% 0,
         100% 100%,
         var(--size-sign-point) 100%,
         0 50%
       );
+
+      width: 100%;
+      padding-inline: --spacing(10) --spacing(4);
       text-align: right;
     }
   }
 
-  .crossroads-sign[aria-pressed='true'] {
-    background-color: var(--color-block-gold);
+  :is(.crossroads-sign[aria-pressed='true'], .crossroads-page-rabbit) {
+    --sign-fill: var(--color-block-gold);
+
     color: var(--color-block-ink);
   }
 
   .crossroads-page {
     padding-inline: --spacing(4) --spacing(10);
-    clip-path: polygon(
-      0 0,
-      calc(100% - var(--size-sign-point)) 0,
-      100% 50%,
-      calc(100% - var(--size-sign-point)) 100%,
-      0 100%
-    );
     font-size: var(--text-body);
     text-decoration: none;
-  }
-
-  .crossroads-page-rabbit {
-    background-color: var(--color-block-gold);
-    color: var(--color-block-ink);
   }
 
   .crossroads-pick {
@@ -170,7 +177,8 @@
 
   /* Light mode's cyan is a text color, so the fill keeps the dark one under ink. */
   :is(.crossroads-sign, .crossroads-page):hover {
-    background-color: var(--dark-cyan);
+    --sign-fill: var(--dark-cyan);
+
     color: var(--color-block-ink);
   }
 
@@ -188,10 +196,12 @@
   /* System colors keep the chosen sign and the rabbit's pick apart from the rest. */
   @media (forced-colors: active) {
     :is(.crossroads-sign, .crossroads-page) {
-      clip-path: none;
-      border-color: CanvasText;
-      background-color: Canvas;
+      border: var(--border-width-sticker) solid CanvasText;
       color: LinkText;
+    }
+
+    :is(.crossroads-sign, .crossroads-page)::before {
+      clip-path: none;
     }
 
     .crossroads-sign {
