@@ -325,7 +325,9 @@ it stays out of the per-page script budgets (`tests/performance.spec.ts`).
 - A feature is a `?worker&url` file. `Footer.astro` renders the registry on
   every page except under `/talks/`.
 - A trigger is `[data-on-demand="<feature file URL>"]`, shipped `hidden`; the
-  registry unhides it. Without JavaScript nothing shows.
+  registry unhides it. Without JavaScript nothing shows. A trigger that takes
+  room in the layout is drawn from first paint instead, so nothing moves when
+  the registry runs: the Aa brick, hidden like Theme without `data-theme`.
 - First click imports the file, then dispatches an `on-demand` event on the
   trigger; later clicks only dispatch. A failed import is reported with
   `reportError` and retried on the next click.
@@ -500,8 +502,8 @@ in `wrangler.jsonc`).
   `--logo-rabbit-*` in `global.css` must match.
 - Tab icons (`favicon.*`, `artwork/favicon-*`): the logo's jumping rabbit
   alone, on a transparent ground: a gold body, a white ear, a thick ink rim,
-  then a `bunny` throw and an ink throw. Gold reads on dark tabs, the ink rim
-  on light tabs.
+  then a `bunny` block behind the rabbit whose back face has an ink edge. Gold
+  reads on dark tabs, the ink rim on light tabs.
 - App icons (`apple-touch-icon`, `android-chrome-*`, `maskable-icon`): the same
   artwork on a full-bleed `#FFC000` square.
 

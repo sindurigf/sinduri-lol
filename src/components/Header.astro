@@ -12,7 +12,7 @@ import { DENSITIES } from '../lib/image-densities';
 import { SITE_NAME } from '../lib/site';
 import NavList from './NavList.astro';
 import ThemeSwitch from './ThemeSwitch.astro';
-import TextSizeGroup from './TextSizeGroup.astro';
+import TextSizeButton from './TextSizeButton.astro';
 import { TALKS_PATH } from '../lib/paths';
 
 /* The rabbit's drawn height in px: `--logo-rabbit-height`, as scripts/make-logo.mjs prints it. */
@@ -52,11 +52,12 @@ const current = (href: string) => ariaCurrent(currentPath, href);
         />
       </span>
       {/*
-        Untracked below xs so it fits at 305px; under SC 1.4.12 spacing it
-        breaks after the dot instead of pushing the row off screen.
+        Drawn from `md`; below it only the tile shows, which leaves room for the
+        Theme, Text Size and Menu bricks at 320px. The link's aria-label names it.
+        Untracked below xs; under SC 1.4.12 spacing it breaks after the dot.
       */}
       {/* prettier-ignore */}
-      <span class="label min-w-0 text-gold-text max-xs:tracking-normal below-reflow:sr-only">sinduri.<wbr />lol</span>
+      <span class="label min-w-0 text-gold-text max-xs:tracking-normal max-md:sr-only">sinduri.<wbr />lol</span>
     </a>
 
     {/* Bricks are the 44px target (SC 2.5.5); styles in buttons-nav.css. */}
@@ -77,6 +78,7 @@ const current = (href: string) => ariaCurrent(currentPath, href);
     */}
     <div class="header-bricks lg:justify-self-end">
       <ThemeSwitch textSize={sizeControls} />
+      {sizeControls && <TextSizeButton />}
       <div class="hidden md:block">
         <a
           href={CTA.href}
@@ -132,10 +134,6 @@ const current = (href: string) => ariaCurrent(currentPath, href);
                 {CTA.label}
               </a>
             </nav>
-
-            {sizeControls && (
-              <TextSizeGroup idPrefix="menu-text-size" class="menu-text-size" />
-            )}
 
             <button
               type="button"
