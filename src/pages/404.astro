@@ -87,7 +87,12 @@ const CAT_LINE =
         <div class="crossroads-column" data-pending></div>
       </div>
       <p class="sr-only" aria-live="polite"></p>
-      <script type="application/json" id="chase-pages" set:html={pagesJson} />
+      <script
+        is:inline
+        type="application/json"
+        id="chase-pages"
+        set:html={pagesJson}
+      />
     </div>
   </PageHero>
 </BaseLayout>

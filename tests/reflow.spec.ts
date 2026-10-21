@@ -317,10 +317,10 @@ for (const { width, contentBox, note } of REFLOW_WIDTHS) {
   });
 }
 
-/* No break point, like an email address: only wrap-anywhere can break it. */
 /* /brand shows every button kind in <main> without JavaScript. */
 const BUTTON_ROUTE = '/brand';
 
+/* No break point, like an email address: only wrap-anywhere can break it. */
 const UNBROKEN_LABEL =
   'Email averylongmailboxnamewithnobreak@anexampledomainfortesting.example';
 
