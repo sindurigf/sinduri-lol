@@ -516,6 +516,8 @@
   --logo-rabbit-squash: 0.88;
   --logo-rabbit-crouch-time: 60ms;
   --logo-rabbit-spring-time: 320ms;
+  /* Let It Fall: how long a block takes to drop into the pile or climb back. */
+  --fall-time: 900ms;
   /* Overshoots its end value, so a return to rest goes past it and settles back. */
   --ease-spring: cubic-bezier(0.3, 2.2, 0.5, 1);
   /* A pressable rises this far off its throw under the pointer. */
