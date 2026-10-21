@@ -39,9 +39,9 @@ const STICKER = { edge: 1, rim: 1.2, rimEdge: 1, throw: 3, line: 0.2 };
 /* Favicon grid: 64 units, the tile and the jump drawn to the icon's edges. */
 const ICON = 64;
 /* In 64 units: the box leaves room for the rim on every side and the block to the bottom left. */
-const ICON_POSE = { box: [11, 4, 47, 47], rotate: -12 };
+const ICON_POSE = { box: [11, 4, 46, 45], rotate: -12 };
 /* The tab icon: a gold rabbit, white ear, an ink rim, then a pink block behind it whose back face has an ink edge. */
-const ICON_STICKER = { rim: 3.5, depth: 6, backEdge: 1.5, steps: 8 };
+const ICON_STICKER = { rim: 4, depth: 6, backEdge: 1.5, steps: 8 };
 /* Opaque app icons on gold: artwork scale, and the maskable safe zone. */
 const APP_SCALE = 0.8;
 const MASKABLE_SCALE = 0.62;
