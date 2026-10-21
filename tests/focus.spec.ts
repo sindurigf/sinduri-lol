@@ -322,7 +322,15 @@ const walkFor = async (page: Page, colorScheme: (typeof SCHEMES)[number]) => {
 
   /* Backward: the direction that lands controls under the sticky header. */
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await page.locator('footer a').last().focus();
+  /* The no-script fallback link is not rendered when scripts run; the reading tab follows the footer. */
+  const last = await page.evaluateHandle(
+    (selector) =>
+      [...document.querySelectorAll(selector)]
+        .filter((control) => control.checkVisibility())
+        .at(-1),
+    FOCUSABLE_SELECTOR,
+  );
+  await last.asElement()!.focus();
   const backward = await walk(page, 'Shift+Tab');
   const backwardCoverage = await walkCoverage(page, FOCUSABLE_SELECTOR);
 
@@ -412,14 +420,15 @@ const expectRingsContrast = (route: string, width: number, stops: Stop[]) => {
  * of the control. Its change of contrast is the ring against the ground it
  * replaces, which expectRingsContrast holds at 3:1.
  */
+const isRingTooSmall = (s: Stop): boolean =>
+  s.hasRing && (s.outlineStyle !== 'solid' || s.area < s.perimeter);
+
 const expectRingsLargeEnough = (
   route: string,
   width: number,
   stops: Stop[],
 ) => {
-  const small = stops.filter(
-    (s) => s.hasRing && (s.outlineStyle !== 'solid' || s.area < s.perimeter),
-  );
+  const small = stops.filter(isRingTooSmall);
   expect(
     small,
     `${route} at ${width}px has focus indicator(s) smaller than a 2px perimeter or not solid (SC 2.4.13):\n` +
@@ -469,6 +478,44 @@ for (const colorScheme of SCHEMES) {
     });
   }
 }
+
+const CLIP_PROBE_ID = 'clip-path-probe';
+
+test('counts a ring cut by clip-path as too small (SC 2.4.13)', async ({
+  page,
+}) => {
+  await gotoSettled(page, '/');
+  await page.evaluate((id) => {
+    const button = document.createElement('button');
+    button.id = id;
+    button.type = 'button';
+    button.textContent = 'Probe';
+    document.querySelector('main')?.prepend(button);
+  }, CLIP_PROBE_ID);
+  const probe = page.locator(`#${CLIP_PROBE_ID}`);
+
+  await probe.focus();
+  const unclipped = await readFocused(page);
+  expect(
+    unclipped.hasRing,
+    'the probe button should draw the site focus ring',
+  ).toBe(true);
+  expect(isRingTooSmall(unclipped), 'the unclipped ring should pass').toBe(
+    false,
+  );
+
+  await probe.evaluate((el) => el.style.setProperty('clip-path', 'inset(0)'));
+  await probe.focus();
+  const clipped = await readFocused(page);
+  expect(
+    clipped.hasRing,
+    'clip-path should leave the computed outline in place',
+  ).toBe(true);
+  expect(
+    isRingTooSmall(clipped),
+    'a ring cut by clip-path should fail the size check',
+  ).toBe(true);
+});
 
 /** Whole-pixel scrolling can leave a fractional box this much lower than the padding allows. */
 const SCROLL_ROUNDING_PX = 1;

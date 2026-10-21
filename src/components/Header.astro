@@ -12,11 +12,16 @@ import { DENSITIES } from '../lib/image-densities';
 import { SITE_NAME } from '../lib/site';
 import NavList from './NavList.astro';
 import ThemeSwitch from './ThemeSwitch.astro';
+import TextSizeGroup from './TextSizeGroup.astro';
+import { TALKS_PATH } from '../lib/paths';
 
 /* The rabbit's drawn height in px: `--logo-rabbit-height`, as scripts/make-logo.mjs prints it. */
 const RABBIT_HEIGHT = 64;
 
 const currentPath = Astro.url.pathname;
+
+/* A slide deck loads no on-demand script, so it has no text size control. */
+const sizeControls = !currentPath.startsWith(TALKS_PATH);
 
 const current = (href: string) => ariaCurrent(currentPath, href);
 ---
@@ -71,7 +76,7 @@ const current = (href: string) => ariaCurrent(currentPath, href);
       inside the list would push the links off-center by half its width.
     */}
     <div class="header-bricks lg:justify-self-end">
-      <ThemeSwitch />
+      <ThemeSwitch textSize={sizeControls} />
       <div class="hidden md:block">
         <a
           href={CTA.href}
@@ -127,6 +132,10 @@ const current = (href: string) => ariaCurrent(currentPath, href);
                 {CTA.label}
               </a>
             </nav>
+
+            {sizeControls && (
+              <TextSizeGroup idPrefix="menu-text-size" class="menu-text-size" />
+            )}
 
             <button
               type="button"
