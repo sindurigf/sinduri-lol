@@ -14,13 +14,12 @@ import { wallClasses } from '../lib/wall';
  * from the post are marked. Change the PDF and this page together: no test
  * compares their text. A slot neither source fills gets fewer items, not new copy.
  */
-const CV_HREF = CV_PATH;
 const PUBLIC_DIR = 'public';
 const BYTES_PER_KB = 1024;
 
 /* From cwd, not import.meta.url: this runs bundled in dist/.prerender/chunks/. */
 const CV_KB = Math.round(
-  statSync(join(process.cwd(), PUBLIC_DIR, CV_HREF)).size / BYTES_PER_KB,
+  statSync(join(process.cwd(), PUBLIC_DIR, CV_PATH)).size / BYTES_PER_KB,
 );
 
 const EXPERIENCE = [
@@ -153,7 +152,7 @@ const pairWall = (count: number) =>
 
     {/* No `download` attribute: the browser's viewer is the more accessible default. */}
     <p class="actions mt-head">
-      <a href={CV_HREF} class="btn-gold-primary">
+      <a href={CV_PATH} class="btn-gold-primary">
         Download My CV (PDF, {CV_KB} KB)
       </a>
       <a href="/contact/" class="btn-gold-secondary">

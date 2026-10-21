@@ -2,7 +2,7 @@ import { expect, test } from './test';
 import { gotoSettled } from './settle';
 import { ENGINE_INVARIANT } from './tags';
 
-/* /about links #name and /404 links #not-found; Made with AI closes the page. */
+/* /about links #name; #not-found credits the 404 page; Made with AI closes the page. */
 const SECTIONS = [
   { heading: 'Where the Name Comes From', id: 'name' },
   { heading: 'Thank You' },
