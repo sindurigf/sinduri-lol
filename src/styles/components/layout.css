@@ -101,7 +101,7 @@
 
   /*
    * Thin at the top only. The bottom stays --spacing-section, the only padding
-   * that clears the roundel (half the disc, its lift and 24px: 92px at 1280).
+   * that clears the roundel (half its box, its lift and 24px: 92px at 1280).
    */
   .page-hero-thin,
   .post-slab {
@@ -136,7 +136,7 @@
 
   /*
    * Roundel across the slab's bottom edge, right edge on the page column. Hangs
-   * 48px or 64px into the next section's top padding (at least 56px).
+   * half its box into the next section's top padding (at least 56px).
    */
   .hero-roundel {
     position: absolute;

@@ -14,7 +14,7 @@ interface Props {
   variant?: 'page' | 'hero';
 }
 
-/* The box must be positioned to hold the art; a caller's `absolute` replaces the default. */
+/* The box holds the absolute art, so a caller's `class` must set a position. */
 const {
   class: className = 'relative',
   eager = false,

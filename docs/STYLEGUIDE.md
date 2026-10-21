@@ -872,7 +872,7 @@ roundel.**
 | Chip label                  | `text` on `surface`             | 13.51 | 4.5        |
 | Focus ring                  | `gold-text` on gold             | 11.32 | 3          |
 | Photo border                | `gold-text` on gold             | 11.32 | decoration |
-| Roundel rabbit back edge    | `fill-edge` on gold             | 11.32 | decoration |
+| Roundel rabbit back edge    | `block-ink` on gold             | 11.32 | decoration |
 | Roundel rabbit off the slab | white fill on `background`      | 19.68 | decoration |
 | Photo and chip shadows      | pink on gold                    | 2.31  | decoration |
 

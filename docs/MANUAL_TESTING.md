@@ -179,7 +179,7 @@ Setup: `/career`, `/contact`, `/blog`; `/about` (photo) as the control.
 Forced colors (DevTools → Rendering → forced-colors: active, or the OS
 high-contrast theme):
 
-- [ ] The roundel is a disc with a visible edge. → SC 1.4.11
+- [ ] The roundel rabbit shows and covers no text; it is decoration. → SC 1.1.1
 - [ ] The bottom of the hero is findable. Say what marks it; "nothing" is a
       finding. → SC 1.4.1
 - [ ] The `h1` and buttons are readable; a focused control shows a ring. → SC 1.4.11, 2.4.7
@@ -217,8 +217,8 @@ its place at 320 and 1280px, its ring, forced colors, the theme set before
 - [ ] A gold label shows ink text with its gold square; nothing is gold text
       on white. → SC 1.4.3
 - [ ] Repeat §3 at 400% in light: no overlap, no cut-off. → SC 1.4.10
-- [ ] Repeat §5a.2 forced colors in light: the roundel edge and the focus ring
-      show. → SC 1.4.11
+- [ ] Repeat §5a.2 forced colors in light: the roundel rabbit and the focus
+      ring show. → SC 1.4.11
 - [ ] The button's name is not a visible label, so §6a needs it reachable by
       the tool's numbers in both modes; the choices are visible labels. → SC 2.1.1
 
