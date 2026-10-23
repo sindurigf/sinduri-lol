@@ -838,8 +838,11 @@ evidence.
   the header and the footer button never share the screen on any page, so the
   header is never on screen to fall.
 - **Let a buried pile target take clicks so the hero's pause control works:**
-  a partly covered target fails SC 2.5.8; Put It Back, then the pause control,
-  meets SC 2.2.2, and the keyboard reaches it at once.
+  without a clear 24px square it fails SC 2.5.8; Put It Back, then the pause
+  control, meets SC 2.2.2, and the keyboard reaches it at once.
+- **axe `target-size` on Let It Fall pile targets:** axe sizes tilted targets
+  by upright boxes and overstates cover. `tests/let-it-fall.spec.ts` probes
+  each target's drawn shape for a clear 24px square instead.
 
 ## Content notes
 

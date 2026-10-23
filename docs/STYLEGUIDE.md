@@ -1090,9 +1090,10 @@ Enforced by `tests/footer.spec.ts`.
   and footer, into a pile above the button with a bounce; the same button
   (now Put It Back), Esc, keyboard focus moving anywhere else or a new window
   width puts them back. A click or tap on a link or button in the pile does
-  not, so one wholly on top still works; one partly covered takes no pointer
-  (SC 2.5.8), and the pile spreads over the lower half of the screen so more
-  land on top. A text field takes focus on click, so it puts the page back.
+  not, so one with a clear 24px square still works; one without takes no
+  pointer (SC 2.5.8), checked in short slices after landing and again after a
+  scroll. The pile spreads over the lower half of the screen so more land on
+  top. A text field takes focus on click, so it puts the page back.
   The sticky header is held in flow while fallen, so its pile scrolls with the
   page. `transform` only, stacked on a block's own
   `translate` and `rotate`, so the order and text stay as they are; other

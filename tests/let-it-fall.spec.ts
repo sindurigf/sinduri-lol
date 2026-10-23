@@ -21,6 +21,10 @@ const HEIGHT = 900;
 /* px of page above the button kept on screen, so some blocks are there to fall. */
 const BUTTON_FROM_BOTTOM = 120;
 const MAX_INSTANT_MS = 1;
+/* px: the SC 2.5.8 minimum square; live targets are probed finer than let-it-fall.ts, buried ones on its grid. */
+const MIN_TARGET = 24;
+const FINE_STEP = 2;
+const PROBE_STEP = 6;
 
 const fallen = (page: Page) => page.locator('[data-fell]');
 /* Every fall and climb back has landed. */
@@ -28,6 +32,11 @@ const landed = (page: Page) =>
   expect
     .poll(() => page.evaluate(() => document.getAnimations().length))
     .toBe(0);
+/* let-it-fall.ts has checked which pile targets take clicks. */
+const checked = (page: Page) =>
+  expect(page.locator('[data-let-it-fall]')).toHaveAttribute(
+    'data-fall-checked',
+  );
 const status = (page: Page) => page.locator('footer').getByRole('status');
 
 /* The button near the bottom of the screen with the page above it, then one press. */
@@ -80,18 +89,68 @@ for (const width of WIDTHS) {
         hit: true,
         covered: 0,
       });
+      await checked(page);
+      const squares = await page.evaluate(
+        ({ side, fine, coarse }) => {
+          const clear = (el: Element, step: number) => {
+            const box = el.getBoundingClientRect();
+            const on = (x: number, y: number) => {
+              const hit = document.elementFromPoint(x, y);
+              return hit !== null && el.contains(hit);
+            };
+            for (let y = box.top; y + side <= box.bottom; y += step) {
+              for (let x = box.left; x + side <= box.right; x += step) {
+                let whole = true;
+                for (let dy = 0; whole && dy <= side; dy += step) {
+                  for (let dx = 0; whole && dx <= side; dx += step) {
+                    whole = on(x + dx, y + dy);
+                  }
+                }
+                if (whole) return true;
+              }
+            }
+            return false;
+          };
+          const targets = [
+            ...document.querySelectorAll(
+              '[data-fell] :is(a[href], button), [data-fell]:is(a[href], button)',
+            ),
+          ].filter((el) => el.checkVisibility());
+          const live = targets.filter(
+            (el) => !el.hasAttribute('data-fall-buried'),
+          );
+          /* Buried targets take no pointer, so probes pass through them; check them with it back on. */
+          const buried = targets.filter((el) =>
+            el.hasAttribute('data-fall-buried'),
+          );
+          const unclear = live.filter((el) => !clear(el, fine)).length;
+          for (const el of buried) el.removeAttribute('data-fall-buried');
+          const clearBuried = buried.filter((el) => clear(el, coarse)).length;
+          for (const el of buried) el.setAttribute('data-fall-buried', '');
+          return { live: live.length, unclear, clearBuried };
+        },
+        { side: MIN_TARGET, fine: FINE_STEP, coarse: PROBE_STEP },
+      );
+      expect(
+        squares.live,
+        'no target in the pile takes clicks',
+      ).toBeGreaterThan(0);
+      expect(
+        squares,
+        'a live target lacks a clear 24px square, or a buried one has it (SC 2.5.8)',
+      ).toMatchObject({ unclear: 0, clearBuried: 0 });
       const { violations } = await timedScan(page, 'fallen /career');
-      /* A buried target takes no pointer input, so it is no target under SC 2.5.8; axe still sizes it. */
+      /* False positive: axe sizes a tilted pile target by upright boxes, so it overstates cover; the square probe above measures the drawn shape. */
       const found: string[] = [];
       for (const { id, nodes } of violations) {
         const left = [];
         for (const node of nodes) {
-          const buried =
+          const inPile =
             id === 'target-size' &&
             (await page
               .locator(node.target.join(' '))
-              .evaluate((el) => el.hasAttribute('data-fall-buried')));
-          if (!buried) left.push(node);
+              .evaluate((el) => el.closest('[data-fell]') !== null));
+          if (!inPile) left.push(node);
         }
         if (left.length) found.push(`${id}: ${left.length} node(s)`);
       }
@@ -167,6 +226,7 @@ test('a click on a link in the pile follows it', async ({ page }) => {
   await gotoSettled(page, ROUTE);
   await press(page);
   await landed(page);
+  await checked(page);
   const href = await page.evaluate(() => {
     const top = [
       ...document.querySelectorAll<HTMLAnchorElement>(

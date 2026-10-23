@@ -106,34 +106,72 @@ const unbury = (block: Element): void => {
   block.removeAttribute('data-fall-buried');
 };
 
-/* Points per side sampled across a target's box on screen. */
-const PROBES = 6;
+/* px: the SC 2.5.8 minimum square, and the grid it is probed on. */
+const MIN_TARGET = 24;
+const PROBE_STEP = 6;
+const PROBES_PER_SIDE = MIN_TARGET / PROBE_STEP + 1;
+/* ms: probing a tilted pile is slow, so it runs in slices that leave each frame room. */
+const SLICE_MS = 8;
 
-/*
- * Every probe that lands on the target's own drawn shape finds it on top. Probes
- * outside its shape, tilted or not, or off screen do not count; a target with none on screen is buried.
- */
-const uncovered = (el: Element): boolean => {
+let burial = 0;
+let sliceStart = 0;
+/* Resolves false once a newer fall, Put It Back or check has taken over. */
+const keepGoing = async (run: number): Promise<boolean> => {
+  if (performance.now() - sliceStart > SLICE_MS) {
+    await new Promise((resolve) => setTimeout(resolve));
+    sliceStart = performance.now();
+  }
+  return run === burial;
+};
+
+/* Some 24px square of the target, probed every 6px, is on top everywhere; null if overtaken. */
+const uncovered = async (el: Element, run: number): Promise<boolean | null> => {
   const box = el.getBoundingClientRect();
-  let seen = 0;
-  for (let i = 0; i < PROBES; i++) {
-    for (let j = 0; j < PROBES; j++) {
-      const x = box.left + (box.width * (i + 0.5)) / PROBES;
-      const y = box.top + (box.height * (j + 0.5)) / PROBES;
-      const stack = document.elementsFromPoint(x, y);
-      if (!stack.some((hit) => el.contains(hit))) continue;
-      seen++;
-      if (!stack[0] || !el.contains(stack[0])) return false;
+  const cols = Math.floor(box.width / PROBE_STEP) + 1;
+  const rows = Math.floor(box.height / PROBE_STEP) + 1;
+  const seen = new Map<number, boolean>();
+  for (let row = 0; row + PROBES_PER_SIDE <= rows; row++) {
+    let col = 0;
+    square: while (col + PROBES_PER_SIDE <= cols) {
+      for (let y = row; y < row + PROBES_PER_SIDE; y++) {
+        for (let x = col; x < col + PROBES_PER_SIDE; x++) {
+          const key = y * cols + x;
+          let top = seen.get(key);
+          if (top === undefined) {
+            if (!(await keepGoing(run))) return null;
+            const hit = document.elementFromPoint(
+              box.left + x * PROBE_STEP,
+              box.top + y * PROBE_STEP,
+            );
+            top = hit !== null && el.contains(hit);
+            seen.set(key, top);
+          }
+          /* No square holding this point is clear: try the first one past it. */
+          if (!top) {
+            col = x + 1;
+            continue square;
+          }
+        }
+      }
+      return true;
     }
   }
-  return seen > 0;
+  return false;
 };
 
 /*
- * SC 2.5.8: a target with any part covered takes no pointer input, so every live
- * target in the pile is whole. Keyboard and screen readers still reach them all.
+ * SC 2.5.8: a target with no clear 24px square takes no pointer input, so every
+ * live target in the pile has one. Keyboard and screen readers still reach them all.
  */
-const bury = (): void => {
+const stopBurial = (): void => {
+  burial++;
+  button.removeAttribute('data-fall-checked');
+};
+
+const bury = async (): Promise<void> => {
+  stopBurial();
+  const run = burial;
+  sliceStart = performance.now();
   const targets = fallen.flatMap((block) =>
     [block, ...block.querySelectorAll(TARGETS)].filter((el) =>
       el.matches(TARGETS),
@@ -141,8 +179,14 @@ const bury = (): void => {
   );
   for (const el of targets) el.removeAttribute('data-fall-buried');
   /* All are measured before any is buried, as a buried target lets probes through. */
-  const covered = targets.filter((el) => !uncovered(el));
+  const covered: Element[] = [];
+  for (const el of targets) {
+    const clear = await uncovered(el, run);
+    if (clear === null) return;
+    if (!clear) covered.push(el);
+  }
   for (const el of covered) el.setAttribute('data-fall-buried', '');
+  button.setAttribute('data-fall-checked', '');
 };
 
 const FALL_VARS = [
@@ -178,6 +222,7 @@ const settle = (el: HTMLElement): void => {
 };
 
 const fall = (): void => {
+  stopBurial();
   /* A press mid-climb: the climbing blocks snap home first, or their clip and transforms would hide them from the next fall. */
   for (const el of document.querySelectorAll<HTMLElement>(
     '[data-fall-block]',
@@ -227,7 +272,7 @@ const fall = (): void => {
   void Promise.all(
     fallen.flatMap((el) => el.getAnimations()).map((a) => a.finished),
   ).then(() => {
-    if (fallen === moving) bury();
+    if (fallen === moving) void bury().catch(reportError);
   }, ignoreCancel);
   width = innerWidth;
   button.textContent = LABEL_BACK;
@@ -235,6 +280,7 @@ const fall = (): void => {
 };
 
 const restore = (): void => {
+  stopBurial();
   /* The page may have scrolled since the fall: home for the header is where it sticks now. */
   if (header?.style.position) {
     unpin();
@@ -275,7 +321,7 @@ addEventListener('focusin', (event) => {
 /* Scrolling shows parts of the pile the last check could not see, and resizes the compact header. */
 addEventListener('scrollend', () => {
   if (fallen.some((el) => el.getAnimations().length)) return;
-  if (fallen.length) bury();
+  if (fallen.length) void bury().catch(reportError);
 });
 /* Offsets are measured for one width; a rotated phone or a zoom would leave the pile in the wrong place. */
 addEventListener('resize', () => {
