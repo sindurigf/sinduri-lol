@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 import bunnyFooter from '../assets/bunny-footer.svg';
 import { CONTACT_MAILTO } from '../lib/contact';
 import { NAV_LINKS, ariaCurrent } from '../lib/nav';
@@ -128,10 +127,15 @@ const RABBIT_HEIGHT = 160;
     <div class="footer-name" lang="la">
       <span class="footer-name-text">
         Lepus Ridet
-        <Image
-          src={bunnyFooter}
+        <img
+          src={bunnyFooter.src}
           alt=""
+          width={Math.round(
+            (bunnyFooter.width * RABBIT_HEIGHT) / bunnyFooter.height,
+          )}
           height={RABBIT_HEIGHT}
+          loading="lazy"
+          decoding="async"
           class="footer-rabbit"
         />
       </span>

@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 import roundelRabbit from '../assets/roundel-rabbit.svg';
 
 /*
@@ -31,10 +30,13 @@ const BOX_CLASS = {
 
 <span class:list={['block rotate-3', BOX_CLASS[variant], className]}>
   <span class="absolute -inset-1/8">
-    <Image
-      src={roundelRabbit}
+    <img
+      src={roundelRabbit.src}
       alt=""
+      width={roundelRabbit.width}
+      height={roundelRabbit.height}
       loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
       class="size-full"
     />
   </span>

@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 import logoRabbit from '../assets/logo-rabbit.svg';
 import {
   CTA,
@@ -41,11 +40,15 @@ const current = (href: string) => ariaCurrent(currentPath, href);
       class="logo-link flex min-w-0 items-center gap-4 max-xs:gap-2 lg:justify-self-start"
     >
       <span class="logo-tile relative flex h-12 w-12 rotate-3 items-center justify-center rounded-nav border-4 border-fill-edge bg-block-gold">
-        <Image
-          src={logoRabbit}
+        <img
+          src={logoRabbit.src}
           alt=""
+          width={Math.round(
+            (logoRabbit.width * RABBIT_HEIGHT) / logoRabbit.height,
+          )}
           height={RABBIT_HEIGHT}
           loading="eager"
+          decoding="async"
           class="logo-rabbit"
         />
       </span>

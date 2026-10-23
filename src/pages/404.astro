@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 import bunnyFooter from '../assets/bunny-footer.svg';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
@@ -52,10 +51,15 @@ const pagesJson = JSON.stringify(
         </span>
         {/* <div>s: a large bold <p> trips WAVE's "Possible heading" (tests/wave-alerts.spec.ts). */}
         <div class="flex items-end gap-6">
-          <Image
-            src={bunnyFooter}
+          <img
+            src={bunnyFooter.src}
             alt=""
+            width={Math.round(
+              (bunnyFooter.width * RABBIT_HEIGHT) / bunnyFooter.height,
+            )}
             height={RABBIT_HEIGHT}
+            loading="lazy"
+            decoding="async"
             class="h-24 w-auto shrink-0"
           />
           <div class="text-lead font-black text-text text-pretty">
