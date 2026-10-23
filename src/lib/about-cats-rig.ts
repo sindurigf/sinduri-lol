@@ -22,8 +22,10 @@ const D = Math.PI / 180;
 const FADE_MS = 110;
 /** ms a frame must have shown before the next one fades in over it, not cuts. */
 const HELD_MS = 240;
-/** px a cat must move in a frame to read as walking, not shuffling. */
-const WALKING = 0.15;
+/** ms a cat must stand still before it stops walking. */
+const STILL_MS = 120;
+/** Where the head is in a frame, as shares of its width ahead of center and its height up. */
+const HEAD_AT = { ahead: 1 / 3, up: 0.8 };
 /** The white rim and ink edge round each frame, in px: part of the drawing. */
 const OUTLINE = 3;
 /** The feather's string hangs from just under the band's top: --spacing-cat-band (140px) must stay above it. */
@@ -41,6 +43,8 @@ const ZZ_AHEAD = 6;
 const ZZ_RISE = 10;
 /** Half the click box's least width: over 44px (SC 2.5.5), wider for a wider frame. */
 export const HIT_HALF_WIDTH = 48;
+/** The click box's least height: a curled-up cat is still a 44px target (SC 2.5.5). */
+export const HIT_MIN_HEIGHT = 44;
 const WING_BEAT_MS = 16;
 
 const f = (n: number): string => n.toFixed(2);
@@ -87,7 +91,7 @@ const sizeOf = (id: CatId, frame: Frame) => {
 
 /** The frame a pose is drawn as, standing still. */
 export const stillFrame = (p: Pose): Frame =>
-  frameFor(p, NAMED, { ...STILL, lift: p.y, lastLift: p.y });
+  frameFor(grounded(p), NAMED, { ...STILL, lift: p.y, lastLift: p.y });
 
 const CAT_IDS = Object.keys(SHEET) as CatId[];
 
@@ -97,7 +101,7 @@ export const highestPoint = (p: Pose): number => {
   return (
     Math.max(...CAT_IDS.map((id) => sizeOf(id, frame).h)) +
     OUTLINE +
-    Math.max(0, p.y) +
+    liftOf(p) +
     (p.zz > 0 ? ZZ_HEIGHT : 0)
   );
 };
@@ -140,6 +144,7 @@ export interface CatRig {
   shownAt: number;
   lastX: number;
   lastLift: number;
+  movedAt: number;
   travelled: number;
   /** Head center in the svg's coordinates, for the pointer-watcher. */
   head: { x: number; y: number };
@@ -155,13 +160,19 @@ export const createCatRig = (
   const root = el('g', { class: 'cat-hit' }, svg);
   const hit = el('rect', { class: 'cat-hit-area' }, root);
   const flip = el('g', {}, root);
+  /* Hidden until a frame is drawn: an empty window shows the whole sheet, and takes clicks. */
   const layer = (): Layer => {
     const view = el(
       'svg',
-      { overflow: 'hidden', 'aria-hidden': 'true', focusable: 'false' },
+      {
+        overflow: 'hidden',
+        'aria-hidden': 'true',
+        focusable: 'false',
+        visibility: 'hidden',
+      },
       flip,
     );
-    const image = el('image', { href: sheet.src }, view);
+    const image = el('image', {}, view);
     return { view, image };
   };
   const layers: [Layer, Layer] = [layer(), layer()];
@@ -192,9 +203,25 @@ export const createCatRig = (
     shownAt: -Infinity,
     lastX: NaN,
     lastLift: 0,
+    movedAt: -Infinity,
     travelled: 0,
     head: { x: 0, y: 0 },
   };
+};
+
+/** Half the click box's width and its height above the cat's feet, for a frame. */
+export const hitBox = (id: CatId, frame: Frame) => {
+  const { w, h } = sizeOf(id, frame);
+  return {
+    half: Math.max(HIT_HALF_WIDTH, w / 2 + OUTLINE),
+    tall: Math.max(HIT_MIN_HEIGHT, h + OUTLINE),
+  };
+};
+
+/** Loads the cat's frames, once: called when its band first comes into view, so an unseen cat costs no download. */
+export const loadSheet = (rig: CatRig): void => {
+  for (const { image } of rig.layers)
+    if (!image.hasAttribute('href')) set(image, 'href', rig.sheet.src);
 };
 
 /** Shows `frame` in `layer`, its ground line at y = 0 and centered on x = 0. */
@@ -210,15 +237,33 @@ const drawFrame = (rig: CatRig, layer: Layer, frame: Frame): void => {
   set(layer.image, 'height', height);
 };
 
+const showLayer = (layer: Layer, opacity: number): void => {
+  set(layer.view, 'opacity', f(opacity));
+  set(layer.view, 'visibility', opacity > 0 ? 'visible' : 'hidden');
+};
+
 export const isFading = (
   rig: Pick<CatRig, 'changedAt'>,
   now: number,
 ): boolean => now - rig.changedAt < FADE_MS;
 
-/** Ends any fade, so a jump cut (resize, reduced motion) shows the new frame at once. */
+/** Ends any fade, and makes the next frame cut in: a jump cut (resize, reduced motion) shows it at once. */
 export const settleFrame = (rig: CatRig): void => {
   rig.changedAt = -Infinity;
+  rig.shownAt = Infinity;
 };
+
+/** px the paws stand above the ground: a climb raises the whole cat onto the upper brick. */
+const feetUp = (p: Pose): number =>
+  p.rot === 0
+    ? Math.max(0, p.by - Math.max(p.fN[1], p.fF[1], p.hN[1], p.hF[1]))
+    : 0;
+
+/** px the drawing is raised: a jump's lift and a climb's height. */
+export const liftOf = (p: Pose): number => Math.max(0, p.y) + feetUp(p);
+
+/** The pose as if its paws were on the ground, to compare with the named poses. */
+const grounded = (p: Pose): Pose => ({ ...p, by: p.by - feetUp(p) });
 
 export const renderCat = (
   rig: CatRig,
@@ -229,9 +274,11 @@ export const renderCat = (
 ): void => {
   const step = Number.isNaN(rig.lastX) ? 0 : Math.abs(x - rig.lastX);
   rig.lastX = x;
-  const moving = step > WALKING;
+  if (step > 0) rig.movedAt = now;
+  /* A frame drawn too soon after the last moves the cat too little to tell: walking lasts until it has stood still a while. */
+  const moving = now - rig.movedAt < STILL_MS;
   rig.travelled = moving ? rig.travelled + step : 0;
-  const frame = frameFor(p, NAMED, {
+  const frame = frameFor(grounded(p), NAMED, {
     travelled: rig.travelled,
     moving,
     lift: p.y,
@@ -251,22 +298,22 @@ export const renderCat = (
     set(rig.root, 'data-frame', frame);
   }
   const k = clamp((now - rig.changedAt) / FADE_MS, 0, 1);
-  set(front.view, 'opacity', f(k));
-  set(back.view, 'opacity', f(1 - k));
+  showLayer(front, k);
+  showLayer(back, 1 - k);
 
   const { w, h } = sizeOf(rig.id, frame);
-  const half = Math.max(HIT_HALF_WIDTH, w / 2 + OUTLINE);
+  const lift = liftOf(p);
+  const { half, tall } = hitBox(rig.id, frame);
   set(rig.hit, 'x', f(-half));
   set(rig.hit, 'width', f(2 * half));
-  const lift = Math.max(0, p.y);
-  set(rig.hit, 'y', f(-(h + OUTLINE + lift)));
-  set(rig.hit, 'height', f(h + OUTLINE + lift));
+  set(rig.hit, 'y', f(-(tall + lift)));
+  set(rig.hit, 'height', f(tall + lift));
 
   const sleeping = p.zz > 0;
   set(rig.zz, 'visibility', sleeping ? 'visible' : 'hidden');
   if (sleeping) {
     const zx = p.face * (w / 2 + ZZ_AHEAD) - (p.face < 0 ? ZZ_WIDTH : 0);
-    set(rig.zz, 'transform', translate(zx, -h + ZZ_RISE * (1 - p.zz)));
+    set(rig.zz, 'transform', translate(zx, -h - lift + ZZ_RISE * (1 - p.zz)));
     set(rig.zz, 'opacity', f(Math.min(1, 2 * p.zz)));
   }
 
@@ -277,7 +324,10 @@ export const renderCat = (
     'transform',
     `translate(0 ${f(-lift)}) scale(${f(-p.face * (2 - p.sq))} ${f(p.sq)})`,
   );
-  rig.head = { x: x + (p.face * w) / 3, y: groundY - lift - h * 0.8 };
+  rig.head = {
+    x: x + p.face * w * HEAD_AT.ahead,
+    y: groundY - lift - h * HEAD_AT.up,
+  };
 };
 
 export interface PropRig {

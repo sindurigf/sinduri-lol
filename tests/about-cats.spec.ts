@@ -1,3 +1,4 @@
+import sharp from 'sharp';
 import { expect, test, type Browser, type Page } from './test';
 import { gotoSettled, setViewportSettled } from './settle';
 import { settleFocusScroll } from './tab-walk';
@@ -26,9 +27,11 @@ import {
   HIT_HALF_WIDTH,
   POST_HEIGHT,
   highestPoint,
+  hitBox,
   isFading,
   reachOf,
 } from '../src/lib/about-cats-rig';
+import { FRAMES } from '../src/lib/about-cats-frames';
 import {
   createIdle,
   idleFrameMs,
@@ -543,6 +546,65 @@ test(
 const SLOW_FRAME_MS = 530;
 /** Frames a slow device may still draw after a move ends: the move's last, and the fade's. */
 const SLOW_FRAMES_SPARE = 2;
+
+test(
+  'every frame of every cat is a click box at least 44 by 44px (SC 2.5.5)',
+  NODE,
+  () => {
+    for (const id of CATS)
+      for (const frame of FRAMES) {
+        const { half, tall } = hitBox(id, frame);
+        expect(2 * half, `${id} ${frame} width`).toBeGreaterThanOrEqual(
+          MIN_TARGET,
+        );
+        expect(tall, `${id} ${frame} height`).toBeGreaterThanOrEqual(
+          MIN_TARGET,
+        );
+      }
+  },
+);
+
+/** Device px from any point of a frame's outer edge to its white rim: the ink edge and the pink block lie between. */
+const RIM_WITHIN = 12;
+/** A channel this bright is the white rim, not the coat. */
+const RIM_WHITE = 240;
+
+test(
+  'every frame is outlined by a white rim right inside its edge, the boundary on a dark band (SC 1.4.11)',
+  NODE,
+  async () => {
+    for (const id of CATS) {
+      const { data, info } = await sharp(`src/assets/about-cats-${id}.webp`)
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+      const { width, height, channels } = info;
+      const at = (x: number, y: number) => (y * width + x) * channels;
+      const solid = (x: number, y: number) =>
+        x >= 0 && y >= 0 && x < width && y < height && data[at(x, y) + 3] > 200;
+      const white = (x: number, y: number) =>
+        solid(x, y) && [0, 1, 2].every((c) => data[at(x, y) + c] >= RIM_WHITE);
+      let far = 0;
+      for (let y = 0; y < height; y += 1)
+        for (let x = 0; x < width; x += 1) {
+          if (!solid(x, y)) continue;
+          if (
+            solid(x + 1, y) &&
+            solid(x - 1, y) &&
+            solid(x, y + 1) &&
+            solid(x, y - 1)
+          )
+            continue;
+          let near = false;
+          for (let dy = -RIM_WITHIN; dy <= RIM_WITHIN && !near; dy += 1)
+            for (let dx = -RIM_WITHIN; dx <= RIM_WITHIN && !near; dx += 1)
+              near = white(x + dx, y + dy);
+          if (!near) far += 1;
+        }
+      expect(far, `${id}: edge pixels with no white rim near them`).toBe(0);
+    }
+  },
+);
 
 test(
   'a new frame fades in well within 5 s, so a still cat stops redrawing (SC 2.2.2)',
@@ -2620,6 +2682,25 @@ test.describe('About cats', () => {
       'the page scrolled with a cat, so a scroll anchor sits in a cat band',
     ).toEqual([]);
     await context.close();
+  });
+
+  test('switching to reduced motion mid-move shows the frame it reports, fully drawn and alone', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    await page.locator('#cat-spot-minerva').scrollIntoViewIfNeeded();
+    await showCat(page, 'minerva');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect
+      .poll(() =>
+        page.locator('#cat-spot-minerva .cat-hit').evaluate((cat) => {
+          const shown = [...cat.querySelectorAll('svg')].filter(
+            (view) => view.getAttribute('visibility') !== 'hidden',
+          );
+          return shown.map((view) => view.getAttribute('opacity'));
+        }),
+      )
+      .toEqual(['1.00']);
   });
 
   test('a drawn cat is at least 44 by 44px (SC 2.5.5)', async ({ page }) => {

@@ -1297,7 +1297,7 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   focus leaves it and its paw (SC 2.4.12). The paw shows only where the
   browser has popovers.
 - A cat naps after `NAP_AFTER_MS` of on-screen play (`src/lib/about-cats.ts`).
-  Lying down, and the breaths and "z" after it, end within 5 s, then the cat is
+  Lying down, and the "z" after it, end within 5 s, then the cat is
   still.
 - Pointing at a cat, or keyboard focus on it, holds it in place, so a target
   being aimed at never moves: a focused target that never moves suits keyboard

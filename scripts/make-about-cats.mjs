@@ -9,6 +9,7 @@
  */
 
 import { existsSync, writeFileSync } from 'node:fs';
+import { format, resolveConfig } from 'prettier';
 import { chromium } from '@playwright/test';
 import sharp from 'sharp';
 import { cssColorToken } from '../src/lib/css-token.ts';
@@ -149,7 +150,11 @@ try {
     `/* Written by scripts/make-about-cats.mjs; do not edit. Per frame: sheet x, y, w, h; drawn w, h; the cat's own w, h inside it. */\n` +
     `export const PAD = ${PAD};\n` +
     `export const SHEET = ${JSON.stringify(sheet)} as const;\n`;
-  writeFileSync('src/lib/about-cats-sheet.ts', source);
+  const file = 'src/lib/about-cats-sheet.ts';
+  writeFileSync(
+    file,
+    await format(source, { ...(await resolveConfig(file)), filepath: file }),
+  );
   console.log('make-about-cats: wrote src/lib/about-cats-sheet.ts');
 } finally {
   await browser.close();

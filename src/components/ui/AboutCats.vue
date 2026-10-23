@@ -10,7 +10,12 @@ import {
 } from 'vue';
 import { IDLE, useMotionLoop } from '../../composables/use-motion-loop';
 import { markFailed } from '../../scripts/failed-frame';
-import { clamp, createCatRig, type Sheet } from '../../lib/about-cats-rig';
+import {
+  clamp,
+  createCatRig,
+  loadSheet,
+  type Sheet,
+} from '../../lib/about-cats-rig';
 import minervaSheet from '../../assets/about-cats-minerva.webp';
 import rudraSheet from '../../assets/about-cats-rudra.webp';
 import helaSheet from '../../assets/about-cats-hela.webp';
@@ -88,6 +93,9 @@ const svgs = new Map<CatId, SVGSVGElement>();
 let colony: Colony | null = null;
 let pointerAt: { x: number; y: number; time: number } | null = null;
 let resizeObserver: ResizeObserver | null = null;
+let sheetObserver: IntersectionObserver | null = null;
+/* A cat's frames start loading this far before its band scrolls into view. */
+const SHEET_AHEAD = '50% 0px';
 
 const setSvg = (id: CatId, node: unknown): void => {
   if (node instanceof SVGSVGElement) svgs.set(id, node);
@@ -522,6 +530,18 @@ onMounted(async () => {
 
   resizeObserver = new ResizeObserver(layout);
   for (const node of spots()) resizeObserver.observe(node);
+  sheetObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const spot = catSpots.find((cat) => cat.id === spotId(entry.target));
+        if (spot) loadSheet(spot.rig);
+        sheetObserver?.unobserve(entry.target);
+      }
+    },
+    { rootMargin: SHEET_AHEAD },
+  );
+  for (const node of spots()) sheetObserver.observe(node);
   loop.observe(spots(), {
     onEntries: (entries) => {
       for (const entry of entries) {
@@ -540,6 +560,7 @@ onBeforeUnmount(() => {
   closeTricks();
   cancelWarm();
   resizeObserver?.disconnect();
+  sheetObserver?.disconnect();
   document.removeEventListener('pointermove', onPointer);
   document.removeEventListener('keydown', onKeyDown, { capture: true });
   document.removeEventListener('pointerdown', onPointerDown, {

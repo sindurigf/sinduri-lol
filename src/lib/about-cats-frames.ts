@@ -135,16 +135,28 @@ export const betweenFrame = (a: NamedPose, b: NamedPose): Frame | null =>
   BETWEEN.find(([x, y]) => (x === a && y === b) || (x === b && y === a))?.[2] ??
   null;
 
-/** How far apart two poses look: body angle and height, haunch, paws, head, eyes. */
+/** px or degrees of each pose value that count as one unit of difference. */
+const UNIT = {
+  ba: 10,
+  by: 4,
+  haunch: 4,
+  paw: 8,
+  bt: 4,
+  /* Open or shut eyes, and the Zz, outweigh small shifts of the body. */
+  eyes: 0.5,
+  zz: 1 / 3,
+};
+
+/** How far apart two poses look: body angle and height, haunch, front paw, thickness, eyes, sleep. */
 export const poseDistance = (p: Pose, q: Pose): number =>
-  Math.abs(p.ba - q.ba) / 10 +
-  Math.abs(p.by - q.by) / 4 +
-  Math.abs(p.haunch - q.haunch) / 4 +
-  Math.abs(p.fN[1] - q.fN[1]) / 8 +
-  Math.abs(p.fN[0] - q.fN[0]) / 8 +
-  Math.abs(p.bt - q.bt) / 4 +
-  Math.abs(p.eyes - q.eyes) * 2 +
-  Math.abs(p.zz - q.zz) * 3;
+  Math.abs(p.ba - q.ba) / UNIT.ba +
+  Math.abs(p.by - q.by) / UNIT.by +
+  Math.abs(p.haunch - q.haunch) / UNIT.haunch +
+  Math.abs(p.fN[1] - q.fN[1]) / UNIT.paw +
+  Math.abs(p.fN[0] - q.fN[0]) / UNIT.paw +
+  Math.abs(p.bt - q.bt) / UNIT.bt +
+  Math.abs(p.eyes - q.eyes) / UNIT.eyes +
+  Math.abs(p.zz - q.zz) / UNIT.zz;
 
 /** Share of the way between the nearest pose and the next past which the in-between frame shows. */
 const BETWEEN_FROM = 0.3;
@@ -153,7 +165,7 @@ const ON_SIDE = 25;
 const ON_BACK = 135;
 /** Head turn in degrees that reads as a glance, and as a look back. */
 const GLANCE = 5;
-const LOOK_BACK = 60;
+const LOOK_BACK = 20;
 /** px off the ground that reads as a jump, and as the top of one. */
 const AIRBORNE = 3;
 const HIGH = 14;
