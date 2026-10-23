@@ -7,7 +7,9 @@
 import { PAD, SHEET } from './about-cats-sheet';
 import {
   POSE_FRAME,
+  WALK,
   frameFor,
+  walkFramePx,
   type Frame,
   type Motion,
   type NamedPose,
@@ -20,7 +22,7 @@ const NS = 'http://www.w3.org/2000/svg';
 const D = Math.PI / 180;
 
 /** One step of the flip-book: 12 a second. A new frame waits until the last has shown this long, so every in-between is seen. */
-const TICK_MS = 1000 / 12;
+export const TICK_MS = 1000 / 12;
 /** The squash a cat lands in for one step when it arrives in a still pose. */
 const ARRIVE_SQUASH = 0.96;
 /** How much a held pose grows at the top of a breath, as a share of its height. */
@@ -84,11 +86,36 @@ const NAMED = Object.fromEntries(
   (Object.keys(POSE_FRAME) as NamedPose[]).map((name) => [name, pose(name)]),
 ) as Record<NamedPose, Pose>;
 
-const STILL: Motion = { travelled: 0, moving: false, lift: 0, lastLift: 0 };
+const STILL: Motion = {
+  walk: [],
+  walkPx: 1,
+  travelled: 0,
+  moving: false,
+  lift: 0,
+  lastLift: 0,
+};
+
+type Tile = readonly [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+];
+
+/** Where `frame` sits in the cat's sheet; only Minerva has walk5 to walk8. */
+const tileOf = (id: CatId, frame: Frame): Tile => {
+  const tile = (SHEET[id] as Partial<Record<Frame, Tile>>)[frame];
+  if (!tile) throw new Error(`The ${id} sheet has no ${frame} frame.`);
+  return tile;
+};
 
 /** A frame's drawn size and the cat's own size inside it, in px. */
 const sizeOf = (id: CatId, frame: Frame) => {
-  const [, , , , dw, dh, w, h] = SHEET[id][frame];
+  const [, , , , dw, dh, w, h] = tileOf(id, frame);
   return { dw, dh, w, h };
 };
 
@@ -236,7 +263,7 @@ export const loadSheet = (rig: CatRig): void => {
 
 /** Shows `frame` in `layer`, its ground line at y = 0 and centered on x = 0. */
 const drawFrame = (rig: CatRig, layer: Layer, frame: Frame): void => {
-  const [sx, sy, sw, sh, dw, dh, , h] = SHEET[rig.id][frame];
+  const [sx, sy, sw, sh, dw, dh, , h] = tileOf(rig.id, frame);
   const { width, height } = rig.sheet;
   set(layer.view, 'x', f(-dw / 2));
   set(layer.view, 'y', f(-(PAD + h)));
@@ -251,6 +278,47 @@ const showLayer = (layer: Layer, opacity: number): void => {
   set(layer.view, 'opacity', f(opacity));
   set(layer.view, 'visibility', opacity > 0 ? 'visible' : 'hidden');
 };
+
+/** What stepFrame keeps between frames. */
+export type FrameStep = Pick<
+  CatRig,
+  'frame' | 'shownAt' | 'pending' | 'cut' | 'stepX'
+>;
+
+/**
+ * Moves `s` toward the frame `wanted`, returning true when the frame changes.
+ * Frames cut, never fade: a fade doubles the legs. Each holds a full step, so a
+ * quick move still shows its in-between, and a walk advances one frame at a time.
+ */
+export const stepFrame = (
+  s: FrameStep,
+  wanted: Frame,
+  now: number,
+  x: number,
+  walk: readonly Frame[],
+): boolean => {
+  const at = s.frame === null ? -1 : walk.indexOf(s.frame);
+  const next =
+    at >= 0 && wanted !== s.frame && walk.includes(wanted)
+      ? walk[(at + 1) % walk.length]!
+      : wanted;
+  s.pending = next !== s.frame && now - s.shownAt < TICK_MS;
+  if (next === s.frame) s.cut = false;
+  if (next === s.frame || s.pending) return false;
+  /* A cut counts as a full step already shown: no squash, and the next frame need not wait. */
+  s.shownAt = s.cut ? now - TICK_MS : now;
+  s.cut = false;
+  s.stepX = x;
+  s.frame = next;
+  return true;
+};
+
+/** Where the cat is drawn: while a walk frame shows, where that frame began, so a planted paw never slides; the body catches up when the next frame cuts in. */
+export const drawnXOf = (
+  s: Pick<FrameStep, 'frame' | 'stepX'>,
+  x: number,
+): number =>
+  s.frame?.startsWith('walk') && !Number.isNaN(s.stepX) ? s.stepX : x;
 
 /** True while a frame waits its turn or the arrival squash shows: the loop draws until both end. */
 export const isStepping = (
@@ -296,7 +364,9 @@ export const renderCat = (
   /* A frame drawn too soon after the last moves the cat too little to tell: walking lasts until it has stood still a while. */
   const moving = now - rig.movedAt < STILL_MS;
   rig.travelled = moving ? rig.travelled + step : 0;
-  const frame = frameFor(grounded(p), NAMED, {
+  const wanted = frameFor(grounded(p), NAMED, {
+    walk: WALK[rig.id],
+    walkPx: walkFramePx(rig.id),
     travelled: rig.travelled,
     moving,
     lift: p.y,
@@ -304,20 +374,13 @@ export const renderCat = (
   });
   rig.lastLift = p.y;
 
-  /* Frames cut, never fade: a fade doubles the legs. Each holds a full step, so a quick move still shows its in-between. */
   const arrived = rig.frame !== null && !rig.cut;
-  rig.pending = frame !== rig.frame && now - rig.shownAt < TICK_MS;
-  if (frame !== rig.frame && !rig.pending) {
-    drawFrame(rig, rig.layer, frame);
+  if (stepFrame(rig, wanted, now, x, WALK[rig.id])) {
+    drawFrame(rig, rig.layer, rig.frame!);
     showLayer(rig.layer, 1);
-    /* A cut counts as a full step already shown: no squash, and the next frame need not wait. */
-    rig.shownAt = rig.cut ? now - TICK_MS : now;
-    rig.cut = false;
-    rig.stepX = x;
-    rig.frame = frame;
-    set(rig.root, 'data-frame', frame);
+    set(rig.root, 'data-frame', rig.frame!);
   }
-  const shown = rig.frame ?? frame;
+  const shown = rig.frame ?? wanted;
 
   const { w, h } = sizeOf(rig.id, shown);
   const lift = liftOf(p);
@@ -335,9 +398,7 @@ export const renderCat = (
     set(rig.zz, 'opacity', f(Math.min(1, 2 * p.zz)));
   }
 
-  /* While a walk frame shows, the body holds where that frame began: it moves WALK_FRAME_PX with each frame, so a planted paw never slides, and catches up only when the next frame cuts in. */
-  const drawnX =
-    shown.startsWith('walk') && !Number.isNaN(rig.stepX) ? rig.stepX : x;
+  const drawnX = drawnXOf(rig, x);
   set(rig.root, 'transform', translate(drawnX, groundY));
   /* A still frame breathes with the pose's chest, and lands in a squash for one step. */
   const still = RESTING_POSE.has(shown) && !moving;
