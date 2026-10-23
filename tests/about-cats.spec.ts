@@ -28,7 +28,7 @@ import {
   POST_HEIGHT,
   highestPoint,
   hitBox,
-  isFading,
+  isStepping,
   reachOf,
 } from '../src/lib/about-cats-rig';
 import { FRAMES } from '../src/lib/about-cats-frames';
@@ -611,17 +611,22 @@ test(
 );
 
 test(
-  'a new frame fades in well within 5 s, so a still cat stops redrawing (SC 2.2.2)',
+  'a new frame finishes its step well within 5 s, so a still cat stops redrawing (SC 2.2.2)',
   NODE,
   () => {
-    const rig = { changedAt: 0 };
-    expect(isFading(rig, 1), 'a frame changed 1 ms ago is not fading').toBe(
-      true,
-    );
+    const rig = { shownAt: 0, pending: false };
     expect(
-      isFading(rig, SC_2_2_2_MS),
-      'a frame changed 5 s ago is still fading',
+      isStepping(rig, 1),
+      'a frame shown 1 ms ago has not held its step',
+    ).toBe(true);
+    expect(
+      isStepping(rig, SC_2_2_2_MS),
+      'a frame shown 5 s ago is still stepping',
     ).toBe(false);
+    expect(
+      isStepping({ shownAt: 0, pending: true }, SC_2_2_2_MS),
+      'a frame waiting its turn keeps the loop drawing',
+    ).toBe(true);
   },
 );
 

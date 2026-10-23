@@ -29,7 +29,7 @@ import {
   createProp,
   reachOf,
   renderCat,
-  isFading,
+  isStepping,
   settleFrame,
   type CatRig,
   type PropRig,
@@ -661,14 +661,14 @@ export const createColony = (
     for (const cat of cats) {
       if (cat.hiddenAt !== undefined) continue;
       const result = step(cat, now, frames);
-      const frameFading = isFading(cat.rig, now);
+      const frameStepping = isStepping(cat.rig, now);
       const resting = result === 'rest';
       /* Timers run only while resting, so each rest starts them afresh. */
       if (resting && !cat.idling) rearmIdle(cat.idle);
       cat.idling = resting;
       if (cat.idling) {
         tickIdle(cat.idle, now);
-        const gap = idleFrameMs(cat.idle, now, frameFading);
+        const gap = idleFrameMs(cat.idle, now, frameStepping);
         const due = now - cat.idleDrawnAt >= gap;
         /* Next frame: the next idle one, the pause's end, or the nap. */
         wakeAt = Math.min(
@@ -695,7 +695,7 @@ export const createColony = (
                 : Infinity,
           );
         /* A settled or sleeping cat keeps its last drawing. */
-        if (result !== 'draw' && !frameFading) continue;
+        if (result !== 'draw' && !frameStepping) continue;
         wakeAt = now;
       }
       if (!cat.asleep && now > cat.nextBlink) {

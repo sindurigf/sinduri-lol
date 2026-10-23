@@ -7,7 +7,7 @@
 /** A sitting cat breathes about 24 times a minute. */
 const BREATH_MS = 2500;
 /** Chest thickness gained at the top of a breath, in px. */
-const BREATH_DEPTH = 3.2;
+export const BREATH_DEPTH = 3.2;
 const EAR_FLICK_EVERY_MS = [3500, 8000] as const;
 const EAR_FLICK_MS = 260;
 /** How far the ear swings, 0 to 1. */

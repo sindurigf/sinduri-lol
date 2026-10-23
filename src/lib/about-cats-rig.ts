@@ -12,16 +12,19 @@ import {
   type Motion,
   type NamedPose,
 } from './about-cats-frames';
+import { BREATH_DEPTH } from './about-cats-idle';
 import { pose } from './about-cats-moves';
 import type { CatId, Pose, PropKind, PropState } from './about-cats-types';
 
 const NS = 'http://www.w3.org/2000/svg';
 const D = Math.PI / 180;
 
-/** How long a new frame takes to fade in over the last one. */
-const FADE_MS = 110;
-/** ms a frame must have shown before the next one fades in over it, not cuts. */
-const HELD_MS = 240;
+/** One step of the flip-book: 12 a second. A new frame waits until the last has shown this long, so every in-between is seen. */
+const TICK_MS = 1000 / 12;
+/** The squash a cat lands in for one step when it arrives in a still pose. */
+const ARRIVE_SQUASH = 0.96;
+/** How much a held pose grows at the top of a breath, as a share of its height. */
+const BREATH_SCALE = 0.025;
 /** ms a cat must stand still before it stops walking. */
 const STILL_MS = 120;
 /** Where the head is in a frame, as shares of its width ahead of center and its height up. */
@@ -137,12 +140,17 @@ export interface CatRig {
   hit: SVGRectElement;
   zz: SVGPathElement;
   flip: SVGGElement;
-  /** The frame fading out, then the one fading in. */
+  /** The frame shown; the second window stays hidden. */
   layers: [Layer, Layer];
   frame: Frame | null;
-  changedAt: number;
   shownAt: number;
+  /** A frame waiting for the current one's step to end. */
+  pending: boolean;
+  /** The next frame cuts in without the arrival squash: a resize or reduced motion. */
+  cut: boolean;
   lastX: number;
+  /** Where the cat was drawn when its walk frame last changed: a walk moves only with the frame. */
+  stepX: number;
   lastLift: number;
   movedAt: number;
   travelled: number;
@@ -199,9 +207,11 @@ export const createCatRig = (
     flip,
     layers,
     frame: null,
-    changedAt: -Infinity,
     shownAt: -Infinity,
+    pending: false,
+    cut: true,
     lastX: NaN,
+    stepX: NaN,
     lastLift: 0,
     movedAt: -Infinity,
     travelled: 0,
@@ -242,16 +252,26 @@ const showLayer = (layer: Layer, opacity: number): void => {
   set(layer.view, 'visibility', opacity > 0 ? 'visible' : 'hidden');
 };
 
-export const isFading = (
-  rig: Pick<CatRig, 'changedAt'>,
+/** True while a frame waits its turn or the arrival squash shows: the loop draws until both end. */
+export const isStepping = (
+  rig: Pick<CatRig, 'shownAt' | 'pending'>,
   now: number,
-): boolean => now - rig.changedAt < FADE_MS;
+): boolean => rig.pending || now - rig.shownAt < TICK_MS;
 
-/** Ends any fade, and makes the next frame cut in: a jump cut (resize, reduced motion) shows it at once. */
+/** Makes the next frame show at once, with no squash: a jump cut (resize, reduced motion). */
 export const settleFrame = (rig: CatRig): void => {
-  rig.changedAt = -Infinity;
-  rig.shownAt = Infinity;
+  rig.shownAt = -Infinity;
+  rig.pending = false;
+  rig.cut = true;
 };
+
+const STILL_FRAMES = new Set<Frame>(Object.values(POSE_FRAME));
+
+/** The named pose a still frame draws, for its resting chest thickness. */
+const restingPose = (frame: Frame): NamedPose | undefined =>
+  (Object.keys(POSE_FRAME) as NamedPose[]).find(
+    (name) => POSE_FRAME[name] === frame,
+  );
 
 /** px the paws stand above the ground: a climb raises the whole cat onto the upper brick. */
 const feetUp = (p: Pose): number =>
@@ -287,23 +307,25 @@ export const renderCat = (
   rig.lastLift = p.y;
 
   const [back, front] = rig.layers;
-  if (frame !== rig.frame) {
-    if (rig.frame) drawFrame(rig, back, rig.frame);
+  /* Frames cut, never fade: a fade doubles the legs. Each holds a full step, so a quick move still shows its in-between. */
+  const arrived = rig.frame !== null && !rig.cut;
+  rig.pending = frame !== rig.frame && now - rig.shownAt < TICK_MS;
+  if (frame !== rig.frame && !rig.pending) {
     drawFrame(rig, front, frame);
-    /* Only a frame that held still fades out: faded mid-stride or mid-leap, the legs double. */
-    const fades = rig.frame !== null && now - rig.shownAt > HELD_MS && p.y <= 0;
-    rig.shownAt = now;
-    rig.changedAt = fades ? now : -Infinity;
+    /* A cut counts as a full step already shown: no squash, and the next frame need not wait. */
+    rig.shownAt = rig.cut ? now - TICK_MS : now;
+    rig.cut = false;
+    rig.stepX = x;
     rig.frame = frame;
     set(rig.root, 'data-frame', frame);
   }
-  const k = clamp((now - rig.changedAt) / FADE_MS, 0, 1);
-  showLayer(front, k);
-  showLayer(back, 1 - k);
+  showLayer(front, 1);
+  showLayer(back, 0);
+  const shown = rig.frame ?? frame;
 
-  const { w, h } = sizeOf(rig.id, frame);
+  const { w, h } = sizeOf(rig.id, shown);
   const lift = liftOf(p);
-  const { half, tall } = hitBox(rig.id, frame);
+  const { half, tall } = hitBox(rig.id, shown);
   set(rig.hit, 'x', f(-half));
   set(rig.hit, 'width', f(2 * half));
   set(rig.hit, 'y', f(-(tall + lift)));
@@ -317,15 +339,29 @@ export const renderCat = (
     set(rig.zz, 'opacity', f(Math.min(1, 2 * p.zz)));
   }
 
-  set(rig.root, 'transform', translate(x, groundY));
+  /* Walking, the body steps WALK_FRAME_PX with each frame and holds between, so a planted paw never slides. */
+  const drawnX =
+    moving && shown.startsWith('walk') && !Number.isNaN(rig.stepX)
+      ? rig.stepX
+      : x;
+  set(rig.root, 'transform', translate(drawnX, groundY));
+  /* A still frame breathes with the pose's chest, and lands in a squash for one step. */
+  const still = STILL_FRAMES.has(shown) && !moving;
+  const resting = still ? restingPose(shown) : undefined;
+  const breath = resting
+    ? clamp((p.bt - NAMED[resting].bt) / BREATH_DEPTH, -1, 1) * BREATH_SCALE
+    : 0;
+  const squash =
+    still && arrived && now - rig.shownAt < TICK_MS ? ARRIVE_SQUASH : 1;
+  const sq = p.sq * squash;
   /* The drawings face left; a squash flattens the cat onto its feet. */
   set(
     rig.flip,
     'transform',
-    `translate(0 ${f(-lift)}) scale(${f(-p.face * (2 - p.sq))} ${f(p.sq)})`,
+    `translate(0 ${f(-lift)}) scale(${f(-p.face * (2 - sq))} ${f(sq * (1 + breath))})`,
   );
   rig.head = {
-    x: x + p.face * w * HEAD_AT.ahead,
+    x: drawnX + p.face * w * HEAD_AT.ahead,
     y: groundY - lift - h * HEAD_AT.up,
   };
 };
