@@ -184,17 +184,20 @@
 
   /*
    * Moved by src/scripts/let-it-fall.ts: `transform` stacks on a block's own
-   * `translate` and `rotate`. No pointer, so a tap on the pile reaches what lies
-   * under it; its own ground travels with it, so its text keeps its contrast.
+   * `translate` and `rotate`. Links in the pile still work where they lie; its
+   * own ground travels with it, so its text keeps its contrast.
    */
   [data-fell] {
     transform: translate(var(--fall-x), var(--fall-y)) rotate(var(--fall-turn));
-    pointer-events: none;
     background-color: var(--fall-ground);
   }
 
+  [data-fall-buried] {
+    pointer-events: none;
+  }
+
   /* SC 1.4.10: a block tipped past the edge, falling or climbing back, never scrolls the page sideways. Not on body, whose overflow passes to the viewport. */
-  :root:has([data-fall-block]) :is(main, footer) {
+  :root:has([data-fall-block]) :is(.site-header, main, footer) {
     overflow-x: clip;
   }
 

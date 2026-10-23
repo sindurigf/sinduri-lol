@@ -6,7 +6,8 @@ import { timedScan } from './axe';
 
 /**
  * Let It Fall (src/scripts/let-it-fall.ts): the pile never covers the button (SC 2.5.5) or scrolls sideways (1.4.10),
- * each change is announced (4.1.3), Esc and focus elsewhere restore (2.4.11), reduced motion never animates (2.3.3).
+ * each change is announced (4.1.3), Esc and keyboard focus elsewhere restore (2.4.11), reduced motion never animates (2.3.3),
+ * and a link in the pile still works.
  */
 
 const ROUTE = '/career';
@@ -54,9 +55,9 @@ for (const width of WIDTHS) {
       await expect(button).toBeFocused();
       await expect(fallen(page)).not.toHaveCount(0);
       await expect(
-        fallen(page).first(),
-        'a fallen block still takes taps',
-      ).toHaveCSS('pointer-events', 'none');
+        page.locator('.header-slab'),
+        'the header stayed up',
+      ).toHaveAttribute('data-fell');
       await landed(page);
       const pile = await page.evaluate(() => {
         const target = document.querySelector('[data-let-it-fall]')!;
@@ -80,8 +81,22 @@ for (const width of WIDTHS) {
         covered: 0,
       });
       const { violations } = await timedScan(page, 'fallen /career');
+      /* A buried target takes no pointer input, so it is no target under SC 2.5.8; axe still sizes it. */
+      const found: string[] = [];
+      for (const { id, nodes } of violations) {
+        const left = [];
+        for (const node of nodes) {
+          const buried =
+            id === 'target-size' &&
+            (await page
+              .locator(node.target.join(' '))
+              .evaluate((el) => el.hasAttribute('data-fall-buried')));
+          if (!buried) left.push(node);
+        }
+        if (left.length) found.push(`${id}: ${left.length} node(s)`);
+      }
       expect(
-        violations.map((v) => `${v.id}: ${v.nodes.length} node(s)`),
+        found,
         'axe found WCAG 2.2 AA violations in the fallen pile',
       ).toEqual([]);
       await button.focus();
@@ -99,7 +114,7 @@ for (const width of WIDTHS) {
       ).toBe(false);
     });
 
-    test('the same button, Esc, or focus entering the page puts it back', async ({
+    test('the same button, Esc, or keyboard focus entering the page puts it back', async ({
       page,
     }) => {
       const button = await press(page);
@@ -123,14 +138,91 @@ for (const width of WIDTHS) {
       await landed(page);
 
       await press(page);
-      await page.locator('main a').first().focus();
+      await page.keyboard.press('Shift+Tab');
       await expect(
         fallen(page),
-        'a control moved by the fall took focus out of place',
+        'a control moved by the fall took keyboard focus out of place',
       ).toHaveCount(0);
     });
   });
 }
+
+/* The pile is random; a fixed sequence makes the same one every run. */
+const seedRandom = (page: Page, seed: number) =>
+  page.addInitScript((start) => {
+    let state = start;
+    /* mulberry32 */
+    Math.random = () => {
+      state = (state + 0x6d2b79f5) | 0;
+      let t = Math.imul(state ^ (state >>> 15), 1 | state);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 2 ** 32;
+    };
+  }, seed);
+const PILE_SEED = 7;
+
+test('a click on a link in the pile follows it', async ({ page }) => {
+  await seedRandom(page, PILE_SEED);
+  await page.setViewportSize({ width: 390, height: HEIGHT });
+  await gotoSettled(page, ROUTE);
+  await press(page);
+  await landed(page);
+  const href = await page.evaluate(() => {
+    const top = [
+      ...document.querySelectorAll<HTMLAnchorElement>(
+        '[data-fell] a[href^="/"]:not([data-fall-buried])',
+      ),
+    ].find((link) => {
+      if (link.pathname === location.pathname) return false;
+      const r = link.getBoundingClientRect();
+      const hit = document.elementFromPoint(
+        r.left + r.width / 2,
+        r.top + r.height / 2,
+      );
+      return hit !== null && link.contains(hit);
+    });
+    top?.setAttribute('data-test-target', '');
+    return top?.getAttribute('href');
+  });
+  expect(href, 'no link in the pile is on top').toBeTruthy();
+  await page.locator('[data-test-target]').click();
+  await expect(page).toHaveURL(new RegExp(`${href}$`));
+});
+
+test('the fallen header scrolls with the page and is sticky again once back', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: HEIGHT });
+  await gotoSettled(page, ROUTE);
+  await press(page);
+  await landed(page);
+  const slab = page.locator('.header-slab');
+  const top = () => slab.evaluate((el) => el.getBoundingClientRect().top);
+  const before = await top();
+  const SCROLL = 200;
+  await page.evaluate((by) => scrollBy(0, -by), SCROLL);
+  expect(await top(), 'the fallen header stayed on screen').toBeCloseTo(
+    before + SCROLL,
+    0,
+  );
+  /* Esc, not the button: a click would scroll the button back into view first. */
+  await page.keyboard.press('Escape');
+  await expect(status(page)).toHaveText(RESTORED);
+  await landed(page);
+  const header = page.locator('.site-header');
+  await expect(header).toHaveCSS('position', 'sticky');
+  await expect(header, 'the header kept a pinned style').not.toHaveAttribute(
+    'style',
+    /./,
+  );
+  expect(
+    await slab.evaluate((el) => {
+      const { top } = el.getBoundingClientRect();
+      return top >= 0 && top < innerHeight / 2;
+    }),
+    'the header climbed home off screen',
+  ).toBe(true);
+});
 
 /* ms: longer than let-it-fall.ts REPEAT_MS, shorter than --fall-time, so the second press lands mid-climb. */
 const PRESS_AGAIN_MS = 400;

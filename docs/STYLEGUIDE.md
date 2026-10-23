@@ -1086,13 +1086,19 @@ Enforced by `tests/footer.spec.ts`.
 - `nav` "About this site": the links in `POLICY_LINKS` in `Footer.astro`
 - the copyright
 - Let It Fall (`src/scripts/let-it-fall.ts`, loaded on demand), above the
-  copyright: one press drops the blocks on screen, in the page and the footer,
-  into a pile above the button with a bounce; the same button (now Put It
-  Back), Esc, focus moving anywhere else or a new window width puts them back.
-  `transform` only, stacked on a block's own `translate` and `rotate`, so the
-  order and text stay as they are; blocks in a raised or clipping layer stay
-  put. Each fallen block carries its own ground, so its text keeps its
-  contrast, takes no pointer, and never scrolls the page sideways. The name
+  copyright: one press drops everything on screen, the header bar, hero, page
+  and footer, into a pile above the button with a bounce; the same button
+  (now Put It Back), Esc, keyboard focus moving anywhere else or a new window
+  width puts them back. A click or tap on a link or button in the pile does
+  not, so one wholly on top still works; one partly covered takes no pointer
+  (SC 2.5.8), and the pile spreads over the lower half of the screen so more
+  land on top. A text field takes focus on click, so it puts the page back.
+  The sticky header is held in flow while fallen, so its pile scrolls with the
+  page. `transform` only, stacked on a block's own
+  `translate` and `rotate`, so the order and text stay as they are; other
+  blocks in a raised or clipping layer stay put. Wide blocks tilt less. Each
+  fallen block carries its own ground, so its text keeps its contrast, and
+  never scrolls the page sideways. The name
   swaps between Let It Fall and Put It Back, no `aria-pressed`; a polite
   status, in the page from the start, says what happened. `z-index: 1` keeps
   the button above the pile. Under reduced motion the blocks move at once; in
