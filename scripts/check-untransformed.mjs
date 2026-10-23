@@ -29,6 +29,10 @@ const SERVED_AS_IS = new Map([
     'the runtime image endpoint reads it for /contact/send/, which renders ' +
       'the header on demand.',
   ],
+  ...['minerva', 'rudra', 'hela'].map((cat) => [
+    `about-cats-${cat}.webp`,
+    'the About cats draw their frames from it with SVG <image>; it is a WebP atlas already.',
+  ]),
   [
     'hero-rabbit.webp',
     'the hero canvas draws its frames with drawImage; it is a WebP atlas already.',

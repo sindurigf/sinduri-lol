@@ -29,7 +29,8 @@ import {
   createProp,
   reachOf,
   renderCat,
-  settleTail,
+  isFading,
+  settleFrame,
   type CatRig,
   type PropRig,
 } from './about-cats-rig';
@@ -88,10 +89,6 @@ const MAX_FRAMES_PER_STEP = 6;
 const SETTLED = 0.01;
 /** ms a prop takes to fade when its move is cut short. */
 const PROP_FADE_MS = 250;
-/** A resting cat's tail swaying with its idle motion peaks at about 0.5; a landing whips it past this, and it is drawn at the quicker rate until it slows. */
-const IDLE_TAIL_WHIP = 1;
-/** Tail segment speed below which the tail counts as at rest. */
-export const TAIL_REST = 0.02;
 
 /** One cat as the page passes it in: names, roles and the dialog photo. */
 export interface CatInfo {
@@ -664,19 +661,16 @@ export const createColony = (
     for (const cat of cats) {
       if (cat.hiddenAt !== undefined) continue;
       const result = step(cat, now, frames);
-      const tailMoving = cat.rig.tailSpeed.some((v) => Math.abs(v) > TAIL_REST);
+      const frameFading = isFading(cat.rig, now);
       const resting = result === 'rest';
       /* Timers run only while resting, so each rest starts them afresh. */
       if (resting && !cat.idling) rearmIdle(cat.idle);
       cat.idling = resting;
       if (cat.idling) {
         tickIdle(cat.idle, now);
-        const whipping = cat.rig.tailSpeed.some(
-          (v) => Math.abs(v) > IDLE_TAIL_WHIP,
-        );
-        const gap = idleFrameMs(cat.idle, now, whipping);
+        const gap = idleFrameMs(cat.idle, now, frameFading);
         const due = now - cat.idleDrawnAt >= gap;
-        /* Next frame: the next idle one, the pause's end, or the nap. The idle sway keeps the tail moving, so it does not hold the loop awake. */
+        /* Next frame: the next idle one, the pause's end, or the nap. */
         wakeAt = Math.min(
           wakeAt,
           cat.restUntil,
@@ -701,7 +695,7 @@ export const createColony = (
                 : Infinity,
           );
         /* A settled or sleeping cat keeps its last drawing. */
-        if (result !== 'draw' && !tailMoving) continue;
+        if (result !== 'draw' && !frameFading) continue;
         wakeAt = now;
       }
       if (!cat.asleep && now > cat.nextBlink) {
@@ -750,7 +744,7 @@ export const createColony = (
             TRACK_MARGIN +
             (size.width - 2 * TRACK_MARGIN - CONTROL_ROOM) * cat.start;
         onLedge(cat);
-        settleTail(cat.rig);
+        settleFrame(cat.rig);
         draw(cat, performance.now());
       }
     },
@@ -839,7 +833,7 @@ export const createColony = (
         onLedge(cat);
         cat.hiddenAt ??= now;
         updateMood(cat);
-        settleTail(cat.rig);
+        settleFrame(cat.rig);
         draw(cat, now);
       }
     },

@@ -10,7 +10,10 @@ import {
 } from 'vue';
 import { IDLE, useMotionLoop } from '../../composables/use-motion-loop';
 import { markFailed } from '../../scripts/failed-frame';
-import { clamp, createCatRig } from '../../lib/about-cats-rig';
+import { clamp, createCatRig, type Sheet } from '../../lib/about-cats-rig';
+import minervaSheet from '../../assets/about-cats-minerva.webp';
+import rudraSheet from '../../assets/about-cats-rudra.webp';
+import helaSheet from '../../assets/about-cats-hela.webp';
 import type { CatId, Ledge } from '../../lib/about-cats-types';
 import tricksUrl from '../../lib/about-cats-tricks-url';
 import {
@@ -38,6 +41,12 @@ const props = defineProps<{
   cats: CatInfo[];
   inspiration: { name: string; href: string };
 }>();
+
+const SHEETS: Record<CatId, Sheet> = {
+  minerva: minervaSheet,
+  rudra: rudraSheet,
+  hela: helaSheet,
+};
 
 /* Where each cat starts on its card, 0 to 1, and which way it faces. */
 const PLACES: Record<CatId, { start: number; facing: 1 | -1 }> = {
@@ -497,7 +506,7 @@ onMounted(async () => {
   for (const cat of props.cats) {
     const svg = svgs.get(cat.id);
     if (!svg) continue;
-    const rig = createCatRig(svg, cat.id);
+    const rig = createCatRig(svg, cat.id, SHEETS[cat.id]);
     catSpots.push({ id: cat.id, rig, ...PLACES[cat.id] });
   }
   colony = createColony(catSpots, (id, mood, isAsleep) => {

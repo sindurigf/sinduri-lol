@@ -119,8 +119,9 @@ Dark is the default. Colors and rules:
   `MutationObserver` sees `data-theme` change. Its ground is `hero-ground`.
   A `(resolution)` media query resizes its canvases when only the pixel ratio
   changes; in forced colors it is hidden (`tests/hero-media.spec.ts`).
-- `AboutCats.vue` needs neither: its SVG parts carry classes, and
-  `about-cats.css` maps them to tokens, so the cats follow the theme in CSS.
+- `AboutCats.vue` needs neither: the cats are drawings with their outline
+  baked in, the same in both themes, and the toys' SVG parts carry classes
+  that `about-cats.css` maps to tokens.
 - `playwright.config.ts` sets `colorScheme: 'dark'`; specs that measure light
   set `colorScheme: 'light'` themselves (`light-mode.spec.ts`, `focus.spec.ts`,
   `states.spec.ts`, `about-cats.spec.ts`, the talk scan in `a11y.spec.ts`).

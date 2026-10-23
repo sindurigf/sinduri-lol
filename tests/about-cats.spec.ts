@@ -9,6 +9,7 @@ import {
   PHONE_VIEWPORT,
 } from './wcag';
 import { AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
+import { cssColorToken } from './source';
 import { NODE } from './tags';
 import { readFileSync } from 'node:fs';
 import {
@@ -25,8 +26,8 @@ import {
   HIT_HALF_WIDTH,
   POST_HEIGHT,
   highestPoint,
+  isFading,
   reachOf,
-  stepTail,
 } from '../src/lib/about-cats-rig';
 import {
   createIdle,
@@ -42,7 +43,6 @@ import {
   MAX_OVERHANG,
   NAP_AFTER_MS,
   POINTER_IDLE_MS,
-  TAIL_REST,
   TRACK_MARGIN,
   cupPush,
   planMove,
@@ -539,37 +539,23 @@ test(
   },
 );
 
-/** Frames this far apart, as a loaded device drew them in CI; the tail must still settle in time. */
+/** Frames this far apart, as a loaded device drew them in CI. */
 const SLOW_FRAME_MS = 530;
-/** Frames a slow device may still draw after a move ends: the move's last, and the tail's. */
+/** Frames a slow device may still draw after a move ends: the move's last, and the fade's. */
 const SLOW_FRAMES_SPARE = 2;
-/** A tail swung this far, in degrees per segment, then left to settle. */
-const TAIL_SWING = 40;
-const TAIL_SEGMENTS = 8;
 
 test(
-  'a tail settles in real time even at two frames a second, so a sleeping cat is still within 5 s (SC 2.2.2)',
+  'a new frame fades in well within 5 s, so a still cat stops redrawing (SC 2.2.2)',
   NODE,
   () => {
-    const tail = {
-      tailAngle: [] as number[],
-      tailSpeed: [] as number[],
-      physAt: 0,
-    };
-    stepTail(tail, Array(TAIL_SEGMENTS).fill(0), 0);
-    const swung = Array(TAIL_SEGMENTS).fill(TAIL_SWING);
-    let now = 0;
-    do {
-      now += SLOW_FRAME_MS;
-      stepTail(tail, swung, now);
-    } while (
-      now < SC_2_2_2_MS &&
-      tail.tailSpeed.some((v) => Math.abs(v) > TAIL_REST)
+    const rig = { changedAt: 0 };
+    expect(isFading(rig, 1), 'a frame changed 1 ms ago is not fading').toBe(
+      true,
     );
     expect(
-      now,
-      'the tail was still swinging 5 s after it was left to settle',
-    ).toBeLessThan(SC_2_2_2_MS);
+      isFading(rig, SC_2_2_2_MS),
+      'a frame changed 5 s ago is still fading',
+    ).toBe(false);
   },
 );
 
@@ -754,21 +740,11 @@ test(
   },
 );
 
-/** A head turned at least this far, in degrees, has turned to the pointer; under this, it is level again. */
-const HEAD_TURNED_DEG = 5;
-const HEAD_LEVEL_DEG = 1;
-/** How far a cat's head is turned, in degrees, read from its drawn transform. */
-const headTurn = (page: Page, id: (typeof CATS)[number]) =>
-  page.locator(`#cat-spot-${id} .cat-fill`).evaluate((fill) => {
-    /* The head is the one part placed with a translate and a single-argument rotate. */
-    for (const part of fill.querySelectorAll('[transform]')) {
-      const turn = /translate\([^)]*\) rotate\(([-\d.]+)\)/.exec(
-        part.getAttribute('transform') ?? '',
-      );
-      if (turn) return Math.abs(Number(turn[1]));
-    }
-    throw new Error('The cat has no head turn to read.');
-  });
+/** The frame a cat is drawn with, as its rig reports it. */
+const frameOf = (page: Page, id: (typeof CATS)[number]) =>
+  page.locator(`#cat-spot-${id} .cat-hit`).getAttribute('data-frame');
+/** Frames drawn with the head turned. */
+const TURNED = /^(headturn|look)$/;
 
 /* Window for counting animation frames: none in it means the renderer, not the cat loop, has stopped. */
 const FRAME_COUNT_MS = 500;
@@ -802,7 +778,7 @@ const catState = async (page: Page, id: (typeof CATS)[number]) => {
         }),
       [`cat-spot-${id}`, FRAME_COUNT_MS] as const,
     );
-    return JSON.stringify({ ...state, headTurn: await headTurn(page, id) });
+    return JSON.stringify({ ...state, frame: await frameOf(page, id) });
   } catch (error) {
     return `the page state could not be read: ${String(error)}`;
   }
@@ -993,18 +969,18 @@ const expectHeldHeadRelaxes = async (page: Page) => {
   ).toBe(true);
   await pointAt(page, 'minerva');
   await expect
-    .poll(() => headTurn(page, 'minerva'), {
+    .poll(() => frameOf(page, 'minerva'), {
       message: 'a held cat never turned its head to the pointer',
       timeout: POINTER_IDLE_MS,
     })
-    .toBeGreaterThan(HEAD_TURNED_DEG);
+    .toMatch(TURNED);
   try {
     await expect
-      .poll(() => headTurn(page, 'minerva'), {
+      .poll(() => frameOf(page, 'minerva'), {
         message: 'a held cat kept its head turned to an idle pointer',
         timeout: POINTER_IDLE_MS + SC_2_2_2_MS,
       })
-      .toBeLessThan(HEAD_LEVEL_DEG);
+      .not.toMatch(TURNED);
   } catch (error) {
     if (error instanceof Error) {
       error.message += `\nCat state: ${await catState(page, 'minerva')}`;
@@ -2663,25 +2639,32 @@ test.describe('About cats', () => {
   });
 
   for (const colorScheme of ['dark', 'light'] as const) {
-    test(`the sticker edge is at least 3:1 against the page in ${colorScheme} mode (SC 1.4.11)`, async ({
+    test(`the sticker outline is at least 3:1 against the page in ${colorScheme} mode: the ink edge or the white rim inside it (SC 1.4.11)`, async ({
       browser,
     }) => {
       const context = await browser.newContext({ colorScheme });
       const page = await context.newPage();
       await gotoSettled(page, ROUTE);
+      /* scripts/make-about-cats.mjs bakes these two tokens into every frame's outline. */
+      const outline = [
+        cssColorToken('--color-gold-text'),
+        cssColorToken('--color-light-ground'),
+      ].map((hex) => {
+        const n = parseInt(hex.slice(1), 16);
+        return `rgb(${n >> 16}, ${(n >> 8) & 255}, ${n & 255})`;
+      });
       const ratios = await page.evaluate(`(() => {
         ${PAGE_HELPERS}
+        const outline = ${JSON.stringify(outline)}.map(parse);
         return [...document.querySelectorAll('.cat-spot')].map((spot) => {
-          const edge = spot.querySelector('.cat-edge');
-          const fill = edge ? parse(getComputedStyle(edge).fill) : null;
           const ground = effectiveBackground(spot);
-          return fill && ground ? ratio(fill, ground) : 0;
+          return ground ? Math.max(...outline.map((c) => ratio(c, ground))) : 0;
         });
       })()`);
       for (const value of ratios as number[]) {
         expect(
           value,
-          'the cat edge fails SC 1.4.11 against its ground',
+          'neither outline layer reaches 3:1 against the band',
         ).toBeGreaterThanOrEqual(NON_TEXT);
       }
       await context.close();
