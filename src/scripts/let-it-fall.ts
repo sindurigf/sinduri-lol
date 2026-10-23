@@ -39,7 +39,6 @@ const HOP_SHARE = 0.7;
 const FALL_EASING = 'cubic-bezier(0.55, 0, 1, 0.45)';
 const LAND_AT = 0.72;
 const BOUNCE_AT = 0.86;
-const HALF_TURN_DEG = 180;
 /* A second press this soon after the first is the same press, as when both wait on the first load. */
 const REPEAT_MS = 300;
 
@@ -170,6 +169,23 @@ const lowestFit = (
   return { bottom, resting: bottom !== floor };
 };
 
+/* A block's box joined with every visible part it draws past it, as a label set over its card's edge; 1px screen reader labels aside. */
+const reach = (el: Element): DOMRect =>
+  [...el.querySelectorAll('*')]
+    .filter((inner) => inner.checkVisibility())
+    .map((inner) => inner.getBoundingClientRect())
+    .filter((r) => r.width > 1 && r.height > 1)
+    .reduce((all, r) => {
+      const left = Math.min(all.left, r.left);
+      const top = Math.min(all.top, r.top);
+      return new DOMRect(
+        left,
+        top,
+        Math.max(all.right, r.right) - left,
+        Math.max(all.bottom, r.bottom) - top,
+      );
+    }, el.getBoundingClientRect());
+
 /*
  * Wide blocks land first in a shuffled order, then small ones, widest first,
  * into the lowest gap. Each takes its tilted box's room, so no two overlap and
@@ -186,6 +202,7 @@ const stack = (
     return {
       el,
       box,
+      reach: reach(el),
       small: box.width < screen * SMALL_SHARE,
       key: Math.random(),
     };
@@ -195,14 +212,27 @@ const stack = (
     ...sized.filter((b) => b.small).sort((a, b) => b.box.width - a.box.width),
   ];
   const heap = [...solid];
-  const landings = order.map(({ el, box, small }, rank) => {
+  const landings = order.map(({ el, box, reach: drawn, small }, rank) => {
     const turn = spread(small ? SMALL_TURN_DEG : WIDE_TURN_DEG);
-    const radians = (Math.abs(turn) * Math.PI) / HALF_TURN_DEG;
-    const wide = box.width * Math.cos(radians) + box.height * Math.sin(radians);
-    const tall = box.width * Math.sin(radians) + box.height * Math.cos(radians);
+    /* What the block draws, turned about its own center as the transform turns it. */
+    const centerX = box.left + box.width / 2;
+    const centerY = box.top + box.height / 2;
+    const turned = new DOMMatrix().rotate(turn);
+    const corners = [
+      [drawn.left, drawn.top],
+      [drawn.right, drawn.top],
+      [drawn.left, drawn.bottom],
+      [drawn.right, drawn.bottom],
+    ].map(([x, y]) =>
+      turned.transformPoint(new DOMPoint(x - centerX, y - centerY)),
+    );
+    const minX = Math.min(...corners.map((c) => c.x));
+    const minY = Math.min(...corners.map((c) => c.y));
+    const wide = Math.max(...corners.map((c) => c.x)) - minX;
+    const tall = Math.max(...corners.map((c) => c.y)) - minY;
     const lo = EDGE;
     const hi = Math.max(lo, screen - EDGE - wide);
-    const home = box.left + (box.width - wide) / 2;
+    const home = centerX + minX;
     let left = Math.min(hi, Math.max(lo, home + spread(WIDE_DRIFT)));
     if (small) {
       let best = -Infinity;
@@ -218,11 +248,10 @@ const stack = (
     }
     const { bottom } = lowestFit(heap, left, left + wide, tall, floor);
     heap.push({ left, right: left + wide, top: bottom - tall, bottom });
-    /* The transform turns about the block's center. */
     return {
       el,
-      x: left + wide / 2 - (box.left + box.width / 2),
-      y: bottom - tall / 2 - (box.top + box.height / 2),
+      x: left - minX - centerX,
+      y: bottom - tall - minY - centerY,
       turn,
       top: bottom - tall,
       rank,
@@ -324,10 +353,13 @@ const drop = ({ el, x, y, turn, rank }: Landing): Animation | null => {
   el.style.setProperty('--fall-ground', ground(el));
   el.setAttribute('data-fall-block', '');
   el.setAttribute('data-fell', '');
-  /* Above content that stays, as a tall card the heap lands on: it comes later and would paint over it. */
+  /* Above content that stays, as a tall card or the footer band: it comes later and would paint over the heap. */
   const style = getComputedStyle(el);
-  if (style.position === 'static' && style.zIndex === 'auto') {
-    el.setAttribute('data-fall-raised', '');
+  if (style.zIndex === 'auto') {
+    el.setAttribute(
+      'data-fall-raised',
+      style.position === 'static' ? 'static' : '',
+    );
   }
   if (!motion.matches) return null;
   const at = (lift: number) =>
@@ -389,7 +421,7 @@ const fall = (): void => {
           !falling.some((block) => block.contains(el)),
       )
       .map((el) => toSpot(el.getBoundingClientRect())),
-    ...stays.map((el) => toSpot(el.getBoundingClientRect())),
+    ...stays.map((el) => toSpot(reach(el))),
   ];
   let stays: HTMLElement[] = [];
   let { heap, landings } = stack(fallen, floor, solidBeside(fallen, stays));

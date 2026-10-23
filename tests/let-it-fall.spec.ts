@@ -169,6 +169,23 @@ for (const width of WIDTHS) {
   });
 }
 
+/* px: a desktop window short enough that the footer band shares the screen with the heap. */
+const BAND_HEIGHT = 800;
+const DESKTOP = 1280;
+
+test('with the footer band on screen, no heap target is covered', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: DESKTOP, height: BAND_HEIGHT });
+  await gotoSettled(page, ROUTE);
+  await press(page);
+  await landed(page);
+  expect(
+    await coveredTargets(page),
+    'a target in the heap is off screen or partly covered (SC 2.5.8)',
+  ).toEqual([]);
+});
+
 /* The heap is random; a fixed sequence makes the same one every run. */
 const seedRandom = (page: Page, seed: number) =>
   page.addInitScript((start) => {

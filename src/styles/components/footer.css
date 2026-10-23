@@ -211,8 +211,11 @@
   }
 
   [data-fall-raised] {
-    position: relative;
     z-index: 1;
+  }
+
+  [data-fall-raised='static'] {
+    position: relative;
   }
 
   /* SC 1.4.10: a block tipped past the edge, falling or climbing back, never scrolls the page sideways. Not on body, whose overflow passes to the viewport. */

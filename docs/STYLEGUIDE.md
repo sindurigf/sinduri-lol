@@ -1089,7 +1089,7 @@ Enforced by `tests/footer.spec.ts`.
   copyright: one press drops everything on screen, the header bar, hero, page
   and footer, and stacks it into a heap with a bounce. Wide blocks land first
   in a shuffled order, then small ones drop into the lowest gaps. Each takes
-  its tilted box's room, so nothing overlaps and every link and button stays
+  its tilted box's room, labels set over its edge included, so nothing overlaps and every link and button stays
   whole and clickable (SC 2.5.8). Put It Back and any control that stays are
   solid: the heap lands beside or on them, never over them. A block taller
   than 60% of the screen stays and the blocks inside it fall; a footer row
