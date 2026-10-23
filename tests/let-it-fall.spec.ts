@@ -5,9 +5,9 @@ import { ENGINE_INVARIANT } from './tags';
 import { timedScan } from './axe';
 
 /**
- * Let It Fall (src/scripts/let-it-fall.ts): the pile never covers the button (SC 2.5.5) or scrolls sideways (1.4.10),
- * each change is announced (4.1.3), Esc and keyboard focus elsewhere restore (2.4.11), reduced motion never animates (2.3.3),
- * and a link in the pile still works.
+ * Let It Fall (src/scripts/let-it-fall.ts): the heap never covers the button or a target (SC 2.5.8), never scrolls
+ * sideways (1.4.10), each change is announced (4.1.3), Esc and keyboard focus elsewhere restore (2.4.11), reduced
+ * motion never animates (2.3.3), a link in the heap still works, and the rabbit on top covers no control.
  */
 
 const ROUTE = '/career';
@@ -18,13 +18,9 @@ const RESTORED = 'The page is back in place.';
 /* CSS px at 400% zoom of a 1280 window, a phone, and a desktop. */
 const WIDTHS = [320, 390, 1280] as const;
 const HEIGHT = 900;
+const MAX_INSTANT_MS = 1;
 /* px of page above the button kept on screen, so some blocks are there to fall. */
 const BUTTON_FROM_BOTTOM = 120;
-const MAX_INSTANT_MS = 1;
-/* px: the SC 2.5.8 minimum square; live targets are probed finer than let-it-fall.ts, buried ones on its grid. */
-const MIN_TARGET = 24;
-const FINE_STEP = 2;
-const PROBE_STEP = 6;
 
 const fallen = (page: Page) => page.locator('[data-fell]');
 /* Every fall and climb back has landed. */
@@ -32,10 +28,48 @@ const landed = (page: Page) =>
   expect
     .poll(() => page.evaluate(() => document.getAnimations().length))
     .toBe(0);
-/* let-it-fall.ts has checked which pile targets take clicks. */
-const checked = (page: Page) =>
-  expect(page.locator('[data-let-it-fall]')).toHaveAttribute(
-    'data-fall-checked',
+/* Targets in the heap on screen that something else covers at any of nine points across them. */
+const coveredTargets = (page: Page) =>
+  page.evaluate(() => {
+    const SHARES = [0.25, 0.5, 0.75];
+    return [
+      ...document.querySelectorAll(
+        '[data-fell] :is(a[href], button), [data-fell]:is(a[href], button)',
+      ),
+    ]
+      .filter((el) => {
+        const r = el.getBoundingClientRect();
+        return el.checkVisibility() && r.top >= 0 && r.bottom <= innerHeight;
+      })
+      .filter((el) => {
+        const r = el.getBoundingClientRect();
+        return SHARES.some((x) =>
+          SHARES.some((y) => {
+            const hit = document.elementFromPoint(
+              r.left + r.width * x,
+              r.top + r.height * y,
+            );
+            return !hit || !el.contains(hit);
+          }),
+        );
+      })
+      .map((el) => el.textContent?.trim() || el.getAttribute('aria-label'));
+  });
+/* What animates on the fallen blocks and the rabbit for longer than an instant; reduced-motion.css cuts transitions to 0.01ms. */
+const moving = (page: Page) =>
+  page.evaluate(
+    (instant) =>
+      [...document.querySelectorAll('[data-fall-block], .footer-rabbit')]
+        .flatMap((el) => el.getAnimations())
+        .filter((a) => Number(a.effect?.getComputedTiming().duration) > instant)
+        .map((a) => {
+          const target =
+            a.effect instanceof KeyframeEffect ? a.effect.target : null;
+          const property =
+            a instanceof CSSTransition ? a.transitionProperty : 'keyframes';
+          return `${target?.className} ${property}`;
+        }),
+    MAX_INSTANT_MS,
   );
 const status = (page: Page) => page.locator('footer').getByRole('status');
 
@@ -57,7 +91,7 @@ for (const width of WIDTHS) {
       await gotoSettled(page, ROUTE);
     });
 
-    test('blocks fall into a pile above the button, which keeps focus and stays the hit target', async ({
+    test('blocks fall into a heap above the button, which keeps focus, and every target stays whole', async ({
       page,
     }) => {
       const button = await press(page);
@@ -68,95 +102,26 @@ for (const width of WIDTHS) {
         'the header stayed up',
       ).toHaveAttribute('data-fell');
       await landed(page);
-      const pile = await page.evaluate(() => {
-        const target = document.querySelector('[data-let-it-fall]')!;
-        const r = target.getBoundingClientRect();
-        const hit = document.elementFromPoint(
-          r.left + r.width / 2,
-          r.top + r.height / 2,
-        );
-        const covered = [...document.querySelectorAll('[data-fell]')]
-          /* Only blocks that started above the button fall onto it. */
-          .filter(
-            (el) =>
-              el.compareDocumentPosition(target) &
-              Node.DOCUMENT_POSITION_FOLLOWING,
-          )
-          .filter((el) => el.getBoundingClientRect().bottom > r.top + 1);
-        return { hit: hit === target, covered: covered.length };
-      });
-      expect(pile, 'a fallen block covers the button').toEqual({
-        hit: true,
-        covered: 0,
-      });
-      await checked(page);
-      const squares = await page.evaluate(
-        ({ side, fine, coarse }) => {
-          const clear = (el: Element, step: number) => {
-            const box = el.getBoundingClientRect();
-            const on = (x: number, y: number) => {
-              const hit = document.elementFromPoint(x, y);
-              return hit !== null && el.contains(hit);
-            };
-            for (let y = box.top; y + side <= box.bottom; y += step) {
-              for (let x = box.left; x + side <= box.right; x += step) {
-                let whole = true;
-                for (let dy = 0; whole && dy <= side; dy += step) {
-                  for (let dx = 0; whole && dx <= side; dx += step) {
-                    whole = on(x + dx, y + dy);
-                  }
-                }
-                if (whole) return true;
-              }
-            }
-            return false;
-          };
-          const targets = [
-            ...document.querySelectorAll(
-              '[data-fell] :is(a[href], button), [data-fell]:is(a[href], button)',
-            ),
-          ].filter((el) => el.checkVisibility());
-          const live = targets.filter(
-            (el) => !el.hasAttribute('data-fall-buried'),
-          );
-          /* Buried targets take no pointer, so probes pass through them; check them with it back on. */
-          const buried = targets.filter((el) =>
-            el.hasAttribute('data-fall-buried'),
-          );
-          const unclear = live.filter((el) => !clear(el, fine)).length;
-          for (const el of buried) el.removeAttribute('data-fall-buried');
-          const clearBuried = buried.filter((el) => clear(el, coarse)).length;
-          for (const el of buried) el.setAttribute('data-fall-buried', '');
-          return { live: live.length, unclear, clearBuried };
-        },
-        { side: MIN_TARGET, fine: FINE_STEP, coarse: PROBE_STEP },
-      );
       expect(
-        squares.live,
-        'no target in the pile takes clicks',
-      ).toBeGreaterThan(0);
+        await button.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return (
+            document.elementFromPoint(
+              r.left + r.width / 2,
+              r.top + r.height / 2,
+            ) === el
+          );
+        }),
+        'a fallen block covers the button',
+      ).toBe(true);
       expect(
-        squares,
-        'a live target lacks a clear 24px square, or a buried one has it (SC 2.5.8)',
-      ).toMatchObject({ unclear: 0, clearBuried: 0 });
+        await coveredTargets(page),
+        'a target in the heap is partly covered (SC 2.5.8)',
+      ).toEqual([]);
       const { violations } = await timedScan(page, 'fallen /career');
-      /* False positive: axe sizes a tilted pile target by upright boxes, so it overstates cover; the square probe above measures the drawn shape. */
-      const found: string[] = [];
-      for (const { id, nodes } of violations) {
-        const left = [];
-        for (const node of nodes) {
-          const inPile =
-            id === 'target-size' &&
-            (await page
-              .locator(node.target.join(' '))
-              .evaluate((el) => el.closest('[data-fell]') !== null));
-          if (!inPile) left.push(node);
-        }
-        if (left.length) found.push(`${id}: ${left.length} node(s)`);
-      }
       expect(
-        found,
-        'axe found WCAG 2.2 AA violations in the fallen pile',
+        violations.map((v) => `${v.id}: ${v.nodes.length} node(s)`),
+        'axe found WCAG 2.2 AA violations in the heap',
       ).toEqual([]);
       await button.focus();
       await expect(
@@ -184,8 +149,8 @@ for (const width of WIDTHS) {
       await expect(fallen(page)).toHaveCount(0);
       await landed(page);
       await expect(
-        page.locator('[data-fall-block]'),
-        'a block home again keeps the fall transition',
+        page.locator('[data-fall-block], [data-fall-raised]'),
+        'a block home again keeps its fall state',
       ).toHaveCount(0);
 
       await press(page);
@@ -226,11 +191,10 @@ test('a click on a link in the pile follows it', async ({ page }) => {
   await gotoSettled(page, ROUTE);
   await press(page);
   await landed(page);
-  await checked(page);
   const href = await page.evaluate(() => {
     const top = [
       ...document.querySelectorAll<HTMLAnchorElement>(
-        '[data-fell] a[href^="/"]:not([data-fall-buried])',
+        '[data-fell] a[href^="/"]',
       ),
     ].find((link) => {
       if (link.pathname === location.pathname) return false;
@@ -305,23 +269,71 @@ test('pressing again while the blocks climb home drops them again', async ({
   expect(errors, 'cutting the climb short threw').toEqual([]);
 });
 
-test('under reduced motion the blocks move at once, never animated', async ({
+test('under reduced motion the blocks and the rabbit move at once, never animated', async ({
   page,
 }) => {
+  await seedRandom(page, PILE_SEED);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.setViewportSize({ width: 390, height: HEIGHT });
   await gotoSettled(page, ROUTE);
   await press(page);
   await expect(fallen(page)).not.toHaveCount(0);
-  /* reduced-motion.css cuts every transition to 0.01ms under reduced motion. */
+  await expect(page.locator('.footer-rabbit')).toHaveAttribute('data-hopped');
+  expect(await moving(page), 'something animates under reduced motion').toEqual(
+    [],
+  );
+  await page.keyboard.press('Escape');
+  await expect(fallen(page)).toHaveCount(0);
+  await expect(page.locator('.footer-rabbit')).not.toHaveAttribute(
+    'data-hopped',
+  );
   expect(
-    await fallen(page)
-      .first()
-      .evaluate(
-        (el) => parseFloat(getComputedStyle(el).transitionDuration) * 1000,
-      ),
-    'a fallen block animates under reduced motion',
-  ).toBeLessThanOrEqual(MAX_INSTANT_MS);
+    await moving(page),
+    'putting it back animates under reduced motion',
+  ).toEqual([]);
+});
+
+test('the rabbit hops onto the heap, covers no control, and hops home', async ({
+  page,
+}) => {
+  await seedRandom(page, PILE_SEED);
+  await page.setViewportSize({ width: 390, height: HEIGHT });
+  await gotoSettled(page, ROUTE);
+  await press(page);
+  const rabbit = page.locator('.footer-rabbit');
+  await expect(rabbit).toHaveAttribute('data-hopped');
+  await landed(page);
+  expect(
+    await rabbit.evaluate((img) => {
+      const r = img.getBoundingClientRect();
+      const onScreen =
+        r.top >= 0 &&
+        r.bottom <= innerHeight &&
+        r.left >= 0 &&
+        r.right <= innerWidth;
+      const covers = [...document.querySelectorAll('a[href], button')]
+        .filter((el) => el.checkVisibility())
+        .filter((el) => {
+          const c = el.getBoundingClientRect();
+          return (
+            r.left < c.right &&
+            c.left < r.right &&
+            r.top < c.bottom &&
+            c.top < r.bottom
+          );
+        })
+        .map((el) => el.textContent?.trim());
+      return { onScreen, covers, hidden: img.getAttribute('alt') === '' };
+    }),
+    'the rabbit is off screen, covers a control, or is announced',
+  ).toEqual({ onScreen: true, covers: [], hidden: true });
+  await page.keyboard.press('Escape');
+  await landed(page);
+  await expect(rabbit).not.toHaveAttribute('data-hopped');
+  await expect(rabbit, 'the rabbit kept its hop offsets').not.toHaveAttribute(
+    'style',
+    /./,
+  );
 });
 
 test('without JavaScript there is no button', async ({ browser, baseURL }) => {

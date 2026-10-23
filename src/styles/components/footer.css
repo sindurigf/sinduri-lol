@@ -183,17 +183,36 @@
   }
 
   /*
-   * Moved by src/scripts/let-it-fall.ts: `transform` stacks on a block's own
-   * `translate` and `rotate`. Links in the pile still work where they lie; its
-   * own ground travels with it, so its text keeps its contrast.
+   * Where src/scripts/let-it-fall.ts lands a block in the heap; its animations
+   * play the drop and climb. `transform` stacks on a block's own `translate` and
+   * `rotate`. Its own ground travels with it, so its text keeps its contrast.
    */
   [data-fell] {
     transform: translate(var(--fall-x), var(--fall-y)) rotate(var(--fall-turn));
     background-color: var(--fall-ground);
   }
 
-  [data-fall-buried] {
-    pointer-events: none;
+  /* A footer row falls as its link alone, a --spacing-target tall, so the heap fits the screen. */
+  :is(.footer-pages, .footer-policies) li[data-fall-block] {
+    width: fit-content;
+
+    & > a {
+      display: inline-flex;
+    }
+  }
+
+  /* The rabbit on top of the heap, clear of every control; scaled from its top left, as the script measures. */
+  .footer-rabbit {
+    transform-origin: 0 0;
+  }
+
+  .footer-rabbit[data-hopped] {
+    transform: translate(var(--hop-x), var(--hop-y)) scale(var(--hop-scale));
+  }
+
+  [data-fall-raised] {
+    position: relative;
+    z-index: 1;
   }
 
   /* SC 1.4.10: a block tipped past the edge, falling or climbing back, never scrolls the page sideways. Not on body, whose overflow passes to the viewport. */
@@ -201,15 +220,8 @@
     overflow-x: clip;
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    [data-fall-block] {
-      transition: transform var(--fall-time) var(--ease-spring)
-        var(--fall-delay);
-    }
-  }
-
   @media print {
-    [data-fell] {
+    :is([data-fell], .footer-rabbit[data-hopped]) {
       transform: none;
     }
   }
