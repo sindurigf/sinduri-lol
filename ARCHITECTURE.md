@@ -507,21 +507,24 @@ in `wrangler.jsonc`).
   alone, on a transparent ground: a gold body, a white ear, a thick ink rim,
   then a `bunny` block behind the rabbit whose back face has an ink edge. Gold
   reads on dark tabs, the ink rim on light tabs.
+- Each tab frame fits the whole sticker with a 1px clear border
+  (`TAB_BORDER`); `favicon.svg` is fitted as the 16px frame. The script
+  measures the sticker's reach and fails if a frame draws on its edge.
 - App icons (`apple-touch-icon`, `android-chrome-*`, `maskable-icon`): the same
-  artwork on a full-bleed `#FFC000` square.
+  artwork centered on a full-bleed `#FFC000` square.
 
-| Path                                | Size         | Notes                                                |
-| ----------------------------------- | ------------ | ---------------------------------------------------- |
-| `public/favicon.svg`                | vector       | Primary icon for modern browsers; source of the rest |
-| `public/favicon.ico`                | 16 / 32 / 48 | Legacy fallback, three frames                        |
-| `artwork/favicon-16x16.png`         | 16           | `favicon.ico` frame                                  |
-| `artwork/favicon-32x32.png`         | 32           | `favicon.ico` frame                                  |
-| `artwork/favicon-48x48.png`         | 48           | `favicon.ico` frame                                  |
-| `public/favicon-96x96.png`          | 96           | Linked from the head                                 |
-| `public/apple-touch-icon.png`       | 180          | Full-bleed; iOS rounds it, do not pre-round          |
-| `public/android-chrome-192x192.png` | 192          | PWA icon, from the manifest                          |
-| `public/android-chrome-512x512.png` | 512          | PWA icon, from the manifest                          |
-| `public/maskable-icon-512x512.png`  | 512          | `purpose: maskable`, mark inside the 80% safe zone   |
+| Path                                | Size         | Notes                                              |
+| ----------------------------------- | ------------ | -------------------------------------------------- |
+| `public/favicon.svg`                | vector       | Primary icon for modern browsers                   |
+| `public/favicon.ico`                | 16 / 32 / 48 | Legacy fallback, three frames                      |
+| `artwork/favicon-16x16.png`         | 16           | `favicon.ico` frame                                |
+| `artwork/favicon-32x32.png`         | 32           | `favicon.ico` frame                                |
+| `artwork/favicon-48x48.png`         | 48           | `favicon.ico` frame                                |
+| `public/favicon-96x96.png`          | 96           | Linked from the head                               |
+| `public/apple-touch-icon.png`       | 180          | Full-bleed; iOS rounds it, do not pre-round        |
+| `public/android-chrome-192x192.png` | 192          | PWA icon, from the manifest                        |
+| `public/android-chrome-512x512.png` | 512          | PWA icon, from the manifest                        |
+| `public/maskable-icon-512x512.png`  | 512          | `purpose: maskable`, mark inside the 80% safe zone |
 
 - The icons drop the rabbit's inner lines: they turn to mush below 48px.
 - `favicon.svg` is a thinned copy: the outline flattened, thinned and redrawn
@@ -533,7 +536,8 @@ in `wrangler.jsonc`).
 node scripts/make-logo.mjs   # rewrites the logo rabbit and every icon
 ```
 
-- `tests/icons.spec.ts` checks every `sizes` attribute against the bytes.
+- `tests/icons.spec.ts` checks every `sizes` attribute against the bytes, and
+  that the `favicon.ico` frames and the 96 leave their outer edge clear.
 - Do not use the RealFaviconGenerator pack: its `.ico` is a light mark on
   `#131313`, mismatching the gold PNGs.
 - No light-scheme variants.

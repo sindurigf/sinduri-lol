@@ -36,10 +36,18 @@ const LOGO_POSE = { h: 52, rotate: -12, left: 10, bottom: 36 };
 /* Hairline die-cut: ink edge, white rim, ink rim edge, ink throw. */
 const STICKER = { edge: 1, rim: 1.2, rimEdge: 1, throw: 3, line: 0.2 };
 
-/* Favicon grid: 64 units, the tile and the jump drawn to the icon's edges. */
+/* Favicon grid: 64 units. */
 const ICON = 64;
-/* In 64 units: the box leaves room for the rim on every side and the block to the bottom left. */
+/* In 64 units: the rabbit's box, which sizes it against the rim and block. Each frame then fits the whole sticker. */
 const ICON_POSE = { box: [11, 4, 46, 45], rotate: -12 };
+/* Clear px kept round each tab frame, so no part of the sticker is cut at the tab's edge. */
+const TAB_BORDER = 1;
+/* favicon.svg is fitted as the 16px frame, the smallest a tab draws it. */
+const SVG_FRAME = 16;
+/* Probe render of the icon, in px per icon side, to measure the sticker's reach. */
+const ICON_PROBE = 512;
+/* Room round the 64-unit grid in the probe, as a share of the icon side. */
+const PROBE_PAD = 0.5;
 /* The tab icon: a gold rabbit, white ear, an ink rim, then a pink block behind it whose back face has an ink edge. */
 const ICON_STICKER = { rim: 4, depth: 6, backEdge: 1.5, steps: 8 };
 /* Opaque app icons on gold: artwork scale, and the maskable safe zone. */
@@ -298,23 +306,9 @@ function iconArtwork({ precise }) {
 const svg = (viewBox, body) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${body}</svg>\n`;
 
-const SIDE = ICON * FINE;
-const iconSvg = svg(
-  `0 0 ${SIDE} ${SIDE}`,
-  `<defs><clipPath id="c"><rect width="${SIDE}" height="${SIDE}"/></clipPath></defs><g clip-path="url(#c)">${iconArtwork({ precise: false })}</g>`,
-);
-/* The tab PNGs and the 96 keep the full curves; favicon.svg is the small copy. */
-const iconFull = svg(
-  `0 0 ${ICON} ${ICON}`,
-  `<defs><clipPath id="c"><rect width="${ICON}" height="${ICON}"/></clipPath></defs><g clip-path="url(#c)">${iconArtwork({ precise: true })}</g>`,
-);
-const onGold = (scale) => {
-  const inset = (ICON * (1 - scale)) / 2;
-  return svg(
-    `0 0 ${ICON} ${ICON}`,
-    `<rect width="${ICON}" height="${ICON}" fill="${GOLD}"/><g transform="translate(${inset} ${inset}) scale(${scale})">${iconArtwork({ precise: true })}</g>`,
-  );
-};
+/* The tab PNGs and the app icons keep the full curves; favicon.svg is the small copy. */
+const iconFull = iconArtwork({ precise: true });
+const iconSmall = iconArtwork({ precise: false });
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
@@ -346,6 +340,22 @@ const raster = (source, width, height) =>
     { source, width, height },
   );
 
+/** The px box of every pixel with any alpha in a `width`-wide raster. */
+const alphaBox = (alpha, width) => {
+  let [x0, y0, x1, y1] = [width, alpha.length / width, 0, 0];
+  alpha.forEach((a, i) => {
+    if (!a) return;
+    const [x, y] = [i % width, Math.floor(i / width)];
+    [x0, y0, x1, y1] = [
+      Math.min(x0, x),
+      Math.min(y0, y),
+      Math.max(x1, x + 1),
+      Math.max(y1, y + 1),
+    ];
+  });
+  return [x0, y0, x1, y1];
+};
+
 /* Logo rabbit: find its box in tile px around the tile, then render that box. */
 const REACH = 40;
 const span = TILE + 2 * REACH;
@@ -354,17 +364,7 @@ const probe = await raster(
   span,
   span,
 );
-let [x0, y0, x1, y1] = [span, span, 0, 0];
-probe.alpha.forEach((a, i) => {
-  if (!a) return;
-  const [x, y] = [i % span, Math.floor(i / span)];
-  [x0, y0, x1, y1] = [
-    Math.min(x0, x),
-    Math.min(y0, y),
-    Math.max(x1, x + 1),
-    Math.max(y1, y + 1),
-  ];
-});
+const [x0, y0, x1, y1] = alphaBox(probe.alpha, span);
 if (x0 === 0 || y0 === 0 || x1 === span || y1 === span) {
   throw new Error('The logo rabbit reaches the probe edge; raise REACH.');
 }
@@ -413,15 +413,92 @@ writeFileSync(
 const png = async (source, size) =>
   Buffer.from((await raster(source, size, size)).png, 'base64');
 
+/** The sticker's reach in its own units: a pixel-rounded outer box, so never smaller than the art. */
+const reach = async (art, side) => {
+  const pad = side * PROBE_PAD;
+  const span = side + 2 * pad;
+  const px = 2 * ICON_PROBE;
+  const { alpha } = await raster(
+    svg(`${-pad} ${-pad} ${span} ${span}`, art),
+    px,
+    px,
+  );
+  const [x0, y0, x1, y1] = alphaBox(alpha, px);
+  if (x0 === 0 || y0 === 0 || x1 === px || y1 === px)
+    throw new Error('The tab icon reaches its probe edge; raise PROBE_PAD.');
+  const unit = span / px;
+  return {
+    x: x0 * unit - pad,
+    y: y0 * unit - pad,
+    w: (x1 - x0) * unit,
+    h: (y1 - y0) * unit,
+  };
+};
+
+/** A square viewBox round `art` that leaves `border` clear px in a `size` px frame. */
+const framed = (art, size, border) => {
+  const side = (Math.max(art.w, art.h) * size) / (size - 2 * border);
+  return [art.x + art.w / 2 - side / 2, art.y + art.h / 2 - side / 2, side];
+};
+
+/** Fails the run if any pixel on a transparent frame's outer edge has alpha. */
+const assertClearEdge = (alpha, size, name) => {
+  const last = size - 1;
+  const edge = alpha.some((a, i) => {
+    const [x, y] = [i % size, Math.floor(i / size)];
+    return a > 0 && (x === 0 || y === 0 || x === last || y === last);
+  });
+  if (edge)
+    throw new Error(`${name} draws on its outer edge; raise TAB_BORDER.`);
+};
+
+const fullReach = await reach(iconFull, ICON);
+const smallReach = await reach(iconSmall, ICON * FINE);
+
+/* Whole grid units keep the viewBox short; rounded outward so the border only grows. */
+const [sx, sy, sSide] = framed(smallReach, SVG_FRAME, TAB_BORDER);
+const [svgX, svgY] = [Math.floor(sx), Math.floor(sy)];
+const svgSide = Math.max(
+  Math.ceil(sx + sSide) - svgX,
+  Math.ceil(sy + sSide) - svgY,
+);
+const iconSvg = svg(`${svgX} ${svgY} ${svgSide} ${svgSide}`, iconSmall);
+assertClearEdge(
+  (await raster(iconSvg, SVG_FRAME, SVG_FRAME)).alpha,
+  SVG_FRAME,
+  'favicon.svg',
+);
 writeFileSync('public/favicon.svg', iconSvg);
+
+const tabFrame = async (size, file) => {
+  const [x, y, side] = framed(fullReach, size, TAB_BORDER);
+  const { alpha, png } = await raster(
+    svg(`${x} ${y} ${side} ${side}`, iconFull),
+    size,
+    size,
+  );
+  assertClearEdge(alpha, size, file);
+  const frame = Buffer.from(png, 'base64');
+  writeFileSync(file, frame);
+  return frame;
+};
+
+/* App icons: the sticker centered on a full-bleed gold square, spanning `scale` of the 64-unit grid. */
+const onGold = (scale) => {
+  const side = ICON / scale;
+  const x = fullReach.x + fullReach.w / 2 - side / 2;
+  const y = fullReach.y + fullReach.h / 2 - side / 2;
+  return svg(
+    `${x} ${y} ${side} ${side}`,
+    `<rect x="${x}" y="${y}" width="${side}" height="${side}" fill="${GOLD}"/>${iconFull}`,
+  );
+};
+
 const frames = [16, 32, 48];
 const framePngs = [];
-for (const size of frames) {
-  const frame = await png(iconFull, size);
-  framePngs.push(frame);
-  writeFileSync(`artwork/favicon-${size}x${size}.png`, frame);
-}
-writeFileSync('public/favicon-96x96.png', await png(iconFull, 96));
+for (const size of frames)
+  framePngs.push(await tabFrame(size, `artwork/favicon-${size}x${size}.png`));
+await tabFrame(96, 'public/favicon-96x96.png');
 writeFileSync('public/apple-touch-icon.png', await png(onGold(APP_SCALE), 180));
 writeFileSync(
   'public/android-chrome-192x192.png',
