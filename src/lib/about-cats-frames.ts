@@ -1,8 +1,4 @@
-/*
- * Pure. The About cats are drawn from Canva AI frames, 24 each plus a longer
- * walk for Minerva. This picks the frame for a pose and sets how tall each
- * frame is drawn.
- */
+/* Pure. Picks the Canva AI frame that draws a cat's pose, and how tall each frame is drawn. */
 import type { CatId, Pose } from './about-cats-types';
 
 export const FRAMES = [
@@ -193,7 +189,7 @@ const HIGH = 14;
 /** px the body travels in one stride, the drawn step length of the walk cycle. */
 export const WALK_STRIDE_PX = 52;
 
-/** px the body travels per walk frame: a stride shared by the cat's walk frames, so a planted paw stays put. */
+/** px the body travels per walk frame, so a planted paw stays put. */
 export const walkFramePx = (cat: CatId): number =>
   WALK_STRIDE_PX / WALK[cat].length;
 

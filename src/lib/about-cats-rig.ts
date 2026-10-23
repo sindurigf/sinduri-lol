@@ -23,6 +23,8 @@ const D = Math.PI / 180;
 
 /** One step of the flip-book: 12 a second. A new frame waits until the last has shown this long, so every in-between is seen. */
 export const TICK_MS = 1000 / 12;
+/** Walk phases a fast gait still shows: an 8-frame walk may step 2 frames at a time, a 4-frame walk only 1. */
+const MIN_WALK_PHASES = 4;
 /** The squash a cat lands in for one step when it arrives in a still pose. */
 const ARRIVE_SQUASH = 0.96;
 /** How much a held pose grows at the top of a breath, as a share of its height. */
@@ -298,9 +300,15 @@ export const stepFrame = (
   walk: readonly Frame[],
 ): boolean => {
   const at = s.frame === null ? -1 : walk.indexOf(s.frame);
+  const to = walk.indexOf(wanted);
+  const ahead = (to - at + walk.length) % walk.length;
+  const maxStep = Math.max(1, walk.length / MIN_WALK_PHASES);
+  /* Within a walk: hold while the body is still, else step toward `wanted` without skipping a phase. */
   const next =
-    at >= 0 && wanted !== s.frame && walk.includes(wanted)
-      ? walk[(at + 1) % walk.length]!
+    at >= 0 && to >= 0
+      ? x === s.stepX
+        ? s.frame!
+        : walk[(at + Math.min(ahead, maxStep)) % walk.length]!
       : wanted;
   s.pending = next !== s.frame && now - s.shownAt < TICK_MS;
   if (next === s.frame) s.cut = false;
@@ -313,7 +321,7 @@ export const stepFrame = (
   return true;
 };
 
-/** Where the cat is drawn: while a walk frame shows, where that frame began, so a planted paw never slides; the body catches up when the next frame cuts in. */
+/** Where the cat is drawn: while a walk frame shows, where that frame began, so a planted paw never slides. */
 export const drawnXOf = (
   s: Pick<FrameStep, 'frame' | 'stepX'>,
   x: number,

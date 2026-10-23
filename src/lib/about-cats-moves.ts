@@ -1250,7 +1250,7 @@ const SETTLE_BACK_MS = 400;
 /** Farther than this, a cat trots to the spot first and creeps only the last of it. */
 const CREEP_REACH = 60;
 /** px per second of a purposeful trot, twice the creep. */
-const TROT_SPEED = 110;
+export const TROT_SPEED = 110;
 const TROT_READY_MS = 250;
 
 /** Trots, then creeps, `distance` ahead first, so an edge move starts at the track end from anywhere on it. */

@@ -15,6 +15,7 @@ import { NODE } from './tags';
 import { readFileSync } from 'node:fs';
 import {
   EDGE_MOVES,
+  TROT_SPEED,
   MOVES,
   type MoveName,
   duration,
@@ -36,6 +37,7 @@ import {
 } from '../src/lib/about-cats-rig';
 import {
   WALK,
+  WALK_STRIDE_PX,
   framesOf,
   walkFramePx,
   type Frame,
@@ -638,16 +640,19 @@ test(
   },
 );
 
-/** A run fast enough to cross a whole stride between two screen frames. */
-const RUN_PX_PER_MS = 0.5;
 const SCREEN_FRAME_MS = 1000 / 60;
+const TROT_MS = 2000;
+const STOPPED_MS = 500;
+/** The walk phases a cycle must keep: contact, passing, and both again on the other side. */
+const WALK_PHASES = 4;
 
 test(
-  'a walking cat shows every walk frame in order, each for a full step, its body still within a frame',
+  'a trotting cat steps through its walk without skipping a phase, keeps pace with its body, and stops stepping when it stops',
   NODE,
   () => {
     for (const id of CATS) {
       const walk = WALK[id];
+      const px = walkFramePx(id);
       const s = {
         frame: 'stand' as Frame | null,
         shownAt: -Infinity,
@@ -656,9 +661,10 @@ test(
         stepX: NaN,
       };
       const shown: { frame: Frame; at: number; x: number }[] = [];
-      for (let at = 0; at < 2000; at += SCREEN_FRAME_MS) {
-        const x = at * RUN_PX_PER_MS;
-        const wanted = walk[Math.floor(x / walkFramePx(id)) % walk.length]!;
+      let travelled = 0;
+      for (let at = 0; at < TROT_MS + STOPPED_MS; at += SCREEN_FRAME_MS) {
+        const x = (Math.min(at, TROT_MS) * TROT_SPEED) / 1000;
+        const wanted = walk[Math.floor(x / px) % walk.length]!;
         if (stepFrame(s, wanted, at, x, walk))
           shown.push({ frame: s.frame!, at, x: drawnXOf(s, x) });
         else if (shown.length)
@@ -668,15 +674,31 @@ test(
       }
       shown.slice(1).forEach(({ frame, at }, i) => {
         const before = shown[i]!;
+        const ahead =
+          (walk.indexOf(frame) - walk.indexOf(before.frame) + walk.length) %
+          walk.length;
+        travelled += ahead * px;
         expect(
-          walk.indexOf(frame),
+          ahead,
           `${id} skipped from ${before.frame} to ${frame}`,
-        ).toBe((walk.indexOf(before.frame) + 1) % walk.length);
+        ).toBeGreaterThanOrEqual(1);
+        expect(
+          ahead,
+          `${id} skipped a phase from ${before.frame}`,
+        ).toBeLessThanOrEqual(Math.max(1, walk.length / WALK_PHASES));
         expect(
           at - before.at,
           `${id} showed ${before.frame} for less than a step`,
         ).toBeGreaterThanOrEqual(TICK_MS);
       });
+      expect(
+        Math.abs(travelled - (TROT_MS * TROT_SPEED) / 1000),
+        `${id}'s walk frames fell behind its body, so its paws slide`,
+      ).toBeLessThan(WALK_STRIDE_PX / 2);
+      expect(
+        shown.at(-1)!.at,
+        `${id} kept stepping after it stopped`,
+      ).toBeLessThanOrEqual(TROT_MS);
     }
   },
 );
