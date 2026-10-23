@@ -28,7 +28,7 @@ const landed = (page: Page) =>
   expect
     .poll(() => page.evaluate(() => document.getAnimations().length))
     .toBe(0);
-/* Targets in the heap on screen that something else covers at any of nine points across them. */
+/* Targets in the heap off screen, or covered by something else at any of nine points across them. */
 const coveredTargets = (page: Page) =>
   page.evaluate(() => {
     const SHARES = [0.25, 0.5, 0.75];
@@ -37,12 +37,10 @@ const coveredTargets = (page: Page) =>
         '[data-fell] :is(a[href], button), [data-fell]:is(a[href], button)',
       ),
     ]
+      .filter((el) => el.checkVisibility())
       .filter((el) => {
         const r = el.getBoundingClientRect();
-        return el.checkVisibility() && r.top >= 0 && r.bottom <= innerHeight;
-      })
-      .filter((el) => {
-        const r = el.getBoundingClientRect();
+        if (r.top < 0 || r.bottom > innerHeight) return true;
         return SHARES.some((x) =>
           SHARES.some((y) => {
             const hit = document.elementFromPoint(
@@ -116,7 +114,7 @@ for (const width of WIDTHS) {
       ).toBe(true);
       expect(
         await coveredTargets(page),
-        'a target in the heap is partly covered (SC 2.5.8)',
+        'a target in the heap is off screen or partly covered (SC 2.5.8)',
       ).toEqual([]);
       const { violations } = await timedScan(page, 'fallen /career');
       expect(
@@ -251,13 +249,14 @@ test('the fallen header scrolls with the page and is sticky again once back', as
 /* ms: longer than let-it-fall.ts REPEAT_MS, shorter than --fall-time, so the second press lands mid-climb. */
 const PRESS_AGAIN_MS = 400;
 
-test('pressing again while the blocks climb home drops them again', async ({
+test('pressing again while the blocks and rabbit go home drops them again, the rabbit clear of controls', async ({
   page,
 }) => {
+  await seedRandom(page, HEAP_SEED);
   await page.setViewportSize({ width: 390, height: HEIGHT });
   await gotoSettled(page, ROUTE);
   const button = await press(page);
-  await landed(page);
+  await rabbitClear(page);
   await button.click();
   await expect(status(page)).toHaveText(RESTORED);
   const errors: string[] = [];
@@ -266,6 +265,7 @@ test('pressing again while the blocks climb home drops them again', async ({
   await page.getByRole('button', FALL).click();
   await expect(status(page)).toHaveText(FELL);
   await expect(fallen(page)).not.toHaveCount(0);
+  await rabbitClear(page);
   expect(errors, 'cutting the climb short threw').toEqual([]);
 });
 
@@ -293,13 +293,8 @@ test('under reduced motion the blocks and the rabbit move at once, never animate
   ).toEqual([]);
 });
 
-test('the rabbit hops onto the heap, covers no control, and hops home', async ({
-  page,
-}) => {
-  await seedRandom(page, HEAP_SEED);
-  await page.setViewportSize({ width: 390, height: HEIGHT });
-  await gotoSettled(page, ROUTE);
-  await press(page);
+/* The rabbit on the heap: on screen, over no control, and decorative. */
+const rabbitClear = async (page: Page) => {
   const rabbit = page.locator('.footer-rabbit');
   await expect(rabbit).toHaveAttribute('data-hopped');
   await landed(page);
@@ -327,6 +322,17 @@ test('the rabbit hops onto the heap, covers no control, and hops home', async ({
     }),
     'the rabbit is off screen, covers a control, or is announced',
   ).toEqual({ onScreen: true, covers: [], hidden: true });
+};
+
+test('the rabbit hops onto the heap, covers no control, and hops home', async ({
+  page,
+}) => {
+  await seedRandom(page, HEAP_SEED);
+  await page.setViewportSize({ width: 390, height: HEIGHT });
+  await gotoSettled(page, ROUTE);
+  await press(page);
+  const rabbit = page.locator('.footer-rabbit');
+  await rabbitClear(page);
   await page.keyboard.press('Escape');
   await landed(page);
   await expect(rabbit).not.toHaveAttribute('data-hopped');

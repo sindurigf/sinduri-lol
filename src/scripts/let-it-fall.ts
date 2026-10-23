@@ -18,6 +18,8 @@ const TARGETS = 'a[href], button, input, select, textarea, summary';
 /* px: the room kept around a control that did not fall, the space between stacked blocks, and the heap's margin. */
 const SOLID_GAP = 12;
 const STACK_GAP = 4;
+/* A block the heap cannot fit on screen stays, solid, and the rest stack again, at most this often. */
+const MAX_PASSES = 4;
 const EDGE = 16;
 /* A block narrower than this share of the screen is small: it tilts more and drops into the lowest gap. */
 const SMALL_SHARE = 0.4;
@@ -95,6 +97,15 @@ const onScreen = (el: Element): boolean => {
 /* A block already moved by its own transform, or inside a raised or clipping layer, would land above the button or vanish. */
 const free = (el: Element): boolean => {
   if (getComputedStyle(el).transform !== 'none') return false;
+  /* A moved block would become the containing block of a sticker placed against its card; a 1px screen reader label does not count. */
+  const anchoredOutside = [...el.querySelectorAll<HTMLElement>('*')].some(
+    (inner) =>
+      /absolute|fixed/.test(getComputedStyle(inner).position) &&
+      !el.contains(inner.offsetParent) &&
+      inner.checkVisibility() &&
+      inner.getBoundingClientRect().width > 1,
+  );
+  if (anchoredOutside) return false;
   for (
     let up = el.parentElement;
     up && up !== document.body;
@@ -128,6 +139,7 @@ type Landing = {
   x: number;
   y: number;
   turn: number;
+  top: number;
   rank: number;
 };
 
@@ -212,6 +224,7 @@ const stack = (
       x: left + wide / 2 - (box.left + box.width / 2),
       y: bottom - tall / 2 - (box.top + box.height / 2),
       turn,
+      top: bottom - tall,
       rank,
     };
   });
@@ -341,6 +354,8 @@ const fall = (): void => {
   )) {
     home(el);
   }
+  /* A rabbit still hopping home is measured from home, not mid-air. */
+  for (const animation of rabbit?.getAnimations() ?? []) animation.cancel();
   pin();
   const tallest = innerHeight * TALLEST_SHARE;
   const candidates = [...document.querySelectorAll<HTMLElement>(BLOCKS)].filter(
@@ -358,24 +373,35 @@ const fall = (): void => {
   /* Marked before measuring: a falling footer row shrinks to its link. */
   for (const el of fallen) el.setAttribute('data-fall-block', '');
   const floor = innerHeight - EDGE;
-  /* Put It Back and every control that stays are solid: the heap lands on them, never over them. */
-  const solid = [...document.querySelectorAll(TARGETS)]
-    .filter(
-      (el) =>
-        onScreen(el) &&
-        el.checkVisibility() &&
-        !fallen.some((block) => block.contains(el)),
-    )
-    .map((el) => {
-      const { left, right, top, bottom } = el.getBoundingClientRect();
-      return {
-        left: left - SOLID_GAP,
-        right: right + SOLID_GAP,
-        top: top - SOLID_GAP,
-        bottom: bottom + SOLID_GAP,
-      };
-    });
-  const { heap, landings } = stack(fallen, floor, solid);
+  const toSpot = ({ left, right, top, bottom }: DOMRect): Spot => ({
+    left: left - SOLID_GAP,
+    right: right + SOLID_GAP,
+    top: top - SOLID_GAP,
+    bottom: bottom + SOLID_GAP,
+  });
+  /* Put It Back, every control that stays and every block that stays are solid: the heap lands on them, never over them. */
+  const solidBeside = (falling: HTMLElement[], stays: HTMLElement[]) => [
+    ...[...document.querySelectorAll(TARGETS)]
+      .filter(
+        (el) =>
+          onScreen(el) &&
+          el.checkVisibility() &&
+          !falling.some((block) => block.contains(el)),
+      )
+      .map((el) => toSpot(el.getBoundingClientRect())),
+    ...stays.map((el) => toSpot(el.getBoundingClientRect())),
+  ];
+  let stays: HTMLElement[] = [];
+  let { heap, landings } = stack(fallen, floor, solidBeside(fallen, stays));
+  for (let pass = 1; pass < MAX_PASSES; pass++) {
+    const over = landings.filter(({ top }) => top < 0).map(({ el }) => el);
+    if (!over.length) break;
+    for (const el of over) el.removeAttribute('data-fall-block');
+    stays = [...stays, ...over];
+    fallen = fallen.filter((el) => !stays.includes(el));
+    ({ heap, landings } = stack(fallen, floor, solidBeside(fallen, stays)));
+  }
+  if (!fallen.some((el) => header?.contains(el))) unpin();
   const spot = perch(heap, floor);
   const moves = landings
     .map(drop)
@@ -397,14 +423,23 @@ const fall = (): void => {
 };
 
 const restore = (): void => {
-  /* The page may have scrolled since the fall: home for the header is where it sticks now. */
+  /* The page may have scrolled since the fall: home for the header is where it sticks now, and its blocks climb from where they lie. */
+  const before = header?.getBoundingClientRect().top ?? 0;
   if (header?.style.position) {
     unpin();
     pin();
   }
+  const shift = (header?.getBoundingClientRect().top ?? 0) - before;
   if (rabbit?.hasAttribute('data-hopped')) hopTo(null);
   for (const el of fallen) {
-    const from = getComputedStyle(el).transform;
+    const lies = getComputedStyle(el).transform;
+    const from =
+      shift && header?.contains(el)
+        ? new DOMMatrix()
+            .translate(0, -shift)
+            .multiply(new DOMMatrix(lies === 'none' ? undefined : lies))
+            .toString()
+        : lies;
     el.removeAttribute('data-fell');
     if (!motion.matches) {
       home(el);
