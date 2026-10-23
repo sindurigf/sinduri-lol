@@ -140,8 +140,8 @@ export interface CatRig {
   hit: SVGRectElement;
   zz: SVGPathElement;
   flip: SVGGElement;
-  /** The frame shown; the second window stays hidden. */
-  layers: [Layer, Layer];
+  /** The window the current frame shows through. */
+  layer: Layer;
   frame: Frame | null;
   shownAt: number;
   /** A frame waiting for the current one's step to end. */
@@ -169,7 +169,7 @@ export const createCatRig = (
   const hit = el('rect', { class: 'cat-hit-area' }, root);
   const flip = el('g', {}, root);
   /* Hidden until a frame is drawn: an empty window shows the whole sheet, and takes clicks. */
-  const layer = (): Layer => {
+  const makeLayer = (): Layer => {
     const view = el(
       'svg',
       {
@@ -183,7 +183,7 @@ export const createCatRig = (
     const image = el('image', {}, view);
     return { view, image };
   };
-  const layers: [Layer, Layer] = [layer(), layer()];
+  const layer = makeLayer();
   /* Outside the flip, so the letter never reads backwards. */
   const zz = el(
     'path',
@@ -205,7 +205,7 @@ export const createCatRig = (
     hit,
     zz,
     flip,
-    layers,
+    layer,
     frame: null,
     shownAt: -Infinity,
     pending: false,
@@ -230,8 +230,8 @@ export const hitBox = (id: CatId, frame: Frame) => {
 
 /** Loads the cat's frames, once: called when its band first comes into view, so an unseen cat costs no download. */
 export const loadSheet = (rig: CatRig): void => {
-  for (const { image } of rig.layers)
-    if (!image.hasAttribute('href')) set(image, 'href', rig.sheet.src);
+  const { image } = rig.layer;
+  if (!image.hasAttribute('href')) set(image, 'href', rig.sheet.src);
 };
 
 /** Shows `frame` in `layer`, its ground line at y = 0 and centered on x = 0. */
@@ -265,13 +265,11 @@ export const settleFrame = (rig: CatRig): void => {
   rig.cut = true;
 };
 
-const STILL_FRAMES = new Set<Frame>(Object.values(POSE_FRAME));
-
-/** The named pose a still frame draws, for its resting chest thickness. */
-const restingPose = (frame: Frame): NamedPose | undefined =>
-  (Object.keys(POSE_FRAME) as NamedPose[]).find(
-    (name) => POSE_FRAME[name] === frame,
-  );
+/** The named pose each still frame draws, for its resting chest thickness: the first one listed wins. */
+const RESTING_POSE = new Map<Frame, NamedPose>();
+for (const name of Object.keys(POSE_FRAME) as NamedPose[])
+  if (!RESTING_POSE.has(POSE_FRAME[name]))
+    RESTING_POSE.set(POSE_FRAME[name], name);
 
 /** px the paws stand above the ground: a climb raises the whole cat onto the upper brick. */
 const feetUp = (p: Pose): number =>
@@ -306,12 +304,12 @@ export const renderCat = (
   });
   rig.lastLift = p.y;
 
-  const [back, front] = rig.layers;
   /* Frames cut, never fade: a fade doubles the legs. Each holds a full step, so a quick move still shows its in-between. */
   const arrived = rig.frame !== null && !rig.cut;
   rig.pending = frame !== rig.frame && now - rig.shownAt < TICK_MS;
   if (frame !== rig.frame && !rig.pending) {
-    drawFrame(rig, front, frame);
+    drawFrame(rig, rig.layer, frame);
+    showLayer(rig.layer, 1);
     /* A cut counts as a full step already shown: no squash, and the next frame need not wait. */
     rig.shownAt = rig.cut ? now - TICK_MS : now;
     rig.cut = false;
@@ -319,8 +317,6 @@ export const renderCat = (
     rig.frame = frame;
     set(rig.root, 'data-frame', frame);
   }
-  showLayer(front, 1);
-  showLayer(back, 0);
   const shown = rig.frame ?? frame;
 
   const { w, h } = sizeOf(rig.id, shown);
@@ -339,15 +335,13 @@ export const renderCat = (
     set(rig.zz, 'opacity', f(Math.min(1, 2 * p.zz)));
   }
 
-  /* Walking, the body steps WALK_FRAME_PX with each frame and holds between, so a planted paw never slides. */
+  /* While a walk frame shows, the body holds where that frame began: it moves WALK_FRAME_PX with each frame, so a planted paw never slides, and catches up only when the next frame cuts in. */
   const drawnX =
-    moving && shown.startsWith('walk') && !Number.isNaN(rig.stepX)
-      ? rig.stepX
-      : x;
+    shown.startsWith('walk') && !Number.isNaN(rig.stepX) ? rig.stepX : x;
   set(rig.root, 'transform', translate(drawnX, groundY));
   /* A still frame breathes with the pose's chest, and lands in a squash for one step. */
-  const still = STILL_FRAMES.has(shown) && !moving;
-  const resting = still ? restingPose(shown) : undefined;
+  const still = RESTING_POSE.has(shown) && !moving;
+  const resting = still ? RESTING_POSE.get(shown) : undefined;
   const breath = resting
     ? clamp((p.bt - NAMED[resting].bt) / BREATH_DEPTH, -1, 1) * BREATH_SCALE
     : 0;
