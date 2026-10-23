@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { gzipSync } from 'node:zlib';
 import { join } from 'node:path';
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
@@ -53,6 +54,25 @@ const scriptsFetched = async (
   await gotoSettled(page, route, { webFont: false });
   return Promise.all(pending);
 };
+
+/* Gzipped bytes of each rabbit SVG; the logo and footer load on every page, so a regrown trace fails here. */
+const RABBIT_SVG_BUDGETS: Readonly<Record<string, number>> = {
+  'logo-rabbit.svg': 12_000,
+  'roundel-rabbit.svg': 12_000,
+  'bunny-footer.svg': 13_000,
+  'hero-rabbit.svg': 48_000,
+};
+
+test.describe('rabbit artwork weight', NODE, () => {
+  for (const [file, budget] of Object.entries(RABBIT_SVG_BUDGETS))
+    test(`${file} stays within ${budget} gzipped bytes`, () => {
+      const bytes = gzipSync(readFileSync(join('src/assets', file))).length;
+      expect(
+        bytes,
+        `src/assets/${file} is ${bytes} bytes gzipped, over its ${budget} budget.`,
+      ).toBeLessThanOrEqual(budget);
+    });
+});
 
 test.describe('style weight', NODE, () => {
   test('no page ships more CSS than its budget', () => {

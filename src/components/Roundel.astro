@@ -24,11 +24,10 @@ const BOX_CLASS = {
   page: 'size-24 lg:size-32',
   hero: 'size-roundel',
 } as const;
-
-/* The art bleeds an eighth past each side of the box (ROUNDEL_BLEED in scripts/make-logo.mjs); a vector, so one file at every size. */
 ---
 
 <span class:list={['block rotate-3', BOX_CLASS[variant], className]}>
+  {/* The art bleeds an eighth past the box (ROUNDEL_BLEED in scripts/make-logo.mjs). */}
   <span class="absolute -inset-1/8">
     <img
       src={roundelRabbit.src}

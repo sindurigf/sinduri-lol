@@ -29,7 +29,11 @@ const relative = (d) => {
   let out = '';
   const num = (n) =>
     n < 0 || out.endsWith(' ') || /[a-z]$/.test(out) ? `${n}` : ` ${n}`;
-  for (const [, op, args] of d.matchAll(/([MLCZ])([^MLCZ]*)/g)) {
+  for (const [, op, args] of d.matchAll(/([A-Za-z])([^A-Za-z]*)/g)) {
+    if (!'MLCZ'.includes(op))
+      throw new Error(
+        `make-logo: the trace has a ${op} command; relative() writes only M, L, C and Z.`,
+      );
     const n = (args.match(/-?\d+(\.\d+)?/g) ?? []).map((v) =>
       Math.round(Number(v)),
     );
@@ -47,7 +51,8 @@ const relative = (d) => {
         out += num(pts[j + 1] - y);
       }
       [x, y] = pts.slice(-2);
-      if (op === 'M') [x0, y0] = [x, y];
+      /* Pairs after a moveto's first are linetos: only the first opens the subpath. */
+      if (op === 'M' && i === 0) [x0, y0] = [x, y];
     }
   }
   return out;
@@ -61,7 +66,6 @@ const shipped = (source) =>
 /* The header tile, Header.astro: 48px, `border-4`, `rounded-nav`. */
 const TILE = 48;
 const BORDER = 4;
-const LOGO_SCALE = 2;
 /* The share cards draw the tile at 7x (TILE_SCALE in scripts/make-og.mjs); this renders the rabbit at 2x of that. */
 const OG_LOGO_SCALE = 14;
 
@@ -170,19 +174,22 @@ function roundelArt() {
   const transform = `translate(${ROUNDEL.cx} 50) rotate(${ROUNDEL.rotate}) scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
   /* The drawing is mirrored, so a positive offset falls down and behind the rabbit. */
   const grown = (color, width, offset = 0, ref = 'cut') =>
-    `<use href="#${ref}"${offset ? ` x="${offset * u}" y="${offset * u}"` : ''} fill="${color}" stroke="${color}" stroke-width="${2 * width * u}" stroke-linejoin="round"/>`;
-  const block = Array.from({ length: ROUNDEL.steps }, (_, i) =>
-    grown(
-      PINK,
-      ROUNDEL.rim,
-      (ROUNDEL.depth * (ROUNDEL.steps - i)) / ROUNDEL.steps,
-    ),
-  ).join('');
+    `<use href="#${ref}"${offset ? ` x="${(offset * u).toFixed(2)}" y="${(offset * u).toFixed(2)}"` : ''} fill="${color}" stroke="${color}" stroke-width="${(2 * width * u).toFixed(2)}" stroke-linejoin="round"/>`;
+  const offsets = Array.from(
+    { length: ROUNDEL.steps },
+    (_, i) => (ROUNDEL.depth * (ROUNDEL.steps - i)) / ROUNDEL.steps,
+  );
+  /* The ink back is swept like the block, from one edge width in, so it edges the block's far side evenly and never shows past its near side. */
+  const back = offsets
+    .filter((d) => d >= ROUNDEL.backEdge)
+    .map((d) => grown(INK, ROUNDEL.rim + ROUNDEL.backEdge, d))
+    .join('');
+  const block = offsets.map((d) => grown(PINK, ROUNDEL.rim, d)).join('');
   const [face, mouthLine] = partition(line, MOUTH_BOX);
   const [pink, tongue] = partition(TRACE.pink, MOUTH_BOX);
   const mx = (MOUTH_BOX.x0 + MOUTH_BOX.x1) / 2;
   const mouth = `<g transform="translate(${mx} ${MOUTH_BOX.y0}) scale(${MOUTH_SCALE}) translate(${-mx} ${-MOUTH_BOX.y0})">${fill(tongue, EAR)}${fill(mouthLine, INK, ROUNDEL.line * u)}</g>`;
-  return `<defs><path id="cut" d="${TRACE.cut}"/><path id="sil" d="${TRACE.sil}"/></defs><g transform="${transform}">${grown(INK, ROUNDEL.rim + ROUNDEL.backEdge, ROUNDEL.depth)}${block}${grown(WHITE, ROUNDEL.rim)}${grown(INK, ROUNDEL.edge, 0, 'sil')}
+  return `<defs><path id="cut" d="${TRACE.cut}"/><path id="sil" d="${TRACE.sil}"/></defs><g transform="${transform}">${back}${block}${grown(WHITE, ROUNDEL.rim)}${grown(INK, ROUNDEL.edge, 0, 'sil')}
 ${fill(TRACE.sil, WHITE)}${fill(pink, EAR)}${fill(face, INK, ROUNDEL.line * u)}${mouth}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
 }
 
@@ -195,7 +202,7 @@ function sticker() {
   const u = 1 / k;
   const outer = (STICKER.edge + 2 * STICKER.rim + 2 * STICKER.rimEdge) * u;
   const use = (ref, color, stroke = 0, offset = 0) =>
-    `<use href="#${ref}"${offset ? ` x="${offset}" y="${offset}"` : ''} fill="${color}"${stroke ? ` stroke="${color}" stroke-width="${stroke}" stroke-linejoin="round"` : ''}/>`;
+    `<use href="#${ref}"${offset ? ` x="${offset.toFixed(2)}" y="${offset.toFixed(2)}"` : ''} fill="${color}"${stroke ? ` stroke="${color}" stroke-width="${stroke.toFixed(2)}" stroke-linejoin="round"` : ''}/>`;
   return `<defs><path id="cut" d="${TRACE.cut}"/><path id="sil" d="${TRACE.sil}"/></defs><g transform="${transform}">
 ${use('cut', INK, outer, STICKER.throw * u)}
 ${use('cut', INK, outer)}${use('cut', WHITE, (STICKER.edge + 2 * STICKER.rim) * u)}${use('sil', INK, STICKER.edge * u)}${use('sil', WHITE)}

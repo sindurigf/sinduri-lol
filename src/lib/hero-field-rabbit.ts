@@ -27,7 +27,7 @@ export const RABBIT_FRAMES: Readonly<Record<RabbitPose, AtlasFrame>> = {
 };
 
 /** Atlas pixels per drawing unit; sets the rabbit's size, about 90 units tall sitting. */
-export const ATLAS_PX_PER_UNIT = 3.2;
+const ATLAS_PX_PER_UNIT = 3.2;
 
 /** The atlas's size in its own pixels, the frames' coordinates. */
 export const ATLAS_SIZE = { w: 933, h: 335 } as const;
@@ -60,8 +60,8 @@ export const rabbitAir = (here: RoutePoint): number =>
 
 /*
  * `lift` is the height above the ground in drawing units, `scale` CSS pixels
- * per unit. `atlas` is drawn at `density` times the atlas's own pixels, so a
- * copy rasterised at the drawn size is copied 1:1.
+ * per unit. `atlas` holds the atlas at `density` times its own pixels: a copy
+ * rasterised near the drawn size.
  */
 export const drawRabbit = (
   ctx: CanvasRenderingContext2D,

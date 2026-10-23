@@ -599,32 +599,32 @@ const drawBack = (
   ctx.globalAlpha = 1;
 };
 
-/* Rasterising again costs a frame: only a change in size past this share is worth it. */
+/* Rasterising takes tens of ms on a phone: only a size change past this share redraws it. */
 const DENSITY_STEP = 0.02;
-let sharp: {
+let rasterised: {
   atlas: CanvasImageSource;
   density: number;
   canvas: HTMLCanvasElement;
 } | null = null;
 
-/** The vector atlas rasterised at `density`, once per size, so the canvas never scales the rabbit. */
+/** The vector atlas rasterised at `density`, once per size, so the rabbit is drawn at its own resolution. */
 const atlasAt = (
   atlas: CanvasImageSource,
   density: number,
-): HTMLCanvasElement => {
+): { canvas: HTMLCanvasElement; density: number } => {
   if (
-    sharp?.atlas === atlas &&
-    Math.abs(sharp.density / density - 1) < DENSITY_STEP
+    rasterised?.atlas === atlas &&
+    Math.abs(rasterised.density / density - 1) < DENSITY_STEP
   )
-    return sharp.canvas;
-  const canvas = sharp?.canvas ?? document.createElement('canvas');
+    return rasterised;
+  const canvas = rasterised?.canvas ?? document.createElement('canvas');
   canvas.width = Math.ceil(ATLAS_SIZE.w * density);
   canvas.height = Math.ceil(ATLAS_SIZE.h * density);
   canvas
     .getContext('2d')
     ?.drawImage(atlas, 0, 0, ATLAS_SIZE.w * density, ATLAS_SIZE.h * density);
-  sharp = { atlas, density, canvas };
-  return canvas;
+  rasterised = { atlas, density, canvas };
+  return rasterised;
 };
 
 const drawMid = (
@@ -640,16 +640,16 @@ const drawMid = (
 
   if (atlas) {
     drawHareShadow(ctx, palette, state.scene, here.x, air);
-    const density = atlasDensity(hareScale, ctx.getTransform().a);
+    const sheet = atlasAt(atlas, atlasDensity(hareScale, ctx.getTransform().a));
     drawRabbit(
       ctx,
-      atlasAt(atlas, density),
+      sheet.canvas,
       here.x,
       hareRoot,
       hareScale,
       rabbitPose(here, seconds),
       air * here.hop,
-      sharp?.density ?? density,
+      sheet.density,
     );
   }
 
