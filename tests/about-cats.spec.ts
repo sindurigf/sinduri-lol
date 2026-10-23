@@ -252,6 +252,10 @@ const expectStill = async (
   id: (typeof CATS)[number],
   why: string,
 ) => {
+  /* The frames load as the band nears view; the load is not motion. */
+  await expect(
+    page.locator(`#cat-spot-${id} image[href]`).first(),
+  ).toBeAttached();
   const before = await drawing(page, id);
   await page.waitForTimeout(STILL_WINDOW_MS);
   expect(await drawing(page, id), why).toBe(before);
