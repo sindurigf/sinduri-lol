@@ -16,7 +16,7 @@ const BLOCKS = [
 ].join(', ');
 const TARGETS = 'a[href], button, input, select, textarea, summary';
 /* px: the room kept around a control that did not fall, the space between stacked blocks, and the heap's margin. */
-const PILE_GAP = 12;
+const SOLID_GAP = 12;
 const STACK_GAP = 4;
 const EDGE = 16;
 /* A block narrower than this share of the screen is small: it tilts more and drops into the lowest gap. */
@@ -369,10 +369,10 @@ const fall = (): void => {
     .map((el) => {
       const { left, right, top, bottom } = el.getBoundingClientRect();
       return {
-        left: left - PILE_GAP,
-        right: right + PILE_GAP,
-        top: top - PILE_GAP,
-        bottom: bottom + PILE_GAP,
+        left: left - SOLID_GAP,
+        right: right + SOLID_GAP,
+        top: top - SOLID_GAP,
+        bottom: bottom + SOLID_GAP,
       };
     });
   const { heap, landings } = stack(fallen, floor, solid);

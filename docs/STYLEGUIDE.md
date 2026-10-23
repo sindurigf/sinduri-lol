@@ -1087,23 +1087,29 @@ Enforced by `tests/footer.spec.ts`.
 - the copyright
 - Let It Fall (`src/scripts/let-it-fall.ts`, loaded on demand), above the
   copyright: one press drops everything on screen, the header bar, hero, page
-  and footer, into a pile above the button with a bounce; the same button
-  (now Put It Back), Esc, keyboard focus moving anywhere else or a new window
-  width puts them back. A click or tap on a link or button in the pile does
-  not, so one with a clear 24px square still works; one without takes no
-  pointer (SC 2.5.8), checked in short slices after landing and again after a
-  scroll. The pile spreads over the lower half of the screen so more land on
-  top. A text field takes focus on click, so it puts the page back.
-  The sticky header is held in flow while fallen, so its pile scrolls with the
-  page. `transform` only, stacked on a block's own
-  `translate` and `rotate`, so the order and text stay as they are; other
-  blocks in a raised or clipping layer stay put. Wide blocks tilt less. Each
-  fallen block carries its own ground, so its text keeps its contrast, and
-  never scrolls the page sideways. The name
-  swaps between Let It Fall and Put It Back, no `aria-pressed`; a polite
-  status, in the page from the start, says what happened. `z-index: 1` keeps
-  the button above the pile. Under reduced motion the blocks move at once; in
-  print they stand still. Hidden without JavaScript and not on talk decks
+  and footer, and stacks it into a heap with a bounce. Wide blocks land first
+  in a shuffled order, then small ones drop into the lowest gaps. Each takes
+  its tilted box's room, so nothing overlaps and every link and button stays
+  whole and clickable (SC 2.5.8). Put It Back and any control that stays are
+  solid: the heap lands beside or on them, never over them. A block taller
+  than 60% of the screen stays and the blocks inside it fall; a footer row
+  falls as its link alone. The footer rabbit (`alt=""`) then hops onto the
+  highest spot clear of every control, shrinking to fit a wide screen, and
+  hops home on Put It Back.
+- The same button (now Put It Back), Esc, keyboard focus moving anywhere else
+  or a new window width puts it all back. A click or tap on a link or button
+  in the heap focuses without `:focus-visible`, so it follows the link; a
+  text field takes focus on click, so it puts the page back. The sticky
+  header is held in flow while fallen, so its part of the heap scrolls with
+  the page.
+- `transform` only, stacked on a block's own `translate` and `rotate`, so the
+  order and text stay as they are; blocks in a raised or clipping layer stay
+  put. Fallen blocks are raised over content that stays, carry their own
+  ground so their text keeps its contrast, and never scroll the page
+  sideways. The name swaps between Let It Fall and Put It Back, no
+  `aria-pressed`; a polite status, in the page from the start, says what
+  happened. Under reduced motion the blocks and rabbit move at once; in print
+  they stand still. Hidden without JavaScript and not on talk decks
   (`tests/let-it-fall.spec.ts`).
 - the name "Lepus Ridet" (`div lang="la"`, not a heading) as display type on a
   gold band, the rabbit (`alt=""`) standing on its last letter

@@ -171,7 +171,7 @@ for (const width of WIDTHS) {
   });
 }
 
-/* The pile is random; a fixed sequence makes the same one every run. */
+/* The heap is random; a fixed sequence makes the same one every run. */
 const seedRandom = (page: Page, seed: number) =>
   page.addInitScript((start) => {
     let state = start;
@@ -183,10 +183,10 @@ const seedRandom = (page: Page, seed: number) =>
       return ((t ^ (t >>> 14)) >>> 0) / 2 ** 32;
     };
   }, seed);
-const PILE_SEED = 7;
+const HEAP_SEED = 7;
 
-test('a click on a link in the pile follows it', async ({ page }) => {
-  await seedRandom(page, PILE_SEED);
+test('a click on a link in the heap follows it', async ({ page }) => {
+  await seedRandom(page, HEAP_SEED);
   await page.setViewportSize({ width: 390, height: HEIGHT });
   await gotoSettled(page, ROUTE);
   await press(page);
@@ -208,7 +208,7 @@ test('a click on a link in the pile follows it', async ({ page }) => {
     top?.setAttribute('data-test-target', '');
     return top?.getAttribute('href');
   });
-  expect(href, 'no link in the pile is on top').toBeTruthy();
+  expect(href, 'no link in the heap is on screen').toBeTruthy();
   await page.locator('[data-test-target]').click();
   await expect(page).toHaveURL(new RegExp(`${href}$`));
 });
@@ -272,7 +272,7 @@ test('pressing again while the blocks climb home drops them again', async ({
 test('under reduced motion the blocks and the rabbit move at once, never animated', async ({
   page,
 }) => {
-  await seedRandom(page, PILE_SEED);
+  await seedRandom(page, HEAP_SEED);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.setViewportSize({ width: 390, height: HEIGHT });
   await gotoSettled(page, ROUTE);
@@ -296,7 +296,7 @@ test('under reduced motion the blocks and the rabbit move at once, never animate
 test('the rabbit hops onto the heap, covers no control, and hops home', async ({
   page,
 }) => {
-  await seedRandom(page, PILE_SEED);
+  await seedRandom(page, HEAP_SEED);
   await page.setViewportSize({ width: 390, height: HEIGHT });
   await gotoSettled(page, ROUTE);
   await press(page);
