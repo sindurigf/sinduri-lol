@@ -3,7 +3,7 @@ import { NEXT_FRAME, useMotionLoop } from './use-motion-loop';
 import { createHeroField } from '../lib/hero-field';
 import { MAX_PIXEL_RATIO } from '../lib/image-densities';
 import type { HeroField, HeroPalette } from '../lib/hero-field-scene';
-import heroRabbit from '../assets/hero-rabbit.webp';
+import heroRabbit from '../assets/hero-rabbit.svg';
 import type { Ref } from 'vue';
 
 /*

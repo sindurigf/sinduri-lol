@@ -34,10 +34,10 @@ How AI tooling was used to build this site.
 - AI-made and listed under
   [Made with AI on `/credits/`](https://sinduri.lol/credits/#ai):
   - the hopping bunny in the homepage hero, drawn with Canva AI and traced
-    with Potrace (`src/assets/hero-rabbit.webp`, `src/lib/hero-field-rabbit.ts`),
+    with Potrace (`src/assets/hero-rabbit.svg`, `src/lib/hero-field-rabbit.ts`),
     and its stills shown without JavaScript (`src/assets/hero-still-*.webp`);
   - the sticker bunny in the footer and on the 404 page, drawn with Canva AI and traced with
-    Potrace (`src/assets/bunny-footer.webp`);
+    Potrace (`src/assets/bunny-footer.svg`);
   - the jumping bunny in the header logo, the hero roundel, every favicon and
     app icon and the share images, the same Canva AI rabbit traced with Potrace
     (`artwork/rabbit-jump.json`, `scripts/make-logo.mjs`, `scripts/make-og.mjs`);

@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets';
-import logoRabbit from '../assets/logo-rabbit.png';
+import logoRabbit from '../assets/logo-rabbit.svg';
 import {
   CTA,
   HEADER_LINKS,
@@ -8,7 +8,6 @@ import {
   NAV_LINKS,
   ariaCurrent,
 } from '../lib/nav';
-import { DENSITIES } from '../lib/image-densities';
 import { SITE_NAME } from '../lib/site';
 import NavList from './NavList.astro';
 import ThemeSwitch from './ThemeSwitch.astro';
@@ -46,7 +45,6 @@ const current = (href: string) => ariaCurrent(currentPath, href);
           src={logoRabbit}
           alt=""
           height={RABBIT_HEIGHT}
-          densities={DENSITIES}
           loading="eager"
           class="logo-rabbit"
         />

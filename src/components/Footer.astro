@@ -1,8 +1,7 @@
 ---
 import { Image } from 'astro:assets';
-import bunnyFooter from '../assets/bunny-footer.webp';
+import bunnyFooter from '../assets/bunny-footer.svg';
 import { CONTACT_MAILTO } from '../lib/contact';
-import { DENSITIES } from '../lib/image-densities';
 import { NAV_LINKS, ariaCurrent } from '../lib/nav';
 import {
   EMAIL_LINK_NAME,
@@ -133,7 +132,6 @@ const RABBIT_HEIGHT = 160;
           src={bunnyFooter}
           alt=""
           height={RABBIT_HEIGHT}
-          densities={DENSITIES}
           class="footer-rabbit"
         />
       </span>

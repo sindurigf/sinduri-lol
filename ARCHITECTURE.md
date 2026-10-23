@@ -404,8 +404,8 @@ in `wrangler.jsonc`).
 | Path                            | Artwork   | Goes on              | Used by                                      |
 | ------------------------------- | --------- | -------------------- | -------------------------------------------- |
 | `src/assets/bunny-dark.png`     | `#111111` | Gold, light surfaces | About                                        |
-| `src/assets/roundel-rabbit.png` | Sticker   | Hero slab edge       | `Roundel.astro`                              |
-| `src/assets/logo-rabbit.png`    | Sticker   | The logo tile        | `Header.astro` logo tile                     |
+| `src/assets/roundel-rabbit.svg` | Sticker   | Hero slab edge       | `Roundel.astro`                              |
+| `src/assets/logo-rabbit.svg`    | Sticker   | The logo tile        | `Header.astro` logo tile                     |
 | `artwork/badge-white.png`       | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge               |
 | `public/images/og-default.png`  | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
 | `public/images/og/*.jpg`        | Composite | n/a                  | `BaseLayout.astro`, every other page         |
@@ -439,9 +439,9 @@ in `wrangler.jsonc`).
   and pass the result as a prop.
 - Footer links: seven sticker tiles with Simple Icons (CC0) paths, one
   `<symbol>` per link label in `src/assets/social-icons.svg`. The footer rabbit
-  is `src/assets/bunny-footer.webp` with `alt=""`, standing on the name band:
+  is `src/assets/bunny-footer.svg` with `alt=""`, standing on the name band:
   the Looking Up pose of a Canva sheet, traced with Potrace and
-  exported as a die-cut sticker on a pink block behind it, like the roundel;
+  exported as a vector die-cut sticker on a pink block behind it, like the roundel;
   sources and scripts are kept outside the repo.
   The footer runs JavaScript only for features
   [loaded on demand](#scripts-loaded-on-demand).
@@ -500,7 +500,14 @@ in `wrangler.jsonc`).
 - One source: `scripts/make-logo.mjs` renders the logo rabbit, the roundel
   rabbit and every icon from `artwork/rabbit-jump.json` (the jumping rabbit,
   traced) in Chromium.
-- Logo (`src/assets/logo-rabbit.png`): the hairline die-cut rabbit with an ink
+- The trace holds two outlines, both the smoothed silhouette. `cut` places the
+  rabbit, draws the rim, block and throw, and fills the tab icons; `sil` takes
+  the white fill and the thin ink edge.
+- The logo, roundel, footer and hero rabbits ship as SVG, with the rim and
+  block as strokes of one shared outline (`<use>`), so their lines stay sharp
+  at every size and zoom. The hero canvas rasterises its atlas once at the size
+  it draws the rabbit (`atlasDensity`), so it never scales a bitmap.
+- Logo (`src/assets/logo-rabbit.svg`): the hairline die-cut rabbit with an ink
   throw, jumping the tile's top-right corner. The script prints its box;
   `--logo-rabbit-*` in `global.css` must match.
 - Tab icons (`favicon.*`, `artwork/favicon-*`): the logo's jumping rabbit

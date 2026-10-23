@@ -64,7 +64,13 @@ import {
   random,
   stemPoint,
 } from './hero-field-scene';
-import { drawRabbit, rabbitAir, rabbitPose } from './hero-field-rabbit';
+import {
+  ATLAS_SIZE,
+  atlasDensity,
+  drawRabbit,
+  rabbitAir,
+  rabbitPose,
+} from './hero-field-rabbit';
 import type {
   HeroField,
   HeroPalette,
@@ -593,6 +599,34 @@ const drawBack = (
   ctx.globalAlpha = 1;
 };
 
+/* Rasterising again costs a frame: only a change in size past this share is worth it. */
+const DENSITY_STEP = 0.02;
+let sharp: {
+  atlas: CanvasImageSource;
+  density: number;
+  canvas: HTMLCanvasElement;
+} | null = null;
+
+/** The vector atlas rasterised at `density`, once per size, so the canvas never scales the rabbit. */
+const atlasAt = (
+  atlas: CanvasImageSource,
+  density: number,
+): HTMLCanvasElement => {
+  if (
+    sharp?.atlas === atlas &&
+    Math.abs(sharp.density / density - 1) < DENSITY_STEP
+  )
+    return sharp.canvas;
+  const canvas = sharp?.canvas ?? document.createElement('canvas');
+  canvas.width = Math.ceil(ATLAS_SIZE.w * density);
+  canvas.height = Math.ceil(ATLAS_SIZE.h * density);
+  canvas
+    .getContext('2d')
+    ?.drawImage(atlas, 0, 0, ATLAS_SIZE.w * density, ATLAS_SIZE.h * density);
+  sharp = { atlas, density, canvas };
+  return canvas;
+};
+
 const drawMid = (
   ctx: CanvasRenderingContext2D,
   palette: HeroPalette,
@@ -606,14 +640,16 @@ const drawMid = (
 
   if (atlas) {
     drawHareShadow(ctx, palette, state.scene, here.x, air);
+    const density = atlasDensity(hareScale, ctx.getTransform().a);
     drawRabbit(
       ctx,
-      atlas,
+      atlasAt(atlas, density),
       here.x,
       hareRoot,
       hareScale,
       rabbitPose(here, seconds),
       air * here.hop,
+      sharp?.density ?? density,
     );
   }
 
@@ -626,7 +662,7 @@ const drawMid = (
   );
 };
 
-/* `atlas` is the decoded src/assets/hero-rabbit.webp; null draws the field without the rabbit. */
+/* `atlas` is the decoded src/assets/hero-rabbit.svg; null draws the field without the rabbit. */
 export const createHeroField = (
   palette: HeroPalette,
   atlas: CanvasImageSource | null,
