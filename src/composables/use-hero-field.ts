@@ -3,8 +3,11 @@ import { NEXT_FRAME, useMotionLoop } from './use-motion-loop';
 import { createHeroField } from '../lib/hero-field';
 import { MAX_PIXEL_RATIO } from '../lib/image-densities';
 import type { HeroField, HeroPalette } from '../lib/hero-field-scene';
-import heroRabbit from '../assets/hero-rabbit.webp';
+import heroRabbit from '../assets/hero-rabbit.svg';
 import type { Ref } from 'vue';
+
+/** Longest wait for an idle moment before the rabbit joins the field. */
+const ATLAS_IDLE_MS = 1000;
 
 /*
  * The hero canvases' lifecycle for HeroField.vue; drawing lives in
@@ -239,7 +242,10 @@ export const useHeroField = (): HeroFieldState => {
       .decode()
       .then(() => {
         atlas = image;
-        onThemeChange();
+        /* The first draw rasterises the vector atlas, tens of ms: when the page is idle, not mid-load. */
+        if (typeof window.requestIdleCallback === 'function')
+          window.requestIdleCallback(onThemeChange, { timeout: ATLAS_IDLE_MS });
+        else setTimeout(onThemeChange, 0);
       })
       .catch((error: unknown) => {
         console.error('The hero rabbit image did not load.', error);

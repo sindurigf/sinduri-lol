@@ -64,7 +64,13 @@ import {
   random,
   stemPoint,
 } from './hero-field-scene';
-import { drawRabbit, rabbitAir, rabbitPose } from './hero-field-rabbit';
+import {
+  ATLAS_SIZE,
+  atlasDensity,
+  drawRabbit,
+  rabbitAir,
+  rabbitPose,
+} from './hero-field-rabbit';
 import type {
   HeroField,
   HeroPalette,
@@ -593,6 +599,34 @@ const drawBack = (
   ctx.globalAlpha = 1;
 };
 
+/* Rasterising takes tens of ms on a phone: only a size change past this share redraws it. */
+const DENSITY_STEP = 0.02;
+let rasterised: {
+  atlas: CanvasImageSource;
+  density: number;
+  canvas: HTMLCanvasElement;
+} | null = null;
+
+/** The vector atlas rasterised at `density`, once per size, so the rabbit is drawn at its own resolution. */
+const atlasAt = (
+  atlas: CanvasImageSource,
+  density: number,
+): { canvas: HTMLCanvasElement; density: number } => {
+  if (
+    rasterised?.atlas === atlas &&
+    Math.abs(rasterised.density / density - 1) < DENSITY_STEP
+  )
+    return rasterised;
+  const canvas = rasterised?.canvas ?? document.createElement('canvas');
+  canvas.width = Math.ceil(ATLAS_SIZE.w * density);
+  canvas.height = Math.ceil(ATLAS_SIZE.h * density);
+  canvas
+    .getContext('2d')
+    ?.drawImage(atlas, 0, 0, ATLAS_SIZE.w * density, ATLAS_SIZE.h * density);
+  rasterised = { atlas, density, canvas };
+  return rasterised;
+};
+
 const drawMid = (
   ctx: CanvasRenderingContext2D,
   palette: HeroPalette,
@@ -606,14 +640,16 @@ const drawMid = (
 
   if (atlas) {
     drawHareShadow(ctx, palette, state.scene, here.x, air);
+    const sheet = atlasAt(atlas, atlasDensity(hareScale, ctx.getTransform().a));
     drawRabbit(
       ctx,
-      atlas,
+      sheet.canvas,
       here.x,
       hareRoot,
       hareScale,
       rabbitPose(here, seconds),
       air * here.hop,
+      sheet.density,
     );
   }
 
@@ -626,7 +662,7 @@ const drawMid = (
   );
 };
 
-/* `atlas` is the decoded src/assets/hero-rabbit.webp; null draws the field without the rabbit. */
+/* `atlas` is the decoded src/assets/hero-rabbit.svg; null draws the field without the rabbit. */
 export const createHeroField = (
   palette: HeroPalette,
   atlas: CanvasImageSource | null,

@@ -1,6 +1,5 @@
 ---
-import { Image } from 'astro:assets';
-import roundelRabbit from '../assets/roundel-rabbit.png';
+import roundelRabbit from '../assets/roundel-rabbit.svg';
 
 /*
  * The rabbit is the badge, with no disc: a die-cut sticker on a pink block
@@ -25,27 +24,18 @@ const BOX_CLASS = {
   page: 'size-24 lg:size-32',
   hero: 'size-roundel',
 } as const;
-
-/*
- * The art bleeds an eighth past each side of the box (ROUNDEL_BLEED in
- * scripts/make-logo.mjs), so it is drawn at 1.25x the box: 120 and 160px for
- * page, 70 to 160px for hero. tests/image-size.spec.ts fails on drift.
- */
-const ART_WIDTHS = [70, 120, 160, 240, 320];
-const ART_SIZES = {
-  page: '(min-width: 64rem) 160px, 120px',
-  hero: 'clamp(70px, calc(20vw - 70px), 160px)',
-} as const;
 ---
 
 <span class:list={['block rotate-3', BOX_CLASS[variant], className]}>
+  {/* The art bleeds an eighth past the box (ROUNDEL_BLEED in scripts/make-logo.mjs). */}
   <span class="absolute -inset-1/8">
-    <Image
-      src={roundelRabbit}
+    <img
+      src={roundelRabbit.src}
       alt=""
-      widths={ART_WIDTHS}
-      sizes={ART_SIZES[variant]}
+      width={roundelRabbit.width}
+      height={roundelRabbit.height}
       loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
       class="size-full"
     />
   </span>
