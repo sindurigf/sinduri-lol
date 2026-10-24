@@ -8,7 +8,7 @@ import {
   type Foot,
   type Hopper,
 } from './let-it-fall-rabbit';
-import { RABBIT_FRAMES } from '../lib/hero-field-rabbit';
+import { CLIMB_HEIGHT, RABBIT_FRAMES } from '../lib/hero-field-rabbit';
 
 const LABEL_FALL = 'Let It Fall';
 const LABEL_BACK = 'Put It Back';
@@ -548,8 +548,6 @@ type Hop = {
 };
 /* The rabbit shrinks to these to fit, as on a wide screen where the heap reaches the top. */
 const HOP_SCALES = [1, 0.75, 0.5];
-/* px: the rabbit's height while it climbs, at most its phone size (the floor of --size-footer-rabbit; the two must agree). */
-const CLIMB_HEIGHT = 96;
 const climbHeight = (): number =>
   Math.min(CLIMB_HEIGHT, rabbit?.getBoundingClientRect().height ?? 0);
 
