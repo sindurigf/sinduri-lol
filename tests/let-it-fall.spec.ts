@@ -35,7 +35,7 @@ const landed = (page: Page) =>
       ),
     )
     .toBe(0);
-/* Targets in the heap off screen, or covered by something else at any of nine points across them. */
+/* Targets in the heap off screen, or covered by something else at any of nine points across their face. */
 const coveredTargets = (page: Page) =>
   page.evaluate(() => {
     const SHARES = [0.25, 0.5, 0.75];
@@ -48,11 +48,20 @@ const coveredTargets = (page: Page) =>
       .filter((el) => {
         const r = el.getBoundingClientRect();
         if (r.top < 0 || r.bottom > innerHeight) return true;
+        /* Points across the target's own face, turned with its fallen block: its upright box's corners lie outside it. */
+        const block = el.closest('[data-fell]')!;
+        const { a, b } = new DOMMatrix(getComputedStyle(block).transform);
+        const turn = Math.atan2(b, a);
+        const own = el as HTMLElement;
+        const cx = r.left + r.width / 2;
+        const cy = r.top + r.height / 2;
         return SHARES.some((x) =>
           SHARES.some((y) => {
+            const dx = (x - 0.5) * own.offsetWidth;
+            const dy = (y - 0.5) * own.offsetHeight;
             const hit = document.elementFromPoint(
-              r.left + r.width * x,
-              r.top + r.height * y,
+              cx + dx * Math.cos(turn) - dy * Math.sin(turn),
+              cy + dx * Math.sin(turn) + dy * Math.cos(turn),
             );
             return !hit || !el.contains(hit);
           }),
@@ -179,6 +188,40 @@ for (const width of WIDTHS) {
     });
   });
 }
+
+/* deg and px: a long, thin link at the heap's small-block tilt, whose upright box's corners lie outside it. */
+const PROBE_TURN_DEG = 8;
+const PROBE_LINK = { width: 320, height: 44 } as const;
+
+test('the cover probe passes a whole link tilted in the heap', async ({
+  page,
+}) => {
+  await gotoSettled(page, ROUTE);
+  await page.evaluate(
+    ({ turn, size }) => {
+      const block = document.createElement('div');
+      block.setAttribute('data-fell', '');
+      block.style.setProperty('position', 'fixed');
+      block.style.setProperty('top', '40%');
+      block.style.setProperty('left', '10%');
+      block.style.setProperty('z-index', '9');
+      block.style.setProperty('transform', `rotate(${turn}deg)`);
+      const link = document.createElement('a');
+      link.href = '/';
+      link.textContent = 'Tilted';
+      link.style.setProperty('display', 'block');
+      link.style.setProperty('width', `${size.width}px`);
+      link.style.setProperty('height', `${size.height}px`);
+      block.append(link);
+      document.body.append(block);
+    },
+    { turn: PROBE_TURN_DEG, size: PROBE_LINK },
+  );
+  expect(
+    await coveredTargets(page),
+    'the probe counts a whole tilted link as covered',
+  ).toEqual([]);
+});
 
 /* px: a desktop window short enough that the footer band shares the screen with the heap. */
 const BAND_HEIGHT = 800;
@@ -332,6 +375,10 @@ test('under reduced motion the blocks and the rabbit move at once, never animate
     }),
     'under reduced motion the rabbit is not on Put It Back',
   ).toMatchObject({ on: true });
+  await expect(
+    page.locator('.fall-hopper'),
+    'the climbing copy appeared under reduced motion',
+  ).toHaveCount(0);
   expect(await moving(page), 'something animates under reduced motion').toEqual(
     [],
   );
