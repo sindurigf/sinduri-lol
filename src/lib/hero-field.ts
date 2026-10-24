@@ -511,7 +511,7 @@ const SHADOW_SHRINK = 0.45;
 const SHADOW_ALPHA_FLOOR = 0.08;
 const SHADOW_ALPHA_RANGE = 0.14;
 const SHADOW_BLUR = 3.2;
-/** In hare units: below the feet, then the radii on the ground. */
+/** In drawing units: below the feet, then the radii on the ground. */
 const SHADOW_SHAPE = { drop: 1.2, rx: 30, ry: 3.6 } as const;
 
 const drawHareShadow = (
