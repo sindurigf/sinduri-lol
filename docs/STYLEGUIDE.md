@@ -1096,8 +1096,8 @@ Enforced by `tests/footer.spec.ts`.
 - Put It Back rises to the top of the screen, centered, over every fallen
   block, with room above it for the rabbit and a 24px gap below it that the
   heap never enters. If the heap does not fit under it, it packs tight and
-  level; if it still does not fit, its floor sinks below the screen and the
-  page scrolls to it.
+  level; if it still does not fit, it moves down past the screen's bottom,
+  where scrolling reaches it.
 - Then the footer rabbit climbs in the hero's poses
   (`src/scripts/let-it-fall-rabbit.ts`, frames from
   `src/lib/hero-field-rabbit.ts`, the hero atlas loaded on press): crouch,
