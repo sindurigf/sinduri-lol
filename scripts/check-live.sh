@@ -442,7 +442,8 @@ check_response /talks/open-source-is-not-just-code.pdf 200
 
 check_response "$UNKNOWN_PATH" 404
 
-# Rule 8. tests/served-types.spec.ts checks the built _redirects locally.
+# Rule 8. The test suites ignore the /sitemap.xml alias; tests/served-types.spec.ts
+# checks the page redirects locally.
 REDIRECT_STATUS=301
 check_redirect() {
   RESPONSES=$((RESPONSES + 1))
