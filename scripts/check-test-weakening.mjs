@@ -44,6 +44,13 @@ const RUNNER_FILES = [
 const SKIP =
   /\b(?:test|describe|it)(?:\.\w+)*\.(?:skip|fixme|fail)\b|\b\w*[Ii]nfo(?:\(\))?\.(?:skip|fixme|fail)\s*\(|\b(?:test|describe|it)(?:\.\w+)*\s*\[/;
 
+/** An early exit on a selector or set held in a name, the shape of a filter that exempts things from an assertion. */
+const EXEMPTING_EXIT =
+  /\bif\s*\(!?\s*[\w$.]*\.(?:matches|closest|contains)\s*\(\s*[A-Za-z_$][\w$.]*\s*\)\s*\)\s*\{?\s*(?:return\b|continue\b)/;
+/** A list or set named as an exemption: `ALLOWED_*`, `*_EXEMPT`, `KEEPS_*`, `SKIP_*`, `*_FALSE_POSITIVES`. */
+const EXEMPTION_NAME =
+  /\b(?:const|let|var)\s+[A-Z0-9_]*(?:ALLOW|EXEMPT|EXCEPT|KEEPS|SKIP|IGNORE|FALSE_POSITIVE|WHITELIST)[A-Z0-9_]*\b/;
+
 /** Changes retries, mode or timeout for a group of tests. */
 const CONFIGURE = /\b(?:test|describe)(?:\.\w+)*\.configure\s*\(/;
 
@@ -495,6 +502,14 @@ export const fileFindings = ({ path, oldPath = path, oldText, newText }) => {
       add(line, `skips or inverts a test: ${text}`);
     for (const { line, text } of newMatchingLines(oldText, runs, CONFIGURE))
       add(line, `configures how tests run: ${text}`);
+    const runLines = runs.split('\n');
+    for (const { line } of newMatchingLines(oldCode, newCode, EXEMPTING_EXIT))
+      add(
+        line,
+        `exempts elements from an assertion: ${runLines[line - 1].trim()}`,
+      );
+    for (const { line } of newMatchingLines(oldCode, newCode, EXEMPTION_NAME))
+      add(line, `names an exemption list: ${runLines[line - 1].trim()}`);
     for (const { line, text } of newMatchingLines(oldText, runs, AXE_EXCLUSION))
       add(line, `narrows axe: ${text}`);
     for (const { line, text, key } of newMatchingLines(
