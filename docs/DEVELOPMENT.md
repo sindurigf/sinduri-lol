@@ -47,35 +47,36 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 
 ## Commands
 
-| Command                       | Does                                                                                                                                             |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `npm run dev`                 | Dev server at `http://localhost:4340`                                                                                                            |
-| `npm test`                    | `test:a11y`, then `test:worker`; each builds first                                                                                               |
-| `npm run build`               | Build to `dist/client` (assets) and `dist/server` (Worker)                                                                                       |
-| `npm run preview`             | Serve the build through the Worker runtime                                                                                                       |
-| `npm run typecheck`           | `astro check` (fails on hints), then `vue-tsc` on `.vue` files                                                                                   |
-| `npm run format`              | Prettier, write                                                                                                                                  |
-| `npm run check`               | `check:tokens`, `links`, `pins`, `classes`, `csp`, `untransformed`, `title-case`, `exif`, `format:check`, `commits`; needs `npm run build` first |
-| `npm run format:check`        | Prettier, check only                                                                                                                             |
-| `npm run check:links`         | Relative Markdown links and `#heading` anchors resolve; no link names a gitignored path; no network                                              |
-| `npm run check:classes`       | Every class in the built HTML has a CSS rule                                                                                                     |
-| `npm run check:csp`           | `script-src` and `style-src` in `public/_headers` hash exactly the build's inline blocks; `-- --write` fixes them; needs `npm run build`         |
-| `npm run check:untransformed` | No built file is byte-identical to a source image                                                                                                |
-| `npm run check:exif`          | No EXIF, XMP or IPTC in JPEG, PNG or WebP under `src/assets` and `public`; AVIF is not read                                                      |
-| `npm run test:a11y`           | Playwright suite in Chromium and Firefox; CI adds WebKit                                                                                         |
-| `npm run test:webkit`         | The same suite in WebKit, in Playwright's Docker image                                                                                           |
-| `npm run test:a11y:ui`        | The same suite in Playwright's UI mode                                                                                                           |
-| `npm run test:worker`         | Worker specs, local D1: contact, byte ranges, types, /blog pager                                                                                 |
-| `npm run test:coverage`       | `test:a11y` in Chromium, with line and branch coverage of `src/`                                                                                 |
-| `npm run check:live`          | Production headers and markup against this repository                                                                                            |
-| `npm run check:live:console`  | Every production route in a browser, failing on console errors                                                                                   |
-| `npm run check:umami`         | The vendored Umami tracker against the one Umami serves                                                                                          |
-| `npm run og`                  | After a build, redraws `public/images/og-default.png` and every page's card in `public/images/og/`                                               |
-| `npm run hero-still`          | After a build, redraws the hero stills in `src/assets/hero-still-*.webp` shown without JavaScript                                                |
-| `npm run about-cats`          | Packs the About cats' drawings in `artwork/about-cats/` into `src/assets/about-cats-*.avif` and `src/lib/about-cats-sheet.ts`                    |
-| `npm run check:pdf`           | Every PDF in `public/` against PDF/UA-1, veraPDF in Docker                                                                                       |
-| `npm run publish:cv`          | Print `cv/cv.html` to the tagged CV PDF in `public/`                                                                                             |
-| `npm run publish:talk`        | Print a talk's slideshow to its tagged PDF in `public/talks/`                                                                                    |
+| Command                        | Does                                                                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run dev`                  | Dev server at `http://localhost:4340`                                                                                                            |
+| `npm test`                     | `test:a11y`, then `test:worker`; each builds first                                                                                               |
+| `npm run build`                | Build to `dist/client` (assets) and `dist/server` (Worker)                                                                                       |
+| `npm run preview`              | Serve the build through the Worker runtime                                                                                                       |
+| `npm run typecheck`            | `astro check` (fails on hints), then `vue-tsc` on `.vue` files                                                                                   |
+| `npm run format`               | Prettier, write                                                                                                                                  |
+| `npm run check`                | `check:tokens`, `links`, `pins`, `classes`, `csp`, `untransformed`, `title-case`, `exif`, `format:check`, `commits`; needs `npm run build` first |
+| `npm run format:check`         | Prettier, check only                                                                                                                             |
+| `npm run check:links`          | Relative Markdown links and `#heading` anchors resolve; no link names a gitignored path; no network                                              |
+| `npm run check:classes`        | Every class in the built HTML has a CSS rule                                                                                                     |
+| `npm run check:csp`            | `script-src` and `style-src` in `public/_headers` hash exactly the build's inline blocks; `-- --write` fixes them; needs `npm run build`         |
+| `npm run check:untransformed`  | No built file is byte-identical to a source image                                                                                                |
+| `npm run check:exif`           | No EXIF, XMP or IPTC in JPEG, PNG or WebP under `src/assets` and `public`; AVIF is not read                                                      |
+| `npm run check:test-weakening` | Test weakening against `origin/main`, working tree included; CI runs it as the `Test weakening` check                                            |
+| `npm run test:a11y`            | Playwright suite in Chromium and Firefox; CI adds WebKit                                                                                         |
+| `npm run test:webkit`          | The same suite in WebKit, in Playwright's Docker image                                                                                           |
+| `npm run test:a11y:ui`         | The same suite in Playwright's UI mode                                                                                                           |
+| `npm run test:worker`          | Worker specs, local D1: contact, byte ranges, types, /blog pager                                                                                 |
+| `npm run test:coverage`        | `test:a11y` in Chromium, with line and branch coverage of `src/`                                                                                 |
+| `npm run check:live`           | Production headers and markup against this repository                                                                                            |
+| `npm run check:live:console`   | Every production route in a browser, failing on console errors                                                                                   |
+| `npm run check:umami`          | The vendored Umami tracker against the one Umami serves                                                                                          |
+| `npm run og`                   | After a build, redraws `public/images/og-default.png` and every page's card in `public/images/og/`                                               |
+| `npm run hero-still`           | After a build, redraws the hero stills in `src/assets/hero-still-*.webp` shown without JavaScript                                                |
+| `npm run about-cats`           | Packs the About cats' drawings in `artwork/about-cats/` into `src/assets/about-cats-*.avif` and `src/lib/about-cats-sheet.ts`                    |
+| `npm run check:pdf`            | Every PDF in `public/` against PDF/UA-1, veraPDF in Docker                                                                                       |
+| `npm run publish:cv`           | Print `cv/cv.html` to the tagged CV PDF in `public/`                                                                                             |
+| `npm run publish:talk`         | Print a talk's slideshow to its tagged PDF in `public/talks/`                                                                                    |
 
 ### WebKit
 
@@ -114,6 +115,19 @@ WEBKIT_CPUS=8 npm run test:webkit
 - A pass is the machine half; [MANUAL_TESTING.md](MANUAL_TESTING.md) §13 is
   the rest.
 
+### Approving a test change
+
+The `Test weakening` check
+([rules](../ARCHITECTURE.md#tests)) fails until the owner approves:
+
+1. Review the pull request's changes, choose Approve, and write the line
+   `Approved test change: <reason>`.
+2. Open the failed `Test weakening` check and choose Re-run jobs. A review
+   does not start it, and a new push needs a new approval.
+
+Until agents work under their own account, the owner cannot approve:
+[setup](DEPLOYMENT.md#repository-settings).
+
 ### Other notes
 
 - A test that never opens a page takes `NODE` from `tests/tags.ts`: it runs
@@ -125,6 +139,11 @@ WEBKIT_CPUS=8 npm run test:webkit
   `npm audit --omit=dev --audit-level=high`, `check:live`, `check:umami` and
   `tests/security-txt.spec.ts`. After a deploy:
   [DEPLOYMENT.md](DEPLOYMENT.md).
+- Two accessibility engines run: axe (`tests/a11y.spec.ts`) and AccessLint
+  (`tests/accesslint.spec.ts`); their coverage is in
+  [ACCESSIBILITY.md](../ACCESSIBILITY.md#4-what-the-site-supports). An AccessLint false positive goes in `ACCESSLINT_FALSE_POSITIVES`
+  (`tests/accesslint.ts`) with its selector, a reason the page checks and a
+  route where it occurs, and in ARCHITECTURE.md "Rejected findings".
 - `test:coverage` writes `coverage/` (`index.html`, `lcov.info`). It covers
   browser JavaScript only (the Vue islands and page scripts). It builds with source
   maps: run a plain `npm run build` before anything else reads `dist/`.
@@ -146,20 +165,21 @@ WEBKIT_CPUS=8 npm run test:webkit
   each shard's `--test-list` selects exactly its share.
 - [AGENTS.md](../AGENTS.md) lists what must pass before a change is done.
 
-| Variable                        | Default                | Effect                                                   |
-| ------------------------------- | ---------------------- | -------------------------------------------------------- |
-| `LIVE_ORIGIN`                   | `https://sinduri.lol`  | Target of `check:live:console` only, e.g. a preview URL  |
-| `PORT`                          | 4321                   | Port of `node scripts/preview-static.mjs` run by hand    |
-| `TEST_PORT`, `TEST_WORKER_PORT` | from the checkout path | Ports for `test:a11y`, `test:worker`; must be 1024-65535 |
-| `WEBKIT`                        | unset                  | `1` adds the WebKit project outside CI                   |
-| `CLOUDFLARE_API_TOKEN`          | unset                  | Lets `check:live` count unsent notifications in D1       |
-| `CLOUDFLARE_ACCOUNT_ID`         | unset                  | Needed with the token: a D1-only token cannot look it up |
-| `CHECK_LIVE_SKIP_D1`            | unset                  | `1` skips that D1 count                                  |
-| `CI`                            | unset                  | Adds the WebKit project and one retry; set by CI         |
-| `TRUST_DEPENDABOT`              | unset                  | `1` skips `check:commits` for Dependabot's commits       |
-| `GITHUB_BASE_REF`               | unset                  | `check:commits` checks from `origin/<it>`, else `main`   |
-| `COVERAGE`                      | unset                  | `1` builds source maps; set by `test:coverage`           |
-| `WORKERS_CI`                    | unset                  | `1` skips the build fingerprint, set in Workers Builds   |
+| Variable                        | Default                | Effect                                                         |
+| ------------------------------- | ---------------------- | -------------------------------------------------------------- |
+| `LIVE_ORIGIN`                   | `https://sinduri.lol`  | Target of `check:live:console` only, e.g. a preview URL        |
+| `PORT`                          | 4321                   | Port of `node scripts/preview-static.mjs` run by hand          |
+| `TEST_PORT`, `TEST_WORKER_PORT` | from the checkout path | Ports for `test:a11y`, `test:worker`; must be 1024-65535       |
+| `WEBKIT`                        | unset                  | `1` adds the WebKit project outside CI                         |
+| `CLOUDFLARE_API_TOKEN`          | unset                  | Lets `check:live` count unsent notifications in D1             |
+| `CLOUDFLARE_ACCOUNT_ID`         | unset                  | Needed with the token: a D1-only token cannot look it up       |
+| `CHECK_LIVE_SKIP_D1`            | unset                  | `1` skips that D1 count                                        |
+| `CI`                            | unset                  | Adds the WebKit project and one retry; set by CI               |
+| `TRUST_DEPENDABOT`              | unset                  | `1` skips `check:commits` for Dependabot's commits             |
+| `APPROVED_TEST_CHANGE`          | unset                  | Any value passes `check:test-weakening` locally; CI ignores it |
+| `GITHUB_BASE_REF`               | unset                  | `check:commits` checks from `origin/<it>`, else `main`         |
+| `COVERAGE`                      | unset                  | `1` builds source maps; set by `test:coverage`                 |
+| `WORKERS_CI`                    | unset                  | `1` skips the build fingerprint, set in Workers Builds         |
 
 `check:live` takes an optional origin argument (`sh scripts/check-live.sh <origin>`),
 default the `site` in `astro.config.mjs`; `LIVE_ORIGIN` does not affect it.
