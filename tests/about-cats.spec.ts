@@ -1453,15 +1453,25 @@ test.describe('About cats', () => {
     );
   });
 
-  for (const colorScheme of ['dark', 'light'] as const)
-    test(`a keyboard-focused cat's ring hugs it, uncut and above the cards, in ${colorScheme} mode (SC 2.4.7, 2.4.11, 2.4.13)`, async ({
+  for (const colorScheme of ['dark', 'light', 'forced colors'] as const)
+    test(`a keyboard-focused cat's ring hugs it, uncut and above the cards, in ${colorScheme === 'forced colors' ? colorScheme : `${colorScheme} mode`} (SC 2.4.7, 2.4.11, 2.4.13)`, async ({
       page,
     }) => {
-      await page.emulateMedia({ colorScheme });
+      await page.emulateMedia(
+        colorScheme === 'forced colors'
+          ? { forcedColors: 'active' }
+          : { colorScheme },
+      );
       await gotoSettled(page, ROUTE);
       for (const id of CATS) {
         await showCat(page, id);
         await page.keyboard.press('Shift');
+        const svgBox = () =>
+          page.locator(`#cat-spot-${id} .cat-svg`).evaluate((svg) => {
+            const { x, y, width, height } = svg.getBoundingClientRect();
+            return [x, y, width, height].map(Math.round);
+          });
+        const before = await svgBox();
         await catButton(page, id).focus();
         await expectMood(
           page,
@@ -1472,7 +1482,7 @@ test.describe('About cats', () => {
         await expect
           .poll(
             () =>
-              catButton(page, id).evaluate((button) => {
+              catButton(page, id).evaluate((button, minTarget) => {
                 const area = button.querySelector('.cat-hit-area');
                 if (!area) return 'no hit box';
                 const box = button.getBoundingClientRect();
@@ -1480,6 +1490,8 @@ test.describe('About cats', () => {
                 const style = getComputedStyle(button);
                 if (style.outlineStyle !== 'solid')
                   return `ring is ${style.outlineStyle}`;
+                if (hit.width < minTarget || hit.height < minTarget)
+                  return `the hit box is under ${minTarget}px`;
                 const reach =
                   parseFloat(style.outlineOffset) +
                   parseFloat(style.outlineWidth);
@@ -1530,10 +1542,19 @@ test.describe('About cats', () => {
                     return 'a card is painted over the ring';
                 }
                 return 'ok';
-              }),
+              }, MIN_TARGET),
             { message: `${NAMES[id]}'s focus ring does not hug the cat whole` },
           )
           .toBe('ok');
+        expect(
+          await svgBox(),
+          `${NAMES[id]}'s drawing moved when the ring hugged her`,
+        ).toEqual(before);
+        await page.keyboard.press('Tab');
+        await expect(
+          catButton(page, id),
+          `${NAMES[id]}'s button still hugs her after focus left`,
+        ).not.toHaveAttribute('data-hug');
       }
     });
 

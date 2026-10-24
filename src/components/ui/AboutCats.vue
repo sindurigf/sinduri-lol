@@ -253,15 +253,18 @@ const hug = (id: CatId): void => {
   const area = svg?.querySelector('.cat-hit-area')?.getBoundingClientRect();
   const spot = svg?.closest('.cat-spot');
   if (!svg || !button || !area || !spot) return;
-  /* The drawing keeps the band's box wherever the button goes. */
-  const band = svg.getBoundingClientRect();
+  /* The drawing keeps its own box wherever the button goes. */
+  const drawn = svg.getBoundingClientRect();
+  const band = spot.getBoundingClientRect();
   const box = {
     x: area.left - band.left,
     y: area.top - band.top,
     w: area.width,
     h: area.height,
-    'band-w': band.width,
-    'band-h': spot.clientHeight,
+    'svg-x': drawn.left - area.left,
+    'svg-y': drawn.top - area.top,
+    'svg-w': drawn.width,
+    'svg-h': drawn.height,
   };
   for (const [name, px] of Object.entries(box))
     button.style.setProperty(`--hug-${name}`, `${px}px`);

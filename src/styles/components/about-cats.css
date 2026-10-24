@@ -64,14 +64,16 @@
     top: var(--hug-y);
     width: var(--hug-w);
     height: var(--hug-h);
+    /* The ring marks it; a forced-colors border would shift the drawing inside. */
+    border-width: 0;
 
     & > .cat-svg {
       @apply absolute;
 
-      left: calc(var(--hug-x) * -1);
-      top: calc(var(--hug-y) * -1);
-      width: var(--hug-band-w);
-      height: calc(var(--hug-band-h) + var(--cat-below, 0px));
+      left: var(--hug-svg-x);
+      top: var(--hug-svg-y);
+      width: var(--hug-svg-w);
+      height: var(--hug-svg-h);
     }
   }
 
