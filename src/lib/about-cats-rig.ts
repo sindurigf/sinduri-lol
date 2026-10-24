@@ -32,7 +32,7 @@ const ARRIVE_SQUASH = 0.96;
 /** How much a held pose grows at the top of a breath, as a share of its height. */
 const BREATH_SCALE = 0.025;
 /** ms a cat must stand still before it stops walking. */
-const STILL_MS = 120;
+export const STILL_MS = 120;
 /** Where the head is in a frame, as shares of its width ahead of center and its height up. */
 const HEAD_AT = { ahead: 1 / 3, up: 0.8 };
 /** The white rim and ink edge round each frame, in px: part of the drawing. */
