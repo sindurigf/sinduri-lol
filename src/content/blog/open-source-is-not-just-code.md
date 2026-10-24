@@ -207,6 +207,8 @@ One force is reshaping all six pillars at once, so it deserves its own section.
 - It is cheap to generate a change, but a maintainer still has to understand it, so the cost shifts from the author to the reviewer.
 - Access is unequal. The best tools cost money and know-how, so people at well-funded companies get faster, while volunteers and people in lower-income regions get left behind. AI risks becoming a new kind of privilege.
 
+### What Happened at curl
+
 This is not theoretical. Someone asks a model to find a bug, pastes the confident output into a report, marks it critical and never checks whether it is real. curl is the clearest case:
 
 - [Daniel Stenberg](https://daniel.haxx.se/blog/), who has maintained curl for decades, said the project was [effectively being DDoSed](https://www.theregister.com/2025/05/07/curl_ai_bug_reports/).
