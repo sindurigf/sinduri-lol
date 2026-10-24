@@ -3,6 +3,7 @@
  * it plays it, when they nap, and the one that watches the pointer.
  * AboutCats.vue owns the DOM, the frame loop and the dialog.
  */
+import { LOOK_BACK } from './about-cats-frames';
 import {
   MOVES,
   CAT_WEIGHTS,
@@ -77,6 +78,8 @@ export const CUP_EDGE = TRACK_MARGIN;
 export const POINTER_IDLE_MS = 4000;
 const FACE_DEADBAND = 20;
 const WATCH_EASE = 0.12;
+/** Degrees a cat turns its head while its card is open: past LOOK_BACK, so it looks round at you. */
+const LOOK_AT_YOU = LOOK_BACK + 8;
 const TILT_GAIN = 20;
 const MAX_TILT = 25;
 /** The eases are per 60fps frame; other rates scale to it. */
@@ -550,9 +553,10 @@ export const createColony = (
   const eased = (ease: number, frames: number): number =>
     1 - (1 - ease) ** frames;
 
-  /** A held cat sits where it is and turns its head to the pointer; true until it settles. */
+  /** A held cat sits where it is and turns its head to the pointer, or to you while its card is open; true until it settles. */
   const look = (cat: CatState, now: number, frames: number): boolean => {
     const target = pointerFor(cat, now);
+    const carded = cat.holds.has('card');
     const dx = target ? target.x - cat.pose.x : 0;
     const want =
       Math.abs(dx) > FACE_DEADBAND
@@ -560,7 +564,7 @@ export const createColony = (
         : Math.sign(cat.pose.face) || 1;
     const aim = pose('sit', {
       x: cat.pose.x,
-      hr: target ? tiltTowards(cat, target) : 0,
+      hr: carded ? LOOK_AT_YOU : target ? tiltTowards(cat, target) : 0,
     });
     aim.face = want;
     const toward = (frameCount: number): Pose => {
