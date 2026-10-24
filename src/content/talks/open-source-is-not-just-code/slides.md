@@ -83,7 +83,7 @@ Most projects do not fail on code. They fail under invisible weight.
 - The hero maintainer burns out
 - A single point of failure is a design flaw
 
-**A good model: [Rust](https://www.rust-lang.org/governance)**
+**A Good Model: [Rust](https://www.rust-lang.org/governance)**
 
 Topic-focused teams (compiler, language, libraries, tooling, infrastructure) each own their area independently. A leadership council coordinates across teams. Ownership is spread by design, so no single person carries the whole project.
 
@@ -124,7 +124,7 @@ label: 'Pillar 1'
 - Pick a model: BDFL, council, or foundation. Big projects layer several
 - Single-company control is the opposite: one owner, not a neutral body
 
-**A good model: [Apache Software Foundation](https://www.apache.org/theapacheway/)**
+**A Good Model: [Apache Software Foundation](https://www.apache.org/theapacheway/)**
 
 The PMC elects committers on merit. Individuals represent themselves, not employers. Decisions happen in the open: if it was not recorded, it did not happen.
 
@@ -140,7 +140,7 @@ label: 'Pillar 1'
 - Name what is not acceptable: harassment, discrimination, personal attacks, sustained disruption
 - Rules only matter if they are enforced
 
-**A good model: [Contributor Covenant](https://www.contributor-covenant.org/)**
+**A Good Model: [Contributor Covenant](https://www.contributor-covenant.org/)**
 
 A widely adopted code of conduct. Clear expected behavior, clear unacceptable behavior, and a path to report and enforce.
 
@@ -157,7 +157,7 @@ label: 'Pillar 2'
 - Visible path to trusted contributor
 - If it is confusing, they quietly leave
 
-**A good model: [Kubernetes](https://github.com/kubernetes/community/blob/master/community-membership.md)**
+**A Good Model: [Kubernetes](https://github.com/kubernetes/community/blob/master/community-membership.md)**
 
 Published contributor ladder: from member to approver, with clear expectations at each step. Good first issues, mentoring cohorts, and a graceful way to step back.
 
@@ -189,7 +189,7 @@ label: 'Pillar 3'
 - Invisible work gets undervalued
 - Record who did the work, sponsors included
 
-**A good model: [Drupal contribution credit system](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues)**
+**A Good Model: [Drupal Contribution Credit System](https://www.drupal.org/docs/develop/issues/fields-and-other-parts-of-an-issue/getting-credit-for-work-on-issues)**
 
 A public record of who did what, across code and the invisible work. Contribution becomes visible instead of assumed.
 
@@ -215,19 +215,19 @@ label: 'Pillar 4'
 
 # Local Community
 
-**Why it matters**
+**Why It Matters**
 
 - Global projects need local belonging
 - Pair global events with local ones
 - "Come for the code, stay for the community"
 
-**At a local event**
+**At a Local Event**
 
 - Mentorship workshops for first-timers
 - Contribution rooms to work together
 - Student workshops: Drupal in a Day
 
-**A good model: [Drupal](https://events.drupal.org/)**
+**A Good Model: [Drupal](https://events.drupal.org/)**
 
 DrupalCon globally, local volunteer-run camps, small and accessible by design. That's where new people get pulled in and where most new organizers learn the ropes.
 
@@ -257,7 +257,7 @@ label: 'Pillar 6'
 - Fund the boring, critical work, not just features
 - Not a prerequisite. It matters once others depend on you
 
-**A good model: [Django](https://www.djangoproject.com/fundraising/)**
+**A Good Model: [Django](https://www.djangoproject.com/fundraising/)**
 
 The Django Software Foundation pays Fellows to do the unglamorous maintenance: triage, reviews, releases, and security. Routes to fund this: Open Collective, GitHub Sponsors, Patreon, Tidelift, and the Sovereign Tech Fund.
 
@@ -287,7 +287,7 @@ What to prioritize, what AI changes, and what you can actually do.
 
 # What to Do Now vs Later
 
-**Optimize early**
+**Optimize Early**
 
 - Clear contribution paths
 - Explicit, written expectations
@@ -295,7 +295,7 @@ What to prioritize, what AI changes, and what you can actually do.
 
 Cheap now. Expensive to fix later.
 
-**Safe to delay**
+**Safe to Delay**
 
 - Heavy formal governance
 - Complex tooling and automation
@@ -321,13 +321,13 @@ label: 'The AI Question'
 
 # Help and Hazard
 
-**Where AI helps**
+**Where AI Helps**
 
 - Lowers the barrier to a first contribution
 - Speeds up docs, translation, and issue triage
 - Could ease the "privilege of free time" open source depends on
 
-**Where AI strains**
+**Where AI Strains**
 
 - Low-effort contributions can overwhelm reviewers
 - The cost shifts from author to maintainer
@@ -393,7 +393,7 @@ part: Closing
 - The system around the code is what scales
 - Design it on purpose
 
-**Reality check**
+**Reality Check**
 
 - No quick fix
 - You control your corner, not the whole
@@ -417,13 +417,13 @@ part: Closing
 
 # Sources & Further Reading
 
-**Primary reading**
+**Primary Reading**
 
 - David Hirsch, [Open Source Communities](https://www.linkedin.com/pulse/open-source-communities-david-hirsch/)
 - Dries Buytaert, [The Privilege of AI in Open Source](https://dri.es/the-privilege-of-ai-in-open-source)
 - Chris Short, [OSPO Notes: Open Source Governance](https://chrisshort.net/ospo-notes-open-source-governance-who-decides-and-how/)
 
-**Community examples**
+**Community Examples**
 
 - Rust, [Governance and teams](https://www.rust-lang.org/governance)
 - Apache, [The Apache Way](https://www.apache.org/theapacheway/)
