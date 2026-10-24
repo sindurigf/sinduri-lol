@@ -38,7 +38,14 @@ const BRAND_TOKENS = new Set([SITE_NAME, SITE_SHORT_NAME]);
  * Each entry names why the text stays as written. An entry that no longer
  * matches fails.
  */
-const ALLOWED = [];
+const ALLOWED = [
+  {
+    route: '/talks/open-source-is-not-just-code/',
+    kind: 'heading',
+    text: 'Example: curl',
+    reason: 'curl writes its own name in lower case.',
+  },
+];
 
 const ENTITIES = {
   '&nbsp;': ' ',
