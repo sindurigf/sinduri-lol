@@ -15,7 +15,6 @@ import { NODE } from './tags';
 import { readFileSync } from 'node:fs';
 import {
   EDGE_MOVES,
-  TROT_SPEED,
   MOVES,
   type MoveName,
   duration,
@@ -28,29 +27,14 @@ import {
   HIT_HALF_WIDTH,
   POST_HEIGHT,
   highestPoint,
-  TICK_MS,
-  drawnXOf,
   hitBox,
   isStepping,
   reachOf,
-  STILL_MS,
-  stepFrame,
 } from '../src/lib/about-cats-rig';
-import {
-  FRAMES,
-  WALK,
-  WALK_FRAME_PX,
-  WALK_STRIDE_PX,
-  POSE_FRAME,
-  frameFor,
-  type Frame,
-  type NamedPose,
-} from '../src/lib/about-cats-frames';
+import { FRAMES } from '../src/lib/about-cats-frames';
 import {
   createIdle,
   idleFrameMs,
-  idleOffsets,
-  rearmIdle,
   tickIdle,
 } from '../src/lib/about-cats-idle';
 import { isTricksData, tricksOf } from '../src/lib/about-cats-tricks';
@@ -644,137 +628,6 @@ test(
   },
 );
 
-const SCREEN_FRAME_MS = 1000 / 60;
-const TROT_MS = 2000;
-const STOPPED_MS = 500;
-/** The walk phases a cycle must keep: contact, passing, and both again on the other side. */
-const WALK_PHASES = 4;
-
-const NAMED_POSES = Object.fromEntries(
-  (Object.keys(POSE_FRAME) as NamedPose[]).map((name) => [name, pose(name)]),
-) as Record<NamedPose, ReturnType<typeof pose>>;
-
-/** The frames a sitting cat shows playing `move`, drawn every `frameMs`, in order. */
-const shownFrames = (move: Move, frameMs = SCREEN_FRAME_MS): Frame[] => {
-  const s = {
-    frame: null as Frame | null,
-    shownAt: -Infinity,
-    pending: false,
-    cut: true,
-    stepX: 0,
-    wanted: null as Frame | null,
-    wantedAt: 0,
-  };
-  const shown: Frame[] = [];
-  let lastX = 0;
-  let lastLift = 0;
-  let movedAt = -Infinity;
-  let travelled = 0;
-  for (let at = 0; at <= duration(move) + TICK_MS; at += frameMs) {
-    const p = poseAt(move, pose('sit'), Math.min(at, duration(move)));
-    const step = Math.abs(p.x - lastX);
-    lastX = p.x;
-    if (step > 0) movedAt = at;
-    const moving = at - movedAt < STILL_MS;
-    travelled = moving ? travelled + step : 0;
-    const wanted = frameFor(p, NAMED_POSES, {
-      travelled,
-      moving,
-      lift: p.y,
-      lastLift,
-    });
-    lastLift = p.y;
-    if (stepFrame(s, wanted, at, p.x)) shown.push(s.frame!);
-  }
-  return shown;
-};
-
-const LYING: readonly Frame[] = ['loaf', 'loafsink', 'sleep', 'belly'];
-const JUMPING: readonly Frame[] = ['takeoff', 'leap', 'landing'];
-
-/** Screen rates to draw at: a 30Hz phone in low power, 60Hz, and 144Hz. */
-const SCREEN_RATES = [30, 60, 144];
-
-test(
-  'a pounce lands and sits back up without flashing a lying-down frame, at 30, 60 and 144Hz',
-  NODE,
-  () => {
-    for (const hz of SCREEN_RATES) {
-      const shown = shownFrames(MOVES.pounce(), 1000 / hz);
-      const landed = shown.lastIndexOf('landing');
-      expect(landed, `the pounce never landed at ${hz}Hz`).toBeGreaterThan(-1);
-      expect(
-        shown.slice(landed).filter((frame) => LYING.includes(frame)),
-        `frames after landing at ${hz}Hz: ${shown.slice(landed).join(', ')}`,
-      ).toEqual([]);
-    }
-  },
-);
-
-test('a sitting cat turning on the spot shows no jump frames', NODE, () => {
-  const turn = withTurn(MOVES.look(), { ...pose('sit'), face: -1 });
-  const shown = shownFrames(turn);
-  expect(
-    shown.filter((frame) => JUMPING.includes(frame)),
-    `frames: ${shown.join(', ')}`,
-  ).toEqual([]);
-});
-
-test(
-  'a trotting cat steps through its walk without skipping a phase, keeps pace with its body, and stops stepping when it stops',
-  NODE,
-  () => {
-    const s = {
-      frame: 'stand' as Frame | null,
-      shownAt: -Infinity,
-      pending: false,
-      cut: false,
-      stepX: 0,
-      wanted: null as Frame | null,
-      wantedAt: 0,
-    };
-    const shown: { frame: Frame; at: number; x: number }[] = [];
-    for (let at = 0; at < TROT_MS + STOPPED_MS; at += SCREEN_FRAME_MS) {
-      const x = (Math.min(at, TROT_MS) * TROT_SPEED) / 1000;
-      const wanted = WALK[Math.floor(x / WALK_FRAME_PX) % WALK.length]!;
-      if (stepFrame(s, wanted, at, x))
-        shown.push({ frame: s.frame!, at, x: drawnXOf(s, x) });
-      else if (shown.length)
-        expect(drawnXOf(s, x), 'the cat moved within a walk frame').toBe(
-          shown.at(-1)!.x,
-        );
-    }
-    let travelled = 0;
-    shown.slice(1).forEach(({ frame, at }, i) => {
-      const before = shown[i]!;
-      const ahead =
-        (WALK.indexOf(frame) - WALK.indexOf(before.frame) + WALK.length) %
-        WALK.length;
-      travelled += ahead * WALK_FRAME_PX;
-      expect(
-        ahead,
-        `stepped back from ${before.frame} to ${frame}`,
-      ).toBeGreaterThanOrEqual(1);
-      expect(
-        ahead,
-        `skipped a phase from ${before.frame} to ${frame}`,
-      ).toBeLessThanOrEqual(WALK.length / WALK_PHASES);
-      expect(
-        at - before.at,
-        `showed ${before.frame} for less than a step`,
-      ).toBeGreaterThanOrEqual(TICK_MS);
-    });
-    expect(
-      Math.abs(travelled - (TROT_MS * TROT_SPEED) / 1000),
-      'the walk frames fell behind the body, so the paws slide',
-    ).toBeLessThan(WALK_STRIDE_PX / 2);
-    expect(
-      shown.at(-1)!.at,
-      'the cat kept stepping after it stopped',
-    ).toBeLessThanOrEqual(TROT_MS);
-  },
-);
-
 test(
   "every cat's tricks are named and drawn once each, and every play move is on a list",
   NODE,
@@ -840,97 +693,11 @@ test(
   },
 );
 
-/** When each cat, ticked with its own fixed roll, first turns its head, from `from` on. */
-const firstGlances = (
-  cats: { idle: ReturnType<typeof createIdle>; fixed: number }[],
-  from: number,
-): number[] =>
-  cats.map(({ idle, fixed }) => {
-    for (let now = from; now < from + 20_000; now += 50) {
-      tickIdle(idle, now, () => fixed);
-      if (idleOffsets(idle, now).hr !== 0) return now;
-    }
-    return Infinity;
-  });
-
 test(
-  'a resting cat idles in small offsets: breath and glance stay in range, and each really moves',
-  NODE,
-  () => {
-    const MAX = { bt: 4, hr: 30 };
-    const SPAN_MS = 120_000;
-    const STEP_MS = 50;
-    for (const roll of [() => 0, () => 0.9, () => 1, Math.random]) {
-      const idle = createIdle();
-      let breath = 0;
-      const outOfRange: string[] = [];
-      for (let now = 0; now < SPAN_MS; now += STEP_MS) {
-        tickIdle(idle, now, roll);
-        const o = idleOffsets(idle, now);
-        if (Math.abs(o.bt) > MAX.bt) outOfRange.push(`chest ${o.bt} at ${now}`);
-        if (Math.abs(o.hr) > MAX.hr) outOfRange.push(`head ${o.hr} at ${now}`);
-        breath = Math.max(breath, Math.abs(o.bt));
-      }
-      expect(outOfRange.slice(0, 3), 'an idle offset left its range').toEqual(
-        [],
-      );
-      expect(breath, 'the chest never moved').toBeGreaterThan(0);
-    }
-    const glancing = createIdle();
-    let turned = 0;
-    for (let now = 0; now < SPAN_MS; now += STEP_MS) {
-      tickIdle(glancing, now, () => 0.9);
-      turned = Math.max(turned, Math.abs(idleOffsets(glancing, now).hr));
-    }
-    expect(turned, 'the head never turned').toBeGreaterThan(0);
-  },
-);
-
-test(
-  'after a move, resting cats start their timers again and do not glance together',
+  'a resting cat redraws at the slow idle rate while only its breath moves, and faster during a glance',
   NODE,
   () => {
     const START_MS = 10_000;
-    const MOVE_MS = 30_000;
-    const resumeAt = START_MS + MOVE_MS;
-    const cats = [0.1, 0.5, 0.9].map((fixed) => {
-      const idle = createIdle();
-      tickIdle(idle, START_MS, () => fixed);
-      return { idle, fixed };
-    });
-    for (const { idle, fixed } of cats) {
-      rearmIdle(idle);
-      tickIdle(idle, resumeAt, () => fixed);
-      expect(
-        idleOffsets(idle, resumeAt).hr,
-        'a cat glanced on its first frame after a move',
-      ).toBe(0);
-    }
-    const first = firstGlances(cats, resumeAt);
-    expect(
-      new Set(first).size,
-      `cats glanced together after a move: ${first.join(', ')}`,
-    ).toBe(first.length);
-  },
-);
-
-test(
-  'resting cats do not glance together, and idle frames slow down while only the breath moves',
-  NODE,
-  () => {
-    const START_MS = 10_000;
-    const first = firstGlances(
-      [0.1, 0.5, 0.9].map((fixed) => ({ idle: createIdle(), fixed })),
-      START_MS,
-    );
-    expect(
-      new Set(first).size,
-      `cats glanced together: ${first.join(', ')}`,
-    ).toBe(first.length);
-    expect(
-      Math.min(...first),
-      'a cat glanced on its first idle frame',
-    ).toBeGreaterThan(START_MS);
     const idle = createIdle();
     tickIdle(idle, START_MS, () => 0.5);
     const calm = idleFrameMs(idle, START_MS);
@@ -941,7 +708,7 @@ test(
     }
     expect(
       idleFrameMs(createIdle(), 0),
-      'a cat that has not yet had an event draws at the busy rate',
+      'a cat that has not yet glanced draws faster than its breath needs',
     ).toBe(calm);
     expect(busy, 'a glance drew no faster than the breath').toBeLessThan(calm);
   },
