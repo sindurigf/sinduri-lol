@@ -7,9 +7,12 @@ import {
   RABBIT_FRAMES,
   rabbitPose,
 } from '../src/lib/hero-field-rabbit';
+import {
+  CLIMB_ATLAS_TARGET,
+  renderClimbAtlas,
+} from '../src/lib/climb-atlas-render';
 import { NODE } from './tags';
 
-const CLIMB_ATLAS = 'src/assets/hero-rabbit-climb.webp';
 /* The densest screen the climb is drawn for: the largest sitting rabbit at this device pixel ratio is never upscaled. */
 const MAX_PIXEL_RATIO = 3;
 /* Mean difference per channel, out of 255, allowed between the raster and a fresh render of the SVG. */
@@ -21,7 +24,7 @@ const CHUNK_TAG = 4;
 /* Performance and build correctness: Let It Fall's climb draws a lossless raster of the same atlas, which decodes off the main thread. */
 test.describe('the climb atlas', NODE, () => {
   test('is lossless, the atlas size, and sharp at the largest climb on a 3x screen', async () => {
-    const file = readFileSync(CLIMB_ATLAS);
+    const file = readFileSync(CLIMB_ATLAS_TARGET);
     expect(
       file.subarray(CHUNK_AT, CHUNK_AT + CHUNK_TAG).toString(),
       'the climb atlas is not lossless WebP',
@@ -43,16 +46,8 @@ test.describe('the climb atlas', NODE, () => {
   });
 
   test('matches the vector atlas, so it is redrawn with it (npm run climb-atlas)', async () => {
-    /* As scripts/make-climb-atlas.mjs renders it: 72 dpi times its supersample of 4; the two must agree. */
-    const SUPERSAMPLE_DPI = 288;
-    const fresh = await sharp('src/assets/hero-rabbit.svg', {
-      density: SUPERSAMPLE_DPI,
-    })
-      .resize(ATLAS_SIZE.w, ATLAS_SIZE.h, { kernel: 'lanczos3' })
-      .ensureAlpha()
-      .raw()
-      .toBuffer();
-    const kept = await sharp(CLIMB_ATLAS).ensureAlpha().raw().toBuffer();
+    const fresh = await renderClimbAtlas().ensureAlpha().raw().toBuffer();
+    const kept = await sharp(CLIMB_ATLAS_TARGET).ensureAlpha().raw().toBuffer();
     expect(kept.length, 'the climb atlas has a different size').toBe(
       fresh.length,
     );
