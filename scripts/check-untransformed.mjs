@@ -19,27 +19,19 @@ const TALKS = join(ROOT, 'src/content/talks');
  * fails.
  */
 const SERVED_AS_IS = new Map([
-  [
-    'roundel-rabbit.png',
-    'the runtime image endpoint reads it for /contact/send/, which renders ' +
-      'the page hero on demand.',
-  ],
-  [
-    'logo-rabbit.png',
-    'the runtime image endpoint reads it for /contact/send/, which renders ' +
-      'the header on demand.',
-  ],
+  ...['logo-rabbit.svg', 'roundel-rabbit.svg', 'bunny-footer.svg'].map(
+    (name) => [
+      name,
+      'a vector from scripts/make-logo.mjs or the rabbit trace, drawn sharp at every size as it is.',
+    ],
+  ),
   ...['minerva', 'rudra', 'hela'].map((cat) => [
     `about-cats-${cat}.webp`,
     'the About cats draw their frames from it with SVG <image>; it is a WebP atlas already.',
   ]),
   [
-    'hero-rabbit.webp',
-    'the hero canvas draws its frames with drawImage; it is a WebP atlas already.',
-  ],
-  [
-    'bunny-footer.webp',
-    'the runtime image endpoint reads it for /contact/send/, which renders the footer on demand.',
+    'hero-rabbit.svg',
+    'the hero canvas rasterises the vector atlas at the size it draws the rabbit.',
   ],
   [
     'hero-still-short.webp',

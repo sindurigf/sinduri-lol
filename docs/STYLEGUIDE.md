@@ -839,7 +839,7 @@ roundel.**
 - The homepage is not a PageHero and has no roundel on its window.
 - The roundel is the jumping rabbit with no disc: a die-cut sticker (white
   rim, thin ink line) on a `bunny` block that falls behind the rabbit, its back
-  face edged in ink, drawn into `src/assets/roundel-rabbit.png` by
+  face edged in ink, drawn into `src/assets/roundel-rabbit.svg` by
   `scripts/make-logo.mjs`, tilted 3deg. `variant="hero"` sizes its box by
   `--spacing-roundel`; the page variant is 96px, 128px from `lg`.
 - Its center sits `--spacing(1)` above the slab's bottom edge; its right side

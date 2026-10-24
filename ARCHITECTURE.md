@@ -395,8 +395,9 @@ in `wrangler.jsonc`).
 - **The suffix names the artwork color.** `-dark` is `#111111` artwork (goes
   on gold or light); `-white` is `#FFFFFF` artwork (goes on dark). The wrong
   pairing renders invisible.
-- `src/assets/`: rendered artwork, through `astro:assets`, WebP, hashed into
-  `/_astro/`, cached immutably. Unimported files are not emitted.
+- `src/assets/`: rendered artwork, hashed into `/_astro/` and cached
+  immutably: WebP through `astro:assets`, and the rabbit SVGs as they are.
+  Unimported files are not emitted.
 - `public/images/`: stable URLs for outside consumers (Open Graph images).
 - `artwork/`: source artwork the build never reads (the Lepus Ridet badge,
   the `favicon.ico` frames, the traced logo rabbit and its share-card copy).
@@ -405,8 +406,8 @@ in `wrangler.jsonc`).
 | Path                            | Artwork   | Goes on              | Used by                                      |
 | ------------------------------- | --------- | -------------------- | -------------------------------------------- |
 | `src/assets/bunny-dark.png`     | `#111111` | Gold, light surfaces | About                                        |
-| `src/assets/roundel-rabbit.png` | Sticker   | Hero slab edge       | `Roundel.astro`                              |
-| `src/assets/logo-rabbit.png`    | Sticker   | The logo tile        | `Header.astro` logo tile                     |
+| `src/assets/roundel-rabbit.svg` | Sticker   | Hero slab edge       | `Roundel.astro`                              |
+| `src/assets/logo-rabbit.svg`    | Sticker   | The logo tile        | `Header.astro` logo tile                     |
 | `artwork/badge-white.png`       | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge               |
 | `public/images/og-default.png`  | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
 | `public/images/og/*.jpg`        | Composite | n/a                  | `BaseLayout.astro`, every other page         |
@@ -434,15 +435,16 @@ in `wrangler.jsonc`).
 - Rerun `npm run build && npm run og` after changing a token, a page title,
   a page's first photo, the name or the tagline, and commit `public/images/`.
   Not part of `npm run build`: the Cloudflare build has no Chromium.
-- Every placement renders through `<Image>` at its drawn size with `DENSITIES`
-  (1x, 2x). The roundel resizes, so it passes `widths` and `sizes`.
+- The rabbit placements are SVG files in a plain `<img>`, one URL each, with
+  `width` and `height` from the file; other artwork renders through `<Image>`
+  at its drawn size with `DENSITIES` (1x, 2x).
 - A `.vue` component cannot reach `astro:assets`: call `getImage()` in Astro
   and pass the result as a prop.
 - Footer links: seven sticker tiles with Simple Icons (CC0) paths, one
   `<symbol>` per link label in `src/assets/social-icons.svg`. The footer rabbit
-  is `src/assets/bunny-footer.webp` with `alt=""`, standing on the name band:
+  is `src/assets/bunny-footer.svg` with `alt=""`, standing on the name band:
   the Looking Up pose of a Canva sheet, traced with Potrace and
-  exported as a die-cut sticker on a pink block behind it, like the roundel;
+  exported as a vector die-cut sticker on a pink block behind it, like the roundel;
   sources and scripts are kept outside the repo.
   The footer runs JavaScript only for features
   [loaded on demand](#scripts-loaded-on-demand).
@@ -501,7 +503,15 @@ in `wrangler.jsonc`).
 - One source: `scripts/make-logo.mjs` renders the logo rabbit, the roundel
   rabbit and every icon from `artwork/rabbit-jump.json` (the jumping rabbit,
   traced) in Chromium.
-- Logo (`src/assets/logo-rabbit.png`): the hairline die-cut rabbit with an ink
+- The trace holds two outlines, both the smoothed silhouette. `cut` places the
+  rabbit, draws the rim, block and throw, and fills the tab icons; `sil` takes
+  the white fill and the thin ink edge.
+- The logo, roundel, footer and hero rabbits ship as SVG, with the rim and
+  block as strokes of one shared outline (`<use>`), so their lines stay sharp
+  at every size and zoom. The hero canvas rasterises its atlas at the size it
+  draws the rabbit (`atlasDensity`), off the animation frame, so the rabbit is
+  drawn at its own resolution rather than scaled from a fixed bitmap.
+- Logo (`src/assets/logo-rabbit.svg`): the hairline die-cut rabbit with an ink
   throw, jumping the tile's top-right corner. The script prints its box;
   `--logo-rabbit-*` in `global.css` must match.
 - Tab icons (`favicon.*`, `artwork/favicon-*`): the logo's jumping rabbit
@@ -562,9 +572,6 @@ in `public/`.
   asset layer, and a POST gets 405. `tests/contact.spec.ts` sends that header.
 - `/videos/*` is in `run_worker_first` for byte ranges
   ([Photos and video](#photos-and-video)).
-- `/_image` is in `run_worker_first`: on-demand pages (the contact error pages)
-  point images at the adapter's passthrough endpoint, which serves the original
-  from `/_astro/`. Without it the asset layer answers with `404.html`.
 
 ### Rules and caching
 

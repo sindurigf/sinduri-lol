@@ -35,10 +35,21 @@ const measureImages = (page: Page) =>
       await probe.decode();
       return { width: probe.naturalWidth, height: probe.naturalHeight };
     };
-    const drawn = all.filter(
+    /* A vector SVG has no pixels to stretch; one that embeds a raster picture is measured like any image. */
+    const vector = async (src: string) => {
+      if (!new URL(src).pathname.endsWith('.svg')) return false;
+      return !(await (await fetch(src)).text()).includes('<image');
+    };
+    const shown = all.filter(
       (img) => img.offsetWidth > 0 && img.offsetHeight > 0,
     );
+    const drawn = (
+      await Promise.all(
+        shown.map(async (img) => ((await vector(img.currentSrc)) ? null : img)),
+      )
+    ).filter((img): img is HTMLImageElement => img !== null);
     return {
+      shown: shown.length,
       ratio: window.devicePixelRatio,
       images: await Promise.all(
         drawn.map(async (img) => {
@@ -84,10 +95,10 @@ for (const route of SAMPLED_ROUTES) {
   }) => {
     await gotoSettled(page, route);
 
-    const { ratio, images } = await measureImages(page);
+    const { shown, ratio, images } = await measureImages(page);
 
     expect(
-      images.length,
+      shown,
       'no image is drawn on this page, though the header mark is on every route.',
     ).toBeGreaterThan(0);
 
