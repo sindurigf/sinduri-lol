@@ -32,11 +32,7 @@ import {
   reachOf,
 } from '../src/lib/about-cats-rig';
 import { FRAMES } from '../src/lib/about-cats-frames';
-import {
-  createIdle,
-  idleFrameMs,
-  tickIdle,
-} from '../src/lib/about-cats-idle';
+import { createIdle, idleFrameMs, tickIdle } from '../src/lib/about-cats-idle';
 import { isTricksData, tricksOf } from '../src/lib/about-cats-tricks';
 import tricksData from '../src/lib/about-cats-tricks.json' with { type: 'json' };
 import {
