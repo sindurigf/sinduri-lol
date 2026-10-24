@@ -175,11 +175,20 @@
     pointer-events: none;
   }
 
-  /* Let It Fall: centered above the copyright; the heap lands around it, never over it. */
+  /* Let It Fall: centered above the copyright. */
   .let-it-fall {
     position: relative;
     z-index: 1;
     margin: --spacing(8) auto 0;
+  }
+
+  /* Risen to the top of the screen while the page lies in a heap below it; over every fallen block. */
+  .let-it-fall[data-floating] {
+    z-index: 3;
+    transform: translate(
+      var(--float-x),
+      calc(var(--float-y) + env(safe-area-inset-top, 0px))
+    );
   }
 
   /*
@@ -201,12 +210,17 @@
     }
   }
 
-  /* The rabbit on top of the heap, clear of every control; scaled from its top left, as the script measures. */
+  /* The rabbit on its perch, clear of every control; scaled from its top left, as the script measures. */
   .footer-rabbit {
     transform-origin: 0 0;
   }
 
-  /* While the hero's posed rabbit climbs the heap in its place. */
+  /* Over every fallen block while the page is down, as the climbing rabbit is. */
+  :root:has([data-fall-block]) .footer-rabbit {
+    z-index: 2;
+  }
+
+  /* While the hero's posed rabbit climbs in its place. */
   .footer-rabbit[data-away] {
     visibility: hidden;
   }
@@ -243,6 +257,11 @@
     z-index: 1;
   }
 
+  /* The fallen bar takes the pointer back from the header box that let-it-fall.ts empties. */
+  .site-header [data-fell] {
+    pointer-events: auto;
+  }
+
   [data-fall-raised='static'] {
     position: relative;
   }
@@ -253,7 +272,7 @@
   }
 
   @media print {
-    :is([data-fell], .footer-rabbit[data-hopped]) {
+    :is([data-fell], .footer-rabbit[data-hopped], .let-it-fall[data-floating]) {
       transform: none;
     }
   }

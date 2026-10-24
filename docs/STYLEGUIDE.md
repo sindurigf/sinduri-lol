@@ -1097,21 +1097,38 @@ Enforced by `tests/footer.spec.ts`.
   copyright: one press drops everything on screen, the header bar, hero, page
   and footer, and stacks it into a heap with a bounce. Wide blocks land first
   in a shuffled order, then small ones drop into the lowest gaps. Each takes
-  its tilted box's room, labels set over its edge included, so nothing overlaps and every link and button stays
-  whole and clickable (SC 2.5.8). Put It Back and any control that stays are
-  solid: the heap lands beside or on them, never over them. A block taller
-  than 60% of the screen stays and the blocks inside it fall; a footer row
-  falls as its link alone.
-- Then the footer rabbit climbs the heap in the hero's poses
+  its tilted box's room, labels set over its edge included, so nothing
+  overlaps and every link and button stays whole and clickable (SC 2.5.8).
+  Any control that stays is solid: the heap lands beside or on it, never over
+  it. A block taller than 60% of the screen stays and the blocks inside it
+  fall; a footer row falls as its link alone.
+- Put It Back rises to the top of the screen, centered, over every fallen
+  block, with room above it for the rabbit. The header bar, the main menu,
+  becomes a shelf in the heap about two thirds down: the wide blocks land under
+  it and it sits on them as low as that allows, at most two thirds down; the
+  small blocks fill the gaps and land on it, around a clear stretch kept for
+  the rabbit, and never on its links. The heap keeps a hop's headroom under Put
+  It Back. If it does not fit, it packs tight and level; if it still does not
+  fit, it moves down past the screen's bottom, where scrolling reaches it. Bare
+  labels land before painted blocks, so painted ones top the heap.
+- Once the heap has settled and after a short beat, the footer rabbit climbs
+  in the hero's poses
   (`src/scripts/let-it-fall-rabbit.ts`, frames from
   `src/lib/hero-field-rabbit.ts`, the hero atlas loaded on press): crouch,
-  leap on an eased arc, crouch on landing, sit, facing the way it travels.
-  One leap up onto the heap, then hops along its top, five hops in all at
-  most and 70px apart at least, to the highest spot clear of every control with support under its
-  middle; there it looks around twice. It shrinks to fit a wide screen. On
-  Put It Back it leaps home at once, as the heap climbs home under it. It is
-  `aria-hidden` and takes no pointer; under reduced motion the footer
-  sticker is simply on the heap and back.
+  leap on an eased arc, crouch on landing, sit, pause, facing the way it
+  travels. It
+  hops onto the menu shelf's clear stretch, up the blocks on top of it (their
+  highest place to stand, and one about halfway up), then onto the button's
+  top edge, clear of its label, and above its focus ring while keyboard focus shows it. Where it
+  lands is read from the landed page: only the top edge of a painted, fallen
+  surface (a fill or edge unlike its ground, or an image) or of Put It Back,
+  level under its middle, with nothing painted, no text and no other control
+  in its box; it may stand on a control's top edge. It is drawn over every
+  fallen block; only Put It Back is drawn over it. It is at most 96px tall
+  while it climbs. On the button it holds, then looks around twice. If the seat has no
+  room, it takes the highest such place on the heap, shrinking to fit. On Put
+  It Back it leaps home at once. It is `aria-hidden` and takes no pointer;
+  under reduced motion the footer sticker is simply on the button and back.
 - The same button (now Put It Back), Esc, keyboard focus moving anywhere else
   or a new window width puts it all back. A click or tap on a link or button
   in the heap focuses without `:focus-visible`, so it follows the link; a

@@ -867,9 +867,6 @@ evidence.
   controls in `/brand`'s light halves, which are `inert` and so never take
   focus. `ACCESSLINT_FALSE_POSITIVES` in `tests/accesslint.ts` drops each only
   on those elements and while its reason holds.
-- **Let It Fall should drop the static header on short screens:** under 30rem
-  the header and the footer button never share the screen on any page, so the
-  header is never on screen to fall.
 
 ## Content notes
 
