@@ -1,4 +1,6 @@
 import { globSync, readFileSync } from 'node:fs';
+import { defined } from '../src/lib/defined';
+import { captures } from './captures';
 import { expect } from '@playwright/test';
 import ts from 'typescript';
 import {
@@ -39,7 +41,7 @@ export const configuredSite = (): string => {
 
   expect(match, `no \`site\` found in ${ASTRO_CONFIG}.`).not.toBeNull();
 
-  return match![1]!.replace(/\/$/, '');
+  return defined(match?.[1], `site in ${ASTRO_CONFIG}`).replace(/\/$/, '');
 };
 
 /** `BLOG_CATEGORIES` from src/content.config.ts, which imports `astro:content`. */
@@ -49,7 +51,10 @@ export const blogCategories = (): string[] => {
 
   expect(list, `no BLOG_CATEGORIES found in ${CONTENT_CONFIG}.`).toBeDefined();
 
-  return [...list!.matchAll(/'([a-z-]+)'/g)].map((match) => match[1]!);
+  return captures(
+    defined(list, `BLOG_CATEGORIES in ${CONTENT_CONFIG}`),
+    /'([a-z-]+)'/g,
+  );
 };
 
 /** wrangler.jsonc: `JSON.parse` rejects its comments and trailing commas; TypeScript's reader does not. */

@@ -1,4 +1,5 @@
 import { expect, test } from './test';
+import { itemAt } from '../src/lib/defined';
 import { builtHtml, POST_ROUTES, TALK_ROUTES } from './routes';
 import { CTA, NAV_LINKS } from '../src/lib/nav';
 import { NODE } from './tags';
@@ -27,7 +28,12 @@ const FALLBACK_WIDTHS = [NARROW_WIDTH, PHONE_VIEWPORT.width, 767] as const;
  * One route per layout the fallback renders in: the home page, the error page,
  * a post and a talk. The build check below holds every other page to the markup.
  */
-const LAYOUT_ROUTES = ['/', '/404', POST_ROUTES[0], TALK_ROUTES[0]] as const;
+const LAYOUT_ROUTES = [
+  '/',
+  '/404',
+  itemAt(POST_ROUTES, 0),
+  TALK_ROUTES[0],
+] as const;
 
 test(
   'every built page carries the fallback nav with every destination',
@@ -177,6 +183,7 @@ test.describe('navigation without JavaScript', () => {
           'No visible header action bricks.',
         ).toBeGreaterThan(0);
         const [first, ...rest] = edges;
+        if (!first) throw new Error('No visible header action bricks.');
         expect(first.left, 'The first visible brick has no left edge.').toBe(
           first.right,
         );

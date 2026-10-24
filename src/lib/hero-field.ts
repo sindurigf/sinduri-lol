@@ -2,6 +2,7 @@
  * Mutable per-box state and drawing. Constants and the projection model are in
  * hero-field-scene.ts; use-hero-field.ts owns the canvases and the frame loop.
  */
+import { itemAt } from './defined';
 import {
   BANDS,
   BOTTOM_DEPTH,
@@ -240,7 +241,8 @@ const restSegment = (x: number, rng: () => number): Segment => ({
 const hopSegment = (x: number, rng: () => number, world: number): Segment => {
   const roll = rng();
   const hop =
-    HOPS.find((candidate) => roll < candidate.odds) ?? HOPS[HOPS.length - 1];
+    HOPS.find((candidate) => roll < candidate.odds) ??
+    itemAt(HOPS, HOPS.length - 1);
   return {
     kind: 'hop',
     duration: HOP_BASE_SECONDS + hop.distance / HOP_SPEED,

@@ -204,7 +204,8 @@ for (const width of WIDTHS) {
           .filter((g) => g.ch.trim() && g.box.width > 0);
         const firstTop = Math.min(...glyphs.map((g) => g.box.top));
         const firstLine = glyphs.filter((g) => g.box.top - firstTop < 1);
-        const last = firstLine[firstLine.length - 1]!.box;
+        const last = firstLine.at(-1)?.box;
+        if (!last) throw new Error('The footer line draws no glyph.');
         const r = rabbit.getBoundingClientRect();
         const fontSize = parseFloat(getComputedStyle(text).fontSize);
         return {

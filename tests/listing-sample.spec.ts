@@ -1,4 +1,5 @@
 import { expect, test } from './test';
+import { captures } from './captures';
 import { builtHtml, listingPosts, POST_ROUTES, SAMPLED_ROUTES } from './routes';
 import { NODE } from './tags';
 
@@ -19,9 +20,9 @@ test(
       const main = page.slice(page.indexOf('<main'), page.indexOf('</main>'));
       const shown = [
         ...new Set(
-          [...main.matchAll(/href="(\/blog\/[^"/]+)\/"/g)]
-            .map((m) => m[1]!)
-            .filter((href) => posts.has(href)),
+          captures(main, /href="(\/blog\/[^"/]+)\/"/g).filter((href) =>
+            posts.has(href),
+          ),
         ),
       ]
         .map((href) => href.replace('/blog/', ''))

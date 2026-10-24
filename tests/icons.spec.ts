@@ -47,8 +47,8 @@ const icoSizes = (file: string): Size[] => {
   return Array.from({ length: count }, (_, index) => {
     const at = FIRST + index * ENTRY;
     return {
-      width: buffer[at] === 0 ? 256 : buffer[at]!,
-      height: buffer[at + 1] === 0 ? 256 : buffer[at + 1]!,
+      width: buffer.readUInt8(at) || 256,
+      height: buffer.readUInt8(at + 1) || 256,
     };
   });
 };

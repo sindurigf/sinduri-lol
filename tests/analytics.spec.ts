@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from './test';
+import { itemAt } from '../src/lib/defined';
 import {
   CLICK_EVENTS,
   UMAMI_HOST_URL,
@@ -128,7 +129,7 @@ test.describe('analytics', () => {
           tags,
           `${route} should load the tracker exactly once`,
         ).toHaveLength(1);
-        const tag = tags[0]!;
+        const tag = itemAt(tags, 0);
 
         expect(
           tag,
@@ -215,11 +216,12 @@ test.describe('analytics', () => {
         .toBeGreaterThan(0);
 
       const [view] = sent;
-      expect(view!.type).toBe('event');
-      expect(view!.payload.website).toBe(UMAMI_WEBSITE_ID);
-      expect(String(view!.payload.url)).toContain('/about/');
+      if (!view) throw new Error('No event was sent.');
+      expect(view.type).toBe('event');
+      expect(view.payload.website).toBe(UMAMI_WEBSITE_ID);
+      expect(String(view.payload.url)).toContain('/about/');
 
-      const undisclosed = Object.keys(view!.payload).filter(
+      const undisclosed = Object.keys(view.payload).filter(
         (key) => !PAYLOAD_KEYS.includes(key),
       );
       expect(
