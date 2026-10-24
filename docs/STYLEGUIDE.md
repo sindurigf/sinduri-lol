@@ -1294,7 +1294,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 - The About cats (`src/components/ui/AboutCats.vue`) wake when their band is
   first on screen, play along it (games like the yarn and the fly carry them,
   leaps move them on), and sit still under reduced motion. Each cat's button
-  ("Meet Minerva") opens its card and changes nothing else.
+  ("Meet Minerva") opens its card; while it is open the cat sits where it is
+  and looks round at you, and under reduced motion it stays as it was.
 - Each cat's SC 2.2.2 control sits in its band's corner: Zz ("Put Minerva to
   sleep") while it plays, an eye ("Wake Minerva") while it sleeps.
   Hidden under reduced motion, where nothing moves.
@@ -1311,9 +1312,9 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   card's top right corner. No control there is named Full Screen. They show on
   a pointer move or a tap, hide with the pointer once it rests, and stay while
   the pointer is on one or one has keyboard focus. No transition. The foot row
-  sits over the margin under the slide and the slide's foot padding, ✕ inside
-  the card's border by `--focus-gap`, in its corner padding: clear of slide
-  content on 16:9 and 4:3 screens. Exit is first in the DOM, so Tab goes from
+  sits in a row reserved under the slide (`--deck-bar-room`), clear of the
+  slide and its focus ring; ✕ sits inside the card's border by `--focus-gap`,
+  in its corner padding, clear of slide content on 16:9 and 4:3 screens. Exit is first in the DOM, so Tab goes from
   the top down.
 - The list opens under the band, its right edge on the paw's. With no room
   below it opens beside the paw and Zz, never over them, and it closes when
@@ -1325,6 +1326,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 - Pointing at a cat, or keyboard focus on it, holds it in place, so a target
   being aimed at never moves: a focused target that never moves suits keyboard
   and magnifier users.
+- A keyboard-focused cat's button takes the cat's hit box, so the focus ring
+  hugs the cat; its band rises above the cards so the ring is never covered.
 - A drawing may reach `MAX_OVERHANG` (the phone gutter) past its band's end,
   never over text or a control (`src/lib/about-cats.ts`). A cat about to lie
   down near an end turns to face the band first.

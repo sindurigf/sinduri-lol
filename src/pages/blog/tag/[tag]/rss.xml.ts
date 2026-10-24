@@ -1,9 +1,8 @@
 import type { APIRoute, GetStaticPaths, InferGetStaticPropsType } from 'astro';
 import { getPostsByTag, tagLabel } from '../../../../lib/blog';
 import { feedResponse, tagFeedTitle } from '../../../../lib/feed';
-import { tagFeedPath, tagHref } from '../../../../lib/paths';
+import { PLANET_TAG, tagFeedPath, tagHref } from '../../../../lib/paths';
 
-/* The drupal tag feed is the one Drupal Planet subscribes to. */
 export const getStaticPaths = (async () =>
   [...(await getPostsByTag())].map(([tag, posts]) => ({
     params: { tag },
@@ -20,6 +19,7 @@ export const GET: APIRoute<Props> = ({ props: { tag, posts }, site }) =>
       pagePath: tagHref(tag),
       selfPath: tagFeedPath(tag),
       posts,
+      opening: tag === PLANET_TAG,
     },
     site,
   );
