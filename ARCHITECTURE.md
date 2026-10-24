@@ -6,18 +6,18 @@ sinduri.lol. Design rules and values are in
 
 ## Stack
 
-| Concern     | Choice                                                                                   |
-| ----------- | ---------------------------------------------------------------------------------------- |
-| Framework   | Astro 7, static output; `/contact/send/` renders on demand in the Worker                 |
-| Interactive | Vue 3 via `@astrojs/vue`, islands only (the homepage canvas hero and the About cats)     |
-| Scripts     | Plain modules for everything that is not an island                                       |
-| Styling     | Tailwind CSS 4 via `@tailwindcss/vite`                                                   |
-| Language    | TypeScript, `astro/tsconfigs/strictest`, checked with `astro check` and `vue-tsc`        |
-| Content     | Astro Content Collections, Markdown in repo, rendered by Sätteri                         |
-| Font        | Lexend, self-hosted through Fontsource                                                   |
-| Hosting     | Cloudflare Workers static assets, D1 (EU), Rate Limiting, Email Routing, Workers Builds  |
-| Tests       | Playwright in Chromium, Firefox and WebKit, with axe-core and AccessLint for WCAG 2.2 AA |
-| Runtime     | Node.js from `.nvmrc`                                                                    |
+| Concern     | Choice                                                                                                                |
+| ----------- | --------------------------------------------------------------------------------------------------------------------- |
+| Framework   | Astro 7, static output; `/contact/send/` renders on demand in the Worker                                              |
+| Interactive | Vue 3 via `@astrojs/vue`, islands only (the homepage canvas hero and the About cats)                                  |
+| Scripts     | Plain modules for everything that is not an island                                                                    |
+| Styling     | Tailwind CSS 4 via `@tailwindcss/vite`                                                                                |
+| Language    | TypeScript, `astro/tsconfigs/strictest`, checked with `astro check` and `vue-tsc`                                     |
+| Content     | Astro Content Collections, Markdown in repo, rendered by Sätteri                                                      |
+| Font        | Lexend, self-hosted through Fontsource                                                                                |
+| Hosting     | Cloudflare Workers static assets, D1 (EU), Rate Limiting, Email Routing, Workers Builds                               |
+| Tests       | Playwright in Chromium, Firefox and WebKit, with axe-core and AccessLint for WCAG 2.2 AA, HTML_CodeSniffer for 2.1 AA |
+| Runtime     | Node.js from `.nvmrc`                                                                                                 |
 
 - Vue runs with `features: { optionsAPI: false }`; every component uses
   `<script setup>`.
@@ -871,6 +871,17 @@ evidence.
   controls in `/brand`'s light halves, which are `inert` and so never take
   focus. `ACCESSLINT_FALSE_POSITIVES` in `tests/accesslint.ts` drops each only
   on those elements and while its reason holds.
+- **HTML_CodeSniffer engine hits:** H42 flags "Where AI helps:" and "Where AI
+  adds strain:" on `/blog/open-source-is-not-just-code/`, each a
+  `<p><strong>` alone; each is a label ending in a colon that leads into the
+  list after it, not a heading. `HTMLCS_FALSE_POSITIVES` in
+  `tests/htmlcs.ts` drops H42 only on prose paragraphs where that holds. Its
+  other warnings are not gated: H67.2 on `alt=""` decoration, 1.4.10 on
+  fixed-position elements (its `<pre>` and viewport-zoom variants share the
+  code; axe's `meta-viewport` covers zoom), G18 and G145 "cannot determine
+  contrast" (axe and the contrast specs measure it), H48 on links inside
+  sentences and H39.3 on tables, which have `th scope="col"` and an introducing
+  sentence.
 - **Move the full-screen slide bar inside the card:** on a 16:9 screen the
   foot row crosses the bottom of the focused slide's ring while both show.
   The row shows only while the pointer moves or one of its buttons has focus,
