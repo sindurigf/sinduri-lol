@@ -1102,10 +1102,12 @@ Enforced by `tests/footer.spec.ts`.
   It Back. If it does not fit, it packs tight and level; if it still does not
   fit, it moves down past the screen's bottom, where scrolling reaches it. Bare
   labels land before painted blocks, so painted ones top the heap.
-- Then the footer rabbit climbs in the hero's poses
+- Once the heap has settled and after a short beat, the footer rabbit climbs
+  in the hero's poses
   (`src/scripts/let-it-fall-rabbit.ts`, frames from
   `src/lib/hero-field-rabbit.ts`, the hero atlas loaded on press): crouch,
-  leap on an eased arc, crouch on landing, sit, facing the way it travels. It
+  leap on an eased arc, crouch on landing, sit, pause, facing the way it
+  travels. It
   hops onto the menu shelf's clear stretch, up the blocks on top of it (their
   highest place to stand, and one about halfway up), then onto the button's
   top edge, clear of its label, and above its focus ring while keyboard focus shows it. Where it
@@ -1114,7 +1116,7 @@ Enforced by `tests/footer.spec.ts`.
   level under its middle, with nothing painted, no text and no other control
   in its box; it may stand on a control's top edge. It is drawn over every
   fallen block; only Put It Back is drawn over it. It is at most 96px tall
-  while it climbs. On the button it looks around twice. If the seat has no
+  while it climbs. On the button it holds, then looks around twice. If the seat has no
   room, it takes the highest such place on the heap, shrinking to fit. On Put
   It Back it leaps home at once. It is `aria-hidden` and takes no pointer;
   under reduced motion the footer sticker is simply on the button and back.
