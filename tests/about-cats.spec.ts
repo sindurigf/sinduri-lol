@@ -196,11 +196,11 @@ const ICONS: Record<string, unknown[]> = tricksData.icons;
 const catButton = (page: Page, id: (typeof CATS)[number]) =>
   page.locator(`#cat-spot-${id} .cat-button`);
 
-/** Where the cat stands, not how it is posed: a held cat still blinks. */
+/** Where the cat stands, not how it is posed: a held cat still breathes. */
 const place = (page: Page, id: (typeof CATS)[number]) =>
   page.locator(`#cat-spot-${id} .cat-hit`).getAttribute('transform');
 
-/** Every drawn attribute of one cat but its blinks, so any movement changes the string. */
+/** Every drawn attribute of one cat but its frame window's box and visibility, so any movement changes the string. */
 const drawing = (page: Page, id: (typeof CATS)[number]) =>
   page
     .locator(`#cat-spot-${id} .cat-hit`)
