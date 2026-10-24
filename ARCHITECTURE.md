@@ -875,17 +875,6 @@ evidence.
   controls in `/brand`'s light halves, which are `inert` and so never take
   focus. `ACCESSLINT_FALSE_POSITIVES` in `tests/accesslint.ts` drops each only
   on those elements and while its reason holds.
-- **HTML_CodeSniffer engine hits:** H42 flags "Where AI helps:" and "Where AI
-  adds strain:" on `/blog/open-source-is-not-just-code/`, each a
-  `<p><strong>` alone; each is a label ending in a colon that leads into the
-  list after it, not a heading. `HTMLCS_FALSE_POSITIVES` in
-  `tests/htmlcs.ts` drops H42 only on prose paragraphs where that holds. Its
-  other warnings are not gated: H67.2 on `alt=""` decoration, 1.4.10 on
-  fixed-position elements (its `<pre>` and viewport-zoom variants share the
-  code; axe's `meta-viewport` covers zoom), G18 and G145 "cannot determine
-  contrast" (axe and the contrast specs measure it), H48 on links inside
-  sentences and H39.3 on tables, which have `th scope="col"` and an introducing
-  sentence.
 - **Move the full-screen slide bar inside the card:** on a 16:9 screen the
   foot row crosses the bottom of the focused slide's ring while both show.
   The row shows only while the pointer moves or one of its buttons has focus,

@@ -102,9 +102,12 @@ view (development server only, never published), and forks.
 - **HTML_CodeSniffer, a third engine.** `@pa11y/html_codesniffer` runs its WCAG
   2.1 AA sniffs in dark mode at 1280 and 320px on the same routes. Errors fail,
   and so does H42 (a paragraph that is only bold text, a likely heading); other
-  warnings and notices are prompts for a person. One false positive is dropped
-  on named elements and only while its reason holds
-  ([ARCHITECTURE.md](ARCHITECTURE.md#rejected-findings)).
+  warnings and notices are prompts for a person. No result is dropped. The
+  warnings it raises are checked elsewhere or need a person: H67.2 on `alt=""`
+  decoration, 1.4.10 on fixed-position elements (axe's `meta-viewport` covers
+  zoom), G18 and G145 when it cannot work out contrast (axe and the contrast
+  specs measure it), H48 on links inside sentences, and H39.3 on tables, which
+  have `th scope="col"` and an introducing sentence.
 - **Undecided results.** Every `incomplete` result from the WCAG scans is
   decided (`tests/incomplete.ts`): contrast by walking the paint stack, label
   in name (SC 2.5.3) by passing only a control whose visible text is symbols,
