@@ -808,9 +808,6 @@ evidence.
 - **Drop the About cat card's "beside its cat, not over it" checks as
   decoration:** the owner asked for the card to open beside its cat, so where
   it opens is function; the test name in `tests/about-cats.spec.ts` says so.
-- **Draw the About cat's focus ring round the cat, not its band:** the ring on
-  the band passes SC 2.4.11 (sides and top stay visible), and the cat moves
-  while the band does not.
 - **Let an About cat keep playing while it has keyboard focus:** the hold is a
   rule, with its reason, in [STYLEGUIDE.md](docs/STYLEGUIDE.md#motion).
 - **Size the hero roundel with a fixed 96px disc, a jump to 128px at `lg`, or
@@ -877,10 +874,6 @@ evidence.
   controls in `/brand`'s light halves, which are `inert` and so never take
   focus. `ACCESSLINT_FALSE_POSITIVES` in `tests/accesslint.ts` drops each only
   on those elements and while its reason holds.
-- **Move the full-screen slide bar inside the card:** on a 16:9 screen the
-  foot row crosses the bottom of the focused slide's ring while both show.
-  The row shows only while the pointer moves or one of its buttons has focus,
-  and inside the card it would sit over slide content at some widths.
 - **Let It Fall should drop the static header on short screens:** under 30rem
   the header and the footer button never share the screen on any page, so the
   header is never on screen to fall.
