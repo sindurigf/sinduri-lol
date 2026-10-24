@@ -303,18 +303,31 @@ test('under reduced motion the blocks and the rabbit move at once, never animate
   await press(page);
   await expect(fallen(page)).not.toHaveCount(0);
   await expect(page.locator('.footer-rabbit')).toHaveAttribute('data-hopped');
+  /* reduced-motion.css leaves a 0.01ms transition, which starts at home. */
+  await expect
+    .poll(() =>
+      page
+        .locator('.footer-rabbit')
+        .evaluate((img) => img.getAnimations().length),
+    )
+    .toBe(0);
   expect(
     await page.locator('.footer-rabbit').evaluate((img) => {
       const own = img.getBoundingClientRect();
       const seat = document
         .querySelector('[data-let-it-fall]')!
         .getBoundingClientRect();
-      return (
-        own.bottom <= seat.top && own.left < seat.right && seat.left < own.right
-      );
+      return {
+        on:
+          own.bottom <= seat.top &&
+          own.left < seat.right &&
+          seat.left < own.right,
+        own: [own.left, own.top, own.right, own.bottom].map(Math.round),
+        seat: [seat.left, seat.top, seat.right, seat.bottom].map(Math.round),
+      };
     }),
     'under reduced motion the rabbit is not on Put It Back',
-  ).toBe(true);
+  ).toMatchObject({ on: true });
   expect(await moving(page), 'something animates under reduced motion').toEqual(
     [],
   );
