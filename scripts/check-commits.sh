@@ -1,11 +1,11 @@
 #!/bin/sh
 # Subject format and AI attribution per AGENTS.md, CI's counterpart to .githooks.
 # Skips merges, and Dependabot only with CI's TRUST_DEPENDABOT=1: anyone can set an email.
-# Usage: sh scripts/check-commits.sh [range]     (default origin/main..HEAD)
+# Usage: sh scripts/check-commits.sh [range]     (default origin/$GITHUB_BASE_REF..HEAD, origin/main outside CI)
 
 set -eu
 
-RANGE=${1:-origin/main..HEAD}
+RANGE=${1:-origin/${GITHUB_BASE_REF:-main}..HEAD}
 
 TYPES='feat|fix|docs|style|refactor|chore|perf|security|config|revert|test'
 
