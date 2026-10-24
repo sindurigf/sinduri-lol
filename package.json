@@ -29,6 +29,7 @@
     "check:title-case": "node scripts/check-title-case.mjs",
     "check:exif": "node scripts/check-exif.mjs",
     "check:commits": "sh scripts/check-commits.sh",
+    "check:test-weakening": "node scripts/check-test-weakening.mjs",
     "check:live": "sh scripts/check-live.sh",
     "check:live:console": "playwright test -c playwright.live.config.ts",
     "check:umami": "sh scripts/check-umami.sh",
@@ -36,7 +37,7 @@
     "hero-still": "node scripts/make-hero-still.mjs",
     "publish:cv": "node scripts/publish-cv.mjs",
     "publish:talk": "node scripts/publish-talk.mjs",
-    "check": "npm run check:tokens && npm run check:links && npm run check:pins && npm run check:classes && npm run check:untransformed && npm run check:title-case && npm run check:exif && npm run format:check && npm run check:commits"
+    "check": "npm run check:tokens && npm run check:links && npm run check:pins && npm run check:classes && npm run check:untransformed && npm run check:title-case && npm run check:exif && npm run format:check && npm run check:commits && npm run check:test-weakening"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.0",
