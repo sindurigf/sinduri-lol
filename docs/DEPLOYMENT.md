@@ -142,6 +142,9 @@ Dashboard settings that change what ships without a file change.
 - CI (`.github/workflows/a11y.yml`) reports one status, `Required checks`,
   which passes only when every job passes. The `main` ruleset requires it by
   the job's `name`: rename it in both at once, or no pull request can merge.
+- CI runs on pushes to `main` and on every pull request, whatever its base
+  branch, so a stacked pull request gets the full gate. Its commits are checked
+  against its own base branch, not `main`.
 - Turn on Dependabot alerts and automated security fixes.
 - Turn on private vulnerability reporting: [SECURITY.md](../SECURITY.md) relies
   on it.
