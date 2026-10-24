@@ -1094,19 +1094,21 @@ Enforced by `tests/footer.spec.ts`.
   it. A block taller than 60% of the screen stays and the blocks inside it
   fall; a footer row falls as its link alone.
 - Put It Back rises to the top of the screen, centered, over every fallen
-  block, with room above it for the rabbit. The header bar, the main menu, is
-  parked level under it as a ledge, its links clickable, with a rabbit's
-  height of headroom under it; the heap fills the screen below that. If the
-  heap does not fit, it packs tight and level; if it still does not fit, it
-  moves down past the screen's bottom, where scrolling reaches it. Bare labels
-  land before painted blocks, so painted ones top the heap.
+  block, with room above it for the rabbit. The header bar, the main menu,
+  becomes a shelf in the heap about two thirds down: the wide blocks land under
+  it and it sits on them as low as that allows, at most two thirds down; the
+  small blocks fill the gaps and land on it, around a clear stretch kept for
+  the rabbit, and never on its links. The heap keeps a hop's headroom under Put
+  It Back. If it does not fit, it packs tight and level; if it still does not
+  fit, it moves down past the screen's bottom, where scrolling reaches it. Bare
+  labels land before painted blocks, so painted ones top the heap.
 - Then the footer rabbit climbs in the hero's poses
   (`src/scripts/let-it-fall-rabbit.ts`, frames from
   `src/lib/hero-field-rabbit.ts`, the hero atlas loaded on press): crouch,
   leap on an eased arc, crouch on landing, sit, facing the way it travels. It
-  hops up the heap (its highest place to stand, and one about halfway up),
-  onto the ledge beside Put It Back, then onto the button's top edge, clear of
-  its label, and above its focus ring while keyboard focus shows it. Where it
+  hops onto the menu shelf's clear stretch, up the blocks on top of it (their
+  highest place to stand, and one about halfway up), then onto the button's
+  top edge, clear of its label, and above its focus ring while keyboard focus shows it. Where it
   lands is read from the landed page: only the top edge of a painted, fallen
   surface (a fill or edge unlike its ground, or an image) or of Put It Back,
   level under its middle, with nothing painted, no text and no other control
