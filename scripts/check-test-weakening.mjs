@@ -55,7 +55,7 @@ const EXEMPTING_EXIT = new RegExp(
 );
 /** A `const`, `let` or `var` whose upper-case name has an exemption word between underscores: `KEEPS_ITS_COLORS`, `ACCESSLINT_FALSE_POSITIVES`. */
 const EXEMPTION_NAME =
-  /\b(?:const|let|var)\s+(?:[A-Z0-9]+_)*(?:ALLOW(?:ED|LIST)?|EXEMPTS?|EXEMPTIONS?|EXCEPT(?:IONS?)?|KEEPS|SKIP(?:S|PED)?|IGNORED?|WHITELIST|FALSE_POSITIVES?)(?:_[A-Z0-9]+)*\b/g;
+  /\b(?:const|let|var)\s+(?:[A-Z0-9]+_)*(?:ALLOW(?:LIST)?|EXEMPTS?|EXEMPTIONS?|EXCEPT(?:IONS?)?|KEEPS|SKIP(?:S|PED)?|IGNORED?|WHITELIST|FALSE_POSITIVES?)(?:_[A-Z0-9]+)*\b/g;
 
 /** Changes retries, mode or timeout for a group of tests. */
 const CONFIGURE = /\b(?:test|describe)(?:\.\w+)*\.configure\s*\(/;
