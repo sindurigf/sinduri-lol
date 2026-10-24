@@ -35,7 +35,7 @@ const landed = (page: Page) =>
       ),
     )
     .toBe(0);
-/* Targets in the heap off screen, or covered by something else at any of nine points across their face. */
+/* Targets in the heap above the screen, or covered by something else at any of nine points across their face. */
 const coveredTargets = (page: Page) =>
   page.evaluate(() => {
     const SHARES = [0.25, 0.5, 0.75];
@@ -47,7 +47,9 @@ const coveredTargets = (page: Page) =>
       .filter((el) => el.checkVisibility())
       .filter((el) => {
         const r = el.getBoundingClientRect();
-        if (r.top < 0 || r.bottom > innerHeight) return true;
+        if (r.top < 0) return true;
+        /* Below the screen: a heap too tall for it, which scrolling reaches (tested with Put It Back). */
+        if (r.bottom > innerHeight) return false;
         /* Points across the target's own face, turned with its fallen block: its upright box's corners lie outside it. */
         const block = el.closest('[data-fell]')!;
         const { a, b } = new DOMMatrix(getComputedStyle(block).transform);
@@ -134,7 +136,7 @@ for (const width of WIDTHS) {
       ).toBe(true);
       expect(
         await coveredTargets(page),
-        'a target in the heap is off screen or partly covered (SC 2.5.8)',
+        'a target in the heap is above the screen or partly covered (SC 2.5.8)',
       ).toEqual([]);
       const { violations } = await timedScan(page, 'fallen /career');
       expect(
@@ -236,7 +238,7 @@ test('with the footer band on screen, no heap target is covered', async ({
   await landed(page);
   expect(
     await coveredTargets(page),
-    'a target in the heap is off screen or partly covered (SC 2.5.8)',
+    'a target in the heap is above the screen or partly covered (SC 2.5.8)',
   ).toEqual([]);
 });
 
@@ -546,6 +548,94 @@ for (const [route, width, height, motion] of [
     });
   });
 }
+
+/* ms between samples of what is drawn over the rabbit while the page falls and it climbs. */
+const SAMPLE_MS = 100;
+
+test('nothing but Put It Back is ever drawn over the rabbit as the page falls and it climbs', async ({
+  page,
+}) => {
+  await seedRandom(page, HEAP_SEED);
+  await page.setViewportSize({ width: 390, height: HEIGHT });
+  await gotoSettled(page, ROUTE);
+  /* Hit-testing skips what takes no pointer, so the rabbit takes it for this test only. */
+  await page.addStyleTag({
+    content:
+      '.fall-hopper, .fall-hopper *, .footer-rabbit { pointer-events: auto !important; }',
+  });
+  await press(page);
+  const over = new Set<string>();
+  const settled = page.locator('.fall-hopper[data-settled]');
+  for (let waited = 0; waited < CLIMB_MS; waited += SAMPLE_MS) {
+    const hit = await page.evaluate(() => {
+      const rabbit =
+        document.querySelector('.fall-hopper-frame') ??
+        document.querySelector('.footer-rabbit')!;
+      const r = rabbit.getBoundingClientRect();
+      const x = r.left + r.width / 2;
+      const y = r.top + r.height / 2;
+      if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) return null;
+      const top = document.elementFromPoint(x, y);
+      if (!top || rabbit.contains(top) || top === rabbit) return null;
+      if (top.closest('[data-let-it-fall]')) return null;
+      return `${top.tagName}.${top.className}`;
+    });
+    if (hit) over.add(hit);
+    if (await settled.count()) break;
+    await page.waitForTimeout(SAMPLE_MS);
+  }
+  await expect(settled).toBeAttached();
+  expect([...over], 'something is drawn over the rabbit').toEqual([]);
+});
+
+test('the header bar is parked as a ledge under Put It Back, the heap below it, and the rabbit climbs heap, ledge, button', async ({
+  page,
+}) => {
+  await seedRandom(page, HEAP_SEED);
+  await page.setViewportSize({ width: 390, height: HEIGHT });
+  await gotoSettled(page, ROUTE);
+  await press(page);
+  await rabbitClear(page);
+  const found = await page.evaluate((gap) => {
+    const own = document
+      .querySelector('[data-let-it-fall]')!
+      .getBoundingClientRect();
+    const ledge = document.querySelector('.header-slab')!;
+    const shelf = ledge.getBoundingClientRect();
+    const heapBelow = [...document.querySelectorAll('[data-fell]')]
+      .filter((block) => block !== ledge)
+      .every((block) => block.getBoundingClientRect().top >= shelf.bottom);
+    const feet = document.querySelector<HTMLElement>('.fall-hopper')!;
+    const host = feet.parentElement!.getBoundingClientRect();
+    const INTO_SURFACE = 4;
+    const path = (
+      JSON.parse(feet.dataset.stones ?? '[]') as {
+        x: number;
+        y: number;
+      }[]
+    ).map(({ x, y }) => {
+      const hit = document.elementFromPoint(
+        x + host.left,
+        y + host.top + INTO_SURFACE,
+      );
+      if (hit?.closest('[data-let-it-fall]')) return 'button';
+      if (hit && ledge.contains(hit)) return 'ledge';
+      return hit?.closest('[data-fell]') ? 'heap' : 'nothing';
+    });
+    return {
+      fell: ledge.hasAttribute('data-fell'),
+      underButton: shelf.top >= own.bottom + gap - 1,
+      heapBelow,
+      path: path.filter((on, i) => on !== path[i - 1]),
+    };
+  }, FLOAT_GAP);
+  expect(found, 'the ledge, the heap or the climb is out of order').toEqual({
+    fell: true,
+    underButton: true,
+    heapBelow: true,
+    path: ['heap', 'ledge', 'button'],
+  });
+});
 
 /* A seed whose heap at the desktop size has places to land on before Put It Back. */
 const CLIMB_SEED = 2;

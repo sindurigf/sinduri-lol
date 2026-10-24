@@ -30,6 +30,8 @@ const TIGHT_GAP = 1;
 const FLOAT_GAP = 24;
 /* Rises without overshoot, so it never passes the top of the screen. */
 const RISE_EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+/* Parked under Put It Back as the rabbit's last ledge: the main menu bar. */
+const LEDGE = '.header-slab';
 const EDGE = 16;
 /* A block narrower than this share of the screen is small: it tilts more and drops into the lowest gap. */
 const SMALL_SHARE = 0.4;
@@ -230,9 +232,19 @@ const stack = (blocks: HTMLElement[], room: Room, solid: Spot[]): Landing[] => {
       key: Math.random(),
     };
   });
+  /*
+   * Wide blocks first, shuffled; then small ones, widest first, into the lowest
+   * gaps, bare labels before painted ones, so painted blocks the rabbit can climb top the heap.
+   */
+  const shows = (el: Element) =>
+    [el, ...el.querySelectorAll('*')].some((part) => painted(part));
+  const small = sized
+    .filter((b) => b.small)
+    .sort((a, b) => b.box.width - a.box.width);
   const order = [
     ...sized.filter((b) => !b.small).sort((a, b) => a.key - b.key),
-    ...sized.filter((b) => b.small).sort((a, b) => b.box.width - a.box.width),
+    ...small.filter((b) => !shows(b.el)),
+    ...small.filter((b) => shows(b.el)),
   ];
   const heap = [...solid];
   const landings = order.map(({ el, box, reach: drawn, small }, rank) => {
@@ -358,7 +370,10 @@ const topEdges = (): Edge[] => {
 };
 
 /* y of the highest visible top edge straight down at x: one nothing covers there. */
-const surfaceAt = (edges: Edge[], x: number): number | null => {
+const surfaceAt = (
+  edges: Edge[],
+  x: number,
+): { y: number; el: Element } | null => {
   const under = edges
     .filter(({ a, b }) => x >= Math.min(a.x, b.x) && x <= Math.max(a.x, b.x))
     .map(({ el, a, b }) => ({
@@ -371,17 +386,18 @@ const surfaceAt = (edges: Edge[], x: number): number | null => {
     const hit = document.elementFromPoint(x, y + LEVEL_SLACK / 2);
     return hit !== null && el.contains(hit);
   });
-  return seen ? seen.y : null;
+  return seen ? { y: seen.y, el: seen.el } : null;
 };
 
 /* Nothing painted, no text and no control, nor another control's ring, inside the rabbit's box; `overPage`: the page that stays may lie under it, as under the risen Put It Back. */
 const roomFor = (
-  controls: DOMRect[],
+  controls: Guard[],
   left: number,
   top: number,
   wide: number,
   tall: number,
   overPage = false,
+  under: Element[] = [],
 ): boolean => {
   if (
     top < 0 ||
@@ -390,14 +406,19 @@ const roomFor = (
   ) {
     return false;
   }
-  const reach = ringReach();
-  const clash = controls.some(
-    (c) =>
-      left < c.right + reach &&
-      c.left - reach < left + wide &&
-      top < c.bottom + reach &&
-      c.top - reach < top + tall,
-  );
+  /* A control it stands on is under its feet, not in its box. */
+  const clash = controls
+    .filter(
+      ({ el }) => !under.some((part) => el.contains(part) || part.contains(el)),
+    )
+    .map(({ box }) => box)
+    .some(
+      (c) =>
+        left < c.right &&
+        c.left < left + wide &&
+        top < c.bottom &&
+        c.top < top + tall,
+    );
   if (clash) return false;
   for (let i = 0; i < ROOM_PROBES; i++) {
     for (let j = 0; j < ROOM_PROBES; j++) {
@@ -418,11 +439,30 @@ const roomFor = (
   return true;
 };
 
-/* Every shown control but Put It Back, measured once for the whole search. */
-const controlBoxes = (): DOMRect[] =>
+const grow = (box: DOMRect, by: number): DOMRect =>
+  new DOMRect(
+    box.left - by,
+    box.top - by,
+    box.width + 2 * by,
+    box.height + 2 * by,
+  );
+
+/*
+ * Every shown control but Put It Back, measured once for the whole search. Their
+ * rings never show while fallen: keyboard focus on one puts the page back.
+ */
+type Guard = { el: Element; box: DOMRect };
+
+const controlBoxes = (): Guard[] =>
   [...document.querySelectorAll(TARGETS)]
     .filter((el) => el !== button && el.checkVisibility())
-    .map((el) => el.getBoundingClientRect());
+    .map((el) => ({ el, box: grow(el.getBoundingClientRect(), TOUCH) }));
+
+/* Put It Back with its focus ring's reach: kept clear wherever the rabbit stands but on it. */
+const buttonGuard = (): Guard => ({
+  el: button,
+  box: grow(button.getBoundingClientRect(), ringReach()),
+});
 
 type Hop = {
   x: number;
@@ -434,22 +474,30 @@ type Hop = {
 };
 /* The rabbit shrinks to these to fit, as on a wide screen where the heap reaches the top. */
 const HOP_SCALES = [1, 0.75, 0.5];
+/* px: the rabbit's height while it climbs, at most its phone size, so its seat and headroom leave the heap the screen. */
+const CLIMB_HEIGHT = 96;
+const climbHeight = (): number =>
+  Math.min(CLIMB_HEIGHT, rabbit?.getBoundingClientRect().height ?? 0);
 
 /* Where the rabbit could stand with its middle at x: on the surfaces under its feet, level enough, with room above. */
 const standAt = (
   edges: Edge[],
-  controls: DOMRect[],
+  controls: Guard[],
   x: number,
   wide: number,
   tall: number,
 ): number | null => {
   const reach = (wide * FEET_SHARE) / 2;
   const levels = [x - reach, x, x + reach].map((at) => surfaceAt(edges, at));
-  if (levels.some((y) => y === null)) return null;
-  const ys = levels as number[];
+  if (levels.some((level) => level === null)) return null;
+  const found = levels as { y: number; el: Element }[];
+  const ys = found.map(({ y }) => y);
   if (Math.max(...ys) - Math.min(...ys) > LEVEL_SLACK) return null;
   const y = Math.min(...ys) - TOUCH;
-  return roomFor(controls, x - wide / 2, y - tall, wide, tall) ? y : null;
+  const under = found.map(({ el }) => el);
+  return roomFor(controls, x - wide / 2, y - tall, wide, tall, false, under)
+    ? y
+    : null;
 };
 
 /* On Put It Back, its seat: on the edge, or above the focus ring while keyboard focus shows it (SC 2.4.11). */
@@ -464,7 +512,7 @@ const seat = (): number =>
  */
 const perch = (
   edges: Edge[],
-  controls: DOMRect[],
+  controls: Guard[],
   posed: boolean,
 ): Hop | null => {
   if (!rabbit) return null;
@@ -490,52 +538,87 @@ const perch = (
     tall,
   });
   for (const scale of HOP_SCALES) {
-    const wide = box.height * ratio * scale;
-    const tall = box.height * scale;
+    const tall = climbHeight() * scale;
+    const wide = tall * ratio;
     const middle = own.left + own.width / 2;
     const y = seat();
     if (roomFor(controls, middle - wide / 2, y - tall, wide, tall, true)) {
-      return hop(middle, y, scale, wide, tall);
+      return hop(middle, y, tall / box.height, wide, tall);
     }
   }
   for (const scale of HOP_SCALES) {
-    const wide = box.height * ratio * scale;
-    const tall = box.height * scale;
+    const tall = climbHeight() * scale;
+    const wide = tall * ratio;
     let best: { x: number; y: number } | null = null;
     for (
       let x = EDGE + wide / 2;
       x + wide / 2 <= screen - EDGE;
       x += SLOT_STEP
     ) {
-      const y = standAt(edges, controls, x, wide, tall);
+      const y = standAt(edges, [...controls, buttonGuard()], x, wide, tall);
       if (y !== null && (!best || y < best.y)) best = { x, y };
     }
-    if (best) return hop(best.x, best.y, scale, wide, tall);
+    if (best) return hop(best.x, best.y, tall / box.height, wide, tall);
   }
   return null;
 };
 
-/* px between the rabbit's hops, at least; longer when more hops than this would be needed. */
-const STRIDE = 70;
-const MAX_HOPS = 5;
-
-/* Visible places to land on the way from the footer to the perch, then the perch. */
-const stones = (edges: Edge[], controls: DOMRect[], spot: Hop): Foot[] => {
+/*
+ * Visible places to land on the way from the footer: up the heap, onto the ledge
+ * beside Put It Back when there is one, then the perch.
+ */
+const stones = (
+  edges: Edge[],
+  controls: Guard[],
+  spot: Hop,
+  ledge: Element | undefined,
+): Foot[] => {
   if (!rabbit) return [];
+  const guard = [...controls, buttonGuard()];
   const box = rabbit.getBoundingClientRect();
   const from = box.left + box.width / 2;
-  const toward = Math.sign(spot.foot.x - from);
-  const stride = Math.max(STRIDE, Math.abs(spot.foot.x - from) / MAX_HOPS);
-  const steps: Foot[] = [];
+  const onLedge = edges.filter(({ el }) => ledge?.contains(el));
+  const heap = edges.filter(({ el }) => !ledge?.contains(el) && el !== button);
+  /* Beside the button on the ledge, on the side nearer the footer rabbit first. */
+  const own = button.getBoundingClientRect();
+  const aside = ringReach() + spot.wide / 2 + TOUCH;
+  const ledgeStone = [own.right + aside, own.left - aside]
+    .sort((a, b) => Math.abs(a - from) - Math.abs(b - from))
+    .map((x) => ({ x, y: standAt(onLedge, guard, x, spot.wide, spot.tall) }))
+    .find((stone): stone is Foot => stone.y !== null);
+  /* Up the heap first: its highest place to stand, and one about halfway up from the footer. */
+  const screen = document.documentElement.clientWidth;
+  const footY = box.bottom;
+  const places: Foot[] = [];
   for (
-    let x = from + toward * stride;
-    toward !== 0 && (spot.foot.x - x) * toward > stride / 2;
-    x += toward * stride
+    let x = EDGE + spot.wide / 2;
+    x + spot.wide / 2 <= screen - EDGE;
+    x += SLOT_STEP
   ) {
-    const y = standAt(edges, controls, x, spot.wide, spot.tall);
-    if (y !== null) steps.push({ x, y });
+    const y = standAt(heap, guard, x, spot.wide, spot.tall);
+    if (y !== null) places.push({ x, y });
   }
-  return [...steps, spot.foot];
+  const highest = places.reduce<Foot | null>(
+    (best, place) => (!best || place.y < best.y ? place : best),
+    null,
+  );
+  const halfway = highest
+    ? places
+        .filter((place) => place.y > highest.y + spot.tall / 2)
+        .reduce<Foot | null>(
+          (best, place) =>
+            !best ||
+            Math.abs(place.y - (footY + highest.y) / 2) <
+              Math.abs(best.y - (footY + highest.y) / 2)
+              ? place
+              : best,
+          null,
+        )
+    : null;
+  const steps = [halfway, highest].filter(
+    (place): place is Foot => place !== null,
+  );
+  return [...steps, ...(ledgeStone ? [ledgeStone] : []), spot.foot];
 };
 
 const HOP_VARS = ['--hop-x', '--hop-y', '--hop-scale'];
@@ -646,7 +729,7 @@ const floatButton = (): DOMRect => {
     getComputedStyle(header).position === 'sticky'
       ? header.getBoundingClientRect().bottom
       : 0;
-  const seat = (rabbit?.getBoundingClientRect().height ?? 0) + ringReach();
+  const seat = climbHeight() + ringReach();
   const top = Math.max(0, stuck) + EDGE + seat;
   const left = (document.documentElement.clientWidth - own.width) / 2;
   button.style.setProperty('--float-x', `${left - own.left}px`);
@@ -741,10 +824,31 @@ const fall = (): void => {
     )
     .map((el) => toSpot(el.getBoundingClientRect()));
   /*
-   * Under Put It Back's gap: packed loosely and tilted, then tightly and level,
-   * and if it still does not fit, moved down past the screen's bottom, where scrolling reaches it.
+   * The header bar is parked level under Put It Back as a ledge for the rabbit,
+   * with a rabbit's height of headroom under it, so the rabbit can stand on the heap too.
    */
-  const ceiling = lifted.bottom + FLOAT_GAP;
+  const ledge = fallen.find((el) => el.matches(LEDGE));
+  const climbRoom = climbHeight() + ringReach();
+  let ledgeLanding: Landing | null = null;
+  let ceiling = lifted.bottom + FLOAT_GAP;
+  if (ledge) {
+    const drawn = reach(ledge);
+    const top = ceiling;
+    ledgeLanding = {
+      el: ledge,
+      x: 0,
+      y: top - drawn.top,
+      turn: 0,
+      top,
+      rank: 0,
+    };
+    ceiling = top + drawn.height + climbRoom;
+  }
+  const heaped = fallen.filter((el) => el !== ledge);
+  /*
+   * Under that: packed loosely and tilted, then tightly and level, and if it
+   * still does not fit, moved down past the screen's bottom, where scrolling reaches it.
+   */
   let room: Room = {
     floor: innerHeight - EDGE,
     ceiling,
@@ -752,18 +856,22 @@ const fall = (): void => {
     tilt: true,
   };
   const highestOf = (all: Landing[]) => Math.min(...all.map(({ top }) => top));
-  let landings = stack(fallen, room, solid);
+  let landings = stack(heaped, room, solid);
   if (highestOf(landings) < ceiling) {
     room = { ...room, gap: TIGHT_GAP, tilt: false };
-    landings = stack(fallen, room, solid);
+    landings = stack(heaped, room, solid);
   }
   /* Still too tall: the whole heap moves down by the overflow, below the screen's bottom edge. */
   const sink = Math.max(0, ceiling - highestOf(landings));
-  landings = landings.map((landing) => ({
-    ...landing,
-    y: landing.y + sink,
-    top: landing.top + sink,
-  }));
+  landings = [
+    ...(ledgeLanding ? [ledgeLanding] : []),
+    ...landings.map((landing) => ({
+      ...landing,
+      y: landing.y + sink,
+      top: landing.top + sink,
+      rank: landing.rank + 1,
+    })),
+  ];
   const posed = motion.matches && Boolean(rabbit && atlasUrl);
   const moves = landings
     .map(drop)
@@ -790,7 +898,7 @@ const fall = (): void => {
       if (hopper && posed) {
         try {
           await hopper.climb(
-            stones(edges, controls, spot).map(hopper.local),
+            stones(edges, controls, spot, ledge).map(hopper.local),
             spot.scale,
           );
           return;

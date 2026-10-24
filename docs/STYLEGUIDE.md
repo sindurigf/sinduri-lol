@@ -1094,24 +1094,28 @@ Enforced by `tests/footer.spec.ts`.
   it. A block taller than 60% of the screen stays and the blocks inside it
   fall; a footer row falls as its link alone.
 - Put It Back rises to the top of the screen, centered, over every fallen
-  block, with room above it for the rabbit and a 24px gap below it that the
-  heap never enters. If the heap does not fit under it, it packs tight and
-  level; if it still does not fit, it moves down past the screen's bottom,
-  where scrolling reaches it.
+  block, with room above it for the rabbit. The header bar, the main menu, is
+  parked level under it as a ledge, its links clickable, with a rabbit's
+  height of headroom under it; the heap fills the screen below that. If the
+  heap does not fit, it packs tight and level; if it still does not fit, it
+  moves down past the screen's bottom, where scrolling reaches it. Bare labels
+  land before painted blocks, so painted ones top the heap.
 - Then the footer rabbit climbs in the hero's poses
   (`src/scripts/let-it-fall-rabbit.ts`, frames from
   `src/lib/hero-field-rabbit.ts`, the hero atlas loaded on press): crouch,
   leap on an eased arc, crouch on landing, sit, facing the way it travels. It
-  hops up the heap, then leaps onto the risen Put It Back and sits on its top
-  edge, clear of its label, and above its focus ring while keyboard focus
-  shows it. Where it lands is read from the landed page: only the top edge of
-  a painted, fallen surface (a fill or edge unlike its ground, or an image) or
-  of Put It Back, level under its middle, with nothing painted, no text and
-  no other control or its ring in its box. Five hops at most, 70px apart at
-  least; on the button it looks around twice. If the seat has no room, it
-  takes the highest such place on the heap, shrinking to fit. On Put It Back
-  it leaps home at once. It is `aria-hidden` and takes no pointer; under
-  reduced motion the footer sticker is simply on the button and back.
+  hops up the heap (its highest place to stand, and one about halfway up),
+  onto the ledge beside Put It Back, then onto the button's top edge, clear of
+  its label, and above its focus ring while keyboard focus shows it. Where it
+  lands is read from the landed page: only the top edge of a painted, fallen
+  surface (a fill or edge unlike its ground, or an image) or of Put It Back,
+  level under its middle, with nothing painted, no text and no other control
+  in its box; it may stand on a control's top edge. It is drawn over every
+  fallen block; only Put It Back is drawn over it. It is at most 96px tall
+  while it climbs. On the button it looks around twice. If the seat has no
+  room, it takes the highest such place on the heap, shrinking to fit. On Put
+  It Back it leaps home at once. It is `aria-hidden` and takes no pointer;
+  under reduced motion the footer sticker is simply on the button and back.
 - The same button (now Put It Back), Esc, keyboard focus moving anywhere else
   or a new window width puts it all back. A click or tap on a link or button
   in the heap focuses without `:focus-visible`, so it follows the link; a

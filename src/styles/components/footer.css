@@ -215,6 +215,11 @@
     transform-origin: 0 0;
   }
 
+  /* Over every fallen block while the page is down, as the climbing rabbit is. */
+  :root:has([data-fall-block]) .footer-rabbit {
+    z-index: 2;
+  }
+
   /* While the hero's posed rabbit climbs in its place. */
   .footer-rabbit[data-away] {
     visibility: hidden;
