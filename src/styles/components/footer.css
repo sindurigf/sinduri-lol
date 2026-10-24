@@ -206,6 +206,35 @@
     transform-origin: 0 0;
   }
 
+  /* While the hero's posed rabbit climbs the heap in its place. */
+  .footer-rabbit[data-away] {
+    visibility: hidden;
+  }
+
+  /* The climbing rabbit: a point at its feet, its pose a window onto the hero atlas. */
+  .fall-hopper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    pointer-events: none;
+
+    & > span {
+      position: absolute;
+      transform-origin: 0 0;
+    }
+  }
+
+  .fall-hopper-frame {
+    position: absolute;
+    overflow: hidden;
+
+    & img {
+      position: absolute;
+      max-width: none;
+    }
+  }
+
   .footer-rabbit[data-hopped] {
     transform: translate(var(--hop-x), var(--hop-y)) scale(var(--hop-scale));
   }

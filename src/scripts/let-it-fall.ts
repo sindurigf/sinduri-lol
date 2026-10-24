@@ -1,5 +1,6 @@
 /* Let It Fall: everything on screen drops and stacks into a heap above the button, with the footer rabbit on top; the same button, Esc, keyboard focus elsewhere or a new window width puts it back. */
-export {};
+import { createHopper, type Foot, type Hopper } from './let-it-fall-rabbit';
+import { RABBIT_FRAMES } from '../lib/hero-field-rabbit';
 
 const LABEL_FALL = 'Let It Fall';
 const LABEL_BACK = 'Put It Back';
@@ -45,6 +46,8 @@ const REPEAT_MS = 300;
 const button = document.querySelector<HTMLButtonElement>('[data-let-it-fall]');
 const header = document.querySelector<HTMLElement>('.site-header');
 const rabbit = document.querySelector<HTMLImageElement>('.footer-rabbit');
+const atlasUrl = button?.dataset.rabbitAtlas;
+let hopper: Hopper | null = null;
 const status = document.querySelector<HTMLElement>('[data-let-it-fall-status]');
 if (!button || !status) {
   throw new Error('let-it-fall: the footer lacks its button or status.');
@@ -260,18 +263,45 @@ const stack = (
   return { heap, landings };
 };
 
-type Hop = { x: number; y: number; scale: number };
+/* The rabbit sits on something under the middle half of it, not on a corner. */
+const FEET_SHARE = 0.5;
+const SUPPORT_SLACK = 1;
+const supported = (
+  heap: Spot[],
+  left: number,
+  wide: number,
+  tall: number,
+  floor: number,
+  bottom: number,
+): boolean => {
+  const inset = (wide * (1 - FEET_SHARE)) / 2;
+  const under = lowestFit(heap, left + inset, left + wide - inset, tall, floor);
+  return Math.abs(under.bottom - bottom) <= SUPPORT_SLACK;
+};
+
+type Hop = {
+  x: number;
+  y: number;
+  scale: number;
+  foot: Foot;
+  wide: number;
+  tall: number;
+};
 /* The rabbit shrinks to these to fit the heap's top, as on a wide screen where the heap reaches the top. */
 const HOP_SCALES = [1, 0.75, 0.5];
 
 /* The highest place on the heap where the rabbit fits on screen, at the largest size that does; controls are spots, so it covers none. */
-const perch = (heap: Spot[], floor: number): Hop | null => {
+const perch = (heap: Spot[], floor: number, posed: boolean): Hop | null => {
   if (!rabbit) return null;
   const box = rabbit.getBoundingClientRect();
   if (!box.width) return null;
   const screen = document.documentElement.clientWidth;
+  /* The hero's sitting pose is narrower than the footer sticker. */
+  const ratio = posed
+    ? RABBIT_FRAMES.sit.w / RABBIT_FRAMES.sit.h
+    : box.width / box.height;
   for (const scale of HOP_SCALES) {
-    const wide = box.width * scale;
+    const wide = box.height * ratio * scale;
     const tall = box.height * scale;
     let best: (Hop & { at: number }) | null = null;
     for (let left = EDGE; left + wide <= screen - EDGE; left += SLOT_STEP) {
@@ -284,13 +314,63 @@ const perch = (heap: Spot[], floor: number): Hop | null => {
       );
       const top = bottom - tall;
       const at = top + Math.random() * SLOT_JITTER;
-      if (resting && top >= 0 && (!best || at < best.at)) {
-        best = { x: left - box.left, y: top - box.top, scale, at };
+      if (
+        resting &&
+        top >= 0 &&
+        supported(heap, left, wide, tall, floor, bottom) &&
+        (!best || at < best.at)
+      ) {
+        best = {
+          x: left - box.left,
+          y: top - box.top,
+          scale,
+          foot: { x: left + wide / 2, y: bottom },
+          wide,
+          tall,
+          at,
+        };
       }
     }
-    if (best) return { x: best.x, y: best.y, scale };
+    if (best) {
+      const { at: _, ...hop } = best;
+      return hop;
+    }
   }
   return null;
+};
+
+/* px between the rabbit's hops along the top of the heap, at least; longer when more hops than this would be needed. */
+const STRIDE = 70;
+const MAX_HOPS = 5;
+
+/* Up onto the heap, then hops along its top to the perch, each landing as clear of controls as the perch. */
+const stones = (heap: Spot[], floor: number, spot: Hop): Foot[] => {
+  if (!rabbit) return [];
+  const box = rabbit.getBoundingClientRect();
+  const from = box.left + box.width / 2;
+  const toward = Math.sign(spot.foot.x - from);
+  const stride = Math.max(STRIDE, Math.abs(spot.foot.x - from) / MAX_HOPS);
+  const steps: Foot[] = [];
+  for (
+    let x = from + toward * stride;
+    toward !== 0 && (spot.foot.x - x) * toward > stride / 2;
+    x += toward * stride
+  ) {
+    const { bottom, resting } = lowestFit(
+      heap,
+      x - spot.wide / 2,
+      x + spot.wide / 2,
+      spot.tall,
+      floor,
+    );
+    const left = x - spot.wide / 2;
+    const fits =
+      resting &&
+      bottom - spot.tall >= 0 &&
+      supported(heap, left, spot.wide, spot.tall, floor, bottom);
+    if (fits) steps.push({ x, y: bottom });
+  }
+  return [...steps, spot.foot];
 };
 
 const HOP_VARS = ['--hop-x', '--hop-y', '--hop-scale'];
@@ -388,6 +468,7 @@ const fall = (): void => {
   }
   /* A rabbit still hopping home is measured from home, not mid-air. */
   for (const animation of rabbit?.getAnimations() ?? []) animation.cancel();
+  hopper?.stop();
   pin();
   const tallest = innerHeight * TALLEST_SHARE;
   const candidates = [...document.querySelectorAll<HTMLElement>(BLOCKS)].filter(
@@ -434,16 +515,26 @@ const fall = (): void => {
     ({ heap, landings } = stack(fallen, floor, solidBeside(fallen, stays)));
   }
   if (!fallen.some((el) => header?.contains(el))) unpin();
-  const spot = perch(heap, floor);
+  const posed = motion.matches && Boolean(rabbit && atlasUrl);
+  const spot = perch(heap, floor, posed);
   const moves = landings
     .map(drop)
     .filter((a): a is Animation => a !== null)
     .map((a) => a.finished);
+  if (posed && rabbit && atlasUrl && spot) {
+    hopper ??= createHopper(rabbit, atlasUrl);
+  }
+  const path =
+    spot && hopper ? stones(heap, floor, spot).map(hopper.local) : [];
   const pile = fallen;
   void Promise.all(moves)
     .then(async () => {
       if (!rabbit || !spot || fallen !== pile) return;
-      /* Lazy below the fold; it must be drawn before it leaps. */
+      if (hopper && motion.matches) {
+        await hopper.climb(path, spot.scale);
+        return;
+      }
+      /* Lazy below the fold; it must be drawn before it is shown on the heap. */
       rabbit.loading = 'eager';
       await rabbit.decode();
       if (fallen === pile) hopTo(spot);
@@ -463,6 +554,7 @@ const restore = (): void => {
   }
   const shift = (header?.getBoundingClientRect().top ?? 0) - before;
   if (rabbit?.hasAttribute('data-hopped')) hopTo(null);
+  void hopper?.goHome().catch(ignoreCancel);
   for (const el of fallen) {
     const lies = getComputedStyle(el).transform;
     const from =

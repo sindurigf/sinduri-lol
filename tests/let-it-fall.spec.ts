@@ -311,13 +311,20 @@ test('under reduced motion the blocks and the rabbit move at once, never animate
 });
 
 /* The rabbit on the heap: on screen, over no control, and decorative. */
+/* ms: the climb is a few hops of about 0.8s and two glances; the wait allows for a slow runner. */
+const CLIMB_MS = 20_000;
+
+/* The rabbit on the heap, settled: on screen, over no control, hidden from assistive technology. */
 const rabbitClear = async (page: Page) => {
-  const rabbit = page.locator('.footer-rabbit');
-  await expect(rabbit).toHaveAttribute('data-hopped');
+  const hopper = page.locator('.fall-hopper[data-settled]');
+  await expect(hopper).toBeAttached({ timeout: CLIMB_MS });
   await landed(page);
+  await expect(page.locator('.footer-rabbit')).toHaveAttribute('data-away');
   expect(
-    await rabbit.evaluate((img) => {
-      const r = img.getBoundingClientRect();
+    await hopper.evaluate((feet) => {
+      const r = feet
+        .querySelector('.fall-hopper-frame')!
+        .getBoundingClientRect();
       const onScreen =
         r.top >= 0 &&
         r.bottom <= innerHeight &&
@@ -335,25 +342,26 @@ const rabbitClear = async (page: Page) => {
           );
         })
         .map((el) => el.textContent?.trim());
-      return { onScreen, covers, hidden: img.getAttribute('alt') === '' };
+      return { onScreen, covers, hidden: feet.getAttribute('aria-hidden') };
     }),
     'the rabbit is off screen, covers a control, or is announced',
-  ).toEqual({ onScreen: true, covers: [], hidden: true });
+  ).toEqual({ onScreen: true, covers: [], hidden: 'true' });
 };
 
-test('the rabbit hops onto the heap, covers no control, and hops home', async ({
+test('the rabbit climbs onto the heap, covers no control, and hops home', async ({
   page,
 }) => {
   await seedRandom(page, HEAP_SEED);
   await page.setViewportSize({ width: 390, height: HEIGHT });
   await gotoSettled(page, ROUTE);
   await press(page);
-  const rabbit = page.locator('.footer-rabbit');
   await rabbitClear(page);
   await page.keyboard.press('Escape');
-  await landed(page);
-  await expect(rabbit).not.toHaveAttribute('data-hopped');
-  await expect(rabbit, 'the rabbit kept its hop offsets').not.toHaveAttribute(
+  await expect(page.locator('.fall-hopper')).toHaveCount(0);
+  const sticker = page.locator('.footer-rabbit');
+  await expect(sticker).not.toHaveAttribute('data-away');
+  await expect(sticker).not.toHaveAttribute('data-hopped');
+  await expect(sticker, 'the rabbit kept its hop offsets').not.toHaveAttribute(
     'style',
     /./,
   );
