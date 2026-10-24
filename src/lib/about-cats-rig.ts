@@ -219,7 +219,7 @@ export const createCatRig = (
     pending: false,
     cut: true,
     lastX: NaN,
-    stepX: NaN,
+    stepX: 0,
     lastLift: 0,
     movedAt: -Infinity,
     travelled: 0,
@@ -253,11 +253,6 @@ const drawFrame = (rig: CatRig, layer: Layer, frame: Frame): void => {
   set(layer.view, 'viewBox', `${sx} ${sy} ${sw} ${sh}`);
   set(layer.image, 'width', width);
   set(layer.image, 'height', height);
-};
-
-const showLayer = (layer: Layer, opacity: number): void => {
-  set(layer.view, 'opacity', f(opacity));
-  set(layer.view, 'visibility', opacity > 0 ? 'visible' : 'hidden');
 };
 
 /** What stepFrame keeps between frames. */
@@ -302,8 +297,7 @@ export const stepFrame = (
 export const drawnXOf = (
   s: Pick<FrameStep, 'frame' | 'stepX'>,
   x: number,
-): number =>
-  s.frame?.startsWith('walk') && !Number.isNaN(s.stepX) ? s.stepX : x;
+): number => (s.frame?.startsWith('walk') ? s.stepX : x);
 
 /** True while a frame waits its turn or the arrival squash shows: the loop draws until both end. */
 export const isStepping = (
@@ -360,7 +354,7 @@ export const renderCat = (
   const arrived = rig.frame !== null && !rig.cut;
   if (stepFrame(rig, wanted, now, x)) {
     drawFrame(rig, rig.layer, rig.frame!);
-    showLayer(rig.layer, 1);
+    set(rig.layer.view, 'visibility', 'visible');
     set(rig.root, 'data-frame', rig.frame!);
   }
   const shown = rig.frame ?? wanted;

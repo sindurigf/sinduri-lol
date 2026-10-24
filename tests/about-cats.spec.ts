@@ -655,7 +655,7 @@ test(
       shownAt: -Infinity,
       pending: false,
       cut: false,
-      stepX: NaN,
+      stepX: 0,
     };
     const shown: { frame: Frame; at: number; x: number }[] = [];
     for (let at = 0; at < TROT_MS + STOPPED_MS; at += SCREEN_FRAME_MS) {
@@ -2775,10 +2775,10 @@ test.describe('About cats', () => {
           const shown = [...cat.querySelectorAll('svg')].filter(
             (view) => view.getAttribute('visibility') !== 'hidden',
           );
-          return shown.map((view) => view.getAttribute('opacity'));
+          return shown.map((view) => getComputedStyle(view).opacity);
         }),
       )
-      .toEqual(['1.00']);
+      .toEqual(['1']);
   });
 
   test('a drawn cat is at least 44 by 44px (SC 2.5.5)', async ({ page }) => {

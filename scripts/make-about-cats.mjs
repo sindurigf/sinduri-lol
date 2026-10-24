@@ -123,8 +123,8 @@ try {
         t.th * DENSITY,
         t.tw,
         t.th,
-        +t.w.toFixed(2),
-        +t.h.toFixed(2),
+        +t.w.toFixed(1),
+        +t.h.toFixed(1),
       ];
       return { input: t.png, left, top };
     });
