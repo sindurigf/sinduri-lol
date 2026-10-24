@@ -30,6 +30,9 @@ export const tagHref = (tag: string): string => `${TAG_PATH}${tag}/`;
 
 export const tagFeedPath = (tag: string): string => `${tagHref(tag)}rss.xml`;
 
+/* Drupal Planet subscribes to this tag's feed. */
+export const PLANET_TAG = 'drupal';
+
 /* `/blog/page/<n>`, not `/blog/<n>`, which `[category]` and `[slug]` share. */
 export const PAGED_SEGMENT = 'page';
 
