@@ -23,10 +23,17 @@ const MAX_INSTANT_MS = 1;
 const BUTTON_FROM_BOTTOM = 120;
 
 const fallen = (page: Page) => page.locator('[data-fell]');
-/* Every fall and climb back has landed. */
+/* Every block's fall or climb back has landed; the rabbit's climb may go on. */
 const landed = (page: Page) =>
   expect
-    .poll(() => page.evaluate(() => document.getAnimations().length))
+    .poll(() =>
+      page.evaluate(
+        () =>
+          [...document.querySelectorAll('[data-fall-block]')].flatMap((el) =>
+            el.getAnimations(),
+          ).length,
+      ),
+    )
     .toBe(0);
 /* Targets in the heap off screen, or covered by something else at any of nine points across them. */
 const coveredTargets = (page: Page) =>
