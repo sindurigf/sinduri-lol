@@ -40,7 +40,10 @@ import {
   WALK,
   WALK_FRAME_PX,
   WALK_STRIDE_PX,
+  POSE_FRAME,
+  frameFor,
   type Frame,
+  type NamedPose,
 } from '../src/lib/about-cats-frames';
 import {
   createIdle,
@@ -646,6 +649,73 @@ const STOPPED_MS = 500;
 /** The walk phases a cycle must keep: contact, passing, and both again on the other side. */
 const WALK_PHASES = 4;
 
+const NAMED_POSES = Object.fromEntries(
+  (Object.keys(POSE_FRAME) as NamedPose[]).map((name) => [name, pose(name)]),
+) as Record<NamedPose, ReturnType<typeof pose>>;
+/** px a move must travel within this long to count as moving, as the rig does. */
+const MOVING_WITHIN_MS = 120;
+
+/** The frames a sitting cat shows playing `move` at 60fps, in order. */
+const shownFrames = (move: Move): Frame[] => {
+  const s = {
+    frame: null as Frame | null,
+    shownAt: -Infinity,
+    pending: false,
+    cut: true,
+    stepX: 0,
+    wanted: null as Frame | null,
+    wantedAt: 0,
+  };
+  const shown: Frame[] = [];
+  let lastX = 0;
+  let lastLift = 0;
+  let movedAt = -Infinity;
+  let travelled = 0;
+  for (let at = 0; at <= duration(move) + TICK_MS; at += SCREEN_FRAME_MS) {
+    const p = poseAt(move, pose('sit'), Math.min(at, duration(move)));
+    const step = Math.abs(p.x - lastX);
+    lastX = p.x;
+    if (step > 0) movedAt = at;
+    const moving = at - movedAt < MOVING_WITHIN_MS;
+    travelled = moving ? travelled + step : 0;
+    const wanted = frameFor(p, NAMED_POSES, {
+      travelled,
+      moving,
+      lift: p.y,
+      lastLift,
+    });
+    lastLift = p.y;
+    if (stepFrame(s, wanted, at, p.x)) shown.push(s.frame!);
+  }
+  return shown;
+};
+
+const LYING: readonly Frame[] = ['loaf', 'loafsink', 'sleep', 'belly'];
+const JUMPING: readonly Frame[] = ['takeoff', 'leap', 'landing'];
+
+test(
+  'a pounce lands and sits back up without flashing a lying-down frame',
+  NODE,
+  () => {
+    const shown = shownFrames(MOVES.pounce());
+    const landed = shown.lastIndexOf('landing');
+    expect(landed, 'the pounce never landed').toBeGreaterThan(-1);
+    expect(
+      shown.slice(landed).filter((frame) => LYING.includes(frame)),
+      `frames after landing: ${shown.slice(landed).join(', ')}`,
+    ).toEqual([]);
+  },
+);
+
+test('a sitting cat turning on the spot shows no jump frames', NODE, () => {
+  const turn = withTurn(MOVES.look(), { ...pose('sit'), face: -1 });
+  const shown = shownFrames(turn);
+  expect(
+    shown.filter((frame) => JUMPING.includes(frame)),
+    `frames: ${shown.join(', ')}`,
+  ).toEqual([]);
+});
+
 test(
   'a trotting cat steps through its walk without skipping a phase, keeps pace with its body, and stops stepping when it stops',
   NODE,
@@ -656,6 +726,8 @@ test(
       pending: false,
       cut: false,
       stepX: 0,
+      wanted: null as Frame | null,
+      wantedAt: 0,
     };
     const shown: { frame: Frame; at: number; x: number }[] = [];
     for (let at = 0; at < TROT_MS + STOPPED_MS; at += SCREEN_FRAME_MS) {
