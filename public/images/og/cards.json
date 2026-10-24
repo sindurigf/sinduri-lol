@@ -1,7 +1,7 @@
 {
   "/about": {
     "title": "About",
-    "photo": "/_astro/sinduri-bicycle.BrStwMe4_Z8c9zf.webp",
+    "photo": "/_astro/sinduri-bicycle.BrStwMe4_uXmDT.webp",
     "alt": "About, sinduri.lol, beside a photo: Sinduri laughing as she rides a bicycle with a basket down a tree-lined path."
   },
   "/accessibility": {
@@ -11,12 +11,12 @@
   },
   "/blog": {
     "title": "Blog",
-    "photo": "/_astro/cover.BaYAHj5r_1uFe5D.webp",
+    "photo": "/_astro/cover.BaYAHj5r_2cTk0V.webp",
     "alt": "Blog, sinduri.lol, beside a photo: Sinduri and a friend laughing together, each holding a bottle."
   },
   "/blog/five-years-in-drupal": {
     "title": "Five Years in Drupal",
-    "photo": "/_astro/cover.BaYAHj5r_1uFe5D.webp",
+    "photo": "/_astro/cover.BaYAHj5r_2cTk0V.webp",
     "alt": "Five Years in Drupal, sinduri.lol, beside a photo: Sinduri and a friend laughing together, each holding a bottle."
   },
   "/blog/open-source": {
@@ -26,7 +26,7 @@
   },
   "/blog/open-source-is-not-just-code": {
     "title": "Open Source Is Not Just Code",
-    "photo": "/_astro/mentoring-table.BlT0bjAS_2dcWLX.webp",
+    "photo": "/_astro/mentoring-table.BlT0bjAS_Z1AV8Fi.webp",
     "alt": "Open Source Is Not Just Code, sinduri.lol, beside a photo: Sinduri at the Drupal mentoring table at DrupalCon Rotterdam."
   },
   "/blog/professional-journey": {
@@ -106,7 +106,7 @@
   },
   "/talks/open-source-is-not-just-code": {
     "title": "Open Source Is Not Just Code, the Slides",
-    "photo": "/_astro/sinduri-studio.BXKCzLan_Z13DGm0.webp",
+    "photo": "/_astro/sinduri-studio.BXKCzLan_Yx6sa.webp",
     "alt": "Open Source Is Not Just Code, the Slides, sinduri.lol, beside a photo: Sinduri smiling in a studio portrait, standing against a dark wall beside a teal block."
   }
 }
