@@ -726,6 +726,9 @@ evidence.
   every color; a swatch there is a bordered box.
 - **Delete the video byte-range pipeline as dead code:** the next
   published video would not play in Safari and iOS, which need `206`.
+- **Keep an About cat's `cut` set until its frame changes:** `stepFrame` clears
+  it once the frame holds, so only the settle draw skips the arrival squash; a
+  later arrival is a real one and squashes.
 - **Route `/llms.txt` through `getSortedPosts`:** it drops placeholder
   posts, and `/llms.txt` is the one surface meant to list them.
 - **Use Astro's `security.csp`:** `@astrojs/cloudflare` lacks

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /*
  * Renders the About cats' frames from the cut-out drawings in
- * artwork/about-cats/ as die-cut stickers, packed into one WebP sheet per cat
- * (src/assets/about-cats-<cat>.webp), and writes where each frame sits to
+ * artwork/about-cats/ as die-cut stickers, packed into one AVIF sheet per cat
+ * (src/assets/about-cats-<cat>.avif), and writes where each frame sits to
  * src/lib/about-cats-sheet.ts. Rerun after changing a drawing or a frame size.
  *
  *   npm run about-cats
@@ -21,12 +21,15 @@ const paint = (token) => cssColorToken(`--color-${token}`);
 const RIM = 2;
 const EDGE = 1;
 const BLOCK = 3;
+/* Alpha gain before the rim is grown, so thin lines like whiskers get a solid rim, not a faint grey one. */
+const MASK_GAIN = 4;
 /* Device px per drawn px: sharp on a 2x screen. */
 const DENSITY = 2;
 /* Below this the drawing is upscaled into its frame and blurs. */
 const MIN_DENSITY = 1.5;
-const WEBP_QUALITY = 82;
-const WEBP_EFFORT = 6;
+/* AVIF keeps full colour (4:4:4), so the white rim takes no pink haze and the ink edge stays sharp, at less weight than WebP. */
+const AVIF_QUALITY = 70;
+const AVIF_EFFORT = 6;
 /* Frames per sheet row. */
 const COLUMNS = 6;
 /* Clear px between frames, so a frame never bleeds into its neighbour when scaled. */
@@ -63,8 +66,9 @@ const filter = (scale) => {
   ).join('');
   return (
     `<filter id="cut" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">` +
-    `<feMorphology in="SourceAlpha" operator="dilate" radius="${r(RIM)}" result="rim"/>` +
-    `<feMorphology in="SourceAlpha" operator="dilate" radius="${r(OUTER)}" result="edge"/>` +
+    `<feComponentTransfer in="SourceAlpha" result="mask"><feFuncA type="linear" slope="${MASK_GAIN}"/></feComponentTransfer>` +
+    `<feMorphology in="mask" operator="dilate" radius="${r(RIM)}" result="rim"/>` +
+    `<feMorphology in="mask" operator="dilate" radius="${r(OUTER)}" result="edge"/>` +
     `${steps}<feMerge result="block">${merge}</feMerge>` +
     `<feFlood flood-color="${paint('pink')}"/><feComposite in2="block" operator="in" result="pink"/>` +
     `<feFlood flood-color="${paint('gold-text')}"/><feComposite in2="edge" operator="in" result="ink"/>` +
@@ -123,14 +127,14 @@ try {
         t.th * DENSITY,
         t.tw,
         t.th,
-        +t.w.toFixed(2),
-        +t.h.toFixed(2),
+        +t.w.toFixed(1),
+        +t.h.toFixed(1),
       ];
       return { input: t.png, left, top };
     });
     const width = cellW * COLUMNS;
     const height = rowH.reduce((a, b) => a + b, 0);
-    const file = `src/assets/about-cats-${cat}.webp`;
+    const file = `src/assets/about-cats-${cat}.avif`;
     await sharp({
       create: {
         width,
@@ -140,7 +144,11 @@ try {
       },
     })
       .composite(composites)
-      .webp({ quality: WEBP_QUALITY, alphaQuality: 100, effort: WEBP_EFFORT })
+      .avif({
+        quality: AVIF_QUALITY,
+        chromaSubsampling: '4:4:4',
+        effort: AVIF_EFFORT,
+      })
       .toFile(file);
     sheet[cat] = frames;
     console.log(`make-about-cats: wrote ${file} (${width}x${height})`);

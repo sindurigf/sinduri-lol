@@ -7,21 +7,30 @@
 import { PAD, SHEET } from './about-cats-sheet';
 import {
   POSE_FRAME,
+  bridges,
+  WALK,
   frameFor,
   type Frame,
   type Motion,
   type NamedPose,
 } from './about-cats-frames';
+import { BREATH_DEPTH } from './about-cats-idle';
 import { pose } from './about-cats-moves';
 import type { CatId, Pose, PropKind, PropState } from './about-cats-types';
 
 const NS = 'http://www.w3.org/2000/svg';
 const D = Math.PI / 180;
 
-/** How long a new frame takes to fade in over the last one. */
-const FADE_MS = 110;
-/** ms a frame must have shown before the next one fades in over it, not cuts. */
-const HELD_MS = 240;
+/** One step of the flip-book: 12 a second. A new frame waits until the last has shown this long, so every in-between is seen. */
+export const TICK_MS = 1000 / 12;
+/** A frame wanted for less than this is a passing blip of the pose blend, not a pose: one 60Hz frame is 16.7ms. */
+const BLIP_MS = 25;
+/** Walk frames a fast gait may step at once: 2 of 8 keeps the 4 phases (contact and passing, each side). */
+const MAX_WALK_STEP = 2;
+/** The squash a cat lands in for one step when it arrives in a still pose. */
+const ARRIVE_SQUASH = 0.96;
+/** How much a held pose grows at the top of a breath, as a share of its height. */
+const BREATH_SCALE = 0.025;
 /** ms a cat must stand still before it stops walking. */
 const STILL_MS = 120;
 /** Where the head is in a frame, as shares of its width ahead of center and its height up. */
@@ -81,7 +90,12 @@ const NAMED = Object.fromEntries(
   (Object.keys(POSE_FRAME) as NamedPose[]).map((name) => [name, pose(name)]),
 ) as Record<NamedPose, Pose>;
 
-const STILL: Motion = { travelled: 0, moving: false, lift: 0, lastLift: 0 };
+const STILL: Motion = {
+  travelled: 0,
+  moving: false,
+  lift: 0,
+  lastLift: 0,
+};
 
 /** A frame's drawn size and the cat's own size inside it, in px. */
 const sizeOf = (id: CatId, frame: Frame) => {
@@ -137,12 +151,20 @@ export interface CatRig {
   hit: SVGRectElement;
   zz: SVGPathElement;
   flip: SVGGElement;
-  /** The frame fading out, then the one fading in. */
-  layers: [Layer, Layer];
+  /** The window the current frame shows through. */
+  layer: Layer;
   frame: Frame | null;
-  changedAt: number;
   shownAt: number;
+  /** A frame waiting for the current one's step to end. */
+  pending: boolean;
+  /** The next frame cuts in without the arrival squash: a resize or reduced motion. */
+  cut: boolean;
+  /** The frame the pose last asked for, and since when. */
+  wanted: Frame | null;
+  wantedAt: number;
   lastX: number;
+  /** Where the cat was drawn when its walk frame last changed: a walk moves only with the frame. */
+  stepX: number;
   lastLift: number;
   movedAt: number;
   travelled: number;
@@ -161,7 +183,7 @@ export const createCatRig = (
   const hit = el('rect', { class: 'cat-hit-area' }, root);
   const flip = el('g', {}, root);
   /* Hidden until a frame is drawn: an empty window shows the whole sheet, and takes clicks. */
-  const layer = (): Layer => {
+  const makeLayer = (): Layer => {
     const view = el(
       'svg',
       {
@@ -175,7 +197,7 @@ export const createCatRig = (
     const image = el('image', {}, view);
     return { view, image };
   };
-  const layers: [Layer, Layer] = [layer(), layer()];
+  const layer = makeLayer();
   /* Outside the flip, so the letter never reads backwards. */
   const zz = el(
     'path',
@@ -197,11 +219,15 @@ export const createCatRig = (
     hit,
     zz,
     flip,
-    layers,
+    layer,
     frame: null,
-    changedAt: -Infinity,
     shownAt: -Infinity,
+    pending: false,
+    cut: true,
+    wanted: null,
+    wantedAt: 0,
     lastX: NaN,
+    stepX: 0,
     lastLift: 0,
     movedAt: -Infinity,
     travelled: 0,
@@ -220,8 +246,8 @@ export const hitBox = (id: CatId, frame: Frame) => {
 
 /** Loads the cat's frames, once: called when its band first comes into view, so an unseen cat costs no download. */
 export const loadSheet = (rig: CatRig): void => {
-  for (const { image } of rig.layers)
-    if (!image.hasAttribute('href')) set(image, 'href', rig.sheet.src);
+  const { image } = rig.layer;
+  if (!image.hasAttribute('href')) set(image, 'href', rig.sheet.src);
 };
 
 /** Shows `frame` in `layer`, its ground line at y = 0 and centered on x = 0. */
@@ -237,21 +263,81 @@ const drawFrame = (rig: CatRig, layer: Layer, frame: Frame): void => {
   set(layer.image, 'height', height);
 };
 
-const showLayer = (layer: Layer, opacity: number): void => {
-  set(layer.view, 'opacity', f(opacity));
-  set(layer.view, 'visibility', opacity > 0 ? 'visible' : 'hidden');
-};
+/** What stepFrame keeps between frames. */
+export type FrameStep = Pick<
+  CatRig,
+  'frame' | 'shownAt' | 'pending' | 'cut' | 'stepX' | 'wanted' | 'wantedAt'
+>;
 
-export const isFading = (
-  rig: Pick<CatRig, 'changedAt'>,
+/**
+ * Moves `s` toward the frame `wanted`, returning true when the frame changes.
+ * Frames cut, never fade: a fade doubles the legs. Each holds a full step, so a
+ * quick move still shows its in-between, and a walk advances one frame at a time.
+ */
+export const stepFrame = (
+  s: FrameStep,
+  wanted: Frame,
   now: number,
-): boolean => now - rig.changedAt < FADE_MS;
-
-/** Ends any fade, and makes the next frame cut in: a jump cut (resize, reduced motion) shows it at once. */
-export const settleFrame = (rig: CatRig): void => {
-  rig.changedAt = -Infinity;
-  rig.shownAt = Infinity;
+  x: number,
+): boolean => {
+  if (wanted !== s.wanted) {
+    s.wanted = wanted;
+    s.wantedAt = now;
+  }
+  const at = s.frame === null ? -1 : WALK.indexOf(s.frame);
+  const to = WALK.indexOf(wanted);
+  const blip =
+    !s.cut &&
+    to < 0 &&
+    !(s.frame && bridges(s.frame, wanted)) &&
+    now - s.wantedAt < BLIP_MS;
+  if (blip) {
+    s.pending = wanted !== s.frame;
+    return false;
+  }
+  const ahead = (to - at + WALK.length) % WALK.length;
+  /* Within a walk: hold while the body is still, else step toward `wanted` without skipping a phase. */
+  const next =
+    at >= 0 && to >= 0
+      ? x === s.stepX
+        ? s.frame!
+        : WALK[(at + Math.min(ahead, MAX_WALK_STEP)) % WALK.length]!
+      : wanted;
+  s.pending = next !== s.frame && now - s.shownAt < TICK_MS;
+  if (next === s.frame) s.cut = false;
+  if (next === s.frame || s.pending) return false;
+  /* A cut counts as a full step already shown: no squash, and the next frame need not wait. */
+  s.shownAt = s.cut ? now - TICK_MS : now;
+  s.cut = false;
+  s.stepX = x;
+  s.frame = next;
+  return true;
 };
+
+/** Where the cat is drawn: while a walk frame shows, where that frame began, so a planted paw never slides. */
+export const drawnXOf = (
+  s: Pick<FrameStep, 'frame' | 'stepX'>,
+  x: number,
+): number => (s.frame?.startsWith('walk') ? s.stepX : x);
+
+/** True while a frame waits its turn or the arrival squash shows: the loop draws until both end. */
+export const isStepping = (
+  rig: Pick<CatRig, 'shownAt' | 'pending'>,
+  now: number,
+): boolean => rig.pending || now - rig.shownAt < TICK_MS;
+
+/** Makes the next frame show at once, with no squash: a jump cut (resize, reduced motion). */
+export const settleFrame = (rig: CatRig): void => {
+  rig.shownAt = -Infinity;
+  rig.pending = false;
+  rig.cut = true;
+};
+
+/** The named pose each still frame draws, for its resting chest thickness: the first one listed wins. */
+const RESTING_POSE = new Map<Frame, NamedPose>();
+for (const name of Object.keys(POSE_FRAME) as NamedPose[])
+  if (!RESTING_POSE.has(POSE_FRAME[name]))
+    RESTING_POSE.set(POSE_FRAME[name], name);
 
 /** px the paws stand above the ground: a climb raises the whole cat onto the upper brick. */
 const feetUp = (p: Pose): number =>
@@ -278,7 +364,7 @@ export const renderCat = (
   /* A frame drawn too soon after the last moves the cat too little to tell: walking lasts until it has stood still a while. */
   const moving = now - rig.movedAt < STILL_MS;
   rig.travelled = moving ? rig.travelled + step : 0;
-  const frame = frameFor(grounded(p), NAMED, {
+  const wanted = frameFor(grounded(p), NAMED, {
     travelled: rig.travelled,
     moving,
     lift: p.y,
@@ -286,24 +372,17 @@ export const renderCat = (
   });
   rig.lastLift = p.y;
 
-  const [back, front] = rig.layers;
-  if (frame !== rig.frame) {
-    if (rig.frame) drawFrame(rig, back, rig.frame);
-    drawFrame(rig, front, frame);
-    /* Only a frame that held still fades out: faded mid-stride or mid-leap, the legs double. */
-    const fades = rig.frame !== null && now - rig.shownAt > HELD_MS && p.y <= 0;
-    rig.shownAt = now;
-    rig.changedAt = fades ? now : -Infinity;
-    rig.frame = frame;
-    set(rig.root, 'data-frame', frame);
+  const arrived = rig.frame !== null && !rig.cut;
+  if (stepFrame(rig, wanted, now, x)) {
+    drawFrame(rig, rig.layer, rig.frame!);
+    set(rig.layer.view, 'visibility', 'visible');
+    set(rig.root, 'data-frame', rig.frame!);
   }
-  const k = clamp((now - rig.changedAt) / FADE_MS, 0, 1);
-  showLayer(front, k);
-  showLayer(back, 1 - k);
+  const shown = rig.frame ?? wanted;
 
-  const { w, h } = sizeOf(rig.id, frame);
+  const { w, h } = sizeOf(rig.id, shown);
   const lift = liftOf(p);
-  const { half, tall } = hitBox(rig.id, frame);
+  const { half, tall } = hitBox(rig.id, shown);
   set(rig.hit, 'x', f(-half));
   set(rig.hit, 'width', f(2 * half));
   set(rig.hit, 'y', f(-(tall + lift)));
@@ -317,15 +396,25 @@ export const renderCat = (
     set(rig.zz, 'opacity', f(Math.min(1, 2 * p.zz)));
   }
 
-  set(rig.root, 'transform', translate(x, groundY));
+  const drawnX = drawnXOf(rig, x);
+  set(rig.root, 'transform', translate(drawnX, groundY));
+  /* A still frame breathes with the pose's chest, and lands in a squash for one step. */
+  const still = RESTING_POSE.has(shown) && !moving;
+  const resting = still ? RESTING_POSE.get(shown) : undefined;
+  const breath = resting
+    ? clamp((p.bt - NAMED[resting].bt) / BREATH_DEPTH, -1, 1) * BREATH_SCALE
+    : 0;
+  const squash =
+    still && arrived && now - rig.shownAt < TICK_MS ? ARRIVE_SQUASH : 1;
+  const sq = p.sq * squash;
   /* The drawings face left; a squash flattens the cat onto its feet. */
   set(
     rig.flip,
     'transform',
-    `translate(0 ${f(-lift)}) scale(${f(-p.face * (2 - p.sq))} ${f(p.sq)})`,
+    `translate(0 ${f(-lift)}) scale(${f(-p.face * (2 - sq))} ${f(sq * (1 + breath))})`,
   );
   rig.head = {
-    x: x + p.face * w * HEAD_AT.ahead,
+    x: drawnX + p.face * w * HEAD_AT.ahead,
     y: groundY - lift - h * HEAD_AT.up,
   };
 };

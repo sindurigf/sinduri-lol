@@ -1,7 +1,4 @@
-/*
- * Pure. The About cats are drawn from 24 Canva AI frames each. This picks the
- * frame for a pose and sets how tall each frame is drawn.
- */
+/* Pure. Picks the Canva AI frame that draws a cat's pose, and how tall each frame is drawn. */
 import type { CatId, Pose } from './about-cats-types';
 
 export const FRAMES = [
@@ -11,6 +8,10 @@ export const FRAMES = [
   'walk2',
   'walk3',
   'walk4',
+  'walk5',
+  'walk6',
+  'walk7',
+  'walk8',
   'rise',
   'crouchdown',
   'crouch',
@@ -33,7 +34,17 @@ export const FRAMES = [
 
 export type Frame = (typeof FRAMES)[number];
 
-export const WALK: readonly Frame[] = ['walk', 'walk2', 'walk3', 'walk4'];
+/** The walk cycle, one stride. */
+export const WALK: readonly Frame[] = [
+  'walk',
+  'walk2',
+  'walk3',
+  'walk4',
+  'walk5',
+  'walk6',
+  'walk7',
+  'walk8',
+];
 
 /** A sitting cat's drawn height in px; Hela is the smallest of the three. */
 export const SIT_HEIGHT: Record<CatId, number> = {
@@ -54,6 +65,10 @@ const SIZE: Record<Frame, ['h' | 'w', number]> = {
   walk2: ['w', 1.01],
   walk3: ['w', 1.01],
   walk4: ['w', 1.01],
+  walk5: ['w', 1.01],
+  walk6: ['w', 1.01],
+  walk7: ['w', 1.01],
+  walk8: ['w', 1.01],
   rise: ['w', 0.94],
   crouchdown: ['w', 1.12],
   crouch: ['w', 1.12],
@@ -83,6 +98,10 @@ const ADJUST: Record<CatId, Partial<Record<Frame, number>>> = {
     walk2: 1.1,
     walk3: 1.1,
     walk4: 1.1,
+    walk5: 1.1,
+    walk6: 1.1,
+    walk7: 1.1,
+    walk8: 1.1,
     belly: 0.8,
   },
 };
@@ -131,6 +150,13 @@ const BETWEEN: [NamedPose, NamedPose, Frame][] = [
   ['rear', 'leap', 'swat'],
 ];
 
+/** Whether `frame` is drawn in passing between `from` and another pose. */
+export const bridges = (from: Frame, frame: Frame): boolean =>
+  BETWEEN.some(
+    ([a, b, between]) =>
+      between === frame && (POSE_FRAME[a] === from || POSE_FRAME[b] === from),
+  );
+
 export const betweenFrame = (a: NamedPose, b: NamedPose): Frame | null =>
   BETWEEN.find(([x, y]) => (x === a && y === b) || (x === b && y === a))?.[2] ??
   null;
@@ -169,8 +195,11 @@ const LOOK_BACK = 20;
 /** px off the ground that reads as a jump, and as the top of one. */
 const AIRBORNE = 3;
 const HIGH = 14;
-/** px a paw travels per walk frame. */
-export const WALK_FRAME_PX = 13;
+/** px the body travels in one stride, the drawn step length of the walk cycle. */
+export const WALK_STRIDE_PX = 52;
+
+/** px the body travels per walk frame, so a planted paw stays put. */
+export const WALK_FRAME_PX = WALK_STRIDE_PX / WALK.length;
 
 export interface Motion {
   /** px travelled along the ground since the cat started walking. */
@@ -193,15 +222,18 @@ export const frameFor = (
   if (turned > ON_SIDE)
     return turned > (ON_SIDE + ON_BACK) / 2 ? 'roll' : 'lieside';
 
-  if (motion.lift > AIRBORNE) {
-    if (motion.lift > HIGH) return 'leap';
-    return motion.lift >= motion.lastLift ? 'takeoff' : 'landing';
-  }
-
   const ranked = (Object.keys(named) as NamedPose[])
     .map((name) => ({ name, d: poseDistance(p, named[name]) }))
     .sort((a, b) => a.d - b.d);
   const [near, next] = ranked;
+
+  /* A low hop from sitting, such as a turn on the spot, keeps the sitting frame: jump frames would flash a leap. */
+  const sitHop = near.name === 'sit' && motion.lift <= HIGH;
+  if (motion.lift > AIRBORNE && !sitHop) {
+    if (motion.lift > HIGH) return 'leap';
+    return motion.lift >= motion.lastLift ? 'takeoff' : 'landing';
+  }
+
   const share = near.d / (near.d + next.d || 1);
   const between =
     share > BETWEEN_FROM ? betweenFrame(near.name, next.name) : null;
@@ -209,7 +241,7 @@ export const frameFor = (
   if (motion.moving && (near.name === 'stand' || near.name === 'crouch'))
     return near.name === 'crouch'
       ? 'crouch'
-      : WALK[Math.floor(motion.travelled / WALK_FRAME_PX) % WALK.length];
+      : WALK[Math.floor(motion.travelled / WALK_FRAME_PX) % WALK.length]!;
 
   if (between) return between;
   if (near.name === 'sit' && Math.abs(p.hr) > LOOK_BACK) return 'look';

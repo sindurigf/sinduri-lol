@@ -26,8 +26,8 @@ const SERVED_AS_IS = new Map([
     ],
   ),
   ...['minerva', 'rudra', 'hela'].map((cat) => [
-    `about-cats-${cat}.webp`,
-    'the About cats draw their frames from it with SVG <image>; it is a WebP atlas already.',
+    `about-cats-${cat}.avif`,
+    'the About cats draw their frames from it with SVG <image>; it is an AVIF atlas already.',
   ]),
   [
     'hero-rabbit.svg',
