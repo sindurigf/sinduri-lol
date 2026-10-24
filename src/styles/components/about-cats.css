@@ -73,8 +73,9 @@
     }
   }
 
+  /* Only the hit box takes the pointer: the frame window's whole-sheet image would widen the cat's box (SC 2.5.8). */
   .cat-hit {
-    @apply pointer-events-auto cursor-pointer;
+    @apply pointer-events-none cursor-pointer;
   }
 
   /* Each cat's SC 2.2.2 control, in the band's corner, which the cat's track stops short of. */
