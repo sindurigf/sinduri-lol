@@ -875,10 +875,6 @@ evidence.
   controls in `/brand`'s light halves, which are `inert` and so never take
   focus. `ACCESSLINT_FALSE_POSITIVES` in `tests/accesslint.ts` drops each only
   on those elements and while its reason holds.
-- **Move the full-screen slide bar inside the card:** on a 16:9 screen the
-  foot row crosses the bottom of the focused slide's ring while both show.
-  The row shows only while the pointer moves or one of its buttons has focus,
-  and inside the card it would sit over slide content at some widths.
 - **Let It Fall should drop the static header on short screens:** under 30rem
   the header and the footer button never share the screen on any page, so the
   header is never on screen to fall.
