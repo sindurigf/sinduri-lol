@@ -21,6 +21,8 @@ const paint = (token) => cssColorToken(`--color-${token}`);
 const RIM = 2;
 const EDGE = 1;
 const BLOCK = 3;
+/* Alpha gain before the rim is grown, so thin lines like whiskers get a solid rim, not a faint grey one. */
+const MASK_GAIN = 4;
 /* Device px per drawn px: sharp on a 2x screen. */
 const DENSITY = 2;
 /* Below this the drawing is upscaled into its frame and blurs. */
@@ -63,8 +65,9 @@ const filter = (scale) => {
   ).join('');
   return (
     `<filter id="cut" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">` +
-    `<feMorphology in="SourceAlpha" operator="dilate" radius="${r(RIM)}" result="rim"/>` +
-    `<feMorphology in="SourceAlpha" operator="dilate" radius="${r(OUTER)}" result="edge"/>` +
+    `<feComponentTransfer in="SourceAlpha" result="mask"><feFuncA type="linear" slope="${MASK_GAIN}"/></feComponentTransfer>` +
+    `<feMorphology in="mask" operator="dilate" radius="${r(RIM)}" result="rim"/>` +
+    `<feMorphology in="mask" operator="dilate" radius="${r(OUTER)}" result="edge"/>` +
     `${steps}<feMerge result="block">${merge}</feMerge>` +
     `<feFlood flood-color="${paint('pink')}"/><feComposite in2="block" operator="in" result="pink"/>` +
     `<feFlood flood-color="${paint('gold-text')}"/><feComposite in2="edge" operator="in" result="ink"/>` +
