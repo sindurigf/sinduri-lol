@@ -195,14 +195,14 @@ Drupal is a project that closely follows all six pillars.
 
 One force is reshaping all six pillars at once, so it deserves its own section.
 
-**Where AI helps:**
+### Where AI Helps
 
 - It lowers the barrier to a first contribution.
 - It speeds up documentation, translation and issue triage.
 - It helps people who do not work in English as a first language.
 - It can shorten the time needed to understand a codebase, which could ease open source's long reliance on people's spare time.
 
-**Where AI adds strain:**
+### Where AI Adds Strain
 
 - It is cheap to generate a change, but a maintainer still has to understand it, so the cost shifts from the author to the reviewer.
 - Access is unequal. The best tools cost money and know-how, so people at well-funded companies get faster, while volunteers and people in lower-income regions get left behind. AI risks becoming a new kind of privilege.
