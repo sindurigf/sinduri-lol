@@ -136,8 +136,8 @@ const measureFluidImages = (page: Page) =>
 
     const resolve = (sizes: string): number => {
       const entry = topLevel(sizes).find((candidate) => {
-        const media = candidate.match(/^(\([^()]*\))\s+/);
-        return media === null || matchMedia(media[1]).matches;
+        const media = candidate.match(/^(\([^()]*\))\s+/)?.[1];
+        return media === undefined || matchMedia(media).matches;
       });
       const probe = document.createElement('div');
       probe.style.width = (entry ?? '100vw').replace(/^\([^()]*\)\s+/, '');
