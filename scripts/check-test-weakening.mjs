@@ -44,12 +44,18 @@ const RUNNER_FILES = [
 const SKIP =
   /\b(?:test|describe|it)(?:\.\w+)*\.(?:skip|fixme|fail)\b|\b\w*[Ii]nfo(?:\(\))?\.(?:skip|fixme|fail)\s*\(|\b(?:test|describe|it)(?:\.\w+)*\s*\[/;
 
-/** An early exit on a selector or set held in a name, the shape of a filter that exempts things from an assertion. */
-const EXEMPTING_EXIT =
-  /\bif\s*\(!?\s*[\w$.]*\.(?:matches|closest|contains)\s*\(\s*[A-Za-z_$][\w$.]*\s*\)\s*\)\s*\{?\s*(?:return\b|continue\b)/;
-/** A list or set named as an exemption: `ALLOWED_*`, `*_EXEMPT`, `KEEPS_*`, `SKIP_*`, `*_FALSE_POSITIVES`. */
+/** One balanced `(...)` level, so a condition can hold calls and span lines. */
+const IN_PARENS = String.raw`(?:[^()]|\((?:[^()]|\([^()]*\))*\))*?`;
+/** A selector test whose selector is held in a name, not a literal: `el.matches(keeps)`. */
+const NAMED_TEST = String.raw`[\w$.?]*\.(?:matches|closest)\s*\(\s*[A-Za-z_$][\w$.]*\s*\)`;
+/** An exit or a negated filter on a named test, the shape of a filter that exempts elements from an assertion. */
+const EXEMPTING_EXIT = new RegExp(
+  String.raw`\bif\s*\(${IN_PARENS}${NAMED_TEST}${IN_PARENS}\)\s*\{?\s*(?:return|continue)\b|\.filter\s*\(\s*\(?\s*[\w$]+\s*\)?\s*=>\s*!\s*${NAMED_TEST}`,
+  'g',
+);
+/** A `const`, `let` or `var` whose upper-case name has an exemption word between underscores: `KEEPS_ITS_COLORS`, `ACCESSLINT_FALSE_POSITIVES`. */
 const EXEMPTION_NAME =
-  /\b(?:const|let|var)\s+[A-Z0-9_]*(?:ALLOW|EXEMPT|EXCEPT|KEEPS|SKIP|IGNORE|FALSE_POSITIVE|WHITELIST)[A-Z0-9_]*\b/;
+  /\b(?:const|let|var)\s+(?:[A-Z0-9]+_)*(?:ALLOW(?:ED|LIST)?|EXEMPTS?|EXEMPTIONS?|EXCEPT(?:IONS?)?|KEEPS|SKIP(?:S|PED)?|IGNORED?|WHITELIST|FALSE_POSITIVES?)(?:_[A-Z0-9]+)*\b/g;
 
 /** Changes retries, mode or timeout for a group of tests. */
 const CONFIGURE = /\b(?:test|describe)(?:\.\w+)*\.configure\s*\(/;
@@ -257,6 +263,21 @@ export const newMatchingLines = (
     else added.push({ line: index + 1, text: line.trim(), key });
   });
   return added;
+};
+
+/** Lines where `newCode` has a `pattern` match, possibly multi-line, beyond those `oldCode` has, compared without whitespace. */
+const newMatches = (oldCode, newCode, pattern) => {
+  const left = new Map();
+  for (const [text] of oldCode.matchAll(pattern))
+    left.set(normalize(text), (left.get(normalize(text)) ?? 0) + 1);
+  const lines = [];
+  for (const match of newCode.matchAll(pattern)) {
+    const key = normalize(match[0]);
+    const count = left.get(key) ?? 0;
+    if (count > 0) left.set(key, count - 1);
+    else lines.push(lineAt(newCode, match.index));
+  }
+  return lines;
 };
 
 const countExpects = (code) => (code.match(EXPECT_CALL) ?? []).length;
@@ -503,12 +524,12 @@ export const fileFindings = ({ path, oldPath = path, oldText, newText }) => {
     for (const { line, text } of newMatchingLines(oldText, runs, CONFIGURE))
       add(line, `configures how tests run: ${text}`);
     const runLines = runs.split('\n');
-    for (const { line } of newMatchingLines(oldCode, newCode, EXEMPTING_EXIT))
+    for (const line of newMatches(oldCode, newCode, EXEMPTING_EXIT))
       add(
         line,
         `exempts elements from an assertion: ${runLines[line - 1].trim()}`,
       );
-    for (const { line } of newMatchingLines(oldCode, newCode, EXEMPTION_NAME))
+    for (const line of newMatches(oldCode, newCode, EXEMPTION_NAME))
       add(line, `names an exemption list: ${runLines[line - 1].trim()}`);
     for (const { line, text } of newMatchingLines(oldText, runs, AXE_EXCLUSION))
       add(line, `narrows axe: ${text}`);

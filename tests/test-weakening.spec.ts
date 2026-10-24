@@ -234,6 +234,20 @@ test.describe('test-weakening guard', NODE, () => {
       found.some((rule) => rule.startsWith('names an exemption list')),
       'the exemption list went unflagged',
     ).toBe(true);
+    expect(
+      rules({
+        path: SPEC,
+        oldText: scan(),
+        newText: scan(
+          `    if (`,
+          `      element.matches(keeps)`,
+          `    ) {`,
+          `      return false;`,
+          `    }`,
+        ),
+      }).filter((rule) => rule.startsWith('exempts elements')),
+      'an exempting exit wrapped over lines went unflagged',
+    ).toHaveLength(1);
   });
 
   test('passes an exit on a literal selector and a constant not named as an exemption', () => {
