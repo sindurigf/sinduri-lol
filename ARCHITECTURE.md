@@ -6,18 +6,18 @@ sinduri.lol. Design rules and values are in
 
 ## Stack
 
-| Concern     | Choice                                                                                   |
-| ----------- | ---------------------------------------------------------------------------------------- |
-| Framework   | Astro 7, static output; `/contact/send/` renders on demand in the Worker                 |
-| Interactive | Vue 3 via `@astrojs/vue`, islands only (the homepage canvas hero and the About cats)     |
-| Scripts     | Plain modules for everything that is not an island                                       |
-| Styling     | Tailwind CSS 4 via `@tailwindcss/vite`                                                   |
-| Language    | TypeScript, `astro/tsconfigs/strictest`, checked with `astro check` and `vue-tsc`        |
-| Content     | Astro Content Collections, Markdown in repo, rendered by Sätteri                         |
-| Font        | Lexend, self-hosted through Fontsource                                                   |
-| Hosting     | Cloudflare Workers static assets, D1 (EU), Rate Limiting, Email Routing, Workers Builds  |
-| Tests       | Playwright in Chromium, Firefox and WebKit, with axe-core and AccessLint for WCAG 2.2 AA |
-| Runtime     | Node.js from `.nvmrc`                                                                    |
+| Concern     | Choice                                                                                                                |
+| ----------- | --------------------------------------------------------------------------------------------------------------------- |
+| Framework   | Astro 7, static output; `/contact/send/` renders on demand in the Worker                                              |
+| Interactive | Vue 3 via `@astrojs/vue`, islands only (the homepage canvas hero and the About cats)                                  |
+| Scripts     | Plain modules for everything that is not an island                                                                    |
+| Styling     | Tailwind CSS 4 via `@tailwindcss/vite`                                                                                |
+| Language    | TypeScript, `astro/tsconfigs/strictest`, checked with `astro check` and `vue-tsc`                                     |
+| Content     | Astro Content Collections, Markdown in repo, rendered by Sätteri                                                      |
+| Font        | Lexend, self-hosted through Fontsource                                                                                |
+| Hosting     | Cloudflare Workers static assets, D1 (EU), Rate Limiting, Email Routing, Workers Builds                               |
+| Tests       | Playwright in Chromium, Firefox and WebKit, with axe-core and AccessLint for WCAG 2.2 AA, HTML_CodeSniffer for 2.1 AA |
+| Runtime     | Node.js from `.nvmrc`                                                                                                 |
 
 - Vue runs with `features: { optionsAPI: false }`; every component uses
   `<script setup>`.
@@ -282,7 +282,7 @@ presenter view and a PDF. Authoring rules:
   Slidev's `packages/parser/src/core.ts`), then `renderMarkdown` runs the
   visitors above, with a strict schema
   ([what fails the build](docs/DEVELOPMENT.md#writing-a-talk)).
-- **Slideshow.** Every slide is a `.card` in `<section id="slide-N">`, all in
+- **Slideshow.** Every slide is a `.slide` on the page's ground in `<section id="slide-N">`, all in
   the HTML. `DeckBar.astro` holds the controls and a polite live region;
   `src/scripts/slideshow.ts` wires them and the keys. Hidden slides use
   `data-current`, not `hidden`: Tailwind's `[hidden]` `!important` would stop
@@ -727,9 +727,6 @@ evidence.
 - **Fix axe's forced-colors `color-contrast` on `.sticker` in a `.card`:** axe
   reads the authored gold; the computed color there is CanvasText on Canvas,
   and `tests/forced-colors.spec.ts` passes.
-- **Keep `/brand` swatch colors in forced colors with `forced-color-adjust: none`:**
-  `tests/forced-colors.spec.ts` holds the site rule that forced colors replaces
-  every color; a swatch there is a bordered box.
 - **Delete the video byte-range pipeline as dead code:** the next
   published video would not play in Safari and iOS, which need `206`.
 - **Keep an About cat's `cut` set until its frame changes:** `stepFrame` clears
