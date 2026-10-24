@@ -227,7 +227,11 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 
 - `/rss.xml` (all published posts) and `/blog/tag/<tag>/rss.xml`, RSS 2.0 from
   `src/lib/feed.ts`, with `atom:link rel="self"` and RFC 822 dates.
-- The Drupal tag feed is the one for Drupal Planet.
+- The Drupal tag feed is the one for Drupal Planet. Its items carry the post's
+  opening, whole sentences up to 300 characters, stopping before a paragraph
+  that ends in a colon (`src/lib/feed-excerpt.ts`); the owner picked the length
+  under [Planet's guidelines](https://www.drupal.org/planet/guidelines). Every
+  other feed carries the teaser.
 - Placeholders are excluded. `tests/rss.spec.ts`.
 
 ### Markdown visitors
@@ -763,9 +767,6 @@ evidence.
 - **Store a message and count the last hour in one D1 `batch()`:** a batch
   is one transaction, so a failed count would roll back the stored message;
   apart, a failed count only skips the hourly cap.
-- **Stretch feed descriptions to Drupal Planet's 600 to 1000 characters:**
-  [its guidelines](https://www.drupal.org/planet/guidelines) call that length
-  "recommended", to keep long posts from flooding the page; the teaser stays.
 - **Give the talk page one `h1` above the slides:** the cover slide's heading
   is the `h1` and every other slide carries its own `h2`; another would repeat
   the title.
@@ -808,9 +809,6 @@ evidence.
 - **Drop the About cat card's "beside its cat, not over it" checks as
   decoration:** the owner asked for the card to open beside its cat, so where
   it opens is function; the test name in `tests/about-cats.spec.ts` says so.
-- **Draw the About cat's focus ring round the cat, not its band:** the ring on
-  the band passes SC 2.4.11 (sides and top stay visible), and the cat moves
-  while the band does not.
 - **Let an About cat keep playing while it has keyboard focus:** the hold is a
   rule, with its reason, in [STYLEGUIDE.md](docs/STYLEGUIDE.md#motion).
 - **Size the hero roundel with a fixed 96px disc, a jump to 128px at `lg`, or
@@ -877,10 +875,6 @@ evidence.
   controls in `/brand`'s light halves, which are `inert` and so never take
   focus. `ACCESSLINT_FALSE_POSITIVES` in `tests/accesslint.ts` drops each only
   on those elements and while its reason holds.
-- **Move the full-screen slide bar inside the card:** on a 16:9 screen the
-  foot row crosses the bottom of the focused slide's ring while both show.
-  The row shows only while the pointer moves or one of its buttons has focus,
-  and inside the card it would sit over slide content at some widths.
 
 ## Content notes
 
