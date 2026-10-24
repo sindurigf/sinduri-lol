@@ -1,14 +1,21 @@
 import sharp from 'sharp';
 import { expect, test } from './test';
-import { RABBIT_FRAMES, rabbitPose } from '../src/lib/hero-field-rabbit';
+import {
+  ATLAS_SIZE,
+  RABBIT_FRAMES,
+  rabbitPose,
+} from '../src/lib/hero-field-rabbit';
 import { NODE } from './tags';
 
 /* Build correctness: the hero draws atlas rects by number, so a re-exported atlas must still hold them. */
 test.describe('the hero rabbit atlas', NODE, () => {
   test('every frame and its foot lie inside the atlas', async () => {
     const { width = 0, height = 0 } = await sharp(
-      'src/assets/hero-rabbit.webp',
+      'src/assets/hero-rabbit.svg',
     ).metadata();
+    expect({ width, height }, 'the atlas file and ATLAS_SIZE disagree').toEqual(
+      { width: ATLAS_SIZE.w, height: ATLAS_SIZE.h },
+    );
     for (const [pose, f] of Object.entries(RABBIT_FRAMES)) {
       expect(
         f.x + f.w <= width && f.y + f.h <= height,

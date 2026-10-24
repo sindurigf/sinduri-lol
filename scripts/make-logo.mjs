@@ -13,6 +13,7 @@
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { chromium } from '@playwright/test';
+import sharp from 'sharp';
 import { cssColorToken } from '../src/lib/css-token.ts';
 
 const INK = cssColorToken('--color-block-ink');
@@ -22,12 +23,49 @@ const WHITE = cssColorToken('--color-light-ground');
 /* Baked into the drawing like the hero atlas; no page sets it. */
 const EAR = '#ff9cc4';
 
+/** A Potrace path in relative commands on whole trace units, a twentieth of a pixel at the roundel's largest: a third of the bytes. */
+const relative = (d) => {
+  let [x, y, x0, y0] = [0, 0, 0, 0];
+  let out = '';
+  const num = (n) =>
+    n < 0 || out.endsWith(' ') || /[a-z]$/.test(out) ? `${n}` : ` ${n}`;
+  for (const [, op, args] of d.matchAll(/([A-Za-z])([^A-Za-z]*)/g)) {
+    if (!'MLCZ'.includes(op))
+      throw new Error(
+        `make-logo: the trace has a ${op} command; relative() writes only M, L, C and Z.`,
+      );
+    const n = (args.match(/-?\d+(\.\d+)?/g) ?? []).map((v) =>
+      Math.round(Number(v)),
+    );
+    if (op === 'Z') {
+      out += 'z';
+      [x, y] = [x0, y0];
+      continue;
+    }
+    out += op.toLowerCase();
+    const step = op === 'C' ? 6 : 2;
+    for (let i = 0; i < n.length; i += step) {
+      const pts = n.slice(i, i + step);
+      for (let j = 0; j < pts.length; j += 2) {
+        out += num(pts[j] - x);
+        out += num(pts[j + 1] - y);
+      }
+      [x, y] = pts.slice(-2);
+      /* Pairs after a moveto's first are linetos: only the first opens the subpath. */
+      if (op === 'M' && i === 0) [x0, y0] = [x, y];
+    }
+  }
+  return out;
+};
+/* Two outlines, `cut` and `sil`: ARCHITECTURE.md#the-favicon-set. */
 const TRACE = JSON.parse(readFileSync('artwork/rabbit-jump.json', 'utf8'));
+/** The SVG with every path written by `relative`. */
+const shipped = (source) =>
+  source.replace(/ d="([^"]+)"/g, (_, d) => ` d="${relative(d)}"`);
 
 /* The header tile, Header.astro: 48px, `border-4`, `rounded-nav`. */
 const TILE = 48;
 const BORDER = 4;
-const LOGO_SCALE = 2;
 /* The share cards draw the tile at 7x (TILE_SCALE in scripts/make-og.mjs); this renders the rabbit at 2x of that. */
 const OG_LOGO_SCALE = 14;
 
@@ -106,7 +144,7 @@ const line = subpaths(TRACE.line)
 
 /** Mirrored to face right, scaled to `h`, turned, its box at (left, bottom). */
 const placement = ({ h, rotate, left, bottom }) => {
-  const b = bbox(TRACE.sil);
+  const b = bbox(TRACE.cut);
   const k = h / (b.y1 - b.y0);
   const w = (b.x1 - b.x0) * k;
   const transform = `translate(${left + w / 2} ${bottom - h / 2}) rotate(${rotate}) scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
@@ -130,25 +168,28 @@ const partition = (d, box) => {
 };
 
 function roundelArt() {
-  const b = bbox(TRACE.sil);
+  const b = bbox(TRACE.cut);
   const k = ROUNDEL.h / (b.y1 - b.y0);
   const u = 1 / k;
   const transform = `translate(${ROUNDEL.cx} 50) rotate(${ROUNDEL.rotate}) scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
   /* The drawing is mirrored, so a positive offset falls down and behind the rabbit. */
-  const grown = (color, width, offset = 0) =>
-    `<path d="${TRACE.sil}" transform="translate(${offset * u} ${offset * u})" fill="${color}" stroke="${color}" stroke-width="${2 * width * u}" stroke-linejoin="round"/>`;
-  const block = Array.from({ length: ROUNDEL.steps }, (_, i) =>
-    grown(
-      PINK,
-      ROUNDEL.rim,
-      (ROUNDEL.depth * (ROUNDEL.steps - i)) / ROUNDEL.steps,
-    ),
-  ).join('');
+  const grown = (color, width, offset = 0, ref = 'cut') =>
+    `<use href="#${ref}"${offset ? ` x="${(offset * u).toFixed(2)}" y="${(offset * u).toFixed(2)}"` : ''} fill="${color}" stroke="${color}" stroke-width="${(2 * width * u).toFixed(2)}" stroke-linejoin="round"/>`;
+  const offsets = Array.from(
+    { length: ROUNDEL.steps },
+    (_, i) => (ROUNDEL.depth * (ROUNDEL.steps - i)) / ROUNDEL.steps,
+  );
+  /* The ink back is swept like the block, from one edge width in, so it edges the block's far side evenly and never shows past its near side. */
+  const back = offsets
+    .filter((d) => d >= ROUNDEL.backEdge)
+    .map((d) => grown(INK, ROUNDEL.rim + ROUNDEL.backEdge, d))
+    .join('');
+  const block = offsets.map((d) => grown(PINK, ROUNDEL.rim, d)).join('');
   const [face, mouthLine] = partition(line, MOUTH_BOX);
   const [pink, tongue] = partition(TRACE.pink, MOUTH_BOX);
   const mx = (MOUTH_BOX.x0 + MOUTH_BOX.x1) / 2;
   const mouth = `<g transform="translate(${mx} ${MOUTH_BOX.y0}) scale(${MOUTH_SCALE}) translate(${-mx} ${-MOUTH_BOX.y0})">${fill(tongue, EAR)}${fill(mouthLine, INK, ROUNDEL.line * u)}</g>`;
-  return `<g transform="${transform}">${grown(INK, ROUNDEL.rim + ROUNDEL.backEdge, ROUNDEL.depth)}${block}${grown(WHITE, ROUNDEL.rim)}${grown(INK, ROUNDEL.edge)}
+  return `<defs><path id="cut" d="${TRACE.cut}"/><path id="sil" d="${TRACE.sil}"/></defs><g transform="${transform}">${back}${block}${grown(WHITE, ROUNDEL.rim)}${grown(INK, ROUNDEL.edge, 0, 'sil')}
 ${fill(TRACE.sil, WHITE)}${fill(pink, EAR)}${fill(face, INK, ROUNDEL.line * u)}${mouth}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
 }
 
@@ -160,9 +201,11 @@ function sticker() {
   });
   const u = 1 / k;
   const outer = (STICKER.edge + 2 * STICKER.rim + 2 * STICKER.rimEdge) * u;
-  return `<g transform="${transform}">
-<g transform="translate(${STICKER.throw * u} ${STICKER.throw * u})">${fill(TRACE.sil, INK, outer)}</g>
-${fill(TRACE.sil, INK, outer)}${fill(TRACE.sil, WHITE, (STICKER.edge + 2 * STICKER.rim) * u)}${fill(TRACE.sil, INK, STICKER.edge * u)}${fill(TRACE.sil, WHITE)}
+  const use = (ref, color, stroke = 0, offset = 0) =>
+    `<use href="#${ref}"${offset ? ` x="${offset.toFixed(2)}" y="${offset.toFixed(2)}"` : ''} fill="${color}"${stroke ? ` stroke="${color}" stroke-width="${stroke.toFixed(2)}" stroke-linejoin="round"` : ''}/>`;
+  return `<defs><path id="cut" d="${TRACE.cut}"/><path id="sil" d="${TRACE.sil}"/></defs><g transform="${transform}">
+${use('cut', INK, outer, STICKER.throw * u)}
+${use('cut', INK, outer)}${use('cut', WHITE, (STICKER.edge + 2 * STICKER.rim) * u)}${use('sil', INK, STICKER.edge * u)}${use('sil', WHITE)}
 ${fill(TRACE.pink, EAR)}${fill(line, INK, STICKER.line * u)}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
 }
 
@@ -275,7 +318,7 @@ const compact = (d, m) =>
     .join('');
 
 function iconArtwork({ precise }) {
-  const s = bbox(TRACE.sil);
+  const s = bbox(TRACE.cut);
   const [bx, by, bw, bh] = ICON_POSE.box;
   const k = Math.min(bw / (s.x1 - s.x0), bh / (s.y1 - s.y0));
   const r = (ICON_POSE.rotate * Math.PI) / 180;
@@ -300,7 +343,7 @@ function iconArtwork({ precise }) {
   const block = Array.from({ length: steps }, (_, i) =>
     use(PINK, outer, (depth * (steps - i)) / steps),
   ).join('');
-  return `<defs><path id="r" d="${path(TRACE.sil)}"/></defs>${use(INK, 2 * (rim + backEdge) * unit, depth)}${block}${use(INK, outer)}<use href="#r" fill="${GOLD}"/>${fill(path(largest(TRACE.pink)), WHITE)}${fill(path(largest(TRACE.eye)), INK)}`;
+  return `<defs><path id="r" d="${path(TRACE.cut)}"/></defs>${use(INK, 2 * (rim + backEdge) * unit, depth)}${block}${use(INK, outer)}<use href="#r" fill="${GOLD}"/>${fill(path(largest(TRACE.pink)), WHITE)}${fill(path(largest(TRACE.eye)), INK)}`;
 }
 
 const svg = (viewBox, body) =>
@@ -340,6 +383,19 @@ const raster = (source, width, height) =>
     { source, width, height },
   );
 
+/* The stickers are drawn at SUPERSAMPLE times their size and downscaled once, so the stacked block copies leave no seams. */
+const SUPERSAMPLE = 4;
+const crisp = async (source, width, height) =>
+  sharp(
+    Buffer.from(
+      (await raster(source, width * SUPERSAMPLE, height * SUPERSAMPLE)).png,
+      'base64',
+    ),
+  )
+    .resize(width, height, { kernel: 'lanczos3' })
+    .png()
+    .toBuffer();
+
 /** The px box of every pixel with any alpha in a `width`-wide raster. */
 const alphaBox = (alpha, width) => {
   let [x0, y0, x1, y1] = [width, alpha.length / width, 0, 0];
@@ -374,18 +430,23 @@ const box = {
   width: x1 - x0,
   height: y1 - y0,
 };
-const logo = await raster(
-  svg(`${box.left} ${box.top} ${box.width} ${box.height}`, sticker()),
-  box.width * LOGO_SCALE,
-  box.height * LOGO_SCALE,
+writeFileSync(
+  'src/assets/logo-rabbit.svg',
+  shipped(
+    svg(`${box.left} ${box.top} ${box.width} ${box.height}`, sticker()).replace(
+      '<svg ',
+      `<svg width="${box.width}" height="${box.height}" `,
+    ),
+  ),
 );
-writeFileSync('src/assets/logo-rabbit.png', Buffer.from(logo.png, 'base64'));
-const ogLogo = await raster(
-  svg(`${box.left} ${box.top} ${box.width} ${box.height}`, sticker()),
-  box.width * OG_LOGO_SCALE,
-  box.height * OG_LOGO_SCALE,
+writeFileSync(
+  'artwork/logo-rabbit-og.png',
+  await crisp(
+    svg(`${box.left} ${box.top} ${box.width} ${box.height}`, sticker()),
+    box.width * OG_LOGO_SCALE,
+    box.height * OG_LOGO_SCALE,
+  ),
 );
-writeFileSync('artwork/logo-rabbit-og.png', Buffer.from(ogLogo.png, 'base64'));
 
 const roundelSide = 100 + 2 * ROUNDEL_BLEED;
 const roundel = await raster(
@@ -406,8 +467,13 @@ if (touches)
     'The roundel rabbit reaches its bleed edge; widen ROUNDEL_BLEED.',
   );
 writeFileSync(
-  'src/assets/roundel-rabbit.png',
-  Buffer.from(roundel.png, 'base64'),
+  'src/assets/roundel-rabbit.svg',
+  shipped(
+    svg(
+      `${-ROUNDEL_BLEED} ${-ROUNDEL_BLEED} ${roundelSide} ${roundelSide}`,
+      roundelArt(),
+    ),
+  ),
 );
 
 const png = async (source, size) =>

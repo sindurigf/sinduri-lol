@@ -1010,7 +1010,7 @@ test.describe('the contact error pages in a browser', () => {
     }
   };
 
-  /* On-demand pages point images at /_image, which only the Worker serves. */
+  /* On-demand pages load their images from /_astro/ like any other page. */
   const expectEveryImageLoaded = async (page: Page, label: string) => {
     await expect
       .poll(
