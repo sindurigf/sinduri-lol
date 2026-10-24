@@ -13,7 +13,7 @@ import { format, resolveConfig } from 'prettier';
 import { chromium } from '@playwright/test';
 import sharp from 'sharp';
 import { cssColorToken } from '../src/lib/css-token.ts';
-import { framesOf, frameHeight } from '../src/lib/about-cats-frames.ts';
+import { FRAMES, frameHeight } from '../src/lib/about-cats-frames.ts';
 
 const CATS = ['minerva', 'rudra', 'hela'];
 const paint = (token) => cssColorToken(`--color-${token}`);
@@ -80,7 +80,7 @@ try {
   const sheet = {};
   for (const cat of CATS) {
     const arts = [];
-    for (const frame of framesOf(cat))
+    for (const frame of FRAMES)
       arts.push({ frame, ...(await checkArt(cat, frame)) });
 
     const tiles = [];

@@ -9,7 +9,6 @@ import {
   POSE_FRAME,
   WALK,
   frameFor,
-  walkFramePx,
   type Frame,
   type Motion,
   type NamedPose,
@@ -23,8 +22,8 @@ const D = Math.PI / 180;
 
 /** One step of the flip-book: 12 a second. A new frame waits until the last has shown this long, so every in-between is seen. */
 export const TICK_MS = 1000 / 12;
-/** Walk phases a fast gait still shows: an 8-frame walk may step 2 frames at a time, a 4-frame walk only 1. */
-const MIN_WALK_PHASES = 4;
+/** Walk frames a fast gait may step at once: 2 of 8 keeps the 4 phases (contact and passing, each side). */
+const MAX_WALK_STEP = 2;
 /** The squash a cat lands in for one step when it arrives in a still pose. */
 const ARRIVE_SQUASH = 0.96;
 /** How much a held pose grows at the top of a breath, as a share of its height. */
@@ -89,35 +88,15 @@ const NAMED = Object.fromEntries(
 ) as Record<NamedPose, Pose>;
 
 const STILL: Motion = {
-  walk: [],
-  walkPx: 1,
   travelled: 0,
   moving: false,
   lift: 0,
   lastLift: 0,
 };
 
-type Tile = readonly [
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-];
-
-/** Where `frame` sits in the cat's sheet; only Minerva has walk5 to walk8. */
-const tileOf = (id: CatId, frame: Frame): Tile => {
-  const tile = (SHEET[id] as Partial<Record<Frame, Tile>>)[frame];
-  if (!tile) throw new Error(`The ${id} sheet has no ${frame} frame.`);
-  return tile;
-};
-
 /** A frame's drawn size and the cat's own size inside it, in px. */
 const sizeOf = (id: CatId, frame: Frame) => {
-  const [, , , , dw, dh, w, h] = tileOf(id, frame);
+  const [, , , , dw, dh, w, h] = SHEET[id][frame];
   return { dw, dh, w, h };
 };
 
@@ -265,7 +244,7 @@ export const loadSheet = (rig: CatRig): void => {
 
 /** Shows `frame` in `layer`, its ground line at y = 0 and centered on x = 0. */
 const drawFrame = (rig: CatRig, layer: Layer, frame: Frame): void => {
-  const [sx, sy, sw, sh, dw, dh, , h] = tileOf(rig.id, frame);
+  const [sx, sy, sw, sh, dw, dh, , h] = SHEET[rig.id][frame];
   const { width, height } = rig.sheet;
   set(layer.view, 'x', f(-dw / 2));
   set(layer.view, 'y', f(-(PAD + h)));
@@ -297,18 +276,16 @@ export const stepFrame = (
   wanted: Frame,
   now: number,
   x: number,
-  walk: readonly Frame[],
 ): boolean => {
-  const at = s.frame === null ? -1 : walk.indexOf(s.frame);
-  const to = walk.indexOf(wanted);
-  const ahead = (to - at + walk.length) % walk.length;
-  const maxStep = Math.max(1, walk.length / MIN_WALK_PHASES);
+  const at = s.frame === null ? -1 : WALK.indexOf(s.frame);
+  const to = WALK.indexOf(wanted);
+  const ahead = (to - at + WALK.length) % WALK.length;
   /* Within a walk: hold while the body is still, else step toward `wanted` without skipping a phase. */
   const next =
     at >= 0 && to >= 0
       ? x === s.stepX
         ? s.frame!
-        : walk[(at + Math.min(ahead, maxStep)) % walk.length]!
+        : WALK[(at + Math.min(ahead, MAX_WALK_STEP)) % WALK.length]!
       : wanted;
   s.pending = next !== s.frame && now - s.shownAt < TICK_MS;
   if (next === s.frame) s.cut = false;
@@ -373,8 +350,6 @@ export const renderCat = (
   const moving = now - rig.movedAt < STILL_MS;
   rig.travelled = moving ? rig.travelled + step : 0;
   const wanted = frameFor(grounded(p), NAMED, {
-    walk: WALK[rig.id],
-    walkPx: walkFramePx(rig.id),
     travelled: rig.travelled,
     moving,
     lift: p.y,
@@ -383,7 +358,7 @@ export const renderCat = (
   rig.lastLift = p.y;
 
   const arrived = rig.frame !== null && !rig.cut;
-  if (stepFrame(rig, wanted, now, x, WALK[rig.id])) {
+  if (stepFrame(rig, wanted, now, x)) {
     drawFrame(rig, rig.layer, rig.frame!);
     showLayer(rig.layer, 1);
     set(rig.root, 'data-frame', rig.frame!);

@@ -34,19 +34,17 @@ export const FRAMES = [
 
 export type Frame = (typeof FRAMES)[number];
 
-const WALK4: readonly Frame[] = ['walk', 'walk2', 'walk3', 'walk4'];
-const WALK8: readonly Frame[] = [...WALK4, 'walk5', 'walk6', 'walk7', 'walk8'];
-
-/** Each cat's walk cycle, one stride. */
-export const WALK: Record<CatId, readonly Frame[]> = {
-  minerva: WALK8,
-  rudra: WALK4,
-  hela: WALK4,
-};
-
-/** The frames drawn for a cat: every frame but the walk frames past its cycle. */
-export const framesOf = (cat: CatId): readonly Frame[] =>
-  FRAMES.filter((frame) => !WALK8.includes(frame) || WALK[cat].includes(frame));
+/** The walk cycle, one stride. */
+export const WALK: readonly Frame[] = [
+  'walk',
+  'walk2',
+  'walk3',
+  'walk4',
+  'walk5',
+  'walk6',
+  'walk7',
+  'walk8',
+];
 
 /** A sitting cat's drawn height in px; Hela is the smallest of the three. */
 export const SIT_HEIGHT: Record<CatId, number> = {
@@ -100,6 +98,10 @@ const ADJUST: Record<CatId, Partial<Record<Frame, number>>> = {
     walk2: 1.1,
     walk3: 1.1,
     walk4: 1.1,
+    walk5: 1.1,
+    walk6: 1.1,
+    walk7: 1.1,
+    walk8: 1.1,
     belly: 0.8,
   },
 };
@@ -190,13 +192,9 @@ const HIGH = 14;
 export const WALK_STRIDE_PX = 52;
 
 /** px the body travels per walk frame, so a planted paw stays put. */
-export const walkFramePx = (cat: CatId): number =>
-  WALK_STRIDE_PX / WALK[cat].length;
+export const WALK_FRAME_PX = WALK_STRIDE_PX / WALK.length;
 
 export interface Motion {
-  /** The cat's walk cycle and the px it travels per frame. */
-  walk: readonly Frame[];
-  walkPx: number;
   /** px travelled along the ground since the cat started walking. */
   travelled: number;
   moving: boolean;
@@ -233,9 +231,7 @@ export const frameFor = (
   if (motion.moving && (near.name === 'stand' || near.name === 'crouch'))
     return near.name === 'crouch'
       ? 'crouch'
-      : motion.walk[
-          Math.floor(motion.travelled / motion.walkPx) % motion.walk.length
-        ];
+      : WALK[Math.floor(motion.travelled / WALK_FRAME_PX) % WALK.length]!;
 
   if (between) return between;
   if (near.name === 'sit' && Math.abs(p.hr) > LOOK_BACK) return 'look';
