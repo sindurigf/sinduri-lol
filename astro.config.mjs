@@ -17,6 +17,7 @@ import { MARKDOWN_WIDTHS } from './src/lib/image-densities.ts';
 import { cssColorToken } from './src/lib/css-token.ts';
 import { recordFingerprint } from './scripts/build-fingerprint.mjs';
 import { licenses } from './scripts/licenses.mjs';
+import { slashRedirects } from './scripts/slash-redirects.mjs';
 import { presenter } from './src/presenter/integration.mjs';
 import {
   isAdvertised,
@@ -105,6 +106,7 @@ export default defineConfig({
   integrations: [
     recordFingerprint(),
     licenses(),
+    slashRedirects(),
     presenter(),
     /* Every component uses <script setup>. */
     vue({ features: { optionsAPI: false } }),
