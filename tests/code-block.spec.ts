@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from './test';
+import { captures } from './captures';
 import { itemAt } from '../src/lib/defined';
 import { gotoSettled } from './settle';
 import { codeBlock } from '../src/plugins/code-block.mjs';
@@ -244,10 +245,11 @@ const scriptsOf = (html: string): string[] => {
       visit(`/_astro/${relative}`);
     }
   };
-  for (const [, src] of html.matchAll(
+  for (const src of captures(
+    html,
     /<script\b[^>]*\bsrc="(\/_astro\/[^"]+)"/g,
   )) {
-    visit(src!);
+    visit(src);
   }
   return [...seen.values()];
 };

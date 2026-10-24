@@ -189,7 +189,8 @@ export const TALK_ROUTES = ['/talks/open-source-is-not-just-code'] as const;
 export const TALKS_DIR = 'src/content/talks';
 
 /** The deck directory a talk route is built from. */
-export const deckOf = (route: string): string => route.split('/').at(-1)!;
+export const deckOf = (route: string): string =>
+  route.slice(route.lastIndexOf('/') + 1);
 
 /**
  * No `/blog/page/2` until a tenth post (POSTS_PER_PAGE). The `page` segment keeps

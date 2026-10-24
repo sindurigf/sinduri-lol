@@ -1,4 +1,5 @@
 import { expect, test, type Page } from './test';
+import { defined } from '../src/lib/defined';
 import { CONTENTS_POST_ROUTE, POST_ROUTES, POSTS, postsWhere } from './routes';
 import { PHOTOGRAPHERS } from '../src/lib/credits';
 import { gotoSettled } from './settle';
@@ -77,7 +78,10 @@ test(`a post with a long paragraph sets at most ${MAX_CHARACTERS_PER_LINE} chara
     'no post has a paragraph long enough to measure',
   ).toBeDefined();
   await page.setViewportSize({ width: MEASURE_WIDTH, height: 900 });
-  await gotoSettled(page, LONG_PARAGRAPH_POST!);
+  await gotoSettled(
+    page,
+    defined(LONG_PARAGRAPH_POST, 'a post with a long paragraph'),
+  );
   const longest = await charactersPerLine(page);
   expect(longest, 'no paragraph long enough to measure').not.toBeNull();
   expect(longest!).toBeLessThanOrEqual(MAX_CHARACTERS_PER_LINE);
@@ -226,10 +230,12 @@ test.describe('body figures', () => {
                 .getAttribute('viewBox')!
                 .split(' ')
                 .map(Number);
+              if (w === undefined || h === undefined)
+                throw new Error('An .aspect-sizer has no viewBox size.');
               const box = figure.getBoundingClientRect();
               return {
-                portrait: h! > w!,
-                ratio: frame.width / frame.height / (w! / h!),
+                portrait: h > w,
+                ratio: frame.width / frame.height / (w / h),
                 left: frame.left,
                 right: frame.right,
                 height: frame.height,

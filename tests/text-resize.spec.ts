@@ -164,7 +164,7 @@ for (const { width, height } of WINDOWS) {
 
     expect(
       report.filter((line) => line.endsWith('none')),
-      `text that never reaches 2x by ${Math.round(levels.at(-1)! * 100)}% zoom at ${width}px`,
+      `text that never reaches 2x by ${Math.round(Math.max(...levels) * 100)}% zoom at ${width}px`,
     ).toEqual([]);
   });
 }
