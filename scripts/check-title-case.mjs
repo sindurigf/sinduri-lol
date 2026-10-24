@@ -51,6 +51,12 @@ const ALLOWED = [
     text: 'Example: curl',
     reason: 'curl writes its own name in lower case.',
   },
+  {
+    route: '/blog/open-source-is-not-just-code/',
+    kind: 'heading',
+    text: 'What Happened at curl',
+    reason: 'curl writes its own name in lower case.',
+  },
 ];
 
 const ENTITIES = {
