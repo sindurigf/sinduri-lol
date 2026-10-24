@@ -30,6 +30,7 @@
     "check:title-case": "node scripts/check-title-case.mjs",
     "check:exif": "node scripts/check-exif.mjs",
     "check:commits": "sh scripts/check-commits.sh",
+    "check:test-weakening": "node scripts/check-test-weakening.mjs",
     "check:live": "sh scripts/check-live.sh",
     "check:live:console": "playwright test -c playwright.live.config.ts",
     "check:umami": "sh scripts/check-umami.sh",
