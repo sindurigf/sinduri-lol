@@ -78,8 +78,9 @@ export const CUP_EDGE = TRACK_MARGIN;
 export const POINTER_IDLE_MS = 4000;
 const FACE_DEADBAND = 20;
 const WATCH_EASE = 0.12;
-/** Degrees a cat turns its head while its card is open: past LOOK_BACK, so it looks round at you. */
-const LOOK_AT_YOU = LOOK_BACK + 8;
+/** Degrees past LOOK_BACK a cat turns its head while its card is open, so it looks round at you. */
+const LOOK_AT_YOU_MARGIN = 8;
+const LOOK_AT_YOU = LOOK_BACK + LOOK_AT_YOU_MARGIN;
 const TILT_GAIN = 20;
 const MAX_TILT = 25;
 /** The eases are per 60fps frame; other rates scale to it. */
@@ -807,6 +808,8 @@ export const createColony = (
       if (!cat) return;
       if (on) cat.holds.add(reason);
       else cat.holds.delete(reason);
+      /* The look ends with the card, not after the rest that follows it. */
+      if (reason === 'card' && !on) cat.pose.hr = 0;
       updateMood(cat);
     },
     still: () => {
