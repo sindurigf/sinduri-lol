@@ -25,6 +25,10 @@ const SERVED_AS_IS = new Map([
       'a vector from scripts/make-logo.mjs or the rabbit trace, drawn sharp at every size as it is.',
     ],
   ),
+  ...['minerva', 'rudra', 'hela'].map((cat) => [
+    `about-cats-${cat}.avif`,
+    'the About cats draw their frames from it with SVG <image>; it is an AVIF atlas already.',
+  ]),
   [
     'hero-rabbit.svg',
     'the hero canvas rasterises the vector atlas at the size it draws the rabbit.',
