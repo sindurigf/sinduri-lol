@@ -794,11 +794,6 @@ evidence.
 - **Emulate touch in the browser projects:** the menu, photo strip and
   slideshow use native buttons and links, which fire the same events for
   touch; pointer and keyboard runs already cover them.
-- **Fall back to `HEAD` in `scripts/check-commits.sh` when `origin/main` is
-  missing:** CI checks out with `fetch-depth: 0`, so the pull request's base
-  branch exists there as `origin/<base>` (a push also passes an explicit
-  range), and `.githooks` never calls the script; only an unusual local clone
-  lacks the ref.
 - **Derive the post `scripts/check-live.sh` probes from `src/content/blog`:**
   a rename should fail rule 6, and the slug is also fixed in specs, the talk
   folder and the PDF path, so a rename breaks those first.
