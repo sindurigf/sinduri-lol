@@ -16,9 +16,9 @@ import {
   loadSheet,
   type Sheet,
 } from '../../lib/about-cats-rig';
-import minervaSheet from '../../assets/about-cats-minerva.webp';
-import rudraSheet from '../../assets/about-cats-rudra.webp';
-import helaSheet from '../../assets/about-cats-hela.webp';
+import minervaSheet from '../../assets/about-cats-minerva.avif';
+import rudraSheet from '../../assets/about-cats-rudra.avif';
+import helaSheet from '../../assets/about-cats-hela.avif';
 import type { CatId, Ledge } from '../../lib/about-cats-types';
 import tricksUrl from '../../lib/about-cats-tricks-url';
 import {

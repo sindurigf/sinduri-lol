@@ -72,7 +72,7 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run check:umami`         | The vendored Umami tracker against the one Umami serves                                                                                          |
 | `npm run og`                  | After a build, redraws `public/images/og-default.png` and every page's card in `public/images/og/`                                               |
 | `npm run hero-still`          | After a build, redraws the hero stills in `src/assets/hero-still-*.webp` shown without JavaScript                                                |
-| `npm run about-cats`          | Packs the About cats' drawings in `artwork/about-cats/` into `src/assets/about-cats-*.webp` and `src/lib/about-cats-sheet.ts`                    |
+| `npm run about-cats`          | Packs the About cats' drawings in `artwork/about-cats/` into `src/assets/about-cats-*.avif` and `src/lib/about-cats-sheet.ts`                    |
 | `npm run check:pdf`           | Every PDF in `public/` against PDF/UA-1, veraPDF in Docker                                                                                       |
 | `npm run publish:cv`          | Print `cv/cv.html` to the tagged CV PDF in `public/`                                                                                             |
 | `npm run publish:talk`        | Print a talk's slideshow to its tagged PDF in `public/talks/`                                                                                    |

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /*
  * Renders the About cats' frames from the cut-out drawings in
- * artwork/about-cats/ as die-cut stickers, packed into one WebP sheet per cat
- * (src/assets/about-cats-<cat>.webp), and writes where each frame sits to
+ * artwork/about-cats/ as die-cut stickers, packed into one AVIF sheet per cat
+ * (src/assets/about-cats-<cat>.avif), and writes where each frame sits to
  * src/lib/about-cats-sheet.ts. Rerun after changing a drawing or a frame size.
  *
  *   npm run about-cats
@@ -27,8 +27,9 @@ const MASK_GAIN = 4;
 const DENSITY = 2;
 /* Below this the drawing is upscaled into its frame and blurs. */
 const MIN_DENSITY = 1.5;
-const WEBP_QUALITY = 70;
-const WEBP_EFFORT = 6;
+/* AVIF keeps full colour (4:4:4), so the white rim takes no pink haze and the ink edge stays sharp, at less weight than WebP. */
+const AVIF_QUALITY = 70;
+const AVIF_EFFORT = 6;
 /* Frames per sheet row. */
 const COLUMNS = 6;
 /* Clear px between frames, so a frame never bleeds into its neighbour when scaled. */
@@ -133,7 +134,7 @@ try {
     });
     const width = cellW * COLUMNS;
     const height = rowH.reduce((a, b) => a + b, 0);
-    const file = `src/assets/about-cats-${cat}.webp`;
+    const file = `src/assets/about-cats-${cat}.avif`;
     await sharp({
       create: {
         width,
@@ -143,7 +144,11 @@ try {
       },
     })
       .composite(composites)
-      .webp({ quality: WEBP_QUALITY, alphaQuality: 100, effort: WEBP_EFFORT })
+      .avif({
+        quality: AVIF_QUALITY,
+        chromaSubsampling: '4:4:4',
+        effort: AVIF_EFFORT,
+      })
       .toFile(file);
     sheet[cat] = frames;
     console.log(`make-about-cats: wrote ${file} (${width}x${height})`);
