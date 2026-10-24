@@ -298,7 +298,6 @@ test.describe('forced colors', () => {
     });
   }
 
-  // Every stop: box-shadow paints nothing here, so a shadow ring disappears.
   test('/brand color swatches keep their colors in forced colors, edged in CanvasText, each named beside it (SC 1.4.1, 1.4.11)', async ({
     page,
   }) => {
@@ -307,10 +306,7 @@ test.describe('forced colors', () => {
       page.locator(KEEPS_ITS_COLORS).evaluateAll((swatches) =>
         swatches.map((swatch) => {
           const style = getComputedStyle(swatch);
-          return swatch instanceof HTMLElement &&
-            swatch.dataset.paint === 'glyph'
-            ? style.color
-            : style.backgroundColor;
+          return [style.color, style.backgroundColor];
         }),
       );
     const authored = await paints();
@@ -349,6 +345,7 @@ test.describe('forced colors', () => {
     ).toEqual([]);
   });
 
+  // Every stop: box-shadow paints nothing here, so a shadow ring disappears.
   test('the focus indicator survives forced colors', async ({ page }) => {
     await gotoSettled(page, '/');
     await forceColors(page, '/');
