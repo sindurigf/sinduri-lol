@@ -282,7 +282,7 @@ presenter view and a PDF. Authoring rules:
   Slidev's `packages/parser/src/core.ts`), then `renderMarkdown` runs the
   visitors above, with a strict schema
   ([what fails the build](docs/DEVELOPMENT.md#writing-a-talk)).
-- **Slideshow.** Every slide is a `.card` in `<section id="slide-N">`, all in
+- **Slideshow.** Every slide is a `.slide` on the page's ground in `<section id="slide-N">`, all in
   the HTML. `DeckBar.astro` holds the controls and a polite live region;
   `src/scripts/slideshow.ts` wires them and the keys. Hidden slides use
   `data-current`, not `hidden`: Tailwind's `[hidden]` `!important` would stop
@@ -313,8 +313,8 @@ Commits, copy rules and process: [AGENTS.md](AGENTS.md).
 
 - Comment `.astro` templates with `{/* … */}`. Authored `<!-- -->` ships
   verbatim. `tests/seo.spec.ts` fails on any in the build.
-- Internal links end with `/`; production 307s the unslashed form.
-  `tests/seo.spec.ts`.
+- Internal links end with `/`; `tests/seo.spec.ts`. The unslashed form gets
+  a 301 from a `_redirects` line per page (`scripts/slash-redirects.mjs`).
 
 ### Text size
 
@@ -727,9 +727,6 @@ evidence.
 - **Fix axe's forced-colors `color-contrast` on `.sticker` in a `.card`:** axe
   reads the authored gold; the computed color there is CanvasText on Canvas,
   and `tests/forced-colors.spec.ts` passes.
-- **Keep `/brand` swatch colors in forced colors with `forced-color-adjust: none`:**
-  `tests/forced-colors.spec.ts` holds the site rule that forced colors replaces
-  every color; a swatch there is a bordered box.
 - **Delete the video byte-range pipeline as dead code:** the next
   published video would not play in Safari and iOS, which need `206`.
 - **Keep an About cat's `cut` set until its frame changes:** `stepFrame` clears
@@ -773,9 +770,6 @@ evidence.
 - **Add a `BreadcrumbList` to the talk page:** pages outside `/blog` carry no
   breadcrumbs (`tests/breadcrumbs.spec.ts`); the link to the talk's post
   covers the way back.
-- **Name the frame numbers in `hero-field-rabbit.ts`, and the bud, head and
-  shadow ellipses in `hero-field.ts`, as constants:** they are pixel rects in
-  the rabbit atlas and drawing coordinates, not tuning values.
 - **Move every `href` in page markup into `paths.ts`:** a route used by code
   (redirects, nav, sitemap, `llms.txt`) is a constant there; a link in prose
   stays markup, and `tests/internal-links.spec.ts` fails on a broken one.
@@ -859,10 +853,6 @@ evidence.
   name, and the hero roundel is decoration, so `alt=""` is right
   ([H67](https://www.w3.org/WAI/WCAG22/Techniques/html/H67)). Text there would
   be announced twice.
-- **Answer the unslashed URL with a 301, not a 307:** the status is the
-  platform's (`html_handling` in `wrangler.jsonc`). Every internal link,
-  canonical, sitemap and feed URL ends in `/`, so only a typed or outside link
-  meets it; the alternative is one `_redirects` line per route.
 - **AccessLint engine hits, each checked against the live DOM:**
   `color-contrast` on the homepage "Sinduri" is read against a gold ancestor
   the text does not sit on; `landmark-unique` counts the no-JavaScript nav,
