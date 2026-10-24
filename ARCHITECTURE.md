@@ -727,9 +727,6 @@ evidence.
 - **Fix axe's forced-colors `color-contrast` on `.sticker` in a `.card`:** axe
   reads the authored gold; the computed color there is CanvasText on Canvas,
   and `tests/forced-colors.spec.ts` passes.
-- **Keep `/brand` swatch colors in forced colors with `forced-color-adjust: none`:**
-  `tests/forced-colors.spec.ts` holds the site rule that forced colors replaces
-  every color; a swatch there is a bordered box.
 - **Delete the video byte-range pipeline as dead code:** the next
   published video would not play in Safari and iOS, which need `206`.
 - **Keep an About cat's `cut` set until its frame changes:** `stepFrame` clears
