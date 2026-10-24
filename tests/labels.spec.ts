@@ -33,6 +33,8 @@ test.describe('categoryLabel', NODE, () => {
 });
 
 const PASSES: readonly string[] = [
+  'Email lol@sinduri.lol',
+  'Read It at https://sinduri.lol/about/',
   'The One-Keeper Problem',
   'Up-to-Date Guides',
   'What to Do Now vs Later',
