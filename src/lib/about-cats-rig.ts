@@ -6,8 +6,8 @@
  */
 import { PAD, SHEET } from './about-cats-sheet';
 import {
-  IN_BETWEENS,
   POSE_FRAME,
+  bridges,
   WALK,
   frameFor,
   type Frame,
@@ -287,7 +287,10 @@ export const stepFrame = (
   const at = s.frame === null ? -1 : WALK.indexOf(s.frame);
   const to = WALK.indexOf(wanted);
   const blip =
-    !s.cut && to < 0 && !IN_BETWEENS.has(wanted) && now - s.wantedAt < BLIP_MS;
+    !s.cut &&
+    to < 0 &&
+    !(s.frame && bridges(s.frame, wanted)) &&
+    now - s.wantedAt < BLIP_MS;
   if (blip) {
     s.pending = wanted !== s.frame;
     return false;

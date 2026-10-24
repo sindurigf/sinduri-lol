@@ -654,8 +654,8 @@ const NAMED_POSES = Object.fromEntries(
   (Object.keys(POSE_FRAME) as NamedPose[]).map((name) => [name, pose(name)]),
 ) as Record<NamedPose, ReturnType<typeof pose>>;
 
-/** The frames a sitting cat shows playing `move` at 60fps, in order. */
-const shownFrames = (move: Move): Frame[] => {
+/** The frames a sitting cat shows playing `move`, drawn every `frameMs`, in order. */
+const shownFrames = (move: Move, frameMs = SCREEN_FRAME_MS): Frame[] => {
   const s = {
     frame: null as Frame | null,
     shownAt: -Infinity,
@@ -670,7 +670,7 @@ const shownFrames = (move: Move): Frame[] => {
   let lastLift = 0;
   let movedAt = -Infinity;
   let travelled = 0;
-  for (let at = 0; at <= duration(move) + TICK_MS; at += SCREEN_FRAME_MS) {
+  for (let at = 0; at <= duration(move) + TICK_MS; at += frameMs) {
     const p = poseAt(move, pose('sit'), Math.min(at, duration(move)));
     const step = Math.abs(p.x - lastX);
     lastX = p.x;
@@ -692,17 +692,22 @@ const shownFrames = (move: Move): Frame[] => {
 const LYING: readonly Frame[] = ['loaf', 'loafsink', 'sleep', 'belly'];
 const JUMPING: readonly Frame[] = ['takeoff', 'leap', 'landing'];
 
+/** Screen rates to draw at: a 30Hz phone in low power, 60Hz, and 144Hz. */
+const SCREEN_RATES = [30, 60, 144];
+
 test(
-  'a pounce lands and sits back up without flashing a lying-down frame',
+  'a pounce lands and sits back up without flashing a lying-down frame, at 30, 60 and 144Hz',
   NODE,
   () => {
-    const shown = shownFrames(MOVES.pounce());
-    const landed = shown.lastIndexOf('landing');
-    expect(landed, 'the pounce never landed').toBeGreaterThan(-1);
-    expect(
-      shown.slice(landed).filter((frame) => LYING.includes(frame)),
-      `frames after landing: ${shown.slice(landed).join(', ')}`,
-    ).toEqual([]);
+    for (const hz of SCREEN_RATES) {
+      const shown = shownFrames(MOVES.pounce(), 1000 / hz);
+      const landed = shown.lastIndexOf('landing');
+      expect(landed, `the pounce never landed at ${hz}Hz`).toBeGreaterThan(-1);
+      expect(
+        shown.slice(landed).filter((frame) => LYING.includes(frame)),
+        `frames after landing at ${hz}Hz: ${shown.slice(landed).join(', ')}`,
+      ).toEqual([]);
+    }
   },
 );
 

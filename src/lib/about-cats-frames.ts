@@ -150,10 +150,12 @@ const BETWEEN: [NamedPose, NamedPose, Frame][] = [
   ['rear', 'leap', 'swat'],
 ];
 
-/** Frames drawn only in passing from one pose to another. */
-export const IN_BETWEENS: ReadonlySet<Frame> = new Set(
-  BETWEEN.map(([, , frame]) => frame),
-);
+/** Whether `frame` is drawn in passing between `from` and another pose. */
+export const bridges = (from: Frame, frame: Frame): boolean =>
+  BETWEEN.some(
+    ([a, b, between]) =>
+      between === frame && (POSE_FRAME[a] === from || POSE_FRAME[b] === from),
+  );
 
 export const betweenFrame = (a: NamedPose, b: NamedPose): Frame | null =>
   BETWEEN.find(([x, y]) => (x === a && y === b) || (x === b && y === a))?.[2] ??
