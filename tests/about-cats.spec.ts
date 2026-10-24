@@ -32,13 +32,7 @@ import {
   reachOf,
 } from '../src/lib/about-cats-rig';
 import { FRAMES } from '../src/lib/about-cats-frames';
-import {
-  createIdle,
-  idleFrameMs,
-  idleOffsets,
-  rearmIdle,
-  tickIdle,
-} from '../src/lib/about-cats-idle';
+import { createIdle, idleFrameMs, tickIdle } from '../src/lib/about-cats-idle';
 import { isTricksData, tricksOf } from '../src/lib/about-cats-tricks';
 import tricksData from '../src/lib/about-cats-tricks.json' with { type: 'json' };
 import {
@@ -186,11 +180,11 @@ const ICONS: Record<string, unknown[]> = tricksData.icons;
 const catButton = (page: Page, id: (typeof CATS)[number]) =>
   page.locator(`#cat-spot-${id} .cat-button`);
 
-/** Where the cat stands, not how it is posed: a held cat still blinks. */
+/** Where the cat stands, not how it is posed: a held cat still breathes. */
 const place = (page: Page, id: (typeof CATS)[number]) =>
   page.locator(`#cat-spot-${id} .cat-hit`).getAttribute('transform');
 
-/** Every drawn attribute of one cat but its blinks, so any movement changes the string. */
+/** Every drawn attribute of one cat but its frame window's box and visibility, so any movement changes the string. */
 const drawing = (page: Page, id: (typeof CATS)[number]) =>
   page
     .locator(`#cat-spot-${id} .cat-hit`)
@@ -696,102 +690,10 @@ test(
 );
 
 test(
-  'a resting cat idles in small offsets: breath, glance, ear and tail stay in range, and each really moves',
-  NODE,
-  () => {
-    const MAX = { bt: 4, hr: 30, ears: 1, ta: 16 };
-    const SPAN_MS = 120_000;
-    const STEP_MS = 50;
-    for (const roll of [() => 0, () => 0.9, () => 1, Math.random]) {
-      const idle = createIdle();
-      const seen = { bt: 0, hr: 0, ears: 0, tw: 0 };
-      const outOfRange: string[] = [];
-      for (let now = 0; now < SPAN_MS; now += STEP_MS) {
-        tickIdle(idle, now, roll);
-        const o = idleOffsets(idle, now);
-        if (Math.abs(o.bt) > MAX.bt) outOfRange.push(`chest ${o.bt} at ${now}`);
-        if (Math.abs(o.hr) > MAX.hr) outOfRange.push(`head ${o.hr} at ${now}`);
-        if (Math.abs(o.ta) > MAX.ta) outOfRange.push(`tail ${o.ta} at ${now}`);
-        if (o.ears < 0 || o.ears > MAX.ears)
-          outOfRange.push(`ear ${o.ears} at ${now}`);
-        seen.bt = Math.max(seen.bt, Math.abs(o.bt));
-        seen.hr = Math.max(seen.hr, Math.abs(o.hr));
-        seen.ears = Math.max(seen.ears, o.ears);
-        seen.tw = Math.max(seen.tw, o.tw);
-      }
-      expect(outOfRange.slice(0, 3), 'an idle offset left its range').toEqual(
-        [],
-      );
-      expect(seen.bt, 'the chest never moved').toBeGreaterThan(0);
-      expect(seen.ears, 'no ear ever flicked').toBeGreaterThan(0);
-      expect(seen.tw, 'the tail tip never twitched').toBeGreaterThan(0);
-    }
-    const glancing = createIdle();
-    let turned = 0;
-    for (let now = 0; now < SPAN_MS; now += STEP_MS) {
-      tickIdle(glancing, now, () => 0.9);
-      turned = Math.max(turned, Math.abs(idleOffsets(glancing, now).hr));
-    }
-    expect(turned, 'the head never turned').toBeGreaterThan(0);
-  },
-);
-
-test(
-  'after a move, resting cats start their timers again and do not flick, glance or twitch together',
+  'a resting cat redraws at the slow idle rate while only its breath moves, and faster during a glance',
   NODE,
   () => {
     const START_MS = 10_000;
-    const MOVE_MS = 30_000;
-    const resumeAt = START_MS + MOVE_MS;
-    const cats = [0.1, 0.5, 0.9].map((fixed) => {
-      const idle = createIdle();
-      tickIdle(idle, START_MS, () => fixed);
-      return { idle, fixed };
-    });
-    for (const { idle, fixed } of cats) {
-      rearmIdle(idle);
-      tickIdle(idle, resumeAt, () => fixed);
-      const first = idleOffsets(idle, resumeAt);
-      expect(
-        [first.ears, first.hr, first.tw],
-        'a cat flicked, glanced or twitched on its first frame after a move',
-      ).toEqual([0, 0, 0]);
-    }
-    const firstFlick = cats.map(({ idle, fixed }) => {
-      for (let now = resumeAt; now < resumeAt + 20_000; now += 50) {
-        tickIdle(idle, now, () => fixed);
-        if (idleOffsets(idle, now).ears > 0) return now;
-      }
-      return Infinity;
-    });
-    expect(
-      new Set(firstFlick).size,
-      `cats flicked an ear together after a move: ${firstFlick.join(', ')}`,
-    ).toBe(firstFlick.length);
-  },
-);
-
-test(
-  'resting cats do not flick, glance or twitch together, and idle frames slow down while only the breath moves',
-  NODE,
-  () => {
-    const START_MS = 10_000;
-    const firstFlick = [0.1, 0.5, 0.9].map((fixed) => {
-      const idle = createIdle();
-      for (let now = START_MS; now < START_MS + 20_000; now += 50) {
-        tickIdle(idle, now, () => fixed);
-        if (idleOffsets(idle, now).ears > 0) return now;
-      }
-      return Infinity;
-    });
-    expect(
-      new Set(firstFlick).size,
-      `cats flicked an ear together: ${firstFlick.join(', ')}`,
-    ).toBe(firstFlick.length);
-    expect(
-      Math.min(...firstFlick),
-      'a cat flicked on its first idle frame',
-    ).toBeGreaterThan(START_MS);
     const idle = createIdle();
     tickIdle(idle, START_MS, () => 0.5);
     const calm = idleFrameMs(idle, START_MS);
@@ -802,12 +704,9 @@ test(
     }
     expect(
       idleFrameMs(createIdle(), 0),
-      'a cat that has not yet had an event draws at the busy rate',
+      'a cat that has not yet glanced draws faster than its breath needs',
     ).toBe(calm);
-    expect(
-      busy,
-      'a flick or glance drew no faster than the breath',
-    ).toBeLessThan(calm);
+    expect(busy, 'a glance drew no faster than the breath').toBeLessThan(calm);
   },
 );
 

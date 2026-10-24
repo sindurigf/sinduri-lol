@@ -150,6 +150,13 @@ const BETWEEN: [NamedPose, NamedPose, Frame][] = [
   ['rear', 'leap', 'swat'],
 ];
 
+/** Whether `frame` is drawn in passing between `from` and another pose. */
+export const bridges = (from: Frame, frame: Frame): boolean =>
+  BETWEEN.some(
+    ([a, b, between]) =>
+      between === frame && (POSE_FRAME[a] === from || POSE_FRAME[b] === from),
+  );
+
 export const betweenFrame = (a: NamedPose, b: NamedPose): Frame | null =>
   BETWEEN.find(([x, y]) => (x === a && y === b) || (x === b && y === a))?.[2] ??
   null;
@@ -215,15 +222,18 @@ export const frameFor = (
   if (turned > ON_SIDE)
     return turned > (ON_SIDE + ON_BACK) / 2 ? 'roll' : 'lieside';
 
-  if (motion.lift > AIRBORNE) {
-    if (motion.lift > HIGH) return 'leap';
-    return motion.lift >= motion.lastLift ? 'takeoff' : 'landing';
-  }
-
   const ranked = (Object.keys(named) as NamedPose[])
     .map((name) => ({ name, d: poseDistance(p, named[name]) }))
     .sort((a, b) => a.d - b.d);
   const [near, next] = ranked;
+
+  /* A low hop from sitting, such as a turn on the spot, keeps the sitting frame: jump frames would flash a leap. */
+  const sitHop = near.name === 'sit' && motion.lift <= HIGH;
+  if (motion.lift > AIRBORNE && !sitHop) {
+    if (motion.lift > HIGH) return 'leap';
+    return motion.lift >= motion.lastLift ? 'takeoff' : 'landing';
+  }
+
   const share = near.d / (near.d + next.d || 1);
   const between =
     share > BETWEEN_FROM ? betweenFrame(near.name, next.name) : null;

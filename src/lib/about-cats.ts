@@ -79,8 +79,6 @@ const FACE_DEADBAND = 20;
 const WATCH_EASE = 0.12;
 const TILT_GAIN = 20;
 const MAX_TILT = 25;
-const BLINK_EVERY_MS = [2500, 5000] as const;
-const BLINK_MS = 160;
 /** The eases are per 60fps frame; other rates scale to it. */
 const FRAME_MS = 1000 / 60;
 /** Longest gap one frame may cover, so a stalled tab does not jump the watcher. */
@@ -152,12 +150,10 @@ interface CatState extends CatSpot {
   reportedAsleep: boolean;
   /** When its band left the screen; it is not stepped and its play clock stops meanwhile. */
   hiddenAt?: number;
-  nextBlink: number;
-  blinkUntil: number;
   /** No new move before this; a nap still starts at once. */
   restUntil: number;
   idle: IdleState;
-  /** Resting between moves: breathing, ear flicks and glances are drawn on its pose. */
+  /** Resting between moves: breathing and glances are drawn on its pose. */
   idling: boolean;
   idleDrawnAt: number;
   /** The idle offsets on screen: a move starts from these, not from offsets a frame newer. */
@@ -289,13 +285,11 @@ export const createColony = (
     mood: 'hidden' as CatMood,
     reportedAsleep: false,
     hiddenAt: 0,
-    nextBlink: 0,
-    blinkUntil: 0,
     restUntil: 0,
     idle: createIdle(),
     idling: false,
     idleDrawnAt: 0,
-    idleShown: { ta: 0, bt: 0, ears: 0, hr: 0, tw: 0 },
+    idleShown: { bt: 0, hr: 0 },
   }));
   const watcherId = cats[Math.floor(Math.random() * cats.length)]?.id ?? '';
   const pointerAt = new Map<CatSpot['id'], { x: number; y: number }>();
@@ -348,18 +342,14 @@ export const createColony = (
     updateMood(cat);
   };
 
-  const addIdle = (p: Pose, { ta, bt, ears, hr, tw }: IdleOffsets): void => {
-    p.ta += ta;
+  const addIdle = (p: Pose, { bt, hr }: IdleOffsets): void => {
     p.bt += bt;
-    p.ears = Math.max(p.ears, ears);
     p.hr += hr;
-    p.tw = Math.max(p.tw, tw);
   };
 
   const draw = (cat: CatState, now: number): void => {
     const p = clonePose(cat.pose);
     if (cat.idling) addIdle(p, cat.idleShown);
-    if (now < cat.blinkUntil) p.eyes = 0;
     renderCat(cat.rig, p, now, p.x, cat.groundY);
   };
 
@@ -698,10 +688,6 @@ export const createColony = (
         if (result !== 'draw' && !frameStepping) continue;
         wakeAt = now;
       }
-      if (!cat.asleep && now > cat.nextBlink) {
-        cat.blinkUntil = now + BLINK_MS;
-        cat.nextBlink = now + rand(...BLINK_EVERY_MS);
-      }
       draw(cat, now);
     }
     return wakeAt;
@@ -710,7 +696,6 @@ export const createColony = (
   /** Getting up, then `after` (default: a stretch and a yawn in place, as a cat does on waking). */
   const wakeCat = (cat: CatState, now: number, after?: () => void): void => {
     cat.napAt = now + NAP_AFTER_MS;
-    cat.nextBlink = now + rand(...BLINK_EVERY_MS);
     if (!cat.asleep) return;
     setAsleep(cat, false);
     const facing = Math.sign(cat.pose.face) || 1;

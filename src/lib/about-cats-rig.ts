@@ -7,6 +7,7 @@
 import { PAD, SHEET } from './about-cats-sheet';
 import {
   POSE_FRAME,
+  bridges,
   WALK,
   frameFor,
   type Frame,
@@ -22,6 +23,8 @@ const D = Math.PI / 180;
 
 /** One step of the flip-book: 12 a second. A new frame waits until the last has shown this long, so every in-between is seen. */
 export const TICK_MS = 1000 / 12;
+/** A frame wanted for less than this is a passing blip of the pose blend, not a pose: one 60Hz frame is 16.7ms. */
+const BLIP_MS = 25;
 /** Walk frames a fast gait may step at once: 2 of 8 keeps the 4 phases (contact and passing, each side). */
 const MAX_WALK_STEP = 2;
 /** The squash a cat lands in for one step when it arrives in a still pose. */
@@ -156,6 +159,9 @@ export interface CatRig {
   pending: boolean;
   /** The next frame cuts in without the arrival squash: a resize or reduced motion. */
   cut: boolean;
+  /** The frame the pose last asked for, and since when. */
+  wanted: Frame | null;
+  wantedAt: number;
   lastX: number;
   /** Where the cat was drawn when its walk frame last changed: a walk moves only with the frame. */
   stepX: number;
@@ -218,6 +224,8 @@ export const createCatRig = (
     shownAt: -Infinity,
     pending: false,
     cut: true,
+    wanted: null,
+    wantedAt: 0,
     lastX: NaN,
     stepX: 0,
     lastLift: 0,
@@ -258,7 +266,7 @@ const drawFrame = (rig: CatRig, layer: Layer, frame: Frame): void => {
 /** What stepFrame keeps between frames. */
 export type FrameStep = Pick<
   CatRig,
-  'frame' | 'shownAt' | 'pending' | 'cut' | 'stepX'
+  'frame' | 'shownAt' | 'pending' | 'cut' | 'stepX' | 'wanted' | 'wantedAt'
 >;
 
 /**
@@ -272,8 +280,21 @@ export const stepFrame = (
   now: number,
   x: number,
 ): boolean => {
+  if (wanted !== s.wanted) {
+    s.wanted = wanted;
+    s.wantedAt = now;
+  }
   const at = s.frame === null ? -1 : WALK.indexOf(s.frame);
   const to = WALK.indexOf(wanted);
+  const blip =
+    !s.cut &&
+    to < 0 &&
+    !(s.frame && bridges(s.frame, wanted)) &&
+    now - s.wantedAt < BLIP_MS;
+  if (blip) {
+    s.pending = wanted !== s.frame;
+    return false;
+  }
   const ahead = (to - at + WALK.length) % WALK.length;
   /* Within a walk: hold while the body is still, else step toward `wanted` without skipping a phase. */
   const next =
