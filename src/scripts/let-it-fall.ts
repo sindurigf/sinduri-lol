@@ -1,5 +1,10 @@
 /* Let It Fall: everything on screen drops and stacks into a heap above the button, with the footer rabbit on top; the same button, Esc, keyboard focus elsewhere or a new window width puts it back. */
-import { createHopper, type Foot, type Hopper } from './let-it-fall-rabbit';
+import {
+  createHopper,
+  ignoreCancel,
+  type Foot,
+  type Hopper,
+} from './let-it-fall-rabbit';
 import { RABBIT_FRAMES } from '../lib/hero-field-rabbit';
 
 const LABEL_FALL = 'Let It Fall';
@@ -265,6 +270,7 @@ const stack = (
 
 /* The rabbit sits on something under the middle half of it, not on a corner. */
 const FEET_SHARE = 0.5;
+/* px of give in that support. */
 const SUPPORT_SLACK = 1;
 const supported = (
   heap: Spot[],
@@ -408,13 +414,6 @@ const hopTo = (spot: Hop | null): void => {
   );
 };
 
-/* A new fall or Put It Back cancels a running move on purpose; anything else is a real error. */
-const ignoreCancel = (error: unknown): void => {
-  if (!(error instanceof DOMException && error.name === 'AbortError')) {
-    reportError(error);
-  }
-};
-
 const FALL_VARS = ['--fall-x', '--fall-y', '--fall-turn', '--fall-ground'];
 
 /* Home at once: drops the clip and offsets, so a block is measured where it rests. */
@@ -531,8 +530,23 @@ const fall = (): void => {
     .then(async () => {
       if (!rabbit || !spot || fallen !== pile) return;
       if (hopper && motion.matches) {
-        await hopper.climb(path, spot.scale);
-        return;
+        try {
+          await hopper.climb(path, spot.scale);
+          return;
+        } catch (error) {
+          if (error instanceof DOMException && error.name === 'AbortError') {
+            return;
+          }
+          /* The atlas failed to load: the sticker takes the heap instead, and the next press tries again. */
+          reportError(error);
+          hopper.stop();
+          hopper = null;
+          const fallback = perch(heap, floor, false);
+          if (!fallback || fallen !== pile) return;
+          await rabbit.decode();
+          if (fallen === pile) hopTo(fallback);
+          return;
+        }
       }
       /* Lazy below the fold; it must be drawn before it is shown on the heap. */
       rabbit.loading = 'eager';
@@ -589,6 +603,10 @@ button.addEventListener('on-demand', () => {
   lastPress = now;
   if (fallen.length) restore();
   else fall();
+});
+/* Reduced motion switched on mid-climb: the rabbit is home at once. */
+motion.addEventListener('change', () => {
+  if (!motion.matches) hopper?.stop();
 });
 addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && fallen.length) restore();

@@ -310,7 +310,6 @@ test('under reduced motion the blocks and the rabbit move at once, never animate
   ).toEqual([]);
 });
 
-/* The rabbit on the heap: on screen, over no control, and decorative. */
 /* ms: the climb is a few hops of about 0.8s and two glances; the wait allows for a slow runner. */
 const CLIMB_MS = 20_000;
 

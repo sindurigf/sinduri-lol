@@ -1,8 +1,6 @@
 /*
- * The footer rabbit's climb onto the Let It Fall heap, drawn from the hero's
- * pose atlas: crouch, leap on an arc, crouch on landing, sit. Decorative and
- * hidden from assistive technology; let-it-fall.ts picks every landing clear
- * of controls.
+ * The footer rabbit's climb onto the Let It Fall heap in the hero atlas's poses: crouch,
+ * leap on an arc, crouch, sit. Decorative and aria-hidden; let-it-fall.ts picks each landing.
  */
 import {
   ATLAS_SIZE,
@@ -33,8 +31,8 @@ const SOLE = Math.max(
   ...Object.values(RABBIT_FRAMES).map((frame) => frame.h - frame.footY),
 );
 
-/* A stop cancels a running squash on purpose; anything else is a real error. */
-const ignoreCancel = (error: unknown): void => {
+/* A new fall, Put It Back or a stop cancels a running move on purpose; anything else is a real error. */
+export const ignoreCancel = (error: unknown): void => {
   if (!(error instanceof DOMException && error.name === 'AbortError')) {
     reportError(error);
   }
@@ -65,6 +63,8 @@ export const createHopper = (sticker: HTMLImageElement, atlasUrl: string) => {
   let run = 0;
   let scale = 1;
   let at: Foot = { x: 0, y: 0 };
+  /* Where it is drawn now, mid-flight included. */
+  let shown: Foot = { x: 0, y: 0 };
   /* The atlas faces left. */
   let facingLeft = true;
 
@@ -74,6 +74,7 @@ export const createHopper = (sticker: HTMLImageElement, atlasUrl: string) => {
     return { x: x - origin.left, y: y - origin.top };
   };
   const place = ({ x, y }: Foot) => {
+    shown = { x, y };
     feet.style.setProperty(
       'transform',
       `translate(${x}px, ${y}px) scaleX(${facingLeft ? 1 : -1})`,
@@ -127,7 +128,9 @@ export const createHopper = (sticker: HTMLImageElement, atlasUrl: string) => {
     place(at);
     pose('crouch');
     await squashTo(LAND_SQUASH, LAND_MS);
+    if (mine !== run) return;
     await squashTo([1, 1], LAND_MS);
+    if (mine !== run) return;
     pose('sit');
   };
 
@@ -187,6 +190,9 @@ export const createHopper = (sticker: HTMLImageElement, atlasUrl: string) => {
     async goHome() {
       const mine = ++run;
       feet.removeAttribute('data-settled');
+      for (const animation of squash.getAnimations()) animation.cancel();
+      /* From wherever it is, mid-flight included. */
+      at = shown;
       if (feet.isConnected) await hop(home(), mine);
       if (mine === run) stop();
     },

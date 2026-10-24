@@ -1098,8 +1098,8 @@ Enforced by `tests/footer.spec.ts`.
   (`src/scripts/let-it-fall-rabbit.ts`, frames from
   `src/lib/hero-field-rabbit.ts`, the hero atlas loaded on press): crouch,
   leap on an eased arc, crouch on landing, sit, facing the way it travels.
-  One leap up onto the heap, then hops of at least 70px along its top, five at
-  most, to the highest spot clear of every control with support under its
+  One leap up onto the heap, then hops along its top, five hops in all at
+  most and 70px apart at least, to the highest spot clear of every control with support under its
   middle; there it looks around twice. It shrinks to fit a wide screen. On
   Put It Back it leaps home at once, as the heap climbs home under it. It is
   `aria-hidden` and takes no pointer; under reduced motion the footer
