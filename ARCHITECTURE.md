@@ -6,18 +6,18 @@ sinduri.lol. Design rules and values are in
 
 ## Stack
 
-| Concern     | Choice                                                                                  |
-| ----------- | --------------------------------------------------------------------------------------- |
-| Framework   | Astro 7, static output; `/contact/send/` renders on demand in the Worker                |
-| Interactive | Vue 3 via `@astrojs/vue`, islands only (the homepage canvas hero and the About cats)    |
-| Scripts     | Plain modules for everything that is not an island                                      |
-| Styling     | Tailwind CSS 4 via `@tailwindcss/vite`                                                  |
-| Language    | TypeScript, `astro/tsconfigs/strictest`, checked with `astro check` and `vue-tsc`       |
-| Content     | Astro Content Collections, Markdown in repo, rendered by Sätteri                        |
-| Font        | Lexend, self-hosted through Fontsource                                                  |
-| Hosting     | Cloudflare Workers static assets, D1 (EU), Rate Limiting, Email Routing, Workers Builds |
-| Tests       | Playwright in Chromium, Firefox and WebKit, with axe-core for WCAG 2.2 AA               |
-| Runtime     | Node.js from `.nvmrc`                                                                   |
+| Concern     | Choice                                                                                   |
+| ----------- | ---------------------------------------------------------------------------------------- |
+| Framework   | Astro 7, static output; `/contact/send/` renders on demand in the Worker                 |
+| Interactive | Vue 3 via `@astrojs/vue`, islands only (the homepage canvas hero and the About cats)     |
+| Scripts     | Plain modules for everything that is not an island                                       |
+| Styling     | Tailwind CSS 4 via `@tailwindcss/vite`                                                   |
+| Language    | TypeScript, `astro/tsconfigs/strictest`, checked with `astro check` and `vue-tsc`        |
+| Content     | Astro Content Collections, Markdown in repo, rendered by Sätteri                         |
+| Font        | Lexend, self-hosted through Fontsource                                                   |
+| Hosting     | Cloudflare Workers static assets, D1 (EU), Rate Limiting, Email Routing, Workers Builds  |
+| Tests       | Playwright in Chromium, Firefox and WebKit, with axe-core and AccessLint for WCAG 2.2 AA |
+| Runtime     | Node.js from `.nvmrc`                                                                    |
 
 - Vue runs with `features: { optionsAPI: false }`; every component uses
   `<script setup>`.
@@ -334,8 +334,9 @@ it stays out of the per-page script budgets (`tests/performance.spec.ts`).
   trigger; later clicks only dispatch. A failed import is reported with
   `reportError` and retried on the next click.
 - A feature file finds its trigger and listens at top level:
-  `trigger.addEventListener('on-demand', ...)`, and ends with `export {};` so
-  TypeScript treats it as a module.
+  `trigger.addEventListener('on-demand', ...)`. One with no imports ends with
+  `export {};` so TypeScript treats it as a module; its imports are inlined,
+  as the build is one IIFE.
 
 Rejected:
 
@@ -382,6 +383,35 @@ Rejected:
 - A count in a comment states its unit.
 - A fact duplicated across Markdown files needs a check that fails when the
   copies disagree; otherwise keep one copy and link.
+- **Test weakening needs the owner, out of band.** The `Test weakening`
+  workflow runs on `pull_request_target`, so the default branch's copy of
+  `scripts/check-test-weakening.mjs` judges each pull request. The head is
+  fetched as git objects; nothing from it is installed or run. It flags:
+  - a new or widened skip, fixme or fail, `describe.configure`, a return
+    behind an engine or environment test, and an existing test tagged
+    `ENGINE_INVARIANT`;
+  - axe narrowing: `disableRules`, `exclude`, `include`, `withRules`,
+    `withTags`, `runOnly`, `enabled: false`, filtered results, a `timedScan`
+    tag list, a dropped `AXE_*` entry, any edit to `tests/axe.ts`;
+  - net fewer `expect` calls in a running spec, unless a helper it imports
+    gained them;
+  - an `expect` with no matcher, with a `.catch(`, inside a `try` whose
+    `catch` does not rethrow, or a locator `expect` left unawaited; a negated
+    or renumbered matcher;
+  - a changed or removed upper-case numeric constant in `tests/`; a raised or
+    removed `*BUDGET*` or `*TOLERANCE*`, a new map key above its fallback, a
+    budget multiplied where it is used;
+  - edits to what picks the tests: the Playwright configs, `tests/tags.ts`,
+    `tests/test.ts`, `tests/ports.ts`, `scripts/shard-tests.mjs`, a step
+    dropped from a `test`, `check` or `build` script, a new pre or post hook;
+  - a new or edited rejected finding, an edit to the guard, any change under
+    `.github/workflows` or `.github/actions`.
+
+  A finding passes only with an `APPROVED` review by `GITHUB_REPOSITORY_OWNER`
+  on the head commit carrying `Approved test change: <reason>`, then a re-run;
+  a new push needs a new approval. GitHub blocks approving your own pull
+  request, so this holds only while agents work under their own account. It
+  matches text, so indirection evades it.
 
 ### Claims that rest on a platform setting
 
@@ -841,12 +871,17 @@ evidence.
 - **AccessLint engine hits, each checked against the live DOM:**
   `color-contrast` on the homepage "Sinduri" is read against a gold ancestor
   the text does not sit on; `landmark-unique` counts the no-JavaScript nav,
-  which is `display: none` with scripts on; `focus-order` flags the photo
-  strips, which are focusable so a keyboard can scroll them.
+  which is `display: none` with scripts on; `aria-hidden-focus` flags the
+  controls in `/brand`'s light halves, which are `inert` and so never take
+  focus. `ACCESSLINT_FALSE_POSITIVES` in `tests/accesslint.ts` drops each only
+  on those elements and while its reason holds.
 - **Move the full-screen slide bar inside the card:** on a 16:9 screen the
   foot row crosses the bottom of the focused slide's ring while both show.
   The row shows only while the pointer moves or one of its buttons has focus,
   and inside the card it would sit over slide content at some widths.
+- **Let It Fall should drop the static header on short screens:** under 30rem
+  the header and the footer button never share the screen on any page, so the
+  header is never on screen to fall.
 
 ## Content notes
 
