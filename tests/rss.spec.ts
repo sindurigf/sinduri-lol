@@ -4,6 +4,11 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DIST_DIR, POSTS, TAG_ROUTES, builtHtml } from './routes';
 import { NODE } from './tags';
+import {
+  FEED_EXCERPT_MAX_CHARACTERS,
+  feedExcerpt,
+} from '../src/lib/feed-excerpt';
+import { PLANET_TAG } from '../src/lib/paths';
 
 /*
  * The feeds from src/lib/feed.ts, parsed by the browser's XML parser so
@@ -29,7 +34,13 @@ interface ParsedFeed {
   link: string | null;
   description: string | null;
   self: string | null;
-  items: { link: string; guid: string; pubDate: string; title: string }[];
+  items: {
+    link: string;
+    guid: string;
+    pubDate: string;
+    title: string;
+    description: string;
+  }[];
 }
 
 const parseFeed = async (page: Page, path: string): Promise<ParsedFeed> => {
@@ -62,6 +73,7 @@ const parseFeed = async (page: Page, path: string): Promise<ParsedFeed> => {
           guid: item.querySelector('guid')?.textContent ?? '',
           pubDate: item.querySelector('pubDate')?.textContent ?? '',
           title: item.querySelector('title')?.textContent ?? '',
+          description: item.querySelector('description')?.textContent ?? '',
         }),
       ),
     };
@@ -155,4 +167,65 @@ test.describe('the feeds', () => {
       ).toEqual([]);
     },
   );
+});
+
+test.describe('the Drupal Planet opening', () => {
+  test('the Drupal feed describes each post by whole sentences from its opening, within the cap', async ({
+    page,
+  }) => {
+    const path = `/blog/tag/${PLANET_TAG}/rss.xml`;
+    const planet = await parseFeed(page, path);
+    const site = await parseFeed(page, SITE_FEED);
+    expect(planet.items.length, `${path} has no items`).toBeGreaterThan(0);
+    for (const item of planet.items) {
+      const teaser = site.items.find((other) => other.link === item.link);
+      expect(
+        item.description.length,
+        `${item.link}: the Drupal feed description is over ${FEED_EXCERPT_MAX_CHARACTERS} characters`,
+      ).toBeLessThanOrEqual(FEED_EXCERPT_MAX_CHARACTERS);
+      expect(
+        item.description,
+        `${item.link}: the Drupal feed description does not end a sentence`,
+      ).toMatch(/[.!?]["'”’)\]]*$/);
+      expect(
+        item.description,
+        `${item.link}: the Drupal feed repeats the teaser instead of the post's opening`,
+      ).not.toBe(teaser?.description);
+    }
+  });
+
+  test.describe('feedExcerpt', NODE, () => {
+    test('stops before a paragraph that leads into a list', () => {
+      const body =
+        'Open source runs almost everything we depend on. You almost certainly used several of these before breakfast:\n\n- Linux\n- curl\n\nThe uncomfortable part is that small teams maintain it.';
+      expect(feedExcerpt(body)).toBeUndefined();
+      expect(feedExcerpt(`A first sentence.\n\n${body}`)).toBe(
+        'A first sentence.',
+      );
+    });
+
+    test('keeps whole sentences under the cap, across paragraphs', () => {
+      const body = 'One two three. Four five six.\n\nSeven eight nine. Ten.';
+      expect(feedExcerpt(body, 30)).toBe('One two three. Four five six.');
+      expect(feedExcerpt(body, 100)).toBe(
+        'One two three. Four five six. Seven eight nine. Ten.',
+      );
+    });
+
+    test('skips headings and images, and keeps link text', () => {
+      const body =
+        '## Start\n\n![A photo](../assets/a.jpg)\n\nI met [Klaus](https://example.com/) in **2021**.';
+      expect(feedExcerpt(body)).toBe('I met Klaus in 2021.');
+    });
+
+    test('ends at text after the last full stop of a paragraph', () => {
+      expect(feedExcerpt('Done here. And then\n\nMore later.')).toBe(
+        'Done here.',
+      );
+    });
+
+    test('gives nothing when the first sentence is over the cap', () => {
+      expect(feedExcerpt('A very long sentence indeed.', 10)).toBeUndefined();
+    });
+  });
 });
