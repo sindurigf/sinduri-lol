@@ -373,6 +373,17 @@ const drawStalk = (
   ctx.stroke();
 };
 
+/** In bud sizes: set off the stalk to alternating sides, radii, and tilt in radians. */
+const BUD_SHAPE = { offset: 3, rx: 2.4, ry: 4.2, tilt: 0.3 } as const;
+/** In bud sizes above the stem tip; `minRx` and `minRy` are CSS pixels. */
+const HEAD_SHAPE = {
+  rise: 4,
+  rx: 2.7,
+  ry: 5.2,
+  minRx: 0.75,
+  minRy: 1.3,
+} as const;
+
 /* Buds fill, never just stroke, or stalks show through them as wire loops. */
 const drawBuds = (
   ctx: CanvasRenderingContext2D,
@@ -397,10 +408,18 @@ const drawBuds = (
     );
     const side = i % 2 ? 1 : -1;
     ctx.save();
-    ctx.translate(bx + side * 3 * bud, by);
-    ctx.rotate(side * 0.3 + nod);
+    ctx.translate(bx + side * BUD_SHAPE.offset * bud, by);
+    ctx.rotate(side * BUD_SHAPE.tilt + nod);
     ctx.beginPath();
-    ctx.ellipse(0, 0, 2.4 * bud, 4.2 * bud, 0, 0, Math.PI * 2);
+    ctx.ellipse(
+      0,
+      0,
+      BUD_SHAPE.rx * bud,
+      BUD_SHAPE.ry * bud,
+      0,
+      0,
+      Math.PI * 2,
+    );
     ctx.fillStyle = ctx.strokeStyle;
     ctx.fill();
     ctx.restore();
@@ -417,9 +436,9 @@ const drawHead = (
   ctx.beginPath();
   ctx.ellipse(
     tx,
-    ty - 4 * bud,
-    Math.max(0.75, 2.7 * bud),
-    Math.max(1.3, 5.2 * bud),
+    ty - HEAD_SHAPE.rise * bud,
+    Math.max(HEAD_SHAPE.minRx, HEAD_SHAPE.rx * bud),
+    Math.max(HEAD_SHAPE.minRy, HEAD_SHAPE.ry * bud),
     0,
     0,
     Math.PI * 2,
@@ -492,6 +511,8 @@ const SHADOW_SHRINK = 0.45;
 const SHADOW_ALPHA_FLOOR = 0.08;
 const SHADOW_ALPHA_RANGE = 0.14;
 const SHADOW_BLUR = 3.2;
+/** In hare units: below the feet, then the radii on the ground. */
+const SHADOW_SHAPE = { drop: 1.2, rx: 30, ry: 3.6 } as const;
 
 const drawHareShadow = (
   ctx: CanvasRenderingContext2D,
@@ -507,9 +528,9 @@ const drawHareShadow = (
   ctx.beginPath();
   ctx.ellipse(
     x,
-    scene.hareRoot + 1.2 * scene.hareScale,
-    30 * scene.hareScale * shrink,
-    3.6 * scene.hareScale * shrink,
+    scene.hareRoot + SHADOW_SHAPE.drop * scene.hareScale,
+    SHADOW_SHAPE.rx * scene.hareScale * shrink,
+    SHADOW_SHAPE.ry * scene.hareScale * shrink,
     0,
     0,
     Math.PI * 2,
