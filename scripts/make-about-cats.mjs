@@ -27,7 +27,7 @@ const MASK_GAIN = 4;
 const DENSITY = 2;
 /* Below this the drawing is upscaled into its frame and blurs. */
 const MIN_DENSITY = 1.5;
-const WEBP_QUALITY = 82;
+const WEBP_QUALITY = 70;
 const WEBP_EFFORT = 6;
 /* Frames per sheet row. */
 const COLUMNS = 6;
