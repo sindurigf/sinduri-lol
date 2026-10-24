@@ -176,6 +176,8 @@ export const createHopper = (sticker: HTMLImageElement, atlasUrl: string) => {
       facingLeft = true;
       pose('sit');
       place(at);
+      /* The surfaces it lands on, in the host's coordinates, for tests/let-it-fall.spec.ts. */
+      feet.dataset.stones = JSON.stringify(stones);
       host.append(feet);
       sticker.setAttribute('data-away', '');
       for (const stone of stones) {

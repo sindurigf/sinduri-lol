@@ -1093,16 +1093,20 @@ Enforced by `tests/footer.spec.ts`.
   solid: the heap lands beside or on them, never over them. A block taller
   than 60% of the screen stays and the blocks inside it fall; a footer row
   falls as its link alone.
-- Then the footer rabbit climbs the heap in the hero's poses
+- Then the footer rabbit climbs in the hero's poses
   (`src/scripts/let-it-fall-rabbit.ts`, frames from
   `src/lib/hero-field-rabbit.ts`, the hero atlas loaded on press): crouch,
-  leap on an eased arc, crouch on landing, sit, facing the way it travels.
-  One leap up onto the heap, then hops along its top, five hops in all at
-  most and 70px apart at least, to the highest spot clear of every control with support under its
-  middle; there it looks around twice. It shrinks to fit a wide screen. On
-  Put It Back it leaps home at once, as the heap climbs home under it. It is
-  `aria-hidden` and takes no pointer; under reduced motion the footer
-  sticker is simply on the heap and back.
+  leap on an eased arc, crouch on landing, sit, facing the way it travels. It
+  ends sitting on top of Put It Back, clear of its label, and above its focus
+  ring while keyboard focus shows it; the heap keeps that seat free. Where it
+  lands is read from the landed page: only the top edge of a painted, fallen
+  surface (a fill or edge unlike its ground, or an image) or of Put It Back,
+  level under its middle, with nothing painted, no text and no other control
+  or its ring in its box. Five hops at most, 70px apart at least; on the
+  button it looks around twice. If the seat has no room, it takes the highest
+  such place on the heap, shrinking to fit. On Put It Back it leaps
+  home at once. It is `aria-hidden` and takes no pointer; under reduced
+  motion the footer sticker is simply on the button and back.
 - The same button (now Put It Back), Esc, keyboard focus moving anywhere else
   or a new window width puts it all back. A click or tap on a link or button
   in the heap focuses without `:focus-visible`, so it follows the link; a
