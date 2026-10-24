@@ -1098,13 +1098,14 @@ Enforced by `tests/footer.spec.ts`.
   (`src/scripts/let-it-fall-rabbit.ts`, frames from
   `src/lib/hero-field-rabbit.ts`, the hero atlas loaded on press): crouch,
   leap on an eased arc, crouch on landing, sit, facing the way it travels. It
-  ends sitting on top of Put It Back, clear of its label; the heap keeps that
-  seat free. Where it lands is read from the landed page: only the top edge of
-  a painted, fallen surface (a fill, an edge or a picture) or of Put It Back,
+  ends sitting on top of Put It Back, clear of its label, and above its focus
+  ring while keyboard focus shows it; the heap keeps that seat free. Where it
+  lands is read from the landed page: only the top edge of a painted, fallen
+  surface (a fill or edge unlike its ground, or an image) or of Put It Back,
   level under its middle, with nothing painted, no text and no other control
-  in its box. Five hops at most, 70px apart at least; on the button it looks
-  around twice. If Put It Back is too near the top of the screen, it takes the
-  highest such place on the heap, shrinking to fit. On Put It Back it leaps
+  or its ring in its box. Five hops at most, 70px apart at least; on the
+  button it looks around twice. If the seat has no room, it takes the highest
+  such place on the heap, shrinking to fit. On Put It Back it leaps
   home at once. It is `aria-hidden` and takes no pointer; under reduced
   motion the footer sticker is simply on the button and back.
 - The same button (now Put It Back), Esc, keyboard focus moving anywhere else

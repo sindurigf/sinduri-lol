@@ -201,12 +201,12 @@
     }
   }
 
-  /* The rabbit on top of the heap, clear of every control; scaled from its top left, as the script measures. */
+  /* The rabbit on its perch, clear of every control; scaled from its top left, as the script measures. */
   .footer-rabbit {
     transform-origin: 0 0;
   }
 
-  /* While the hero's posed rabbit climbs the heap in its place. */
+  /* While the hero's posed rabbit climbs in its place. */
   .footer-rabbit[data-away] {
     visibility: hidden;
   }

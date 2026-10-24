@@ -379,11 +379,42 @@ const rabbitClear = async (page: Page) => {
   ).toEqual({ onScreen: true, covers: [], hidden: 'true' });
 };
 
+test("pressed from the keyboard, the rabbit sits clear of Put It Back's focus ring (SC 2.4.11)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: HEIGHT });
+  await gotoSettled(page, ROUTE);
+  const button = page.getByRole('button', FALL);
+  await button.evaluate((el, gap) => {
+    scrollTo(0, el.getBoundingClientRect().top + scrollY - innerHeight + gap);
+  }, BUTTON_FROM_BOTTOM);
+  await button.focus();
+  await page.keyboard.press('Enter');
+  await rabbitClear(page);
+  expect(
+    await page.locator('.fall-hopper-frame').evaluate((frame) => {
+      const own = frame.getBoundingClientRect();
+      const control = document.querySelector('[data-let-it-fall]')!;
+      const style = getComputedStyle(control);
+      const ring =
+        parseFloat(style.outlineOffset) + parseFloat(style.outlineWidth);
+      return {
+        focused: control.matches(':focus-visible'),
+        clear: own.bottom <= control.getBoundingClientRect().top - ring,
+      };
+    }),
+    "the rabbit covers Put It Back's focus ring",
+  ).toEqual({ focused: true, clear: true });
+});
+
+/* A seed whose heap at the desktop size has places to land on before Put It Back. */
+const CLIMB_SEED = 2;
+
 test('every place the rabbit lands is a painted block or Put It Back, and it ends on Put It Back', async ({
   page,
 }) => {
-  await seedRandom(page, HEAP_SEED);
-  await page.setViewportSize({ width: 390, height: HEIGHT });
+  await seedRandom(page, CLIMB_SEED);
+  await page.setViewportSize({ width: DESKTOP, height: HEIGHT });
   await gotoSettled(page, ROUTE);
   await press(page);
   await rabbitClear(page);
@@ -395,27 +426,41 @@ test('every place the rabbit lands is a painted block or Put It Back, and it end
     );
     /* px below the sticker's edge, inside the surface it rests on. */
     const INTO_SURFACE = 4;
+    const CLEAR = 'rgba(0, 0, 0, 0)';
+    const groundOf = (el: Element | null): string => {
+      for (let at = el; at; at = at.parentElement) {
+        const fill = getComputedStyle(at).backgroundColor;
+        if (fill !== CLEAR) return fill;
+      }
+      return CLEAR;
+    };
     return stones.map(({ x, y }) => {
       const hit = document.elementFromPoint(
         x + host.left,
         y + host.top + INTO_SURFACE,
       );
-      if (hit && button.contains(hit)) return 'Put It Back';
-      const style = hit ? getComputedStyle(hit) : null;
-      const filled =
-        style !== null &&
+      if (!hit) return 'nothing';
+      if (button.contains(hit)) return 'Put It Back';
+      const style = getComputedStyle(hit);
+      const behind = groundOf(hit.parentElement);
+      const shown =
         style.visibility === 'visible' &&
         Number(style.opacity) > 0 &&
-        (style.backgroundColor !== 'rgba(0, 0, 0, 0)' ||
-          parseFloat(style.borderTopWidth) > 0 ||
-          hit instanceof HTMLImageElement ||
-          hit instanceof SVGSVGElement);
-      return hit?.closest('[data-fell]') && filled
+        (hit instanceof HTMLImageElement ||
+          (style.backgroundColor !== CLEAR &&
+            style.backgroundColor !== behind) ||
+          (parseFloat(style.borderTopWidth) > 0 &&
+            style.borderTopColor !== CLEAR &&
+            style.borderTopColor !== behind));
+      return hit.closest('[data-fell]') && shown
         ? 'block'
-        : `nothing (${hit?.tagName})`;
+        : `nothing (${hit.tagName})`;
     });
   });
-  expect(landings.length, 'the rabbit never landed').toBeGreaterThan(0);
+  expect(
+    landings.filter((on) => on === 'block').length,
+    'the rabbit never landed on the heap, so this test checks nothing',
+  ).toBeGreaterThan(0);
   expect(
     landings.filter((on) => on !== 'block' && on !== 'Put It Back'),
     'the rabbit landed on something not shown',
