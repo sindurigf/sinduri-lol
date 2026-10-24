@@ -578,7 +578,7 @@ test(
   NODE,
   async () => {
     for (const id of CATS) {
-      const { data, info } = await sharp(`src/assets/about-cats-${id}.webp`)
+      const { data, info } = await sharp(`src/assets/about-cats-${id}.avif`)
         .ensureAlpha()
         .raw()
         .toBuffer({ resolveWithObject: true });
