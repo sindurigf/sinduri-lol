@@ -1114,7 +1114,8 @@ Enforced by `tests/footer.spec.ts`.
 - Once the heap has settled and after a short beat, the footer rabbit climbs
   in the hero's poses
   (`src/scripts/let-it-fall-rabbit.ts`, frames from
-  `src/lib/hero-field-rabbit.ts`, the hero atlas loaded on press): crouch,
+  `src/lib/hero-field-rabbit.ts`, the hero atlas as a lossless WebP loaded on
+  press, `npm run climb-atlas` after a change to it): crouch,
   leap on an eased arc, crouch on landing, sit, pause, facing the way it
   travels. It
   hops onto the menu shelf's clear stretch, up the blocks on top of it (their
