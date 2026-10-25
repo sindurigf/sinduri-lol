@@ -31,13 +31,7 @@ const { cats, inspiration } = Astro.props;
       <button type="button" class="motion-toggle cat-nap" data-motion-control>
         <span class="sr-only" />
       </button>
-      <button
-        type="button"
-        class="cat-tricks-button"
-        aria-expanded="false"
-        popovertarget={`cat-tricks-${cat.id}`}
-        data-motion-control
-      >
+      <button type="button" class="cat-tricks-button" data-motion-control>
         <svg
           class="cat-trick-icon"
           viewBox="0 0 24 24"
@@ -50,7 +44,7 @@ const { cats, inspiration } = Astro.props;
           <circle cx="14.5" cy="5.5" r="2" />
           <circle cx="19" cy="10" r="2" />
         </svg>
-        <span class="sr-only">Choose a trick for {cat.name}</span>
+        <span class="sr-only">Play with {cat.name}</span>
       </button>
       <div
         id={`cat-tricks-${cat.id}`}

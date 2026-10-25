@@ -659,7 +659,7 @@ const setUp = (): void => {
       hold(cat, 'pointer', false),
     );
     cat.nap.addEventListener('click', () => toggleNap(cat));
-    cat.paw.addEventListener('focusout', onTricksFocusOut);
+    cat.paw.addEventListener('click', () => pickTrick(cat, 'random'));
     cat.list.addEventListener('beforetoggle', (event) =>
       onTricksToggle(cat, event),
     );

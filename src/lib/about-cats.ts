@@ -48,7 +48,12 @@ import {
 } from './about-cats-idle';
 
 /** The rest after each move, in ms, while the cat idles: cats act in bursts. */
-const PAUSE_MS = [1500, 4500] as const;
+const PAUSE_MS = [8000, 20000] as const;
+/** Cats play only when pressed, settling between sitting and lying in their rests. */
+const SETTLE_ONLY = true;
+const LIE_DOWN_MS = 600;
+/** Body height in px under which a cat is lying: a loaf's 11 against a sit's 25. */
+const LYING_BELOW = 18;
 /** What a frame did for a cat: drew it, left it settled, or held it in a pause. */
 type StepResult = 'draw' | 'still' | 'rest';
 
@@ -528,9 +533,25 @@ export const createColony = (
       return;
     }
     if (cat.holds.size > 0 || now < cat.restUntil) return;
-    if (Math.random() < CLIMB_CHANCE && climb(cat, now)) return;
-    if (Math.random() < LEAP_CHANCE && leap(cat, now)) return;
-    if (!begin(cat, pickWeighted(CAT_WEIGHTS[cat.id]), now)) leap(cat, now);
+    /* On its own a cat only lies down or sits up; it plays when its paw is pressed. */
+    if (!SETTLE_ONLY) {
+      if (Math.random() < CLIMB_CHANCE && climb(cat, now)) return;
+      if (Math.random() < LEAP_CHANCE && leap(cat, now)) return;
+      if (!begin(cat, pickWeighted(CAT_WEIGHTS[cat.id]), now)) leap(cat, now);
+      return;
+    }
+    const lying = cat.pose.by < LYING_BELOW;
+    play(
+      cat,
+      lying
+        ? MOVES.wake()
+        : {
+            steps: [{ ms: LIE_DOWN_MS, pose: pose('loaf'), ease: 'inOut' }],
+            mods: [],
+          },
+      now,
+      Math.sign(cat.pose.face) || 1,
+    );
   };
 
   /* One test for both reading and waking: written two ways, float rounding can make them disagree at the deadline. */
