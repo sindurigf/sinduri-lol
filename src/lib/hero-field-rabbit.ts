@@ -32,6 +32,9 @@ const ATLAS_PX_PER_UNIT = 3.2;
 /** The atlas's size in its own pixels, the frames' coordinates. */
 export const ATLAS_SIZE = { w: 933, h: 335 } as const;
 
+/** CSS px: the rabbit's height at most while it climbs onto Let It Fall's heap, the floor of --size-footer-rabbit; the two must agree. */
+export const CLIMB_HEIGHT = 96;
+
 /** Device px per atlas px the rabbit is drawn at, for `scale` CSS px per unit on a canvas of `pixelRatio`. */
 export const atlasDensity = (scale: number, pixelRatio: number): number =>
   (scale / ATLAS_PX_PER_UNIT) * pixelRatio;

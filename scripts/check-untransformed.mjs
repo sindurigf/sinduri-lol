@@ -30,6 +30,10 @@ const SERVED_AS_IS = new Map([
     'the About cats draw their frames from it with SVG <image>; it is an AVIF atlas already.',
   ]),
   [
+    'hero-rabbit-climb.webp',
+    "Let It Fall's climbing rabbit draws its poses from it by offset; a lossless WebP from scripts/make-climb-atlas.mjs already.",
+  ],
+  [
     'hero-rabbit.svg',
     'the hero canvas rasterises the vector atlas at the size it draws the rabbit.',
   ],
