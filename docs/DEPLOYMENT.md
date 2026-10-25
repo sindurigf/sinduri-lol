@@ -64,14 +64,15 @@ missing.
 
 ## Plausible
 
-- Plausible Cloud, EU. Retention and click props depend on the plan.
-- `/privacy` states retention from `PLAUSIBLE_RETENTION_YEARS` in
-  [`src/lib/platform-facts.ts`](../src/lib/platform-facts.ts): 5 years on
-  Business, 3 on Starter and Growth. Change it with the plan.
-- Click props (label, area, target) show only on the Business plan.
-- Registered as `sinduri.lol`. `filterPayload` in
-  [`src/lib/analytics.ts`](../src/lib/analytics.ts) drops local, test and
-  preview traffic and Do Not Track, and strips query strings and fragments.
+- Plausible Cloud, EU, Business plan: 5-year retention and click props
+  (label, area, target). A cheaper plan keeps 3 years and hides props, so
+  `PLAUSIBLE_RETENTION_YEARS` in
+  [`src/lib/platform-facts.ts`](../src/lib/platform-facts.ts) and `/privacy`
+  change with it.
+- Registered as `sinduri.lol`. `canSend` in
+  [`src/lib/analytics.ts`](../src/lib/analytics.ts) keeps the tracker off on
+  local, test and preview hosts and under Do Not Track; `filterPayload` strips
+  query strings and fragments.
 - The npm tracker takes its options from `init()` in
   [`src/scripts/analytics.ts`](../src/scripts/analytics.ts), not from the
   dashboard's tracking toggles.
@@ -82,7 +83,8 @@ Dashboard, once per site:
   goal for `/contact/sent/`, which counts contact form sends.
 - Shields > Hostnames: allow `sinduri.lol` only.
 
-`@plausible-analytics/tracker` is pinned to an exact version. Before a bump,
+`@plausible-analytics/tracker` is pinned to an exact version and gets its own
+Dependabot pull request. Before a bump,
 read its changelog for new fields, storage or hosts: `tests/analytics.spec.ts`
 fails on an undisclosed field and `tests/privacy.spec.ts` on a storage write.
 Update `/privacy` if what is sent changed. A collector host change also changes

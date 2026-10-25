@@ -11,7 +11,7 @@ interface PlatformFact {
   checkedOn: string;
 }
 
-/** The longest plan, Business and the free trial; /privacy says "up to". Starter and Growth keep 3. */
+/** Business plan; Starter and Growth keep 3. */
 export const PLAUSIBLE_RETENTION_YEARS = 5;
 
 /** Workers Free plan. */
@@ -22,7 +22,7 @@ export const D1_RESTORE_WINDOW_DAYS = 7;
 
 export const PLATFORM_FACTS: Readonly<Record<string, PlatformFact>> = {
   plausibleRetention: {
-    claim: `Plausible keeps the visit counts for up to ${PLAUSIBLE_RETENTION_YEARS} years`,
+    claim: `Plausible keeps the visit counts for ${PLAUSIBLE_RETENTION_YEARS} years`,
     check:
       'Plausible > Account Settings > Subscription: the plan, and its data ' +
       'retention on plausible.io/#pricing',

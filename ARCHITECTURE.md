@@ -673,7 +673,7 @@ in `public/`.
 default-src 'self';
 script-src 'self' <3 sha256 hashes>;
 style-src  'self' <1 sha256 hash>;
-connect-src 'self' https://plausible.io;
+connect-src 'self' https://plausible.io/api/event;
 object-src 'none'; base-uri 'none';
 form-action 'self'; frame-ancestors 'none';
 upgrade-insecure-requests;
@@ -683,9 +683,9 @@ require-trusted-types-for 'script'; trusted-types vue
 - No `'unsafe-inline'`, no `'unsafe-eval'`. Everything is same-origin: fonts in
   `/_astro/`, the Plausible tracker bundled from npm, no embeds, no `data:`
   URIs, Vue runtime-only build.
-- `connect-src` names Plausible's collector; `tests/headers-rules.spec.ts`
-  asserts it equals `PLAUSIBLE_ORIGIN` in `src/lib/analytics.ts`, so a
-  collector host change updates both in `public/_headers` and `analytics.ts`
+- `connect-src` names Plausible's collector URL; `tests/headers-rules.spec.ts`
+  asserts it equals `PLAUSIBLE_ENDPOINT` in `src/lib/analytics.ts`, so a
+  collector change updates both in `public/_headers` and `analytics.ts`
   together. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#plausible).
 - `vite.build.assetsInlineLimit: 0` so no script is inlined.
 - `form-action 'self'`, never `'none'`: `'none'` silently blocks the contact

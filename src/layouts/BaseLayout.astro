@@ -252,9 +252,11 @@ const articleData = article && {
     </main>
     <Footer />
     <ReadingTab />
+    {/* Its own module: a blocked or failing tracker leaves the others running. */}
     <script>
       import '../scripts/analytics';
-      import '../scripts/track-clicks';
+    </script>
+    <script>
       import '../scripts/failed-images';
       import '../scripts/focus-into-view';
     </script>

@@ -268,7 +268,7 @@ test.describe('the privacy policy is true', NODE, () => {
     expect(
       section,
       `/privacy no longer states Plausible's ${PLAUSIBLE_RETENTION_YEARS}-year retention.`,
-    ).toContain(`keeps it for up to ${PLAUSIBLE_RETENTION_YEARS} years`);
+    ).toContain(`keeps it for ${PLAUSIBLE_RETENTION_YEARS} years`);
 
     expect(
       section,

@@ -3,7 +3,7 @@ import { hashesFor, inlineBlocks } from '../scripts/csp-hashes.mjs';
 import { extname, join, relative, sep } from 'node:path';
 import { expect, test } from './test';
 import { builtPages, DIST_DIR } from './routes';
-import { PLAUSIBLE_ORIGIN } from '../src/lib/analytics';
+import { PLAUSIBLE_ENDPOINT } from '../src/lib/analytics';
 import { asServed, headersFor, MIME, type Rule } from './policy-server';
 import { ASSET_CACHE_CONTROL, usePolicyServer } from './headers-fixture';
 import { NODE } from './tags';
@@ -122,8 +122,8 @@ const expectOutboundDirectives = (csp: string): void => {
   /* Drift silently drops analytics; wider sends data /privacy does not name. */
   expect(
     directive(csp, 'connect-src'),
-    `connect-src must be 'self' plus PLAUSIBLE_ORIGIN (${PLAUSIBLE_ORIGIN}).`,
-  ).toBe(`connect-src 'self' ${PLAUSIBLE_ORIGIN}`);
+    `connect-src must be 'self' plus PLAUSIBLE_ENDPOINT (${PLAUSIBLE_ENDPOINT}).`,
+  ).toBe(`connect-src 'self' ${PLAUSIBLE_ENDPOINT}`);
 
   /* Guards a future http:// URL: upgraded works, blocked is a broken image. */
   expect(
