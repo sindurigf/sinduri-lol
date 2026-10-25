@@ -46,7 +46,7 @@ How AI tooling was used to build this site.
     Potrace (`artwork/rabbit-laugh.json`, `scripts/make-logo.mjs`);
   - the animated cats on `/about/`, drawn with Canva AI from the cats' photos
     (`artwork/about-cats/`, packed by `scripts/make-about-cats.mjs`), their
-    sleep, wake and trick-list icons (`src/components/ui/AboutCats.vue`) and
+    sleep, wake and trick-list icons (`src/components/AboutCats.astro`) and
     their trick icons (`src/lib/about-cats-tricks.json`). The cat photos are
     real.
 
