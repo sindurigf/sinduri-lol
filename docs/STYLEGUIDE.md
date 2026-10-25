@@ -41,7 +41,7 @@ blur, uppercase headings, tilted marks.
 | 1b  | Ground, thin slab: `/contact/sent`, both posts                                                                                     | 3 routes                               |
 | 1c  | Ground, mid-page: a `Section surface="gold"`, the kindness quote, `/contact`'s closing band                                        | `/career`, `/about`, `/`, `/contact`   |
 | 2   | The primary action: `.nav-cta`, `.btn-primary`                                                                                     | 11 routes, 4 routes                    |
-| 3   | The bunny marks: the logo tile, the line bunny tile on `/about`, the roundel, the homepage sticker                                 | 11 routes, 9 routes                    |
+| 3   | The bunny marks: the logo tile, the laughing rabbit tile on `/about`, the roundel, the homepage sticker                            | 11 routes, 9 routes                    |
 | 11  | The footer name band: "Lepus Ridet" in ink on a `block-gold` band at every page's end, the rabbit standing on it                   | every route                            |
 | 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                                                  | `/about`, `/accessibility`, `/contact` |
 | 4a  | A talk slide's label, bold words, part number and lead-in term before a colon; its text links, still underlined                    | `/talks/<deck>/`                       |
@@ -545,13 +545,13 @@ with a comment beside it.
 | `shadow-hard-gold-border-4` | A card on gold                                                                                                        |
 | `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                       |
 | `shadow-hard-bunny-8`       | The logo tile, the homepage stickers                                                                                  |
-| `shadow-hard-bunny-12`      | The line bunny tile on `/about`                                                                                       |
+| `shadow-hard-bunny-12`      | The laughing rabbit tile on `/about`                                                                                  |
 
 - `bunny` is `pink`'s hex but stays pink in light mode, where `pink` turns
   ink.
 - Anything focusable with a shadow sets its lift: [Focus](#focus).
 - Radius is 0 everywhere (base layer). `rounded-nav` (14px): the logo tile
-  (`Header.astro`), the line bunny tile on the Lepus Ridet panel on `/about` and the Star
+  (`Header.astro`), the laughing rabbit tile on the Lepus Ridet panel on `/about` and the Star
   Trek thumbnail on `/about`, square so the photo is not cropped. `rounded-full`:
   no current use. No pills; any other rounded corner is a bug.
 

@@ -447,16 +447,15 @@ in `wrangler.jsonc`).
   immutably: WebP through `astro:assets`, and the rabbit SVGs as they are.
   Unimported files are not emitted.
 - `public/images/`: stable URLs for outside consumers (Open Graph images).
-- `artwork/`: source artwork the build never reads (the Lepus Ridet badge,
-  the `favicon.ico` frames, the traced logo rabbit and its share-card copy).
+- `artwork/`: source artwork the build never reads (the traced logo and
+  Lepus Ridet rabbits, the `favicon.ico` frames and the logo's share-card copy).
   Nothing in it ships.
 
 | Path                            | Artwork   | Goes on              | Used by                                      |
 | ------------------------------- | --------- | -------------------- | -------------------------------------------- |
-| `src/assets/bunny-dark.png`     | `#111111` | Gold, light surfaces | About                                        |
 | `src/assets/roundel-rabbit.svg` | Sticker   | Hero slab edge       | `Roundel.astro`                              |
 | `src/assets/logo-rabbit.svg`    | Sticker   | The logo tile        | `Header.astro` logo tile                     |
-| `artwork/badge-white.png`       | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge               |
+| `src/assets/lepus-rabbit.svg`   | Sticker   | The Lepus Ridet tile | `about.astro`                                |
 | `public/images/og-default.png`  | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
 | `public/images/og/*.jpg`        | Composite | n/a                  | `BaseLayout.astro`, every other page         |
 
@@ -550,11 +549,13 @@ in `wrangler.jsonc`).
 
 - One source: `scripts/make-logo.mjs` renders the logo rabbit, the roundel
   rabbit and every icon from `artwork/rabbit-jump.json` (the jumping rabbit,
-  traced) in Chromium.
-- The trace holds two outlines, both the smoothed silhouette. `cut` places the
+  traced) in Chromium, and the `/about` tile rabbit from
+  `artwork/rabbit-laugh.json` (the laughing rabbit, traced) with the roundel's
+  die-cut.
+- Each trace holds two outlines, both the smoothed silhouette. `cut` places the
   rabbit, draws the rim, block and throw, and fills the tab icons; `sil` takes
   the white fill and the thin ink edge.
-- The logo, roundel, footer and hero rabbits ship as SVG, with the rim and
+- The logo, roundel, Lepus Ridet, footer and hero rabbits ship as SVG, with the rim and
   block as strokes of one shared outline (`<use>`), so their lines stay sharp
   at every size and zoom. The hero canvas rasterises its atlas at the size it
   draws the rabbit (`atlasDensity`), off the animation frame, so the rabbit is
@@ -592,7 +593,7 @@ in `wrangler.jsonc`).
 - `favicon.ico` holds the 16, 32 and 48 frames as PNGs.
 
 ```sh
-node scripts/make-logo.mjs   # rewrites the logo rabbit and every icon
+node scripts/make-logo.mjs   # rewrites the logo, roundel and Lepus Ridet rabbits and every icon
 ```
 
 - `tests/icons.spec.ts` checks every `sizes` attribute against the bytes, and

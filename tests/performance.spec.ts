@@ -60,6 +60,7 @@ const RABBIT_SVG_BUDGETS: Readonly<Record<string, number>> = {
   'logo-rabbit.svg': 12_000,
   'roundel-rabbit.svg': 12_000,
   'bunny-footer.svg': 13_000,
+  'lepus-rabbit.svg': 4_000,
   'hero-rabbit.svg': 48_000,
 };
 

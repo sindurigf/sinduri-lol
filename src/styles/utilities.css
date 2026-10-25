@@ -62,6 +62,36 @@
     }
   }
 
+  /* The row keeps the rabbit's rise above the tile, plus a step for its tilt, so the room and the rise never drift apart. */
+  .lepus-row {
+    --lepus-tile: calc(var(--spacing) * 20);
+
+    padding-top: calc(
+      var(--lepus-rabbit-rise) *
+        (var(--lepus-tile) - 2 * var(--lepus-tile-edge)) + var(--spacing) * 2
+    );
+
+    @variant lg {
+      --lepus-tile: calc(var(--spacing) * 28);
+    }
+  }
+
+  .lepus-row .lepus-tile {
+    width: var(--lepus-tile);
+    height: var(--lepus-tile);
+    border-width: var(--lepus-tile-edge);
+  }
+
+  .lepus-tile .lepus-rabbit {
+    position: absolute;
+    top: calc(var(--lepus-rabbit-rise) * -100%);
+    left: var(--lepus-rabbit-left);
+    width: auto;
+    max-width: none;
+    height: var(--lepus-rabbit-height);
+    rotate: var(--lepus-rabbit-turn);
+  }
+
   /*
    * The logo tile's press, as the controls' in buttons-nav.css with the mark's
    * 8px throw. Only the tile moves, so the link keeps the pointer. The tile is

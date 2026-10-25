@@ -19,12 +19,15 @@ const TALKS = join(ROOT, 'src/content/talks');
  * fails.
  */
 const SERVED_AS_IS = new Map([
-  ...['logo-rabbit.svg', 'roundel-rabbit.svg', 'bunny-footer.svg'].map(
-    (name) => [
-      name,
-      'a vector from scripts/make-logo.mjs or the rabbit trace, drawn sharp at every size as it is.',
-    ],
-  ),
+  ...[
+    'logo-rabbit.svg',
+    'roundel-rabbit.svg',
+    'bunny-footer.svg',
+    'lepus-rabbit.svg',
+  ].map((name) => [
+    name,
+    'a vector from scripts/make-logo.mjs or the rabbit trace, drawn sharp at every size as it is.',
+  ]),
   ...['minerva', 'rudra', 'hela'].map((cat) => [
     `about-cats-${cat}.avif`,
     'the About cats draw their frames from it with SVG <image>; it is an AVIF atlas already.',
