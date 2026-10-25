@@ -167,29 +167,37 @@ const partition = (d, box) => {
   ];
 };
 
+/**
+ * The roundel rabbit's die-cut, drawn under the art in its own mirrored units `u`:
+ * a pink block swept down and behind with an ink back edge, then a white rim and an ink edge round `#cut` and `#sil`.
+ */
+const dieCut = ({ rim, edge, depth, backEdge, steps }, u) => {
+  /* The drawing is mirrored, so a positive offset falls down and behind the rabbit. */
+  const grown = (color, width, offset = 0, ref = 'cut') =>
+    `<use href="#${ref}"${offset ? ` x="${(offset * u).toFixed(2)}" y="${(offset * u).toFixed(2)}"` : ''} fill="${color}" stroke="${color}" stroke-width="${(2 * width * u).toFixed(2)}" stroke-linejoin="round"/>`;
+  const offsets = Array.from(
+    { length: steps },
+    (_, i) => (depth * (steps - i)) / steps,
+  );
+  /* The ink back is swept like the block, from one edge width in, so it edges the block's far side evenly and never shows past its near side. */
+  const back = offsets
+    .filter((d) => d >= backEdge)
+    .map((d) => grown(INK, rim + backEdge, d))
+    .join('');
+  const block = offsets.map((d) => grown(PINK, rim, d)).join('');
+  return `${back}${block}${grown(WHITE, rim)}${grown(INK, edge, 0, 'sil')}`;
+};
+
 function roundelArt() {
   const b = bbox(TRACE.cut);
   const k = ROUNDEL.h / (b.y1 - b.y0);
   const u = 1 / k;
   const transform = `translate(${ROUNDEL.cx} 50) rotate(${ROUNDEL.rotate}) scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
-  /* The drawing is mirrored, so a positive offset falls down and behind the rabbit. */
-  const grown = (color, width, offset = 0, ref = 'cut') =>
-    `<use href="#${ref}"${offset ? ` x="${(offset * u).toFixed(2)}" y="${(offset * u).toFixed(2)}"` : ''} fill="${color}" stroke="${color}" stroke-width="${(2 * width * u).toFixed(2)}" stroke-linejoin="round"/>`;
-  const offsets = Array.from(
-    { length: ROUNDEL.steps },
-    (_, i) => (ROUNDEL.depth * (ROUNDEL.steps - i)) / ROUNDEL.steps,
-  );
-  /* The ink back is swept like the block, from one edge width in, so it edges the block's far side evenly and never shows past its near side. */
-  const back = offsets
-    .filter((d) => d >= ROUNDEL.backEdge)
-    .map((d) => grown(INK, ROUNDEL.rim + ROUNDEL.backEdge, d))
-    .join('');
-  const block = offsets.map((d) => grown(PINK, ROUNDEL.rim, d)).join('');
   const [face, mouthLine] = partition(line, MOUTH_BOX);
   const [pink, tongue] = partition(TRACE.pink, MOUTH_BOX);
   const mx = (MOUTH_BOX.x0 + MOUTH_BOX.x1) / 2;
   const mouth = `<g transform="translate(${mx} ${MOUTH_BOX.y0}) scale(${MOUTH_SCALE}) translate(${-mx} ${-MOUTH_BOX.y0})">${fill(tongue, EAR)}${fill(mouthLine, INK, ROUNDEL.line * u)}</g>`;
-  return `<defs><path id="cut" d="${TRACE.cut}"/><path id="sil" d="${TRACE.sil}"/></defs><g transform="${transform}">${back}${block}${grown(WHITE, ROUNDEL.rim)}${grown(INK, ROUNDEL.edge, 0, 'sil')}
+  return `<defs><path id="cut" d="${TRACE.cut}"/><path id="sil" d="${TRACE.sil}"/></defs><g transform="${transform}">${dieCut(ROUNDEL, u)}
 ${fill(TRACE.sil, WHITE)}${fill(pink, EAR)}${fill(face, INK, ROUNDEL.line * u)}${mouth}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
 }
 
