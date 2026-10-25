@@ -6,7 +6,6 @@
 import { LOOK_BACK } from './about-cats-frames';
 import {
   MOVES,
-  CAT_WEIGHTS,
   clonePose,
   duration,
   moveExtent,
@@ -48,7 +47,12 @@ import {
 } from './about-cats-idle';
 
 /** The rest after each move, in ms, while the cat idles: cats act in bursts. */
-const PAUSE_MS = [1500, 4500] as const;
+const PAUSE_MS = [6000, 15000] as const;
+/** Moves a cat plays on its own: calm ones; the rest only as tricks from its paw. */
+const CALM_MOVES: Partial<Record<MoveName, number>> = { look: 3, stretch: 1 };
+/** Chance a cat lies down for its rest after a move, and how long it takes. */
+const LIE_DOWN_CHANCE = 0.5;
+const LIE_DOWN_MS = 600;
 /** What a frame did for a cat: drew it, left it settled, or held it in a pause. */
 type StepResult = 'draw' | 'still' | 'rest';
 
@@ -64,9 +68,9 @@ export const CONTROL_ROOM = 48;
 /** Positions tried along the track when looking for room for a move. */
 const FIT_STEPS = 24;
 /** Chance a cat moves along its band, by one leap, instead of playing where it is. */
-const LEAP_CHANCE = 0.15;
+const LEAP_CHANCE = 0;
 /** Chance a cat on a stepped band climbs to the next brick instead. */
-const CLIMB_CHANCE = 0.5;
+const CLIMB_CHANCE = 0;
 /* Ways to get about, one at a time and weighted; there is no walking. */
 const LEAPS: Partial<Record<MoveName, number>> = {
   pounce: 3,
@@ -387,7 +391,25 @@ export const createColony = (
       onLedge(cat);
     }
     drop(cat, false, false);
-    if (!playing.settle) cat.restUntil = performance.now() + rand(...PAUSE_MS);
+    if (!playing.settle) {
+      cat.restUntil = performance.now() + rand(...PAUSE_MS);
+      if (
+        !playing.then &&
+        cat.holds.size === 0 &&
+        Math.random() < LIE_DOWN_CHANCE
+      )
+        play(
+          cat,
+          {
+            steps: [{ ms: LIE_DOWN_MS, pose: pose('loaf'), ease: 'inOut' }],
+            mods: [],
+          },
+          performance.now(),
+          Math.sign(cat.pose.face) || 1,
+          undefined,
+          true,
+        );
+    }
     playing.then?.();
   };
 
@@ -530,7 +552,7 @@ export const createColony = (
     if (cat.holds.size > 0 || now < cat.restUntil) return;
     if (Math.random() < CLIMB_CHANCE && climb(cat, now)) return;
     if (Math.random() < LEAP_CHANCE && leap(cat, now)) return;
-    if (!begin(cat, pickWeighted(CAT_WEIGHTS[cat.id]), now)) leap(cat, now);
+    if (!begin(cat, pickWeighted(CALM_MOVES), now)) leap(cat, now);
   };
 
   /* One test for both reading and waking: written two ways, float rounding can make them disagree at the deadline. */
