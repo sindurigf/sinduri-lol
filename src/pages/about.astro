@@ -9,7 +9,7 @@ import PageHero from '../components/PageHero.astro';
 import PhotoTile from '../components/PhotoTile.astro';
 import PhotoViewer from '../components/PhotoViewer.astro';
 import Section from '../components/Section.astro';
-import AboutCats from '../components/ui/AboutCats.vue';
+import AboutCats from '../components/AboutCats.astro';
 import '../styles/components/about-cats.css';
 import type { CatInfo } from '../lib/about-cats';
 import { THANKS } from '../lib/credits';
@@ -584,7 +584,6 @@ const catInfo: CatInfo[] = await Promise.all(
 
   <PhotoViewer />
   <AboutCats
-    client:load
     cats={catInfo}
     inspiration={{
       name: catInspiration.name.split(' ')[0] ?? catInspiration.name,

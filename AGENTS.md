@@ -116,8 +116,8 @@ covers attribution once. `scripts/check-commits.sh` enforces it in CI;
 - UI: native elements with a visible focus indicator, targets outside a
   sentence at least 44x44 CSS px (SC 2.5.5), colors only as tokens from
   `src/styles/global.css`.
-- Vue only for components with real state (`HeroField.vue`). Small
-  scripts are plain modules, e.g. `src/scripts/mobile-menu.ts`.
+- Vue only for `HeroField.vue`. Everything else is a plain module, stateful
+  or not, e.g. `src/scripts/mobile-menu.ts` and `src/scripts/about-cats.ts`.
 
 ## Comments
 

@@ -5,7 +5,7 @@ Guntupalli, Open Source Enthusiast.
 
 ## Stack
 
-Astro, Vue islands, Tailwind CSS and TypeScript on Cloudflare Workers:
+Astro, a Vue island, Tailwind CSS and TypeScript on Cloudflare Workers:
 [ARCHITECTURE.md](ARCHITECTURE.md#stack).
 
 ## Quick start
