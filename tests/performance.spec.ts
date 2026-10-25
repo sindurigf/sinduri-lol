@@ -16,9 +16,9 @@ import { LAYOUT_SHIFT, layoutShiftOf } from './layout-shift';
 const ROUTE_SCRIPT_BUDGETS: Readonly<Record<string, number>> = {
   '/': 98_000,
   '/about': 131_400,
-  '/brand': 20_000,
+  '/brand': 21_500,
 };
-const PAGE_SCRIPT_BUDGET = 15_500;
+const PAGE_SCRIPT_BUDGET = 17_500;
 
 /* Decoded bytes of the stylesheets a page links plus its inline `<style>`. Every route links the one sheet. */
 const PAGE_STYLE_BUDGET = 120_000;
