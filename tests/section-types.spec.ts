@@ -41,7 +41,7 @@ test('"Why Lepus Ridet" copies with the space after the hidden word', async ({
 const LEPUS_WIDTHS = [320, 640, 1280] as const;
 
 for (const width of LEPUS_WIDTHS) {
-  test(`at ${width}px the Lepus Ridet rabbit covers none of the heading or its caption`, async ({
+  test(`at ${width}px the Lepus Ridet rabbit covers none of the heading or its caption and stays in its row`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -70,5 +70,15 @@ for (const width of LEPUS_WIDTHS) {
     expect(overlaps, 'the Lepus Ridet rabbit covers its heading text').toEqual(
       [],
     );
+    expect(
+      await page.evaluate(() => {
+        const rabbit = document.querySelector('.lepus-rabbit')!;
+        return (
+          rabbit.getBoundingClientRect().top >=
+          rabbit.closest('.lepus-row')!.getBoundingClientRect().top
+        );
+      }),
+      'the Lepus Ridet rabbit rises past the room its row keeps above the tile',
+    ).toBe(true);
   });
 }

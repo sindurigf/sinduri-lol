@@ -499,9 +499,10 @@
   --logo-rabbit-height: 64px;
   /* The laughing rabbit's box in /about's Lepus Ridet tile, as shares of the tile inside its border: it bursts out over the border and the bunny shadow. */
   --lepus-rabbit-left: 12%;
-  --lepus-rabbit-top: -42%;
+  --lepus-rabbit-rise: 0.42;
   --lepus-rabbit-height: 112%;
   --lepus-rabbit-turn: 6deg;
+  --lepus-tile-edge: 4px;
   /* The logo link's focus block reaches this far past the tile and the name. */
   --logo-focus-pad: 8px;
   /* The logo rabbit: rises when hovered; crouches with the pressed tile, then springs past its spot on release. */
