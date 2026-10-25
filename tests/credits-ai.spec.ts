@@ -29,7 +29,7 @@ test.describe('/credits Made with AI', () => {
       ).toHaveAttribute('href', '/');
       await expect(
         section.getByRole('link', {
-          name: 'The line bunny on the /about tile',
+          name: 'The laughing bunny on the /about tile',
         }),
       ).toHaveAttribute('href', '/about/');
     },

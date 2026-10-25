@@ -36,8 +36,8 @@ export interface FirstPhoto {
 
 const MAIN = /<main\b[\s\S]*?<\/main>/;
 const IMG = /<img\b[^>]*>/g;
-/* The bunny marks and the badge are site art, never a page's photo. */
-const LOGO_ART = /\/(?:bunny|badge)-/;
+/* The rabbit marks are site art, never a page's photo. */
+const LOGO_ART = /\/(?:bunny-|logo-rabbit|roundel-rabbit|lepus-rabbit)/;
 
 /** The entities Astro writes into attributes, decoded. */
 export const decodeEntities = (text: string): string =>

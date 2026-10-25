@@ -10,7 +10,7 @@ import { NODE } from './tags';
  */
 
 /** The images the site draws for decoration. */
-const DECORATIVE = /bunny-(dark|footer)|logo-rabbit|roundel-rabbit/;
+const DECORATIVE = /bunny-footer|logo-rabbit|roundel-rabbit|lepus-rabbit/;
 
 const SUPPLIED_BY_THE_READER = /\b(image|photo|picture|logo)\b/i;
 const FILENAME = /\.(webp|avif|jpe?g|png|gif|svg)\b/i;
@@ -82,7 +82,7 @@ const FIXTURE = `
   <img src="/_astro/desk.webp" alt="A photo of a desk">
   <img src="/_astro/hare.webp" alt="hare.webp">
   <svg viewBox="0 0 24 24"><path d="" /></svg>
-  <img src="/_astro/bunny-dark.webp" alt>
+  <img src="/_astro/lepus-rabbit.svg" alt>
   <img src="/_astro/bicycle.webp" alt="Sinduri riding a bicycle down a tree-lined path.">
   <svg aria-hidden="true"><path d="" /></svg>
   <svg role="img"><path d="" /></svg>
