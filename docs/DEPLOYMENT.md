@@ -64,11 +64,11 @@ missing.
 
 ## Plausible
 
-- Plausible Cloud, EU, Business plan: 5-year retention and click props
-  (label, area, target). A cheaper plan keeps 3 years and hides props, so
-  `PLAUSIBLE_RETENTION_YEARS` in
-  [`src/lib/platform-facts.ts`](../src/lib/platform-facts.ts) and `/privacy`
-  change with it.
+- Plausible Cloud, EU, on the free trial, which has Business features such as
+  click props (label, area, target). Self-hosted Plausible replaces it before
+  the trial ends. `/privacy` states the trial's terms rather than a retention
+  period; the `plausibleTrial` fact in
+  [`src/lib/platform-facts.ts`](../src/lib/platform-facts.ts) tracks them.
 - Registered as `sinduri.lol`. `canSend` in
   [`src/lib/analytics.ts`](../src/lib/analytics.ts) keeps the tracker off on
   local, test and preview hosts and under Do Not Track; `filterPayload` strips
