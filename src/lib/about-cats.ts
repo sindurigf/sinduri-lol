@@ -49,6 +49,9 @@ import {
 
 /** The rest after each move, in ms, while the cat idles: cats act in bursts. */
 const PAUSE_MS = [1500, 4500] as const;
+/** The one cat that plays on its own; the others only look round or stretch, and play their tricks from the paw. */
+const PLAYFUL: CatSpot['id'] = 'rudra';
+const CALM_MOVES: Partial<Record<MoveName, number>> = { look: 3, stretch: 1 };
 /** What a frame did for a cat: drew it, left it settled, or held it in a pause. */
 type StepResult = 'draw' | 'still' | 'rest';
 
@@ -528,6 +531,10 @@ export const createColony = (
       return;
     }
     if (cat.holds.size > 0 || now < cat.restUntil) return;
+    if (cat.id !== PLAYFUL) {
+      begin(cat, pickWeighted(CALM_MOVES), now);
+      return;
+    }
     if (Math.random() < CLIMB_CHANCE && climb(cat, now)) return;
     if (Math.random() < LEAP_CHANCE && leap(cat, now)) return;
     if (!begin(cat, pickWeighted(CAT_WEIGHTS[cat.id]), now)) leap(cat, now);
