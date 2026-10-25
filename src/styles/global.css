@@ -497,7 +497,7 @@
   --logo-rabbit-top: -19px;
   --logo-rabbit-width: 47px;
   --logo-rabbit-height: 64px;
-  /* The laughing rabbit's box in /about's Lepus Ridet tile, as shares of the tile: it bursts out over the border and the bunny shadow. */
+  /* The laughing rabbit's box in /about's Lepus Ridet tile, as shares of the tile inside its border: it bursts out over the border and the bunny shadow. */
   --lepus-rabbit-left: 12%;
   --lepus-rabbit-top: -42%;
   --lepus-rabbit-height: 112%;

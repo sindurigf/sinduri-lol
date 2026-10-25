@@ -106,16 +106,18 @@ const ROUNDEL = {
   steps: 24,
   line: 0.6,
 };
-/* The laughing rabbit on /about's Lepus Ridet tile, 100 units tall, with the roundel's die-cut at that size. */
+/* The laughing rabbit on /about's Lepus Ridet tile, LEPUS_H units tall, with the roundel's die-cut scaled to that height. */
 const LAUGH = JSON.parse(readFileSync('artwork/rabbit-laugh.json', 'utf8'));
+const LEPUS_H = 100;
+const toLepus = (units) => (units * LEPUS_H) / ROUNDEL.h;
 const LEPUS = {
-  h: 100,
-  rim: 5.2,
-  edge: 0.8,
-  depth: 7.5,
-  backEdge: 1.7,
-  steps: 24,
-  line: 0.6,
+  h: LEPUS_H,
+  rim: toLepus(ROUNDEL.rim),
+  edge: toLepus(ROUNDEL.edge),
+  depth: toLepus(ROUNDEL.depth),
+  backEdge: toLepus(ROUNDEL.backEdge),
+  steps: ROUNDEL.steps,
+  line: ROUNDEL.line,
 };
 
 /* Trace units: the open mouth's box, and its scale about the top of that box; full size reads heavy in the roundel. */

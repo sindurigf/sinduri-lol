@@ -549,11 +549,13 @@ in `wrangler.jsonc`).
 
 - One source: `scripts/make-logo.mjs` renders the logo rabbit, the roundel
   rabbit and every icon from `artwork/rabbit-jump.json` (the jumping rabbit,
-  traced) in Chromium.
-- The trace holds two outlines, both the smoothed silhouette. `cut` places the
+  traced) in Chromium, and the `/about` tile rabbit from
+  `artwork/rabbit-laugh.json` (the laughing rabbit, traced) with the roundel's
+  die-cut.
+- Each trace holds two outlines, both the smoothed silhouette. `cut` places the
   rabbit, draws the rim, block and throw, and fills the tab icons; `sil` takes
   the white fill and the thin ink edge.
-- The logo, roundel, footer and hero rabbits ship as SVG, with the rim and
+- The logo, roundel, Lepus Ridet, footer and hero rabbits ship as SVG, with the rim and
   block as strokes of one shared outline (`<use>`), so their lines stay sharp
   at every size and zoom. The hero canvas rasterises its atlas at the size it
   draws the rabbit (`atlasDensity`), off the animation frame, so the rabbit is
@@ -591,7 +593,7 @@ in `wrangler.jsonc`).
 - `favicon.ico` holds the 16, 32 and 48 frames as PNGs.
 
 ```sh
-node scripts/make-logo.mjs   # rewrites the logo rabbit and every icon
+node scripts/make-logo.mjs   # rewrites the logo, roundel and Lepus Ridet rabbits and every icon
 ```
 
 - `tests/icons.spec.ts` checks every `sizes` attribute against the bytes, and
