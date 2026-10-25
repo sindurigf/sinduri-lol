@@ -11,9 +11,6 @@ interface PlatformFact {
   checkedOn: string;
 }
 
-/** Business plan; Starter and Growth keep 3. */
-export const PLAUSIBLE_RETENTION_YEARS = 5;
-
 /** Workers Free plan. */
 export const WORKER_LOG_RETENTION_DAYS = 3;
 
@@ -21,11 +18,13 @@ export const WORKER_LOG_RETENTION_DAYS = 3;
 export const D1_RESTORE_WINDOW_DAYS = 7;
 
 export const PLATFORM_FACTS: Readonly<Record<string, PlatformFact>> = {
-  plausibleRetention: {
-    claim: `Plausible keeps the visit counts for ${PLAUSIBLE_RETENTION_YEARS} years`,
+  plausibleTrial: {
+    claim:
+      'The site is on a Plausible free trial; when it ends Plausible stops ' +
+      'counting and later deletes the stats',
     check:
-      'Plausible > Account Settings > Subscription: the plan, and its data ' +
-      'retention on plausible.io/#pricing',
+      'Plausible > Account Settings > Subscription: still a trial, and ' +
+      'plausible.io/docs/trial for what happens when it ends',
     checkedOn: '2026-10-25',
   },
   plausibleRegion: {

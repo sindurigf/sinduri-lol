@@ -11,7 +11,6 @@ import { THEME_STORAGE_KEY } from '../lib/theme';
 import { TEXT_SCALE_KEY } from '../lib/text-scale';
 import {
   D1_RESTORE_WINDOW_DAYS,
-  PLAUSIBLE_RETENTION_YEARS,
   WORKER_LOG_RETENTION_DAYS,
 } from '../lib/platform-facts';
 
@@ -28,6 +27,7 @@ const CLOUDFLARE_NEL =
   'https://developers.cloudflare.com/network-error-logging/';
 const NEL_REPORT_HOST = 'a.nel.cloudflare.com';
 const PLAUSIBLE_DATA_POLICY = 'https://plausible.io/data-policy';
+const PLAUSIBLE_TRIAL = 'https://plausible.io/docs/trial';
 const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
 ---
 
@@ -103,9 +103,14 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
           <a href="https://plausible.io/">Plausible</a>, an analytics service
           that uses no cookies and does not follow you from site to site. The
           script runs from this site, and what it sends goes to Plausible at{' '}
-          {PLAUSIBLE_HOST}, which stores it on servers in the European Union and
-          keeps it for {PLAUSIBLE_RETENTION_YEARS} years. It is the only place a
-          page here sends anything to.
+          {PLAUSIBLE_HOST}, which stores it on servers in the European Union. It
+          is the only place a page here sends anything to.
+        </p>
+
+        <p>
+          This site uses Plausible's free trial. When the trial ends, Plausible
+          stops counting and later deletes what it stored, as{' '}
+          <a href={PLAUSIBLE_TRIAL}>its trial terms</a> describe.
         </p>
 
         <p>For each page you open, it sends:</p>
