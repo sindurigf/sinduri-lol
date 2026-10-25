@@ -3,7 +3,8 @@
  * Renders the logo rabbit, its large copy for the share cards, the roundel
  * rabbit and every favicon from one traced drawing,
  * artwork/rabbit-jump.json (the jumping rabbit, Canva AI traced with
- * Potrace), in Chromium with the site tokens.
+ * Potrace), and the laughing rabbit on /about's Lepus Ridet tile from
+ * artwork/rabbit-laugh.json, in Chromium with the site tokens.
  *
  *   node scripts/make-logo.mjs
  *
@@ -105,6 +106,18 @@ const ROUNDEL = {
   steps: 24,
   line: 0.6,
 };
+/* The laughing rabbit on /about's Lepus Ridet tile, 100 units tall, with the roundel's die-cut at that size. */
+const LAUGH = JSON.parse(readFileSync('artwork/rabbit-laugh.json', 'utf8'));
+const LEPUS = {
+  h: 100,
+  rim: 5.2,
+  edge: 0.8,
+  depth: 7.5,
+  backEdge: 1.7,
+  steps: 24,
+  line: 0.6,
+};
+
 /* Trace units: the open mouth's box, and its scale about the top of that box; full size reads heavy in the roundel. */
 const MOUTH_BOX = { x0: 280, y0: 1270, x1: 610, y1: 1540 };
 const MOUTH_SCALE = 0.7;
@@ -168,7 +181,7 @@ const partition = (d, box) => {
 };
 
 /**
- * The roundel rabbit's die-cut, drawn under the art in its own mirrored units `u`:
+ * The die-cut of the roundel and Lepus Ridet rabbits, drawn under the art in its own mirrored units `u`:
  * a pink block swept down and behind with an ink back edge, then a white rim and an ink edge round `#cut` and `#sil`.
  */
 const dieCut = ({ rim, edge, depth, backEdge, steps }, u) => {
@@ -199,6 +212,16 @@ function roundelArt() {
   const mouth = `<g transform="translate(${mx} ${MOUTH_BOX.y0}) scale(${MOUTH_SCALE}) translate(${-mx} ${-MOUTH_BOX.y0})">${fill(tongue, EAR)}${fill(mouthLine, INK, ROUNDEL.line * u)}</g>`;
   return `<defs><path id="cut" d="${TRACE.cut}"/><path id="sil" d="${TRACE.sil}"/></defs><g transform="${transform}">${dieCut(ROUNDEL, u)}
 ${fill(TRACE.sil, WHITE)}${fill(pink, EAR)}${fill(face, INK, ROUNDEL.line * u)}${mouth}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
+}
+
+/** Mirrored to face right, its drawing's center at the origin. */
+function lepusArt() {
+  const b = bbox(LAUGH.cut);
+  const k = LEPUS.h / (b.y1 - b.y0);
+  const u = 1 / k;
+  const transform = `scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
+  return `<defs><path id="cut" d="${LAUGH.cut}"/><path id="sil" d="${LAUGH.sil}"/></defs><g transform="${transform}">${dieCut(LEPUS, u)}
+${fill(LAUGH.sil, WHITE)}${fill(LAUGH.pink, EAR)}${fill(LAUGH.line, INK, LEPUS.line * u)}</g>`;
 }
 
 function sticker() {
@@ -483,6 +506,30 @@ writeFileSync(
     ),
   ),
 );
+
+/* The Lepus Ridet rabbit's box: its drawing's box grown by the rim and edge all round, and by the block's depth down and behind. */
+{
+  const b = bbox(LAUGH.cut);
+  const halfW = (LEPUS.h * (b.x1 - b.x0)) / (b.y1 - b.y0) / 2;
+  const halfH = LEPUS.h / 2;
+  const grow = LEPUS.rim + LEPUS.backEdge;
+  const fit = {
+    left: Math.floor(-halfW - grow - LEPUS.depth),
+    top: Math.floor(-halfH - grow),
+    right: Math.ceil(halfW + grow),
+    bottom: Math.ceil(halfH + grow + LEPUS.depth),
+  };
+  const [fw, fh] = [fit.right - fit.left, fit.bottom - fit.top];
+  writeFileSync(
+    'src/assets/lepus-rabbit.svg',
+    shipped(
+      svg(`${fit.left} ${fit.top} ${fw} ${fh}`, lepusArt()).replace(
+        '<svg ',
+        `<svg width="${fw}" height="${fh}" `,
+      ),
+    ),
+  );
+}
 
 const png = async (source, size) =>
   Buffer.from((await raster(source, size, size)).png, 'base64');

@@ -389,7 +389,7 @@
   --tracking-title: -0.02em;
   --tracking-label: 0.1em;
 
-  /* Zero everywhere except the logo tile and the line bunny tile on /about. */
+  /* Zero everywhere except the logo tile and the laughing rabbit tile on /about. */
   --radius-nav: 14px;
 
   /*
@@ -497,6 +497,11 @@
   --logo-rabbit-top: -19px;
   --logo-rabbit-width: 47px;
   --logo-rabbit-height: 64px;
+  /* The laughing rabbit's box in /about's Lepus Ridet tile, as shares of the tile: it bursts out over the border and the bunny shadow. */
+  --lepus-rabbit-left: 12%;
+  --lepus-rabbit-top: -42%;
+  --lepus-rabbit-height: 112%;
+  --lepus-rabbit-turn: 6deg;
   /* The logo link's focus block reaches this far past the tile and the name. */
   --logo-focus-pad: 8px;
   /* The logo rabbit: rises when hovered; crouches with the pressed tile, then springs past its spot on release. */

@@ -62,6 +62,16 @@
     }
   }
 
+  .lepus-tile .lepus-rabbit {
+    position: absolute;
+    top: var(--lepus-rabbit-top);
+    left: var(--lepus-rabbit-left);
+    width: auto;
+    max-width: none;
+    height: var(--lepus-rabbit-height);
+    rotate: var(--lepus-rabbit-turn);
+  }
+
   /*
    * The logo tile's press, as the controls' in buttons-nav.css with the mark's
    * 8px throw. Only the tile moves, so the link keeps the pointer. The tile is

@@ -42,7 +42,8 @@ How AI tooling was used to build this site.
   - the jumping bunny in the header logo, the hero roundel, every favicon and
     app icon and the share images, the same Canva AI rabbit traced with Potrace
     (`artwork/rabbit-jump.json`, `scripts/make-logo.mjs`, `scripts/make-og.mjs`);
-  - the line bunny on the `/about/` tile (`src/assets/bunny-dark.png`);
+  - the laughing bunny on the `/about/` tile, drawn with Canva AI and traced with
+    Potrace (`artwork/rabbit-laugh.json`, `scripts/make-logo.mjs`);
   - the animated cats on `/about/`, drawn with Canva AI from the cats' photos
     (`artwork/about-cats/`, packed by `scripts/make-about-cats.mjs`), their
     sleep, wake and trick-list icons (`src/components/ui/AboutCats.vue`) and

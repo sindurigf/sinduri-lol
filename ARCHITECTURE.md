@@ -447,16 +447,15 @@ in `wrangler.jsonc`).
   immutably: WebP through `astro:assets`, and the rabbit SVGs as they are.
   Unimported files are not emitted.
 - `public/images/`: stable URLs for outside consumers (Open Graph images).
-- `artwork/`: source artwork the build never reads (the Lepus Ridet badge,
-  the `favicon.ico` frames, the traced logo rabbit and its share-card copy).
+- `artwork/`: source artwork the build never reads (the traced logo and
+  Lepus Ridet rabbits, the `favicon.ico` frames and the logo's share-card copy).
   Nothing in it ships.
 
 | Path                            | Artwork   | Goes on              | Used by                                      |
 | ------------------------------- | --------- | -------------------- | -------------------------------------------- |
-| `src/assets/bunny-dark.png`     | `#111111` | Gold, light surfaces | About                                        |
 | `src/assets/roundel-rabbit.svg` | Sticker   | Hero slab edge       | `Roundel.astro`                              |
 | `src/assets/logo-rabbit.svg`    | Sticker   | The logo tile        | `Header.astro` logo tile                     |
-| `artwork/badge-white.png`       | `#FFFFFF` | Dark surfaces        | Nothing; the Lepus Ridet badge               |
+| `src/assets/lepus-rabbit.svg`   | Sticker   | The Lepus Ridet tile | `about.astro`                                |
 | `public/images/og-default.png`  | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
 | `public/images/og/*.jpg`        | Composite | n/a                  | `BaseLayout.astro`, every other page         |
 
