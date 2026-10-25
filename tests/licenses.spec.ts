@@ -16,10 +16,10 @@ const LICENSES = join(DIST_DIR, 'licenses.txt');
 
 const SHIPPED = [
   '@vue/runtime-core', // a client chunk
+  '@plausible-analytics/tracker', // the analytics client chunk
   '@fontsource-variable/lexend', // a prerender asset
   'tailwindcss', // a banner in the shipped CSS
   'astro', // the island script inlined into a page
-  '/vendor/umami.js', // public/vendor/
 ];
 
 test.describe('/licenses.txt', () => {

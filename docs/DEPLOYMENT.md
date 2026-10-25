@@ -16,7 +16,7 @@ npm run build && npx wrangler deploy --dry-run
 ```
 
 - Run `npm run check:live` and `npm run check:live:console` after any deploy or
-  dashboard change. The console check stubs Umami, so it counts no visits.
+  dashboard change. The console check stubs Plausible, so it counts no visits.
 - After a deploy that changes the hero or what a page loads, run Lighthouse
   (mobile) on `https://sinduri.lol/` and the changed page; record the
   performance score and Total Blocking Time in a comment on the change's pull
@@ -62,36 +62,31 @@ not Build (the runtime never sees Build). Without it, messages are still stored,
 no email is sent, and the endpoint logs whether the binding or the secret is
 missing.
 
-## Umami
+## Plausible
 
-- Umami Cloud, EU region, free Hobby plan. A page view is one event; a click up
-  to four (one per event data property).
-- `/privacy` states retention from `UMAMI_RETENTION_MONTHS` in
-  [`src/lib/platform-facts.ts`](../src/lib/platform-facts.ts); change it with the
-  plan.
-- Website ID, collector host and vendored date: [`src/lib/analytics.ts`](../src/lib/analytics.ts).
-- Registered as `sinduri.lol`; `data-domains` stops local, test and preview
-  traffic being counted.
+- Plausible Cloud, EU. Retention and click props depend on the plan.
+- `/privacy` states retention from `PLAUSIBLE_RETENTION_YEARS` in
+  [`src/lib/platform-facts.ts`](../src/lib/platform-facts.ts): 5 years on
+  Business, 3 on Starter and Growth. Change it with the plan.
+- Click props (label, area, target) show only on the Business plan.
+- Registered as `sinduri.lol`. `filterPayload` in
+  [`src/lib/analytics.ts`](../src/lib/analytics.ts) drops local, test and
+  preview traffic and Do Not Track, and strips query strings and fragments.
+- The npm tracker takes its options from `init()` in
+  [`src/scripts/analytics.ts`](../src/scripts/analytics.ts), not from the
+  dashboard's tracking toggles.
 
-The tracker is vendored at `public/vendor/umami.js`. `scheduled.yml` checks it
-weekly; also run the check after any Umami changelog entry about the tracker:
+Dashboard, once per site:
 
-```sh
-npm run check:umami
-```
+- Goals: a custom event goal for each name in `CLICK_EVENTS`, and a pageview
+  goal for `/contact/sent/`, which counts contact form sends.
+- Shields > Hostnames: allow `sinduri.lol` only.
 
-Exit 0 means it matches. Otherwise it writes `tmp/umami-upstream.js` and prints
-the diff. Then, in one commit:
-
-1. Read the diff for new storage, hosts, data sent or `data-*` settings.
-   `tests/privacy.spec.ts` catches storage writes and `tests/analytics.spec.ts`
-   undisclosed payload fields; changes in meaning need a reader.
-2. Copy `tmp/umami-upstream.js` over `public/vendor/umami.js`.
-3. Update `UMAMI_VENDORED_ON`, and `/privacy` if what is sent changed.
-4. Run the suite, then `npm run check:umami` again for exit 0.
-
-A collector host change also changes the CSP:
-[ARCHITECTURE.md](../ARCHITECTURE.md#the-csp).
+`@plausible-analytics/tracker` is pinned to an exact version. Before a bump,
+read its changelog for new fields, storage or hosts: `tests/analytics.spec.ts`
+fails on an undisclosed field and `tests/privacy.spec.ts` on a storage write.
+Update `/privacy` if what is sent changed. A collector host change also changes
+the CSP: [ARCHITECTURE.md](../ARCHITECTURE.md#the-csp).
 
 ## Hostnames
 
@@ -126,16 +121,16 @@ stays, builds disabled, to hold the `pages.dev` name.
 Dashboard settings that change what ships without a file change.
 `npm run check:live` catches most.
 
-| Setting                   | Required state | Why                                                        |
-| ------------------------- | -------------- | ---------------------------------------------------------- |
-| Web Analytics             | Off            | Injects a script from another domain; Umami does the job   |
-| Email Address Obfuscation | Off            | Rewrites `mailto:` links into a script-dependent page      |
-| JavaScript Detections     | On, forced     | Free plan; `no-transform` in `_headers` keeps it off pages |
-| Compression               | Default        | Assets only; `no-transform` on pages switches it off there |
-| Bot Fight Mode            | Off            | Challenges the search engine crawlers the site wants       |
-| Zone HSTS                 | Off            | Replaces the `Strict-Transport-Security` in `_headers`     |
-| Minimum TLS version       | 1.2            | 1.3 alone locks out older devices that cannot update       |
-| Hotlink Protection        | Off            | Refuses images to link previews and feed readers           |
+| Setting                   | Required state | Why                                                          |
+| ------------------------- | -------------- | ------------------------------------------------------------ |
+| Web Analytics             | Off            | Injects a script from another domain; Plausible does the job |
+| Email Address Obfuscation | Off            | Rewrites `mailto:` links into a script-dependent page        |
+| JavaScript Detections     | On, forced     | Free plan; `no-transform` in `_headers` keeps it off pages   |
+| Compression               | Default        | Assets only; `no-transform` on pages switches it off there   |
+| Bot Fight Mode            | Off            | Challenges the search engine crawlers the site wants         |
+| Zone HSTS                 | Off            | Replaces the `Strict-Transport-Security` in `_headers`       |
+| Minimum TLS version       | 1.2            | 1.3 alone locks out older devices that cannot update         |
+| Hotlink Protection        | Off            | Refuses images to link previews and feed readers             |
 
 ## Repository settings
 
