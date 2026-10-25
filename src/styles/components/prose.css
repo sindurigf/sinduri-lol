@@ -57,10 +57,8 @@
     @apply mt-8 grid list-none grid-cols-1;
 
     padding: 0 0 var(--block-edge) var(--block-edge);
-    filter: drop-shadow(
-      var(--hard-throw) var(--hard-throw) 0 var(--color-pink)
-    );
 
+    /* Each pillar casts the throw and the next covers it, as in a `.card-block`. */
     & > li {
       @apply mt-0 flex min-w-0 flex-col;
 
@@ -68,6 +66,7 @@
       border: var(--block-edge) solid var(--color-block-ink);
       background-color: var(--color-block-light);
       color: var(--color-block-ink);
+      box-shadow: var(--hard-throw) var(--hard-throw) 0 var(--color-pink);
     }
 
     & strong {
@@ -118,8 +117,10 @@
       }
     }
 
-    @media (forced-colors: active), print {
-      filter: none;
+    @media print {
+      & > li {
+        box-shadow: none;
+      }
     }
   }
 
