@@ -18,7 +18,7 @@ run the commands in [AGENTS.md](AGENTS.md#done-means).
 
 - [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md): commands, layout, posts, talks,
   the CV
-- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md): Cloudflare, D1, email, Umami,
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md): Cloudflare, D1, email, Plausible,
   dashboard settings
 - [ARCHITECTURE.md](ARCHITECTURE.md): stack, tokens, content, assets, headers
 - [docs/STYLEGUIDE.md](docs/STYLEGUIDE.md): visual rules and page patterns
@@ -49,5 +49,5 @@ privately instead: [SECURITY.md](SECURITY.md). Pull requests use
   `cv/cv.html`: brand icon paths from
   [Simple Icons](https://simpleicons.org), CC0 1.0.
 - Lexend: SIL Open Font License 1.1, copyright 2019 The Lexend Project Authors.
-- The build writes `/licenses.txt` covering every third-party package, vendored
-  script and font sent to a browser (`scripts/licenses.mjs`).
+- The build writes `/licenses.txt` covering every third-party package and font
+  sent to a browser (`scripts/licenses.mjs`).

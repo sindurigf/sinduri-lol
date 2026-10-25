@@ -633,9 +633,8 @@ in `public/`.
 - `immutable` for a year on `/_astro/*` only: Vite content-hashes those names.
   An unhashed file there stays stale for a year in every browser that has it.
 - Everything else gets `Cache-Control: no-transform` alone, so browsers
-  revalidate against the ETag. `/vendor/*`, favicons and feeds detach it so
-  Cloudflare compresses them; sitemaps and `llms.txt` would save under 1 KB.
-  `/vendor/*` also caches for an hour: its URL is not hashed.
+  revalidate against the ETag. Favicons and feeds detach it so Cloudflare
+  compresses them; sitemaps and `llms.txt` would save under 1 KB.
 - `no-transform` keeps JavaScript Detections (forced on the Free plan) off
   pages: its inline script carries a per-request token no CSP hash allows, and
   it strips the ETag. The cost is uncompressed HTML, since no pattern
@@ -663,8 +662,8 @@ in `public/`.
 ### Speculation rules
 
 - `Speculation-Rules: "/speculationrules.json"`: a header-named file, so no
-  inline hash. Prefetch on hover only, never prerender (would count Umami
-  visits).
+  inline hash. Prefetch on hover only, never prerender (would fetch and run
+  pages never opened).
 - Excludes `/contact/send/`, `/videos/`, PDFs, downloads.
 - Served as `application/speculationrules+json` or Chromium ignores it.
   `tests/served-types.spec.ts`, `tests/headers.spec.ts`.
@@ -675,7 +674,7 @@ in `public/`.
 default-src 'self';
 script-src 'self' <3 sha256 hashes>;
 style-src  'self' <1 sha256 hash>;
-connect-src 'self' https://gateway.umami.is;
+connect-src 'self' https://plausible.io/api/event;
 object-src 'none'; base-uri 'none';
 form-action 'self'; frame-ancestors 'none';
 upgrade-insecure-requests;
@@ -683,12 +682,12 @@ require-trusted-types-for 'script'; trusted-types vue
 ```
 
 - No `'unsafe-inline'`, no `'unsafe-eval'`. Everything is same-origin: fonts in
-  `/_astro/`, Umami vendored under `/vendor/`, no embeds, no `data:` URIs, Vue
-  runtime-only build.
-- `connect-src` names Umami's collector; `tests/headers-rules.spec.ts` asserts it
-  equals `UMAMI_HOST_URL` in `src/lib/analytics.ts`, so a collector host change
-  updates both in `public/_headers` and `analytics.ts` together. See
-  [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#umami).
+  `/_astro/`, the Plausible tracker bundled from npm, no embeds, no `data:`
+  URIs, Vue runtime-only build.
+- `connect-src` names Plausible's collector URL; `tests/headers-rules.spec.ts`
+  asserts it equals `PLAUSIBLE_ENDPOINT` in `src/lib/analytics.ts`, so a
+  collector change updates both in `public/_headers` and `analytics.ts`
+  together. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#plausible).
 - `vite.build.assetsInlineLimit: 0` so no script is inlined.
 - `form-action 'self'`, never `'none'`: `'none'` silently blocks the contact
   form. Never `*`. A form posting to a new origin widens it to that exact
