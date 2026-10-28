@@ -50,7 +50,6 @@ export const WALK: readonly Frame[] = [
 
 /** The walk drawing a walk starts on: its stance is the standing cat's, so the first step does not snap the legs apart. */
 const WALK_START = 2;
-export const WALK_FIRST = WALK[WALK_START] ?? 'walk';
 
 /** Sitting to standing, both ways: each frame shows in turn, the cat turned side-on before it rises and its front paws planted. */
 export const RISE: readonly Frame[] = [

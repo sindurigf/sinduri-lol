@@ -9,7 +9,6 @@ import {
   POSE_FRAME,
   RISE,
   RISE_HOLD_MS,
-  WALK_FIRST,
   bridges,
   riseStep,
   WALK,
@@ -106,13 +105,21 @@ const sizeOf = (id: CatId, frame: Frame) => {
   return { dw, dh, w, h };
 };
 
-/** px a rising frame is drawn off center, before the flip, so its front paw lands where the first walk frame's does. */
-const pawShift = (id: CatId, frame: Frame): number =>
-  RISE.includes(frame) ? SHEET[id][WALK_FIRST][8] - SHEET[id][frame][8] : 0;
+const RISE_FROM = RISE.indexOf('sitside');
+const RISE_TO = RISE.indexOf('stand');
 
-/** How long `frame` shows before the next may replace it. */
-const holdOf = (frame: Frame | null): number =>
-  (frame && RISE_HOLD_MS[frame]) ?? TICK_MS;
+/** px a part-way rising frame is drawn off center, before the flip: its front paw steps evenly from the side-on sit's to the stand's, which both stay centered like every other frame. */
+const pawShift = (id: CatId, frame: Frame): number => {
+  const at = RISE.indexOf(frame);
+  if (at <= RISE_FROM || at >= RISE_TO) return 0;
+  const paw = (f: Frame) => SHEET[id][f][8];
+  const share = (at - RISE_FROM) / (RISE_TO - RISE_FROM);
+  return paw('sitside') + (paw('stand') - paw('sitside')) * share - paw(frame);
+};
+
+/** How long `frame` shows before the next may replace it; a cat already on the move rises at the walk's pace. */
+const holdOf = (frame: Frame | null, hurried = false): number =>
+  (!hurried && frame && RISE_HOLD_MS[frame]) || TICK_MS;
 
 /** The frame a pose is drawn as, standing still. */
 const stillFrame = (p: Pose): Frame =>
@@ -292,6 +299,7 @@ const stepFrame = (
   wanted: Frame,
   now: number,
   x: number,
+  hurried: boolean,
 ): boolean => {
   if (wanted !== s.wanted) {
     s.wanted = wanted;
@@ -317,7 +325,7 @@ const stepFrame = (
         ? s.frame!
         : walkFrame(at + Math.min(ahead, MAX_WALK_STEP))
       : (rise ?? wanted);
-  s.pending = next !== s.frame && now - s.shownAt < holdOf(s.frame);
+  s.pending = next !== s.frame && now - s.shownAt < holdOf(s.frame, hurried);
   if (next === s.frame) s.cut = false;
   if (next === s.frame || s.pending) return false;
   /* A cut counts as a full step already shown: no squash, and the next frame need not wait. */
@@ -387,7 +395,7 @@ export const renderCat = (
   rig.lastLift = p.y;
 
   const arrived = rig.frame !== null && !rig.cut;
-  if (stepFrame(rig, wanted, now, x)) {
+  if (stepFrame(rig, wanted, now, x, moving)) {
     drawFrame(rig, rig.layer, rig.frame!);
     set(rig.layer.view, 'visibility', 'visible');
     set(rig.root, 'data-frame', rig.frame!);

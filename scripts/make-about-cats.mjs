@@ -53,8 +53,9 @@ const checkArt = async (cat, frame) => {
   return { art, width, height, h, w: (h * width) / height };
 };
 
-/** Share of the band at the bottom of a drawing where its paws touch the ground. */
-const GROUND_BAND = 0.04;
+/** Share of a drawing's height, up from its lowest pixel, where its paws touch the ground: toes sit a little above a curled tail. */
+const GROUND_BAND = 0.08;
+const OPAQUE = 128;
 
 /** The front paw's x as a share of the drawing's width: the drawings face left, so the leftmost pixel on the ground. */
 const frontPawShare = async (art) => {
@@ -62,11 +63,19 @@ const frontPawShare = async (art) => {
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
+  const opaque = (x, y) => data[(y * info.width + x) * 4 + 3] > OPAQUE;
+  let bottom = info.height - 1;
+  while (
+    bottom > 0 &&
+    !Array.from({ length: info.width }, (_, x) => x).some((x) =>
+      opaque(x, bottom),
+    )
+  )
+    bottom -= 1;
   const band = Math.max(1, Math.round(info.height * GROUND_BAND));
   let left = info.width;
-  for (let y = info.height - band; y < info.height; y += 1)
-    for (let x = 0; x < left; x += 1)
-      if (data[(y * info.width + x) * 4 + 3] > 128) left = x;
+  for (let y = Math.max(0, bottom - band); y <= bottom; y += 1)
+    for (let x = 0; x < left; x += 1) if (opaque(x, y)) left = x;
   return left / info.width;
 };
 
