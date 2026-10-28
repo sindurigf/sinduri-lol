@@ -2,9 +2,10 @@
 body { margin: 0; background: #131313; color: #e5e2e1; font: 16px/1.5 system-ui, sans-serif; }
 main { max-width: 40rem; margin: 0 auto; padding: 1rem; }
 h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
-h2 { font-size: 1.1rem; margin: 1.25rem 0 .25rem; }
+h2 { font-size: 1.3rem; margin: 2rem 0 .25rem; }
+h3 { font-size: 1.05rem; margin: 1.25rem 0 .25rem; }
 p { margin: 0 0 .5rem; }
 button { min-width: 44px; min-height: 44px; padding: .5rem 1rem; font: inherit; font-weight: 700; background: #ffc000; color: #131313; border: 3px solid #131313; }
 button:focus-visible { outline: 3px solid #00dcfd; outline-offset: 3px; }
 .stage { position: relative; height: 220px; background: #1a1a1a; border-bottom: 3px solid #e5e2e1; overflow: hidden; }
-.stage img { position: absolute; bottom: 0; left: 50%; transform-origin: 50% 100%; }
+.stage img { position: absolute; bottom: 0; left: 50%; }
