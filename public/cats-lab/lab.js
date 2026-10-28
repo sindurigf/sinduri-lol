@@ -16,7 +16,8 @@ const FRAMES = {
   rise: { h: 67.3, paw: 0.269 },
   stand: { h: 96.3, paw: 0.132 },
   ib1: { h: 90, paw: 0.229 },
-  ib2: { h: 89, paw: 0.29 },
+  /* The tail tip hangs below ib2's paws, so it is drawn this far down to stand on them. */
+  ib2: { h: 89, paw: 0.29, dy: 2.2 },
   ib3: { h: 85.5, paw: 0.167 },
   ...Object.fromEntries(
     ['walk', 'walk2', 'walk3', 'walk4', 'walk5', 'walk6', 'walk7', 'walk8'].map(
@@ -35,15 +36,17 @@ const step = (frame, ms, x = 0, o = {}) => ({ frame, ms, x, sx: 1, sy: 1, ...o }
 /* D: side-on sit before the rise, front paws planted, about 0.5 s up and 0.6 s down, hind end lowering first. */
 const matched = (frame, ms, x, o = {}) =>
   step(frame, ms, x, { paw: true, h: MATCHED[frame], ...o });
+/* px back that keeps ib3's front leg over ib2's: its leftmost pixel is a toe raised off the floor. */
+const IB3_NUDGE = -3;
 const D_SIT_STAND = [
   matched('sit', HOLD, 0),
   matched('headturn', 700, 0),
   matched('ib1', 100, 0, { sx: 1.02, sy: 0.97 }),
   matched('ib2', 140, 0),
-  matched('ib3', 140, 0),
+  matched('ib3', 140, IB3_NUDGE),
   matched('stand', 120, 0, { sx: 1.02, sy: 0.97 }),
   matched('stand', HOLD, 0),
-  matched('ib3', 140, 0),
+  matched('ib3', 140, IB3_NUDGE),
   matched('ib2', 180, 0),
   matched('ib1', 120, 0, { sx: 1.03, sy: 0.96 }),
   matched('ib1', 140, 0),
@@ -83,25 +86,42 @@ const C_SIT_STAND = [
 const WALK_FROM = 39;
 const WALK_FRAMES = 11;
 
-/* D: one drawing per stride step, so a paw on the ground stays put; slower first and last steps, and a settle. */
+/*
+ * D: each walk drawing moves the body by the distance that keeps its planted paw on the same spot,
+ * measured from the drawings' ground contacts (site px, negative is forward). Starts and ends on walk3,
+ * whose stance matches the stand; slower first and last steps, and a settle.
+ */
+const PLANTED_STEP = {
+  walk: -3.9,
+  walk2: -13.4,
+  walk3: -5,
+  walk4: -2.8,
+  walk5: -3.1,
+  walk6: -5.6,
+  walk7: -4.1,
+  walk8: -3.1,
+};
+const D_WALK_FIRST = 2;
+const D_WALK_FRAMES = 9;
 const WALK_WIDTH = 80.8;
-const pawOf = (frame, center) => center - WALK_WIDTH / 2 + FRAMES[frame].paw * WALK_WIDTH;
+const pawOf = (frame, center) =>
+  center - WALK_WIDTH / 2 + FRAMES[frame].paw * WALK_WIDTH;
 const dWalk = () => {
-  const centers = Array.from(
-    { length: WALK_FRAMES },
-    (_, i) => WALK_FROM - STRIDE_STEP * (i + 1),
+  const frames = Array.from(
+    { length: D_WALK_FRAMES },
+    (_, i) => WALK[(D_WALK_FIRST + i) % WALK.length],
   );
-  const first = WALK[0];
-  const last = WALK[(WALK_FRAMES - 1) % WALK.length];
+  const centers = [WALK_FROM];
+  frames.slice(0, -1).forEach((f, i) => centers.push(centers[i] + PLANTED_STEP[f]));
   /* Standing, her front paws sit where the first and last walk drawings put theirs. */
   const stand = (ms, x, o = {}) =>
     step('stand', ms, x, { h: MATCHED.stand, paw: true, ...o });
-  const steps = [stand(HOLD, pawOf(first, centers[0]))];
-  centers.forEach((x, i) => {
-    const ms = i === 0 ? 160 : i === 1 ? 120 : i === WALK_FRAMES - 1 ? 120 : TICK;
-    steps.push(step(WALK[i % WALK.length], ms, x));
+  const steps = [stand(HOLD, pawOf(frames[0], centers[0]))];
+  frames.forEach((f, i) => {
+    const ms = i === 0 ? 160 : i === 1 ? 120 : i === frames.length - 1 ? 120 : TICK;
+    steps.push(step(f, ms, centers[i]));
   });
-  const end = pawOf(last, centers.at(-1));
+  const end = pawOf(frames.at(-1), centers.at(-1));
   steps.push(stand(120, end, { sx: 1.02, sy: 0.97 }), stand(HOLD, end));
   return steps;
 };
@@ -141,7 +161,8 @@ const place = (img, s) => {
   const w = WIDTH[s.frame] ? (WIDTH[s.frame] * h) / 100 : 0;
   /* Planted: the front paw sits at x; otherwise the drawing's center does. */
   const from = s.paw ? -f.paw * w : -w / 2;
-  img.style.transform = `translateX(${from + s.x * SCALE}px) scale(${s.sx}, ${s.sy})`;
+  const dy = (f.dy ?? 0) * (h / (f.h * SCALE)) * SCALE;
+  img.style.transform = `translate(${from + s.x * SCALE}px, ${dy}px) scale(${s.sx}, ${s.sy})`;
   img.style.transformOrigin = s.paw ? `${f.paw * w}px 100%` : '50% 100%';
 };
 
@@ -167,7 +188,6 @@ const tick = (now) => {
 const setPlaying = (on) => {
   playing = on;
   button.textContent = on ? 'Pause' : 'Play';
-  button.setAttribute('aria-pressed', String(on));
   if (on) requestAnimationFrame(tick);
 };
 
