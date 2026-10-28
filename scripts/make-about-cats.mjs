@@ -53,6 +53,23 @@ const checkArt = async (cat, frame) => {
   return { art, width, height, h, w: (h * width) / height };
 };
 
+/** Share of the band at the bottom of a drawing where its paws touch the ground. */
+const GROUND_BAND = 0.04;
+
+/** The front paw's x as a share of the drawing's width: the drawings face left, so the leftmost pixel on the ground. */
+const frontPawShare = async (art) => {
+  const { data, info } = await sharp(art)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const band = Math.max(1, Math.round(info.height * GROUND_BAND));
+  let left = info.width;
+  for (let y = info.height - band; y < info.height; y += 1)
+    for (let x = 0; x < left; x += 1)
+      if (data[(y * info.width + x) * 4 + 3] > 128) left = x;
+  return left / info.width;
+};
+
 const filter = (scale) => {
   const r = (n) => n * scale;
   const steps = Array.from(
@@ -84,11 +101,13 @@ try {
   const sheet = {};
   for (const cat of CATS) {
     const arts = [];
-    for (const frame of FRAMES)
-      arts.push({ frame, ...(await checkArt(cat, frame)) });
+    for (const frame of FRAMES) {
+      const art = await checkArt(cat, frame);
+      arts.push({ frame, ...art, paw: await frontPawShare(art.art) });
+    }
 
     const tiles = [];
-    for (const { frame, art, w, h } of arts) {
+    for (const { frame, art, w, h, paw } of arts) {
       const tw = Math.ceil(w + 2 * PAD);
       const th = Math.ceil(h + 2 * PAD);
       const href = `data:image/png;base64,${(await sharp(art).png().toBuffer()).toString('base64')}`;
@@ -100,7 +119,7 @@ try {
           `</body></html>`,
       );
       const png = await page.screenshot({ omitBackground: true });
-      tiles.push({ frame, png, tw, th, w, h });
+      tiles.push({ frame, png, tw, th, w, h, paw });
     }
 
     const cellW = Math.max(...tiles.map((t) => t.tw)) * DENSITY + GUTTER;
@@ -119,7 +138,7 @@ try {
       const r = Math.floor(i / COLUMNS);
       const left = (i % COLUMNS) * cellW;
       const top = rowH.slice(0, r).reduce((a, b) => a + b, 0);
-      /* Sheet px, then the drawn size, then the cat's own size inside it: [sx, sy, sw, sh, dw, dh, catW, catH]. */
+      /* Sheet px, the drawn size, the cat's own size inside it, and its front paw's x from its middle: [sx, sy, sw, sh, dw, dh, catW, catH, pawX]. */
       frames[t.frame] = [
         left,
         top,
@@ -129,6 +148,7 @@ try {
         t.th,
         +t.w.toFixed(1),
         +t.h.toFixed(1),
+        +((t.paw - 0.5) * t.w).toFixed(1),
       ];
       return { input: t.png, left, top };
     });
@@ -155,7 +175,7 @@ try {
   }
 
   const source =
-    `/* Written by scripts/make-about-cats.mjs; do not edit. Per frame: sheet x, y, w, h; drawn w, h; the cat's own w, h inside it. */\n` +
+    `/* Written by scripts/make-about-cats.mjs; do not edit. Per frame: sheet x, y, w, h; drawn w, h; the cat's own w, h inside it; its front paw's x from its middle. */\n` +
     `export const PAD = ${PAD};\n` +
     `export const SHEET = ${JSON.stringify(sheet)} as const;\n`;
   const file = 'src/lib/about-cats-sheet.ts';

@@ -10,6 +10,7 @@ import type {
   PropKind,
   PropState,
 } from './about-cats-types';
+import { WALK_SPEED } from './about-cats-frames';
 
 export type { Pose };
 
@@ -1124,9 +1125,9 @@ const CREEP_READY_MS = 250;
 const SETTLE_BACK_MS = 400;
 /** Farther than this, a cat trots to the spot first and creeps only the last of it. */
 const CREEP_REACH = 60;
-/** px per second of a purposeful trot, twice the creep. */
-const TROT_SPEED = 110;
-const TROT_READY_MS = 250;
+/** A trot at the walk drawings' own pace, so they never skip; it stands up first, through every rising frame. */
+const TROT_SPEED = WALK_SPEED;
+const TROT_READY_MS = 500;
 
 /** Trots, then creeps, `distance` ahead first, so an edge move starts at the track end from anywhere on it. */
 /*
