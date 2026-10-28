@@ -6,10 +6,7 @@ import { builtPages, DIST_DIR, pagesNotLinking } from './routes';
 import { configuredSite } from './source';
 import { RETENTION_DAYS } from '../src/lib/contact-form';
 import { PLAUSIBLE_ORIGIN } from '../src/lib/analytics';
-import {
-  PLAUSIBLE_RETENTION_YEARS,
-  WORKER_LOG_RETENTION_DAYS,
-} from '../src/lib/platform-facts';
+import { WORKER_LOG_RETENTION_DAYS } from '../src/lib/platform-facts';
 import { NODE } from './tags';
 
 /**
@@ -267,8 +264,8 @@ test.describe('the privacy policy is true', NODE, () => {
 
     expect(
       section,
-      `/privacy no longer states Plausible's ${PLAUSIBLE_RETENTION_YEARS}-year retention.`,
-    ).toContain(`keeps it for ${PLAUSIBLE_RETENTION_YEARS} years`);
+      '/privacy no longer says the trial ends with Plausible deleting the counts.',
+    ).toMatch(/free trial\..*later deletes what it stored/);
 
     expect(
       section,
