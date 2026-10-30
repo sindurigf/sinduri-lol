@@ -287,7 +287,7 @@ export const createColony = (
     idle: createIdle(),
     idling: false,
     idleDrawnAt: 0,
-    idleShown: { bt: 0, hr: 0 },
+    idleShown: { hr: 0 },
   }));
   const watcherId = cats[Math.floor(Math.random() * cats.length)]?.id ?? '';
   const pointerAt = new Map<CatSpot['id'], { x: number; y: number }>();
@@ -340,8 +340,7 @@ export const createColony = (
     updateMood(cat);
   };
 
-  const addIdle = (p: Pose, { bt, hr }: IdleOffsets): void => {
-    p.bt += bt;
+  const addIdle = (p: Pose, { hr }: IdleOffsets): void => {
     p.hr += hr;
   };
 

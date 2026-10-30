@@ -33,6 +33,7 @@ import {
   hitBox,
   isStepping,
   reachOf,
+  spriteTransform,
 } from '../src/lib/about-cats-rig';
 import {
   FRAMES,
@@ -192,7 +193,7 @@ const ICONS: Record<string, unknown[]> = tricksData.icons;
 const catButton = (page: Page, id: (typeof CATS)[number]) =>
   page.locator(`#cat-spot-${id} .cat-button`);
 
-/** Where the cat stands, not how it is posed: a held cat still breathes. */
+/** Where the cat stands, not how it is posed: a held cat still turns its head. */
 const place = (page: Page, id: (typeof CATS)[number]) =>
   page.locator(`#cat-spot-${id} .cat-hit`).getAttribute('transform');
 
@@ -375,6 +376,54 @@ test(
       creepFrame({ frame: 'stand', stepX: 0 }, CREEP_STEP_PX, true),
       'a cat that is not crouched was treated as creeping',
     ).toBeNull();
+  },
+);
+
+/** Each transform in an SVG transform list, as its name and numbers. */
+const transformParts = (list: string) =>
+  [...list.matchAll(/([a-zA-Z]+)\(([^)]*)\)/g)].map(([, name, args]) => ({
+    name,
+    args: (args ?? '')
+      .trim()
+      .split(/[\s,]+/)
+      .map(Number),
+  }));
+
+test(
+  'every drawing is shown at its true shape: only moved and turned to face its way, never scaled, squashed or tilted',
+  NODE,
+  () => {
+    const moves: [string, Move][] = [
+      ...Object.entries(MOVES).map(
+        ([name, make]) => [name, make()] as [string, Move],
+      ),
+      ['turn', withTurn(MOVES.look(), pose('sit', { face: -1 }))],
+      ['climb up', climbMove(true, 40)],
+      ['climb down', climbMove(false, 40)],
+    ];
+    const distorted: string[] = [];
+    for (const [name, move] of moves) {
+      const start = startPose(move);
+      for (let t = 0; t <= duration(move); t += FRAME_MS) {
+        const p = poseAt(move, start, t);
+        const list = spriteTransform(p.face, Math.max(0, p.y));
+        const bad = transformParts(list).filter(
+          ({ name: kind, args }) =>
+            !(kind === 'translate' && args.length === 2) &&
+            !(
+              kind === 'scale' &&
+              args.length === 2 &&
+              Math.abs(args[0] ?? 0) === 1 &&
+              args[1] === 1
+            ),
+        );
+        if (bad.length > 0) {
+          distorted.push(`${name} at ${Math.round(t)}ms: ${list}`);
+          break;
+        }
+      }
+    }
+    expect(distorted, 'a drawing is scaled, squashed or tilted').toEqual([]);
   },
 );
 
@@ -774,7 +823,7 @@ test(
 );
 
 test(
-  'a resting cat redraws at the slow idle rate while only its breath moves, and faster during a glance',
+  'a resting cat redraws at the slow idle rate while it holds still, and faster during a glance',
   NODE,
   () => {
     const START_MS = 10_000;
@@ -788,9 +837,11 @@ test(
     }
     expect(
       idleFrameMs(createIdle(), 0),
-      'a cat that has not yet glanced draws faster than its breath needs',
+      'a cat that has not yet glanced draws faster than the calm rate',
     ).toBe(calm);
-    expect(busy, 'a glance drew no faster than the breath').toBeLessThan(calm);
+    expect(busy, 'a glance drew no faster than the calm rate').toBeLessThan(
+      calm,
+    );
   },
 );
 
