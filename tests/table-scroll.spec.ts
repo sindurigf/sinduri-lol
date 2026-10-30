@@ -122,7 +122,8 @@ test.describe('a post table at 320px', () => {
         const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
         for (let node = walker.nextNode(); node; node = walker.nextNode()) {
           const text = node.textContent ?? '';
-          for (const match of text.matchAll(/\S+/g)) {
+          /* A break after a hyphen is a normal line break, not a split word. */
+          for (const match of text.matchAll(/[^\s-]+/g)) {
             const range = document.createRange();
             range.setStart(node, match.index);
             range.setEnd(node, match.index + match[0].length);
