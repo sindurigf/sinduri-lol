@@ -326,13 +326,14 @@ const arc = (from: number, to: number, height: number): Mod =>
     p.y += Math.sin(Math.PI * k) * height;
     p.hr -= HEAD_LAG * Math.cos(Math.PI * k);
   });
-/* Slow breaths; two leave room for a slow device's frames within 5 s. */
-const BREATH_MS = 1000;
-const BREATHS = 2;
-/** The "z" rises once per breath, then rests above the head, not back at the start. */
-const dozing = (from: number, breaths: number): Mod =>
-  between(from, from + BREATH_MS * breaths, (p, s) => {
-    p.zz = s >= BREATH_MS * breaths ? 1 : (s % BREATH_MS) / BREATH_MS;
+/* ms the "z" takes to rise once; two rises leave room for a slow device's frames within 5 s. */
+const DOZE_PERIOD_MS = 1000;
+const DOZE_PERIODS = 2;
+/** The "z" rises once per doze period, then rests above the head, not back at the start. */
+const dozing = (from: number, periods: number): Mod =>
+  between(from, from + DOZE_PERIOD_MS * periods, (p, s) => {
+    p.zz =
+      s >= DOZE_PERIOD_MS * periods ? 1 : (s % DOZE_PERIOD_MS) / DOZE_PERIOD_MS;
   });
 
 type RoutePoint = readonly [t: number, x: number, y: number];
@@ -759,16 +760,16 @@ export const MOVES = {
       };
     },
   }),
-  /* A cat that turns first takes a breath fewer, so turning and lying down stay well within 5 s. */
+  /* A cat that turns first dozes one period fewer, so turning and lying down stay well within 5 s. */
   sleep: (turning = false): Move => {
-    const breaths = turning ? BREATHS - 1 : BREATHS;
+    const periods = turning ? DOZE_PERIODS - 1 : DOZE_PERIODS;
     return {
       steps: [
         step(600, 'loaf'),
         step(800, 'sleep'),
-        step(BREATH_MS * breaths, 'sleep'),
+        step(DOZE_PERIOD_MS * periods, 'sleep'),
       ],
-      mods: [dozing(1400, breaths)],
+      mods: [dozing(1400, periods)],
     };
   },
   wake: (): Move => ({
