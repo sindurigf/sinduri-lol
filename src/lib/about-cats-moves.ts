@@ -512,7 +512,7 @@ const along = ([first, ...rest]: Route, t: number): [number, number] => {
 };
 
 /*
- * Rolling onto the back: low, then over all at once with a small flop. Easing
+ * Rolling onto the back: low, then over all at once with a squash. Easing
  * the 180° roll would stand the cat on its head halfway.
  */
 /** Body height before the roll; upright poses keep their paws on the ground there. */
