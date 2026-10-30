@@ -69,8 +69,24 @@ test.describe('the table-scroll visitor', () => {
 test('hasTable finds a GFM table and passes plain prose', NODE, () => {
   expect(hasTable('| a | b |\n| --- | --- |\n| 1 | 2 |\n')).toBe(true);
   expect(hasTable('a | b\n:-- | --:\n1 | 2\n')).toBe(true);
+  expect(hasTable('> | a | b |\n> | --- | --- |\n')).toBe(true);
+  expect(hasTable('<table><tr><td>1</td></tr></table>\n')).toBe(true);
   expect(hasTable('A paragraph.\n\n---\n\nAnother.\n')).toBe(false);
   expect(hasTable('- a list item\n- another\n')).toBe(false);
+});
+
+/* SC 1.4.10: outside a slide, a table only scrolls in its own box, never clipped or pushing the page. */
+test('every table outside a slide sits in a table scroller', NODE, () => {
+  const bare = [...builtHtml()]
+    .filter(([route]) => !route.startsWith('/talks/'))
+    .filter(
+      ([, html]) =>
+        (html.match(/<table\b/g) ?? []).length !==
+        (html.match(/class="table-scroll"/g) ?? []).length,
+    )
+    .map(([route]) => route);
+
+  expect(bare, 'page(s) with a table outside a .table-scroll box').toEqual([]);
 });
 
 /** The first post route whose built HTML has a table scroller. */
@@ -164,4 +180,34 @@ test.describe('a post table is a tab stop only while it scrolls', () => {
         name: 'Table, scrolls sideways',
       });
   });
+});
+
+/* SC 1.4.10: /brand's columns clip their overflow, so a table wider than its clipping box hides cells nobody can scroll to. */
+test('/brand at 390px: no table is cut off by a box that does not scroll', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await gotoSettled(page, '/brand');
+
+  const clipped = await page.evaluate(() =>
+    [...document.querySelectorAll('table')].flatMap((table) => {
+      const { left, right } = table.getBoundingClientRect();
+      for (
+        let parent = table.parentElement;
+        parent;
+        parent = parent.parentElement
+      ) {
+        const overflow = getComputedStyle(parent).overflowX;
+        if (overflow === 'visible') continue;
+        if (overflow === 'auto' || overflow === 'scroll') return [];
+        const box = parent.getBoundingClientRect();
+        return left < box.left - 0.5 || right > box.right + 0.5
+          ? [table.caption?.textContent ?? 'a table']
+          : [];
+      }
+      return [];
+    }),
+  );
+
+  expect(clipped, 'tables cut off by a box that does not scroll').toEqual([]);
 });
