@@ -9,6 +9,7 @@ import {
   CODE_FOLD_MIN_LINES,
   FOLD_CLASS,
   WATCH_OUT_HEADING,
+  moduleLabel,
   codeLabel,
   surprisesLabel,
 } from '../lib/post-folds.ts';
@@ -85,3 +86,82 @@ export const postFold = ({ fileURL } = {}) => ({
     },
   },
 });
+
+const button = (action, label) => ({
+  type: 'element',
+  tagName: 'button',
+  properties: {
+    type: 'button',
+    className: ['btn-secondary'],
+    dataModules: action,
+  },
+  children: [text(label)],
+});
+
+/* Hidden until src/scripts/post-folds.ts wires them: without JavaScript they would do nothing. */
+const moduleControls = () => ({
+  type: 'element',
+  tagName: 'div',
+  properties: { className: ['module-controls'], hidden: true },
+  children: [
+    button('close', 'Close All Modules'),
+    button('open', 'Open All Modules'),
+  ],
+});
+
+/*
+ * Each module's body after its h2, in a <details open>: open on load, so
+ * nothing is hidden by default. The h2 stays outside as a heading. One
+ * child-list swap on the parent: reused nodes keep their content, and the
+ * Watch Out and code folds postFold made move in with them.
+ */
+const groupModules = (ctx, siblings) => {
+  const isH2 = (node) => node.type === 'element' && node.tagName === 'h2';
+  const out = [];
+  let controlsPlaced = false;
+  for (let index = 0; index < siblings.length; index += 1) {
+    const node = siblings[index];
+    const label = isH2(node) ? moduleLabel(ctx.textContent(node)) : undefined;
+    if (!label) {
+      out.push(node);
+      continue;
+    }
+    if (!controlsPlaced) {
+      out.push(moduleControls());
+      controlsPlaced = true;
+    }
+    out.push(node);
+    const body = [];
+    while (index + 1 < siblings.length && !isH2(siblings[index + 1])) {
+      index += 1;
+      body.push(siblings[index]);
+    }
+    out.push({
+      type: 'element',
+      tagName: 'details',
+      properties: { className: [FOLD_CLASS], dataModule: '', open: true },
+      children: [summary(label), ...body],
+    });
+  }
+  return out;
+};
+
+export const moduleFold = ({ fileURL } = {}) => {
+  let done = false;
+
+  return {
+    name: 'module-fold',
+
+    element: {
+      filter: ['h2'],
+
+      visit(node, ctx) {
+        if (done || String(fileURL ?? '').includes(TALKS_PATH)) return;
+        if (!moduleLabel(ctx.textContent(node))) return;
+        done = true;
+        const parent = ctx.parent(node);
+        ctx.setProperty(parent, 'children', groupModules(ctx, parent.children));
+      },
+    },
+  };
+};

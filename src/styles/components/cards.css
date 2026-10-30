@@ -190,6 +190,10 @@
     @apply mt-6;
   }
 
+  .module-controls {
+    @apply mt-6 flex flex-wrap gap-4;
+  }
+
   .post-fold > .post-contents-summary {
     @apply bg-surface;
   }

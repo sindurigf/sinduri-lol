@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
-import { postFold } from '../src/plugins/post-fold.mjs';
+import { moduleFold, postFold } from '../src/plugins/post-fold.mjs';
 import {
   CODE_FOLD_MIN_LINES,
   WATCH_OUT_HEADING,
@@ -133,6 +133,60 @@ test.describe('the post-fold visitor', () => {
     expect(replaced).toEqual([]);
   });
 
+  test(
+    'folds each module body after its h2, open, with the h2 outside',
+    NODE,
+    () => {
+      const h2 = (value: string) => element('h2', [{ type: 'text', value }]);
+      const intro = h2('The Path at a Glance');
+      const one = h2('Module 1: Try Discourse');
+      const side = h2('Side Path: Move an Existing Site');
+      const after = h2('Where to Go Next');
+      const p = () => element('p');
+      const root = element('div', [
+        intro,
+        p(),
+        one,
+        p(),
+        p(),
+        side,
+        p(),
+        after,
+        p(),
+      ]);
+      let swapped: Node[] = [];
+      const ctx = {
+        ...context(root).ctx,
+        setProperty: (_node: Node, key: string, value: Node[]) => {
+          if (key === 'children') swapped = value;
+        },
+      };
+
+      moduleFold(POST).element.visit(one, ctx);
+
+      const shape = swapped.map((node) =>
+        node.tagName === 'details'
+          ? `details[${textOf(node.children[0])}:${node.children.length - 1}]`
+          : node.tagName === 'div'
+            ? 'controls'
+            : node.tagName,
+      );
+      expect(shape).toEqual([
+        'h2',
+        'p',
+        'controls',
+        'h2',
+        'details[Module 1 Steps:2]',
+        'h2',
+        'details[Side Path Steps:1]',
+        'h2',
+        'p',
+      ]);
+      const folds = swapped.filter((node) => node.tagName === 'details');
+      expect(folds.every((fold) => fold.properties.open === true)).toBe(true);
+    },
+  );
+
   test('leaves slides alone', NODE, () => {
     const pre = codeBlock(CODE_FOLD_MIN_LINES);
     const { replaced, ctx } = context(element('div', [pre]));
@@ -169,7 +223,11 @@ const foldPost = (): string => {
   return route!;
 };
 
-const firstFold = (page: Page) => page.locator('details.post-fold').first();
+/** The first Watch Out or code fold: closed on load. */
+const firstFold = (page: Page) =>
+  page.locator('details.post-fold:not([data-module])').first();
+
+const modules = (page: Page) => page.locator('details[data-module]');
 
 test.describe('a post fold', () => {
   /* SC 2.1.1: Enter and Space toggle it from the keyboard. */
@@ -228,7 +286,7 @@ test.describe('a post fold', () => {
 
     const count = await headings.count();
     expect(count, 'the post has no Watch Out heading').toBeGreaterThan(0);
-    const inside = await page.locator(`details h3`).count();
+    const inside = await page.locator('details:not([data-module]) h3').count();
     expect(inside, 'a heading sits inside a fold').toBe(0);
   });
 
@@ -298,5 +356,108 @@ test.describe('a post fold', () => {
 
     expect(hidden, 'fold content hidden in print').toBe(0);
     await context.close();
+  });
+
+  /* SC 1.3.1, 2.4.6: content everyone needs is never hidden on load; module headings stay headings. */
+  test('opens every module on load with its h2 outside', async ({ page }) => {
+    await gotoSettled(page, foldPost());
+    const count = await modules(page).count();
+    expect(count, 'the post has no module fold').toBeGreaterThan(0);
+
+    const closed = await page
+      .locator('details[data-module]:not([open])')
+      .count();
+    expect(closed, 'a module starts closed').toBe(0);
+    const outside = await page.evaluate(() =>
+      [...document.querySelectorAll('details[data-module]')].every(
+        (fold) => fold.previousElementSibling?.tagName === 'H2',
+      ),
+    );
+    expect(outside, 'a module fold does not follow its h2').toBe(true);
+    expect(
+      await page.locator('details h2').count(),
+      'an h2 sits inside a fold',
+    ).toBe(0);
+  });
+
+  /* SC 4.1.2: a module's name stays the same across toggles. */
+  test('keeps a module name the same open or closed', async ({ page }) => {
+    await gotoSettled(page, foldPost());
+    const summary = modules(page).first().locator(':scope > summary');
+
+    await expect(summary).toHaveAccessibleName(
+      /^(Module \d+|Side Path) Steps$/,
+    );
+    const name = (await summary.textContent())?.trim() ?? '';
+    await summary.click();
+    await expect(summary).toHaveAccessibleName(name);
+    await summary.click();
+    await expect(summary).toHaveAccessibleName(name);
+  });
+
+  /* SC 2.1.1: the buttons close and open every module, and only modules. */
+  test('closes and opens all modules with its buttons', async ({ page }) => {
+    await gotoSettled(page, foldPost());
+    const extrasOpen = () =>
+      page.locator('details.post-fold:not([data-module])[open]').count();
+    const extrasBefore = await extrasOpen();
+
+    await page.getByRole('button', { name: 'Close All Modules' }).click();
+    expect(await page.locator('details[data-module][open]').count()).toBe(0);
+    await page.getByRole('button', { name: 'Open All Modules' }).click();
+    expect(await page.locator('details[data-module]:not([open])').count()).toBe(
+      0,
+    );
+    expect(
+      await extrasOpen(),
+      'the buttons changed a Watch Out or code fold',
+    ).toBe(extrasBefore);
+  });
+
+  test('hides the module buttons without JavaScript', async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto(foldPost());
+
+    await expect(page.locator('.module-controls')).toBeHidden();
+    await context.close();
+  });
+
+  /* SC 2.4.3: a link to a module heading opens the module a reader closed. */
+  test('opens a closed module for a link to its heading', async ({ page }) => {
+    await gotoSettled(page, foldPost());
+    const fold = modules(page).nth(2);
+    const id = await fold.evaluate((el) => el.previousElementSibling?.id ?? '');
+    expect(id, 'the module h2 has no id').not.toBe('');
+
+    await fold.locator(':scope > summary').click();
+    await expect(fold).not.toHaveAttribute('open');
+    await page.locator(`a[href="#${id}"]`).first().click();
+    await expect(
+      fold,
+      'the contents link left the module closed',
+    ).toHaveAttribute('open', '');
+
+    await fold.locator(':scope > summary').click();
+    await page.evaluate(() => {
+      location.hash = '';
+    });
+    await page.evaluate((target) => {
+      location.hash = target;
+    }, id);
+    await expect(fold, 'the hash left the module closed').toHaveAttribute(
+      'open',
+      '',
+    );
+  });
+
+  test('opens closed modules for print', async ({ page }) => {
+    await gotoSettled(page, foldPost());
+    await page.getByRole('button', { name: 'Close All Modules' }).click();
+
+    await page.evaluate(() => dispatchEvent(new Event('beforeprint')));
+    expect(await page.locator('details[data-module]:not([open])').count()).toBe(
+      0,
+    );
   });
 });
