@@ -175,7 +175,7 @@ export interface CatRig {
   shownAt: number;
   /** A frame waiting for the current one's step to end. */
   pending: boolean;
-  /** The next frame cuts in without the arrival squash: a resize or reduced motion. */
+  /** The next frame cuts in at once: a resize or reduced motion. */
   cut: boolean;
   /** The frame the pose last asked for, and since when. */
   wanted: Frame | null;
@@ -368,7 +368,7 @@ export const drawnXOf = (
   return s.frame === 'crouch' && moving ? s.stepX : x;
 };
 
-/** True while a frame waits its turn or the arrival squash shows: the loop draws until both end. */
+/** True while a frame waits its turn or has not yet shown a full step: the loop draws until both end. */
 export const isStepping = (
   rig: Pick<CatRig, 'shownAt' | 'pending'> & { frame?: Frame | null },
   now: number,
@@ -388,7 +388,7 @@ const feetUp = (p: Pose): number =>
     : 0;
 
 /** px the drawing is raised: a jump's lift and a climb's height. */
-const liftOf = (p: Pose): number => Math.max(0, p.y) + feetUp(p);
+export const liftOf = (p: Pose): number => Math.max(0, p.y) + feetUp(p);
 
 /** The pose as if its paws were on the ground, to compare with the named poses. */
 const grounded = (p: Pose): Pose => ({ ...p, by: p.by - feetUp(p) });

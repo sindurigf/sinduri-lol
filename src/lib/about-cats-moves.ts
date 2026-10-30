@@ -294,8 +294,8 @@ const walking = (from: number, to: number, strength = 1): Mod =>
 const BOUND_STRIDE = 44;
 const BOUND_LIFT = 6;
 const BOUND_ROCK = 7;
-/** Each pair is down for a quarter of the stride and lands this many px out from its standing place, so the four legs never gather to a point. */
-const BOUND_STANCE = 0.25;
+/** Each pair is down for half the stride, so a paw is always on the ground and the drawing never bobs, and lands this many px out from its standing place, so the four legs never gather to a point. */
+const BOUND_STANCE = 0.5;
 const BOUND_SPREAD = 5;
 const BOUND_LEGS: typeof WALK_LEGS = [
   ['fN', 0],

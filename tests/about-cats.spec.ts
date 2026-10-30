@@ -32,6 +32,7 @@ import {
   highestPoint,
   hitBox,
   isStepping,
+  liftOf,
   reachOf,
   spriteTransform,
 } from '../src/lib/about-cats-rig';
@@ -424,6 +425,62 @@ test(
       }
     }
     expect(distorted, 'a drawing is scaled, squashed or tilted').toEqual([]);
+  },
+);
+
+/** px of back-and-forth under which a whole drawing's movement reads as a shake, not a step or a jump. */
+const SHAKE_PX = 4;
+
+/** The swings of `values` between turning points that are smaller than SHAKE_PX, as their sizes. */
+const shakes = (values: number[]): number[] => {
+  const turns: number[] = [];
+  let last = values[0] ?? 0;
+  let dir = 0;
+  for (const v of values) {
+    const d = Math.sign(v - last);
+    if (d !== 0 && dir !== 0 && d !== dir) turns.push(last);
+    if (d !== 0) dir = d;
+    last = v;
+  }
+  return turns
+    .slice(1)
+    .map((v, i) => Math.abs(v - (turns[i] ?? v)))
+    .filter((swing) => swing > 0.05 && swing < SHAKE_PX);
+};
+
+test(
+  'no move shakes a whole drawing back and forth or up and down by a few px',
+  NODE,
+  () => {
+    const moves: [string, Move][] = [
+      ...Object.entries(MOVES).map(
+        ([name, make]) => [name, make()] as [string, Move],
+      ),
+      ['climb up', climbMove(true, 40)],
+      ['climb down', climbMove(false, 40)],
+    ];
+    const shaking: string[] = [];
+    for (const [name, move] of moves) {
+      const start = startPose(move);
+      const xs: number[] = [];
+      const lifts: number[] = [];
+      for (let t = 0; t <= duration(move); t += FRAME_MS) {
+        const p = poseAt(move, start, t);
+        xs.push(p.x);
+        lifts.push(liftOf(p));
+      }
+      for (const [axis, values] of [
+        ['sideways', xs],
+        ['up and down', lifts],
+      ] as const) {
+        const found = shakes(values);
+        if (found.length > 0)
+          shaking.push(
+            `${name} ${axis}: ${found.length} swings, largest ${Math.max(...found).toFixed(1)}px`,
+          );
+      }
+    }
+    expect(shaking, 'a drawing shakes').toEqual([]);
   },
 );
 
