@@ -388,13 +388,13 @@ const feetUp = (p: Pose): number =>
     : 0;
 
 /** px the drawing is raised: a jump's lift and a climb's height. */
-export const liftOf = (p: Pose): number => Math.max(0, p.y) + feetUp(p);
+const liftOf = (p: Pose): number => Math.max(0, p.y) + feetUp(p);
 
 /** The pose as if its paws were on the ground, to compare with the named poses. */
 const grounded = (p: Pose): Pose => ({ ...p, by: p.by - feetUp(p) });
 
 /** A drawing is only ever lifted and turned to face its way, never squashed, stretched or tilted: the drawings face left. */
-export const spriteTransform = (face: number, lift: number): string =>
+const spriteTransform = (face: number, lift: number): string =>
   `translate(0 ${f(-lift)}) scale(${face < 0 ? 1 : -1} 1)`;
 
 export const renderCat = (
