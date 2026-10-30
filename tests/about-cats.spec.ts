@@ -71,6 +71,8 @@ const startPose = (move: Move) => itemAt(move.steps, 0).pose;
 
 /** Long enough for several frames of any move; a still cat changes nothing in it. */
 const STILL_WINDOW_MS = 800;
+/** ms of a picked trick to watch: the fly chase stalks, jumps and lands within it. */
+const TRICK_WATCH_MS = 4000;
 
 /** 1280x1024 at 400%: the SC 1.4.10 reflow case, short as well as narrow. */
 const ZOOMED = { width: 320, height: 256 };
@@ -390,48 +392,50 @@ const transformParts = (list: string) =>
       .map(Number),
   }));
 
+/** Whether an SVG transform list only moves a drawing and turns it to face its way: no scale but a ±1 flip, no skew, no rotate. */
+const trueShape = (list: string): boolean =>
+  transformParts(list).every(
+    ({ name, args }) =>
+      (name === 'translate' && args.length === 2) ||
+      (name === 'scale' &&
+        args.length === 2 &&
+        Math.abs(args[0] ?? 0) === 1 &&
+        args[1] === 1),
+  );
+
 test(
-  'every drawing is shown at its true shape: only moved and turned to face its way, never scaled, squashed or tilted',
+  'spriteTransform only lifts a drawing and flips it to face its way',
   NODE,
   () => {
-    const moves: [string, Move][] = [
-      ...Object.entries(MOVES).map(
-        ([name, make]) => [name, make()] as [string, Move],
-      ),
-      ['turn', withTurn(MOVES.look(), pose('sit', { face: -1 }))],
-      ['climb up', climbMove(true, 40)],
-      ['climb down', climbMove(false, 40)],
-    ];
-    const distorted: string[] = [];
-    for (const [name, move] of moves) {
-      const start = startPose(move);
-      for (let t = 0; t <= duration(move); t += FRAME_MS) {
-        const p = poseAt(move, start, t);
-        const list = spriteTransform(p.face, Math.max(0, p.y));
-        const bad = transformParts(list).filter(
-          ({ name: kind, args }) =>
-            !(kind === 'translate' && args.length === 2) &&
-            !(
-              kind === 'scale' &&
-              args.length === 2 &&
-              Math.abs(args[0] ?? 0) === 1 &&
-              args[1] === 1
-            ),
-        );
-        if (bad.length > 0) {
-          distorted.push(`${name} at ${Math.round(t)}ms: ${list}`);
-          break;
-        }
-      }
-    }
-    expect(distorted, 'a drawing is scaled, squashed or tilted').toEqual([]);
+    for (const [face, lift] of [
+      [1, 0],
+      [-1, 0],
+      [1, 30],
+      [-1, 12.5],
+    ] as const)
+      expect(
+        trueShape(spriteTransform(face, lift)),
+        `face ${face}, lift ${lift}`,
+      ).toBe(true);
+    expect(trueShape('translate(0 0) scale(-1 0.96)'), 'a squash passes').toBe(
+      false,
+    );
+    expect(trueShape('translate(0 0) rotate(4)'), 'a tilt passes').toBe(false);
   },
 );
 
 /** px of back-and-forth under which a whole drawing's movement reads as a shake, not a step or a jump. */
 const SHAKE_PX = 4;
 
-/** The swings of `values` between turning points that are smaller than SHAKE_PX, as their sizes. */
+/** px of change below which a swing is float noise, not movement. */
+const NOISE_PX = 0.05;
+
+const isShake = (swing: number) => swing > NOISE_PX && swing < SHAKE_PX;
+
+/**
+ * The swings of `values` that read as a shake, as their sizes: one between two turning points under SHAKE_PX,
+ * or a lone excursion from the start or to the end that goes out and back under SHAKE_PX.
+ */
 const shakes = (values: number[]): number[] => {
   const turns: number[] = [];
   let last = values[0] ?? 0;
@@ -442,14 +446,33 @@ const shakes = (values: number[]): number[] => {
     if (d !== 0) dir = d;
     last = v;
   }
-  return turns
-    .slice(1)
-    .map((v, i) => Math.abs(v - (turns[i] ?? v)))
-    .filter((swing) => swing > 0.05 && swing < SHAKE_PX);
+  if (turns.length === 0) return [];
+  const points = [values[0] ?? 0, ...turns, last];
+  const swings = points.slice(1).map((v, i) => Math.abs(v - (points[i] ?? v)));
+  const final = swings.length - 1;
+  return swings.filter((swing, i) => {
+    if (!isShake(swing)) return false;
+    if (i > 0 && i < final) return true;
+    return isShake(swings[i === 0 ? 1 : final - 1] ?? 0);
+  });
 };
 
 test(
-  'no move shakes a whole drawing back and forth or up and down by a few px',
+  'the shake check finds a back-and-forth and a lone bob under SHAKE_PX, but not a step, a slide or a jump',
+  NODE,
+  () => {
+    expect(shakes([0, 2, 0, 2, 0]), 'a back-and-forth').not.toEqual([]);
+    expect(shakes([0, 1, 2, 3, 2, 1, 0]), 'a lone bob').not.toEqual([]);
+    expect(shakes([5, 5, 7, 5, 5]), 'a bob after a hold').not.toEqual([]);
+    expect(shakes([0, 20, 40]), 'a slide').toEqual([]);
+    expect(shakes([0, 2, 3]), 'a short step').toEqual([]);
+    expect(shakes([0, 10, 20, 10, 0]), 'a jump').toEqual([]);
+    expect(shakes([0, 30, 28]), 'a long step that settles back').toEqual([]);
+  },
+);
+
+test(
+  "no move's poses shake a whole drawing back and forth or up and down by a few px",
   NODE,
   () => {
     const moves: [string, Move][] = [
@@ -1392,6 +1415,53 @@ test.describe('About cats', () => {
         ).toBe(held);
       }
     }
+  });
+
+  test('a cat playing a trick is drawn only moved and turned to face its way, never scaled, skewed or rotated', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    const id = 'minerva';
+    await showCat(page, id);
+    await tricksButton(page, id).click();
+    await tricksList(page, id)
+      .getByRole('button', { name: TRICKS.fly.label })
+      .click();
+    await page.mouse.move(0, 0);
+    const drawn = await page.evaluate(
+      ([spotId, ms]) =>
+        new Promise<string[]>((resolve) => {
+          const root = document.querySelector(`#${spotId} .cat-hit`);
+          const flip = root?.querySelector(':scope > g');
+          if (!root || !flip) throw new Error(`${spotId} has no drawing.`);
+          const seen = [root, flip].map(
+            (node) => node.getAttribute('transform') ?? '',
+          );
+          const observer = new MutationObserver((records) => {
+            for (const { target } of records)
+              if (target === root || target === flip)
+                seen.push((target as Element).getAttribute('transform') ?? '');
+          });
+          observer.observe(root, {
+            attributes: true,
+            attributeFilter: ['transform'],
+            subtree: true,
+          });
+          setTimeout(() => {
+            observer.disconnect();
+            resolve(seen);
+          }, ms);
+        }),
+      [`cat-spot-${id}`, TRICK_WATCH_MS] as const,
+    );
+    expect(
+      new Set(drawn).size,
+      'the trick never moved the drawing',
+    ).toBeGreaterThan(2);
+    expect(
+      drawn.filter((list) => !trueShape(list)),
+      'a drawing is scaled, skewed or rotated',
+    ).toEqual([]);
   });
 
   for (const colorScheme of ['dark', 'light'] as const) {
