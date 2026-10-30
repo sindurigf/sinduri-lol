@@ -29,8 +29,11 @@ npm run test:worker  # WORKER_SPECS through the Worker
 Name what a test protects: function, WCAG 2.2 AA, SEO and feeds, performance,
 security and privacy, or build correctness. "Looks as designed" is not one.
 
+- Every new or changed test names the area it protects in the pull request.
 - Decoration is not tested for its look (canvas drawing, shadow hues, pixel
   gaps). A red decorative test is deleted or cut to its accessibility core.
+- A review that finds a decorative test weak deletes it; it never strengthens
+  it.
 - Accessibility rules about decoration are tested: reduced motion, pause
   control, hidden from assistive technology, never covering text.
 - Interaction states (hover, focus, active, visited, current, disabled) are
@@ -63,6 +66,9 @@ the behavior, look for why it is written that way, and fix only what survives.
 Record rejected findings beside the code so they are not raised again;
 [ARCHITECTURE.md](ARCHITECTURE.md#rejected-findings) lists the current ones.
 
+- For each new or changed test, check its
+  [area](#what-a-test-is-for) before anything else.
+
 ## Git and pull requests
 
 - Branch per task from `main`, named for the task.
@@ -88,6 +94,7 @@ Record rejected findings beside the code so they are not raised again;
 - Short bullets of what the PR does, about 100 words. File or function name
   first, one fact per line.
 - One "Tested:" line: the commands and totals.
+- One "Tests added:" line: each new or changed test and its area, or none.
 - Clear and technical: no narrative, marketing words or restating the diff.
   Leave out sections that do not apply.
 - No code blocks, no Claude links and no "Written for:" lines, in pull

@@ -1,4 +1,4 @@
-import { expect, test } from './test';
+import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 
 /**
@@ -194,7 +194,7 @@ for (const width of SLIM_WIDTHS) {
       page,
     }) => {
       await gotoSettled(page, ROUTE);
-      await page.mouse.wheel(0, 900);
+      await page.evaluate(() => window.scrollTo(0, 900));
       await expect(page.locator('header.site-header')).toHaveAttribute(
         'data-compact',
         '',
@@ -228,6 +228,19 @@ for (const width of SLIM_WIDTHS) {
   });
 }
 
+/* An /about section far below the first screen. */
+const FAR_ANCHOR = 'drupal';
+
+/* The full header's height in px: the slim header starts past it. */
+const fullHeader = (page: Page): Promise<number> =>
+  page.evaluate(() =>
+    parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue(
+        '--spacing-header',
+      ),
+    ),
+  );
+
 /* Tab stops walked under the slim header: past the opening of /about and into its body. */
 const SLIM_WALK_STOPS = 30;
 
@@ -242,7 +255,7 @@ test.describe('the slim header once the page scrolls', () => {
       () =>
         document.querySelector('main')!.getBoundingClientRect().top + scrollY,
     );
-    await page.mouse.wheel(0, 900);
+    await page.evaluate(() => window.scrollTo(0, 900));
     await expect(page.locator('header.site-header')).toHaveAttribute(
       'data-compact',
       '',
@@ -279,7 +292,37 @@ test.describe('the slim header once the page scrolls', () => {
     ).toBeGreaterThanOrEqual(44);
     expect(found.mainTop, 'going slim moved the page under it').toBe(before);
     expect(found.transition, 'the slim header animates').toBe('0s');
-    await page.mouse.wheel(0, -2000);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect(page.locator('header.site-header')).not.toHaveAttribute(
+      'data-compact',
+    );
+  });
+
+  test('is slim on a page that loads scrolled to an anchor', async ({
+    page,
+  }) => {
+    await gotoSettled(page, `${ROUTE}/#${FAR_ANCHOR}`);
+    expect(
+      await page.evaluate(() => window.scrollY),
+      `/about/#${FAR_ANCHOR} did not load scrolled`,
+    ).toBeGreaterThan(await fullHeader(page));
+    await expect(page.locator('header.site-header')).toHaveAttribute(
+      'data-compact',
+      '',
+    );
+  });
+
+  test('goes slim one pixel past the full header and back at its height', async ({
+    page,
+  }) => {
+    await gotoSettled(page, ROUTE);
+    const full = await fullHeader(page);
+    await page.evaluate((top) => window.scrollTo(0, top), full + 1);
+    await expect(page.locator('header.site-header')).toHaveAttribute(
+      'data-compact',
+      '',
+    );
+    await page.evaluate((top) => window.scrollTo(0, top), full);
     await expect(page.locator('header.site-header')).not.toHaveAttribute(
       'data-compact',
     );
