@@ -73,7 +73,7 @@ Both help with the next decision.
 
 ### Choose Hosted or Self-Hosted
 
-|               | Hosted by Discourse                       | Self-hosted                                          |
+| Area          | Hosted by Discourse                       | Self-hosted                                          |
 | ------------- | ----------------------------------------- | ---------------------------------------------------- |
 | Updates       | Done for you                              | You run them                                         |
 | Backups       | Done for you                              | You set them up                                      |
