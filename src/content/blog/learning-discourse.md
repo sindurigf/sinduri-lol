@@ -2,7 +2,7 @@
 title: 'Learning Discourse: A Hands-On Path for Admins'
 date: 2026-10-30
 category: 'open-source'
-placeholder: true
+placeholder: false
 tags: ['community']
 teaser: 'I use Discourse every day for work. This is the learning path I wish I had when I started.'
 readingTime: 34
@@ -93,7 +93,7 @@ You can move to your own server later by restoring a backup.
 
 ### Path B: Self-Hosted
 
-**Before you start, you need:**
+Before you start, you need:
 
 - A fresh 64-bit Linux server, ideally Ubuntu LTS. It needs at least 1 GB of RAM plus swap, and 2 GB or more is recommended. Swap is disk space the server uses as extra memory.
 - Discourse uses ports 80 and 443, so do not run another website on the same server.
@@ -101,13 +101,13 @@ You can move to your own server later by restoring a backup.
 - An email provider that can send over SMTP, such as Postmark, Mailgun or Amazon SES. SMTP is the standard way servers send email. You can skip email at first and let people log in with Discourse ID. Most communities still need email for notifications.
 - SSH access to the server as root.
 
-**1. Connect to the server**
+### 1. Connect to the Server
 
 ```bash
 ssh root@your-server-ip
 ```
 
-**2. Download and run the official installer**
+### 2. Download and Run the Official Installer
 
 Read a script before you run it as root:
 
@@ -121,7 +121,7 @@ The installer sets up Docker and git.
 It puts the official setup files in `/var/discourse`.
 Then it starts the setup wizard.
 
-**3. Answer the setup wizard**
+### 3. Answer the Setup Wizard
 
 It asks for your admin email address and your domain, or a free subdomain.
 It can also ask for your email settings. These are optional.
@@ -130,13 +130,13 @@ That file holds your site's configuration and secrets.
 Then it builds the site, which takes a few minutes.
 HTTPS certificates from Let's Encrypt are set up for you.
 
-**4. Create your admin account**
+### 4. Create Your Admin Account
 
 Open your domain in a browser.
 Register with the admin email you entered.
 The setup wizard from Module 1 opens next.
 
-**5. Turn on basic protection**
+### 5. Turn On Basic Protection
 
 The official install guide recommends these two commands:
 
@@ -149,7 +149,7 @@ The next two steps cover SSH keys, the firewall and backups.
 Do them before you invite members.
 Module 11 covers updates.
 
-**6. Secure server access**
+### 6. Secure Server Access
 
 1. Add your SSH public key to the server. Check that you can log in with it.
 2. Turn off password login. In `/etc/ssh/sshd_config`, set `PasswordAuthentication no`. Also check the files in `/etc/ssh/sshd_config.d/`, because a file there can turn password login back on.
@@ -162,7 +162,7 @@ sshd -t && systemctl restart ssh
 4. Keep automatic security updates and fail2ban running (Path B, step 5).
 5. Use your cloud provider's firewall to allow only ports 22, 80 and 443. If you can, limit port 22 to your own IP address. Port 80 must stay open, because Let's Encrypt uses it to renew certificates.
 
-**7. Set up automatic backups**
+### 7. Set Up Automatic Backups
 
 Search the settings for `backup`:
 
