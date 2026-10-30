@@ -185,10 +185,7 @@
     content: '\2212';
   }
 
-  /*
-   * A folded extra in a post (src/plugins/post-fold.mjs): the summary on a
-   * `surface` fill, its label saying Show or Hide with the open state.
-   */
+  /* A folded extra in a post (src/plugins/post-fold.mjs): the summary on a `surface` fill. */
   .post-fold {
     @apply mt-6;
   }
@@ -199,11 +196,6 @@
 
   .post-fold > :not(summary) {
     @apply mt-6;
-  }
-
-  .post-fold[open] .fold-closed,
-  .post-fold:not([open]) .fold-open {
-    display: none;
   }
 
   .fold-label {

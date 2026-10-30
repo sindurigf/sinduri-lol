@@ -22,20 +22,13 @@ const span = (className, children, hidden = false) => ({
   children,
 });
 
-/* "Show" or "Hide" follows the open state; the +/- marker repeats it without color. */
+/* A constant name: the native expanded state and the +/- marker carry the state (GOV.UK details). */
 const summary = (what) => ({
   type: 'element',
   tagName: 'summary',
   properties: { className: ['post-contents-summary'] },
   children: [
-    span(
-      ['fold-label'],
-      [
-        span(['fold-closed'], [text('Show ')]),
-        span(['fold-open'], [text('Hide ')]),
-        text(what),
-      ],
-    ),
+    span(['fold-label'], [text(what)]),
     span(['post-contents-marker'], [], true),
   ],
 });

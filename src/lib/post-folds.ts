@@ -27,7 +27,7 @@ const LANGUAGES: Record<string, string> = {
   yaml: 'YAML',
 };
 
-/** "4 Surprises" or "the Python Code, 24 Lines": what a fold holds, after Show or Hide. */
+/** "4 Surprises" or "Python Code, 24 Lines": a fold's name, the same open or closed. */
 export const surprisesLabel = (count: number): string =>
   `${count} ${count === 1 ? 'Surprise' : 'Surprises'}`;
 
@@ -36,5 +36,5 @@ export const codeLabel = (
   lines: number,
 ): string => {
   const name = language ? LANGUAGES[language] : undefined;
-  return `the ${name ? `${name} ` : ''}Code, ${lines} Lines`;
+  return `${name ? `${name} ` : ''}Code, ${lines} Lines`;
 };

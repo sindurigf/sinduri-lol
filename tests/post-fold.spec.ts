@@ -119,7 +119,7 @@ test.describe('the post-fold visitor', () => {
 
       expect(replaced).toHaveLength(1);
       expect(textOf(replaced[0]!.by.children[0])).toContain(
-        `the Bash Code, ${CODE_FOLD_MIN_LINES} Lines`,
+        `Bash Code, ${CODE_FOLD_MIN_LINES} Lines`,
       );
     },
   );
@@ -190,25 +190,30 @@ test.describe('a post fold', () => {
     );
   });
 
-  /* SC 4.1.2: the name says Show or Hide and the expanded state follows it. */
-  test('names its action and exposes its state', async ({ page }) => {
+  /* SC 4.1.2: the name stays the same across toggles; the expanded state alone changes. */
+  test('keeps its name and exposes its state', async ({ page }) => {
     await gotoSettled(page, foldPost());
     const summary = firstFold(page).locator('summary');
+    const isOpen = () =>
+      summary.evaluate((el) => (el.parentElement as HTMLDetailsElement).open);
 
-    await expect(summary).toHaveAccessibleName(/^Show \d+ Surprises?$/);
-    expect(
-      await summary.evaluate(
-        (el) => (el.parentElement as HTMLDetailsElement).open,
-      ),
-    ).toBe(false);
+    await expect(summary).toHaveAccessibleName(/^\d+ Surprises?$/);
+    const name = await summary.evaluate((el) => el.textContent?.trim() ?? '');
+    expect(await isOpen()).toBe(false);
 
     await summary.click();
-    await expect(summary).toHaveAccessibleName(/^Hide \d+ Surprises?$/);
-    expect(
-      await summary.evaluate(
-        (el) => (el.parentElement as HTMLDetailsElement).open,
-      ),
-    ).toBe(true);
+    expect(await isOpen()).toBe(true);
+    await expect(
+      summary,
+      'the name changed when the fold opened',
+    ).toHaveAccessibleName(name);
+
+    await summary.click();
+    expect(await isOpen()).toBe(false);
+    await expect(
+      summary,
+      'the name changed when the fold closed',
+    ).toHaveAccessibleName(name);
   });
 
   /* SC 1.3.1, 2.4.6: every Watch Out stays a real h3, outside its fold. */
