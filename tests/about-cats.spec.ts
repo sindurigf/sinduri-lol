@@ -71,8 +71,8 @@ const startPose = (move: Move) => itemAt(move.steps, 0).pose;
 
 /** Long enough for several frames of any move; a still cat changes nothing in it. */
 const STILL_WINDOW_MS = 800;
-/** ms of a picked trick to watch: the fly chase stalks, jumps and lands within it. */
-const TRICK_WATCH_MS = 4000;
+/** ms of a picked trick to watch: room for a wake and a walk over before the fly chase's first jump. */
+const TRICK_WATCH_MS = 6000;
 
 /** 1280x1024 at 400%: the SC 1.4.10 reflow case, short as well as narrow. */
 const ZOOMED = { width: 320, height: 256 };
@@ -394,6 +394,7 @@ const transformParts = (list: string) =>
 
 /** Whether an SVG transform list only moves a drawing and turns it to face its way: no scale but a ±1 flip, no skew, no rotate. */
 const trueShape = (list: string): boolean =>
+  list !== '' &&
   transformParts(list).every(
     ({ name, args }) =>
       (name === 'translate' && args.length === 2) ||
@@ -421,6 +422,7 @@ test(
       false,
     );
     expect(trueShape('translate(0 0) rotate(4)'), 'a tilt passes').toBe(false);
+    expect(trueShape(''), 'a missing transform passes').toBe(false);
   },
 );
 
@@ -432,28 +434,39 @@ const NOISE_PX = 0.05;
 
 const isShake = (swing: number) => swing > NOISE_PX && swing < SHAKE_PX;
 
+/** A point the series rests on or turns at; a reversal is where it goes back the way it came. */
+interface Anchor {
+  v: number;
+  reversal: boolean;
+}
+
 /**
- * The swings of `values` that read as a shake, as their sizes: one between two turning points under SHAKE_PX,
- * or a lone excursion from the start or to the end that goes out and back under SHAKE_PX.
+ * The swings of `values` that read as a shake, as their sizes: one under SHAKE_PX between two reversals,
+ * or an out-and-back under SHAKE_PX either side of one reversal. A hold ends a swing, so a bob after it counts.
  */
 const shakes = (values: number[]): number[] => {
-  const turns: number[] = [];
   let last = values[0] ?? 0;
   let dir = 0;
+  const anchors: Anchor[] = [{ v: last, reversal: false }];
   for (const v of values) {
     const d = Math.sign(v - last);
-    if (d !== 0 && dir !== 0 && d !== dir) turns.push(last);
-    if (d !== 0) dir = d;
+    if (dir !== 0 && d !== dir) anchors.push({ v: last, reversal: d !== 0 });
+    dir = d;
     last = v;
   }
-  if (turns.length === 0) return [];
-  const points = [values[0] ?? 0, ...turns, last];
-  const swings = points.slice(1).map((v, i) => Math.abs(v - (points[i] ?? v)));
-  const final = swings.length - 1;
+  anchors.push({ v: last, reversal: false });
+  const swings = anchors
+    .slice(1)
+    .map(({ v }, i) => Math.abs(v - (anchors[i]?.v ?? v)));
+  const reversal = (i: number) => anchors[i]?.reversal ?? false;
   return swings.filter((swing, i) => {
     if (!isShake(swing)) return false;
-    if (i > 0 && i < final) return true;
-    return isShake(swings[i === 0 ? 1 : final - 1] ?? 0);
+    const [from, to] = [i, i + 1];
+    if (reversal(from) && reversal(to)) return true;
+    return (
+      (reversal(from) && isShake(swings[i - 1] ?? 0)) ||
+      (reversal(to) && isShake(swings[i + 1] ?? 0))
+    );
   });
 };
 
@@ -464,6 +477,19 @@ test(
     expect(shakes([0, 2, 0, 2, 0]), 'a back-and-forth').not.toEqual([]);
     expect(shakes([0, 1, 2, 3, 2, 1, 0]), 'a lone bob').not.toEqual([]);
     expect(shakes([5, 5, 7, 5, 5]), 'a bob after a hold').not.toEqual([]);
+    expect(
+      shakes([0, 20, 40, 40, 43, 40]),
+      'a bob at the end of a move',
+    ).not.toEqual([]);
+    expect(
+      shakes([0, 20, 40, 40, 43, 40, 40, 20, 0]),
+      'a bob on the brick between a climb up and down',
+    ).not.toEqual([]);
+    expect(
+      shakes([0, 0, 3, 0, 0, -20]),
+      'a bob before a move away',
+    ).not.toEqual([]);
+    expect(shakes([0, 20, 20, 22, 22, 40]), 'a creep in steps').toEqual([]);
     expect(shakes([0, 20, 40]), 'a slide').toEqual([]);
     expect(shakes([0, 2, 3]), 'a short step').toEqual([]);
     expect(shakes([0, 10, 20, 10, 0]), 'a jump').toEqual([]);
@@ -1430,17 +1456,23 @@ test.describe('About cats', () => {
     await page.mouse.move(0, 0);
     const drawn = await page.evaluate(
       ([spotId, ms]) =>
-        new Promise<string[]>((resolve) => {
+        new Promise<{ lists: string[]; lifts: number[] }>((resolve) => {
           const root = document.querySelector(`#${spotId} .cat-hit`);
           const flip = root?.querySelector(':scope > g');
           if (!root || !flip) throw new Error(`${spotId} has no drawing.`);
           const seen = [root, flip].map(
             (node) => node.getAttribute('transform') ?? '',
           );
+          const lifts: number[] = [];
           const observer = new MutationObserver((records) => {
             for (const { target } of records)
-              if (target === root || target === flip)
-                seen.push((target as Element).getAttribute('transform') ?? '');
+              if (target === root || target === flip) {
+                const list =
+                  (target as Element).getAttribute('transform') ?? '';
+                seen.push(list);
+                const y = /translate\(\S+ (\S+)\)/.exec(list)?.[1];
+                if (target === flip && y) lifts.push(-Number(y));
+              }
           });
           observer.observe(root, {
             attributes: true,
@@ -1449,17 +1481,17 @@ test.describe('About cats', () => {
           });
           setTimeout(() => {
             observer.disconnect();
-            resolve(seen);
+            resolve({ lists: seen, lifts });
           }, ms);
         }),
       [`cat-spot-${id}`, TRICK_WATCH_MS] as const,
     );
     expect(
-      new Set(drawn).size,
-      'the trick never moved the drawing',
-    ).toBeGreaterThan(2);
+      Math.max(...drawn.lifts),
+      'the fly chase never jumped, so no airborne frame was checked',
+    ).toBeGreaterThan(0);
     expect(
-      drawn.filter((list) => !trueShape(list)),
+      drawn.lists.filter((list) => !trueShape(list)),
       'a drawing is scaled, skewed or rotated',
     ).toEqual([]);
   });
