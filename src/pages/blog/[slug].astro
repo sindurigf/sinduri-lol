@@ -1,5 +1,7 @@
 ---
 import ProseScrollFit from '../../components/ProseScrollFit.astro';
+import PostFolds from '../../components/PostFolds.astro';
+import { hasFold } from '../../lib/post-folds';
 import { hasCodeBlock, hasTable } from '../../lib/code-blocks';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { formatPostDate, isoDateTime } from '../../lib/post-date';
@@ -30,6 +32,7 @@ type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
 const { post } = Astro.props;
 const { Content, headings } = await render(post);
+const foldInPost = hasFold(post.body ?? '');
 const scrollerInPost =
   hasCodeBlock(post.body ?? '') || hasTable(post.body ?? '');
 
@@ -200,6 +203,7 @@ const article = placeholder
         <div class="prose">
           <Content />
           {scrollerInPost && <ProseScrollFit />}
+          {foldInPost && <PostFolds />}
         </div>
 
         {tags.length > 0 ? (

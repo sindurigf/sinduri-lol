@@ -186,6 +186,42 @@
   }
 
   /*
+   * A folded extra in a post (src/plugins/post-fold.mjs): the summary on a
+   * `surface` fill, its label saying Show or Hide with the open state.
+   */
+  .post-fold {
+    @apply mt-6;
+  }
+
+  .post-fold > .post-contents-summary {
+    @apply bg-surface;
+  }
+
+  .post-fold > :not(summary) {
+    @apply mt-6;
+  }
+
+  .post-fold[open] .fold-closed,
+  .post-fold:not([open]) .fold-open {
+    display: none;
+  }
+
+  .fold-label {
+    @apply min-w-0;
+  }
+
+  /* Print shows every fold; beforeprint in src/scripts/post-folds.ts covers browsers without ::details-content. */
+  @media print {
+    .post-fold::details-content {
+      content-visibility: visible;
+    }
+
+    .post-fold > summary {
+      display: none;
+    }
+  }
+
+  /*
    * Reading heading scale for posts, privacy and accessibility: text-h2 is too
    * close to the title's size to read as a level below it.
    */
