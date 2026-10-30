@@ -401,7 +401,7 @@ links. Not automated:
    [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §6 is an Orca pass in Firefox,
    with §6.4 in Chrome for the uppercase question; §6.10.1 and §6.10.2 are 19
    widget steps for TalkBack on Android and Orca. A pass narrows this gap; it
-   does not close it.
+   does not close it. Planned: the §6 Orca pass once the site is ready.
 3. **The gold surface has been measured, not looked at.**
    `tests/gold-surface.spec.ts` measures every route at 1280px, and one
    button at 305px:
