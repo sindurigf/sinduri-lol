@@ -176,9 +176,11 @@ const poseGap = (a: Pose, b: Pose): number =>
     ...(Object.keys(a) as (keyof Pose)[]).flatMap((key) => {
       const u = a[key];
       const v = b[key];
-      return Array.isArray(u) && Array.isArray(v)
-        ? [Math.abs(u[0] - v[0]), Math.abs(u[1] - v[1])]
-        : [Math.abs(Number(u) - Number(v))];
+      if (Array.isArray(u) && Array.isArray(v))
+        return [Math.abs(u[0] - v[0]), Math.abs(u[1] - v[1])];
+      return typeof u === 'number' && typeof v === 'number'
+        ? [Math.abs(u - v)]
+        : [];
     }),
   );
 

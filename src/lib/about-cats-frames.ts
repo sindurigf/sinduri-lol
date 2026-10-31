@@ -51,7 +51,7 @@ export const WALK: readonly Frame[] = [
 /** The walk drawing a walk starts on: its stance is the standing cat's, so the first step does not snap the legs apart. */
 const WALK_START = 2;
 
-/** Frames a seated cat shows; any other is reached from standing. */
+/** Seated drawings: a cat on its way to one is sitting down. */
 const SEATED: ReadonlySet<Frame> = new Set([
   'sit',
   'headturn',
@@ -66,12 +66,9 @@ const SEATED: ReadonlySet<Frame> = new Set([
   'belly',
 ]);
 
-/**
- * The drawings a cat may cut between, one hop per step, so every change shows
- * its in-betweens. Front-facing drawings (sit, look, loaf) turn side-on only
- * through headturn, the side-on sit. A jump runs one way through the air:
- * push off, leap, land. Ties go to the first link listed.
- */
+/* The drawings a cat may cut between, one per step: front-facing sit, look and loaf turn
+ * side-on only through headturn; a jump goes push-off, leap, landing. Of two equal
+ * routes the cat takes the one whose first link is listed first: up through the rise. */
 const LINKS: readonly (readonly [Frame, Frame])[] = [
   ['sit', 'headturn'],
   ['sit', 'look'],
@@ -90,7 +87,6 @@ const LINKS: readonly (readonly [Frame, Frame])[] = [
   ['crouch', 'takeoff'],
   ['crouch', 'landing'],
   ['loaf', 'sleep'],
-  ['loaf', 'lieside'],
   ['lieside', 'roll'],
   ['roll', 'belly'],
   ['pawrise', 'swat'],
@@ -100,7 +96,6 @@ const LINKS: readonly (readonly [Frame, Frame])[] = [
 const JUMP_LINKS: readonly (readonly [Frame, Frame])[] = [
   ['takeoff', 'leap'],
   ['leap', 'landing'],
-  ['landing', 'stand'],
 ];
 
 const NEXT = new Map<Frame, Frame[]>();
@@ -152,7 +147,6 @@ export const HOLD_MS: Partial<Record<Frame, number>> = {
 
 /** Sitting down lowers the hind end first: the rise's drawings show longer on the way down. */
 export const DOWN_HOLD_MS: Partial<Record<Frame, number>> = {
-  risehigh: 140,
   risehalf: 200,
   sitside: 260,
 };

@@ -103,15 +103,14 @@ const sizeOf = (id: CatId, frame: Frame) => {
 
 /** The rise from the side-on sit to standing, whose part-way drawings keep the front paws planted. */
 const RISE: readonly Frame[] = ['sitside', 'risehalf', 'risehigh', 'stand'];
-const RISE_FROM = 0;
 const RISE_TO = RISE.length - 1;
 
 /** px a part-way rising frame is drawn off center, before the flip: its front paw steps evenly from the side-on sit's to the stand's, which both stay centered like every other frame. */
 const pawShift = (id: CatId, frame: Frame): number => {
   const at = RISE.indexOf(frame);
-  if (at <= RISE_FROM || at >= RISE_TO) return 0;
+  if (at <= 0 || at >= RISE_TO) return 0;
   const paw = (f: Frame) => SHEET[id][f][8];
-  const share = (at - RISE_FROM) / (RISE_TO - RISE_FROM);
+  const share = at / RISE_TO;
   return paw('sitside') + (paw('stand') - paw('sitside')) * share - paw(frame);
 };
 

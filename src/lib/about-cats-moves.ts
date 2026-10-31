@@ -726,7 +726,7 @@ export const MOVES = {
           rot: i % 2 === 0 ? YARN_KICK_ROLL : 180,
         }),
       ),
-      ...flopTo('belly', 'loaf', YARN_LAND_2),
+      ...flopTo('belly', 'crouch', YARN_LAND_2),
       step(500, 'sit', { x: YARN_LAND_2 }),
     ],
     mods: [
@@ -749,9 +749,9 @@ export const MOVES = {
         ease(span(7100, 7350)) * 10 +
         ease(span(9420, 9820)) * 12;
       /* Up over the rolled body first, then back to the hind paws; the reverse on letting go. */
-      const lift = span(7520, 7620) - span(9470, 9620);
-      const draw = span(7620, 7720) - span(9420, 9470);
-      const kick = t > 7920 && t < 9420 ? Math.sin((t - 7920) / 60) : 0;
+      const lift = span(7820, 7920) - span(9470, 9620);
+      const draw = span(7920, 8020) - span(9420, 9470);
+      const kick = t > 8020 && t < 9420 ? Math.sin((t - 8020) / 60) : 0;
       return {
         kind: 'yarn',
         x: roll + draw * (YARN_LAND_2 + YARN_HUG - roll) + 3 * kick,
