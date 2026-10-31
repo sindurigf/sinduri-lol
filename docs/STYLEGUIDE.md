@@ -313,7 +313,7 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
 - `.surface-gold` and `.v-column` go white. Buttons, tiles and stickers keep
   their `#FFC000` fill, always under `#131313` (11.32).
 - Gold text turns ink; a `.label.text-gold` and a slide label gain a gold
-  square before the word.
+  square before the word, ink on a gold block (`--label-mark`).
 - Blocks stay gold or light in light mode, with the `#131313` edge (18.58 on white).
 - The header bar keeps its `#FFC000` fill and `#131313` edge; its throw
   turns `#131313`.
