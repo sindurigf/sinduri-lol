@@ -346,10 +346,6 @@
     @apply font-black text-text;
   }
 
-  .prose thead th {
-    @apply edge-b;
-  }
-
   /* A row header names its row; only the column headers are bold. */
   .prose tbody th {
     @apply font-normal;
@@ -367,7 +363,7 @@
    */
   @media (width < 40rem) {
     .prose table.table-stack {
-      @apply block edge-t border-text;
+      @apply block hairline-t border-text;
 
       & :is(tbody, tbody tr, tbody th, td) {
         @apply block;
