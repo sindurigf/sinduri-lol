@@ -11,8 +11,8 @@
   },
   "/blog": {
     "title": "Blog",
-    "photo": null,
-    "alt": "Blog, sinduri.lol, beside a drawing of a rabbit jumping over a gold tile."
+    "photo": "/_astro/cover.bLhsKdnT_ZwCnVG.webp",
+    "alt": "Blog, sinduri.lol, beside a photo: A linocut speech bubble with a winding path carved through it."
   },
   "/blog/five-years-in-drupal": {
     "title": "Five Years in Drupal",
@@ -21,8 +21,8 @@
   },
   "/blog/learning-discourse": {
     "title": "Learning Discourse: A Hands-On Path for Admins",
-    "photo": null,
-    "alt": "Learning Discourse: A Hands-On Path for Admins, sinduri.lol, beside a drawing of a rabbit jumping over a gold tile."
+    "photo": "/_astro/cover.bLhsKdnT_ZwCnVG.webp",
+    "alt": "Learning Discourse: A Hands-On Path for Admins, sinduri.lol, beside a photo: A linocut speech bubble with a winding path carved through it."
   },
   "/blog/open-source": {
     "title": "Open Source",
