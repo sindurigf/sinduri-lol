@@ -171,12 +171,12 @@ const SIZE: Record<Frame, ['h' | 'w', number]> = {
   look: ['h', 0.9],
 };
 
-/** Per cat, how much larger a frame is drawn than SIZE says: each drawing is framed a little differently. Rudra stands taller than the others when he stretches up. */
+/** Per cat, how much larger a frame is drawn than SIZE says: each drawing is framed a little differently. Reared and swatting, each cat keeps Minerva's size against its own sit. */
 const ADJUST: Record<CatId, Partial<Record<Frame, number>>> = {
   minerva: { pawrise: 0.9, swat: 0.9, loaf: 0.85 },
   rudra: {
-    pawrise: 1.16,
-    swat: 1.23,
+    pawrise: 0.945,
+    swat: 0.946,
     loaf: 0.8,
     belly: 0.85,
     sit: 1.05,
@@ -188,6 +188,8 @@ const ADJUST: Record<CatId, Partial<Record<Frame, number>>> = {
     stand: 1.2,
   },
   hela: {
+    pawrise: 0.9,
+    swat: 0.9,
     risehigh: 1.09,
     stand: 1.2,
     walk: 1.1,
