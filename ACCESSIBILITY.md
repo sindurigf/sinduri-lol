@@ -246,8 +246,8 @@ CSS and `tests/contrast-table.spec.ts` fails when it drifts.
 
 - `text`, `subtle`, `gold`, `cyan` and `pink-text` clear 7:1 on `background`
   and `surface`.
-- `border` carries every boundary but post table lines, which take `text`;
-  both clear SC 1.4.11.
+- `border` carries every boundary but post and `/brand` table lines, which
+  take `text`; both clear SC 1.4.11.
 - `pink` is non-text only; `pink-text` carries every pink glyph.
 - The focus ring clears every shadow it could touch
   ([Focus](docs/STYLEGUIDE.md#focus)).
