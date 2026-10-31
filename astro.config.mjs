@@ -13,6 +13,7 @@ import { linkListItem } from './src/plugins/link-list-item.mjs';
 import { codeBlock } from './src/plugins/code-block.mjs';
 import { tableScope } from './src/plugins/table-scope.mjs';
 import { tableScroll } from './src/plugins/table-scroll.mjs';
+import { moduleFold, postFold } from './src/plugins/post-fold.mjs';
 import { tableStack } from './src/plugins/table-stack.mjs';
 import { postFigure } from './src/plugins/post-figure.mjs';
 import { MARKDOWN_WIDTHS } from './src/lib/image-densities.ts';
@@ -140,10 +141,12 @@ export default defineConfig({
       hastPlugins: [
         linkListItem,
         postFigure,
+        postFold,
         codeBlock,
         tableScope,
         tableStack,
         tableScroll,
+        moduleFold,
       ],
     }),
   },
