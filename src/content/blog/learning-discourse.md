@@ -6,10 +6,9 @@ placeholder: false
 tags: ['community']
 teaser: 'I use Discourse every day for work. This is the learning path I wish I had when I started.'
 readingTime: 34
+cover: '../../assets/blog/learning-discourse/cover.jpg'
+coverAlt: 'A linocut speech bubble with a winding path carved through it.'
 ---
-
-I use Discourse every day for work.
-This is the learning path I wish I had when I started.
 
 It starts from zero.
 If you have never set up Discourse, begin at Module 1 and work through the modules in order.
