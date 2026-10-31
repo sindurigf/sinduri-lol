@@ -5,6 +5,7 @@ import { builtHtml } from './routes';
 import { NON_TEXT, PAGE_HELPERS } from './contrast';
 import { DESKTOP_VIEWPORT, PHONE_VIEWPORT, REFLOW_VIEWPORT } from './wcag';
 import { NODE } from './tags';
+import { tableStack } from '../src/plugins/table-stack.mjs';
 
 /** `src/plugins/table-stack.mjs` and the `.table-scroll` and stacked `.table-stack` rules in prose.css. */
 
@@ -54,24 +55,128 @@ test('every post table states its table roles', NODE, () => {
   expect(bare, 'post(s) with a table that states no role').toEqual([]);
 });
 
-/** Each body cell after the first: its column header and its label, if any. */
+type HastNode = {
+  type: string;
+  tagName?: string;
+  value?: string;
+  properties?: Record<string, unknown>;
+  children?: HastNode[];
+};
+
+const el = (
+  tagName: string,
+  children: HastNode[] = [],
+  properties: Record<string, unknown> = {},
+): HastNode => ({ type: 'element', tagName, properties, children });
+
+const cell = (tagName: string, text: string, properties = {}) =>
+  el(tagName, [{ type: 'text', value: text }], properties);
+
+/** The visitor's `ctx`, reduced to the methods it uses. */
+const visitorContext = (root: HastNode) => {
+  const parents = new Map<HastNode, HastNode>();
+  const index = (node: HastNode) => {
+    for (const child of node.children ?? []) {
+      parents.set(child, node);
+      index(child);
+    }
+  };
+  index(root);
+  const textContent = (node: HastNode): string =>
+    node.value ?? (node.children ?? []).map(textContent).join('');
+  return {
+    setProperty: (node: HastNode, key: string, value: unknown) => {
+      node.properties = { ...node.properties, [key]: value };
+    },
+    textContent,
+    parent: (node: HastNode) => parents.get(node),
+    prependChild: (node: HastNode, child: HastNode) => {
+      node.children = [child, ...(node.children ?? [])];
+    },
+  };
+};
+
+const tableOf = (body: HastNode[], properties = {}) =>
+  el(
+    'table',
+    [
+      el('thead', [
+        el('tr', [cell('th', 'Area'), cell('th', 'Plan'), cell('th', 'Cost')]),
+      ]),
+      el('tbody', body),
+    ],
+    properties,
+  );
+
+const visitTable = (table: HastNode) =>
+  tableStack({ fileURL: 'file:///src/content/blog/post.md' }).element.visit(
+    table,
+    visitorContext(table) as never,
+  );
+
+const labelCount = (node: HastNode): number =>
+  Number(node.properties?.ariaHidden === 'true') +
+  (node.children ?? []).reduce((sum, child) => sum + labelCount(child), 0);
+
+/* Build correctness: an author's class on an HTML table survives the visitor. */
+test("the visitor keeps a table's own classes", NODE, () => {
+  const table = tableOf(
+    [el('tr', [cell('td', 'Hosting'), cell('td', 'Basic'), cell('td', 'Low')])],
+    { className: ['wide'] },
+  );
+  visitTable(table);
+  expect(table.properties?.className, 'the table lost its own class').toEqual([
+    'wide',
+    'table-stack',
+  ]);
+});
+
+/* SC 1.3.1: labels follow cell position, so a spanned cell would put a value under the wrong column name. */
+test(
+  'a table with a spanned cell keeps scrolling, with no column labels',
+  NODE,
+  () => {
+    const table = tableOf([
+      el('tr', [cell('td', 'Hosting', { colSpan: 2 }), cell('td', 'Low')]),
+      el('tr', [cell('td', 'Email'), cell('td', 'Basic'), cell('td', 'None')]),
+    ]);
+    visitTable(table);
+    expect(
+      [table.properties?.className ?? []].flat(),
+      'a table with a spanned cell stacks',
+    ).not.toContain('table-stack');
+    expect(
+      labelCount(table),
+      'a table with a spanned cell has column labels',
+    ).toBe(0);
+    expect(table.properties?.role, 'the table lost its role').toBe('table');
+  },
+);
+
+/** A two-column table labels both values; a wider one titles each row with its first cell. */
+const TITLE_COLUMN_MIN = 3;
+
+/** Each body cell that takes a label: its column header and its label, if any. */
 const labelsOf = (page: Page) =>
-  page.evaluate(() =>
-    [...document.querySelectorAll('table.table-stack')].flatMap((table) => {
-      const headers = [...table.querySelectorAll('thead th')].map(
-        (cell) => cell.textContent?.trim() ?? '',
-      );
-      return [...table.querySelectorAll('tbody tr')].flatMap((row) =>
-        [...row.children].slice(1).map((cell, index) => {
-          const label = cell.querySelector(':scope > .table-label');
-          return {
-            header: headers[index + 1] ?? '',
-            label: label?.textContent?.trim() ?? null,
-            hidden: label?.getAttribute('aria-hidden') ?? null,
-          };
-        }),
-      );
-    }),
+  page.evaluate(
+    (titleColumnMin) =>
+      [...document.querySelectorAll('table.table-stack')].flatMap((table) => {
+        const headers = [...table.querySelectorAll('thead th')].map(
+          (cell) => cell.textContent?.trim() ?? '',
+        );
+        const first = headers.length < titleColumnMin ? 0 : 1;
+        return [...table.querySelectorAll('tbody tr')].flatMap((row) =>
+          [...row.children].slice(first).map((cell, index) => {
+            const label = cell.querySelector(':scope > .table-label');
+            return {
+              header: headers[index + first] ?? '',
+              label: label?.textContent?.trim() ?? null,
+              hidden: label?.getAttribute('aria-hidden') ?? null,
+            };
+          }),
+        );
+      }),
+    TITLE_COLUMN_MIN,
   );
 
 /** Each table cell's text as a screen reader gets it: the label left out. */

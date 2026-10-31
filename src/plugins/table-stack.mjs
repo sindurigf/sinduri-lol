@@ -25,6 +25,13 @@ const cellRole = (cell, inHead) => {
   return 'rowheader';
 };
 
+const spans = (cell) =>
+  Number(cell.properties?.colSpan ?? 1) > 1 ||
+  Number(cell.properties?.rowSpan ?? 1) > 1;
+
+/* A two-column table has no title column: both values need their label. */
+const TITLE_COLUMN_MIN = 3;
+
 const labelFor = (text) => ({
   type: 'element',
   tagName: 'span',
@@ -41,12 +48,19 @@ export const tableStack = ({ fileURL } = {}) => ({
     visit(table, ctx) {
       if (String(fileURL ?? '').includes(TALKS_PATH)) return;
       ctx.setProperty(table, 'role', 'table');
-      ctx.setProperty(table, 'className', [STACK_CLASS]);
+
+      /* Labels follow cell position, which spanned cells shift; such a table scrolls. */
+      const stacks = !rowsOf(table).some((row) => elements(row).some(spans));
+      if (stacks) {
+        const authored = [table.properties?.className ?? []].flat();
+        ctx.setProperty(table, 'className', [...authored, STACK_CLASS]);
+      }
 
       const head = elements(table).find((child) => child.tagName === 'thead');
       const names = elements(elements(head ?? {})[0] ?? {}).map((cell) =>
         ctx.textContent(cell).trim(),
       );
+      const firstLabeled = names.length < TITLE_COLUMN_MIN ? 0 : 1;
 
       for (const group of elements(table)) {
         if (ROWGROUPS.has(group.tagName)) {
@@ -60,7 +74,7 @@ export const tableStack = ({ fileURL } = {}) => ({
         elements(row).forEach((cell, index) => {
           ctx.setProperty(cell, 'role', cellRole(cell, inHead));
           const name = names[index];
-          if (!inHead && index > 0 && name) {
+          if (stacks && !inHead && index >= firstLabeled && name) {
             ctx.prependChild(cell, labelFor(name));
           }
         });
