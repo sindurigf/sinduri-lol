@@ -2061,14 +2061,10 @@ test.describe('About cats', () => {
     await showCat(page, id);
     await tricksButton(page, id).click();
     const list = tricksList(page, id);
+    await list.getByRole('button', { name: TRICKS.yarn.label }).click();
     await expect(
-      list.getByRole('button', { name: TRICKS.yarn.label }),
-      'a trick that cannot fit the band is offered',
-    ).toHaveCount(0);
-    await list.getByRole('button', { name: TRICKS.fly.label }).click();
-    await expect(
-      page.locator(`#cat-spot-${id} .cat-prop-wing`).first(),
-      'the picked fly never appeared',
+      page.locator(`#cat-spot-${id} .cat-prop-yarn-end`).first(),
+      'the picked yarn never appeared',
     ).toBeAttached({ timeout: NAP_TIMEOUT_MS });
 
     await setViewportSettled(page, REFLOW_VIEWPORT);
@@ -2078,10 +2074,11 @@ test.describe('About cats', () => {
     await expect(
       list.getByRole('button', { name: TRICKS.look.label }),
     ).toBeAttached();
-    await expect(
-      list.getByRole('button', { name: TRICKS.fly.label }),
-      'a trick that cannot fit the band is offered',
-    ).toHaveCount(0);
+    for (const trick of [TRICKS.yarn, TRICKS.fly])
+      await expect(
+        list.getByRole('button', { name: trick.label }),
+        'a trick that cannot fit the band is offered',
+      ).toHaveCount(0);
   });
 
   test('a held cat that has settled is not redrawn after a slow frame', async ({

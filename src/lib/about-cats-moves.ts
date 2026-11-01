@@ -250,7 +250,7 @@ const STANCE = 0.5;
 const GAIT_BLEND_MS = 180;
 
 type Paw = (typeof PAWS)[number];
-/** Each paw's place in a stride, as a share of it: a walk moves them one at a time, a bound in pairs. */
+/** Each paw's place in a stride, as a share of it: a walk moves them one at a time. */
 const WALK_LEGS: readonly (readonly [Paw, number])[] = [
   ['fN', 0],
   ['hF', 0.25],
@@ -259,7 +259,7 @@ const WALK_LEGS: readonly (readonly [Paw, number])[] = [
 ];
 /*
  * A gait fades in and out. A paw is down for the `stance` share of a stride of `length` px, going back as fast
- * as the body goes forward, then swings ahead; `rest` moves the body by the gait's weight and place in the stride.
+ * as the body goes forward, then swings ahead.
  */
 const gait = (
   from: number,
@@ -268,7 +268,6 @@ const gait = (
   stance: number,
   length: number,
   lift: number,
-  rest?: (p: Pose, weight: number, cycle: number) => void,
 ): Mod =>
   between(from, to, (p, s) => {
     const weight = Math.min(
@@ -285,39 +284,10 @@ const gait = (
         (u < stance ? 1 - (2 * u) / stance : 2 * k * k * (3 - 2 * k) - 1);
       p[leg][1] -= weight * lift * Math.sin(Math.PI * k);
     }
-    rest?.(p, weight, cycle);
   });
 
 const walking = (from: number, to: number, strength = 1): Mod =>
   gait(from, to, WALK_LEGS, STANCE, STRIDE * strength, STEP_LIFT * strength);
-/** A chasing cat bounds: front paws land together, then hind paws, the back flexing between. px per stride, px of paw lift, degrees of rock. */
-const BOUND_STRIDE = 44;
-const BOUND_LIFT = 6;
-const BOUND_ROCK = 7;
-/** Each pair is down for half the stride, so a paw is always on the ground and the drawing never bobs, and lands this many px out from its standing place, so the four legs never gather to a point. */
-const BOUND_STANCE = 0.5;
-const BOUND_SPREAD = 5;
-const BOUND_LEGS: typeof WALK_LEGS = [
-  ['fN', 0],
-  ['fF', 0.08],
-  ['hN', 0.5],
-  ['hF', 0.58],
-];
-const bounding = (from: number, to: number): Mod =>
-  gait(
-    from,
-    to,
-    BOUND_LEGS,
-    BOUND_STANCE,
-    BOUND_STRIDE,
-    BOUND_LIFT,
-    (p, weight, cycle) => {
-      for (const k of PAWS)
-        p[k][0] += weight * (k[0] === 'f' ? BOUND_SPREAD : -BOUND_SPREAD);
-      const phase = 2 * Math.PI * cycle;
-      p.ba += weight * BOUND_ROCK * Math.sin(phase);
-    },
-  );
 /** Degrees the head lags a jump by, up as it takes off and down as it lands. */
 const HEAD_LAG = 14;
 /** A jump's rise and fall; it ends with its landing step, so the paws touch down as the arc does. */
@@ -362,7 +332,6 @@ const SCRATCH_LOW: Partial<Pose> = {
   draw: 'pawrise',
 };
 const SCRATCH_HIGH: Partial<Pose> = { hr: 0, draw: 'swat' };
-const YARN_BOUND_HEIGHT = 38;
 const FLY_HOP_HEIGHT = 40;
 /* The fly's route, [ms, x, y] ahead of the cat: it lands, is missed, circles, and escapes. */
 const FLY_PATH: Route = [
@@ -425,30 +394,9 @@ const swung = (
   beat: number,
 ): number =>
   since > 0 ? size * Math.exp(-since / fade) * Math.sin(since / beat) : 0;
-/*
- * A bat at something on the ground: the cat leans in with its head down, lifts
- * the paw curled, hooks it down onto the target and snaps it back.
- */
-const BAT_LEAN: Partial<Pose> = { ba: 46, hr: 24 };
-const BAT_RAISED: Pair = [22, 8];
-const BAT_STRIKE_MS = 90;
-/** The paw stays on what it hit and pushes it on this far, so the hit is seen. */
+/** A swatting paw stays on what it hit and pushes it on this far, so the hit is seen. */
 const BAT_PUSH_MS = 90;
 const BAT_PUSH = 4;
-/** ms from the hit until the paw is back up. */
-const BAT_AFTER_MS = BAT_PUSH_MS + 130;
-/** ms from a bat's start to the paw's hit. */
-const BAT_HIT_MS = WINDUP_MS + BAT_STRIKE_MS;
-const bat = (hit: Pair, over: Partial<Pose> = {}): Step[] => {
-  const lean = (ms: number, fN: Pair, ease: Ease): Step =>
-    step(ms, 'sit', { ...over, ...BAT_LEAN, fN }, ease);
-  return [
-    lean(WINDUP_MS, BAT_RAISED, 'out'),
-    lean(BAT_STRIKE_MS, hit, 'in'),
-    lean(BAT_PUSH_MS, [hit[0] + BAT_PUSH, hit[1]], 'linear'),
-    lean(BAT_AFTER_MS - BAT_PUSH_MS, BAT_RAISED, 'out'),
-  ];
-};
 /** Just past where each cat's swat drawing reaches, px ahead and up from its feet: the feather hangs there, so each swat meets it. */
 export const SWAT_TIP: Record<CatId, Pair> = {
   minerva: [35, 79],
@@ -478,22 +426,74 @@ const CUP_FADE_IN_MS = 250;
 /** ms the cat watches the cup fall, then settles. */
 const CUP_WATCH_MS = 500;
 const CUP_SETTLE_MS = 500;
-/** Where each yarn pounce lands: the front paws reach the ball's near side. */
-const YARN_LAND_1 = 218;
-const YARN_LAND_2 = 308;
-/** ms the cat stands up on the spot before chasing on, so it rises through every frame before its paws move. */
-const YARN_STAND_MS = 500;
-/** ms at which each bat's paw hits the ball: the first bat, and the one after the first pounce lands. */
-const YARN_BAT_1 = BAT_HIT_MS;
-const YARN_POUNCE_LANDED = 4320;
-const YARN_BAT_2 = YARN_POUNCE_LANDED + BAT_HIT_MS;
-/** The ball hugged on the back, between the hind paws, from the cat's place. */
-const YARN_HUG = 9;
-const YARN_HUG_Y = -34;
-/** On its back with the ball, the cat rocks onto its side and back for each kick; the drawings alternate. */
-const YARN_KICK_MS = 250;
-const YARN_KICKS = 6;
-const YARN_KICK_ROLL = 110;
+/** A pat from a side-on crouch: the paw comes up, then down on the ball, which rolls off as it lands. */
+const PAT_READY_MS = 200;
+const PAT_UP_MS = 200;
+const PAT_DOWN_MS = 120;
+const PAT_AFTER_MS = 260;
+const pat = (x: number): Step[] => [
+  step(PAT_READY_MS, 'crouch', { x, draw: 'crouch' }),
+  step(PAT_UP_MS, 'crouch', { x, draw: 'pawrise' }, 'out'),
+  step(PAT_DOWN_MS, 'crouch', { x, draw: 'crouch' }, 'in'),
+  step(PAT_AFTER_MS, 'crouch', { x }),
+];
+/** A pounce: gather, push off, fly, land with the front paws on the ball, settle. */
+const POUNCE_GATHER_MS = 160;
+const POUNCE_PUSH_MS = 90;
+const POUNCE_AIR_MS = 260;
+const POUNCE_LAND_MS = 110;
+const POUNCE_SETTLE_MS = 220;
+const YARN_POUNCE_HEIGHT = 24;
+/** Onto the back: settles, lies on its side and holds it, rolls over, and lands on its back; getting up is the reverse. */
+const LIE_MS = 260;
+const LIE_HOLD_MS = 480;
+const ROLL_MS = 260;
+const BACK_MS = 300;
+const BACK_PLAY_MS = 1800;
+const GET_UP_MS = 300;
+/** Where each cat's on-its-back drawing holds the ball between its paws, px ahead and up from its place. */
+const YARN_HUG: Record<CatId, Pair> = {
+  minerva: [-1, 50],
+  hela: [-1, 42],
+  rudra: [4, 47],
+};
+const YARN_RADIUS = 6;
+/** Each kick bounces the ball for this many ms, this far back and up, and turns it. */
+const YARN_KICK_MS = 300;
+const YARN_KICK_BACK = 4;
+const YARN_KICK_UP = 5;
+const YARN_KICK_TURN = 40;
+/** The ball rolls this long after each pat, squirts on under a pounce, and rolls off when let go. */
+const YARN_PAT_ROLL_MS = 900;
+const YARN_SQUIRT = 6;
+const YARN_LET_GO = 22;
+const YARN_LET_GO_MS = 500;
+/** The chase along the band, px from the start: the ball's place, each pat's roll, each run's end, each pounce's landing. */
+const YARN_START = 26;
+const YARN_ROLL_1 = 150;
+const YARN_ROLL_2 = 120;
+const YARN_RUN_1 = 100;
+const YARN_POUNCE_1 = 150;
+const YARN_RUN_2 = 230;
+const YARN_POUNCE_2 = 276;
+const YARN_FADE_IN_MS = 200;
+const YARN_FADE_OUT_MS = 300;
+/** The ball turns once for each 2πr it rolls. */
+const turned = (px: number): number => (px / YARN_RADIUS) * (180 / Math.PI);
+const easeOut = (k: number): number =>
+  1 - (1 - Math.min(1, Math.max(0, k))) ** 2;
+/** Where the ball is along [ms, px] points, easing to rest between each pair. */
+const ballAt = (
+  points: readonly (readonly [number, number])[],
+  t: number,
+): number => {
+  let [t0, x0] = points[0] ?? [0, 0];
+  for (const [t1, x1] of points.slice(1)) {
+    if (t <= t1) return x0 + (x1 - x0) * easeOut((t - t0) / (t1 - t0 || 1));
+    [t0, x0] = [t1, x1];
+  }
+  return x0;
+};
 /** The wand's feather hangs on the cat tree just out of a sitting cat's reach, clear of its face. */
 const WAND_HIGH = -62;
 const WAND_AHEAD = 32;
@@ -534,26 +534,6 @@ const along = ([first, ...rest]: Route, t: number): [number, number] => {
   }
   return [x0, y0];
 };
-
-/** Body height before the roll; upright poses keep their paws on the ground there. */
-const FLOP_LOW = 9;
-/** ms a flop takes, and its roll: long enough for each drawing on the way over to show. */
-const FLOP_MS = 700;
-const FLOP_ROLL_MS = 480;
-const groundedAt = (name: PoseName, by: number): Partial<Pose> =>
-  POSES[name].rot !== 0
-    ? {}
-    : Object.fromEntries(PAWS.map((k) => [k, [POSES[name][k][0], by]]));
-/* Rolling onto the back: low, then over through the lying-on-side and rolling drawings. */
-const flopTo = (from: PoseName, to: PoseName, x = 0): Step[] => [
-  step(
-    FLOP_MS - FLOP_ROLL_MS,
-    from,
-    { x, by: FLOP_LOW, ...groundedAt(from, FLOP_LOW) },
-    'in',
-  ),
-  step(FLOP_ROLL_MS, to, { x }, 'linear'),
-];
 
 /** A prop's opacity `t` ms in: it fades in over `inMs`, and out over the `outMs` before `end`. */
 const fade = (t: number, inMs: number, end: number, outMs: number): number =>
@@ -721,70 +701,98 @@ export const MOVES = {
       o: fade(t, 300, 4700, 300),
     }),
   }),
-  /* Bats the ball, bounds after it, pounces with its paws on it, bats it on, then rolls over hugging it. */
-  yarn: (): Move => ({
-    steps: [
-      ...bat([30, 14]),
-      step(300 - BAT_PUSH_MS, 'sit'),
-      step(300, 'stand'),
-      step(2400, 'stand', { x: 150 }),
-      step(300, 'crouch', { x: 150 }),
-      step(140, 'crouch', { x: 150 }, 'in'),
-      step(300, 'air', { x: 198 }, 'linear'),
-      step(180, 'crouch', { x: YARN_LAND_1 }, 'out'),
-      ...bat([30, 14], { x: YARN_LAND_1 }),
-      step(150 - BAT_PUSH_MS, 'sit', { x: YARN_LAND_1 }),
-      step(YARN_STAND_MS, 'stand', { x: YARN_LAND_1 }),
-      step(1500 - YARN_STAND_MS, 'stand', { x: 280 }),
-      step(250, 'crouch', { x: 280 }),
-      step(140, 'crouch', { x: 280 }, 'in'),
-      step(280, 'air', { x: 298 }, 'linear'),
-      step(180, 'crouch', { x: YARN_LAND_2 }, 'out'),
-      ...flopTo('crouch', 'belly', YARN_LAND_2),
-      ...Array.from({ length: YARN_KICKS }, (_, i) =>
-        step(YARN_KICK_MS, 'belly', {
-          x: YARN_LAND_2,
-          rot: i % 2 === 0 ? YARN_KICK_ROLL : 180,
-        }),
-      ),
-      ...flopTo('belly', 'crouch', YARN_LAND_2),
-      step(500, 'sit', { x: YARN_LAND_2 }),
-    ],
-    mods: [
-      bounding(1000, 3400),
-      arc(3840, 4320, YARN_BOUND_HEIGHT),
-      bounding(4870 + YARN_STAND_MS, 6370),
-      arc(6760, 7220, YARN_BOUND_HEIGHT),
-    ],
-    prop: 'yarn',
-    /* Rolls ahead; a pounce lands paws first and squirts it on; batted again; then hugged in the hind paws. */
-    propAt: (t) => {
-      const ease = (k: number) => 1 - (1 - k) ** 2;
-      const span = (a: number, b: number) =>
-        Math.min(1, Math.max(0, (t - a) / (b - a)));
-      const roll =
-        28 +
-        ease(span(YARN_BAT_1, 3850)) * 212 +
-        ease(span(4200, 4450)) * 6 +
-        ease(span(YARN_BAT_2, 6900)) * 84 +
-        ease(span(7100, 7350)) * 10 +
-        ease(span(9420, 9820)) * 12;
-      /* Up over the rolled body first, then back to the hind paws; the reverse on letting go. */
-      const lift = span(7820, 7920) - span(9470, 9620);
-      const draw = span(7920, 8020) - span(9420, 9470);
-      const kick = t > 8020 && t < 9420 ? Math.sin((t - 8020) / 60) : 0;
-      return {
-        kind: 'yarn',
-        x: roll + draw * (YARN_LAND_2 + YARN_HUG - roll) + 3 * kick,
-        y: -6 + lift * (YARN_HUG_Y + 6) + 2 * kick,
-        r:
-          span(YARN_BAT_1, 3850) * 900 +
-          span(4200, 4450) * 80 +
-          span(YARN_BAT_2, 6900) * 500,
-        o: fade(t, 200, 10620, 300),
-      };
-    },
-  }),
+  /* Pats the ball, runs after it, pounces on it, pats it on, runs and pounces again, then lies back and kicks it. */
+  yarn: (): Move => {
+    const steps: Step[] = [];
+    const mods: Mod[] = [];
+    let t = 0;
+    let at = 0;
+    const ball: [number, number][] = [[0, YARN_START]];
+    const add = (...more: Step[]): void => {
+      steps.push(...more);
+      t += stepsDuration(more);
+    };
+    const patTo = (roll: number): void => {
+      const hit = t + PAT_READY_MS + PAT_UP_MS;
+      const from = ball.at(-1)?.[1] ?? YARN_START;
+      ball.push([hit, from], [hit + YARN_PAT_ROLL_MS, from + roll]);
+      add(...pat(at));
+    };
+    const runTo = (x: number): void => {
+      add(step(POUNCE_GATHER_MS, 'crouch', { x: at }, 'in'));
+      const dash = run(at, x, t);
+      mods.push(...dash.mods);
+      add(...dash.steps);
+      at = x;
+    };
+    const pounceTo = (x: number): void => {
+      add(step(PAT_READY_MS, 'crouch', { x: at }, 'out'));
+      add(step(POUNCE_GATHER_MS, 'crouch', { x: at }, 'in'));
+      add(step(POUNCE_PUSH_MS, 'stand', { x: at, draw: 'takeoff' }));
+      mods.push(arc(t, t + POUNCE_AIR_MS, YARN_POUNCE_HEIGHT));
+      add(step(POUNCE_AIR_MS, 'stand', { x, draw: 'leap' }, 'linear'));
+      add(step(POUNCE_LAND_MS, 'stand', { x, draw: 'landing' }));
+      add(step(POUNCE_SETTLE_MS, 'crouch', { x }, 'out'));
+      at = x;
+    };
+    add(step(PAT_AFTER_MS, 'sit'));
+    patTo(YARN_ROLL_1);
+    runTo(YARN_RUN_1);
+    pounceTo(YARN_POUNCE_1);
+    const under = ball.at(-1)?.[1] ?? YARN_START;
+    ball.push(
+      [t - POUNCE_LAND_MS - POUNCE_SETTLE_MS, under],
+      [t, under + YARN_SQUIRT],
+    );
+    patTo(YARN_ROLL_2);
+    runTo(YARN_RUN_2);
+    pounceTo(YARN_POUNCE_2);
+    const hugFrom = t + LIE_MS + LIE_HOLD_MS;
+    add(
+      step(LIE_MS, 'crouch', { x: at }),
+      step(LIE_HOLD_MS, 'crouch', { x: at, draw: 'lieside' }),
+      step(ROLL_MS, 'crouch', { x: at, draw: 'roll' }),
+      step(BACK_MS, 'belly', { x: at, draw: 'belly' }),
+    );
+    const kicksFrom = t;
+    add(step(BACK_PLAY_MS, 'belly', { x: at, draw: 'belly' }));
+    const letGo = t;
+    add(
+      step(ROLL_MS, 'belly', { x: at, draw: 'roll' }),
+      step(GET_UP_MS, 'crouch', { x: at, draw: 'lieside' }),
+      step(GET_UP_MS, 'crouch', { x: at }),
+      step(BACK_MS + PAT_READY_MS, 'sit', { x: at }),
+    );
+    const end = t;
+    const rest = at;
+    return {
+      steps,
+      mods,
+      prop: 'yarn',
+      propAt: (u, cat) => {
+        const [ahead, up] = YARN_HUG[cat];
+        const held =
+          Math.min(1, Math.max(0, (u - hugFrom) / ROLL_MS)) *
+          (1 - Math.min(1, Math.max(0, (u - letGo) / ROLL_MS)));
+        const kick =
+          u > kicksFrom && u < letGo
+            ? Math.sin(((u - kicksFrom) / YARN_KICK_MS) * Math.PI) ** 2
+            : 0;
+        const away =
+          u > letGo ? easeOut((u - letGo) / YARN_LET_GO_MS) * YARN_LET_GO : 0;
+        const ground = u > letGo ? rest + ahead + away : ballAt(ball, u);
+        const x =
+          (1 - held) * ground + held * (rest + ahead - YARN_KICK_BACK * kick);
+        return {
+          kind: 'yarn',
+          x,
+          y: -(1 - held) * YARN_RADIUS - held * (up + YARN_KICK_UP * kick),
+          r: turned(x - YARN_START) + held * YARN_KICK_TURN * kick,
+          o: fade(u, YARN_FADE_IN_MS, end, YARN_FADE_OUT_MS),
+        };
+      },
+    };
+  },
   /* Rudra and the wand on the cat tree, from his photo: sat back reaching up, swats, and one leap that brings it down. */
   wand: (): Move => ({
     steps: [
@@ -886,7 +894,12 @@ export const scaleTravel = (move: Move, factor: number): Move => {
         const ahead = s.x - at;
         const kept = Math.min(Math.abs(ahead), PROP_KEEP);
         const scaled = Math.max(Math.abs(ahead) * factor, kept);
-        return { ...s, x: at * factor + Math.sign(ahead) * scaled };
+        /* A rolling prop turns as far as it now travels. */
+        return {
+          ...s,
+          x: at * factor + Math.sign(ahead) * scaled,
+          r: s.r * factor,
+        };
       }),
   };
 };
@@ -1006,15 +1019,16 @@ const RUN_LIFT = 9;
 /** ms crouched before the first push-off. */
 const RUN_READY_MS = 400;
 const run = (
-  distance: number,
+  x0: number,
+  x1: number,
   from: number,
 ): { steps: Step[]; mods: Mod[] } => {
-  const strides = Math.max(1, Math.round(distance / RUN_STRIDE));
-  const stride = distance / strides;
+  const strides = Math.max(1, Math.round(Math.abs(x1 - x0) / RUN_STRIDE));
+  const stride = (x1 - x0) / strides;
   const steps: Step[] = [];
   const mods: Mod[] = [];
   for (let i = 0; i < strides; i++) {
-    const at = i * stride;
+    const at = x0 + i * stride;
     const air = from + (2 * i + 1) * RUN_GROUND_MS + i * RUN_AIR_MS;
     steps.push(
       step(RUN_GROUND_MS, 'stand', { x: at, draw: 'takeoff' }, 'linear'),
@@ -1049,7 +1063,7 @@ export const withApproach = (
   gait: 'trot' | 'run' = 'trot',
 ): Move => {
   const trot = Math.max(0, distance - CREEP_REACH);
-  const dash = gait === 'run' && trot > 0 ? run(trot, RUN_READY_MS) : null;
+  const dash = gait === 'run' && trot > 0 ? run(0, trot, RUN_READY_MS) : null;
   const trotMs = dash
     ? stepsDuration(dash.steps)
     : trot > 0
