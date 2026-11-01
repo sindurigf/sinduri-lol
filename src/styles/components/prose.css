@@ -365,7 +365,7 @@
     }
 
     & thead th {
-      @apply edge-b bg-transparent;
+      @apply bg-transparent;
     }
   }
 
@@ -381,7 +381,7 @@
    */
   @media (width < 40rem) {
     .prose table.table-stack {
-      @apply block edge-t border-text;
+      @apply block hairline-t border-text;
 
       & :is(tbody, tbody tr, tbody th, td) {
         @apply block;
