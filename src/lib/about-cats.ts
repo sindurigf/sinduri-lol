@@ -606,10 +606,12 @@ export const createColony = (
             SWAT_TIP[cat.id][1] - SWAT_TIP.minerva[1],
           ]
         : [0, 0];
+      /* A move played heading left mirrors its prop's turn too, so the cup tips out over the edge. */
       playing.shown = {
         ...s,
         x: playing.origin + playing.dir * (s.x + ahead),
         y: s.y - up,
+        r: playing.dir * s.r,
       };
       playing.prop.draw(playing.shown, now);
     }
