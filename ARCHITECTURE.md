@@ -211,9 +211,11 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 - Non-placeholder posts get `og:type` `article`,
   `article:published_time` and a `BlogPosting` JSON-LD node. Other pages are
   `website`.
-- `cover` is relative to the post, any ratio, never cropped, and shown as the
-  post's hero photo, on the `/blog` feature card and on its sharing card; the
-  schema requires `coverAlt` with it.
+- Every post needs `cover` (relative to the post, any ratio) and `coverAlt`;
+  the build fails without them. The cover is the post's hero photo and its
+  sharing card, uncropped, and the newest post's card. Every other post card
+  shows a square crop at `coverPosition`
+  ([STYLEGUIDE](docs/STYLEGUIDE.md#posts)).
 - `updated` sets `dateModified`; absent, it is omitted, not copied from `date`.
 - Pagination (`/blog/page/<n>`) builds only past `POSTS_PER_PAGE`, 9 unless
   the build's `POSTS_PER_PAGE` variable sets another positive whole number.
@@ -506,7 +508,7 @@ in `wrangler.jsonc`).
   `src/assets/blog/<slug>/` (posts).
   Masters are JPEG or WebP at their full original frame, metadata stripped,
   never cropped in the file. Tiles, pairs, strips, figures and covers show the
-  whole frame, sharing cards included.
+  whole frame, sharing cards included; only a post card thumbnail is a crop.
 - Fixed-size photos pass `DENSITIES`; fluid ones pass `WIDTHS` and `sizes`
   from `src/lib/image-densities.ts`. `WIDTHS` steps at most 1.5x; `sizes` is
   the real drawn width. `tests/image-size.spec.ts` fails on stretching,
@@ -891,5 +893,9 @@ evidence.
 - The published CV shows the contact email, "Vienna, Austria" and the GitHub
   profiles on purpose. It has no phone number, street address or date of
   birth, and its metadata only a title, dates and the `cv/` digest.
-- **Post artwork.** A `feature` `BlogCard` without a `cover` shows
-  `PlaceholderBox`. `/career` has no photo placement.
+- **Post card thumbnails** are decorative (`alt=""`,
+  [H67](https://www.w3.org/WAI/WCAG22/Techniques/html/H67)): the card's
+  heading link names the post, and the post page carries `coverAlt`. The
+  newest post's card shows the whole cover with `coverAlt`.
+  `data-card-thumbnail` marks the crop for `tests/alt-text.spec.ts`.
+- `/career` has no photo placement.

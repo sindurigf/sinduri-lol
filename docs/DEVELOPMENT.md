@@ -231,9 +231,10 @@ Add a Markdown file to `src/content/blog/`; the filename is the slug. The build
 validates frontmatter against `src/content.config.ts` and fails on a mismatch.
 `open-source-is-not-just-code.md` is a complete example.
 
-- The newest published post needs `cover` and `coverAlt`: `/blog` features it.
-  A cover can have any ratio; the post hero and the feature card show it
-  uncropped.
+- Every post needs `cover` and `coverAlt`; the build fails without them. A
+  cover can have any ratio; the post hero and the newest post's card show it
+  uncropped. Other cards show a square crop: set `coverPosition` (`center`,
+  `top`, `bottom`, `left` or `right`) when the subject is off center.
 - Tests read the new post's routes, category and tags from its frontmatter.
 
 ## Writing a talk

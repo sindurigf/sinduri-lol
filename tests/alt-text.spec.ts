@@ -5,12 +5,15 @@ import { NODE } from './tags';
 
 /**
  * Alt text rules axe cannot judge: every <img> has an `alt` (Astro writes an
- * empty one as a bare `alt`), only the bunny marks are empty, a filled one is not
+ * empty one as a bare `alt`), only the bunny marks and post card thumbnails are empty, a filled one is not
  * a filename or "image/photo/picture/logo", and an inline <svg> is hidden or named.
  */
 
 /** The images the site draws for decoration. */
 const DECORATIVE = /bunny-footer|logo-rabbit|roundel-rabbit|lepus-rabbit/;
+
+/* A post card's square crop: the card heading names the post (H67). */
+const CARD_THUMBNAIL = /\sdata-card-thumbnail(?=[\s>=/])/;
 
 const SUPPLIED_BY_THE_READER = /\b(image|photo|picture|logo)\b/i;
 const FILENAME = /\.(webp|avif|jpe?g|png|gif|svg)\b/i;
@@ -33,7 +36,7 @@ const auditImages = (html: string): Problem[] => {
 
     const alt = valued?.[1]?.trim() ?? '';
     if (alt === '') {
-      if (!DECORATIVE.test(source)) {
+      if (!DECORATIVE.test(source) && !CARD_THUMBNAIL.test(tag)) {
         problems.push({
           image,
           problem: 'empty alt on an image that is not a bunny mark',
