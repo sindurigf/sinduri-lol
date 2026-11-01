@@ -125,7 +125,7 @@ const up = (h: number): Move => {
   };
 };
 
-/* Down: peer over the edge, lean out, and step down front paws first onto the floor; no walking in the air. */
+/* Down: peer over the edge, lean out, and hop down front paws first onto the floor clear of the brick. */
 const down = (h: number): Move => {
   const e = CLIMB_START.down;
   const edge: Partial<Record<Paw, Pair>> = { fN: [e - 1, h], fF: [e - 4, h] };
@@ -135,11 +135,12 @@ const down = (h: number): Move => {
     hN: [e - 18, h],
     hF: [e - 15, h],
   };
+  const land = e + CLIMB_CLEAR;
   const onFloor: Partial<Record<Paw, Pair>> = {
-    fN: [e + 26, 0],
-    fF: [e + 23, 0],
-    hN: [e + 2, 0],
-    hF: [e + 5, 0],
+    fN: [land + 10, 0],
+    fF: [land + 7, 0],
+    hN: [land - 14, 0],
+    hF: [land - 11, 0],
   };
   return {
     rise: -h,
@@ -149,10 +150,10 @@ const down = (h: number): Move => {
       key(400, at('crouch', e - 14, h + 16, edge, { hr: 30 })),
       key(300, at('crouch', e - 14, h + 16, edge, { hr: 30 })),
       key(200, at('stand', e - 6, h + 22, onTop, { draw: 'landing' })),
-      key(260, at('stand', e + 14, 22, onFloor, { draw: 'landing' }), 'in'),
-      key(140, at('crouch', e + 20, 16, {}), 'out'),
-      key(300, at('stand', e + CLIMB_CLEAR, 26, {})),
-      key(500, at('sit', e + CLIMB_CLEAR, 25, {})),
+      key(260, at('stand', land - 4, 22, onFloor, { draw: 'landing' }), 'in'),
+      key(140, at('crouch', land, 16, {}), 'out'),
+      key(300, at('stand', land, 26, {})),
+      key(500, at('sit', land, 25, {})),
     ],
   };
 };
