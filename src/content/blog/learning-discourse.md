@@ -202,7 +202,7 @@ Then:
 
 ### Watch Out
 
-- **Re-running the installer resets the setup files.** It overwrites local changes in `/var/discourse`. It does not touch your `containers/app.yml` or your data. Keep your own changes in `app.yml`.
+- **Re-running the installer resets the setup files.** It overwrites local changes in `/var/discourse`. Then it runs the setup wizard again, which can change your `containers/app.yml` and rebuild the site. Back up `app.yml` first.
 - **Docker can bypass a ufw firewall.** ufw is the firewall tool that ships with Ubuntu. Docker opens its ports directly, so a ufw rule may not block them. Use your cloud provider's firewall instead.
 - **Password login can come back.** On some cloud images, a file in `/etc/ssh/sshd_config.d/` sets `PasswordAuthentication yes`. It overrides your main config. Check that folder too.
 
@@ -247,7 +247,7 @@ for i in 1 2 3; do
     -H "Content-Type: application/json" \
     -d "$payload" | jq '{topic_id, topic_slug}'
 
-  sleep 2   # stay well under the admin API limit of 60 requests a minute
+  sleep 16   # non-staff users can create a topic only every 15 seconds
 done
 ```
 
@@ -330,6 +330,7 @@ Both are meant for development.
 - **Data Explorer cannot create data.** Data Explorer (Module 8) runs read-only queries. It is a reporting tool, not a seeding tool.
 - **Rate limits apply in the console too.** New users can post only every thirty seconds. The same text from the same person within five minutes is rejected. The seed script handles both.
 - **Raw SQL inserts break things.** Going through `PostCreator` and `User` keeps counters, search and category stats correct.
+- **`dev:populate` also clears Redis.** It runs `redis-cli flushall`, which empties the local Redis server.
 - **Use the `.invalid` domain for test emails.** It can never receive mail, so no real person gets a notification.
 
 ## Module 4: Basic Settings
@@ -433,7 +434,7 @@ Create API keys in the admin area under Advanced > API keys.
 
 - Set the user level to **Single User** and pick the user the key acts as.
 - Choose the narrowest scope that works. A granular scope allows only certain actions, such as creating topics. A global scope allows everything.
-- Creating categories has no narrow scope. It needs a key with global scope. Create that key for the task and revoke it afterward.
+- Creating categories has no narrow scope. It needs a key with global scope, for an admin user. Create that key for the task and revoke it afterward.
 - Store keys in a password manager or environment variables. Never put them in chats, shared documents or code repositories.
 
 ### Code: Create a Private Category with the API
@@ -468,7 +469,7 @@ If you script this, check the category list first.
 - **Removing "everyone" from a category also hides it from search engines.** Only do this for content that is meant to be private.
 - **Category moderation is given to groups, not people.** If only one person should moderate a category, create a small group for them.
 - **Changing permissions on a busy category stops notifications silently.** People who lose access stop getting updates, and nobody tells them. Announce changes first.
-- **Some API actions have no narrow scope.** Creating categories and changing site texts need a key with global scope. Create one for the task and revoke it afterward.
+- **Some API actions have no narrow scope.** Creating categories and changing site texts need a key with global scope, for an admin user. Create one for the task and revoke it afterward.
 
 ## Module 6: Welcome and Moderate
 
@@ -499,7 +500,7 @@ The tutorial covers bookmarking, link previews, emoji, mentions, formatting, quo
 Finishing it earns the **Certified** badge.
 An advanced tutorial covers editing, deleting, polls and more, and earns the **Licensed** badge.
 
-1. Find the setting `disable discourse narrative bot welcome post` and **uncheck** it. It is checked by default on new sites, and since August 2025 on most existing sites too. So new members do not get the tutorial automatically. Members can still start it with `@discobot start new user`.
+1. Find the setting `disable discourse narrative bot welcome post` and **uncheck** it. It is checked by default on new sites, and since August 2025 on most existing sites too. So new members do not get the tutorial automatically. Members can still start it with `@discobot start tutorial`.
 2. In the admin area, go to Appearance > Site texts. Search for `discourse_narrative_bot` to see all its messages.
 3. Rewrite the messages in your community's voice, with links to your own categories and guidelines. You can change the wording, not the steps.
 4. Create a new account through an invite link. Go through the tutorial the way a real new member would.
@@ -520,7 +521,7 @@ Rewriting the bot can mean over a hundred messages.
 Keep them in a JSON file and apply them with a script.
 This is faster, easy to review and easy to repeat on another site.
 
-Changing site texts needs a key with global scope.
+Changing site texts needs a key with global scope, for an admin user.
 Create one just for this and revoke it when you are done.
 
 `texts.json`:
@@ -546,7 +547,7 @@ import requests
 URL = os.environ["DISCOURSE_URL"].rstrip("/")
 HEADERS = {
     "Api-Key": os.environ["DISCOURSE_API_KEY"],
-    "Api-Username": os.environ.get("DISCOURSE_API_USERNAME", "system"),
+    "Api-Username": os.environ["DISCOURSE_API_USERNAME"],
 }
 
 def retry_after(response, default=10):
@@ -597,6 +598,7 @@ Run it on a test site first, then on your live site:
 pip install requests
 export DISCOURSE_URL="https://forum.example.com"
 export DISCOURSE_API_KEY="..."   # paste the key here, do not save it in the file
+export DISCOURSE_API_USERNAME="your-username"
 python3 apply_texts.py
 ```
 
@@ -748,7 +750,8 @@ Its ID is the number in the page address.
 
 ### Step 3: Share Results on a Schedule
 
-In the admin area, open Automation from the Plugins page.
+Search the settings for `discourse automation enabled` and turn it on.
+Then open Automation from the Plugins page in the admin area.
 Create a new automation with one of these scripts:
 
 | Script                                                | What it does                                                              |
@@ -779,7 +782,7 @@ import requests
 URL = os.environ["DISCOURSE_URL"].rstrip("/")
 HEADERS = {
     "Api-Key": os.environ["DISCOURSE_API_KEY"],
-    "Api-Username": os.environ.get("DISCOURSE_API_USERNAME", "system"),
+    "Api-Username": os.environ["DISCOURSE_API_USERNAME"],
 }
 QUERY_ID = os.environ["QUERY_ID"]
 
@@ -945,7 +948,7 @@ That matters here, because anyone can open an issue.
 - **Short issue titles can fail.** Discourse has a minimum title length of fifteen characters. That is why the Action adds the issue number as a prefix.
 - **You may sometimes get two links on an issue.** Linkback skips issues that already link to the topic. But if it runs before the Action comments, both comments appear.
 - **Mentions travel.** An `@name` in an issue body notifies the Discourse user with that username.
-- **Live status replaces an older theme component.** If you used the GitHub Status theme component, remove it first. The two do not work together.
+- **Live status replaces an older theme component.** If you used the GitHub Status Indicators theme component, remove it first. The two do not work together.
 
 ## Module 10: Discourse AI
 
@@ -968,8 +971,10 @@ Also read your provider's terms on how API data is stored and used.
 
 ### Step 2: Add the Model
 
+First, search the settings for `discourse ai enabled` and turn it on.
+
 1. In the admin area, open the AI plugin and go to **LLMs**. Add a model. Templates for common models fill in most fields.
-2. Check the model ID against your provider's current model list. For example, a small Anthropic model:
+2. Check the model ID against your provider's current model list. If the template has an older model, change the ID. For example, a small Anthropic model:
 
 | Field    | Value                                     |
 | -------- | ----------------------------------------- |
@@ -990,13 +995,13 @@ Agents with a model set explicitly do not follow the default.
 
 ### Step 4: Turn On Features One at a Time
 
-| Feature                      | Setting                                                             |
-| ---------------------------- | ------------------------------------------------------------------- |
-| Topic summaries              | `ai summarization enabled`                                          |
-| Spam detection               | `ai spam detection enabled`                                         |
-| Writing help in the composer | `ai helper enabled`                                                 |
-| Chat with an AI bot          | `ai bot enabled`                                                    |
-| Semantic search              | `ai embeddings semantic search enabled` (needs an embeddings model) |
+| Feature                      | Setting                                                                                                               |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Topic summaries              | `ai summarization enabled`                                                                                            |
+| Spam detection               | `ai spam detection enabled`                                                                                           |
+| Writing help in the composer | `ai helper enabled`                                                                                                   |
+| Chat with an AI bot          | `ai bot enabled`                                                                                                      |
+| Semantic search              | `ai embeddings semantic search enabled` (also turn on `ai embeddings enabled` and set `ai embeddings selected model`) |
 
 Try each one with a few colleagues before opening it to everyone.
 
@@ -1013,8 +1018,7 @@ category or tag. Instead, report on:
 1. Themes that appear across several categories
 2. Questions that keep coming back
 3. Topics with many views but no replies or no accepted answer
-4. Changes in tone compared with the previous week
-5. Anything that needs staff attention
+4. Anything that needs staff attention
 
 Link to the topics you mention. Do not quote private messages and do not
 include email addresses or other personal details. If you are not sure
@@ -1022,8 +1026,10 @@ about a trend, say so instead of guessing.
 ```
 
 2. Open Automation from the Plugins page. Create an automation with the **Periodic report using AI** script.
-3. Choose your agent and your model. Both are required, and the report runs on the model you choose here. Enter the ID of a topic in a private staff category, where the report is posted. Set it to run every seven days.
-4. Private categories are left out unless you turn on **Allow secure categories**. Turn it on only if staff need them in the report.
+3. Choose your agent and your model. The report runs on the model you choose here. Set **Sender** to the account that posts the report.
+4. Replace the default text in **Instructions** with a short line, such as `Write this week's report.` The default asks for a long report and competes with your agent's prompt.
+5. Enter the ID of a topic in a private staff category, where the report is posted. Set it to run every seven days.
+6. Private categories are left out unless you turn on **Allow secure categories**. Turn it on only if staff need them in the report.
 
 The script reads 150 tokens of each post by default.
 If reports feel shallow, raise **tokens per post**.
@@ -1090,7 +1096,7 @@ params:
 The older names `tests-passed`, `beta` and `stable` still work.
 They are deprecated.
 
-**Regular updates:** use the Upgrade page in the admin area (`/admin/upgrade`).
+**Regular updates:** use the Updates page in the admin area (`/admin/update`).
 
 **Full rebuild:** rebuild from the server every few months, after changing `app.yml`, or when the admin panel asks you to.
 A rebuild also updates the underlying Docker image.
@@ -1125,12 +1131,12 @@ Have a backup you can restore on a fresh server.
 - Set up uptime monitoring with a service such as UptimeRobot or Better Stack.
 - Set an alert for disk space. Local backups and uploads can fill the disk and take the site down.
 - Keep only as many backups as you need, so old member data does not stay around longer than necessary.
-- When something breaks, check the logs. Use the **Logs** page in the admin area (`/logs`), or `./launcher logs app` on the server.
+- When something breaks, check the logs. Use the **Error logs** page in the admin area (`/logs`), or `./launcher logs app` on the server.
 
 ### Watch Out
 
 - **The web updater can stop working.** If the Docker image is too old, updates from the admin panel are blocked. Run `./launcher rebuild app` from the server to fix it.
-- **A rebuild prints a lot, and some lines look like the end.** "Redis is now ready to exit" appears partway through, when the old container stops. Wait for the command to finish. Then check with `docker ps` and load the site.
+- **A rebuild prints a lot, and some lines look like the end.** "Redis is now ready to exit" appears near the end, when the build's temporary Redis stops. Wait for the command to finish. Then check with `docker ps` and load the site.
 - **Rebuilds need free disk space.** If a rebuild fails with disk errors, run `./launcher cleanup` and remove old local backups. Then try again.
 - **Old release channel names still work, for now.** If your `app.yml` uses `stable` or `tests-passed`, plan to switch to the new names.
 
