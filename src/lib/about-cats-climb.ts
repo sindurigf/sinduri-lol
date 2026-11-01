@@ -125,7 +125,7 @@ const up = (h: number): Move => {
   };
 };
 
-/* Down: peer over the edge, lean out, and hop down front paws first onto the floor clear of the brick. */
+/* Down: peer over the edge, push off, and hop down onto the floor clear of the brick, landing front paws first. */
 const down = (h: number): Move => {
   const e = CLIMB_START.down;
   const edge: Partial<Record<Paw, Pair>> = { fN: [e - 1, h], fF: [e - 4, h] };
@@ -149,8 +149,9 @@ const down = (h: number): Move => {
       key(300, at('stand', 0, h + 26, {}, { hr: 22 })),
       key(400, at('crouch', e - 14, h + 16, edge, { hr: 30 })),
       key(300, at('crouch', e - 14, h + 16, edge, { hr: 30 })),
-      key(200, at('stand', e - 6, h + 22, onTop, { draw: 'landing' })),
-      key(260, at('stand', land - 4, 22, onFloor, { draw: 'landing' }), 'in'),
+      key(200, at('stand', e - 6, h + 22, onTop, { draw: 'takeoff' })),
+      key(200, at('stand', land - 6, 24, onFloor, { draw: 'leap' }), 'in'),
+      key(60, at('stand', land - 4, 22, onFloor, { draw: 'landing' }), 'out'),
       key(140, at('crouch', land, 16, {}), 'out'),
       key(300, at('stand', land, 26, {})),
       key(500, at('sit', land, 25, {})),
