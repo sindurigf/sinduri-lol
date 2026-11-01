@@ -24,7 +24,6 @@ import {
   type Move,
   type MoveName,
   type Pose,
-  SWAT_TIP,
 } from './about-cats-moves';
 import {
   clamp,
@@ -66,7 +65,7 @@ export const CONTROL_ROOM = 48;
 const FIT_STEPS = 24;
 /** Chance a cat on a stepped band climbs to the next brick instead. */
 const CLIMB_CHANCE = 0.5;
-/** Where a cat stands from the card's edge to push the cup, the track's end: CUP_AHEAD plus its push takes the cup past the edge. */
+/** Where a cat stands from the card's edge to push the cup, the track's end: CUP_AHEAD plus its tip takes the cup past the edge. */
 const CUP_EDGE = TRACK_MARGIN;
 /** A pointer that has not moved for this long no longer draws a cat's eye. */
 export const POINTER_IDLE_MS = 4000;
@@ -260,12 +259,12 @@ export const planMove = (
 };
 
 /**
- * The cup push from anywhere on the track, heading left: a trot and a creep to
+ * The cup push from anywhere on the track, heading left: a run and a creep to
  * `edge`, the track's left end, so the cup goes over the card's or the step's edge.
  * Left only: the right end is the sleep control's corner.
  */
 export const cupPush = (x: number, edge = CUP_EDGE): Move =>
-  withApproach(moveToPlay('knock'), Math.max(0, x - edge));
+  withApproach(moveToPlay('knock'), Math.max(0, x - edge), 0, 'run');
 
 export const createColony = (
   spots: CatSpot[],
@@ -599,17 +598,12 @@ export const createColony = (
     p.face *= playing.dir;
     cat.pose = p;
     if (playing.prop && playing.move.propAt) {
-      const s = playing.move.propAt(t);
-      const [ahead, up] = playing.move.atSwatTip
-        ? [
-            SWAT_TIP[cat.id][0] - SWAT_TIP.minerva[0],
-            SWAT_TIP[cat.id][1] - SWAT_TIP.minerva[1],
-          ]
-        : [0, 0];
+      const s = playing.move.propAt(t, cat.id);
+      /* A move played heading left mirrors its prop's turn too, so the cup tips out over the edge. */
       playing.shown = {
         ...s,
-        x: playing.origin + playing.dir * (s.x + ahead),
-        y: s.y - up,
+        x: playing.origin + playing.dir * s.x,
+        r: playing.dir * s.r,
       };
       playing.prop.draw(playing.shown, now);
     }
