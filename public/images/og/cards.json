@@ -11,13 +11,18 @@
   },
   "/blog": {
     "title": "Blog",
-    "photo": "/_astro/cover.BaYAHj5r_2cTk0V.webp",
-    "alt": "Blog, sinduri.lol, beside a photo: Sinduri and a friend laughing together, each holding a bottle."
+    "photo": "/_astro/cover.bLhsKdnT_ZwCnVG.webp",
+    "alt": "Blog, sinduri.lol, beside a photo: A linocut speech bubble with a winding path carved through it."
   },
   "/blog/five-years-in-drupal": {
     "title": "Five Years in Drupal",
     "photo": "/_astro/cover.BaYAHj5r_2cTk0V.webp",
     "alt": "Five Years in Drupal, sinduri.lol, beside a photo: Sinduri and a friend laughing together, each holding a bottle."
+  },
+  "/blog/learning-discourse": {
+    "title": "Learning Discourse: A Hands-On Path for Admins",
+    "photo": "/_astro/cover.bLhsKdnT_ZwCnVG.webp",
+    "alt": "Learning Discourse: A Hands-On Path for Admins, sinduri.lol, beside a photo: A linocut speech bubble with a winding path carved through it."
   },
   "/blog/open-source": {
     "title": "Open Source",
