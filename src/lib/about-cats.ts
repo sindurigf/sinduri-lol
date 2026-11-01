@@ -606,7 +606,7 @@ export const createColony = (
             SWAT_TIP[cat.id][1] - SWAT_TIP.minerva[1],
           ]
         : [0, 0];
-      /* A move played heading left mirrors its prop's turn too, so the cup tips out over the edge. */
+      /* A move played heading left mirrors every prop's turn: the cup tips out over the edge, the ball rolls and the feather swings its way. */
       playing.shown = {
         ...s,
         x: playing.origin + playing.dir * (s.x + ahead),
