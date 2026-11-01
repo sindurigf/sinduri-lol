@@ -515,7 +515,6 @@ const along = ([first, ...rest]: Route, t: number): [number, number] => {
   return [x0, y0];
 };
 
-/* Rolling onto the back: low, then over through the lying-on-side and rolling drawings. */
 /** Body height before the roll; upright poses keep their paws on the ground there. */
 const FLOP_LOW = 9;
 /** ms a flop takes, and its roll: long enough for each drawing on the way over to show. */
@@ -525,6 +524,7 @@ const groundedAt = (name: PoseName, by: number): Partial<Pose> =>
   POSES[name].rot !== 0
     ? {}
     : Object.fromEntries(PAWS.map((k) => [k, [POSES[name][k][0], by]]));
+/* Rolling onto the back: low, then over through the lying-on-side and rolling drawings. */
 const flopTo = (from: PoseName, to: PoseName, x = 0): Step[] => [
   step(
     FLOP_MS - FLOP_ROLL_MS,
