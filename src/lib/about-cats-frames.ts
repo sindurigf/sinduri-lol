@@ -217,7 +217,7 @@ const ADJUST: Record<CatId, Partial<Record<Frame, number>>> = {
   minerva: { pawrise: 0.9, swat: 0.9, loaf: 0.85 },
   rudra: {
     pawrise: 0.945,
-    swat: 0.946,
+    swat: 0.945,
     loaf: 0.8,
     belly: 0.85,
     sit: 1.05,
