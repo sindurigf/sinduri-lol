@@ -2074,11 +2074,14 @@ test.describe('About cats', () => {
     await expect(
       list.getByRole('button', { name: TRICKS.look.label }),
     ).toBeAttached();
-    for (const trick of [TRICKS.yarn, TRICKS.fly])
-      await expect(
-        list.getByRole('button', { name: trick.label }),
-        'a trick that cannot fit the band is offered',
-      ).toHaveCount(0);
+    await expect(
+      list.getByRole('button', { name: TRICKS.yarn.label }),
+      'a trick that cannot fit the band is offered',
+    ).toHaveCount(0);
+    await expect(
+      list.getByRole('button', { name: TRICKS.fly.label }),
+      'a trick that cannot fit the band is offered',
+    ).toHaveCount(0);
   });
 
   test('a held cat that has settled is not redrawn after a slow frame', async ({
