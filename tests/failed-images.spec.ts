@@ -6,7 +6,7 @@ import {
   type Page,
 } from './test';
 import { AA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
-import { builtHtml, PHOTO_POST_ROUTES, POSTS } from './routes';
+import { builtHtml, CATEGORY_ROUTES, POST_ROUTES, TAG_ROUTES } from './routes';
 import { gotoSettled } from './settle';
 import { NODE } from './tags';
 import { IMAGE_REQUEST } from './html';
@@ -23,11 +23,10 @@ const FRAME_ROUTES = [
   '/',
   '/about',
   '/blog',
+  ...CATEGORY_ROUTES,
+  ...TAG_ROUTES,
   '/brand',
-  ...new Set([
-    ...PHOTO_POST_ROUTES,
-    ...POSTS.filter((post) => post.hasCover).map((post) => post.route),
-  ]),
+  ...POST_ROUTES,
   '/talks/open-source-is-not-just-code',
 ];
 

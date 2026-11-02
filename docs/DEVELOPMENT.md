@@ -61,7 +61,7 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run check:classes`        | Every class in the built HTML has a CSS rule                                                                                                     |
 | `npm run check:csp`            | `script-src` and `style-src` in `public/_headers` hash exactly the build's inline blocks; `-- --write` fixes them; needs `npm run build`         |
 | `npm run check:untransformed`  | No built file is byte-identical to a source image                                                                                                |
-| `npm run check:exif`           | No EXIF, XMP or IPTC in JPEG, PNG or WebP under `src/assets` and `public`; AVIF is not read                                                      |
+| `npm run check:exif`           | No EXIF, XMP or IPTC in JPEG, PNG or WebP under `src/assets`, `public` and `artwork`; AVIF is not read                                           |
 | `npm run check:test-weakening` | Test weakening against `origin/main`, working tree included; CI runs it as the `Test weakening` check                                            |
 | `npm run test:a11y`            | Playwright suite in Chromium and Firefox; CI adds WebKit                                                                                         |
 | `npm run test:webkit`          | The same suite in WebKit, in Playwright's Docker image                                                                                           |
@@ -231,9 +231,12 @@ Add a Markdown file to `src/content/blog/`; the filename is the slug. The build
 validates frontmatter against `src/content.config.ts` and fails on a mismatch.
 `open-source-is-not-just-code.md` is a complete example.
 
-- The newest published post needs `cover` and `coverAlt`: `/blog` features it.
-  A cover can have any ratio; the post hero and the feature card show it
-  uncropped.
+- Every post needs `cover` and `coverAlt`; the build fails without them. A
+  cover can have any ratio; the post page and its sharing card show it
+  uncropped. Every post card
+  shows a 4:3 crop: set `coverPosition` (`center`, `top`, `bottom`, `left` or
+  `right`) when the subject is off center. `top` and `bottom` move the crop on
+  a cover taller than 4:3, `left` and `right` on a wider one.
 - Tests read the new post's routes, category and tags from its frontmatter.
 
 ## Writing a talk

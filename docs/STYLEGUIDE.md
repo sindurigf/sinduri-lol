@@ -855,7 +855,7 @@ tier and takes its padding.
 roundel.**
 
 - `PageHero` renders the roundel whenever it has no `image`. There is no prop.
-- About and every post with a `cover` have a photo, so no roundel.
+- About and every post have a photo, so no roundel.
 - The homepage is not a PageHero and has no roundel on its window.
 - The roundel is the jumping rabbit with no disc: a die-cut sticker (white
   rim, thin ink line) on a `bunny` block that falls behind the rabbit, its back
@@ -872,7 +872,7 @@ roundel.**
   is thin at the top only.
 - `tests/page-hero.spec.ts` lists each route's tier and holds it to the build:
   a roundel on every gold or plain slab without a photo, none on
-  `PHOTO_ROUTES` or a post with a cover, and over no text on a gold or plain
+  `PHOTO_ROUTES` or a post, and over no text on a gold or plain
   slab. A new PageHero photo adds its route there.
 
 ### Color roles and ratios
@@ -951,14 +951,20 @@ Enforced by `tests/post-page.spec.ts`.
   `.band.py-section` holding `.post-layout`. `BaseLayout` adds no
   element, so articles never nest.
 - Source order: the `<header>` in the slab (breadcrumb, `h1`, teaser, date and
-  reading time, then the cover when the post has one), contents list,
+  reading time, then the cover), contents list,
   `.prose`, tags.
 - A cover takes [Media](#media) in PageHero's photo layout, in its own ratio
   (`.aspect-sizer`): text in the left half, the photo in columns 8 to 12
   crossing the slab's bottom edge, no roundel. `tests/post-page.spec.ts`.
-- A cover is never cropped: the file keeps its full frame, and the hero and
-  the `/blog` feature card show it in its own ratio, and so does the post's
-  sharing card ([ARCHITECTURE](../ARCHITECTURE.md#assets)).
+- A cover file keeps its full frame. The post hero and the sharing card show
+  it in its own ratio ([ARCHITECTURE](../ARCHITECTURE.md#assets)).
+- Every post card, the newest included, shows a 4:3 file the build crops from
+  the cover at `coverPosition` (`CARD_COVER_RATIO`), whatever the cover's own
+  shape, so cards in a row match. It is the only cropped photo, by the owner's
+  choice. The cover sits above the text on every stacked card. The `/blog`
+  feature puts it in the right half from `md`, and a card filling its row from
+  `lg`, where the list has two columns. `alt=""` except the newest post's on `/` and `/blog`
+  ([ARCHITECTURE](../ARCHITECTURE.md#content-notes)).
 - `coverCredit` puts "Photo: name" in the date line, `text-gold-muted`, linked
   when the name is in `PHOTOGRAPHERS`. Not under the cover: the photo hangs
   below the slab, off the gold ground.
@@ -1434,8 +1440,9 @@ shows no alt text. Enforced by `tests/replaced-elements.spec.ts` and
 size-full object-cover`). Never put `aspect-ratio` on the image: WebKit
   drops it, and the ratio from `width` and `height`, when the image fails.
 - A designed ratio is a class on the frame, only where every file already has
-  it: `aspect-portrait` (4:5, hero photos), `aspect-photo` (4:3, the
-  placeholder box), `aspect-square` (square photos). Never a ratio that crops.
+  it: `aspect-portrait` (4:5, hero photos), `aspect-square` (square photos),
+  `aspect-card-cover` (4:3, post card covers). Never a CSS ratio that crops; a post card
+  cover is a 4:3 file the build crops ([Posts](#posts)).
 - Two photos side by side are a `.photo-pair`: from `sm` flex shrinks them to
   one height, each in its own ratio; below `sm` they stack.
 - A file's own ratio is an `.aspect-sizer`: an empty `aria-hidden` SVG whose
