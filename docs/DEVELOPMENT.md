@@ -78,6 +78,10 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run publish:cv`           | Print `cv/cv.html` to the tagged CV PDF in `public/`                                                                                             |
 | `npm run publish:talk`         | Print a talk's slideshow to its tagged PDF in `public/talks/`                                                                                    |
 
+`CHECK_ROOT=<dir>` points `check:tokens`, `pins`, `classes`, `csp`,
+`untransformed` and `title-case` at another tree. The `tests/check-*.spec.ts`
+self-tests use it to run each check on a passing and a failing fixture.
+
 ### WebKit
 
 Run before pushing any markup, CSS or image change: WebKit fails where Chromium
