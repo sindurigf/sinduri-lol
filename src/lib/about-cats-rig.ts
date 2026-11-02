@@ -53,6 +53,8 @@ const ROPE_TURNS = Array.from(
   { length: Math.floor((POST_HEIGHT - 2 * ROPE_INSET) / ROPE_PITCH) + 1 },
   (_, i) => ROPE_INSET - POST_HEIGHT + ROPE_PITCH * i,
 );
+/** px the yarn's loose strand sags below a straight line to its end. */
+const STRAND_SAG = 6;
 /** Claw marks on the post's face, a set of three rakes per pull, each set a little lower: px apart, down and long, from the face. */
 const MARKS_PER_SET = 3;
 const MARK_GAP = 3;
@@ -498,12 +500,8 @@ export const createProp = (
   front: SVGGElement,
   kind: PropKind,
 ): PropRig => {
-  /* The yarn ball is held in the paws, so it draws over the cat. Hidden until its first draw places it. */
-  const node = el(
-    'g',
-    { class: 'cat-prop', opacity: 0 },
-    kind === 'yarn' ? front : parent,
-  );
+  /* Hidden until its first draw places it. */
+  const node = el('g', { class: 'cat-prop', opacity: 0 }, parent);
   const remove = (): void => {
     node.remove();
   };
@@ -613,11 +611,6 @@ export const createProp = (
       node,
     );
   } else {
-    el(
-      'path',
-      { d: 'M4 4q9 5 16 3', class: 'cat-prop-yarn-end', 'stroke-width': 1.5 },
-      node,
-    );
     el('circle', { r: 6, ...solid('toy') }, node);
     el(
       'path',
@@ -633,6 +626,35 @@ export const createProp = (
     set(node, 'transform', `${translate(s.x, s.y)} rotate(${f(s.r)})`);
     set(node, 'opacity', f(s.o));
   };
+  if (kind === 'yarn') {
+    const strand = el(
+      'path',
+      { class: 'cat-prop-yarn-end', 'stroke-width': 1.5, opacity: 0 },
+      front,
+    );
+    return {
+      node,
+      remove: () => {
+        remove();
+        strand.remove();
+      },
+      draw: (s) => {
+        place(s);
+        /* On the floor the paws land over the ball; held, it sits in them. */
+        if (s.held && node.parentNode !== front)
+          front.insertBefore(node, strand);
+        if (!s.held && node.parentNode !== parent) parent.append(node);
+        const [ex, ey] = s.strand ?? [0, 0];
+        const dx = ex * (s.dir ?? 1);
+        set(
+          strand,
+          'd',
+          `M${f(s.x)} ${f(s.y)}q${f(dx / 2)} ${f(Math.max(ey, 0) / 2 + STRAND_SAG)} ${f(dx)} ${f(ey)}`,
+        );
+        set(strand, 'opacity', f(s.o));
+      },
+    };
+  }
   if (kind !== 'post') return { node, remove, draw: place };
   /* Drawn for a cat on the left, then mirrored to face the playing cat. */
   const scratched = el('g', {}, node);

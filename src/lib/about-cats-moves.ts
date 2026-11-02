@@ -418,8 +418,8 @@ const CUP_AT_PAW = 22;
 const CUP_HALF_WIDTH = 5.5;
 /** px from where the cat stops to the card's edge, for track checks: TRACK_MARGIN in about-cats.ts. */
 const CUP_LIP = 48;
-/** ms after the pat's step that its paw-down drawing shows: the rig's BLIP_MS (25) and a frame. */
-const CUP_PAW_LANDS_MS = 45;
+/** ms after a pat's step that its paw-down drawing shows: the rig's BLIP_MS (25) and a frame. */
+const PAW_LANDS_MS = 45;
 /** The pat slides the cup until its middle is over the edge, easing to a stop. */
 const CUP_SLIDE_MS = 200;
 /** One pat tips the cup over the edge: it slides off the lip, then drops, turning as it falls. */
@@ -444,6 +444,9 @@ const PAT_READY_MS = 200;
 const PAT_UP_MS = 200;
 const PAT_DOWN_MS = 120;
 const PAT_AFTER_MS = 260;
+/** The sit before the first pat, and the settle after the last kick. */
+const YARN_SIT_MS = 260;
+const YARN_SETTLE_MS = 500;
 const pat = (x: number): Step[] => [
   step(PAT_READY_MS, 'crouch', { x, draw: 'crouch' }),
   step(PAT_UP_MS, 'crouch', { x, draw: 'pawrise' }, 'out'),
@@ -457,38 +460,43 @@ const POUNCE_AIR_MS = 260;
 const POUNCE_LAND_MS = 110;
 const POUNCE_SETTLE_MS = 220;
 const YARN_POUNCE_HEIGHT = 24;
-/** Onto the back: settles, lies on its side and holds it, rolls over, and lands on its back; getting up is the reverse. */
+/** px ahead of the cat's middle that its landing drawing's front paws come down: within the ball for all three cats, 31 to 41 px. */
+const YARN_POUNCE_REACH = 36;
+/** Onto the back: settles, lies on its side, rolls over and plays holding the ball; getting up is the reverse. */
 const LIE_MS = 260;
 const LIE_HOLD_MS = 480;
 const ROLL_MS = 260;
-const BACK_MS = 300;
-const BACK_PLAY_MS = 1800;
+const BACK_PLAY_MS = 2100;
 const GET_UP_MS = 300;
-/** Where each cat's on-its-back drawing holds the ball between its paws, px ahead and up from its place. */
-const YARN_HUG: Record<CatId, Pair> = {
-  minerva: [-1, 50],
-  hela: [-1, 42],
-  rudra: [4, 47],
+/** The ring of each cat's paws in its hold drawing, px ahead and up from its place: the ball sits there. */
+const YARN_HELD: Record<CatId, Pair> = {
+  minerva: [1, 38],
+  hela: [0, 31],
+  rudra: [0, 34],
 };
 const YARN_RADIUS = 6;
-/** Each kick bounces the ball for this many ms, this far back and up, and turns it. */
+/** Each kick bounces the ball up in the paws for this many ms, this far, and spins it. */
 const YARN_KICK_MS = 300;
-const YARN_KICK_BACK = 4;
 const YARN_KICK_UP = 5;
 const YARN_KICK_TURN = 40;
+/** The ball hops this high, for this long, as each pat's paw comes down on it. */
+const YARN_HOP_PX = 3;
+const YARN_HOP_MS = 180;
+/** The loose strand trails behind the rolling ball up to this long, and hangs from the held ball over the hind paws to this end. */
+const STRAND_TRAIL = 36;
+const STRAND_MIN = 4;
+const STRAND_HELD: Pair = [-10, 22];
 /** The ball rolls this long after each pat, squirts on under a pounce, and rolls off when let go. */
 const YARN_PAT_ROLL_MS = 900;
 const YARN_SQUIRT = 6;
 const YARN_LET_GO = 22;
 const YARN_LET_GO_MS = 500;
-/** The chase along the band, px from the start: the ball's place, each pat's roll, each run's end, each pounce's landing. */
+/** The chase along the band, px from the start: the ball's place, each pat's roll and each run's end. */
 const YARN_START = 26;
 const YARN_ROLL_1 = 150;
 const YARN_ROLL_2 = 120;
 const YARN_RUN_1 = 100;
-const YARN_POUNCE_1 = 150;
 const YARN_RUN_2 = 230;
-const YARN_POUNCE_2 = 276;
 const YARN_FADE_IN_MS = 200;
 const YARN_FADE_OUT_MS = 300;
 /** The ball turns once for each 2πr it rolls. */
@@ -551,7 +559,7 @@ const along = ([first, ...rest]: Route, t: number): [number, number] => {
 /** Looks at the cup, pats it once and watches it fall: the pat slides the cup from under the paw to the edge `lip` px ahead, and it tips over. */
 export const knockAt = (lip: number): Move => {
   const slide = Math.max(0, lip - CUP_AT_PAW);
-  const pushFrom = CUP_HIT + CUP_PAW_LANDS_MS;
+  const pushFrom = CUP_HIT + PAW_LANDS_MS;
   const tipFrom = pushFrom + CUP_SLIDE_MS;
   return {
     steps: [
@@ -767,13 +775,16 @@ export const MOVES = {
     let t = 0;
     let at = 0;
     const ball: [number, number][] = [[0, YARN_START]];
+    const hits: number[] = [];
+    const ballNow = (): number => ball.at(-1)?.[1] ?? YARN_START;
     const add = (...more: Step[]): void => {
       steps.push(...more);
       t += stepsDuration(more);
     };
     const patTo = (roll: number): void => {
-      const hit = t + PAT_READY_MS + PAT_UP_MS;
-      const from = ball.at(-1)?.[1] ?? YARN_START;
+      const hit = t + PAT_READY_MS + PAT_UP_MS + PAW_LANDS_MS;
+      const from = ballNow();
+      hits.push(hit);
       ball.push([hit, from], [hit + YARN_PAT_ROLL_MS, from + roll]);
       add(...pat(at));
     };
@@ -784,43 +795,42 @@ export const MOVES = {
       add(...dash.steps);
       at = x;
     };
-    const pounceTo = (x: number): void => {
+    /* The front paws land on the ball, which squirts on from under them. */
+    const pounce = (): void => {
+      const x = ballNow() - YARN_POUNCE_REACH;
       add(step(PAT_READY_MS, 'crouch', { x: at }, 'out'));
       add(step(POUNCE_GATHER_MS, 'crouch', { x: at }, 'in'));
       add(step(POUNCE_PUSH_MS, 'stand', { x: at, draw: 'takeoff' }));
       mods.push(arc(t, t + POUNCE_AIR_MS, YARN_POUNCE_HEIGHT));
       add(step(POUNCE_AIR_MS, 'stand', { x, draw: 'leap' }, 'linear'));
+      const under = ballNow();
+      ball.push([t, under]);
       add(step(POUNCE_LAND_MS, 'stand', { x, draw: 'landing' }));
       add(step(POUNCE_SETTLE_MS, 'crouch', { x }, 'out'));
+      ball.push([t, under + YARN_SQUIRT]);
       at = x;
     };
-    add(step(PAT_AFTER_MS, 'sit'));
+    add(step(YARN_SIT_MS, 'sit'));
     patTo(YARN_ROLL_1);
     runTo(YARN_RUN_1);
-    pounceTo(YARN_POUNCE_1);
-    const under = ball.at(-1)?.[1] ?? YARN_START;
-    ball.push(
-      [t - POUNCE_LAND_MS - POUNCE_SETTLE_MS, under],
-      [t, under + YARN_SQUIRT],
-    );
+    pounce();
     patTo(YARN_ROLL_2);
     runTo(YARN_RUN_2);
-    pounceTo(YARN_POUNCE_2);
-    const hugFrom = t + LIE_MS + LIE_HOLD_MS;
+    pounce();
+    const rollFrom = t + LIE_MS + LIE_HOLD_MS;
     add(
       step(LIE_MS, 'crouch', { x: at }),
       step(LIE_HOLD_MS, 'crouch', { x: at, draw: 'lieside' }),
       step(ROLL_MS, 'crouch', { x: at, draw: 'roll' }),
-      step(BACK_MS, 'belly', { x: at, draw: 'belly' }),
     );
     const kicksFrom = t;
-    add(step(BACK_PLAY_MS, 'belly', { x: at, draw: 'belly' }));
+    add(step(BACK_PLAY_MS, 'belly', { x: at, draw: 'hold' }));
     const letGo = t;
     add(
       step(ROLL_MS, 'belly', { x: at, draw: 'roll' }),
       step(GET_UP_MS, 'crouch', { x: at, draw: 'lieside' }),
       step(GET_UP_MS, 'crouch', { x: at }),
-      step(BACK_MS + PAT_READY_MS, 'sit', { x: at }),
+      step(YARN_SETTLE_MS, 'sit', { x: at }),
     );
     const end = t;
     const rest = at;
@@ -829,25 +839,42 @@ export const MOVES = {
       mods,
       prop: 'yarn',
       propAt: (u, cat) => {
-        const [ahead, up] = YARN_HUG[cat];
+        const [ahead, up] = YARN_HELD[cat];
         const held =
-          Math.min(1, Math.max(0, (u - hugFrom) / ROLL_MS)) *
+          Math.min(1, Math.max(0, (u - rollFrom) / ROLL_MS)) *
           (1 - Math.min(1, Math.max(0, (u - letGo) / ROLL_MS)));
         const kick =
           u > kicksFrom && u < letGo
             ? Math.sin(((u - kicksFrom) / YARN_KICK_MS) * Math.PI) ** 2
             : 0;
+        const hop = hits.reduce(
+          (h, hit) =>
+            u > hit && u < hit + YARN_HOP_MS
+              ? h + YARN_HOP_PX * Math.sin((Math.PI * (u - hit)) / YARN_HOP_MS)
+              : h,
+          0,
+        );
         const away =
           u > letGo ? easeOut((u - letGo) / YARN_LET_GO_MS) * YARN_LET_GO : 0;
         const ground = u > letGo ? rest + ahead + away : ballAt(ball, u);
-        const x =
-          (1 - held) * ground + held * (rest + ahead - YARN_KICK_BACK * kick);
+        const x = (1 - held) * ground + held * (rest + ahead);
+        const trail = -Math.min(
+          STRAND_TRAIL,
+          Math.max(STRAND_MIN, ground - YARN_START),
+        );
         return {
           kind: 'yarn',
           x,
-          y: -(1 - held) * YARN_RADIUS - held * (up + YARN_KICK_UP * kick),
+          y:
+            -(1 - held) * (YARN_RADIUS + hop) -
+            held * (up + YARN_KICK_UP * kick),
           r: turned(x - YARN_START) + held * YARN_KICK_TURN * kick,
           o: fade(u, YARN_FADE_IN_MS, end, YARN_FADE_OUT_MS),
+          held: held > 0.5,
+          strand: [
+            (1 - held) * trail + held * STRAND_HELD[0],
+            (1 - held) * YARN_RADIUS + held * STRAND_HELD[1],
+          ],
         };
       },
     };
