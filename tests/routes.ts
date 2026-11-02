@@ -92,7 +92,7 @@ interface PostSummary {
   published: boolean;
   category: string;
   tags: string[];
-  coverAlt: string | undefined;
+  coverAlt: string;
   coverCredit: string | undefined;
 }
 
@@ -103,8 +103,11 @@ export const POSTS: readonly PostSummary[] = readdirSync(BLOG_CONTENT_DIR)
     const frontmatter = postFrontmatter(name);
     const time = frontmatterTime(frontmatter, 'date');
     const category = frontmatterField(frontmatter, 'category');
-    if (time === undefined || !category) {
-      throw new Error(`${name} has no date or no category in its frontmatter.`);
+    const coverAlt = frontmatterField(frontmatter, 'coverAlt');
+    if (time === undefined || !category || !coverAlt) {
+      throw new Error(
+        `${name} has no date, category or coverAlt in its frontmatter.`,
+      );
     }
     return {
       route: `/blog/${name.replace(/\.md$/, '')}`,
@@ -112,7 +115,7 @@ export const POSTS: readonly PostSummary[] = readdirSync(BLOG_CONTENT_DIR)
       published: frontmatterField(frontmatter, 'placeholder') !== 'true',
       category,
       tags: frontmatterTags(frontmatter),
-      coverAlt: frontmatterField(frontmatter, 'coverAlt'),
+      coverAlt,
       coverCredit: frontmatterField(frontmatter, 'coverCredit'),
     };
   })
