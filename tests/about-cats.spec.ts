@@ -1508,7 +1508,7 @@ test.describe('About cats', () => {
     for (const id of CATS) {
       const control = napControl(page, id);
       await control.scrollIntoViewIfNeeded();
-      await expect(control).toHaveAccessibleName(`Put ${NAMES[id]} to sleep`);
+      await expect(control).toHaveAccessibleName(`Let ${NAMES[id]} nap`);
       const lastChange = await page.evaluate(
         ({ id, watch }) =>
           new Promise<number>((resolve) => {
@@ -1549,7 +1549,7 @@ test.describe('About cats', () => {
         /^(playing|holding)$/,
         `${NAMES[id]} did not wake`,
       );
-      await expect(control).toHaveAccessibleName(`Put ${NAMES[id]} to sleep`);
+      await expect(control).toHaveAccessibleName(`Let ${NAMES[id]} nap`);
     }
   });
 
@@ -1923,7 +1923,7 @@ test.describe('About cats', () => {
     await expect(
       napControl(page, id),
       `${NAMES[id]} stayed asleep for the trick`,
-    ).toHaveAccessibleName(`Put ${NAMES[id]} to sleep`);
+    ).toHaveAccessibleName(`Let ${NAMES[id]} nap`);
     await expect(wing.first(), 'the picked fly never appeared').toBeAttached({
       timeout: NAP_TIMEOUT_MS,
     });
