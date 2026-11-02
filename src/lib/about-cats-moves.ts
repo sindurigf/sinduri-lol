@@ -464,8 +464,8 @@ const POUNCE_AIR_MS = 260;
 const POUNCE_LAND_MS = 110;
 const POUNCE_SETTLE_MS = 220;
 const YARN_POUNCE_HEIGHT = 24;
-/** px ahead of the cat's middle that its landing drawing's front paws come down: within the ball for all three cats, 31 to 41 px. */
-const YARN_POUNCE_REACH = 36;
+/** px ahead of the cat's middle that the ball lands under a pounce: within the landing paws' 31 to 41 px, and inside every cat's crouched pat after. */
+const YARN_POUNCE_REACH = 35;
 /** Onto the back: settles, lies on its side, rolls over and plays holding the ball; getting up is the reverse. */
 const LIE_MS = 260;
 const LIE_HOLD_MS = 480;
@@ -491,9 +491,8 @@ const YARN_HOP_MS = 180;
 const STRAND_TRAIL = 36;
 const STRAND_MIN = 4;
 const STRAND_HELD: Pair = [-10, 22];
-/** The ball rolls this long after each pat, squirts on under a pounce, and rolls off when let go. */
+/** The ball rolls this long after each pat, and rolls off when let go. */
 const YARN_PAT_ROLL_MS = 900;
-const YARN_SQUIRT = 2;
 const YARN_LET_GO = 22;
 const YARN_LET_GO_MS = 500;
 /** The chase along the band, px from the start: the ball's place, each pat's roll and each run's end. */
@@ -808,7 +807,7 @@ export const MOVES = {
       add(...dash.steps);
       at = x;
     };
-    /* The front paws land on the ball, which squirts on from under them. */
+    /* The front paws land on the ball. */
     const pounce = (): void => {
       const x = ballNow() - YARN_POUNCE_REACH;
       add(step(PAT_READY_MS, 'crouch', { x: at }, 'out'));
@@ -816,11 +815,8 @@ export const MOVES = {
       add(step(POUNCE_PUSH_MS, 'stand', { x: at, draw: 'takeoff' }));
       mods.push(arc(t, t + POUNCE_AIR_MS, YARN_POUNCE_HEIGHT));
       add(step(POUNCE_AIR_MS, 'stand', { x, draw: 'leap' }, 'linear'));
-      const under = ballNow();
-      ball.push([t + PAW_LANDS_MS, under]);
       add(step(POUNCE_LAND_MS, 'stand', { x, draw: 'landing' }));
       add(step(POUNCE_SETTLE_MS, 'crouch', { x }, 'out'));
-      ball.push([t, under + YARN_SQUIRT]);
       at = x;
     };
     add(step(YARN_SIT_MS, 'sit'));
