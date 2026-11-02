@@ -2061,10 +2061,14 @@ test.describe('About cats', () => {
     await showCat(page, id);
     await tricksButton(page, id).click();
     const list = tricksList(page, id);
-    await list.getByRole('button', { name: TRICKS.yarn.label }).click();
     await expect(
-      page.locator(`#cat-spot-${id} .cat-prop-yarn-end`).first(),
-      'the picked yarn never appeared',
+      list.getByRole('button', { name: TRICKS.yarn.label }),
+      'a trick that fits the band is not offered',
+    ).toBeAttached();
+    await list.getByRole('button', { name: TRICKS.fly.label }).click();
+    await expect(
+      page.locator(`#cat-spot-${id} .cat-prop-wing`).first(),
+      'the picked fly never appeared',
     ).toBeAttached({ timeout: NAP_TIMEOUT_MS });
 
     await setViewportSettled(page, REFLOW_VIEWPORT);
