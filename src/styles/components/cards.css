@@ -215,7 +215,14 @@
       content-visibility: visible;
     }
 
-    .post-fold > summary {
+    /* Without ::details-content a closed fold's body stays hidden, so its summary must still print. */
+    @supports selector(::details-content) {
+      .post-fold > summary {
+        display: none;
+      }
+    }
+
+    .module-controls {
       display: none;
     }
   }
