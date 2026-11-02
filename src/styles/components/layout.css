@@ -282,7 +282,7 @@
 
   /*
    * The reduced-motion frame where no script draws it (scripts/make-hero-still.mjs).
-   * Its sky is cut and `contain` keeps all of the field and hare in a short window.
+   * Its sky is cut and `contain` keeps all of the field and rabbit in a short window.
    */
   @media (scripting: none) {
     .hero-field {
