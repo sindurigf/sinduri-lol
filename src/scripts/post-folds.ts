@@ -1,27 +1,41 @@
-/* Progressive: the folds are native <details> and work without it; find-in-page opens them natively. */
+/* Progressive: the folds are native <details> and work without it. Chromium opens them for find-in-page; other engines may not. */
 
-const openFoldsAround = (target: Element | null): void => {
+/** Whether it opened a fold that was closed. */
+const openFoldsAround = (target: Element | null): boolean => {
+  let opened = false;
   for (
     let fold = target?.closest('details');
     fold;
     fold = fold.parentElement?.closest('details')
   ) {
+    opened ||= !fold.open;
     fold.open = true;
+  }
+  return opened;
+};
+
+/* A malformed escape such as #50%-off throws URIError; the raw id is the best guess. */
+const decodeId = (hash: string): string => {
+  const id = hash.slice(1);
+  try {
+    return decodeURIComponent(id);
+  } catch {
+    return id;
   }
 };
 
 /* A module h2 sits just outside its fold; a link to it opens the module a reader closed. */
 const openFor = (id: string): void => {
   const target = id ? document.getElementById(id) : null;
-  openFoldsAround(target);
+  /* The browser scrolled before the fold opened, to where the closed target was not shown. */
+  if (openFoldsAround(target)) target?.scrollIntoView();
   const next = target?.nextElementSibling;
   if (next instanceof HTMLDetailsElement && next.matches('[data-module]'))
     next.open = true;
 };
 
 /* A link to an id inside a closed fold, where the browser does not open it itself. */
-const openForHash = (): void =>
-  openFor(decodeURIComponent(location.hash.slice(1)));
+const openForHash = (): void => openFor(decodeId(location.hash));
 
 openForHash();
 addEventListener('hashchange', openForHash);
@@ -30,7 +44,7 @@ addEventListener('hashchange', openForHash);
 document.addEventListener('click', (event) => {
   if (!(event.target instanceof Element)) return;
   const link = event.target.closest<HTMLAnchorElement>('a[href^="#"]');
-  if (link) openFor(decodeURIComponent(link.hash.slice(1)));
+  if (link) openFor(decodeId(link.hash));
 });
 
 const controls = document.querySelector<HTMLElement>('.module-controls');
