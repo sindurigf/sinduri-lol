@@ -223,7 +223,7 @@ set -euo pipefail
 : "${DISCOURSE_URL:?Set DISCOURSE_URL}"
 : "${DISCOURSE_API_KEY:?Set DISCOURSE_API_KEY}"
 : "${DISCOURSE_API_USERNAME:?Set DISCOURSE_API_USERNAME}"
-CATEGORY_ID="${CATEGORY_ID:-5}"
+: "${CATEGORY_ID:?Set CATEGORY_ID}"
 
 for i in 1 2 3; do
   payload=$(jq -n \
@@ -245,6 +245,7 @@ done
 
 Building the JSON with `jq` avoids broken quotes when titles contain special characters.
 Set `DISCOURSE_API_USERNAME` to the user the key belongs to.
+Set `CATEGORY_ID` to the number at the end of the category's page address.
 Run it once. A second run fails, because topic titles must be unique.
 
 ### On a Self-Hosted Server
@@ -529,6 +530,7 @@ Each message has its own set, so copy them from the original before you edit.
 ```python
 import json
 import os
+import sys
 import time
 
 import requests
@@ -538,6 +540,7 @@ HEADERS = {
     "Api-Key": os.environ["DISCOURSE_API_KEY"],
     "Api-Username": os.environ["DISCOURSE_API_USERNAME"],
 }
+LOCALE = os.environ.get("DISCOURSE_LOCALE", "en")
 
 def retry_after(response, default=10):
     """Seconds to wait after a 429 response."""
@@ -551,7 +554,7 @@ def put_text(session, key, value, retries=3):
     for _ in range(retries):
         response = session.put(
             f"{URL}/admin/customize/site_texts/{key}.json",
-            data={"site_text[value]": value, "site_text[locale]": "en"},
+            data={"site_text[value]": value, "site_text[locale]": LOCALE},
             timeout=30,
         )
         if response.status_code != 429:
@@ -567,7 +570,12 @@ def main():
     with requests.Session() as session:
         session.headers.update(HEADERS)
         for key, value in texts.items():
-            response = put_text(session, key, value)
+            try:
+                response = put_text(session, key, value)
+            except requests.RequestException as error:
+                print(f"FAILED  {key}: {error}")
+                failed.append(key)
+                continue
             if response.ok:
                 print(f"OK      {key}")
             else:
@@ -576,6 +584,8 @@ def main():
             time.sleep(1.2)  # the admin API allows about 60 requests a minute
 
     print(f"\nDone. {len(texts) - len(failed)} updated, {len(failed)} failed.")
+    if failed:
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
@@ -590,6 +600,10 @@ export DISCOURSE_API_KEY="..."   # paste the key here, do not save it in the fil
 export DISCOURSE_API_USERNAME="your-username"
 python3 apply_texts.py
 ```
+
+The script changes the English texts.
+For another language, also set `DISCOURSE_LOCALE`, for example `export DISCOURSE_LOCALE="de"`.
+It exits with an error if any text failed, so you can rerun it after fixing those keys.
 
 ### Watch Out
 
@@ -686,8 +700,9 @@ That way the same query works for any category or date range.
 Useful types include `string`, `int`, `date`, `user_id` and `category_id`.
 `category_id` gives you a category picker.
 
-This query lists posts that still link to an old address.
-It is handy after a migration:
+This query lists posts in public categories that still link to an old address.
+It is handy after a migration.
+It uses `STRPOS` instead of `LIKE`, because `%` and `_` in a `LIKE` pattern match any text:
 
 ```sql
 -- [params]
@@ -700,8 +715,11 @@ SELECT
   CONCAT('/t/', t.slug, '/', t.id, '/', p.post_number) AS post_url
 FROM posts p
 JOIN topics t ON t.id = p.topic_id
+JOIN categories c ON c.id = t.category_id
 JOIN users u ON u.id = p.user_id
-WHERE p.raw ILIKE '%' || :domain || '%'
+WHERE STRPOS(LOWER(p.raw), LOWER(:domain)) > 0
+  AND t.archetype = 'regular'      -- leaves out private messages
+  AND NOT c.read_restricted        -- leaves out private categories
   AND p.deleted_at IS NULL
   AND t.deleted_at IS NULL
 ORDER BY p.created_at DESC
@@ -725,8 +743,10 @@ WHERE t.category_id = :category_id
   AND p.post_number > 1
   AND p.created_at >= :start_date
   AND p.created_at < :end_date
+  AND p.post_type = 1   -- regular posts only, no whispers or small actions
   AND p.deleted_at IS NULL
-  AND p.user_id > 0   -- leaves out system and bot accounts
+  AND t.deleted_at IS NULL
+  AND p.user_id > 0     -- leaves out system and bot accounts
 GROUP BY u.username
 ORDER BY replies DESC
 LIMIT 10
@@ -884,18 +904,22 @@ jobs:
           ISSUE_URL: ${{ github.event.issue.html_url }}
         run: |
           body="${ISSUE_BODY:-No description provided.}"
+          # Discourse allows titles of up to 255 characters
           payload=$(jq -n \
             --arg title "GitHub issue #$ISSUE_NUMBER: $ISSUE_TITLE" \
             --arg raw "$body"$'\n\n'"Original issue: $ISSUE_URL" \
             --argjson category "$CATEGORY_ID" \
-            '{title: $title, raw: $raw, category: $category}')
+            '{title: $title[0:255], raw: $raw, category: $category}')
 
-          response=$(curl -sS --fail-with-body --max-time 30 \
+          if ! response=$(curl -sS --fail-with-body --max-time 30 \
             -X POST "$DISCOURSE_URL/posts.json" \
             -H "Api-Key: $API_KEY" \
             -H "Api-Username: $API_USERNAME" \
             -H "Content-Type: application/json" \
-            -d "$payload")
+            -d "$payload"); then
+            echo "::error::Discourse rejected the topic: $response"
+            exit 1
+          fi
 
           topic_id=$(echo "$response" | jq -r '.topic_id // empty')
           slug=$(echo "$response" | jq -r '.topic_slug // empty')
@@ -931,6 +955,7 @@ That matters here, because anyone can open an issue.
 ### Watch Out
 
 - **The webhook needs a public site.** GitHub cannot reach localhost, so live pull request status will not update there. The other features still work.
+- **Spam issues become spam topics.** Anyone who can open an issue can create a topic through the Action. Delete spam in both places, or limit the Action to known authors with `github.event.issue.author_association`.
 - **Short issue titles can fail.** Discourse has a minimum title length of fifteen characters. That is why the Action adds the issue number as a prefix.
 - **You may sometimes get two links on an issue.** Linkback skips issues that already link to the topic. But if it runs before the Action comments, both comments appear.
 - **Mentions in issues notify forum users.** An `@name` in an issue body notifies the Discourse user with that username.
