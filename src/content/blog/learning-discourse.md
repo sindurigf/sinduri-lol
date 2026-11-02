@@ -79,7 +79,6 @@ That list decides between hosted and self-hosted, and which plan you need.
 | Good fit for  | Teams that want to focus on the community | Teams with someone who can look after a Linux server |
 
 If you are not sure, start hosted.
-You can move to your own server later by restoring a backup.
 
 ### Path A: Hosted
 
