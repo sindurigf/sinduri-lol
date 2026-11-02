@@ -65,6 +65,7 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run check:untransformed`  | No built file is byte-identical to a source image                                                                                                |
 | `npm run check:title-case`     | Built headings, titles, summaries, `og:title` and button labels are in Chicago title case; needs `npm run build`                                 |
 | `npm run check:exif`           | No EXIF, XMP or IPTC in JPEG, PNG or WebP under `src/assets`, `public` and `artwork`; AVIF is not read                                           |
+| `npm run check:pdf`            | Every PDF in `public/` against PDF/UA-1, veraPDF in Docker                                                                                       |
 | `npm run check:commits`        | Commit subjects match `type: Sentence.` and carry no AI attribution, against `origin/main`                                                       |
 | `npm run check:test-weakening` | Test weakening against `origin/main`, working tree included; CI runs it as the `Test weakening` check                                            |
 | `npm run test:a11y`            | Playwright suite in Chromium and Firefox; CI adds WebKit                                                                                         |
@@ -78,7 +79,6 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run hero-still`           | After a build, redraws the hero stills in `src/assets/hero-still-*.webp` shown without JavaScript                                                |
 | `npm run climb-atlas`          | Redraws `src/assets/hero-rabbit-climb.webp`, the lossless raster of the rabbit atlas the Let It Fall climb uses                                  |
 | `npm run about-cats`           | Packs the About cats' drawings in `artwork/about-cats/` into `src/assets/about-cats-*.avif` and `src/lib/about-cats-sheet.ts`                    |
-| `npm run check:pdf`            | Every PDF in `public/` against PDF/UA-1, veraPDF in Docker                                                                                       |
 | `npm run publish:cv`           | Print `cv/cv.html` to the tagged CV PDF in `public/`                                                                                             |
 | `npm run publish:talk`         | Print a talk's slideshow to its tagged PDF in `public/talks/`                                                                                    |
 
