@@ -92,7 +92,6 @@ interface PostSummary {
   published: boolean;
   category: string;
   tags: string[];
-  hasCover: boolean;
   coverAlt: string | undefined;
   coverCredit: string | undefined;
 }
@@ -113,7 +112,6 @@ export const POSTS: readonly PostSummary[] = readdirSync(BLOG_CONTENT_DIR)
       published: frontmatterField(frontmatter, 'placeholder') !== 'true',
       category,
       tags: frontmatterTags(frontmatter),
-      hasCover: frontmatterField(frontmatter, 'cover') !== undefined,
       coverAlt: frontmatterField(frontmatter, 'coverAlt'),
       coverCredit: frontmatterField(frontmatter, 'coverCredit'),
     };

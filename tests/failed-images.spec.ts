@@ -32,10 +32,7 @@ const FRAME_ROUTES = [
   ...CATEGORY_ROUTES,
   ...TAG_ROUTES,
   '/brand',
-  ...new Set([
-    ...PHOTO_POST_ROUTES,
-    ...POSTS.filter((post) => post.hasCover).map((post) => post.route),
-  ]),
+  ...new Set([...PHOTO_POST_ROUTES, ...POSTS.map((post) => post.route)]),
   '/talks/open-source-is-not-just-code',
 ];
 
