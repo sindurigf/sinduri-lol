@@ -10,16 +10,16 @@ cover: '../../assets/blog/learning-discourse/cover.jpg'
 coverAlt: 'A linocut speech bubble with a winding path carved through it.'
 ---
 
-It starts from zero.
-If you have never set up Discourse, begin at Module 1 and work through the modules in order.
+This path assumes you have never set up Discourse.
+Work through the modules in order, because later modules use the site and settings from earlier ones.
 
 Each module has a goal, the steps and, where it helps, code you can copy.
-The surprises I ran into are at the end of each module, in Watch Out, so the steps stay easy to follow.
+Problems I ran into are listed at the end of each module under Watch Out.
 Each one cost me some time.
 I hope they save you some.
 
-Discourse changes often.
-Everything here was checked against Discourse as of October 2026.
+Discourse releases roughly every month, so settings and defaults change between versions.
+Everything here was checked against Discourse in late October 2026, after release v2026.10.0.
 
 ## The Path at a Glance
 
@@ -57,10 +57,8 @@ Start with a free trial or the Free plan.
 4. Open the admin area and look around. It is the Admin link in the sidebar, or `/admin`.
 5. Invite one or two colleagues and try a conversation together.
 
-By the end, you should know two things.
-Does Discourse fit your needs?
-Which features will you use?
-Both help with the next decision.
+Before Module 2, list the features you need, such as private categories, single sign-on, plugins or AI.
+That list decides between hosted and self-hosted, and which plan you need.
 
 ### Watch Out
 
@@ -86,7 +84,7 @@ You can move to your own server later by restoring a backup.
 ### Path A: Hosted
 
 1. Choose a plan before your trial ends. Compare plans on the pricing page. Some features are not on every plan.
-2. If you want your own domain, such as `forum.example.com`, add the DNS record your host gives you. Then set the domain in your hosting dashboard.
+2. If your plan includes a custom domain (Pro and higher), such as `forum.example.com`, add the DNS record your host gives you. Then set the domain in your hosting dashboard.
 3. Check that emails arrive. For example, invite yourself with a second address.
 4. Continue with Module 3.
 
@@ -96,8 +94,8 @@ Before you start, you need:
 
 - A fresh 64-bit Linux server, ideally Ubuntu LTS. It needs at least 1 GB of RAM plus swap, and 2 GB or more is recommended. Swap is disk space the server uses as extra memory.
 - Discourse uses ports 80 and 443, so do not run another website on the same server.
-- Your own domain or subdomain pointing to the server, or the free `yoursite.discourse.diy` subdomain the installer offers. Discourse does not work on a bare IP address.
-- An email provider that can send over SMTP, such as Postmark, Mailgun or Amazon SES. SMTP is the standard way servers send email. You can skip email at first and let people log in with Discourse ID. Most communities still need email for notifications.
+- Your own domain or subdomain pointing to the server, or the free `yoursite.discourse.diy` subdomain the installer offers.
+- An email provider that can send over SMTP, such as Brevo, Mailgun or SendGrid. SMTP is the standard way servers send email. You can skip email at first and let people log in with Discourse ID. Most communities still need email for notifications.
 - SSH access to the server as root.
 
 ### 1. Connect to the Server
@@ -116,18 +114,14 @@ less install-discourse
 sudo bash install-discourse
 ```
 
-The installer sets up Docker and git.
-It puts the official setup files in `/var/discourse`.
-Then it starts the setup wizard.
+The installer installs Docker and git if they are missing.
+It puts the official setup files in `/var/discourse` and starts the setup wizard.
 
 ### 3. Answer the Setup Wizard
 
-It asks for your admin email address and your domain, or a free subdomain.
-It can also ask for your email settings. These are optional.
-It saves the answers in `/var/discourse/containers/app.yml`.
-That file holds your site's configuration and secrets.
-Then it builds the site, which takes a few minutes.
-HTTPS certificates from Let's Encrypt are set up for you.
+It asks for your admin email address, your domain or a free subdomain, and, optionally, your SMTP settings.
+It saves the answers in `/var/discourse/containers/app.yml`, the file that holds your site's configuration and secrets.
+Then it builds the site, which takes a few minutes, and sets up HTTPS certificates from Let's Encrypt.
 
 ### 4. Create Your Admin Account
 
@@ -144,8 +138,7 @@ dpkg-reconfigure -plow unattended-upgrades   # automatic security updates
 apt install fail2ban                          # blocks repeated failed logins
 ```
 
-The next two steps cover SSH keys, the firewall and backups.
-Do them before you invite members.
+Do steps 6 and 7 before you invite members.
 Module 11 covers updates.
 
 ### 6. Secure Server Access
@@ -172,9 +165,9 @@ Search the settings for `backup`:
 | `maximum backups`     | How many to keep, for example 7                             |
 | `backup location`     | S3, so backups are stored off the server                    |
 
-Store backups in their own S3-compatible bucket.
+Store backups in a separate S3-compatible bucket if you can.
 S3 is Amazon's file storage service, and many other providers offer the same interface.
-AWS S3, Backblaze B2 and Wasabi all work, among others.
+AWS S3 and Backblaze B2 work. For others, check the [list of S3-compatible providers](https://meta.discourse.org/t/configure-an-s3-compatible-object-storage-provider-for-uploads/148916).
 Never use the same bucket and folder as uploads.
 
 You can set this in the admin settings (`s3 backup bucket`, `s3 access key id`, `s3 secret access key`, `s3 region`).
@@ -198,13 +191,12 @@ Then:
 - Give the storage key access to the backup bucket only.
 - Turn on versioning or object lock for the bucket. Versioning keeps older copies of each file. Object lock stops files from being deleted for a set time. Then backups cannot be deleted if the server is compromised.
 - Keep an encrypted copy of `/var/discourse/containers/app.yml` somewhere safe. It holds your configuration and secrets.
-- Restore a backup on a fresh server at least once. A backup you have never restored is not a tested backup.
+- Restore a backup on a fresh server at least once, to check that it works.
 
 ### Watch Out
 
 - **Re-running the installer resets the setup files.** It overwrites local changes in `/var/discourse`. Then it runs the setup wizard again, which can change your `containers/app.yml` and rebuild the site. Back up `app.yml` first.
 - **Docker can bypass a ufw firewall.** ufw is the firewall tool that ships with Ubuntu. Docker opens its ports directly, so a ufw rule may not block them. Use your cloud provider's firewall instead.
-- **Password login can come back.** On some cloud images, a file in `/etc/ssh/sshd_config.d/` sets `PasswordAuthentication yes`. It overrides your main config. Check that folder too.
 
 ## Module 3: Practice with Test Content
 
@@ -309,8 +301,7 @@ ensure
 end
 ```
 
-Each reply has different text.
-Discourse rejects the same text from the same person within five minutes.
+Each reply has different text, because Discourse rejects the same text from the same person within five minutes.
 
 ### On a Local Development Install
 
@@ -327,7 +318,7 @@ Both are meant for development.
 
 ### Watch Out
 
-- **Data Explorer cannot create data.** Data Explorer (Module 8) runs read-only queries. It is a reporting tool, not a seeding tool.
+- **Data Explorer cannot create data.** Data Explorer (Module 8) runs read-only queries.
 - **Rate limits apply in the console too.** New users can post only every thirty seconds. The same text from the same person within five minutes is rejected. The seed script handles both.
 - **Raw SQL inserts break things.** Going through `PostCreator` and `User` keeps counters, search and category stats correct.
 - **`dev:populate` also clears Redis.** It runs `redis-cli flushall`, which empties the local Redis server.
@@ -337,9 +328,8 @@ Both are meant for development.
 
 **Goal:** make the site yours and decide who can join, before anyone else arrives.
 
-Settings live in the admin area.
-The fastest way to find one is the settings search.
-Type part of the name, such as `login required`.
+Find any setting with the search on the admin settings page.
+Type part of its name, such as `login required`.
 
 ### 1. Name and Branding
 
@@ -416,13 +406,13 @@ Members of a moderating group can do these things in that category, without acce
 Discourse gives members more abilities as they take part.
 You do not have to manage this by hand.
 
-| Level | Name    | How members reach it               | Examples of what it unlocks                                  |
-| ----- | ------- | ---------------------------------- | ------------------------------------------------------------ |
-| 0     | New     | Signing up                         | Posting, with limits on links, images and replies            |
-| 1     | Basic   | Reading a few topics               | More links and images, file attachments and private messages |
-| 2     | Member  | Visiting and reading regularly     | Inviting others, fewer limits                                |
-| 3     | Regular | Steady activity over recent months | Renaming and recategorizing topics                           |
-| 4     | Leader  | Promoted by staff                  | Editing posts and moderating topics across the site          |
+| Level | Name    | How members reach it               | Examples of what it unlocks                                                    |
+| ----- | ------- | ---------------------------------- | ------------------------------------------------------------------------------ |
+| 0     | New     | Signing up                         | Posting, with limits on links, images and replies                              |
+| 1     | Basic   | Reading a few topics               | More links and images, attachments of allowed file types, and private messages |
+| 2     | Member  | Visiting and reading regularly     | Inviting others, fewer limits                                                  |
+| 3     | Regular | Steady activity over recent months | Renaming and recategorizing topics                                             |
+| 4     | Leader  | Promoted by staff                  | Editing posts and moderating topics across the site                            |
 
 The requirements are site settings that start with `tl1 requires`, `tl2 requires` and `tl3 requires`.
 The defaults work for most communities.
@@ -469,7 +459,6 @@ If you script this, check the category list first.
 - **Removing "everyone" from a category also hides it from search engines.** Only do this for content that is meant to be private.
 - **Category moderation is given to groups, not people.** If only one person should moderate a category, create a small group for them.
 - **Changing permissions on a busy category stops notifications silently.** People who lose access stop getting updates, and nobody tells them. Announce changes first.
-- **Some API actions have no narrow scope.** Creating categories and changing site texts need a key with global scope, for an admin user. Create one for the task and revoke it afterward.
 
 ## Module 6: Welcome and Moderate
 
@@ -500,7 +489,7 @@ The tutorial covers bookmarking, link previews, emoji, mentions, formatting, quo
 Finishing it earns the **Certified** badge.
 An advanced tutorial covers editing, deleting, polls and more, and earns the **Licensed** badge.
 
-1. Find the setting `disable discourse narrative bot welcome post` and **uncheck** it. It is checked by default on new sites, and since August 2025 on most existing sites too. So new members do not get the tutorial automatically. Members can still start it with `@discobot start tutorial`.
+1. Find the setting `disable discourse narrative bot welcome post` and **uncheck** it. It is checked by default on new sites, and since August 2025 on existing sites too, unless they had customized the welcome texts. So new members do not get the tutorial automatically. Members can still start it with `@discobot start tutorial`.
 2. In the admin area, go to Appearance > Site texts. Search for `discourse_narrative_bot` to see all its messages.
 3. Rewrite the messages in your community's voice, with links to your own categories and guidelines. You can change the wording, not the steps.
 4. Create a new account through an invite link. Go through the tutorial the way a real new member would.
@@ -604,7 +593,6 @@ python3 apply_texts.py
 
 ### Watch Out
 
-- **The tutorial is off by default.** This is true on new sites, and since August 2025 on most existing sites. `disable discourse narrative bot welcome post` starts checked. New members do not get the tutorial automatically until you uncheck it.
 - **You can change what the bot says, not what it teaches.** New steps need a custom plugin. On hosted sites, custom plugins depend on your plan.
 - **Placeholders differ between messages.** The welcome message uses `%{title}` and `%{base_uri}`. Other messages use `%{username}`. Discourse rejects a placeholder the original does not have. Removing one drops that value from the message.
 
@@ -643,7 +631,7 @@ That file is built once for each color scheme.
   color: var(--topic-link);
 }
 
-// Discourse adds a .visited class to the row of a topic you have read
+// Discourse adds a .visited class to the row of a topic you have read up to its latest post
 .topic-list-item.visited .main-link a.title:not(.badge-notification) {
   color: var(--topic-link-visited);
 }
@@ -651,7 +639,7 @@ That file is built once for each color scheme.
 
 Each color passes the 4.5:1 contrast ratio for normal text on its own background.
 The light colors reach at least 7:1 on white.
-The dark ones reach at least 7:1 on Discourse's dark backgrounds.
+The dark ones reach at least 7:1 on the default Dark scheme, and at least 4.5:1 on the other built-in dark schemes.
 Check your own colors with a contrast checker.
 
 If you only want the color scheme's own link color, use `var(--tertiary)`.
@@ -674,8 +662,7 @@ The theme developer guides on meta.discourse.org cover the plugin API.
 
 ### Watch Out
 
-- **SCSS color functions do not follow dark mode.** `dark-light-choose` in `common.scss` is decided when the stylesheet is built. Use CSS variables from `color_definitions.scss`, or the built-in color variables.
-- **Browser `:visited` does not match how Discourse tracks reading.** Discourse adds a `.visited` class to the row of each topic you have read. Style `.topic-list-item.visited`. Logged-out visitors still get the browser's `:visited`.
+- **Browser `:visited` does not match how Discourse tracks reading.** Discourse adds a `.visited` class to the row of each topic you have read up to its latest post. Style `.topic-list-item.visited`. Logged-out visitors still get the browser's `:visited`.
 - **Class names in third-party components change between versions.** Inspect the current class names in your browser tools before you target them.
 
 ## Module 8: Reports with Data Explorer and Automation
@@ -814,15 +801,14 @@ The API returns up to 1,000 rows by default.
 ### Watch Out
 
 - **Data Explorer can see everything.** That includes private categories, private messages and email addresses. Only admins and trusted groups should have access. Shared results should never include personal data.
-- **There is no "last day of the month" schedule.** A monthly automation repeats on the day of its start date. Run monthly reports on the 1st, for the previous month.
+- **There is no "last day of the month" schedule.** A monthly automation repeats on the day of its start date, and a start date on the 29th to 31st moves to the last day in shorter months. Run monthly reports on the 1st, for the previous month.
 - **`@username` in a posted report notifies people.** Leave out the `@` if you do not want members pinged every month.
 
 ## Module 9: GitHub Integration
 
 **Goal:** connect discussions and code, so people can move between a GitHub issue or pull request and the conversation about it.
 
-The GitHub integration is part of Discourse core.
-There is nothing to install.
+The GitHub plugin is bundled with Discourse, so there is nothing to install.
 On hosted sites, check that your plan includes it.
 It has four features, each with its own setting:
 
@@ -838,7 +824,7 @@ It has four features, each with its own setting:
 1. Create a GitHub personal access token (classic) with only the scope you need. The `public_repo` scope can write to repositories. So create the token from a separate GitHub account that has access to nothing important.
 2. In the settings, search for `github`. Turn on `enable discourse github plugin` first. It is off by default. Then turn on the features you want. Paste the token into `github linkback access token`.
 3. List your repositories in `github linkback projects`, as `owner/repo`. Also list them in `github badges repos`.
-4. For pull request status on private repos, add tokens to `github onebox access tokens`. Add one per line, as `organization|token`.
+4. For pull request status on private repos, add tokens to `github onebox access tokens`. Add one per line, as `organization|token`, and a `default|token` line for any other organization.
 5. Test it: post a link to a pull request in a topic.
 
 ### Step 2: Set Up Live Pull Request Status
@@ -947,7 +933,7 @@ That matters here, because anyone can open an issue.
 - **The webhook needs a public site.** GitHub cannot reach localhost, so live pull request status will not update there. The other features still work.
 - **Short issue titles can fail.** Discourse has a minimum title length of fifteen characters. That is why the Action adds the issue number as a prefix.
 - **You may sometimes get two links on an issue.** Linkback skips issues that already link to the topic. But if it runs before the Action comments, both comments appear.
-- **Mentions travel.** An `@name` in an issue body notifies the Discourse user with that username.
+- **Mentions in issues notify forum users.** An `@name` in an issue body notifies the Discourse user with that username.
 - **Live status replaces an older theme component.** If you used the GitHub Status Indicators theme component, remove it first. The two do not work together.
 
 ## Module 10: Discourse AI
@@ -955,7 +941,7 @@ That matters here, because anyone can open an issue.
 **Goal:** connect a language model to Discourse and use it for summaries, spam detection, writing help and staff reports.
 
 Discourse AI is bundled with Discourse.
-Hosted plans include daily AI credits and a Discourse-hosted model.
+All hosted plans include daily AI credits, and paid plans also include a Discourse-hosted model.
 So you can start without your own provider.
 To use your own provider, follow these steps.
 
@@ -964,8 +950,8 @@ To use your own provider, follow these steps.
 Create a separate key just for Discourse.
 Set a monthly spend limit with your provider.
 
-Chat subscriptions, such as Claude.ai Pro, do not include API access.
-API usage is set up and billed separately.
+Chat subscriptions such as Claude Pro do not include API usage.
+Set up API billing with your provider.
 
 Also read your provider's terms on how API data is stored and used.
 
@@ -1033,7 +1019,7 @@ about a trend, say so instead of guessing.
 
 The script reads 150 tokens of each post by default.
 If reports feel shallow, raise **tokens per post**.
-Keep an eye on the cost.
+Every extra token per post adds to the cost of each run.
 
 ### Watch Out
 
@@ -1051,7 +1037,7 @@ Security and backups are in Module 2, steps 6 and 7.
 
 ### 1. Install Plugins
 
-Many popular plugins are now bundled with Discourse.
+About 50 plugins are bundled with Discourse as of v2026.10, including Data Explorer, Solved, Assign, GitHub and Automation.
 They only need turning on in the settings.
 Check the Plugins page in the admin area first.
 
@@ -1093,8 +1079,7 @@ params:
   version: release
 ```
 
-The older names `tests-passed`, `beta` and `stable` still work.
-They are deprecated.
+The older names `tests-passed`, `beta` and `stable` still work, but they are deprecated and Discourse plans to drop them.
 
 **Regular updates:** use the Updates page in the admin area (`/admin/update`).
 
@@ -1138,13 +1123,10 @@ Have a backup you can restore on a fresh server.
 - **The web updater can stop working.** If the Docker image is too old, updates from the admin panel are blocked. Run `./launcher rebuild app` from the server to fix it.
 - **A rebuild prints a lot, and some lines look like the end.** "Redis is now ready to exit" appears near the end, when the build's temporary Redis stops. Wait for the command to finish. Then check with `docker ps` and load the site.
 - **Rebuilds need free disk space.** If a rebuild fails with disk errors, run `./launcher cleanup` and remove old local backups. Then try again.
-- **Old release channel names still work, for now.** If your `app.yml` uses `stable` or `tests-passed`, plan to switch to the new names.
 
 ## Side Path: Move an Existing Site to Discourse
 
 **Goal:** move a community from another platform without losing links, analytics or consent records.
-
-Only follow this path if you are moving from another platform.
 
 ### Before the Move
 
@@ -1205,8 +1187,7 @@ Agree on it with the other owners first.
 
 Once you have worked through the modules, meta.discourse.org is the best place to keep learning.
 The Discourse team and other admins post guides, announcements and answers there.
-Search it before you change anything big.
-Settings and defaults do change between versions.
+Search it before you change anything big, because settings and defaults change between versions.
 
 I am still learning a lot of this as I go.
 
