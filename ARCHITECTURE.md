@@ -232,7 +232,7 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 - `/rss.xml` (all published posts) and `/blog/tag/<tag>/rss.xml`, RSS 2.0 from
   `src/lib/feed.ts`, with `atom:link rel="self"` and RFC 822 dates.
 - `lastBuildDate` is the latest `updated`, else `date`, of the feed's posts
-  (`src/lib/feed-date.ts`), so an edit to a post moves it.
+  (`src/lib/feed-date.ts`), so a post's `updated` date moves it.
 - The Drupal tag feed is the one for Drupal Planet. Its items carry the post's
   opening, whole sentences up to 300 characters, stopping before a paragraph
   that ends in a colon (`src/lib/feed-excerpt.ts`); the owner picked the length
