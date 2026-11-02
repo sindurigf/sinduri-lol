@@ -34,7 +34,7 @@ Everything here was checked against Discourse in late October 2026, after releas
 | Customize and extend | 7. Look and feel                    | Change styles with theme components                                                                       |
 | Customize and extend | 8. Reports                          | Answer questions with SQL and share reports on a schedule                                                 |
 | Customize and extend | 9. GitHub                           | Connect discussions with issues and pull requests                                                         |
-| Customize and extend | 10. Discourse AI                    | Add summaries, spam detection and AI reports                                                              |
+| Customize and extend | 10. Discourse AI                    | Add summaries, spam detection and writing help                                                            |
 | Operate              | 11. Keep a self-hosted site running | Install plugins and keep a self-hosted site updated                                                       |
 | Side path            | Move an existing site               | Keep links, analytics and consent working after a migration. Only if you are moving from another platform |
 
@@ -963,7 +963,7 @@ That matters here, because anyone can open an issue.
 
 ## Module 10: Discourse AI
 
-**Goal:** connect a language model to Discourse and use it for summaries, spam detection, writing help and staff reports.
+**Goal:** connect a language model to Discourse and use it for summaries, spam detection and writing help.
 
 Discourse AI is bundled with Discourse.
 All hosted plans include daily AI credits, and paid plans also include a Discourse-hosted model.
@@ -1016,42 +1016,12 @@ Agents with a model set explicitly do not follow the default.
 
 Try each one with a few colleagues before opening it to everyone.
 
-### Step 5: Set Up a Weekly AI Report for Staff
-
-1. Create a new agent. Allow only your staff group to use it. Give it this system prompt:
-
-```text
-You write a weekly report for the staff of this forum.
-
-Read the topics that were active in the last 7 days. Do not group them by
-category or tag. Instead, report on:
-
-1. Themes that appear across several categories
-2. Questions that keep coming back
-3. Topics with many views but no replies or no accepted answer
-4. Anything that needs staff attention
-
-Link to the topics you mention. Do not quote private messages and do not
-include email addresses or other personal details. If you are not sure
-about a trend, say so instead of guessing.
-```
-
-2. Open Automation from the Plugins page. Create an automation with the **Periodic report using AI** script.
-3. Choose your agent and your model. The report runs on the model you choose here. Set **Sender** to the account that posts the report.
-4. Replace the default text in **Instructions** with a short line, such as `Write this week's report.` The default asks for a long report and competes with your agent's prompt.
-5. Enter the ID of a topic in a private staff category, where the report is posted. Set it to run every seven days.
-6. Private categories are left out unless you turn on **Allow secure categories**. Turn it on only if staff need them in the report.
-
-The script reads 150 tokens of each post by default.
-If reports feel shallow, raise **tokens per post**.
-Every extra token per post adds to the cost of each run.
-
 ### Watch Out
 
 - **An error can come from Discourse, not from your provider.** With a Mistral model, I got `reasoning_effort is not enabled for this model`. Then I switched to a model that supports reasoning. The error became `no implicit conversion of Hash into String`, which is a Ruby error inside Discourse. Leaving the reasoning effort field empty avoids the first error. If you hit errors like these, switch the model or provider and report it on meta.discourse.org.
 - **`-latest` model names can change under you.** An alias can start pointing to a model with different behavior. Use a fixed model ID.
 - **Changing the default model does not move everything.** Agents with a model set explicitly keep using it. Open the old model, check what still uses it and update each one. Then delete it.
-- **AI activity is logged in two places.** Requests show up in your provider's usage dashboard and in Discourse's AI logs. Other admins can see those logs. Keep reports staff-only and leave out private categories.
+- **AI activity is logged in two places.** Requests show up in your provider's usage dashboard and in Discourse's AI logs. Other admins can see those logs.
 
 ## Module 11: Keep a Self-Hosted Site Running
 
@@ -1233,7 +1203,6 @@ Checked on 30 October 2026.
 - [A new versioning strategy for Discourse](https://meta.discourse.org/t/rfc-a-new-versioning-strategy-for-discourse/383536)
 - [Discourse GitHub](https://meta.discourse.org/t/discourse-github/99895)
 - [Automate the syncing of Discourse queries to Google Sheets](https://meta.discourse.org/t/automate-the-syncing-of-discourse-queries-to-google-sheets/394473)
-- [Discourse AI periodic summary reports](https://meta.discourse.org/t/discourse-ai-periodic-summary-reports/290236)
 - [PostCreator (source)](https://github.com/discourse/discourse/blob/main/lib/post_creator.rb)
 - [Discourse rate limiter (source)](https://github.com/discourse/discourse/blob/main/lib/rate_limiter.rb)
 - [GitHub Actions: secure use reference](https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions)
