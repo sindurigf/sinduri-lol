@@ -20,7 +20,14 @@ import {
   type Motion,
   type NamedPose,
 } from './about-cats-frames';
-import { POST_WIDTH, pose } from './about-cats-moves';
+import {
+  CAT_IDS,
+  POST_CAP_OVERHANG,
+  POST_HEIGHT,
+  POST_WIDTH,
+  SCRATCH_PULLS,
+  pose,
+} from './about-cats-moves';
 import type { CatId, Pose, PropKind, PropState } from './about-cats-types';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -38,8 +45,6 @@ const STILL_MS = 120;
 const OUTLINE = 3;
 /** The feather's string hangs from just under the band's top: --spacing-cat-band (140px) must stay above it. */
 const STRING_TOP = -136;
-/** The scratching post's height in px, cap aside: well above a reaching cat, and with its cap under the band. */
-export const POST_HEIGHT = 126;
 /** px between turns of rope, and clear of the post's top and bottom. */
 const ROPE_PITCH = 8;
 const ROPE_INSET = 6;
@@ -48,8 +53,25 @@ const ROPE_TURNS = Array.from(
   { length: Math.floor((POST_HEIGHT - 2 * ROPE_INSET) / ROPE_PITCH) + 1 },
   (_, i) => ROPE_INSET - POST_HEIGHT + ROPE_PITCH * i,
 );
-/** px the post's cap reaches past each side of it. */
-const POST_CAP_OVERHANG = 5;
+/** Claw marks on the post's face, a set of three rakes per pull, each set a little lower: px apart, down and long, from the face. */
+const MARKS_PER_SET = 3;
+const MARK_GAP = 3;
+const MARK_SET_DROP = 4;
+const MARK_LENGTH = 12;
+const MARK_INSET = 1;
+const MARK_SLANT = 6;
+/** px below the claws the marks start. */
+const MARK_BELOW_CLAWS = 6;
+/** Bits of rope that fall from the claws after each pull, px apart from the face down: ms they last, and px per ms² they fall, per ms they drift and degrees per ms they spin. */
+const FLUFF_BITS = 4;
+const FLUFF_CLEAR = 2;
+const FLUFF_SPREAD_X = 1.5;
+const FLUFF_BELOW_CLAWS = 10;
+const FLUFF_SPREAD_Y = 4;
+const FLUFF_MS = 500;
+const FLUFF_FALL = 0.0005;
+const FLUFF_DRIFT = 0.006;
+const FLUFF_SPIN = 0.5;
 /** A small and a larger "z", drawn from the lower left of the small one. */
 const ZZ = 'M0 0h4l-4 5h4M6 -9h6l-6 7h6';
 const ZZ_HEIGHT = 14;
@@ -136,8 +158,6 @@ const holdOf = (
 /** The frame a pose is drawn as, standing still. */
 const stillFrame = (p: Pose): Frame =>
   frameFor(grounded(p), NAMED, { ...STILL, lift: p.y });
-
-const CAT_IDS = Object.keys(SHEET) as CatId[];
 
 /** Height of a pose's highest drawn point above the ground, outline included, for the tallest cat. */
 export const highestPoint = (p: Pose): number => {
@@ -487,8 +507,12 @@ export const createProp = (
   front: SVGGElement,
   kind: PropKind,
 ): PropRig => {
-  /* The yarn ball is held in the paws, so it draws over the cat. */
-  const node = el('g', { class: 'cat-prop' }, kind === 'yarn' ? front : parent);
+  /* The yarn ball is held in the paws, so it draws over the cat. Hidden until its first draw places it. */
+  const node = el(
+    'g',
+    { class: 'cat-prop', opacity: 0 },
+    kind === 'yarn' ? front : parent,
+  );
   const remove = (): void => {
     node.remove();
   };
@@ -614,12 +638,77 @@ export const createProp = (
       node,
     );
   }
+  const place = (s: PropState): void => {
+    set(node, 'transform', `${translate(s.x, s.y)} rotate(${f(s.r)})`);
+    set(node, 'opacity', f(s.o));
+  };
+  if (kind !== 'post') return { node, remove, draw: place };
+  /* Drawn for a cat on the left, then mirrored to face the playing cat. */
+  const scratched = el('g', {}, node);
+  const face = -POST_WIDTH / 2;
+  const marks = Array.from({ length: SCRATCH_PULLS * MARKS_PER_SET }, () =>
+    el(
+      'path',
+      { class: 'cat-prop-string', 'stroke-width': 0.9, visibility: 'hidden' },
+      scratched,
+    ),
+  );
+  const fluff = Array.from({ length: FLUFF_BITS }, () =>
+    el(
+      'path',
+      {
+        d: 'M0 0l2 1.5',
+        class: 'cat-prop-rope',
+        'stroke-width': 1.2,
+        visibility: 'hidden',
+      },
+      scratched,
+    ),
+  );
   return {
     node,
     remove,
     draw: (s) => {
-      set(node, 'transform', `${translate(s.x, s.y)} rotate(${f(s.r)})`);
-      set(node, 'opacity', f(s.o));
+      place(s);
+      set(scratched, 'transform', `scale(${s.dir ?? 1} 1)`);
+      const claws = -(s.clawHigh ?? 0);
+      marks.forEach((mark, i) => {
+        const shown = i < (s.marks ?? 0) * MARKS_PER_SET;
+        set(mark, 'visibility', shown ? 'visible' : 'hidden');
+        if (!shown) return;
+        const y =
+          claws +
+          MARK_BELOW_CLAWS +
+          Math.floor(i / MARKS_PER_SET) * MARK_SET_DROP +
+          (i % MARKS_PER_SET) * MARK_GAP;
+        set(
+          mark,
+          'd',
+          `M${face + MARK_INSET} ${y}l${MARK_SLANT + (i % MARKS_PER_SET)} ${MARK_LENGTH}`,
+        );
+      });
+      const since = s.sincePull ?? Infinity;
+      fluff.forEach((bit, i) => {
+        const falling = since < FLUFF_MS;
+        set(bit, 'visibility', falling ? 'visible' : 'hidden');
+        if (!falling) return;
+        const x =
+          face -
+          FLUFF_CLEAR -
+          i * FLUFF_SPREAD_X -
+          since * FLUFF_DRIFT * (i + 1);
+        /* It lands on the floor and fades there. */
+        const y = Math.min(
+          0,
+          claws +
+            FLUFF_BELOW_CLAWS +
+            i * FLUFF_SPREAD_Y +
+            FLUFF_FALL * since ** 2,
+        );
+        const spin = since * FLUFF_SPIN * (i % 2 ? 1 : -1);
+        set(bit, 'transform', `${translate(x, y)} rotate(${f(spin)})`);
+        set(bit, 'opacity', f(1 - since / FLUFF_MS));
+      });
     },
   };
 };
