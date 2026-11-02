@@ -1,4 +1,4 @@
-/* Pure, no imports: src/plugins/post-fold.mjs and the post page read it. */
+/* Pure, no imports: src/plugins/post-fold.mjs and the post page read it. Only these exact headings fold. */
 
 /** The h3 whose list folds: each module's surprises. */
 export const WATCH_OUT_HEADING = 'Watch Out';
@@ -19,7 +19,7 @@ export const moduleLabel = (heading: string): string | undefined => {
 
 const FENCE = /^ {0,3}(`{3,}|~{3,})[^\n]*\n([\s\S]*?)^ {0,3}\1[ \t]*$/gm;
 
-/** Whether Markdown has a Watch Out list or a long fenced block, so the page needs the fold script. */
+/** Whether Markdown has a module h2, a Watch Out h3 or a long fenced block, so the page needs the fold script. */
 export const hasFold = (markdown: string): boolean =>
   new RegExp(`^## ${MODULE_HEADING.source.slice(1)}`, 'm').test(markdown) ||
   new RegExp(`^### ${WATCH_OUT_HEADING}[ \\t]*$`, 'm').test(markdown) ||

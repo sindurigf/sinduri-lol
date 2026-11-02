@@ -1,8 +1,4 @@
-/*
- * Folds a post's extras in a native <details>: the list after each Watch Out
- * h3, and code blocks of CODE_FOLD_MIN_LINES or more. The heading stays
- * outside the fold, so it is still a heading. Not slides.
- */
+/* Folds a post's Watch Out lists, long code and module bodies in native <details>; headings stay outside. Not slides. */
 
 import { TALKS_PATH } from './post-figure.mjs';
 import {
@@ -110,10 +106,8 @@ const moduleControls = () => ({
 });
 
 /*
- * Each module's body after its h2, in a <details open>: open on load, so
- * nothing is hidden by default. The h2 stays outside as a heading. One
- * child-list swap on the parent: reused nodes keep their content, and the
- * Watch Out and code folds postFold made move in with them.
+ * Each module's body after its h2, in a <details open>, so nothing is hidden on load.
+ * One child-list swap on the parent keeps the Watch Out and code folds postFold made.
  */
 const groupModules = (ctx, siblings) => {
   const isH2 = (node) => node.type === 'element' && node.tagName === 'h2';
