@@ -53,8 +53,9 @@ const ROPE_TURNS = Array.from(
   { length: Math.floor((POST_HEIGHT - 2 * ROPE_INSET) / ROPE_PITCH) + 1 },
   (_, i) => ROPE_INSET - POST_HEIGHT + ROPE_PITCH * i,
 );
-/** px the yarn's loose strand sags below a straight line to its end. */
+/** px the yarn's loose strand sags below a straight line to its end, and px from the ball's middle it starts: just inside its rim. */
 const STRAND_SAG = 6;
+const STRAND_FROM_RIM = 5;
 /** Claw marks on the post's face, a set of three rakes per pull, each set a little lower: px apart, down and long, from the face. */
 const MARKS_PER_SET = 3;
 const MARK_GAP = 3;
@@ -494,7 +495,7 @@ export interface PropRig {
 }
 
 /* Props share the cat classes, so they follow the theme too. */
-/* `front` is drawn over the cat: the yarn ball held in its paws. */
+/* `front` is drawn over the cat: the yarn ball and its strand while held in its paws. */
 export const createProp = (
   parent: SVGGElement,
   front: SVGGElement,
@@ -630,8 +631,9 @@ export const createProp = (
     const strand = el(
       'path',
       { class: 'cat-prop-yarn-end', 'stroke-width': 1.5, opacity: 0 },
-      front,
+      parent,
     );
+    parent.append(node);
     return {
       node,
       remove: () => {
@@ -640,16 +642,20 @@ export const createProp = (
       },
       draw: (s) => {
         place(s);
-        /* On the floor the paws land over the ball; held, it sits in them. */
-        if (s.held && node.parentNode !== front)
-          front.insertBefore(node, strand);
-        if (!s.held && node.parentNode !== parent) parent.append(node);
+        /* On the floor the paws land over the ball; held, it sits in them. The strand goes with it, under it. */
+        const layer = s.held ? front : parent;
+        if (node.parentNode !== layer) layer.append(strand, node);
         const [ex, ey] = s.strand ?? [0, 0];
         const dx = ex * (s.dir ?? 1);
+        const from = Math.atan2(ey, dx);
+        const [rx, ry] = [
+          STRAND_FROM_RIM * Math.cos(from),
+          STRAND_FROM_RIM * Math.sin(from),
+        ];
         set(
           strand,
           'd',
-          `M${f(s.x)} ${f(s.y)}q${f(dx / 2)} ${f(Math.max(ey, 0) / 2 + STRAND_SAG)} ${f(dx)} ${f(ey)}`,
+          `M${f(s.x + rx)} ${f(s.y + ry)}q${f((dx - rx) / 2)} ${f(Math.max(ey - ry, 0) / 2 + STRAND_SAG)} ${f(dx - rx)} ${f(ey - ry)}`,
         );
         set(strand, 'opacity', f(s.o));
       },
