@@ -178,22 +178,22 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 `src/content.config.ts` defines `blog` (`glob()` over
 `src/content/blog/*.md`, top level only) and [`talks`](#talks).
 
-| Field            | Type              | Required     | Default |
-| ---------------- | ----------------- | ------------ | ------- |
-| `title`          | string            | yes          |         |
-| `date`           | date              | yes          |         |
-| `updated`        | date              | no           |         |
-| `category`       | enum, see below   | yes          |         |
-| `placeholder`    | boolean           | yes          |         |
-| `tags`           | slug[], see below | no           | `[]`    |
-| `teaser`         | string            | yes          |         |
-| `featured`       | boolean           | no           | `false` |
-| `readingTime`    | number            | no           |         |
-| `seoTitle`       | string            | no           |         |
-| `seoDescription` | string            | no           |         |
-| `cover`          | image             | no           |         |
-| `coverAlt`       | string            | with `cover` |         |
-| `coverCredit`    | string            | no           |         |
+| Field            | Type              | Required | Default |
+| ---------------- | ----------------- | -------- | ------- |
+| `title`          | string            | yes      |         |
+| `date`           | date              | yes      |         |
+| `updated`        | date              | no       |         |
+| `category`       | enum, see below   | yes      |         |
+| `placeholder`    | boolean           | yes      |         |
+| `tags`           | slug[], see below | no       | `[]`    |
+| `teaser`         | string            | yes      |         |
+| `featured`       | boolean           | no       | `false` |
+| `readingTime`    | number            | no       |         |
+| `seoTitle`       | string            | no       |         |
+| `seoDescription` | string            | no       |         |
+| `cover`          | image             | yes      |         |
+| `coverAlt`       | string            | yes      |         |
+| `coverCredit`    | string            | no       |         |
 
 - Categories: `skincare`, `travel`, `personal-thoughts`,
   `professional-journey`, `open-source`. Import `BLOG_CATEGORIES`.
