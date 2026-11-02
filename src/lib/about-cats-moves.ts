@@ -953,11 +953,12 @@ export const scaleTravel = (move: Move, factor: number): Move => {
         const ahead = s.x - at;
         const kept = Math.min(Math.abs(ahead), PROP_KEEP);
         const scaled = Math.max(Math.abs(ahead) * factor, kept);
-        /* A rolling prop turns as far as it now travels. */
+        const x = at * factor + Math.sign(ahead) * scaled;
+        /* The ball turns as far as it now rolls. */
         return {
           ...s,
-          x: at * factor + Math.sign(ahead) * scaled,
-          r: s.r * factor,
+          x,
+          r: s.kind === 'yarn' ? s.r + turned(x - s.x) : s.r,
         };
       }),
   };
