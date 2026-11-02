@@ -2063,8 +2063,8 @@ test.describe('About cats', () => {
     const list = tricksList(page, id);
     await expect(
       list.getByRole('button', { name: TRICKS.yarn.label }),
-      'a trick that cannot fit the band is offered',
-    ).toHaveCount(0);
+      'a trick that fits the band is not offered',
+    ).toBeAttached();
     await list.getByRole('button', { name: TRICKS.fly.label }).click();
     await expect(
       page.locator(`#cat-spot-${id} .cat-prop-wing`).first(),
@@ -2078,6 +2078,10 @@ test.describe('About cats', () => {
     await expect(
       list.getByRole('button', { name: TRICKS.look.label }),
     ).toBeAttached();
+    await expect(
+      list.getByRole('button', { name: TRICKS.yarn.label }),
+      'a trick that cannot fit the band is offered',
+    ).toHaveCount(0);
     await expect(
       list.getByRole('button', { name: TRICKS.fly.label }),
       'a trick that cannot fit the band is offered',
