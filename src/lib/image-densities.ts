@@ -24,7 +24,7 @@ export const HERO_PHOTO_SIZES = `(min-width: 1829px) calc(20.93vw + 178px), (min
 
 /*
  * The newest post's cover on a homepage Featured Posts card, by column count
- * at `lg`. tests/image-size.spec.ts fails on drift.
+ * at `lg`. tests/image-size.spec.ts checks the count the build has.
  */
 const FEATURED_CARD_NARROW =
   '(min-width: 40rem) calc(100vw - 144px), calc(100vw - 96px)';

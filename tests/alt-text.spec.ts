@@ -5,7 +5,7 @@ import { NODE } from './tags';
 
 /**
  * Alt text rules axe cannot judge: every <img> has an `alt` (Astro writes an
- * empty one as a bare `alt`), only the bunny marks and post card thumbnails are empty, a filled one is not
+ * empty one as a bare `alt`), only the bunny marks and card thumbnails are empty, a filled one is not
  * a filename or "image/photo/picture/logo", and an inline <svg> is hidden or named.
  */
 
@@ -39,7 +39,8 @@ const auditImages = (html: string): Problem[] => {
       if (!DECORATIVE.test(source) && !CARD_THUMBNAIL.test(tag)) {
         problems.push({
           image,
-          problem: 'empty alt on an image that is not a bunny mark',
+          problem:
+            'empty alt on an image that is not a bunny mark or card thumbnail',
         });
       }
       continue;
@@ -97,7 +98,7 @@ test('the checker reports every kind of fault', NODE, () => {
   const problems = auditImages(FIXTURE).map((p) => p.problem);
   expect(problems).toEqual([
     'no alt attribute',
-    'empty alt on an image that is not a bunny mark',
+    'empty alt on an image that is not a bunny mark or card thumbnail',
     'alt says what a screen reader already says: "A photo of a desk"',
     'alt is a filename: "hare.webp"',
     'an svg that is neither aria-hidden nor named',

@@ -307,7 +307,10 @@ const cardCovers = (page: Page) =>
     const cards = [...document.querySelectorAll('main article.card')].filter(
       (card) => card.querySelector('.card-link'),
     );
-    return Promise.all(
+    const thumbnails = document.querySelectorAll(
+      'img[data-card-thumbnail]',
+    ).length;
+    const covers = await Promise.all(
       cards.map(async (card) => {
         const img = card.querySelector<HTMLImageElement>('.aspect-frame img');
         const loading = img?.getAttribute('loading') ?? null;
@@ -322,20 +325,30 @@ const cardCovers = (page: Page) =>
           alt: img?.getAttribute('alt') ?? null,
           loading,
           thumbnail: img?.closest('.aspect-square') !== null,
+          whole:
+            img
+              ?.closest('.aspect-frame')
+              ?.querySelector(':scope > .aspect-sizer') != null,
           square: img ? img.naturalWidth === img.naturalHeight : false,
+          marked: img?.hasAttribute('data-card-thumbnail') ?? false,
         };
       }),
     );
+    return { covers, thumbnails };
   });
 
-for (const route of ['/blog', '/', ...CATEGORY_ROUTES]) {
+for (const route of ['/blog', '/', ...CATEGORY_ROUTES, ...TAG_ROUTES]) {
   test(
     `every post card on ${route} shows its cover`,
     ENGINE_INVARIANT,
     async ({ page }) => {
       await gotoSettled(page, route);
-      const covers = await cardCovers(page);
+      const { covers, thumbnails } = await cardCovers(page);
       expect(covers.length, `${route} shows no post card`).toBeGreaterThan(0);
+      expect(
+        thumbnails,
+        `an empty alt marked data-card-thumbnail on ${route} sits outside a post card`,
+      ).toBe(covers.filter((cover) => cover.marked).length);
       const newestShownLarge = route === '/blog' || route === '/';
 
       for (const [index, cover] of covers.entries()) {
@@ -349,6 +362,10 @@ for (const route of ['/blog', '/', ...CATEGORY_ROUTES]) {
             cover.alt,
             `the newest post's whole cover on ${route} must keep its coverAlt`,
           ).toBe(NEWEST?.coverAlt);
+          expect(
+            cover.whole,
+            `the newest post's cover on ${route} must be drawn whole in its own ratio`,
+          ).toBe(true);
           continue;
         }
         expect(

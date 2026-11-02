@@ -213,7 +213,8 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
   `website`.
 - Every post needs `cover` (relative to the post, any ratio) and `coverAlt`;
   the build fails without them. The cover is the post's hero photo and its
-  sharing card, uncropped, and the newest post's card. Every other post card
+  sharing card, uncropped, and so on the `/blog` feature card and its homepage
+  card. Every other post card
   shows a square crop at `coverPosition`
   ([STYLEGUIDE](docs/STYLEGUIDE.md#posts)).
 - `updated` sets `dateModified`; absent, it is omitted, not copied from `date`.

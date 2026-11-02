@@ -18,7 +18,7 @@ export const BLOG_CATEGORIES = [
 
 export type BlogCategory = (typeof BLOG_CATEGORIES)[number];
 
-/* Keywords both CSS `object-position` and sharp's crop position read. */
+/* Crop positions sharp reads for the square card thumbnail. */
 export const COVER_POSITIONS = [
   'center',
   'top',
@@ -47,10 +47,10 @@ const blog = defineCollection({
       readingTime: z.number().optional(),
       seoTitle: z.string().optional(),
       seoDescription: z.string().optional(),
-      /* Any ratio, shown uncropped on the post and the newest post's card. Relative to the post. */
+      /* Any ratio, relative to the post; uncropped on the post, the /blog feature card and its homepage card. */
       cover: image(),
       coverAlt: z.string().min(1),
-      /* Where the square card thumbnail crops the cover, as `object-position`. */
+      /* Where the build crops the square card thumbnail. */
       coverPosition: z.enum(COVER_POSITIONS).default('center'),
       /* The cover's photographer, shown in the post's date line; a PHOTOGRAPHERS name is linked. */
       coverCredit: z.string().optional(),
