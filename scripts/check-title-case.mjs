@@ -5,7 +5,7 @@
  * Each part of a hyphenated compound counts as a word.
  * The brand names in src/lib/site.ts are exempt, in their own case.
  */
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { existsSync } from 'node:fs';
 import { glob, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -14,7 +14,8 @@ import { visibleMarkup } from './visible-markup.mjs';
 import { titleCaseMiss } from '../src/lib/labels.ts';
 import { SITE_NAME, SITE_SHORT_NAME } from '../src/lib/site.ts';
 
-const ROOT = fileURLToPath(new URL('..', import.meta.url));
+const ROOT =
+  process.env.CHECK_ROOT ?? fileURLToPath(new URL('..', import.meta.url));
 const DIST = join(ROOT, 'dist/client');
 
 const HEADING = /<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1>/g;
@@ -45,7 +46,7 @@ const BRAND_TOKENS = new Set([SITE_NAME, SITE_SHORT_NAME]);
  * Each entry names why the text stays as written. An entry that no longer
  * matches fails.
  */
-const ALLOWED = [
+export const ALLOWED = [
   {
     route: '/talks/open-source-is-not-just-code/',
     kind: 'heading',
@@ -169,4 +170,9 @@ const run = async () => {
   );
 };
 
-await run();
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  await run();
+}
