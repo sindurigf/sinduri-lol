@@ -61,7 +61,7 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run check:classes`        | Every class in the built HTML has a CSS rule                                                                                                     |
 | `npm run check:csp`            | `script-src` and `style-src` in `public/_headers` hash exactly the build's inline blocks; `-- --write` fixes them; needs `npm run build`         |
 | `npm run check:untransformed`  | No built file is byte-identical to a source image                                                                                                |
-| `npm run check:exif`           | No EXIF, XMP or IPTC in JPEG, PNG or WebP under `src/assets` and `public`; AVIF is not read                                                      |
+| `npm run check:exif`           | No EXIF, XMP or IPTC in JPEG, PNG or WebP under `src/assets`, `public` and `artwork`; AVIF is not read                                           |
 | `npm run check:test-weakening` | Test weakening against `origin/main`, working tree included; CI runs it as the `Test weakening` check                                            |
 | `npm run test:a11y`            | Playwright suite in Chromium and Firefox; CI adds WebKit                                                                                         |
 | `npm run test:webkit`          | The same suite in WebKit, in Playwright's Docker image                                                                                           |
