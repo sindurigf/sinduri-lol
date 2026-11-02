@@ -32,7 +32,7 @@ Everything here was checked against Discourse in late October 2026, after releas
 | Build your community | 5. Organize content and access      | Create categories, tags and groups, and understand trust levels                                           |
 | Build your community | 6. Welcome and moderate             | Set up onboarding and handle flagged posts                                                                |
 | Customize and extend | 7. Look and feel                    | Change styles with theme components                                                                       |
-| Customize and extend | 8. Reports                          | Answer questions with SQL and share reports on a schedule                                                 |
+| Customize and extend | 8. Reports                          | Compare activity over time, answer questions with SQL and share results on a schedule                     |
 | Customize and extend | 9. GitHub                           | Connect discussions with issues and pull requests                                                         |
 | Customize and extend | 10. Discourse AI                    | Add summaries, spam detection and writing help                                                            |
 | Operate              | 11. Keep a self-hosted site running | Install plugins and keep a self-hosted site updated                                                       |
@@ -59,10 +59,6 @@ Start with a free trial or the Free plan.
 
 Before Module 2, list the features you need, such as private categories, single sign-on, plugins or AI.
 That list decides between hosted and self-hosted, and which plan you need.
-
-### Watch Out
-
-- **A trial and a plan are not the same thing.** A trial ends after a set time. Choose a plan before it ends if you want to keep the site.
 
 ## Module 2: Set Up Your Site
 
@@ -678,19 +674,26 @@ The theme developer guides on meta.discourse.org cover the plugin API.
 - **Browser `:visited` does not match how Discourse tracks reading.** Discourse adds a `.visited` class to the row of each topic you have read up to its latest post. Style `.topic-list-item.visited`. Logged-out visitors still get the browser's `:visited`.
 - **Class names in third-party components change between versions.** Inspect the current class names in your browser tools before you target them.
 
-## Module 8: Reports with Data Explorer and Automation
+## Module 8: Reports: Dashboard, Data Explorer and Automation
 
-**Goal:** answer questions about your site with SQL, and share the answers on a schedule.
+**Goal:** compare activity over time, answer other questions with SQL, and share the answers on a schedule.
+
+### Step 1: Start with the Dashboard
+
+The admin dashboard (`/admin/dashboard`) answers most everyday questions, such as how many people signed up, posted or visited.
+Choose a date range at the top, or set a custom one. The numbers show the change compared with the previous period of the same length.
+For the full list of reports, open `/admin/reports`. Each report has its own date range, and **Export** sends you its data as a CSV file in a private message.
+This is what we use at work. Use Data Explorer only for questions the dashboard cannot answer.
+
+### Step 2: Turn On Data Explorer
 
 Data Explorer and Automation are both bundled with Discourse.
 On hosted sites, check that your plan includes them.
 
-### Step 1: Turn On Data Explorer
-
 Search the settings for `data explorer enabled` and turn it on.
 Then open Data Explorer from the Plugins page in the admin area.
 
-### Step 2: Write a Query with Parameters
+### Step 3: Write a Query with Parameters
 
 Parameters go in a comment block at the top of the query.
 They show up as fields above the results.
@@ -754,7 +757,7 @@ LIMIT 10
 Save each query.
 Its ID is the number in the page address.
 
-### Step 3: Share Results on a Schedule
+### Step 4: Share Results on a Schedule
 
 Search the settings for `discourse automation enabled` and turn it on.
 Then open Automation from the Plugins page in the admin area.
@@ -1196,6 +1199,7 @@ Checked on 30 October 2026.
 - [Introducing the Discourse Free plan](https://blog.discourse.org/2026/07/introducing-the-discourse-free-plan/)
 - [Discourse site settings (source)](https://github.com/discourse/discourse/blob/main/config/site_settings.yml)
 - [Discourse API documentation](https://docs.discourse.org/)
+- [Admin reports (source)](https://github.com/discourse/discourse/blob/main/app/models/report.rb)
 - [Customize text in Discourse](https://meta.discourse.org/t/customize-text-in-discourse/36092)
 - [Configure automatic backups for Discourse](https://meta.discourse.org/t/configure-automatic-backups-for-discourse/14855)
 - [Manually update Discourse and the Docker image](https://meta.discourse.org/t/manually-update-discourse-and-docker-image-to-latest/23325)
