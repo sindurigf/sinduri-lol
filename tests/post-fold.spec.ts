@@ -318,6 +318,19 @@ test.describe('a post fold', () => {
       'open',
       '',
     );
+    await expect(
+      page.locator('#inside-a-fold'),
+      'the opened target is out of view',
+    ).toBeInViewport();
+  });
+
+  /* Function: a malformed escape in the address does not stop the script. */
+  test('still wires the buttons after a malformed hash', async ({ page }) => {
+    await gotoSettled(page, `${foldPost()}#50%-off`);
+
+    await expect(
+      page.getByRole('button', { name: 'Close All Modules' }),
+    ).toBeVisible();
   });
 
   /* Print and paper readers: every fold prints open, then the reader's choice returns. */
@@ -345,16 +358,20 @@ test.describe('a post fold', () => {
     await page.goto(foldPost());
     await page.emulateMedia({ media: 'print' });
 
-    const hidden = await page.evaluate(
-      () =>
-        [
-          ...document.querySelectorAll(
-            'details.post-fold:not([open]) > :not(summary)',
-          ),
-        ].filter((el) => el.getBoundingClientRect().height === 0).length,
-    );
+    const counts = await page.evaluate(() => {
+      const content = [
+        ...document.querySelectorAll(
+          'details.post-fold:not([open]) > :not(summary)',
+        ),
+      ];
+      return {
+        closed: content.length,
+        hidden: content.filter((el) => !el.checkVisibility()).length,
+      };
+    });
 
-    expect(hidden, 'fold content hidden in print').toBe(0);
+    expect(counts.closed, 'the post has no closed fold').toBeGreaterThan(0);
+    expect(counts.hidden, 'fold content hidden in print').toBe(0);
     await context.close();
   });
 
@@ -449,6 +466,13 @@ test.describe('a post fold', () => {
       'open',
       '',
     );
+  });
+
+  test('leaves the module buttons out of print', async ({ page }) => {
+    await gotoSettled(page, foldPost());
+    await page.emulateMedia({ media: 'print' });
+
+    await expect(page.locator('.module-controls')).toBeHidden();
   });
 
   test('opens closed modules for print', async ({ page }) => {
