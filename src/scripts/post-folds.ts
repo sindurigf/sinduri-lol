@@ -28,9 +28,8 @@ addEventListener('hashchange', openForHash);
 
 /* Same-page links, including one to the hash already in the address bar, which fires no hashchange. */
 document.addEventListener('click', (event) => {
-  const link = (event.target as Element).closest<HTMLAnchorElement>(
-    'a[href^="#"]',
-  );
+  if (!(event.target instanceof Element)) return;
+  const link = event.target.closest<HTMLAnchorElement>('a[href^="#"]');
   if (link) openFor(decodeURIComponent(link.hash.slice(1)));
 });
 
@@ -38,9 +37,9 @@ const controls = document.querySelector<HTMLElement>('.module-controls');
 if (controls) {
   controls.hidden = false;
   controls.addEventListener('click', (event) => {
-    const action = (event.target as Element).closest<HTMLElement>(
-      '[data-modules]',
-    )?.dataset.modules;
+    if (!(event.target instanceof Element)) return;
+    const action =
+      event.target.closest<HTMLElement>('[data-modules]')?.dataset.modules;
     if (!action) return;
     for (const fold of document.querySelectorAll<HTMLDetailsElement>(
       'details[data-module]',
