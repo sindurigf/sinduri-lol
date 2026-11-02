@@ -320,20 +320,20 @@ export const POST_CAP_OVERHANG = 5;
 /** px ahead of the cat's middle and up from its feet where each cat's scratch drawing hooks its claws. */
 const SCRATCH_CLAWS: Record<CatId, Pair> = {
   minerva: [32, 97],
-  hela: [23, 78],
+  hela: [21, 70],
   rudra: [29, 100],
 };
 /** px the claws sink into the post's face. */
 const SCRATCH_GRIP = 2;
-/** A stroke: a slow lean in, then a hard pull back. */
+/** The rise onto the hind legs, then each stroke: a slow lean in, then a hard pull back. */
+const SCRATCH_RISE_MS = 500;
 const SCRATCH_REACH_MS = 380;
 const SCRATCH_PULL_MS = 170;
 export const SCRATCH_PULLS = 6;
 /** px the body pulls back; the post leans with it, so the claws stay in its face. */
 const SCRATCH_PULL_PX = 5;
-/** Once the claws let go the post swings back past upright: ms per full swing, and ms for each swing to shrink to 1/e of the last. */
-const POST_SWING_PERIOD_MS = 250;
-const POST_DECAY_MS = 160;
+/** Once the claws let go the post springs back upright, critically damped, so its face never swings away from the claws: ms to settle to 1/e. */
+const POST_SETTLE_MS = 80;
 /** The cat looks at its work, then rests while the post fades. */
 const SCRATCH_LOOK_MS = 600;
 const SCRATCH_REST_MS = 500;
@@ -715,7 +715,7 @@ export const MOVES = {
   post: (): Move => {
     /* Reaches up the post, then pulls down on it in strokes and looks at the work. */
     const steps: Step[] = [
-      step(500, 'rear', { hr: 0, draw: 'swat' }),
+      step(SCRATCH_RISE_MS, 'rear', { hr: 0, draw: 'swat' }),
       step(SCRATCH_REACH_MS, 'leap', SCRATCH, 'out'),
     ];
     const pulls: number[] = [];
@@ -759,8 +759,8 @@ export const MOVES = {
               : after < 0
                 ? tug * EASE.in(pulling)
                 : tug *
-                  Math.exp(-after / POST_DECAY_MS) *
-                  Math.cos((2 * Math.PI * after) / POST_SWING_PERIOD_MS),
+                  Math.exp(-after / POST_SETTLE_MS) *
+                  (1 + after / POST_SETTLE_MS),
           o: fade(t, 300, end, SCRATCH_REST_MS),
           marks: pulls.filter((p) => t >= p + SCRATCH_PULL_MS).length,
           sincePull: after < 0 ? Infinity : after,
