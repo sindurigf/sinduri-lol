@@ -20,6 +20,7 @@ import {
   scaledExtent,
   EDGE_MOVES,
   knockAt,
+  TRACK_MARGIN,
   TRAVEL_FACTORS,
   TRAVEL_MOVES,
   type Move,
@@ -56,8 +57,7 @@ type StepResult = 'draw' | 'still' | 'rest';
 /** On-screen play time after waking before a cat naps. */
 export const NAP_AFTER_MS = 30_000;
 
-/** Distance from each card end the cat's origin keeps, so its drawing reaches at most MAX_OVERHANG past the end. */
-export const TRACK_MARGIN = 48;
+export { TRACK_MARGIN };
 /** px a drawing may reach past its band's end: the page gutter on phones (`px-4`), so it stays on screen. */
 export const MAX_OVERHANG = 16;
 /** Room at the right end for the sleep control. */
@@ -262,11 +262,17 @@ export const planMove = (
 /**
  * The cup push from anywhere on the track, heading left: a run and a creep to
  * `edge`, the track's left end, so the cup goes over the card's or the step's
- * edge at `floor`, where the surface the cat stands on starts.
+ * edge at `floor`, where the surface the cat stands on starts, onto a floor
+ * `depth` px below.
  * Left only: the right end is the sleep control's corner.
  */
-export const cupPush = (x: number, edge = CUP_EDGE, floor = 0): Move =>
-  withApproach(knockAt(edge - floor), Math.max(0, x - edge), 0, 'run');
+export const cupPush = (
+  x: number,
+  edge = CUP_EDGE,
+  floor = 0,
+  depth = Infinity,
+): Move =>
+  withApproach(knockAt(edge - floor, depth), Math.max(0, x - edge), 0, 'run');
 
 export const createColony = (
   spots: CatSpot[],
@@ -500,8 +506,10 @@ export const createColony = (
   /** Plays `name` from where the cat stands; false if it fits nowhere on the track. */
   const begin = (cat: CatState, name: MoveName, now: number): boolean => {
     if (EDGE_MOVES.has(name)) {
-      const brick = cat.ledges[ledgeIndex(cat, cat.pose.x)];
-      play(cat, cupPush(cat.pose.x, cat.min, brick?.x0 ?? 0), now, -1);
+      const i = ledgeIndex(cat, cat.pose.x);
+      const [below, brick] = [cat.ledges[i - 1], cat.ledges[i]];
+      const depth = below && brick ? below.drop - brick.drop : Infinity;
+      play(cat, cupPush(cat.pose.x, cat.min, brick?.x0 ?? 0, depth), now, -1);
       return true;
     }
     const plan = planFor(cat, name);
