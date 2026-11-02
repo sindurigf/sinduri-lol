@@ -412,15 +412,22 @@ const SWAT_TIP: Record<CatId, Pair> = {
 export const CAT_IDS = Object.keys(SWAT_TIP) as CatId[];
 /** The feather swings back towards the cat by this share of its swing away, so each swat finds it. */
 const TOY_BACKSWING = 0.25;
-/** The cup stands clear of the head and chest. */
-const CUP_AHEAD = 36;
+/** The cup's middle, px ahead of the cat's: its near side where the patting paw comes down, 14 to 17 px ahead for the three cats. */
+const CUP_AT_PAW = 22;
+/** Half the cup's width, as drawn in about-cats-rig.ts: it tips over the edge by this much. */
+const CUP_HALF_WIDTH = 5.5;
+/** px from where the cat stops to the card's edge, for track checks: TRACK_MARGIN in about-cats.ts. */
+const CUP_LIP = 48;
+/** ms after the pat's step that its paw-down drawing shows: the rig's BLIP_MS (25) and a frame. */
+const CUP_PAW_LANDS_MS = 45;
+/** The pat slides the cup until its middle is over the edge, easing to a stop. */
+const CUP_SLIDE_MS = 200;
 /** One pat tips the cup over the edge: it slides off the lip, then drops, turning as it falls. */
 const CUP_LOOK_MS = 450;
 const CUP_PAW_UP_MS = 220;
 const CUP_PAW_DOWN_MS = 140;
 const CUP_HIT = CUP_LOOK_MS + CUP_PAW_UP_MS;
 const CUP_TIP_MS = 110;
-const CUP_TIP_PX = 16;
 const CUP_TIP_DEG = 80;
 /** px per ms², so the cup drops out of sight below the edge in about a quarter second; it drifts and spins per ms as it falls. */
 const CUP_GRAVITY = 0.0022;
@@ -541,6 +548,44 @@ const along = ([first, ...rest]: Route, t: number): [number, number] => {
   return [x0, y0];
 };
 
+/** Looks at the cup, pats it once and watches it fall: the pat slides the cup from under the paw to the edge `lip` px ahead, and it tips over. */
+export const knockAt = (lip: number): Move => {
+  const slide = Math.max(0, lip - CUP_AT_PAW);
+  const pushFrom = CUP_HIT + CUP_PAW_LANDS_MS;
+  const tipFrom = pushFrom + CUP_SLIDE_MS;
+  return {
+    steps: [
+      step(CUP_LOOK_MS, 'sit', { hr: 14, draw: 'headturn' }),
+      step(CUP_PAW_UP_MS, 'sit', { hr: 8, draw: 'pawrise' }, 'out'),
+      step(CUP_PAW_DOWN_MS, 'sit', { hr: 14, draw: 'headturn' }, 'in'),
+      step(CUP_WATCH_MS, 'sit', { hr: 26, draw: 'headturn' }),
+      step(CUP_SETTLE_MS, 'sit'),
+    ],
+    mods: [],
+    prop: 'cup',
+    propAt: (t) => {
+      const pushed = EASE.out(
+        Math.min(1, Math.max(0, (t - pushFrom) / CUP_SLIDE_MS)),
+      );
+      const tip = Math.min(1, Math.max(0, (t - tipFrom) / CUP_TIP_MS));
+      const fall = Math.max(0, t - tipFrom - CUP_TIP_MS);
+      const y = 0.5 * CUP_GRAVITY * fall ** 2;
+      return {
+        kind: 'cup',
+        x:
+          CUP_AT_PAW + slide * pushed + CUP_HALF_WIDTH * tip + CUP_DRIFT * fall,
+        y,
+        r: CUP_TIP_DEG * tip + CUP_SPIN * fall,
+        o: Math.min(
+          1,
+          t / CUP_FADE_IN_MS,
+          Math.max(0, 1 - (y - CUP_FADE_AFTER) / CUP_FADE_AFTER),
+        ),
+      };
+    },
+  };
+};
+
 /** A prop's opacity `t` ms in: it fades in over `inMs`, and out over the `outMs` before `end`. */
 const fade = (t: number, inMs: number, end: number, outMs: number): number =>
   Math.min(1, t / inMs, Math.max(0, (end - t) / outMs));
@@ -599,34 +644,7 @@ export const MOVES = {
       },
     };
   },
-  /* Looks at the cup, pats it once, and watches it fall. */
-  knock: (): Move => ({
-    steps: [
-      step(CUP_LOOK_MS, 'sit', { hr: 14, draw: 'headturn' }),
-      step(CUP_PAW_UP_MS, 'sit', { hr: 8, draw: 'pawrise' }, 'out'),
-      step(CUP_PAW_DOWN_MS, 'sit', { hr: 14, draw: 'headturn' }, 'in'),
-      step(CUP_WATCH_MS, 'sit', { hr: 26, draw: 'headturn' }),
-      step(CUP_SETTLE_MS, 'sit'),
-    ],
-    mods: [],
-    prop: 'cup',
-    propAt: (t) => {
-      const tip = Math.min(1, Math.max(0, (t - CUP_HIT) / CUP_TIP_MS));
-      const fall = Math.max(0, t - CUP_HIT - CUP_TIP_MS);
-      const y = 0.5 * CUP_GRAVITY * fall ** 2;
-      return {
-        kind: 'cup',
-        x: CUP_AHEAD + CUP_TIP_PX * tip + CUP_DRIFT * fall,
-        y,
-        r: CUP_TIP_DEG * tip + CUP_SPIN * fall,
-        o: Math.min(
-          1,
-          t / CUP_FADE_IN_MS,
-          Math.max(0, 1 - (y - CUP_FADE_AFTER) / CUP_FADE_AFTER),
-        ),
-      };
-    },
-  }),
+  knock: () => knockAt(CUP_LIP),
   /*
    * The fly lands; the cat stalks it and pounces, misses, swats at it overhead,
    * follows it along the band in hops, leaps for it, and it gets away.
@@ -1055,16 +1073,19 @@ export const withTurn = (move: Move, from: Pose): Move => {
 /** A run from the jump drawings: push off, stretch out, land. The body moves only in the air, so a paw on the ground never slides. */
 const RUN_STRIDE = 96;
 const RUN_AIR_MS = 230;
-const RUN_GROUND_MS = 90;
+/** As long as the landing drawing must show (HOLD_MS), so each ground drawing is up for its whole step. */
+const RUN_GROUND_MS = 120;
 const RUN_LIFT = 9;
-/** ms crouched before the first push-off. */
-const RUN_READY_MS = 400;
+/** ms the body waits at the start of each leap, so the leap drawing is up before it moves: a new drawing waits out a blip and a screen frame. */
+const RUN_LIFTOFF_MS = 40;
+/** A shorter run is no leap: the cat trots it instead. */
+const RUN_MIN_STRIDE = RUN_STRIDE / 2;
 const run = (
   x0: number,
   x1: number,
   from: number,
 ): { steps: Step[]; mods: Mod[] } => {
-  const strides = Math.max(1, Math.round(Math.abs(x1 - x0) / RUN_STRIDE));
+  const strides = Math.max(1, Math.ceil(Math.abs(x1 - x0) / RUN_STRIDE));
   const stride = (x1 - x0) / strides;
   const steps: Step[] = [];
   const mods: Mod[] = [];
@@ -1073,7 +1094,13 @@ const run = (
     const air = from + (2 * i + 1) * RUN_GROUND_MS + i * RUN_AIR_MS;
     steps.push(
       step(RUN_GROUND_MS, 'stand', { x: at, draw: 'takeoff' }, 'linear'),
-      step(RUN_AIR_MS, 'stand', { x: at + stride, draw: 'leap' }, 'linear'),
+      step(RUN_LIFTOFF_MS, 'stand', { x: at, draw: 'leap' }),
+      step(
+        RUN_AIR_MS - RUN_LIFTOFF_MS,
+        'stand',
+        { x: at + stride, draw: 'leap' },
+        'linear',
+      ),
       step(RUN_GROUND_MS, 'stand', { x: at + stride, draw: 'landing' }),
     );
     mods.push(arc(air, air + RUN_AIR_MS, RUN_LIFT));
@@ -1088,7 +1115,7 @@ const CREEP_READY_MS = 250;
 const SETTLE_BACK_MS = 400;
 /** Farther than this, a cat trots or runs to the spot first and creeps only the last of it. */
 const CREEP_REACH = 60;
-/** A trot at the walk drawings' own pace, so they never skip. It stands up first, quickly at the start, so every rising frame shows before the paws move. */
+/** A trot at the walk drawings' own pace, so they never skip. It stands up, or crouches for a run, first, quickly at the start, so every drawing on the way shows before the paws move. */
 const TROT_SPEED = WALK_SPEED;
 const TROT_READY_MS = 800;
 
@@ -1104,14 +1131,16 @@ export const withApproach = (
   gait: 'trot' | 'run' = 'trot',
 ): Move => {
   const trot = Math.max(0, distance - CREEP_REACH);
-  const dash = gait === 'run' && trot > 0 ? run(0, trot, RUN_READY_MS) : null;
+  const dash =
+    gait === 'run' && trot >= RUN_MIN_STRIDE
+      ? run(0, trot, TROT_READY_MS)
+      : null;
   const trotMs = dash
     ? stepsDuration(dash.steps)
     : trot > 0
       ? (trot / TROT_SPEED) * 1000
       : 0;
-  const ready = dash ? RUN_READY_MS : TROT_READY_MS;
-  const trotLead = trot > 0 ? ready + trotMs : 0;
+  const trotLead = trot > 0 ? TROT_READY_MS + trotMs : 0;
   const creep = Math.max(
     CREEP_MIN_MS,
     ((distance - trot) / CREEP_SPEED) * 1000,
@@ -1123,7 +1152,7 @@ export const withApproach = (
     ...move,
     steps: [
       ...(dash
-        ? [step(RUN_READY_MS, 'crouch', {}, 'out'), ...dash.steps]
+        ? [step(TROT_READY_MS, 'crouch', {}, 'out'), ...dash.steps]
         : trot > 0
           ? [
               step(TROT_READY_MS, 'stand', {}, 'out'),
