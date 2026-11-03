@@ -16,6 +16,8 @@ import { PHOTOGRAPHERS, PHOTO_CREDIT_PREFIX } from '../../lib/credits';
 import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+/* After BaseLayout, so global.css declares the layer order first. */
+import '../../styles/components/post-folds.css';
 import { tagLabel } from '../../lib/blog';
 
 export const getStaticPaths = (async () => {
