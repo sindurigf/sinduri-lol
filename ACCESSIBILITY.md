@@ -72,15 +72,15 @@ In scope:
 Not in scope: third-party sites linked from the footer, the talk presenter
 view (development server only, never published), and forks.
 
-| Environment      | Support                                                                                                              |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Browsers         | Chrome and Edge 120, Firefox 128, Safari and iOS Safari 17 ([ARCHITECTURE.md](ARCHITECTURE.md#browser-support))      |
-| Engines tested   | Chromium and Firefox locally and in CI; WebKit in CI and through Docker (`npm run test:webkit`)                      |
-| Color modes      | Dark by default. With JavaScript, the Theme menu offers System (follows the device), Light and Dark (remembered)     |
-| Forced colors    | Windows High Contrast (`forced-colors: active`)                                                                      |
-| No JavaScript    | Navigation and the contact form work; the page stays dark and the theme switch is hidden; the hero field stays blank |
-| Zoom and spacing | 400% zoom at 1280px (320px reflow), SC 1.4.12 text spacing                                                           |
-| Screen readers   | None tested. See [gap 2](#7-known-gaps)                                                                              |
+| Environment      | Support                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Browsers         | Chrome and Edge 120, Firefox 128, Safari and iOS Safari 17 ([ARCHITECTURE.md](ARCHITECTURE.md#browser-support))          |
+| Engines tested   | Chromium and Firefox locally and in CI; WebKit in CI and through Docker (`npm run test:webkit`)                          |
+| Color modes      | Dark by default. With JavaScript, the Theme menu offers System (follows the device), Light and Dark (remembered)         |
+| Forced colors    | Windows High Contrast (`forced-colors: active`)                                                                          |
+| No JavaScript    | Navigation and the contact form work; the page stays dark and the theme switch is hidden; the homepage rabbit sits still |
+| Zoom and spacing | 400% zoom at 1280px (320px reflow), SC 1.4.12 text spacing                                                               |
+| Screen readers   | None tested. See [gap 2](#7-known-gaps)                                                                                  |
 
 ## 4. What the site supports
 
@@ -172,9 +172,10 @@ view (development server only, never published), and forks.
 - **Alt text.** Every image in the build is named or decorative on purpose;
   a failed photo in an `.aspect-frame` shows its alt text on its frame
   without doubling it for a screen reader.
-- **Motion.** The hero field on `/` has a pause control and each cat on
-  `/about` a sleep control (SC 2.2.2). Under `prefers-reduced-motion: reduce`
-  the hero field is drawn once and held, the cats sit still on the brick
+- **Motion.** The homepage rabbit and printed things have two pause controls
+  and each cat on `/about` a sleep control (SC 2.2.2). Under
+  `prefers-reduced-motion: reduce` the homepage is drawn once and held, the
+  cats sit still on the brick
   under them, and a pressed
   control does not move into its shadow (SC 2.3.3); nothing else animates
   ([STYLEGUIDE Motion](docs/STYLEGUIDE.md#motion)).
@@ -315,12 +316,12 @@ merge.
 | `tests/table-stack.spec.ts`         | 1.3.1, 1.4.10, 1.4.11, 4.1.2                                     | Below 640px a post table stacks with its table, row, header and cell roles in Chromium's tree, column labels hidden from assistive technology and left out of cell names, no sideways scroll at 320 or 390px and no split word; table lines 3:1 against the page, dark and light                                |
 | `tests/visual-presentation.spec.ts` | 1.4.8                                                            | Line length, line height and paragraph spacing at three widths, open cat card included                                                                                                                                                                                                                          |
 | `tests/zoom-lines.spec.ts`          | 1.4.8                                                            | Every line of text on screen and no sideways scroll at 200px and 256px, the 500% zoom widths; code blocks, tables and photo strips scroll in their own region                                                                                                                                                   |
-| `tests/hero-fit.spec.ts`            | 1.4.10, 1.4.11, 1.4.12, 2.2.2, 2.4.11                            | Hero name unclipped and uncovered; no visible sticker over text in a window too short for it; pause control on the first screen beside the first name, every point of it reachable, clear of the name, edge and ring 3:1 on the page                                                                            |
+| `tests/home-hero.spec.ts`           | 1.4.3, 2.4.11                                                    | The name clears the sticky header; the grass, rabbit and hole cover no text or control; the printed things pass behind every word and control at seven sizes; only the jar is a control                                                                                                                         |
 | `tests/close-row.spec.ts`           | 1.4.10                                                           | The close row's sticker never covers its text                                                                                                                                                                                                                                                                   |
 | `tests/mobile-menu.spec.ts`         | 2.1.1, 2.4.3                                                     | Menu opens, takes focus, returns it; widened from 320px it closes, leaves one Primary navigation and no dialog                                                                                                                                                                                                  |
 | `tests/no-script.spec.ts`           | 2.1.1, 1.3.1                                                     | Navigation with scripting off                                                                                                                                                                                                                                                                                   |
 | `tests/forced-colors.spec.ts`       | 1.4.1, 1.4.11, 2.4.7                                             | Forced colors, listings sampled; every focus stop on /; /brand's named color swatches keep their colors with a CanvasText edge; not WebKit                                                                                                                                                                      |
-| `tests/motion.spec.ts`              | 2.2.2, 2.3.3                                                     | Hero field pauses; nothing moves under reduced motion                                                                                                                                                                                                                                                           |
+| `tests/motion.spec.ts`              | 2.2.2, 2.3.3                                                     | Homepage motion pauses from either control, at most 30 frames a second, stopped off screen and in a hidden tab; the jar moves nothing while paused or under reduced motion; nothing moves under reduced motion                                                                                                  |
 | `tests/let-it-fall.spec.ts`         | 2.3.3, 2.4.11, 2.5.5, 2.5.8, 4.1.3                               | One press stacks the screen into a heap above the button, which keeps focus; no target covered; axe on the heap; no sideways scroll; button, Esc or keyboard focus restores; a heap link works; rabbit covers no control; announced; reduced motion; no button without JavaScript or on talk decks              |
 | `tests/press.spec.ts`               | 1.4.11, 2.3.3                                                    | A press is drawn; a hover lift keeps the pointer and its ring clears the grown shadow; under reduced motion or without a hovering pointer nothing moves                                                                                                                                                         |
 | `tests/about-cats.spec.ts`          | 1.4.1, 1.4.3, 1.4.10, 1.4.11, 2.2.2, 2.4.11, 2.5.5               | Cat buttons, card dialog, focus return, sleep controls, trick lists, reduced motion; a moving cat never scrolls the page; on a stepped wall a cat stands on, and is clickable on, the brick under it                                                                                                            |

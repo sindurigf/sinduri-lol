@@ -41,12 +41,12 @@ blur, uppercase headings, tilted marks.
 | 1b  | Ground, thin slab: `/contact/sent`, both posts                                                                                     | 3 routes                               |
 | 1c  | Ground, mid-page: a `Section surface="gold"`, the kindness quote, `/contact`'s closing band                                        | `/career`, `/about`, `/`, `/contact`   |
 | 2   | The primary action: `.nav-cta`, `.btn-primary`                                                                                     | 11 routes, 4 routes                    |
-| 3   | The bunny marks: the logo tile, the laughing rabbit tile on `/about`, the roundel, the homepage sticker                            | 11 routes, 9 routes                    |
+| 3   | The bunny marks: the logo tile, the laughing rabbit tile on `/about`, the roundel                                                  | 11 routes, 9 routes                    |
 | 11  | The footer name band: "Lepus Ridet" in ink on a `block-gold` band at every page's end, the rabbit standing on it                   | every route                            |
 | 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                                                  | `/about`, `/accessibility`, `/contact` |
 | 4a  | A talk slide's label, bold words, part number and lead-in term before a colon; its text links, still underlined                    | `/talks/<deck>/`                       |
 | 5   | Category: the blog label and the homepage glyph tiles, ink-edged on gold                                                           | 3 routes                               |
-| 6   | Display words: `Guntupalli`                                                                                                        | `/`                                    |
+| 6   | Homepage: the fall's section title bricks, and the printed things' line on the dark ground                                         | `/`                                    |
 | 7   | List markers in `.bullet-list`                                                                                                     | wherever a bulleted list is            |
 | 8   | The `gold` swatch and the contrast samples on gold; fills, hex in both modes                                                       | `/brand`                               |
 | 9   | Edges in dark mode: `border` on fields, controls, chips, rules and the outer edge of a gold area                                   | every route                            |
@@ -269,8 +269,7 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
   beats the subtree default and is a bug. axe misses it;
   `tests/gold-surface.spec.ts` catches it.
 - No single line of text crosses the gold's edge: nothing clears 4.5 on both
-  grounds. The homepage name breaks on the rule, `text` above and `gold-text`
-  below; `tests/hero-fit.spec.ts` keeps it two lines.
+  grounds.
 
 ### Buttons on gold
 
@@ -310,7 +309,8 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
 
 - Every hard shadow and edge turns `#131313`.
 - Hover fills are dark mode's `#00dcfd` under `#131313` (11.20).
-- `.surface-gold` and `.v-column` go white. Buttons, tiles and stickers keep
+- `.surface-gold` goes white, except the homepage meadow, which stays gold.
+  Buttons, tiles and stickers keep
   their `#FFC000` fill, always under `#131313` (11.32).
 - Gold text turns ink; a `.label.text-gold` and a slide label gain a gold
   square before the word, ink on a gold block (`--label-mark`).
@@ -335,7 +335,7 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 
 | Token                     | Min px | Max px | Line height | Weight | Use                                   |
 | ------------------------- | ------ | ------ | ----------- | ------ | ------------------------------------- |
-| `text-hero-h1`            | 36     | 36     | 0.94        | 900    | Homepage name only                    |
+| `text-home-name`          | 28     | 64     | 0.98        | 900    | Homepage name only                    |
 | `text-h1`                 | 48     | 48     | 0.94        | 900    | Page title                            |
 | `text-deck-cover`         | 33     | 80     | 0.94        | 900    | Talk cover title                      |
 | `text-reading-h1`         | 40     | 40     | 0.94        | 900    | Privacy, Accessibility title          |
@@ -355,7 +355,6 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 | `text-code`               | 16     | none   | 1.5         | 400    | Code, `--font-mono`; tracks body      |
 | `text-button`             | 14     | 16     | 1.2         | 900    | Buttons; same as `text-label`         |
 | `text-label`              | 14     | 16     | 1.2         | 900    | Labels; 16 to 40rem, 14 at 48rem      |
-| `text-hero-sticker`       | 18     | 30     | 1.02        | 900    | Homepage hero stickers                |
 | `text-menu`               | 34     | 56     | 1           | 900    | Mobile menu links                     |
 | `text-slide`              | 17     | 34     | 1.35        | 400    | Slide text: full screen, print        |
 | `text-slide-title`        | 26     | 65     | 1           | 900    | Talk slide title, its own case        |
@@ -403,7 +402,7 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 - Headings never skip levels; one `<h1>` per page. No heading is larger than
   the level above it (`tests/headings.spec.ts`); a /brand example, shown at
   another page's size, is exempt.
-- `text-hero-h1` is 36px so the homepage name stays two lines.
+- `text-home-name` is the homepage name only: 28px to 64px, two lines.
 - `text-reading-h1` is for the Privacy and Accessibility titles only.
 - The talk cover keeps the fluid `text-deck-cover`; the deck has its own
   rule ([ACCESSIBILITY.md](../ACCESSIBILITY.md) gap 7).
@@ -422,7 +421,8 @@ longest word fits there; `tests/reflow.spec.ts` holds them.
 
 - `text-h1` 48px: `CREDITS` fits 273px.
 - `text-reading-h1` 40px: `ACCES-SIBILITY` breaks at its soft hyphen.
-- `text-hero-h1` 36px: `GUNTUPALLI` fits the name's 241px window.
+- `text-home-name` 28px: `GUNTUPALLI` fits the meadow's 225px column; the
+  name's brick starts at `sm`.
 - `text-h2` 28px: `MAINTAINERS` fits. `text-h3` 22px, 0.8 of it.
 - `text-post-title` 32px: `Communities` fits.
 - A longer word in a heading fails `reflow.spec.ts`'s heading-word fit on
@@ -552,7 +552,7 @@ with a comment beside it.
 | `shadow-hard-cyan-object`   | A hovered linked card, in place of pink; a contact link brick fills cyan instead, its ring inside in ink              |
 | `shadow-hard-gold-border-4` | A card on gold                                                                                                        |
 | `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                       |
-| `shadow-hard-bunny-8`       | The logo tile, the homepage stickers                                                                                  |
+| `shadow-hard-bunny-8`       | The logo tile                                                                                                         |
 | `shadow-hard-bunny-12`      | The laughing rabbit tile on `/about`                                                                                  |
 
 - `bunny` is `pink`'s hex but stays pink in light mode, where `pink` turns
@@ -778,7 +778,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
 `src/components/PageHero.astro`. Enforced by `tests/page-hero.spec.ts` and
 `tests/gold-surface.spec.ts`.
 
-Four openings, no fifth: Home's canvas hero, a talk's cover slide, a post's
+Four openings, no fifth: Home's meadow, a talk's cover slide, a post's
 `.post-slab`, and `PageHero` everywhere else.
 
 ### The slab tiers
@@ -809,7 +809,7 @@ how important the page is.
 
 | Variant  | Where                                                        | Title                            | Column                             |
 | -------- | ------------------------------------------------------------ | -------------------------------- | ---------------------------------- |
-| Home     | `/` only                                                     | its own hero, `HeroField.vue`    | its own composition                |
+| Home     | `/` only                                                     | its own meadow, `#home-name`     | its own composition                |
 | Standard | About, Career, Contact, Blog, Credits, Brand, `/404`         | `text-h1`                        | `max-w-page`; 6 of 12 with a photo |
 | Reading  | Privacy, Accessibility (`measure="reading"`)                 | `text-reading-h1`                | `max-w-measure`, the prose column  |
 | Compact  | category and tag listings, `/contact/send`, `/blog/page/<n>` | `text-h2`, still the page's `h1` | `max-w-page`                       |
@@ -931,15 +931,25 @@ text-gold-muted` under the standfirst. Color
 None. Gold buttons lift and press like every control
 ([Control states](#control-states)). The roundel's tilt is static.
 
-### The hero pause control
+### The homepage meadow and fall
 
-- Beside the first name at every size (`.hero-motion-toggle`): right edge on
-  the window's, `--spacing(4)` above its top rule. The window can be too low to
-  hold it clear of the name.
-- It sits on the page, not the gold, so its focus ring is the page's `cyan`.
-- A first name long enough to reach it would sit under it:
-  `tests/hero-fit.spec.ts` measures the letters against its box.
-- It is the first stop in `<main>` at every size.
+Homepage only (`src/pages/index.astro`, `src/styles/components/home.css`).
+Enforced by `tests/home-hero.spec.ts` and `tests/motion.spec.ts`.
+
+- The meadow is the gold column, gold in both modes: the name as a light brick
+  (from `sm`), the two roles as two stepped bricks, the photo, the stats, then
+  the grass strip with the hopping rabbit and the hole's mouth cut into its
+  floor.
+- The fall: every section after it steps sideways (`--spacing-home-tumble`)
+  and its title is a gold label brick, so all text sits in an opaque brick.
+- Printed things (jar, book, picture, watch, teacup) rise in the lanes beside
+  the column (`--spacing-home-lane`), in `--color-print`: gold on dark, ink on
+  light. Below `md` there are no lanes and they pass behind the bricks; the
+  jar rests at the top of the fall.
+- The jar is the one control among them ("Let Go of the Jar"); the rest are
+  `aria-hidden`.
+- Two pause controls, one beside the stats and one at the top of the fall,
+  named "Pause animations" / "Play animations" and kept in step.
 
 ## Posts
 
@@ -1320,19 +1330,22 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 
 - Every animation respects `prefers-reduced-motion: reduce`.
 - Anything moving automatically for over five seconds needs a pause control
-  (SC 2.2.2): the homepage hero field and each About cat.
+  (SC 2.2.2): the homepage meadow and fall, and each About cat.
 - Nothing flashes more than three times per second (SC 2.3.1).
 - Controls lift off their shadow under a hovering pointer and press into it at
   once ([Control states](#control-states)); no movement under reduced motion.
 - No marquee.
-- Pattern (`src/components/ui/HeroField.vue`, its logic in
-  `src/composables/use-hero-field.ts`): start the animation on mount,
-  never in server HTML. Under reduced motion render one still frame and no
-  button. The state lives in the accessible name ("Play the hero animation" /
-  "Pause the hero animation"), no `aria-pressed`. Without JavaScript the hero
-  shows that still frame as a WebP (`npm run hero-still` after a change to the
-  field).
-- `HeroField` loads `client:load`.
+- Pattern (`src/scripts/home-motion.ts`): the pause controls ship `hidden`
+  and the script shows them as it starts the motion. Under reduced motion it
+  draws one still frame and keeps them hidden. The state lives in the
+  accessible name ("Play animations" / "Pause animations"), no
+  `aria-pressed`. Without JavaScript the rabbit and the printed things rest
+  where `home.css` puts them.
+- One frame loop (`src/scripts/motion-loop.ts`) at most 30 frames a second,
+  stopped while paused, while the tab is hidden and while the meadow and the
+  fall are off screen.
+- Pressing the jar tosses it up out of view; while paused or under reduced
+  motion it flips over in place instead, with no animation.
 - The About cats (`src/components/AboutCats.astro`, `src/scripts/about-cats.ts`) wake when their band is
   first on screen, play along it (games like the yarn and the fly carry them),
   and sit still under reduced motion. Each cat's button

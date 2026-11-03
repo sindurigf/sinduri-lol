@@ -122,7 +122,7 @@ Dark is the default. Colors and rules:
 - `HeroField.vue` (through `use-hero-field.ts`) reads its palette from its own element and rebuilds when a
   `MutationObserver` sees `data-theme` change. Its ground is `hero-ground`.
   A `(resolution)` media query resizes its canvases when only the pixel ratio
-  changes; in forced colors it is hidden (`tests/hero-media.spec.ts`).
+  changes; in forced colors it is hidden.
 - The About cats (`src/scripts/about-cats.ts`) need neither: the cats are drawings with their outline
   baked in, the same in both themes, and the toys' SVG parts carry classes
   that `about-cats.css` maps to tokens.
@@ -711,9 +711,6 @@ require-trusted-types-for 'script'; trusted-types vue
 
 Hashed inline blocks:
 
-- On `/` (the `HeroField.vue` island, `client:load`): the `client:load`
-  loader, the `<astro-island>` hydration script, and the
-  `astro-island,astro-slot,astro-static-slot{display:contents}` style.
 - On every page: the theme script in `BaseLayout.astro`'s `<head>`.
 - JSON-LD needs no hash (not executed).
 
