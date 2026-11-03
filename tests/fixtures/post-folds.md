@@ -1,5 +1,3 @@
-Test-only body for `tests/post-fold.spec.ts`; never built as a page.
-
 - [Module 1: Set Up](#module-1-set-up)
 - [Module 2: Configure](#module-2-configure)
 - [Module 3: Go Live](#module-3-go-live)
