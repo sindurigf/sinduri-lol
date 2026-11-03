@@ -50,10 +50,12 @@ echo "short"
 
 - The only surprise.
 
+## Between Modules
+
+A section outside any module.
+
 ## Side Path: Move a Site
 
-Move content from another site.
+Move content from another site.[^1]
 
-## Where to Go Next
-
-A closing section outside any module.
+[^1]: A footnote, which stays outside every fold.

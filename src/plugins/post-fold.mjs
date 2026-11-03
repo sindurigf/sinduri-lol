@@ -111,6 +111,12 @@ const moduleControls = () => ({
  */
 const groupModules = (ctx, siblings) => {
   const isH2 = (node) => node.type === 'element' && node.tagName === 'h2';
+  /* GFM footnotes follow the last module with their own sr-only h2; they are not its body. */
+  const endsModule = (node) =>
+    isH2(node) ||
+    (node.type === 'element' &&
+      node.tagName === 'section' &&
+      node.properties?.dataFootnotes !== undefined);
   const out = [];
   let controlsPlaced = false;
   for (let index = 0; index < siblings.length; index += 1) {
@@ -126,7 +132,7 @@ const groupModules = (ctx, siblings) => {
     }
     out.push(node);
     const body = [];
-    while (index + 1 < siblings.length && !isH2(siblings[index + 1])) {
+    while (index + 1 < siblings.length && !endsModule(siblings[index + 1])) {
       index += 1;
       body.push(siblings[index]);
     }
