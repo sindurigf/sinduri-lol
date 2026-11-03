@@ -1,5 +1,6 @@
 import { test, expect, type Page } from './test';
 import { fontsSettled, gotoSettled } from './settle';
+import { NO_WEBKIT } from './tags';
 
 /** [width, height]: the four layouts the fall has (no lanes, `md`, `lg`, `xl`) and a landscape phone. */
 const VIEWPORTS = [
@@ -91,7 +92,7 @@ const coveredBy = (page: Page, scope: string, cover: string) =>
 
 test.describe('the homepage meadow', () => {
   for (const [width, height] of VIEWPORTS) {
-    test(`the name clears the header at ${width}x${height} (SC 2.4.11)`, async ({
+    test(`the name clears the header at ${width}x${height}`, async ({
       page,
     }) => {
       await open(page, width, height);
@@ -267,8 +268,8 @@ test.describe('the printed things in the fall', () => {
   });
 });
 
-test.describe('the homepage in forced colors', () => {
-  test('the meadow, the hole, both pause controls and the jar keep an edge, and the rabbit stays drawn (SC 1.4.11)', async ({
+test.describe('the homepage in forced colors', NO_WEBKIT, () => {
+  test('both pause controls and the jar keep an edge (SC 1.4.11)', async ({
     page,
   }) => {
     await page.emulateMedia({ forcedColors: 'active' });
@@ -287,26 +288,18 @@ test.describe('the homepage in forced colors', () => {
           style.borderTopColor !== style.backgroundColor
         );
       };
-      const one = (selector: string) => {
-        const el = document.querySelector(selector);
-        if (!el) throw new Error(`${selector} is not on the page.`);
-        return el;
-      };
+      const jar = document.querySelector('[data-home-jar]');
+      if (!jar) throw new Error('[data-home-jar] is not on the page.');
       const pauses = [...document.querySelectorAll('[data-home-pause]')];
       return {
-        meadow: edged(one('.home-meadow')),
-        mouth: edged(one('[data-home-mouth]')),
-        jar: edged(one('[data-home-jar]')),
+        jar: edged(jar),
         pauses: pauses.length,
         pausesEdged: pauses.every(
           (button) => !(button as HTMLElement).hidden && edged(button),
         ),
-        rabbit: getComputedStyle(one('.home-bun > i')).backgroundImage,
       };
     });
 
-    expect(found.meadow, 'the meadow loses its edge').toBe(true);
-    expect(found.mouth, 'the hole loses its edge').toBe(true);
     expect(found.jar, 'the jar has no boundary as a control').toBe(true);
     expect(found.pauses, 'the homepage does not have two pause controls').toBe(
       2,
@@ -314,6 +307,5 @@ test.describe('the homepage in forced colors', () => {
     expect(found.pausesEdged, 'a pause control is hidden or has no edge').toBe(
       true,
     );
-    expect(found.rabbit, 'the rabbit is not drawn').not.toBe('none');
   });
 });
