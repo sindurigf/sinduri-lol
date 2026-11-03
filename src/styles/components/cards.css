@@ -201,6 +201,7 @@
     @apply relative mt-16 edge border-border;
 
     container: module-panel / inline-size;
+    anchor-scope: --module-heading;
   }
 
   .prose .module-panel > h2 {
@@ -236,7 +237,15 @@
     border-bottom-width: 0;
   }
 
-  /* Too narrow for a long word beside the toggle (tests/post-fold.spec.ts at 320px): the toggle drops below the bar. */
+  /* Inside the toggle: outside, the ring would cross the panel's edge. */
+  .module-panel > .post-fold > .post-contents-summary:focus-visible {
+    outline-offset: calc(-1 * (var(--focus-width) + var(--focus-gap)));
+  }
+
+  /*
+   * Too narrow for a long word beside the toggle, without JavaScript; with it,
+   * src/scripts/post-folds.ts stacks any panel whose bar is crowded (Text Size).
+   */
   @container module-panel (width < 20rem) {
     .prose .module-panel > h2 {
       @apply pr-card-tight;
@@ -250,6 +259,17 @@
     }
   }
 
+  .prose .module-panel-stacked > h2 {
+    @apply pr-card-tight;
+  }
+
+  .module-panel-stacked > .post-fold > .post-contents-summary {
+    @apply static w-auto;
+
+    height: auto;
+    border-width: var(--edge) 0 0;
+  }
+
   /* The inset sits on the body, not the fold, so a dropped toggle spans the panel. */
   .module-panel > .post-fold[open] {
     @apply pb-card-tight;
@@ -257,6 +277,11 @@
 
   .module-panel > .post-fold > :not(summary) {
     @apply mx-card-tight;
+  }
+
+  /* No breakout from a panel: its container query would zero the outdent and start them at the edge. */
+  .post-layout .prose .module-panel > .post-fold > :is(figure, .pillar-wall) {
+    @apply mx-card-tight w-auto;
   }
 
   .post-fold > :not(summary) {

@@ -57,6 +57,42 @@ if (controls) {
   });
 }
 
+/* Text Size and long words can outgrow the bar's corner (SC 1.4.4, 1.4.10); the toggle then drops below the bar. */
+const STACKED = 'module-panel-stacked';
+
+const overlaps = (a: DOMRect, b: DOMRect): boolean =>
+  a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom;
+
+const crowded = (panel: HTMLElement): boolean => {
+  const heading = panel.querySelector(':scope > h2');
+  const toggle = panel.querySelector(':scope > details > summary');
+  if (!heading || !toggle) return false;
+  if (toggle.scrollWidth > toggle.clientWidth) return true;
+  const range = document.createRange();
+  range.selectNodeContents(heading);
+  const box = toggle.getBoundingClientRect();
+  return [...range.getClientRects()].some((line) => overlaps(line, box));
+};
+
+/* Measured beside first, so a panel goes back once there is room. */
+const fit = (panel: HTMLElement): void => {
+  panel.classList.remove(STACKED);
+  panel.classList.toggle(STACKED, crowded(panel));
+};
+
+const panels = [...document.querySelectorAll<HTMLElement>('.module-panel')];
+let fitting = 0;
+/* A frame later: changing a watched size inside the callback is a ResizeObserver loop error. */
+const watcher = new ResizeObserver(() => {
+  cancelAnimationFrame(fitting);
+  fitting = requestAnimationFrame(() => panels.forEach(fit));
+});
+for (const panel of panels) {
+  watcher.observe(panel);
+  const toggle = panel.querySelector(':scope > details > summary');
+  if (toggle) watcher.observe(toggle);
+}
+
 /* Print shows every fold, then puts the reader's choice back. */
 let openedForPrint: HTMLDetailsElement[] = [];
 addEventListener('beforeprint', () => {

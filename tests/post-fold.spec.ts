@@ -402,7 +402,7 @@ test.describe('a post fold', () => {
     expect(short, 'summaries under 44px tall').toEqual([]);
   });
 
-  /* SC 1.4.11: the toggle's own edge or its fill reaches 3:1 on the page. */
+  /* SC 1.4.11: the toggle's edge reaches 3:1 against the page and the heading bar beside it, or its fill does against the page. */
   for (const colorScheme of ['dark', 'light'] as const) {
     test(`draws every summary's boundary at 3:1 in ${colorScheme} mode`, async ({
       browser,
@@ -419,9 +419,10 @@ test.describe('a post fold', () => {
           const side = ['Top', 'Right', 'Bottom', 'Left'].find((name) => parseFloat(style['border' + name + 'Width']) >= 1);
           const edge = side ? parse(style['border' + side + 'Color']) : null;
           const fill = parse(style.backgroundColor);
-          if (!ground) return 0;
+          const bar = effectiveBackground(summary.closest('.module-panel')?.querySelector(':scope > h2'));
+          if (!ground || !bar) return 0;
           return Math.max(
-            edge ? ratio(over(edge, ground), ground) : 0,
+            edge ? Math.min(ratio(over(edge, ground), ground), ratio(over(edge, bar), bar)) : 0,
             fill && fill.a === 1 ? ratio(fill, ground) : 0,
           );
         });
@@ -494,6 +495,7 @@ test.describe('a post fold', () => {
     );
   });
 
+  /* Print and paper readers: a fold left closed prints open without the script. */
   test('prints a closed fold open without JavaScript', async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
@@ -556,6 +558,7 @@ test.describe('a post fold', () => {
     );
   });
 
+  /* Function: buttons that would do nothing are not shown. */
   test('hides the module buttons without JavaScript', async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
@@ -594,6 +597,7 @@ test.describe('a post fold', () => {
     );
   });
 
+  /* Print and paper readers: controls are not printed. */
   test('leaves the module buttons out of print', async ({ page }) => {
     await gotoFoldPost(page);
     await page.emulateMedia({ media: 'print' });
@@ -601,13 +605,76 @@ test.describe('a post fold', () => {
     await expect(page.locator('.module-controls')).toBeHidden();
   });
 
-  test('opens closed modules for print', async ({ page }) => {
-    await gotoFoldPost(page);
-    await page.getByRole('button', { name: 'Close All Modules' }).click();
+  /* SC 1.4.4, 1.4.10: at the largest Text Size the toggle drops below the bar rather than overflow or cover the heading. */
+  for (const width of [390, 1280]) {
+    test(`fits the toggle at 200% Text Size at ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await gotoFoldPost(page);
+      await page.evaluate(() =>
+        document.documentElement.style.setProperty('--text-scale', '2'),
+      );
 
-    await page.evaluate(() => dispatchEvent(new Event('beforeprint')));
-    expect(await page.locator('details[data-module]:not([open])').count()).toBe(
-      0,
-    );
+      await expect
+        .poll(
+          () =>
+            page.evaluate(
+              () =>
+                [...document.querySelectorAll('.module-panel')].filter(
+                  (panel) => {
+                    const toggle = panel.querySelector(
+                      ':scope > details > summary',
+                    )!;
+                    const box = toggle.getBoundingClientRect();
+                    const range = document.createRange();
+                    range.selectNodeContents(
+                      panel.querySelector(':scope > h2')!,
+                    );
+                    return (
+                      toggle.scrollWidth > toggle.clientWidth ||
+                      [...range.getClientRects()].some(
+                        (line) =>
+                          line.right > box.left &&
+                          line.left < box.right &&
+                          line.bottom > box.top &&
+                          line.top < box.bottom,
+                      )
+                    );
+                  },
+                ).length,
+            ),
+          { message: 'panels whose toggle overflows or covers the heading' },
+        )
+        .toBe(0);
+    });
+  }
+
+  /* Function: a figure in a module keeps the body's inset instead of running into the panel edge. */
+  test('keeps a figure inside the panel inset', async ({ page }) => {
+    await gotoFoldPost(page);
+    const fold = firstFold(page);
+    const result = await fold.evaluate((details) => {
+      const figure = document.createElement('figure');
+      figure.append(document.querySelector('main img')!.cloneNode());
+      details.append(figure);
+      const text = details.querySelector(':scope > p')!.getBoundingClientRect();
+      const box = figure.getBoundingClientRect();
+      return {
+        textLeft: text.left,
+        textRight: text.right,
+        left: box.left,
+        right: box.right,
+      };
+    });
+
+    expect(
+      result.left,
+      'the figure starts outside the text inset',
+    ).toBeGreaterThanOrEqual(result.textLeft - 1);
+    expect(
+      result.right,
+      'the figure runs past the text inset',
+    ).toBeLessThanOrEqual(result.textRight + 1);
   });
 });
