@@ -3,7 +3,7 @@ import Abbr from '../Abbr.astro';
 import ProseScrollFit from '../ProseScrollFit.astro';
 import ComponentRow from './ComponentRow.astro';
 
-const CODE_LABEL = 'Code, scrolls sideways';
+const CODE_LABEL = 'bash code, scrolls sideways';
 ---
 
 <ul role="list" class="brand-parts">
@@ -55,7 +55,9 @@ const CODE_LABEL = 'Code, scrolls sideways';
   >
     <div class="prose">
       <div class="code-block">
-        <span class="code-lang">bash</span>
+        <span class="code-lang" aria-hidden="true">
+          bash
+        </span>
         <pre
           tabindex="0"
           role="group"

@@ -12,6 +12,14 @@ import { NODE } from './tags';
 import ts from 'typescript';
 import type { Page } from '@playwright/test';
 import { NON_TEXT, PAGE_HELPERS } from './contrast';
+import { pathToFileURL } from 'node:url';
+import { createSatteriMarkdownProcessor } from '@astrojs/markdown-satteri';
+import { linkListItem } from '../src/plugins/link-list-item.mjs';
+import { postFigure } from '../src/plugins/post-figure.mjs';
+import { tableScope } from '../src/plugins/table-scope.mjs';
+import { tableStack } from '../src/plugins/table-stack.mjs';
+import { tableScroll } from '../src/plugins/table-scroll.mjs';
+import { BLOG_CONTENT_DIR } from '../src/lib/paths';
 
 /**
  * `src/plugins/code-block.mjs` and the `.prose code` / `.prose pre` rules. No
@@ -103,6 +111,11 @@ test.describe('the code-block visitor', () => {
       'pre',
     ]);
     expect(frame?.children[0].children[0].value).toBe('bash');
+    expect(
+      frame?.children[0].properties.ariaHidden,
+      'the visible label is read twice: it is in the name',
+    ).toBe('true');
+    expect(node.properties.ariaLabel).toBe('bash code, scrolls sideways');
     expect(node.properties.dataCopy).toBe('bash code');
   });
 
@@ -252,7 +265,7 @@ test.describe('a code block is a tab stop only while it scrolls', () => {
         () => stateOf(page),
         'a block that fits is still a tab stop, or named as scrolling',
       )
-      .toMatchObject({ scrolls: false, tabIndex: -1, name: 'Code' });
+      .toMatchObject({ scrolls: false, tabIndex: -1, name: 'bash code' });
   });
 
   /* SC 1.4.12: letter and word spacing widen the text, not the block's box. */
@@ -292,7 +305,7 @@ test.describe('a code block is a tab stop only while it scrolls', () => {
       .toMatchObject({
         scrolls: true,
         tabIndex: 0,
-        name: 'Code, scrolls sideways',
+        name: 'bash code, scrolls sideways',
       });
   });
 
@@ -309,13 +322,13 @@ test.describe('a code block is a tab stop only while it scrolls', () => {
       .toMatchObject({
         scrolls: true,
         tabIndex: 0,
-        name: 'Code, scrolls sideways',
+        name: 'bash code, scrolls sideways',
       });
 
     await page.setViewportSize({ width: 1280, height: 900 });
     await expect
       .poll(() => stateOf(page), 'widened, the block kept its tab stop')
-      .toMatchObject({ scrolls: false, tabIndex: -1, name: 'Code' });
+      .toMatchObject({ scrolls: false, tabIndex: -1, name: 'bash code' });
   });
 });
 
@@ -374,7 +387,9 @@ test.describe('the code-block fit script', NODE, () => {
 
 /* Post code as src/plugins/code-block.mjs frames it, with src/scripts/copy.ts run after it. */
 const FRAMED = `
-  <div class="code-block"><span class="code-lang">bash</span><pre tabindex="0" role="group" aria-label="Code, scrolls sideways" data-copy="bash code" data-copy-word><code>make app
+  <div class="code-block"><span class="code-lang" aria-hidden="true">bash</span><pre tabindex="0" role="group" aria-label="bash code, scrolls sideways" data-copy="bash code" data-copy-word><code>make app
+    indented by four spaces
+	indented by a tab
 drush --uri=https://example.test sql:query "SELECT nid, title FROM node_field_data WHERE status = 1;"
 </code></pre></div>
 `;
@@ -513,4 +528,140 @@ test.describe('post code with its label and Copy button', () => {
       await context.close();
     });
   }
+
+  /* SC 3.3.1: a refusal from the browser, not a missing API, is shown the same way. */
+  test('shows a copy the browser refuses', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: {
+          writeText: async () => {
+            throw new DOMException('Denied', 'NotAllowedError');
+          },
+        },
+      });
+    });
+    const frame = await gotoFramed(page);
+    await frame.getByRole('button', { name: 'Copy bash code' }).click();
+
+    await expect(page.locator('.code-block + .copy-error').last()).toHaveText(
+      'Copy failed. The code is selected: press Ctrl+C or Command+C.',
+    );
+  });
+
+  /* Function: post code and a /brand Markup panel on one page each get one button. */
+  test('draws one button per block when post and /brand markup meet', async ({
+    page,
+  }) => {
+    await gotoSettled(page, itemAt(POST_ROUTES, 0));
+    await page.evaluate((html) => {
+      document
+        .querySelector('.prose')!
+        .insertAdjacentHTML(
+          'beforeend',
+          html +
+            '<div class="brand-code-frame"><pre class="brand-code" data-copy="markup for a part"><code>&lt;p&gt;</code></pre></div>',
+        );
+    }, FRAMED);
+    await page.addScriptTag({ content: COPY_SCRIPT, type: 'module' });
+
+    const counts = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-copy]')].map(
+        (source) => source.parentElement!.querySelectorAll('button').length,
+      ),
+    );
+    expect(counts).toEqual([1, 1]);
+  });
+});
+
+/* The site's own pipeline, so the fixture renders as a post would. */
+const PLUGINS: Record<string, unknown> = {
+  linkListItem,
+  postFigure,
+  codeBlock,
+  tableScope,
+  tableStack,
+  tableScroll,
+};
+
+const configPlugins = (): string[] =>
+  (
+    /hastPlugins:\s*\[([^\]]*)\]/.exec(
+      readFileSync('astro.config.mjs', 'utf8'),
+    )?.[1] ?? ''
+  )
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+const FENCE_BODY =
+  'Text.\n\n```bash\nmake app\n    four spaces\n\tone tab\n```\n';
+
+/* Build correctness: a fence goes through the configured plugins into the frame the browser tests assume. */
+test(
+  'frames a fence through the configured Markdown pipeline',
+  NODE,
+  async () => {
+    const names = configPlugins();
+    expect(
+      names.filter((name) => !(name in PLUGINS)),
+      'hastPlugins has a plugin this spec does not import',
+    ).toEqual([]);
+    const processor = await createSatteriMarkdownProcessor({
+      hastPlugins: names.map((name) => PLUGINS[name]) as never,
+      syntaxHighlight: false,
+    });
+    const { code } = await processor.render(FENCE_BODY, {
+      fileURL: pathToFileURL(join(BLOG_CONTENT_DIR, 'code.md')),
+    });
+
+    expect(code).toContain(
+      '<div class="code-block"><span class="code-lang" aria-hidden="true">bash</span><pre',
+    );
+    expect(code).toContain('aria-label="bash code, scrolls sideways"');
+    expect(code).toContain('data-copy="bash code"');
+    expect(code, 'whitespace inside the code changed').toContain(
+      'make app\n    four spaces\n\tone tab\n</code>',
+    );
+  },
+);
+
+/* Build correctness: the post page loads the frame styles, and the copy script where code can be. */
+test(
+  'the post page wires the code frame styles and the copy script',
+  NODE,
+  () => {
+    const page = readFileSync('src/pages/blog/[slug].astro', 'utf8');
+
+    expect(page).toContain("import '../../styles/components/code-block.css';");
+    expect(page).toMatch(/const codeInPost = hasCodeBlock\(/);
+    expect(page).toContain('{codeInPost && <CodeCopy />}');
+    expect(readFileSync('src/components/CodeCopy.astro', 'utf8')).toContain(
+      "import '../scripts/copy';",
+    );
+  },
+);
+
+/* Build correctness: /brand ships the framed sample with no button in its HTML. */
+test('/brand ships the framed sample without a static button', NODE, () => {
+  const html = builtHtml().get('/brand');
+  expect(html, '/brand was not built').toBeDefined();
+
+  expect(html).toContain('class="code-block"');
+  expect(html).toMatch(/<pre[^>]*data-copy="bash code"[^>]*data-copy-word/);
+  expect(html, 'a Copy button is in the static HTML').not.toContain(
+    'copy-word-button',
+  );
+});
+
+/* Function: without a script, /brand's code sample has no Copy button. */
+test('/brand draws no Copy button on its code sample without a script', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.goto('/brand');
+
+  await expect(page.locator('.code-block pre').first()).toBeVisible();
+  await expect(page.locator('.copy-word-button')).toHaveCount(0);
+  await context.close();
 });

@@ -8,6 +8,8 @@
 import { TALKS_PATH } from './post-figure.mjs';
 
 const LABEL = 'Code, scrolls sideways';
+/* After the language: "bash code, scrolls sideways". */
+const LABEL_IN_POST = 'code, scrolls sideways';
 
 export const CODE_BLOCK_CLASS = 'code-block';
 
@@ -33,7 +35,8 @@ const frame = (node, language) => ({
           {
             type: 'element',
             tagName: 'span',
-            properties: { className: ['code-lang'] },
+            /* The group's name carries the language; this is its visible echo. */
+            properties: { className: ['code-lang'], ariaHidden: 'true' },
             children: [{ type: 'text', value: language }],
           },
         ]
@@ -67,6 +70,8 @@ export const codeBlock = ({ fileURL } = {}) => ({
       }
 
       if (String(fileURL ?? '').includes(TALKS_PATH)) return;
+      if (language)
+        ctx.setProperty(node, 'ariaLabel', `${language} ${LABEL_IN_POST}`);
       ctx.setProperty(node, 'dataCopy', language ? `${language} code` : 'code');
       ctx.setProperty(node, 'dataCopyWord', '');
       ctx.replaceNode(node, frame(node, language));
