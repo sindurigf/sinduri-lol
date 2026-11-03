@@ -559,9 +559,22 @@
     height: 100%;
   }
 
-  .home-prop-face {
-    background: var(--color-print);
+  /* A die-cut sticker: the art over a pink block of its own shape. */
+  .home-prop-face::before,
+  .home-prop-face::after {
+    position: absolute;
+    inset: 0;
+    content: '';
+  }
+
+  .home-prop-face::before {
+    background: var(--color-pink);
     mask: var(--print) center / contain no-repeat;
+    translate: var(--size-home-sticker-throw) var(--size-home-sticker-throw);
+  }
+
+  .home-prop-face::after {
+    background: var(--print) center / contain no-repeat;
   }
 
   .home-prop[data-flipped] .home-prop-face {
@@ -569,39 +582,39 @@
   }
 
   .home-prop-jar {
-    --print: url('../../assets/home-props/jar.webp');
+    --print: url('../../assets/home-stickers/jar.webp');
 
     top: 4%;
   }
 
   .home-prop-book {
-    --print: url('../../assets/home-props/book.webp');
+    --print: url('../../assets/home-stickers/book.webp');
 
     top: 22%;
   }
 
   .home-prop-picture {
-    --print: url('../../assets/home-props/picture.webp');
+    --print: url('../../assets/home-stickers/picture.webp');
 
     top: 42%;
   }
 
   .home-prop-watch {
-    --print: url('../../assets/home-props/watch.webp');
+    --print: url('../../assets/home-stickers/watch.webp');
 
     top: 62%;
   }
 
   .home-prop-teacup {
-    --print: url('../../assets/home-props/teacup.webp');
+    --print: url('../../assets/home-stickers/teacup.webp');
 
     top: 80%;
   }
 
-  /* A mask is invisible in forced colors; the things are decoration, the jar keeps its button. */
+  /* The things are decoration; in forced colors the jar keeps its button edge. */
   @media (forced-colors: active) {
-    .home-prop-face {
-      background: CanvasText;
+    .home-prop-face::before {
+      display: none;
     }
 
     button.home-prop {
