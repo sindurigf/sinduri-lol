@@ -104,14 +104,13 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
   description="Sinduri Guntupalli, open source enthusiast in Vienna, experienced in product and program management, web development and Drupal community work."
 >
   <div class="gold-column surface-gold home-meadow">
-    <section class="home-hero" aria-labelledby="home-name">
+    <div class="home-hero">
       <div class="home-hero-text">
         <h1 id="home-name" class="home-name">
           <span class="block">Sinduri</span>{' '}
           <span class="block">Guntupalli</span>
         </h1>
 
-        {/* The comma is for screen readers; each role is its own brick. */}
         <ul
           role="list"
           class:list={[
@@ -120,10 +119,7 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
           ]}
         >
           {TAGLINES.map((tag, index) => (
-            <li class:list={['edge home-tag', tagWall.bricks[index]]}>
-              {tag}
-              {index < TAGLINES.length - 1 && <span class="sr-only">,</span>}
-            </li>
+            <li class:list={['edge home-tag', tagWall.bricks[index]]}>{tag}</li>
           ))}
         </ul>
 
@@ -169,7 +165,7 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
           />
         </div>
       </div>
-    </section>
+    </div>
 
     <HomeMeadowBand />
   </div>

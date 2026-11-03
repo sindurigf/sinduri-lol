@@ -11,7 +11,7 @@ const CLODS = 3;
 <div class="home-band" aria-hidden="true" data-home-band>
   {BACK_TUFTS.map((place, index) => (
     <span class:list={['home-tuft', place]}>
-      <svg viewBox="0 0 48 40">
+      <svg viewBox="0 0 48 40" aria-hidden="true">
         <path
           d={
             index % 2 === 0
@@ -29,7 +29,7 @@ const CLODS = 3;
   </span>
   {FRONT_TUFTS.map((place) => (
     <span class:list={['home-tuft home-tuft-front', place]}>
-      <svg viewBox="0 0 34 24">
+      <svg viewBox="0 0 34 24" aria-hidden="true">
         <path d="M3 26 10 6 15 26ZM14 26 22 0 28 26Z" />
       </svg>
     </span>
