@@ -40,8 +40,7 @@
 
   .surface-gold :is(.rotate-3, .-rotate-3).sticker,
   :is(:root[data-theme='light'] main, main .mode-light)
-    :is(.rotate-3, .-rotate-3).sticker:not(.mode-dark *),
-  :is(.rotate-3, .-rotate-3).hero-sticker.bg-surface {
+    :is(.rotate-3, .-rotate-3).sticker:not(.mode-dark *) {
     background-clip: border-box;
   }
 

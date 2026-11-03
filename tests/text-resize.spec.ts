@@ -43,9 +43,6 @@ const ROUNDING_TOLERANCE = 0.01;
 const PLAIN_ZOOM_TOKENS = [
   '--text-h1',
   '--text-reading-h1',
-  '--text-hero-h1',
-  '--text-hero-h1-column',
-  '--text-hero-h1-column-phone',
   '--text-h2',
   '--text-h3',
   '--text-post-title',

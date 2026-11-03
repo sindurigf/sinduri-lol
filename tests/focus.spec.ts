@@ -22,8 +22,8 @@ const WIDTHS = [
 const MAX_STOPS = 300;
 
 /*
- * Per step, scaled by control count. `/` has few controls and an animated
- * HeroField canvas; webkit under load measured up to 441ms a step there.
+ * Per step, scaled by control count; webkit under load measured up to 441ms a
+ * step on `/`.
  */
 const WALK_BUDGET_PER_STEP_MS = 600;
 

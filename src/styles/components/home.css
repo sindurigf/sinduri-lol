@@ -1,0 +1,465 @@
+@layer components {
+  /*
+   * The homepage: a gold meadow with the rabbit, then the fall down the hole,
+   * where the sections drop as stepped bricks past Alice's printed things.
+   */
+  .home-meadow {
+    position: relative;
+    margin-block-start: var(--hero-pad-block);
+    padding-block-end: var(--size-home-band-phone);
+
+    @variant md {
+      padding-block-end: var(--size-home-band);
+    }
+  }
+
+  .home-hero {
+    display: grid;
+    gap: --spacing(12);
+    padding: var(--hero-column-pad-block);
+    padding-inline: var(--hero-column-pad-inline);
+
+    @variant lg {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+    }
+  }
+
+  .home-hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: --spacing(6);
+    min-width: 0;
+  }
+
+  .home-name {
+    @apply max-w-full font-black text-gold-text sm:edge sm:border-fill-edge sm:bg-block-light sm:px-6 sm:pt-3 sm:pb-4 sm:shadow-hard-pink-object;
+
+    font-size: var(--text-home-name);
+    line-height: var(--text-home-name--line-height);
+  }
+
+  .home-tags {
+    max-width: 100%;
+  }
+
+  .home-tag {
+    @apply px-4 py-2 font-black;
+  }
+
+  .home-hero-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: --spacing(6);
+    max-width: 100%;
+  }
+
+  .home-hero-row > ul {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .home-photo {
+    position: relative;
+    z-index: 2;
+    width: min(var(--size-home-photo-phone), 100%);
+
+    @variant lg {
+      width: var(--size-home-photo);
+    }
+  }
+
+  /* In flow beside the stats or at the top of the fall, never over text. */
+  .home-pause {
+    position: relative;
+    flex: none;
+  }
+
+  .home-band {
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 3;
+    height: var(--size-home-band-phone);
+    overflow: hidden;
+    pointer-events: none;
+
+    @variant md {
+      height: var(--size-home-band);
+    }
+  }
+
+  .home-tuft {
+    position: absolute;
+    bottom: 0;
+    width: var(--size-home-tuft-w);
+    height: var(--size-home-tuft-h);
+    transform-origin: 50% 100%;
+  }
+
+  /* `auto`, not Chromium's `preserve-parent-color` default for SVG: forced colors repaint the grass too. */
+  .home-tuft :is(svg, path) {
+    forced-color-adjust: auto;
+  }
+
+  .home-tuft svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .home-tuft path {
+    fill: var(--color-home-grass);
+    stroke: var(--color-block-ink);
+    stroke-width: 3;
+  }
+
+  .home-tuft-front {
+    z-index: 4;
+    width: var(--size-home-tuft-front-w);
+    height: var(--size-home-tuft-front-h);
+  }
+
+  .home-tuft-1 {
+    left: 2%;
+  }
+
+  .home-tuft-2 {
+    left: 17%;
+
+    @variant max-md {
+      display: none;
+    }
+  }
+
+  .home-tuft-3 {
+    left: 33%;
+  }
+
+  .home-tuft-4 {
+    left: 94.5%;
+  }
+
+  .home-tuft-5 {
+    left: 9%;
+  }
+
+  .home-tuft-6 {
+    left: 26%;
+
+    @variant max-md {
+      display: none;
+    }
+  }
+
+  .home-clod {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 4;
+    width: var(--size-home-clod);
+    height: var(--size-home-clod);
+    border: var(--size-home-clod-edge) solid var(--color-block-ink);
+    background: var(--color-home-clod);
+    opacity: 0;
+  }
+
+  /* Where the rabbit rests without a script; home-motion.ts moves it from the left edge. */
+  .home-hopper {
+    position: absolute;
+    bottom: 0;
+    left: 30%;
+    z-index: 3;
+    width: var(--size-home-hopper-w-phone);
+    height: var(--size-home-hopper-h-phone);
+    margin-left: calc(var(--size-home-hopper-w-phone) / -2);
+
+    @variant md {
+      width: var(--size-home-hopper-w);
+      height: var(--size-home-hopper-h);
+      margin-left: calc(var(--size-home-hopper-w) / -2);
+    }
+  }
+
+  /*
+   * The rabbit: one pose of the climb atlas at a time, each aligned on its
+   * foot point so a pose swap never jumps. Frames match RABBIT_FRAMES in
+   * src/lib/hero-field-rabbit.ts.
+   */
+  .home-bun {
+    --scale: 0.22;
+
+    position: absolute;
+    top: 100%;
+    left: 50%;
+
+    @variant md {
+      --scale: 0.3;
+    }
+  }
+
+  .home-bun > i {
+    --k: calc(var(--scale) * var(--home-atlas-px));
+
+    position: absolute;
+    display: block;
+    width: calc(var(--w) * var(--k));
+    height: calc(var(--h) * var(--k));
+    left: calc(var(--fx) * var(--k) * -1);
+    top: calc(var(--fy) * var(--k) * -1);
+    background: url('../../assets/hero-rabbit-climb.webp') no-repeat;
+    background-size: calc(933 * var(--k)) auto;
+    background-position: calc(var(--x) * var(--k) * -1) 0;
+    transform: scaleX(var(--face, -1));
+    transform-origin: calc(var(--fx) * var(--k)) calc(var(--fy) * var(--k));
+  }
+
+  .home-bun[data-pose='sit'] > i {
+    --x: 0;
+    --w: 207;
+    --h: 335;
+    --fx: 103;
+    --fy: 312;
+  }
+
+  .home-bun[data-pose='look'] > i {
+    --x: 211;
+    --w: 213;
+    --h: 271;
+    --fx: 106;
+    --fy: 249;
+  }
+
+  .home-bun[data-pose='crouch'] > i {
+    --x: 428;
+    --w: 234;
+    --h: 265;
+    --fx: 117;
+    --fy: 242;
+  }
+
+  .home-bun[data-pose='leap'] > i {
+    --x: 666;
+    --w: 267;
+    --h: 255;
+    --fx: 133;
+    --fy: 233;
+  }
+
+  /* The hole's mouth: dark at its rim, opening into the ground below. */
+  .home-mouth {
+    position: absolute;
+    bottom: calc(var(--block-edge) * -1);
+    left: 56%;
+    z-index: 2;
+    width: 36%;
+    height: var(--size-home-mouth-h-phone);
+    border: var(--block-edge) solid var(--color-block-ink);
+    border-bottom: 0;
+    border-radius: var(--radius-home-mouth);
+    background: linear-gradient(
+      var(--color-block-ink) 40%,
+      var(--color-background)
+    );
+
+    @variant md {
+      left: 58%;
+      width: 30%;
+      height: var(--size-home-mouth-h);
+    }
+  }
+
+  /*
+   * The fall. Every word in it sits in an opaque brick, so the printed things
+   * can pass behind any of it.
+   */
+  .home-fall {
+    --lane: 0px;
+    --tumble: 0px;
+    --prop: var(--size-home-prop-phone);
+
+    position: relative;
+    isolation: isolate;
+    overflow-x: clip;
+
+    @variant md {
+      --lane: var(--spacing-home-lane-md);
+      --tumble: var(--spacing-home-tumble-md);
+      --prop: var(--size-home-prop-md);
+    }
+
+    @variant xl {
+      --lane: var(--spacing-home-lane);
+      --tumble: var(--spacing-home-tumble);
+      --prop: var(--size-home-prop);
+    }
+  }
+
+  /* The bands span the page; only their bricks take the pointer, so the jar stays pressable beside them. */
+  .home-fall > .band {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .home-fall > .band > * {
+    pointer-events: auto;
+  }
+
+  .home-fall > :nth-child(1 of .band) {
+    translate: calc(var(--tumble) * -1) 0;
+  }
+
+  .home-fall > :nth-child(2 of .band) {
+    translate: var(--tumble) 0;
+  }
+
+  .home-fall > :nth-child(3 of .band) {
+    translate: calc(var(--tumble) * -0.5) 0;
+  }
+
+  /* In flow above the first section, so it never sits on a heading. */
+  .home-fall-pause {
+    position: relative;
+    z-index: 3;
+    width: min(var(--container-page), calc(100% - 2 * var(--lane)));
+    margin-inline: auto;
+    padding-block-start: --spacing(6);
+    pointer-events: none;
+  }
+
+  .home-fall-pause > * {
+    pointer-events: auto;
+  }
+
+  .home-drift {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  /* Each thing's `top` below is where it rests without a script; home-motion.ts rises them from 0. */
+  .home-prop {
+    position: absolute;
+    width: var(--prop);
+    height: var(--prop);
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  /* The lanes; below `md` there are none, so the things pass behind the bricks. */
+  .home-prop-l {
+    left: 4%;
+
+    @variant md {
+      left: calc(var(--lane) / 2 - var(--prop) / 2);
+    }
+  }
+
+  .home-prop-r {
+    right: 4%;
+
+    @variant md {
+      right: calc(var(--lane) / 2 - var(--prop) / 2);
+    }
+  }
+
+  button.home-prop {
+    cursor: pointer;
+  }
+
+  /*
+   * Below `md` there are no lanes, so the jar would pass behind the bricks:
+   * it rests in the open ground beside the pause control instead.
+   */
+  .home-prop-jar {
+    @variant max-md {
+      top: --spacing(4) !important;
+      right: --spacing(4);
+      z-index: 2;
+      transform: none !important;
+    }
+  }
+
+  .home-prop-spin,
+  .home-prop-face {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .home-prop-face {
+    background: var(--color-print);
+    mask: var(--print) center / contain no-repeat;
+  }
+
+  .home-prop[data-flipped] .home-prop-face {
+    rotate: 180deg;
+  }
+
+  .home-prop-jar {
+    --print: url('../../assets/home-props/jar.webp');
+
+    top: 4%;
+  }
+
+  .home-prop-book {
+    --print: url('../../assets/home-props/book.webp');
+
+    top: 22%;
+  }
+
+  .home-prop-picture {
+    --print: url('../../assets/home-props/picture.webp');
+
+    top: 42%;
+  }
+
+  .home-prop-watch {
+    --print: url('../../assets/home-props/watch.webp');
+
+    top: 62%;
+  }
+
+  .home-prop-teacup {
+    --print: url('../../assets/home-props/teacup.webp');
+
+    top: 80%;
+  }
+
+  /* A mask is invisible in forced colors; the things are decoration, the jar keeps its button. */
+  @media (forced-colors: active) {
+    .home-prop-face {
+      background: CanvasText;
+    }
+
+    button.home-prop {
+      border: var(--block-edge) solid ButtonText;
+    }
+  }
+}
+
+/* Utilities layer: these replace the column width and heading color utilities in the fall. */
+@layer utilities {
+  .home-fall > .band > .max-w-page {
+    max-width: min(var(--container-page), calc(100% - 2 * var(--lane)));
+  }
+
+  /* A section's title is a gold label brick, so nothing prints under its words. */
+  .home-fall h2 {
+    @apply edge inline-block border-fill-edge bg-block-gold px-6 py-3 text-gold-text shadow-hard-pink-object;
+  }
+}
+
+/* The meadow stays gold in light mode: the hole needs ground above it in both. */
+@layer utilities {
+  :is(:root[data-theme='light'] main, main .mode-light)
+    .home-meadow.surface-gold:not(.mode-dark *) {
+    background-color: var(--color-block-gold);
+  }
+}

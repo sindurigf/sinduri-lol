@@ -173,6 +173,13 @@
   --color-light-pink-text: #b00054;
   --color-light-hero-veil: rgba(19, 19, 19, 0.025);
   --color-light-hero-floor: rgba(19, 19, 19, 0.035);
+  /*
+   * Homepage meadow and fall. Props are printed in --color-print: gold on the
+   * dark ground (11.99), ink on the light one (18.58).
+   */
+  --color-home-grass: #55651f;
+  --color-home-clod: #3a3a3a;
+  --color-print: #ffc000;
 
   /*
    * The gold surface: an inverted set, since only near-blacks read on gold.
@@ -242,19 +249,6 @@
   /* The talk cover keeps the fluid title; the deck has its own rule (ACCESSIBILITY.md gap 7). */
   --text-deck-cover: clamp(2.0625rem, 9vw, 5rem);
   --text-deck-cover--line-height: 0.94;
-  /*
-   * The homepage h1 only. GUNTUPALLI must stay one line in the window's 241px
-   * at 305px, and a third line breaks the layout.
-   */
-  --text-hero-h1: 2.25rem;
-  --text-hero-h1--line-height: 0.94;
-  /*
-   * Ink offsets inside the name's 0.94 line boxes, as fractions of font size,
-   * for Lexend 900 uppercase only. tests/hero-fit.spec.ts fails if face, weight
-   * or line height changes.
-   */
-  --hero-name-ink-foot: 0.0831;
-  --hero-name-ink-head: 0.1188;
   /*
    * Titles of Privacy and Accessibility. ACCES-SIBILITY breaks at its soft
    * hyphen at 305px.
@@ -339,9 +333,6 @@
   /* A part opener's number, height-aware like the two above. */
   --text-slide-number: clamp(4.5rem, 16svh, 10rem);
   --text-slide-number--line-height: 1;
-  /* Height-aware, so the stickers shrink on a short window. */
-  --text-hero-sticker: clamp(1.125rem, min(2.1vw, 3.4svh), 1.875rem);
-  --text-hero-sticker--line-height: 1.02;
   --text-menu: clamp(2.125rem, 8vw, 3.5rem);
   --text-body: calc(clamp(1.125rem, 1.2vw, 1.1875rem) * var(--text-scale, 1));
   --text-body--line-height: 1.62;
@@ -394,6 +385,8 @@
 
   /* Zero everywhere except the logo tile and the laughing rabbit tile on /about. */
   --radius-nav: 14px;
+  /* The hole's mouth: a half ellipse cut into the meadow's floor. */
+  --radius-home-mouth: 50% 50% 0 0 / 100% 100% 0 0;
 
   /*
    * Hard offset shadows, one job per color: pink is depth and pressables, cyan
@@ -540,13 +533,8 @@
    */
   --gold-marker-pad: 4px;
 
-  /*
-   * Homepage hero padding, gap and inset. `--hero-pad-block` also spaces a
-   * page's opening slab below the header (layout.css).
-   */
+  /* Space between the header and a page's opening slab (layout.css). */
   --hero-pad-block: clamp(12px, 3svh, 144px);
-  --hero-gap: clamp(10px, 2.2svh, 40px);
-  --hero-inset: clamp(8px, 3vw, 56px);
 
   /*
    * 48px from the screen edge to the extrusion tip, plus the column's shadow.
@@ -557,25 +545,6 @@
   --hero-column-pad-inline: clamp(20px, 3.5vw, 64px);
 
   --hero-column-edge: var(--block-edge);
-  --hero-rule: var(--hero-column-edge);
-  /*
-   * At least SINDURI's leading under its letters (0.0831em, 7px at 84px), or
-   * its line box reaches the gold at 1.27. tests/hero-fit.spec.ts.
-   */
-  --hero-name-clearance: 8px;
-
-  /*
-   * The name in the column and below `sm`; layout.css swaps them into
-   * --text-hero-h1, so they hold literal values. tests/hero-fit.spec.ts.
-   */
-  --text-hero-h1-column: 2.25rem;
-  --text-hero-h1-column-phone: 2.25rem;
-  /*
-   * Reserved for the two sticker words at the top right, since `max-width` on
-   * the name cannot see them. Holds the widest sticker plus border, padding,
-   * shadow and tilt.
-   */
-  --hero-marks-reserve: clamp(9rem, 14vw, 13rem);
 
   /*
    * Footer profile tiles (48px, 56px from `lg`, each past SC 2.5.5's 44px),
@@ -631,6 +600,45 @@
   --spacing-target: 44px;
 
   /*
+   * Homepage meadow and fall (components/home.css). Each phone value applies
+   * below `md`, the middle one from `md`, the wide one from `xl`.
+   */
+  /*
+   * Floor: the h2 size, and GUNTUPALLI still fits 225px at 305px with the
+   * SC 1.4.12 spacing; the brick starts at `sm`. Cap: five times the floor
+   * is at least twice the cap (SC 1.4.4).
+   */
+  --text-home-name: clamp(1.75rem, 6vw, 4rem);
+  --text-home-name--line-height: 0.98;
+  --size-home-photo: 22rem;
+  --size-home-photo-phone: 17.5rem;
+  --size-home-band: 160px;
+  --size-home-band-phone: 120px;
+  --size-home-tuft-w: 48px;
+  --size-home-tuft-h: 40px;
+  --size-home-tuft-front-w: 34px;
+  --size-home-tuft-front-h: 24px;
+  --size-home-hopper-w: 76px;
+  --size-home-hopper-h: 112px;
+  --size-home-hopper-w-phone: 56px;
+  --size-home-hopper-h-phone: 80px;
+  --size-home-clod: 8px;
+  --size-home-clod-edge: 2px;
+  --size-home-mouth-h: 56px;
+  --size-home-mouth-h-phone: 36px;
+  --size-home-prop: 88px;
+  --size-home-prop-md: 72px;
+  --size-home-prop-phone: 64px;
+  /* Room each side of the fall's column where the printed things drift. */
+  --spacing-home-lane: 184px;
+  --spacing-home-lane-md: 128px;
+  /* How far each section steps sideways as it falls. */
+  --spacing-home-tumble: 32px;
+  --spacing-home-tumble-md: 16px;
+  /* One atlas pixel; the rabbit sprite multiplies its frame sizes by this and the scale. */
+  --home-atlas-px: 1px;
+
+  /*
    * Menu bars in a 24x16 box; they end at 17px, so they are absolutely
    * positioned. The 7px offset is the rotation point, so the open bars cross at
    * the center.
@@ -652,6 +660,7 @@
 @import './components/labels-controls.css';
 @import './components/abbr.css';
 @import './components/footer.css';
+@import './components/home.css';
 @import './components/reading-tab.css';
 @import './reduced-motion.css';
 @import './components/forms.css';

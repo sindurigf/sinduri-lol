@@ -35,12 +35,12 @@ export const SERVED_AS_IS = new Map([
   ]),
   [
     'hero-rabbit-climb.webp',
-    "Let It Fall's climbing rabbit draws its poses from it by offset; a lossless WebP from scripts/make-climb-atlas.mjs already.",
+    "the homepage rabbit and Let It Fall's climbing rabbit draw their poses from it by offset; a lossless WebP from scripts/make-climb-atlas.mjs already.",
   ],
-  [
-    'hero-rabbit.svg',
-    'the hero canvas rasterises the vector atlas at the size it draws the rabbit.',
-  ],
+  ...['jar', 'book', 'picture', 'watch', 'teacup'].map((name) => [
+    `home-props/${name}.webp`,
+    'home.css masks a printed thing in the homepage fall with it; a lossless alpha-only WebP already, drawn at most at its own 200px.',
+  ]),
   [
     'hero-still-short.webp',
     'layout.css links it as the hero background under `scripting: none`; ' +

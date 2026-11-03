@@ -1,0 +1,41 @@
+---
+/*
+ * The meadow's floor: grass tufts, the hopping rabbit and the hole's mouth.
+ * Decoration only; home-motion.ts moves it.
+ */
+const BACK_TUFTS = ['home-tuft-1', 'home-tuft-2', 'home-tuft-3', 'home-tuft-4'];
+const FRONT_TUFTS = ['home-tuft-5', 'home-tuft-6'];
+const CLODS = 3;
+---
+
+<div class="home-band" aria-hidden="true" data-home-band>
+  {BACK_TUFTS.map((place, index) => (
+    <span class:list={['home-tuft', place]}>
+      <svg viewBox="0 0 48 40">
+        <path
+          d={
+            index % 2 === 0
+              ? 'M4 42 12 12 19 42ZM17 42 26 0 33 42ZM31 42 41 16 45 42Z'
+              : 'M4 42 14 6 21 42ZM20 42 30 18 36 42Z'
+          }
+        />
+      </svg>
+    </span>
+  ))}
+  <span class="home-hopper" data-home-hopper>
+    <span class="home-bun" data-pose="sit">
+      <i></i>
+    </span>
+  </span>
+  {FRONT_TUFTS.map((place) => (
+    <span class:list={['home-tuft home-tuft-front', place]}>
+      <svg viewBox="0 0 34 24">
+        <path d="M3 26 10 6 15 26ZM14 26 22 0 28 26Z" />
+      </svg>
+    </span>
+  ))}
+  {Array.from({ length: CLODS }, () => (
+    <span class="home-clod" />
+  ))}
+</div>
+<span class="home-mouth" aria-hidden="true" data-home-mouth></span>
