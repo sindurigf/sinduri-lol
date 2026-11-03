@@ -13,6 +13,10 @@ An introduction outside any module.
 
 Install the tool.
 
+### Step 2: Sign In
+
+Sign in with your account.
+
 ### Watch Out
 
 - The first surprise.

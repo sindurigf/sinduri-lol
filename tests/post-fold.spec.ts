@@ -5,24 +5,20 @@ import { createSatteriMarkdownProcessor } from '@astrojs/markdown-satteri';
 import ts from 'typescript';
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
-import { moduleFold, postFold } from '../src/plugins/post-fold.mjs';
+import { moduleFold } from '../src/plugins/post-fold.mjs';
 import { linkListItem } from '../src/plugins/link-list-item.mjs';
 import { postFigure } from '../src/plugins/post-figure.mjs';
 import { codeBlock } from '../src/plugins/code-block.mjs';
 import { tableScope } from '../src/plugins/table-scope.mjs';
 import { tableStack } from '../src/plugins/table-stack.mjs';
 import { tableScroll } from '../src/plugins/table-scroll.mjs';
-import {
-  CODE_FOLD_MIN_LINES,
-  WATCH_OUT_HEADING,
-  hasFoldMarkup,
-} from '../src/lib/post-folds';
+import { MODULE_TOGGLE_LABEL, hasFoldMarkup } from '../src/lib/post-folds';
 import { BLOG_CONTENT_DIR } from '../src/lib/paths';
 import { builtHtml, POST_ROUTES, PUBLISHED_POST_ROUTES } from './routes';
 import { NODE } from './tags';
 import { NON_TEXT, PAGE_HELPERS } from './contrast';
 
-/** `src/plugins/post-fold.mjs`, `src/scripts/post-folds.ts` and the `.post-fold` rules. */
+/** `src/plugins/post-fold.mjs`, `src/scripts/post-folds.ts` and the `.module-panel` rules. */
 
 type Node = Record<string, any>;
 
@@ -38,9 +34,9 @@ const textOf = (node: Node): string =>
     ? node.value
     : (node.children ?? []).map(textOf).join('');
 
-/** The visitor's `ctx`, reduced to what it uses; records each replacement. */
+/** The visitor's `ctx`, reduced to what it uses; records the child-list swap. */
 const context = (root: Node) => {
-  const replaced: { node: Node; by: Node }[] = [];
+  let swapped: Node[] | undefined;
   const parentOf = (node: Node, from: Node = root): Node | undefined => {
     for (const child of from.children ?? []) {
       if (child === node) return from;
@@ -50,12 +46,13 @@ const context = (root: Node) => {
     return undefined;
   };
   return {
-    replaced,
+    swapped: () => swapped,
     ctx: {
       textContent: textOf,
       parent: (node: Node) => parentOf(node),
-      indexOf: (node: Node) => parentOf(node)?.children.indexOf(node),
-      replaceNode: (node: Node, by: Node) => replaced.push({ node, by }),
+      setProperty: (_node: Node, key: string, value: Node[]) => {
+        if (key === 'children') swapped = value;
+      },
     },
   };
 };
@@ -75,146 +72,68 @@ const configPlugins = (): string[] =>
 
 test('the visitors are registered with the markdown processor', NODE, () => {
   expect(configPlugins(), 'a fold visitor is not in hastPlugins').toEqual(
-    expect.arrayContaining(['postFold', 'moduleFold']),
+    expect.arrayContaining(['moduleFold']),
   );
 });
 
-test.describe('the post-fold visitor', () => {
-  test(
-    'folds the list after Watch Out and keeps the heading outside',
-    NODE,
-    () => {
-      const heading = element('h3', [
-        { type: 'text', value: WATCH_OUT_HEADING },
-      ]);
-      const list = element('ul', [element('li'), element('li')]);
-      const root = element('div', [
-        heading,
-        { type: 'text', value: '\n' },
-        list,
-      ]);
-      const { replaced, ctx } = context(root);
-
-      postFold(POST).element.visit(heading, ctx);
-
-      expect(replaced).toHaveLength(1);
-      expect(replaced[0]?.node, 'the list, not the heading, folds').toBe(list);
-      const [summary, folded] = replaced[0]?.by.children ?? [];
-      expect(replaced[0]?.by.tagName).toBe('details');
-      expect(summary?.tagName, 'a summary must be the first child').toBe(
-        'summary',
-      );
-      expect(folded).toBe(list);
-      expect(textOf(summary)).toContain('2 Surprises');
-    },
-  );
-
-  test('leaves other h3 lists open', NODE, () => {
-    const heading = element('h3', [{ type: 'text', value: 'Steps' }]);
-    const root = element('div', [heading, element('ul', [element('li')])]);
-    const { replaced, ctx } = context(root);
-
-    postFold(POST).element.visit(heading, ctx);
-
-    expect(replaced).toEqual([]);
-  });
-
-  const codeBlock = (lines: number) => {
-    const code = element('code', [
-      { type: 'text', value: 'line\n'.repeat(lines) },
-    ]);
-    code.properties = { className: ['language-bash'] };
-    return element('pre', [code]);
-  };
+test.describe('the module-fold visitor', () => {
+  const h2 = (value: string) => element('h2', [{ type: 'text', value }]);
+  const p = () => element('p');
 
   test(
-    `folds code of ${CODE_FOLD_MIN_LINES} lines or more, named by language and length`,
+    'puts each module h2 and its open fold in one panel, the h2 outside the fold',
     NODE,
     () => {
-      const pre = codeBlock(CODE_FOLD_MIN_LINES);
-      const { replaced, ctx } = context(element('div', [pre]));
-
-      postFold(POST).element.visit(pre, ctx);
-
-      expect(replaced).toHaveLength(1);
-      expect(textOf(replaced[0]!.by.children[0])).toContain(
-        `Bash Code, ${CODE_FOLD_MIN_LINES} Lines`,
-      );
-    },
-  );
-
-  test('leaves shorter code open', NODE, () => {
-    const pre = codeBlock(CODE_FOLD_MIN_LINES - 1);
-    const { replaced, ctx } = context(element('div', [pre]));
-
-    postFold(POST).element.visit(pre, ctx);
-
-    expect(replaced).toEqual([]);
-  });
-
-  test(
-    'folds each module body after its h2, open, with the h2 outside',
-    NODE,
-    () => {
-      const h2 = (value: string) => element('h2', [{ type: 'text', value }]);
-      const intro = h2('Before You Start');
       const one = h2('Module 1: Set Up');
-      const side = h2('Side Path: Move a Site');
-      const after = h2('Between Modules');
-      const p = () => element('p');
       const root = element('div', [
-        intro,
+        h2('Before You Start'),
         p(),
         one,
         p(),
         p(),
-        side,
+        h2('Side Path: Move a Site'),
         p(),
-        after,
+        h2('Between Modules'),
         p(),
       ]);
-      let swapped: Node[] = [];
-      const ctx = {
-        ...context(root).ctx,
-        setProperty: (_node: Node, key: string, value: Node[]) => {
-          if (key === 'children') swapped = value;
-        },
-      };
+      const { swapped, ctx } = context(root);
 
       moduleFold(POST).element.visit(one, ctx);
 
-      const shape = swapped.map((node) =>
-        node.tagName === 'details'
-          ? `details[${textOf(node.children[0])}:${node.children.length - 1}]`
-          : node.tagName === 'div'
-            ? 'controls'
-            : node.tagName,
-      );
+      const isPanel = (node: Node) =>
+        node.properties?.className?.includes('module-panel');
+      const shape = (swapped() ?? []).map((node) => {
+        if (isPanel(node)) {
+          const [heading, fold] = node.children;
+          return `panel[${heading.tagName}|${textOf(fold.children[0])}:${fold.children.length - 1}]`;
+        }
+        return node.tagName === 'div' ? 'controls' : node.tagName;
+      });
       expect(shape).toEqual([
         'h2',
         'p',
         'controls',
-        'h2',
-        'details[Module 1 Steps:2]',
-        'h2',
-        'details[Side Path Steps:1]',
+        'panel[h2|Steps for Module 1:2]',
+        'panel[h2|Steps for Side Path:1]',
         'h2',
         'p',
       ]);
-      const folds = swapped.filter((node) => node.tagName === 'details');
+      const folds = (swapped() ?? [])
+        .filter(isPanel)
+        .map((panel) => panel.children[1]);
       expect(folds.every((fold) => fold.properties.open === true)).toBe(true);
     },
   );
 
   test('leaves slides alone', NODE, () => {
-    const pre = codeBlock(CODE_FOLD_MIN_LINES);
-    const { replaced, ctx } = context(element('div', [pre]));
+    const one = h2('Module 1: Set Up');
+    const { swapped, ctx } = context(element('div', [one, p()]));
 
-    postFold({
+    moduleFold({
       fileURL: 'file:///site/src/content/talks/a/slides.md',
-    }).element.visit(pre, ctx);
+    }).element.visit(one, ctx);
 
-    expect(replaced).toEqual([]);
+    expect(swapped()).toBeUndefined();
   });
 });
 
@@ -222,7 +141,6 @@ test.describe('the post-fold visitor', () => {
 const PLUGINS: Record<string, unknown> = {
   linkListItem,
   postFigure,
-  postFold,
   codeBlock,
   tableScope,
   tableStack,
@@ -272,9 +190,12 @@ const PROSE_OPEN = '<div class="prose">';
 /** A built post, the host for the fixture: its template, CSS and scripts are the real ones. */
 const FOLD_POST = PUBLISHED_POST_ROUTES[0]!;
 
-/** Serves `FOLD_POST` with the rendered fixture first in its prose and the fold script after it. */
-const serveFoldPost = async (page: Page) => {
-  const body = await renderFixture();
+/** Serves `FOLD_POST` with the rendered fixture first in its prose and the fold script after it; `closed` serves the modules closed. */
+const serveFoldPost = async (page: Page, { closed = false } = {}) => {
+  const rendered = await renderFixture();
+  const body = closed
+    ? rendered.replaceAll('data-module="" open>', 'data-module="">')
+    : rendered;
   await page.route(
     (url) => url.pathname.replace(/\/$/, '') === FOLD_POST,
     async (route) => {
@@ -302,25 +223,23 @@ const gotoFoldPost = async (page: Page, hash = '') => {
   await gotoSettled(page, `${FOLD_POST}${hash}`);
 };
 
+/* GOV.UK: "Do not put accordions within accordions"; Watch Out lists and long code stay open. */
 test(
-  "renders modules, Watch Out lists and long code as folds through the site's pipeline",
+  "renders each module as one panel, with nothing folded inside it, through the site's pipeline",
   NODE,
   async () => {
     const html = await renderFixture();
     const count = (pattern: RegExp) => html.match(pattern)?.length ?? 0;
 
+    expect(count(/<div class="module-panel">/g), 'module panels').toBe(4);
     expect(
       count(/<details class="post-fold" data-module/g),
       'module folds',
     ).toBe(4);
-    expect(
-      count(/<span class="fold-label">\d+ Surprises?</g),
-      'Watch Out folds',
-    ).toBe(2);
-    expect(
-      count(/<span class="fold-label">Bash Code, \d+ Lines</g),
-      'code folds',
-    ).toBe(1);
+    expect(count(/<details/g), 'a fold other than a module fold').toBe(4);
+    expect(html, 'the Watch Out list is missing').toMatch(
+      /<h3 id="watch-out">Watch Out<\/h3>\s*<ul>/,
+    );
   },
 );
 
@@ -375,11 +294,10 @@ test(
   },
 );
 
-/** The first Watch Out or code fold: closed on load. */
-const firstFold = (page: Page) =>
-  page.locator('details.post-fold:not([data-module])').first();
-
 const modules = (page: Page) => page.locator('details[data-module]');
+
+/** The first module fold: open on load. */
+const firstFold = (page: Page) => modules(page).first();
 
 test.describe('a post fold', () => {
   /* SC 2.1.1: Enter and Space toggle it from the keyboard. */
@@ -390,33 +308,36 @@ test.describe('a post fold', () => {
 
     await summary.focus();
     await page.keyboard.press('Enter');
-    await expect(fold, 'Enter did not open the fold').toHaveAttribute(
+    await expect(fold, 'Enter did not close the fold').not.toHaveAttribute(
+      'open',
+    );
+    await page.keyboard.press('Space');
+    await expect(fold, 'Space did not open the fold').toHaveAttribute(
       'open',
       '',
     );
-    await page.keyboard.press('Space');
-    await expect(fold, 'Space did not close the fold').not.toHaveAttribute(
-      'open',
-    );
   });
 
-  /* SC 4.1.2: the name stays the same across toggles; the expanded state alone changes. */
-  test('keeps its name and exposes its state', async ({ page }) => {
+  /* SC 4.1.2, 2.5.3: one name across toggles, starting with the visible word; the expanded state alone changes. */
+  test('keeps one name that starts with its visible label', async ({
+    page,
+  }) => {
     await gotoFoldPost(page);
-    const summary = firstFold(page).locator('summary');
+    const summary = firstFold(page).locator(':scope > summary');
     const isOpen = () =>
       summary.evaluate((el) => (el.parentElement as HTMLDetailsElement).open);
 
-    await expect(summary).toHaveAccessibleName(/^\d+ Surprises?$/);
+    await expect(summary).toHaveAccessibleName(
+      /^Steps for (Module \d+|Side Path)$/,
+    );
+    expect(
+      await summary.evaluate(
+        (el) => el.querySelector('.fold-label')?.firstChild?.textContent,
+      ),
+      'the visible label is not the start of the name',
+    ).toBe(MODULE_TOGGLE_LABEL);
     const name = await summary.evaluate((el) => el.textContent?.trim() ?? '');
-    expect(await isOpen()).toBe(false);
-
-    await summary.click();
     expect(await isOpen()).toBe(true);
-    await expect(
-      summary,
-      'the name changed when the fold opened',
-    ).toHaveAccessibleName(name);
 
     await summary.click();
     expect(await isOpen()).toBe(false);
@@ -424,23 +345,50 @@ test.describe('a post fold', () => {
       summary,
       'the name changed when the fold closed',
     ).toHaveAccessibleName(name);
+
+    await summary.click();
+    expect(await isOpen()).toBe(true);
+    await expect(
+      summary,
+      'the name changed when the fold opened',
+    ).toHaveAccessibleName(name);
   });
 
-  /* SC 1.3.1, 2.4.6: every Watch Out stays a real h3, outside its fold. */
-  test('keeps every Watch Out heading a heading outside the fold', async ({
-    page,
-  }) => {
-    await gotoFoldPost(page);
-    const headings = page.getByRole('heading', {
-      level: 3,
-      name: WATCH_OUT_HEADING,
+  /* SC 1.4.10, 1.4.4: the toggle in the bar never covers the heading's words. */
+  for (const width of [320, 390, 1280]) {
+    test(`keeps the toggle off the module heading text at ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await gotoFoldPost(page);
+
+      const overlaps: string[] = await page.evaluate(() =>
+        [...document.querySelectorAll('.module-panel')].flatMap((panel) => {
+          const heading = panel.querySelector(':scope > h2')!;
+          const toggle = panel
+            .querySelector(':scope > details > summary')!
+            .getBoundingClientRect();
+          const range = document.createRange();
+          range.selectNodeContents(heading);
+          return [...range.getClientRects()].some(
+            (line) =>
+              line.right > toggle.left &&
+              line.left < toggle.right &&
+              line.bottom > toggle.top &&
+              line.top < toggle.bottom,
+          )
+            ? [heading.textContent ?? '']
+            : [];
+        }),
+      );
+
+      expect(
+        await page.locator('.module-panel').count(),
+        'the fixture has no module panel',
+      ).toBeGreaterThan(0);
+      expect(overlaps, 'headings the toggle covers').toEqual([]);
     });
-
-    const count = await headings.count();
-    expect(count, 'the post has no Watch Out heading').toBeGreaterThan(0);
-    const inside = await page.locator('details:not([data-module]) h3').count();
-    expect(inside, 'a heading sits inside a fold').toBe(0);
-  });
+  }
 
   /* SC 2.5.5: the summary is at least 44px tall. */
   test('has a summary at least 44px tall', async ({ page }) => {
@@ -454,7 +402,7 @@ test.describe('a post fold', () => {
     expect(short, 'summaries under 44px tall').toEqual([]);
   });
 
-  /* SC 1.4.11: nothing else delimits the bar, so its edge or its fill reaches 3:1 on the page. */
+  /* SC 1.4.11: the toggle's own edge or its fill reaches 3:1 on the page. */
   for (const colorScheme of ['dark', 'light'] as const) {
     test(`draws every summary's boundary at 3:1 in ${colorScheme} mode`, async ({
       browser,
@@ -468,7 +416,8 @@ test.describe('a post fold', () => {
         return [...document.querySelectorAll('details.post-fold > summary')].map((summary) => {
           const style = getComputedStyle(summary);
           const ground = effectiveBackground(summary.parentElement);
-          const edge = parseFloat(style.borderTopWidth) >= 1 ? parse(style.borderTopColor) : null;
+          const side = ['Top', 'Right', 'Bottom', 'Left'].find((name) => parseFloat(style['border' + name + 'Width']) >= 1);
+          const edge = side ? parse(style['border' + side + 'Color']) : null;
           const fill = parse(style.backgroundColor);
           if (!ground) return 0;
           return Math.max(
@@ -493,9 +442,14 @@ test.describe('a post fold', () => {
   test('opens for a link to an id inside it', async ({ page }) => {
     await gotoFoldPost(page);
     const fold = firstFold(page);
-    await fold.locator(':scope > :not(summary)').evaluate((el) => {
-      el.id = 'inside-a-fold';
-    });
+    await fold
+      .locator(':scope > p')
+      .first()
+      .evaluate((el) => {
+        el.id = 'inside-a-fold';
+      });
+    await fold.locator(':scope > summary').click();
+    await expect(fold).not.toHaveAttribute('open');
 
     await page.evaluate(() => {
       location.hash = 'inside-a-fold';
@@ -525,6 +479,7 @@ test.describe('a post fold', () => {
     page,
   }) => {
     await gotoFoldPost(page);
+    await firstFold(page).locator(':scope > summary').click();
     const closedCount = () =>
       page.locator('details.post-fold:not([open])').count();
     const closedBefore = await closedCount();
@@ -542,7 +497,7 @@ test.describe('a post fold', () => {
   test('prints a closed fold open without JavaScript', async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
-    await serveFoldPost(page);
+    await serveFoldPost(page, { closed: true });
     await page.goto(FOLD_POST);
     await page.emulateMedia({ media: 'print' });
 
@@ -583,29 +538,15 @@ test.describe('a post fold', () => {
       await page.locator('details h2').count(),
       'an h2 sits inside a fold',
     ).toBe(0);
+    expect(
+      await page.locator('details details').count(),
+      'a fold sits inside a fold',
+    ).toBe(0);
   });
 
-  /* SC 4.1.2: a module's name stays the same across toggles. */
-  test('keeps a module name the same open or closed', async ({ page }) => {
-    await gotoFoldPost(page);
-    const summary = modules(page).first().locator(':scope > summary');
-
-    await expect(summary).toHaveAccessibleName(
-      /^(Module \d+|Side Path) Steps$/,
-    );
-    const name = (await summary.textContent())?.trim() ?? '';
-    await summary.click();
-    await expect(summary).toHaveAccessibleName(name);
-    await summary.click();
-    await expect(summary).toHaveAccessibleName(name);
-  });
-
-  /* SC 2.1.1: the buttons close and open every module, and only modules. */
+  /* SC 2.1.1: the buttons close and open every module. */
   test('closes and opens all modules with its buttons', async ({ page }) => {
     await gotoFoldPost(page);
-    const extrasOpen = () =>
-      page.locator('details.post-fold:not([data-module])[open]').count();
-    const extrasBefore = await extrasOpen();
 
     await page.getByRole('button', { name: 'Close All Modules' }).click();
     expect(await page.locator('details[data-module][open]').count()).toBe(0);
@@ -613,10 +554,6 @@ test.describe('a post fold', () => {
     expect(await page.locator('details[data-module]:not([open])').count()).toBe(
       0,
     );
-    expect(
-      await extrasOpen(),
-      'the buttons changed a Watch Out or code fold',
-    ).toBe(extrasBefore);
   });
 
   test('hides the module buttons without JavaScript', async ({ browser }) => {

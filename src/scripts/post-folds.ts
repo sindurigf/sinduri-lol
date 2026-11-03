@@ -1,17 +1,11 @@
 /* Progressive: the folds are native <details> and work without it. Chromium opens them for find-in-page; other engines may not. */
 
-/** Whether it opened a fold that was closed. */
-const openFoldsAround = (target: Element | null): boolean => {
-  let opened = false;
-  for (
-    let fold = target?.closest('details');
-    fold;
-    fold = fold.parentElement?.closest('details')
-  ) {
-    opened ||= !fold.open;
-    fold.open = true;
-  }
-  return opened;
+/** Whether it opened the closed fold around the target. Folds never nest. */
+const openFoldAround = (target: Element | null): boolean => {
+  const fold = target?.closest<HTMLDetailsElement>('details.post-fold');
+  if (!fold || fold.open) return false;
+  fold.open = true;
+  return true;
 };
 
 /* A malformed escape such as #50%-off throws URIError; the raw id is the best guess. */
@@ -28,7 +22,7 @@ const decodeId = (hash: string): string => {
 const openFor = (id: string): void => {
   const target = id ? document.getElementById(id) : null;
   /* The browser scrolled before the fold opened, to where the closed target was not shown. */
-  if (openFoldsAround(target)) target?.scrollIntoView();
+  if (openFoldAround(target)) target?.scrollIntoView();
   const next = target?.nextElementSibling;
   if (next instanceof HTMLDetailsElement && next.matches('[data-module]'))
     next.open = true;
