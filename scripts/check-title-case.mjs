@@ -6,7 +6,6 @@
  * The brand names in src/lib/site.ts are exempt, in their own case.
  */
 import { fileURLToPath } from 'node:url';
-import { existsSync } from 'node:fs';
 import { glob, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { assertBuildCurrent } from './build-fingerprint.mjs';
@@ -73,15 +72,7 @@ const routeOf = (file) =>
     .replace(/\/index\.html$/, '/');
 
 const run = async () => {
-  if (!existsSync(DIST)) {
-    console.error(
-      'Title case: dist/client does not exist. Run `npm run build` first; ' +
-        'this check reads the build output.',
-    );
-    process.exit(1);
-  }
-
-  await assertBuildCurrent('Title case');
+  await assertBuildCurrent('Title case', DIST);
 
   const misses = [];
   const used = new Set();
