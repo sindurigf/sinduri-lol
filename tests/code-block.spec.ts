@@ -9,6 +9,9 @@ import { builtHtml, DIST_DIR, POST_ROUTES } from './routes';
 import { hasCodeBlock } from '../src/lib/code-blocks';
 import { REFLOW_VIEWPORT } from './wcag';
 import { NODE } from './tags';
+import ts from 'typescript';
+import type { Page } from '@playwright/test';
+import { NON_TEXT, PAGE_HELPERS } from './contrast';
 
 /**
  * `src/plugins/code-block.mjs` and the `.prose code` / `.prose pre` rules. No
@@ -16,12 +19,22 @@ import { NODE } from './tags';
  * markup injected into a real post's `.prose`.
  */
 
-/** The visitor's `ctx`, reduced to the one method it uses. */
-const visitorContext = () => ({
-  setProperty: (node: Record<string, any>, key: string, value: unknown) => {
-    node.properties = { ...(node.properties ?? {}), [key]: value };
-  },
-});
+/** The visitor's `ctx`, reduced to what it uses; records the frame that replaces a post block. */
+const visitorContext = () => {
+  const replaced: Record<string, any>[] = [];
+  return {
+    replaced,
+    setProperty: (node: Record<string, any>, key: string, value: unknown) => {
+      node.properties = { ...(node.properties ?? {}), [key]: value };
+    },
+    replaceNode: (_node: unknown, by: Record<string, any>) => {
+      replaced.push(by);
+    },
+  };
+};
+
+const POST = { fileURL: 'file:///site/src/content/blog/a.md' };
+const TALK = { fileURL: 'file:///site/src/content/talks/a/slides.md' };
 
 const preNode = (child: Record<string, unknown>) => ({
   type: 'element',
@@ -66,11 +79,52 @@ test(
 test.describe('the code-block visitor', () => {
   test('makes a fenced block a named tab stop', NODE, () => {
     const node = preNode(codeChild);
-    codeBlock.element.visit(node, visitorContext());
+    codeBlock(POST).element.visit(node, visitorContext());
 
     expect(node.properties.tabIndex).toBe(0);
     expect(node.properties.role).toBe('group');
     expect(node.properties.ariaLabel).toBe('Code, scrolls sideways');
+  });
+
+  /* Function: a post block gets its frame, its language label and the copy name. */
+  test('frames a post block with its fence language as the label', NODE, () => {
+    const code = {
+      ...codeChild,
+      properties: { className: ['language-bash'] } as Record<string, unknown>,
+    };
+    const node = preNode(code);
+    const ctx = visitorContext();
+    codeBlock(POST).element.visit(node, ctx);
+
+    const [frame] = ctx.replaced;
+    expect(frame?.properties.className).toEqual(['code-block']);
+    expect(frame?.children.map((child: any) => child.tagName)).toEqual([
+      'span',
+      'pre',
+    ]);
+    expect(frame?.children[0].children[0].value).toBe('bash');
+    expect(node.properties.dataCopy).toBe('bash code');
+  });
+
+  test('frames a block without a language with no label', NODE, () => {
+    const node = preNode(codeChild);
+    const ctx = visitorContext();
+    codeBlock(POST).element.visit(node, ctx);
+
+    expect(
+      ctx.replaced[0]?.children.map((child: any) => child.tagName),
+    ).toEqual(['pre']);
+    expect(node.properties.dataCopy).toBe('code');
+  });
+
+  /* Function: a slide sizes its own code and loads no copy script. */
+  test('leaves a slide block unframed', NODE, () => {
+    const node = preNode(codeChild);
+    const ctx = visitorContext();
+    codeBlock(TALK).element.visit(node, ctx);
+
+    expect(ctx.replaced).toEqual([]);
+    expect(node.properties.dataCopy).toBeUndefined();
   });
 
   test('drops the fence language class, which nothing styles', NODE, () => {
@@ -78,7 +132,7 @@ test.describe('the code-block visitor', () => {
       ...codeChild,
       properties: { className: ['language-bash'] } as Record<string, unknown>,
     };
-    codeBlock.element.visit(preNode(code), visitorContext());
+    codeBlock(POST).element.visit(preNode(code), visitorContext());
 
     expect(
       code.properties.className,
@@ -88,7 +142,7 @@ test.describe('the code-block visitor', () => {
 
   test('leaves preformatted text that is not code alone', NODE, () => {
     const node = preNode({ type: 'text', value: 'a receipt, not code' });
-    codeBlock.element.visit(node, visitorContext());
+    codeBlock(POST).element.visit(node, visitorContext());
 
     expect(
       node.properties,
@@ -99,7 +153,7 @@ test.describe('the code-block visitor', () => {
   test('does not write a second tabindex over one already there', NODE, () => {
     const node = preNode(codeChild);
     node.properties.tabIndex = -1;
-    codeBlock.element.visit(node, visitorContext());
+    codeBlock(POST).element.visit(node, visitorContext());
 
     expect(
       node.properties.tabIndex,
@@ -316,4 +370,139 @@ test.describe('the code-block fit script', NODE, () => {
     expect(hasCodeBlock('Text.\n\n    indented code\n')).toBe(true);
     expect(hasCodeBlock('A paragraph with `inline code` only.\n')).toBe(false);
   });
+});
+
+/* Post code as src/plugins/code-block.mjs frames it, with src/scripts/copy.ts run after it. */
+const FRAMED = `
+  <div class="code-block"><span class="code-lang">bash</span><pre tabindex="0" role="group" aria-label="Code, scrolls sideways" data-copy="bash code" data-copy-word><code>make app
+drush --uri=https://example.test sql:query "SELECT nid, title FROM node_field_data WHERE status = 1;"</code></pre></div>
+`;
+
+const COPY_SCRIPT = ts.transpileModule(
+  readFileSync('src/scripts/copy.ts', 'utf8'),
+  { compilerOptions: { target: ts.ScriptTarget.ES2022 } },
+).outputText;
+
+/** A real post with the framed sample last in its prose and the copy script run on it. */
+const gotoFramed = async (page: Page, { script = true } = {}) => {
+  await gotoSettled(page, itemAt(POST_ROUTES, 0));
+  await page.evaluate((html) => {
+    document.querySelector('.prose')!.insertAdjacentHTML('beforeend', html);
+  }, FRAMED);
+  if (script) await page.addScriptTag({ content: COPY_SCRIPT, type: 'module' });
+  return page.locator('.code-block').last();
+};
+
+test.describe('post code with its label and Copy button', () => {
+  /* Function, SC 4.1.3, 2.5.3, 2.5.5: copies the code, says Copied, keeps a name that starts with its visible word, 44px. */
+  test('copies the code and announces Copied', async ({ page }) => {
+    await page.addInitScript(() => {
+      const copied: string[] = [];
+      Object.defineProperty(window, '__copied', { value: copied });
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText: async (text: string) => void copied.push(text) },
+      });
+    });
+    const frame = await gotoFramed(page);
+    const button = frame.getByRole('button', { name: 'Copy bash code' });
+
+    await expect(button).toBeVisible();
+    await expect(button).toContainText('Copy');
+    const box = (await button.boundingBox())!;
+    expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
+    await button.click();
+    await expect(page.getByRole('status').last()).toHaveText('Copied');
+    expect(
+      await page.evaluate(
+        () => (window as never as { __copied: string[] }).__copied,
+      ),
+    ).toEqual([await frame.locator('pre').textContent()]);
+    await expect(
+      frame.getByRole('button', { name: 'Copy bash code' }),
+      'the name changed after the press',
+    ).toHaveCount(1);
+  });
+
+  /* SC 3.3.1: a refused copy is shown on the page, says how to copy instead, and selects the code. */
+  test('shows a refused copy and selects the code', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', { value: undefined });
+    });
+    const frame = await gotoFramed(page);
+    await frame.getByRole('button', { name: 'Copy bash code' }).click();
+
+    await expect(frame.locator('.copy-error')).toBeVisible();
+    await expect(frame.locator('.copy-error')).toHaveText(
+      'Copy failed. The code is selected: press Ctrl+C or Command+C.',
+    );
+    expect(await page.evaluate(() => getSelection()?.toString())).toBe(
+      await frame.locator('pre').textContent(),
+    );
+  });
+
+  /* Function: a button that would do nothing is not drawn. */
+  test('draws no Copy button without the script', async ({ page }) => {
+    const frame = await gotoFramed(page, { script: false });
+
+    await expect(frame.locator('pre')).toBeVisible();
+    await expect(frame.getByRole('button')).toHaveCount(0);
+  });
+
+  /* SC 1.4.10: the label and the button never sit on the code's text. */
+  for (const width of [REFLOW_VIEWPORT.width, 1280]) {
+    test(`keeps the label and button off the code at ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      const frame = await gotoFramed(page);
+      await expect(frame.getByRole('button')).toBeVisible();
+
+      const covered = await frame.evaluate((block) => {
+        const range = document.createRange();
+        range.selectNodeContents(block.querySelector('pre code')!);
+        const lines = [...range.getClientRects()];
+        return [...block.querySelectorAll('.code-lang, button')].filter(
+          (el) => {
+            const box = el.getBoundingClientRect();
+            return lines.some(
+              (line) =>
+                line.right > box.left &&
+                line.left < box.right &&
+                line.bottom > box.top &&
+                line.top < box.bottom,
+            );
+          },
+        ).length;
+      });
+
+      expect(covered, 'the label or button covers code text').toBe(0);
+    });
+  }
+
+  /* SC 1.4.11, docs/STYLEGUIDE.md borders at 3:1: the grey edge against the page and the code fill. */
+  for (const colorScheme of ['dark', 'light'] as const) {
+    test(`draws the frame edge at 3:1 in ${colorScheme} mode`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ colorScheme });
+      const page = await context.newPage();
+      await gotoFramed(page);
+
+      const ratios: number[] = await page.evaluate(`(() => {
+        ${PAGE_HELPERS}
+        const block = [...document.querySelectorAll('.code-block')].at(-1);
+        const style = getComputedStyle(block);
+        const edge = parse(style.borderTopColor);
+        const fill = parse(style.backgroundColor);
+        const ground = effectiveBackground(block.parentElement);
+        return [ratio(over(edge, ground), ground), ratio(over(edge, fill), fill)];
+      })()`);
+
+      expect(
+        ratios.filter((value) => value < NON_TEXT),
+        'edge ratios under 3:1 (page, fill)',
+      ).toEqual([]);
+      await context.close();
+    });
+  }
 });

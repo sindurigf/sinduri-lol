@@ -5,9 +5,44 @@
  * needs a role, and `region` would add a landmark per block.
  */
 
+import { TALKS_PATH } from './post-figure.mjs';
+
 const LABEL = 'Code, scrolls sideways';
 
-export const codeBlock = {
+export const CODE_BLOCK_CLASS = 'code-block';
+
+const languageOf = (code) =>
+  [code.properties?.className ?? []]
+    .flat()
+    .map(String)
+    .find((name) => name.startsWith('language-'))
+    ?.slice('language-'.length);
+
+/*
+ * In a post, the block sits in a frame with its fence language as a label;
+ * src/scripts/copy.ts adds the Copy button from `data-copy`. Not slides: a
+ * slide sizes its code itself.
+ */
+const frame = (node, language) => ({
+  type: 'element',
+  tagName: 'div',
+  properties: { className: [CODE_BLOCK_CLASS] },
+  children: [
+    ...(language
+      ? [
+          {
+            type: 'element',
+            tagName: 'span',
+            properties: { className: ['code-lang'] },
+            children: [{ type: 'text', value: language }],
+          },
+        ]
+      : []),
+    node,
+  ],
+});
+
+export const codeBlock = ({ fileURL } = {}) => ({
   name: 'code-block',
 
   element: {
@@ -25,10 +60,16 @@ export const codeBlock = {
       ctx.setProperty(node, 'role', 'group');
       ctx.setProperty(node, 'ariaLabel', LABEL);
 
+      const language = languageOf(child);
       /* The fence's `language-*` class: no highlighter and no CSS read it. */
       if (child.properties?.className !== undefined) {
         ctx.setProperty(child, 'className', null);
       }
+
+      if (String(fileURL ?? '').includes(TALKS_PATH)) return;
+      ctx.setProperty(node, 'dataCopy', language ? `${language} code` : 'code');
+      ctx.setProperty(node, 'dataCopyWord', '');
+      ctx.replaceNode(node, frame(node, language));
     },
   },
-};
+});

@@ -171,6 +171,12 @@
   --color-light-subtle: #3f4650;
   --color-light-focus: #0047b3;
   --color-light-pink-text: #b00054;
+  /* A code block's edge in a post, kept grey so the gold label is the only gold (3.97 on background, 3.51 on surface). */
+  --color-code-edge: #707070;
+  /* Its light mode value: 4.54 on white, 3.48 on the light block fill. */
+  --color-light-code-edge: #767676;
+  /* A code block's fill: the surface in dark mode, the light block fill in light mode, so it reads as a block on white. */
+  --color-code-fill: var(--color-surface);
   --color-light-hero-veil: rgba(19, 19, 19, 0.025);
   --color-light-hero-floor: rgba(19, 19, 19, 0.035);
 
@@ -586,6 +592,8 @@
   --size-sticker-lg: 56px;
   --size-sticker-icon: 22px;
   --border-width-sticker: 4px;
+  /* A post code frame: thinner than a block edge, so the gold label leads. */
+  --border-width-code: 2px;
   --size-footer-rabbit: clamp(96px, 12vw, 160px);
   /* How far the rabbit's box drops below the type's top: the cap gap (0.04em) and the image's rim and throw (9%). */
   --footer-rabbit-sink: calc(0.04em + var(--size-footer-rabbit) * 0.09);
@@ -629,6 +637,8 @@
 
   /* SC 2.5.5 target size. Keep equal to MIN_TARGET in tests/wcag.ts. */
   --spacing-target: 44px;
+  /* Room above post code for the Copy button and its label, so neither sits on a line. */
+  --spacing-code-head: calc(var(--spacing-target) + 8px);
 
   /*
    * Menu bars in a 24x16 box; they end at 17px, so they are absolutely
