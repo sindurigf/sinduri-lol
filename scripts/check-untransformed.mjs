@@ -8,58 +8,13 @@ import { createHash } from 'node:crypto';
 import { glob, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { assertBuildCurrent } from './build-fingerprint.mjs';
+import { SERVED_AS_IS } from './check-allow-lists.mjs';
 
-const ROOT = fileURLToPath(new URL('..', import.meta.url));
+const ROOT =
+  process.env.CHECK_ROOT ?? fileURLToPath(new URL('..', import.meta.url));
 const DIST = join(ROOT, 'dist/client');
 const ASSETS = join(ROOT, 'src/assets');
 const TALKS = join(ROOT, 'src/content/talks');
-
-/*
- * Each entry names what reads the original. An entry that no longer matches
- * fails.
- */
-const SERVED_AS_IS = new Map([
-  ...[
-    'logo-rabbit.svg',
-    'roundel-rabbit.svg',
-    'bunny-footer.svg',
-    'lepus-rabbit.svg',
-  ].map((name) => [
-    name,
-    'a vector from scripts/make-logo.mjs or the rabbit trace, drawn sharp at every size as it is.',
-  ]),
-  ...['minerva', 'rudra', 'hela'].map((cat) => [
-    `about-cats-${cat}.avif`,
-    'the About cats draw their frames from it with SVG <image>; it is an AVIF atlas already.',
-  ]),
-  [
-    'hero-rabbit-climb.webp',
-    "Let It Fall's climbing rabbit draws its poses from it by offset; a lossless WebP from scripts/make-climb-atlas.mjs already.",
-  ],
-  [
-    'hero-rabbit.svg',
-    'the hero canvas rasterises the vector atlas at the size it draws the rabbit.',
-  ],
-  [
-    'hero-still-short.webp',
-    'layout.css links it as the hero background under `scripting: none`; ' +
-      'scripts/make-hero-still.mjs writes it as WebP already.',
-  ],
-  [
-    'hero-still-tall.webp',
-    'layout.css links it as the hero background under `scripting: none`; ' +
-      'scripts/make-hero-still.mjs writes it as WebP already.',
-  ],
-  [
-    'hero-still-wide.webp',
-    'layout.css links it as the hero background under `scripting: none`; ' +
-      'scripts/make-hero-still.mjs writes it as WebP already.',
-  ],
-  [
-    'social-icons.svg',
-    'the footer imports it with `?url` and every page links it as a <use> sprite.',
-  ],
-]);
 
 /* Skips node_modules, including a stale one under src/content/talks/. */
 const walk = async (dir) =>
@@ -123,7 +78,7 @@ const run = async () => {
   for (const name of stale) {
     console.error(
       `Untransformed: SERVED_AS_IS entry "${name}" no longer matches, as the ` +
-        'build does not ship it byte for byte; remove it from SERVED_AS_IS.',
+        'build does not ship it byte for byte; remove it from SERVED_AS_IS in scripts/check-allow-lists.mjs.',
     );
   }
 
@@ -140,8 +95,8 @@ const run = async () => {
         'is reading a property of an imported image directly, such as ' +
         '`image.width`: that marks the original as used. Take the size from ' +
         '`getImage({ src })` instead, as src/components/PhotoTile.astro does. ' +
-        'If a file is meant to ship as it is, add it to SERVED_AS_IS in this ' +
-        'script with what reads it.',
+        'If a file is meant to ship as it is, add it to SERVED_AS_IS in ' +
+        'scripts/check-allow-lists.mjs with what reads it.',
     );
     process.exit(1);
   }
