@@ -79,7 +79,7 @@ const pumpSecond = (page: Page) =>
       const signature = (): string =>
         [
           ...document.querySelectorAll<HTMLElement>(
-            '[data-home-hopper], .home-tuft, [data-home-prop], .home-prop-face',
+            '[data-home-hopper], .home-faller-spin, [data-home-prop], .home-prop-face',
           ),
         ]
           .map((el) => `${el.style.transform}/${el.style.rotate}`)

@@ -37,8 +37,8 @@ How AI tooling was used to build this site.
     with Potrace (`src/assets/hero-rabbit.svg`, `src/lib/rabbit-atlas.ts`),
     drawn from its raster, which the Let It Fall climb shares
     (`src/assets/hero-rabbit-climb.webp`);
-  - the jar, book, picture, watch and teacup printed down the homepage, Canva
-    AI linocuts cut out as masks (`src/assets/home-props/`);
+  - the jar, book, picture, watch and teacup down the homepage, Canva AI
+    die-cut stickers (`src/assets/home-stickers/`);
   - the sticker bunny in the footer and on the 404 page, drawn with Canva AI and traced with
     Potrace (`src/assets/bunny-footer.svg`);
   - the jumping bunny in the header logo, the hero roundel, every favicon and

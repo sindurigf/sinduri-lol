@@ -38,8 +38,8 @@ export const SERVED_AS_IS = new Map([
     "the homepage rabbit and Let It Fall's climbing rabbit draw their poses from it by offset; a lossless WebP from scripts/make-climb-atlas.mjs already.",
   ],
   ...['jar', 'book', 'picture', 'watch', 'teacup'].map((name) => [
-    `home-props/${name}.webp`,
-    'home.css masks a printed thing in the homepage fall with it; a lossless alpha-only WebP already, drawn at most at its own 200px.',
+    `home-stickers/${name}.webp`,
+    'home.css paints a die-cut sticker in the homepage fall with it, and masks its throw; a WebP already, drawn at most at its own 200px.',
   ]),
   [
     'social-icons.svg',

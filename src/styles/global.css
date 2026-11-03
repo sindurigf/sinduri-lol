@@ -171,13 +171,8 @@
   --color-light-subtle: #3f4650;
   --color-light-focus: #0047b3;
   --color-light-pink-text: #b00054;
-  /*
-   * Homepage meadow and fall. Props are printed in --color-print: gold on the
-   * dark ground (11.99), ink on the light one (18.58).
-   */
+  /* Homepage meadow: the living stems' leaves and buds. */
   --color-home-grass: #55651f;
-  --color-home-clod: #3a3a3a;
-  --color-print: #ffc000;
 
   /*
    * The gold surface: an inverted set, since only near-blacks read on gold.
@@ -366,7 +361,6 @@
   /* Zero everywhere except the logo tile, the laughing rabbit tile on /about and the hole's mouth on /. */
   --radius-nav: 14px;
   /* The hole's mouth: a half ellipse cut into the meadow's floor. */
-  --radius-home-mouth: 50% 50% 0 0 / 100% 100% 0 0;
 
   /*
    * Hard offset shadows, one job per color: pink is depth and pressables, cyan
@@ -597,17 +591,11 @@
   --size-home-photo-phone: 32rem;
   --size-home-band: 220px;
   --size-home-band-phone: 150px;
-  --size-home-tuft-w: 48px;
-  --size-home-tuft-h: 40px;
-  --size-home-tuft-front-w: 34px;
-  --size-home-tuft-front-h: 24px;
   --size-home-hopper-w: 76px;
   --size-home-hopper-h: 112px;
   --size-home-hopper-w-phone: 56px;
   --size-home-hopper-h-phone: 80px;
-  --size-home-clod: 8px;
   --size-home-sticker-throw: 5px;
-  --size-home-clod-edge: 2px;
   --size-home-mouth-h: 56px;
   --size-home-ledge-h: 36px;
   --size-home-ledge-h-phone: 24px;

@@ -31,7 +31,6 @@
     --color-pink-text: var(--color-light-pink-text);
     --color-gold-border: var(--color-light-ink);
     --color-card-edge: var(--color-light-ink);
-    --color-print: var(--color-light-ink);
     color-scheme: light;
     color: var(--color-text);
     background-color: var(--color-background);

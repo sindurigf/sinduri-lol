@@ -46,7 +46,7 @@ blur, uppercase headings, tilted marks.
 | 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                                                  | `/about`, `/accessibility`, `/contact` |
 | 4a  | A talk slide's label, bold words, part number and lead-in term before a colon; its text links, still underlined                    | `/talks/<deck>/`                       |
 | 5   | Category: the blog label and the homepage glyph tiles, ink-edged on gold                                                           | 3 routes                               |
-| 6   | Homepage: the fall's section title bricks, and the printed things' line on the dark ground                                         | `/`                                    |
+| 6   | Homepage: the fall's section title bricks                                                                                          | `/`                                    |
 | 7   | List markers in `.bullet-list`                                                                                                     | wherever a bulleted list is            |
 | 8   | The `gold` swatch and the contrast samples on gold; fills, hex in both modes                                                       | `/brand`                               |
 | 9   | Edges in dark mode: `border` on fields, controls, chips, rules and the outer edge of a gold area                                   | every route                            |
@@ -558,7 +558,7 @@ with a comment beside it.
 - Radius is 0 everywhere (base layer). `rounded-nav` (14px): the logo tile
   (`Header.astro`), the laughing rabbit tile on the Lepus Ridet panel on `/about` and the Star
   Trek thumbnail on `/about`, square so the photo is not cropped.
-  `--radius-home-mouth`: the hole's arch on `/`. `rounded-full`: no current
+  `rounded-full`: no current
   use. No pills; any other rounded corner is a bug.
 
 ## Components
@@ -936,20 +936,24 @@ Enforced by `tests/home-hero.spec.ts` and `tests/motion.spec.ts`.
 
 - The meadow is the gold column, gold in both modes: the name as a light brick
   (from `sm`), the two roles as two stepped bricks, the photo, the stats, then
-  the grass strip with the hopping rabbit and the hole's mouth cut into its
-  floor.
+  the meadow: living stems with buds in four depth layers
+  (`src/scripts/home-meadow.ts`, two canvases, before and behind the rabbit)
+  over a row of joined bricks, and the hole between two posts. Without
+  JavaScript the bricks carry a few planted stems.
 - The fall: every section after it steps sideways (`--spacing-home-tumble`)
   and its title is a gold label brick, so all text sits in an opaque brick.
 - Below `sm` every wall still climbs right: each higher brick steps
   `--spacing-home-phone-step` (16px, 32px for a third) right, with room for its
   throw. From `pair` (22.5rem) the roles and stats stay side by side, the first
   `--spacing-home-phone-climb` lower. Homepage only.
-- Printed things (jar, book, picture, watch, teacup) rise in the lanes beside
-  the column (`--spacing-home-lane`), in `--color-print`: gold on dark, ink on
-  light. Below `md` there are no lanes and they pass behind the bricks; the
-  jar rests at the top of the fall.
-- The jar is the one control among them ("Let Go of the Jar"); the rest are
-  `aria-hidden`.
+- Alice's things (jar, book, picture, watch, teacup) are die-cut stickers with
+  a pink throw (ink in light mode) rising in the lanes beside the column
+  (`--spacing-home-lane`). Below `md` there are no lanes and they pass behind
+  the bricks; the jar rests at the top of the fall.
+- Two controls among the decoration: the jar ("Let Go of the Jar") and the
+  rabbit ("Follow the Rabbit"), which dives into the hole and then hops side to
+  side down the lane, behind the bricks, until it sits at the end of the fall.
+  Everything else is `aria-hidden`.
 - Two pause controls, one beside the stats and one at the top of the fall,
   named "Pause animations" / "Play animations" and kept in step.
 
@@ -1342,7 +1346,7 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   and the script shows them as it starts the motion. Under reduced motion it
   draws one still frame and keeps them hidden. The state lives in the
   accessible name ("Play animations" / "Pause animations"), no
-  `aria-pressed`. Without JavaScript the rabbit and the printed things rest
+  `aria-pressed`. Without JavaScript the rabbit and Alice's things rest
   where `home.css` puts them.
 - One frame loop (`src/scripts/motion-loop.ts`) at most 30 frames a second,
   stopped while paused, while the tab is hidden and while the meadow and the

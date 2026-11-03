@@ -138,8 +138,9 @@ Setup: `gsettings set org.gnome.desktop.interface enable-animations false`.
 - [ ] Press and hold a primary button, a `/blog` chip, a footer sticker and
       the logo: each loses its shadow but does not move. → SC 2.3.3
 - [ ] Nothing else moves, fades or slides. → SC 2.3.3
-- [ ] `/`: the rabbit sits still, the printed things hold still, and there is
-      no pause control; pressing the jar turns it over without moving it.
+- [ ] `/`: the meadow and rabbit sit still, Alice's things hold still, and there is
+      no pause control; pressing the jar turns it over without moving it, and
+      pressing the rabbit puts it in the lane without a dive.
       → SC 2.3.3, 2.2.2
 - [ ] `/about`: the cats sit still and have no sleep controls or trick buttons. → SC 2.3.3, 2.2.2
 - [ ] Turn it back on: the button moves and the rabbit hops. → SC 2.3.3
