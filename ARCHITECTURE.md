@@ -139,9 +139,9 @@ Dark is the default. Colors and rules:
   outside `@theme`
 - px, rem or em in a declaration outside `@theme` (media conditions and zero
   allowed)
-- spacing utilities off the 0, 1, 2, 3, 4, 6, 8, 12, 16, 24 scale
+- spacing utilities off the [Spacing scale](docs/STYLEGUIDE.md#spacing-scale)
 - border widths other than 0, 4, 8 (a bare `border` included)
-- radius other than `rounded-nav`, `rounded-full`, `rounded-none`
+- a radius off [Borders, shadows and radius](docs/STYLEGUIDE.md#borders-shadows-and-radius)
 - weights other than `font-normal`, `font-black`; Tailwind's own sizes,
   leading or tracking (`leading-none`, `tracking-normal` allowed)
 - a removed outline
@@ -178,22 +178,23 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 `src/content.config.ts` defines `blog` (`glob()` over
 `src/content/blog/*.md`, top level only) and [`talks`](#talks).
 
-| Field            | Type              | Required | Default |
-| ---------------- | ----------------- | -------- | ------- |
-| `title`          | string            | yes      |         |
-| `date`           | date              | yes      |         |
-| `updated`        | date              | no       |         |
-| `category`       | enum, see below   | yes      |         |
-| `placeholder`    | boolean           | yes      |         |
-| `tags`           | slug[], see below | no       | `[]`    |
-| `teaser`         | string            | yes      |         |
-| `featured`       | boolean           | no       | `false` |
-| `readingTime`    | number            | no       |         |
-| `seoTitle`       | string            | no       |         |
-| `seoDescription` | string            | no       |         |
-| `cover`          | image             | yes      |         |
-| `coverAlt`       | string            | yes      |         |
-| `coverCredit`    | string            | no       |         |
+| Field            | Type              | Required | Default  |
+| ---------------- | ----------------- | -------- | -------- |
+| `title`          | string            | yes      |          |
+| `date`           | date              | yes      |          |
+| `updated`        | date              | no       |          |
+| `category`       | enum, see below   | yes      |          |
+| `placeholder`    | boolean           | yes      |          |
+| `tags`           | slug[], see below | no       | `[]`     |
+| `teaser`         | string            | yes      |          |
+| `featured`       | boolean           | no       | `false`  |
+| `readingTime`    | number            | no       |          |
+| `seoTitle`       | string            | no       |          |
+| `seoDescription` | string            | no       |          |
+| `cover`          | image             | yes      |          |
+| `coverAlt`       | string            | yes      |          |
+| `coverPosition`  | enum, see below   | no       | `center` |
+| `coverCredit`    | string            | no       |          |
 
 - Categories: `skincare`, `travel`, `personal-thoughts`,
   `professional-journey`, `open-source`. Import `BLOG_CATEGORIES`.
@@ -211,12 +212,10 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 - Non-placeholder posts get `og:type` `article`,
   `article:published_time` and a `BlogPosting` JSON-LD node. Other pages are
   `website`.
-- Every post needs `cover` (relative to the post, any ratio) and `coverAlt`;
-  the build fails without them. The cover is the post's hero photo and its
-  sharing card, uncropped. Every post card, the newest included, shows a 4:3
-  crop at `coverPosition` (`CARD_COVER_RATIO`), and so does the `/blog`
-  sharing card, which takes the feature card's cover
-  ([STYLEGUIDE](docs/STYLEGUIDE.md#posts)).
+- `cover` is relative to the post, any ratio; the build fails without it or
+  `coverAlt`. Crop positions: `COVER_POSITIONS`. Where the cover shows and
+  where it is cropped: [STYLEGUIDE](docs/STYLEGUIDE.md#posts). The `/blog`
+  sharing card takes the feature card's 4:3 crop.
 - `updated` sets `dateModified`; absent, it is omitted, not copied from `date`.
 - Pagination (`/blog/page/<n>`) builds only past `POSTS_PER_PAGE`, 9 unless
   the build's `POSTS_PER_PAGE` variable sets another positive whole number.
@@ -267,9 +266,8 @@ which is not installed.
 - `public/_headers` sends a `Link` header to `/llms.txt`, the sitemap and the
   feed. `tests/agent-readiness.spec.ts`.
 - `robots.txt` (`src/pages/robots.txt.ts`) disallows crawlers that collect
-  pages for AI training (GPTBot, ClaudeBot, CCBot, Google-Extended,
-  Applebot-Extended, Meta-ExternalAgent, Amazonbot, Bytespider); Google-Extended
-  also covers Gemini app grounding. Everything else is allowed, search crawlers
+  pages for AI training (`BLOCKED_AI_CRAWLERS`); Google-Extended also covers
+  Gemini app grounding. Everything else is allowed, search crawlers
   included. Meta-WebIndexer, Amzn-SearchBot and Amzn-User stay allowed. Google
   Search, AI Overviews and AI Mode use Googlebot and are unaffected; Search
   Console's Search generative AI control stays on Include. Cloudflare's managed
@@ -437,9 +435,9 @@ Rejected:
   A finding passes only with an `APPROVED` or `COMMENTED` review by
   `GITHUB_REPOSITORY_OWNER` on the head commit carrying
   `Approved test change: <reason>`; a later dismissal or change request revokes
-  it, and a new push needs a new review. GitHub blocks approving your own pull
-  request, so a comment review counts. It matches text, so indirection evades
-  it.
+  it. GitHub blocks approving your own pull request, so a comment review
+  counts. It matches text, so indirection evades it. How to approve:
+  [DEVELOPMENT.md](docs/DEVELOPMENT.md#approving-a-test-change).
 
 ### Claims that rest on a platform setting
 
@@ -451,9 +449,6 @@ in `wrangler.jsonc`).
 
 ## Assets
 
-- **The suffix names the artwork color.** `-dark` is `#111111` artwork (goes
-  on gold or light); `-white` is `#FFFFFF` artwork (goes on dark). The wrong
-  pairing renders invisible.
 - `src/assets/`: rendered artwork, hashed into `/_astro/` and cached
   immutably: WebP through `astro:assets`, and the rabbit SVGs as they are.
   Unimported files are not emitted.
@@ -469,11 +464,6 @@ in `wrangler.jsonc`).
 | `src/assets/lepus-rabbit.svg`   | Sticker   | The Lepus Ridet tile | `about.astro`                                |
 | `public/images/og-default.png`  | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
 | `public/images/og/*.jpg`        | Composite | n/a                  | `BaseLayout.astro`, every other page         |
-
-| Artwork             | on `#0B0B0B` | on `#1A1A1A` | on `#FFFFFF` | on `#FFC000` |
-| ------------------- | ------------ | ------------ | ------------ | ------------ |
-| `-dark`, `#111111`  | 1.04         | 1.08         | **18.88**    | **11.50**    |
-| `-white`, `#FFFFFF` | **19.68**    | **17.40**    | 1.00         | 1.64         |
 
 - `og-default.png`: 1200x630. All gold: the name, the joined Lepus Ridet
   sticker and the tagline in two lines, and the header logo scaled 7x, whole
@@ -682,16 +672,7 @@ in `public/`.
 
 ### The CSP
 
-```text
-default-src 'self';
-script-src 'self' <3 sha256 hashes>;
-style-src  'self' <1 sha256 hash>;
-connect-src 'self' https://plausible.io/api/event;
-object-src 'none'; base-uri 'none';
-form-action 'self'; frame-ancestors 'none';
-upgrade-insecure-requests;
-require-trusted-types-for 'script'; trusted-types vue
-```
+The policy is the `Content-Security-Policy` line in `public/_headers`.
 
 - No `'unsafe-inline'`, no `'unsafe-eval'`. Everything is same-origin: fonts in
   `/_astro/`, the Plausible tracker bundled from npm, no embeds, no `data:`
@@ -721,13 +702,8 @@ Hashed inline blocks:
 - JSON-LD needs no hash (not executed).
 
 An Astro upgrade can change a hash; the island then silently fails to hydrate
-(console only). To regenerate:
-
-1. `npm run build`
-2. `npx playwright test tests/headers-rules.spec.ts`
-3. Copy the hashes printed by the failure of
-   `the csp allows exactly the inline blocks the build emits` into
-   `public/_headers`. Never hand-edit a hash.
+(console only). `npm run check:csp` fails on a stale hash; regenerate with
+`npm run build && npm run check:csp -- --write`. Never hand-edit a hash.
 
 `npm run check:live` checks what Cloudflare actually sends.
 
