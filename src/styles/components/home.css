@@ -389,26 +389,6 @@
     --scale: 0.3;
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    [data-rabbit-fell] .home-faller-spin {
-      animation: home-tumble 2.6s linear infinite;
-    }
-
-    [data-rabbit-fell][data-home-motion='paused'] .home-faller-spin {
-      animation-play-state: paused;
-    }
-  }
-
-  @keyframes home-tumble {
-    from {
-      rotate: 0deg;
-    }
-
-    to {
-      rotate: 360deg;
-    }
-  }
-
   /* The hole: a notch cut through the ledge, dark down into the ground. */
   .home-mouth {
     position: absolute;

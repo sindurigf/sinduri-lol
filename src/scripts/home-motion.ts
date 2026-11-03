@@ -55,6 +55,13 @@ const LOOK_UP_MS = 1400;
 const DIVE_LEAP_MS = 520;
 const DIVE_DROP_MS = 260;
 const DIVE_DROP_PX = 90;
+/* Falling, the rabbit keeps hopping on the air: one hop this long, this high, beside the reader. */
+const FALL_HOP_MS = 1400;
+const FALL_HOP_PX = 36;
+const FALL_CROUCH = 0.18;
+const FALL_LAND = 0.82;
+/* Within this of the fall's end, it has landed and sits. */
+const FALL_LANDED_PX = 24;
 
 const PAUSE_NAME = 'Pause animations';
 const PLAY_NAME = 'Play animations';
@@ -110,6 +117,9 @@ const start = (): void => {
     ...document.querySelectorAll<HTMLButtonElement>('[data-home-pause]'),
   ];
   const follow = required<HTMLButtonElement>(band, '[data-home-follow]');
+  const faller = required<HTMLElement>(document, '[data-home-faller]');
+  const fallerSpin = required<HTMLElement>(faller, '.home-faller-spin');
+  const fallerBun = required<HTMLElement>(faller, '.home-bun');
   const fall = drift.parentElement;
 
   const things: Thing[] = [
@@ -218,7 +228,27 @@ const start = (): void => {
     place();
   };
 
+  const stepFaller = (): void => {
+    if (!fall?.hasAttribute('data-rabbit-fell')) return;
+    const landed =
+      fall.getBoundingClientRect().bottom -
+        fallerSpin.getBoundingClientRect().bottom <
+      FALL_LANDED_PX;
+    const p = (clock % FALL_HOP_MS) / FALL_HOP_MS;
+    let pose: RabbitPose = 'leap';
+    let lift = 0;
+    if (landed) pose = 'sit';
+    else if (p < FALL_CROUCH || p > FALL_LAND) pose = 'crouch';
+    else {
+      const t = (p - FALL_CROUCH) / (FALL_LAND - FALL_CROUCH);
+      lift = FALL_HOP_PX * 4 * t * (1 - t);
+    }
+    fallerBun.dataset.pose = pose;
+    fallerSpin.style.transform = `translateY(${(-lift).toFixed(1)}px)`;
+  };
+
   const stepRabbit = (): void => {
+    stepFaller();
     if (dive >= 0) {
       stepDive();
       return;
