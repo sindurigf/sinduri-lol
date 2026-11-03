@@ -16,6 +16,7 @@ import { pathToFileURL } from 'node:url';
 import { createSatteriMarkdownProcessor } from '@astrojs/markdown-satteri';
 import { linkListItem } from '../src/plugins/link-list-item.mjs';
 import { postFigure } from '../src/plugins/post-figure.mjs';
+import { moduleFold } from '../src/plugins/post-fold.mjs';
 import { tableScope } from '../src/plugins/table-scope.mjs';
 import { tableStack } from '../src/plugins/table-stack.mjs';
 import { tableScroll } from '../src/plugins/table-scroll.mjs';
@@ -578,6 +579,7 @@ const PLUGINS: Record<string, unknown> = {
   linkListItem,
   postFigure,
   codeBlock,
+  moduleFold,
   tableScope,
   tableStack,
   tableScroll,
