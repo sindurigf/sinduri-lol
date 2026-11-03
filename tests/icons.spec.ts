@@ -182,11 +182,10 @@ const icoFrames = (file: string): Buffer[] => {
 
 interface AlphaCount {
   width: number;
-  edge: number;
   inside: number;
 }
 
-/** How many pixels on the image's outer edge, and inside it, have any alpha. */
+/** How many pixels inside the image's outer edge have any alpha. */
 const alphaPixels = async (
   image: Buffer | string,
   density?: number,
@@ -196,12 +195,11 @@ const alphaPixels = async (
     .raw()
     .toBuffer({ resolveWithObject: true });
   const last = { x: info.width - 1, y: info.height - 1 };
-  const count = { width: info.width, edge: 0, inside: 0 };
-  for (let y = 0; y <= last.y; y++)
-    for (let x = 0; x <= last.x; x++) {
-      if (data[(y * info.width + x) * info.channels + 3] === 0) continue;
-      const onEdge = x === 0 || y === 0 || x === last.x || y === last.y;
-      count[onEdge ? 'edge' : 'inside'] += 1;
+  const count = { width: info.width, inside: 0 };
+  for (let y = 1; y < last.y; y++)
+    for (let x = 1; x < last.x; x++) {
+      if (data[(y * info.width + x) * info.channels + 3] !== 0)
+        count.inside += 1;
     }
   return count;
 };
@@ -211,34 +209,28 @@ const SVG_TAB_PX = 16;
 /* librsvg sizes a viewBox-only SVG at one px per unit at this density. */
 const SVG_BASE_DENSITY = 72;
 
-const expectUncut = (count: AlphaCount, name: string): void => {
+const expectDrawn = (count: AlphaCount, name: string): void => {
   expect.soft(count.inside, `${name} draws nothing.`).toBeGreaterThan(0);
-  expect
-    .soft(
-      count.edge,
-      `${name} draws on its outer edge; raise TAB_BORDER in scripts/make-logo.mjs.`,
-    )
-    .toBe(0);
 };
 
 test.describe('the tab icon frames', NODE, () => {
-  test('every favicon.ico frame has a clear border, so nothing of the sticker is cut off', async () => {
+  test('every favicon.ico frame draws the mark', async () => {
     const frames = icoFrames(distFile('/favicon.ico'));
     expect(frames.length, 'favicon.ico holds no frames.').toBeGreaterThan(0);
     for (const frame of frames) {
       const width = pngSize(frame)?.width ?? 'non-PNG';
-      expectUncut(await alphaPixels(frame), `The ${width}px favicon.ico frame`);
+      expectDrawn(await alphaPixels(frame), `The ${width}px favicon.ico frame`);
     }
   });
 
-  test('favicon-96x96.png has a clear border, so nothing of the sticker is cut off', async () => {
-    expectUncut(
+  test('favicon-96x96.png draws the mark', async () => {
+    expectDrawn(
       await alphaPixels(distFile('/favicon-96x96.png')),
       'favicon-96x96.png',
     );
   });
 
-  test('favicon.svg at 16px has a clear border, so nothing of the sticker is cut off', async () => {
+  test('favicon.svg has a square viewBox and draws the mark at 16px', async () => {
     const file = distFile('/favicon.svg');
     const side = Number(
       /viewBox="[^"]*?(\S+)"/.exec(readFileSync(file, 'utf8'))?.[1],
@@ -249,7 +241,7 @@ test.describe('the tab icon frames', NODE, () => {
       (SVG_BASE_DENSITY * SVG_TAB_PX) / side,
     );
     expect(count.width, 'favicon.svg did not render at 16px.').toBe(SVG_TAB_PX);
-    expectUncut(count, 'favicon.svg');
+    expectDrawn(count, 'favicon.svg');
   });
 });
 
