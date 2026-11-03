@@ -330,6 +330,7 @@ merge.
 | `tests/titles.spec.ts`              | 2.4.2                                                            | Titles distinct and descriptive                                                                                                                                                                                                                                                                                 |
 | `tests/site-language.spec.ts`       | 3.1.1, 3.1.2                                                     | One declared language everywhere; every Latin phrase in `lang="la"`                                                                                                                                                                                                                                             |
 | `tests/alt-text.spec.ts`            | 1.1.1                                                            | Every image named or decorative on purpose                                                                                                                                                                                                                                                                      |
+| `tests/photo-links.spec.ts`         | 2.4.4, 1.3.1                                                     | Every photo link is named by its alt plus "(opens full size)", with no stray comma                                                                                                                                                                                                                              |
 | `tests/card-click.spec.ts`          | best practice (Intopia Card)                                     | A blog card follows its title link on a click and keeps its teaser selectable on a drag                                                                                                                                                                                                                         |
 | `tests/list-semantics.spec.ts`      | 1.3.1                                                            | Every list drawn without markers outside `<nav>` carries `role="list"`, which Safari needs to keep it a list                                                                                                                                                                                                    |
 | `tests/blog.spec.ts`                | 1.1.1, 1.3.2                                                     | A post card cover is decorative except the newest post's on `/` and `/blog`, which keeps its alt; the cover comes first in reading order and stacked cards draw it above the text (1.3.2)                                                                                                                       |
@@ -405,7 +406,7 @@ links. Not automated:
    with a screen reader. SC 3.3.7 and 3.3.8 do not apply.
 2. **No screen reader testing.** No NVDA, JAWS, VoiceOver or Orca run.
    [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §6 is an Orca pass in Firefox,
-   with §6.4 in Chrome for the uppercase question; §6.10.1 and §6.10.2 are 19
+   with §6.4 in Chrome for the uppercase question; §6.10.1 and §6.10.2 are
    widget steps for TalkBack on Android and Orca. A pass narrows this gap; it
    does not close it. Planned: the §6 Orca pass once the site is ready.
 3. **The gold surface has been measured, not looked at.**
@@ -418,8 +419,7 @@ links. Not automated:
    | every control in `.surface-gold`                     | its fill differs from gold, or its border clears 3:1 |
    | `/contact`'s `.btn-gold-primary` focus ring at 305px | inner `#FFFFFF` ring at 3:1 or more against its fill |
 
-   The inner ring is 18.58 against the `#131313` fill by the tokens; the test
-   asserts 3:1. Nobody has tabbed, zoomed or listened to a gold band.
+   Nobody has tabbed, zoomed or listened to a gold band.
    [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §5 checks the ring on gold by
    eye only, so it does not close this gap.
 
@@ -550,8 +550,7 @@ Rules this repository follows. Values and reasons:
     ([why](ARCHITECTURE.md#rejected-findings)).
 - **Scripts.** Never hold content back behind a script. What a page says is in
   its HTML; a script only adds to it. Tested for navigation, the About
-  cats' names and lines and the homepage hero's still frame
-  (`tests/no-script.spec.ts`) and the talk slides
+  cats' names and lines (`tests/no-script.spec.ts`) and the talk slides
   (`tests/slideshow.spec.ts`).
 - **Sources.** WCAG 2.2 and the specifications it relies on (HTML, WAI-ARIA,
   CSS) are normative; the Understanding documents are informative W3C

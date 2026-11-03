@@ -363,7 +363,7 @@
   --tracking-title: -0.02em;
   --tracking-label: 0.1em;
 
-  /* Zero everywhere except the logo tile and the laughing rabbit tile on /about. */
+  /* Zero everywhere except the logo tile, the laughing rabbit tile on /about and the hole's mouth on /. */
   --radius-nav: 14px;
   /* The hole's mouth: a half ellipse cut into the meadow's floor. */
   --radius-home-mouth: 50% 50% 0 0 / 100% 100% 0 0;

@@ -320,7 +320,7 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
   `pink` or `border`: they do not change with the mode.
 - The label on a gold fill is `gold-text`, never `background` (white in
   light).
-- RIDET and `.sticker` are black blocks.
+- `.sticker` is a black block.
 - `tests/light-mode.spec.ts` scans every route in light at WCAG 2.2 AA.
 
 ## Type scale
@@ -557,8 +557,9 @@ with a comment beside it.
 - Anything focusable with a shadow sets its lift: [Focus](#focus).
 - Radius is 0 everywhere (base layer). `rounded-nav` (14px): the logo tile
   (`Header.astro`), the laughing rabbit tile on the Lepus Ridet panel on `/about` and the Star
-  Trek thumbnail on `/about`, square so the photo is not cropped. `rounded-full`:
-  no current use. No pills; any other rounded corner is a bug.
+  Trek thumbnail on `/about`, square so the photo is not cropped.
+  `--radius-home-mouth`: the hole's arch on `/`. `rounded-full`: no current
+  use. No pills; any other rounded corner is a bug.
 
 ## Components
 
