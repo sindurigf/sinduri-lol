@@ -487,7 +487,7 @@ Let It Fall:
 
 Contact Form:
 
-- [ ] Open sinduri.lol/contact and swipe to the form. Expect: “Name (required)”, an edit box, then “Email (required)” with “Used to reply, and nothing else.”, then “Message (required)” with “Between 10 and 5000 characters.” → SC 1.3.1, 3.3.2
+- [ ] Open sinduri.lol/contact and swipe to the form. Expect: “Name (required)”, an edit box, then “Email (required)” with “Used to reply, and nothing else.”, then “Message (required)” with “Between 10 and 5,000 characters.” → SC 1.3.1, 3.3.2
 - [ ] Leave every field empty and double-tap Send Message. Expect: The page reloads and TalkBack starts at “There Are 3 Problems with This Form”, a heading, with a link for each problem. → SC 3.3.1, 2.4.3
 - [ ] Double-tap the first problem link. Expect: Focus moves into the Name field, and its error is read with it. → SC 3.3.1
 
@@ -551,7 +551,7 @@ Let It Fall:
 
 Contact Form:
 
-- [ ] Open sinduri.lol/contact and press F to reach the first field, then Tab. Expect: “Name (required)”, an entry, then “Email (required)” with “Used to reply, and nothing else.”, then “Message (required)” with “Between 10 and 5000 characters.” → SC 1.3.1, 3.3.2
+- [ ] Open sinduri.lol/contact and press F to reach the first field, then Tab. Expect: “Name (required)”, an entry, then “Email (required)” with “Used to reply, and nothing else.”, then “Message (required)” with “Between 10 and 5,000 characters.” → SC 1.3.1, 3.3.2
 - [ ] Leave every field empty, Tab to Send Message and press Enter. Expect: The page reloads and Orca starts at “There Are 3 Problems with This Form”, a heading, with a link for each problem. → SC 3.3.1, 2.4.3
 - [ ] Press Enter on the first problem link. Expect: Focus moves into the Name field, and its error is read with it. → SC 3.3.1
 
@@ -604,7 +604,7 @@ Let It Fall:
 
 Contact form:
 
-- [ ] Open sinduri.lol/contact and swipe to the form. Expect: “Name (required), text field”, then “Email (required), text field”, with “Used to reply, and nothing else.”, then “Message (required)”, with “Between 10 and 5000 characters.” → SC 1.3.1, 3.3.2
+- [ ] Open sinduri.lol/contact and swipe to the form. Expect: “Name (required), text field”, then “Email (required), text field”, with “Used to reply, and nothing else.”, then “Message (required)”, with “Between 10 and 5,000 characters.” → SC 1.3.1, 3.3.2
 - [ ] Leave every field empty and double-tap Send Message. Expect: The page reloads and VoiceOver starts at “There Are 3 Problems with This Form, heading”, with a link for each problem. → SC 3.3.1, 2.4.3
 - [ ] Double-tap the first problem link. Expect: Focus moves into the Name field, and its error is read with it. → SC 3.3.1
 
