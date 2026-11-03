@@ -279,6 +279,11 @@
     @apply mx-card-tight;
   }
 
+  /* The panel is the one gold edge: code inside takes a card's edge (none in dark mode, ink in light). */
+  .prose .module-panel pre {
+    @apply border-card-edge;
+  }
+
   /* No breakout from a panel: its container query would zero the outdent and start them at the edge. */
   .post-layout .prose .module-panel > .post-fold > :is(figure, .pillar-wall) {
     @apply mx-card-tight w-auto;
