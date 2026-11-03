@@ -1,13 +1,24 @@
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { createSatteriMarkdownProcessor } from '@astrojs/markdown-satteri';
+import ts from 'typescript';
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { moduleFold, postFold } from '../src/plugins/post-fold.mjs';
+import { linkListItem } from '../src/plugins/link-list-item.mjs';
+import { postFigure } from '../src/plugins/post-figure.mjs';
+import { codeBlock } from '../src/plugins/code-block.mjs';
+import { tableScope } from '../src/plugins/table-scope.mjs';
+import { tableStack } from '../src/plugins/table-stack.mjs';
+import { tableScroll } from '../src/plugins/table-scroll.mjs';
 import {
   CODE_FOLD_MIN_LINES,
   WATCH_OUT_HEADING,
   hasFold,
 } from '../src/lib/post-folds';
-import { builtHtml } from './routes';
+import { BLOG_CONTENT_DIR } from '../src/lib/paths';
+import { PUBLISHED_POST_ROUTES } from './routes';
 import { NODE } from './tags';
 
 /** `src/plugins/post-fold.mjs`, `src/scripts/post-folds.ts` and the `.post-fold` rules. */
@@ -50,14 +61,21 @@ const context = (root: Node) => {
 
 const POST = { fileURL: 'file:///site/src/content/blog/a.md' };
 
-test('the visitor is registered with the markdown processor', NODE, () => {
-  const config = readFileSync('astro.config.mjs', 'utf8');
-  const processor = /hastPlugins:\s*\[([^\]]*)\]/.exec(config)?.[1] ?? '';
+/** The hast plugin names in `astro.config.mjs`, in order. */
+const configPlugins = (): string[] =>
+  (
+    /hastPlugins:\s*\[([^\]]*)\]/.exec(
+      readFileSync('astro.config.mjs', 'utf8'),
+    )?.[1] ?? ''
+  )
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean);
 
-  expect(
-    processor.split(',').map((name) => name.trim()),
-    'postFold is not registered in hastPlugins',
-  ).toContain('postFold');
+test('the visitors are registered with the markdown processor', NODE, () => {
+  expect(configPlugins(), 'a fold visitor is not in hastPlugins').toEqual(
+    expect.arrayContaining(['postFold', 'moduleFold']),
+  );
 });
 
 test.describe('the post-fold visitor', () => {
@@ -214,14 +232,103 @@ test(
   },
 );
 
-/** The first post route whose built HTML has a fold. */
-const foldPost = (): string => {
-  const route = [...builtHtml()].find(([, html]) =>
-    html.includes('class="post-fold"'),
-  )?.[0];
-  expect(route, 'no built post has a fold to test').toBeDefined();
-  return route!;
+/* The site's own pipeline, so the fixture renders as a post would. */
+const PLUGINS: Record<string, unknown> = {
+  linkListItem,
+  postFigure,
+  postFold,
+  codeBlock,
+  tableScope,
+  tableStack,
+  tableScroll,
+  moduleFold,
 };
+
+const FIXTURE = 'tests/fixtures/post-folds.md';
+
+let fixtureHtml: Promise<string> | undefined;
+
+/** `FIXTURE` rendered by the `hastPlugins` in `astro.config.mjs`, in their order. */
+const renderFixture = (): Promise<string> =>
+  (fixtureHtml ??= (async () => {
+    const names = configPlugins();
+    const unknown = names.filter((name) => !(name in PLUGINS));
+    expect(
+      unknown,
+      'hastPlugins has a plugin this spec does not import',
+    ).toEqual([]);
+    const renderer = await createSatteriMarkdownProcessor({
+      hastPlugins: names.map((name) => PLUGINS[name]) as never,
+      syntaxHighlight: false,
+    });
+    const { code } = await renderer.render(readFileSync(FIXTURE, 'utf8'), {
+      fileURL: pathToFileURL(join(BLOG_CONTENT_DIR, 'post-folds.md')),
+    });
+    return code;
+  })());
+
+/* A built page carries the fold script only when its own post has a fold. */
+const FOLD_SCRIPT = ts.transpileModule(
+  readFileSync('src/scripts/post-folds.ts', 'utf8'),
+  { compilerOptions: { target: ts.ScriptTarget.ES2022 } },
+).outputText;
+
+const PROSE_OPEN = '<div class="prose">';
+
+/** A built post, the host for the fixture: its template, CSS and scripts are the real ones. */
+const FOLD_POST = PUBLISHED_POST_ROUTES[0]!;
+
+/** Serves `FOLD_POST` with the rendered fixture first in its prose and the fold script after it. */
+const serveFoldPost = async (page: Page) => {
+  const body = await renderFixture();
+  await page.route(
+    (url) => url.pathname.replace(/\/$/, '') === FOLD_POST,
+    async (route) => {
+      const response = await route.fetch();
+      const html = await response.text();
+      expect(html, `${FOLD_POST} has no prose to host the fixture`).toContain(
+        PROSE_OPEN,
+      );
+      await route.fulfill({
+        response,
+        body: html
+          .replace(PROSE_OPEN, `${PROSE_OPEN}${body}`)
+          .replace(
+            '</body>',
+            `<script type="module">${FOLD_SCRIPT}</script></body>`,
+          ),
+      });
+    },
+  );
+};
+
+/** Opens the fixture post, settled, with an optional hash. */
+const gotoFoldPost = async (page: Page, hash = '') => {
+  await serveFoldPost(page);
+  await gotoSettled(page, `${FOLD_POST}${hash}`);
+};
+
+test(
+  "renders modules, Watch Out lists and long code as folds through the site's pipeline",
+  NODE,
+  async () => {
+    const html = await renderFixture();
+    const count = (pattern: RegExp) => html.match(pattern)?.length ?? 0;
+
+    expect(
+      count(/<details class="post-fold" data-module/g),
+      'module folds',
+    ).toBe(4);
+    expect(
+      count(/<span class="fold-label">\d+ Surprises?</g),
+      'Watch Out folds',
+    ).toBe(2);
+    expect(
+      count(/<span class="fold-label">Bash Code, \d+ Lines</g),
+      'code folds',
+    ).toBe(1);
+  },
+);
 
 /** The first Watch Out or code fold: closed on load. */
 const firstFold = (page: Page) =>
@@ -232,7 +339,7 @@ const modules = (page: Page) => page.locator('details[data-module]');
 test.describe('a post fold', () => {
   /* SC 2.1.1: Enter and Space toggle it from the keyboard. */
   test('opens and closes from the keyboard', async ({ page }) => {
-    await gotoSettled(page, foldPost());
+    await gotoFoldPost(page);
     const fold = firstFold(page);
     const summary = fold.locator('summary');
 
@@ -250,7 +357,7 @@ test.describe('a post fold', () => {
 
   /* SC 4.1.2: the name stays the same across toggles; the expanded state alone changes. */
   test('keeps its name and exposes its state', async ({ page }) => {
-    await gotoSettled(page, foldPost());
+    await gotoFoldPost(page);
     const summary = firstFold(page).locator('summary');
     const isOpen = () =>
       summary.evaluate((el) => (el.parentElement as HTMLDetailsElement).open);
@@ -278,7 +385,7 @@ test.describe('a post fold', () => {
   test('keeps every Watch Out heading a heading outside the fold', async ({
     page,
   }) => {
-    await gotoSettled(page, foldPost());
+    await gotoFoldPost(page);
     const headings = page.getByRole('heading', {
       level: 3,
       name: WATCH_OUT_HEADING,
@@ -292,7 +399,7 @@ test.describe('a post fold', () => {
 
   /* SC 2.5.5: the summary is at least 44px tall. */
   test('has a summary at least 44px tall', async ({ page }) => {
-    await gotoSettled(page, foldPost());
+    await gotoFoldPost(page);
     const short = await page.evaluate(() =>
       [...document.querySelectorAll('details.post-fold > summary')]
         .map((summary) => summary.getBoundingClientRect().height)
@@ -304,7 +411,7 @@ test.describe('a post fold', () => {
 
   /* SC 2.4.3: a link to something inside a closed fold opens it. */
   test('opens for a link to an id inside it', async ({ page }) => {
-    await gotoSettled(page, foldPost());
+    await gotoFoldPost(page);
     const fold = firstFold(page);
     await fold.locator(':scope > :not(summary)').evaluate((el) => {
       el.id = 'inside-a-fold';
@@ -326,7 +433,7 @@ test.describe('a post fold', () => {
 
   /* Function: a malformed escape in the address does not stop the script. */
   test('still wires the buttons after a malformed hash', async ({ page }) => {
-    await gotoSettled(page, `${foldPost()}#50%-off`);
+    await gotoFoldPost(page, '#50%-off');
 
     await expect(
       page.getByRole('button', { name: 'Close All Modules' }),
@@ -337,7 +444,7 @@ test.describe('a post fold', () => {
   test('opens every fold for print and restores them after', async ({
     page,
   }) => {
-    await gotoSettled(page, foldPost());
+    await gotoFoldPost(page);
     const closedCount = () =>
       page.locator('details.post-fold:not([open])').count();
     const closedBefore = await closedCount();
@@ -355,7 +462,8 @@ test.describe('a post fold', () => {
   test('prints a closed fold open without JavaScript', async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
-    await page.goto(foldPost());
+    await serveFoldPost(page);
+    await page.goto(FOLD_POST);
     await page.emulateMedia({ media: 'print' });
 
     const counts = await page.evaluate(() => {
@@ -377,7 +485,7 @@ test.describe('a post fold', () => {
 
   /* SC 1.3.1, 2.4.6: content everyone needs is never hidden on load; module headings stay headings. */
   test('opens every module on load with its h2 outside', async ({ page }) => {
-    await gotoSettled(page, foldPost());
+    await gotoFoldPost(page);
     const count = await modules(page).count();
     expect(count, 'the post has no module fold').toBeGreaterThan(0);
 
@@ -399,7 +507,7 @@ test.describe('a post fold', () => {
 
   /* SC 4.1.2: a module's name stays the same across toggles. */
   test('keeps a module name the same open or closed', async ({ page }) => {
-    await gotoSettled(page, foldPost());
+    await gotoFoldPost(page);
     const summary = modules(page).first().locator(':scope > summary');
 
     await expect(summary).toHaveAccessibleName(
@@ -414,7 +522,7 @@ test.describe('a post fold', () => {
 
   /* SC 2.1.1: the buttons close and open every module, and only modules. */
   test('closes and opens all modules with its buttons', async ({ page }) => {
-    await gotoSettled(page, foldPost());
+    await gotoFoldPost(page);
     const extrasOpen = () =>
       page.locator('details.post-fold:not([data-module])[open]').count();
     const extrasBefore = await extrasOpen();
@@ -434,7 +542,8 @@ test.describe('a post fold', () => {
   test('hides the module buttons without JavaScript', async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
-    await page.goto(foldPost());
+    await serveFoldPost(page);
+    await page.goto(FOLD_POST);
 
     await expect(page.locator('.module-controls')).toBeHidden();
     await context.close();
@@ -442,7 +551,7 @@ test.describe('a post fold', () => {
 
   /* SC 2.4.3: a link to a module heading opens the module a reader closed. */
   test('opens a closed module for a link to its heading', async ({ page }) => {
-    await gotoSettled(page, foldPost());
+    await gotoFoldPost(page);
     const fold = modules(page).nth(2);
     const id = await fold.evaluate((el) => el.previousElementSibling?.id ?? '');
     expect(id, 'the module h2 has no id').not.toBe('');
@@ -469,14 +578,14 @@ test.describe('a post fold', () => {
   });
 
   test('leaves the module buttons out of print', async ({ page }) => {
-    await gotoSettled(page, foldPost());
+    await gotoFoldPost(page);
     await page.emulateMedia({ media: 'print' });
 
     await expect(page.locator('.module-controls')).toBeHidden();
   });
 
   test('opens closed modules for print', async ({ page }) => {
-    await gotoSettled(page, foldPost());
+    await gotoFoldPost(page);
     await page.getByRole('button', { name: 'Close All Modules' }).click();
 
     await page.evaluate(() => dispatchEvent(new Event('beforeprint')));
