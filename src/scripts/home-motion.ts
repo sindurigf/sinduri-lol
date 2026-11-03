@@ -60,6 +60,9 @@ const FALL_HOP_MS = 1400;
 const FALL_HOP_PX = 36;
 const FALL_CROUCH = 0.18;
 const FALL_LAND = 0.82;
+/* Each hop crosses the lane, side to side: at most this far from its middle, and never past half the lane. */
+const FALL_SWAY_PX = 40;
+const FALL_SWAY_PHONE_PX = 20;
 /* Within this of the fall's end, it has landed and sits. */
 const FALL_LANDED_PX = 24;
 
@@ -228,23 +231,41 @@ const start = (): void => {
     place();
   };
 
+  const fallSway = (): number => {
+    const lane = parseFloat(
+      getComputedStyle(fall ?? document.body).getPropertyValue('--lane'),
+    );
+    if (!lane) return FALL_SWAY_PHONE_PX;
+    return Math.max(0, Math.min(FALL_SWAY_PX, (lane - thingSize) / 2));
+  };
+
   const stepFaller = (): void => {
     if (!fall?.hasAttribute('data-rabbit-fell')) return;
     const landed =
       fall.getBoundingClientRect().bottom -
         fallerSpin.getBoundingClientRect().bottom <
       FALL_LANDED_PX;
+    const hopIndex = Math.floor(clock / FALL_HOP_MS);
+    const dir = hopIndex % 2 === 0 ? 1 : -1;
+    const reach = fallSway();
     const p = (clock % FALL_HOP_MS) / FALL_HOP_MS;
     let pose: RabbitPose = 'leap';
     let lift = 0;
+    let x = -dir * reach;
     if (landed) pose = 'sit';
-    else if (p < FALL_CROUCH || p > FALL_LAND) pose = 'crouch';
-    else {
+    else if (p < FALL_CROUCH) pose = 'crouch';
+    else if (p > FALL_LAND) {
+      pose = 'crouch';
+      x = dir * reach;
+    } else {
       const t = (p - FALL_CROUCH) / (FALL_LAND - FALL_CROUCH);
       lift = FALL_HOP_PX * 4 * t * (1 - t);
+      x = -dir * reach + 2 * dir * reach * t;
     }
     fallerBun.dataset.pose = pose;
-    fallerSpin.style.transform = `translateY(${(-lift).toFixed(1)}px)`;
+    /* The atlas faces left: -1 mirrors it to face the way it hops. */
+    fallerBun.style.setProperty('--face', String(-dir));
+    fallerSpin.style.transform = `translate(${x.toFixed(1)}px, ${(-lift).toFixed(1)}px)`;
   };
 
   const stepRabbit = (): void => {

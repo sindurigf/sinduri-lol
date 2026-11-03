@@ -353,16 +353,12 @@
     visibility: hidden;
   }
 
-  /* After the dive the rabbit falls beside the reader: sticky in the lane, so it lands at the end of the fall. */
+  /* After the dive the rabbit falls beside the reader: sticky in the lane, behind every brick like the printed things, so it lands at the end of the fall. */
   .home-faller {
     position: sticky;
     top: 45vh;
     z-index: 0;
     height: 0;
-
-    @variant md {
-      z-index: 2;
-    }
 
     visibility: hidden;
     pointer-events: none;
