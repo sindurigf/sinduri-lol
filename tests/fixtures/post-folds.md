@@ -48,9 +48,15 @@ echo "short"
 
 ## Module 3: Go Live
 
+> A quote inside a module.
+
 ### Watch Out
 
 - The only surprise.
+
+---
+
+A paragraph after a rule.
 
 ## Between Modules
 

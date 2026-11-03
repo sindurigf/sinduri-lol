@@ -11,8 +11,11 @@
     --module-bar: calc(
       var(--text-post-h2) * var(--text-post-h2--line-height) + --spacing(8)
     );
+    --module-edge: var(--edge);
 
-    @apply relative mt-16 edge border-border;
+    @apply relative mt-16 border-border;
+
+    border-width: var(--module-edge);
 
     container: module-panel / inline-size;
     anchor-scope: --module-heading;
@@ -36,7 +39,7 @@
 
     width: var(--size-module-toggle);
     height: var(--module-bar);
-    border-width: 0 0 var(--edge) var(--edge);
+    border-width: 0 0 var(--module-edge) var(--module-edge);
 
     /* As tall as the h2 when it wraps; a panel's own h2 is the only anchor inside it. */
     @supports (anchor-name: --module-heading) {
@@ -53,7 +56,7 @@
 
   /* Inside the toggle: outside, the ring would cross the panel's edge. */
   .module-panel > .post-fold > .post-contents-summary:focus-visible {
-    outline-offset: calc(-1 * (var(--edge) + var(--focus-gap)));
+    outline-offset: calc(-1 * (var(--module-edge) + var(--focus-gap)));
   }
 
   /*
@@ -69,7 +72,7 @@
       @apply static w-auto;
 
       height: auto;
-      border-width: var(--edge) 0 0;
+      border-width: var(--module-edge) 0 0;
     }
   }
 
@@ -81,7 +84,7 @@
     @apply static w-auto;
 
     height: auto;
-    border-width: var(--edge) 0 0;
+    border-width: var(--module-edge) 0 0;
   }
 
   /* The inset sits on the body, not the fold, so a dropped toggle spans the panel. */
@@ -96,6 +99,27 @@
   /* The panel is the one gold edge: code inside takes a card's edge (none in dark mode, ink in light). */
   .prose .module-panel pre {
     @apply border-card-edge;
+
+    border-width: var(--border-width-thin);
+  }
+
+  /* Quote and rule inside a module: `subtle`, thin, so no gold line runs inside the panel. */
+  .prose .module-panel blockquote {
+    @apply border-subtle;
+
+    border-left-width: var(--border-width-thin);
+  }
+
+  .prose .module-panel hr {
+    @apply border-subtle;
+
+    border-top-width: var(--border-width-thin);
+  }
+
+  /* Light mode: the panel and its toggle take the thin edge. */
+  :is(:root[data-theme='light'] main, main .mode-light)
+    .module-panel:not(.mode-dark *) {
+    --module-edge: var(--border-width-thin);
   }
 
   /* No breakout from a panel: its container query would zero the outdent and start them at the edge. */
@@ -103,7 +127,8 @@
     @apply mx-card-tight w-auto;
   }
 
-  .post-fold > :not(summary) {
+  /* Zero specificity on the child, so the prose spacing (h3, figure) still wins as it does outside a fold. */
+  .post-fold > :where(:not(summary)) {
     @apply mt-6;
   }
 

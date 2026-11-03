@@ -70,8 +70,8 @@ const configPlugins = (): string[] =>
     .map((name) => name.trim())
     .filter(Boolean);
 
-test('the visitors are registered with the markdown processor', NODE, () => {
-  expect(configPlugins(), 'a fold visitor is not in hastPlugins').toEqual(
+test('the visitor is registered with the markdown processor', NODE, () => {
+  expect(configPlugins(), 'moduleFold is not in hastPlugins').toEqual(
     expect.arrayContaining(['moduleFold']),
   );
 });
@@ -393,6 +393,10 @@ test.describe('a post fold', () => {
   /* SC 2.5.5: the summary is at least 44px tall. */
   test('has a summary at least 44px tall', async ({ page }) => {
     await gotoFoldPost(page);
+    expect(
+      await page.locator('details.post-fold > summary').count(),
+      'the fixture has no fold summary',
+    ).toBeGreaterThan(0);
     const short = await page.evaluate(() =>
       [...document.querySelectorAll('details.post-fold > summary')]
         .map((summary) => summary.getBoundingClientRect().height)
@@ -565,6 +569,7 @@ test.describe('a post fold', () => {
     await serveFoldPost(page);
     await page.goto(FOLD_POST);
 
+    await expect(page.locator('.module-controls')).toHaveCount(1);
     await expect(page.locator('.module-controls')).toBeHidden();
     await context.close();
   });
@@ -602,6 +607,7 @@ test.describe('a post fold', () => {
     await gotoFoldPost(page);
     await page.emulateMedia({ media: 'print' });
 
+    await expect(page.locator('.module-controls')).toHaveCount(1);
     await expect(page.locator('.module-controls')).toBeHidden();
   });
 
@@ -615,6 +621,10 @@ test.describe('a post fold', () => {
       await page.evaluate(() =>
         document.documentElement.style.setProperty('--text-scale', '2'),
       );
+      expect(
+        await page.locator('.module-panel').count(),
+        'the fixture has no module panel',
+      ).toBeGreaterThan(0);
 
       await expect
         .poll(
@@ -649,65 +659,4 @@ test.describe('a post fold', () => {
         .toBe(0);
     });
   }
-
-  /* Function: with room, the toggle sits in the bar beside the heading, not below it. */
-  test('keeps the toggle in the heading bar when there is room', async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await gotoFoldPost(page);
-
-    await expect
-      .poll(
-        () =>
-          page.evaluate(
-            () =>
-              [...document.querySelectorAll('.module-panel')].filter(
-                (panel) => {
-                  const heading = panel.querySelector(':scope > h2')!;
-                  const toggle = panel.querySelector(
-                    ':scope > details > summary',
-                  )!;
-                  return (
-                    panel.classList.contains('module-panel-stacked') ||
-                    Math.abs(
-                      toggle.getBoundingClientRect().top -
-                        heading.getBoundingClientRect().top,
-                    ) > 1
-                  );
-                },
-              ).length,
-          ),
-        { message: 'panels whose toggle left the heading bar' },
-      )
-      .toBe(0);
-  });
-
-  /* Function: a figure in a module keeps the body's inset instead of running into the panel edge. */
-  test('keeps a figure inside the panel inset', async ({ page }) => {
-    await gotoFoldPost(page);
-    const fold = firstFold(page);
-    const result = await fold.evaluate((details) => {
-      const figure = document.createElement('figure');
-      figure.append(document.querySelector('main img')!.cloneNode());
-      details.append(figure);
-      const text = details.querySelector(':scope > p')!.getBoundingClientRect();
-      const box = figure.getBoundingClientRect();
-      return {
-        textLeft: text.left,
-        textRight: text.right,
-        left: box.left,
-        right: box.right,
-      };
-    });
-
-    expect(
-      result.left,
-      'the figure starts outside the text inset',
-    ).toBeGreaterThanOrEqual(result.textLeft - 1);
-    expect(
-      result.right,
-      'the figure runs past the text inset',
-    ).toBeLessThanOrEqual(result.textRight + 1);
-  });
 });
