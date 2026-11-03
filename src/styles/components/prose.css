@@ -124,8 +124,8 @@
     }
   }
 
-  /* `xl` only: below it the rail and the measure leave each name too narrow. */
-  .post-layout .prose .pillar-wall {
+  /* `xl` only: below it the rail and the measure leave each name too narrow. Not in a module panel, which keeps the measure. */
+  .post-layout .prose > .pillar-wall {
     @variant xl {
       --pillar-outdent: calc((100cqi - 100%) / 2);
 
