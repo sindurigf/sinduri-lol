@@ -72,15 +72,15 @@ In scope:
 Not in scope: third-party sites linked from the footer, the talk presenter
 view (development server only, never published), and forks.
 
-| Environment      | Support                                                                                                              |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Browsers         | Chrome and Edge 120, Firefox 128, Safari and iOS Safari 17 ([ARCHITECTURE.md](ARCHITECTURE.md#browser-support))      |
-| Engines tested   | Chromium and Firefox locally and in CI; WebKit in CI and through Docker (`npm run test:webkit`)                      |
-| Color modes      | Dark by default. With JavaScript, the Theme menu offers System (follows the device), Light and Dark (remembered)     |
-| Forced colors    | Windows High Contrast (`forced-colors: active`)                                                                      |
-| No JavaScript    | Navigation and the contact form work; the page stays dark and the theme switch is hidden; the hero field stays blank |
-| Zoom and spacing | 400% zoom at 1280px (320px reflow), SC 1.4.12 text spacing                                                           |
-| Screen readers   | None tested. See [gap 2](#7-known-gaps)                                                                              |
+| Environment      | Support                                                                                                                |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Browsers         | Chrome and Edge 120, Firefox 128, Safari and iOS Safari 17 ([ARCHITECTURE.md](ARCHITECTURE.md#browser-support))        |
+| Engines tested   | Chromium and Firefox locally and in CI; WebKit in CI and through Docker (`npm run test:webkit`)                        |
+| Color modes      | Dark by default. With JavaScript, the Theme menu offers System (follows the device), Light and Dark (remembered)       |
+| Forced colors    | Windows High Contrast (`forced-colors: active`)                                                                        |
+| No JavaScript    | Navigation and the contact form work; the page stays dark and the theme switch is hidden; the hero shows a still frame |
+| Zoom and spacing | 400% zoom at 1280px (320px reflow), SC 1.4.12 text spacing                                                             |
+| Screen readers   | None tested. See [gap 2](#7-known-gaps)                                                                                |
 
 ## 4. What the site supports
 
@@ -404,7 +404,7 @@ links. Not automated:
    with a screen reader. SC 3.3.7 and 3.3.8 do not apply.
 2. **No screen reader testing.** No NVDA, JAWS, VoiceOver or Orca run.
    [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §6 is an Orca pass in Firefox,
-   with §6.4 in Chrome for the uppercase question; §6.10.1 and §6.10.2 are 19
+   with §6.4 in Chrome for the uppercase question; §6.10.1 and §6.10.2 are
    widget steps for TalkBack on Android and Orca. A pass narrows this gap; it
    does not close it. Planned: the §6 Orca pass once the site is ready.
 3. **The gold surface has been measured, not looked at.**
@@ -417,8 +417,7 @@ links. Not automated:
    | every control in `.surface-gold`                     | its fill differs from gold, or its border clears 3:1 |
    | `/contact`'s `.btn-gold-primary` focus ring at 305px | inner `#FFFFFF` ring at 3:1 or more against its fill |
 
-   The inner ring is 18.58 against the `#131313` fill by the tokens; the test
-   asserts 3:1. Nobody has tabbed, zoomed or listened to a gold band.
+   Nobody has tabbed, zoomed or listened to a gold band.
    [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §5 checks the ring on gold by
    eye only, so it does not close this gap.
 
