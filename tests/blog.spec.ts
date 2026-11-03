@@ -13,7 +13,7 @@ import {
   PUBLISHED_POST_ROUTES,
   TAG_ROUTES,
 } from './routes';
-import { pageCount } from '../src/lib/pagination';
+import { pageCount, POSTS_PER_PAGE } from '../src/lib/pagination';
 import { indexPageHref } from '../src/lib/paths';
 import { CARD_COVER_RATIO } from '../src/lib/image-densities';
 import { ENGINE_INVARIANT, NODE } from './tags';
@@ -30,25 +30,30 @@ const cardHrefs = (page: Page): Promise<string[]> =>
     ),
   );
 
-test.describe('the blog index while every post fits on one page', () => {
-  test.skip(
-    PAGINATES,
-    'the index paginates; tests/blog-pages.spec.ts covers the pager',
-  );
-
-  test('lists every post exactly once, with no pager', async ({ page }) => {
+test.describe('the first page of the blog index', () => {
+  test('lists a full page of distinct posts, and a pager only when more follow', async ({
+    page,
+  }) => {
     await gotoSettled(page, '/blog');
 
     const hrefs = await cardHrefs(page);
+    const published = PUBLISHED_POST_ROUTES.map((route) => `${route}/`);
+    expect(new Set(hrefs).size, '/blog lists a post twice').toBe(hrefs.length);
     expect(
-      hrefs.sort(),
-      '/blog should list every post once while they fit on one page',
-    ).toEqual(PUBLISHED_POST_ROUTES.map((route) => `${route}/`).sort());
+      hrefs.filter((href) => !published.includes(href)),
+      '/blog lists a post that is not published',
+    ).toEqual([]);
+    expect(hrefs.length, '/blog does not fill its first page').toBe(
+      Math.min(POST_COUNT, POSTS_PER_PAGE),
+    );
 
+    /* tests/blog-pages.spec.ts walks the pager itself. */
     await expect(
       page.getByRole('navigation', { name: /pagination/i }),
-      'a pager with one page offers a single link to the page you are on',
-    ).toHaveCount(0);
+      PAGINATES
+        ? 'more posts follow, but /blog offers no pager'
+        : 'a pager with one page offers a single link to the page you are on',
+    ).toHaveCount(PAGINATES ? 1 : 0);
   });
 });
 
