@@ -3,7 +3,7 @@
 @layer components {
   /*
    * The homepage: a gold meadow with the rabbit, then the fall down the hole,
-   * where the sections drop as stepped bricks past Alice's printed things.
+   * where the sections drop as stepped bricks past Alice's things.
    */
   .home-meadow {
     position: relative;
@@ -205,6 +205,13 @@
     height: var(--plant-w);
   }
 
+  /* `auto`, not Chromium's `preserve-parent-color` default for SVG: forced colors repaint the plants too. */
+  .home-plant,
+  .home-plant * {
+    forced-color-adjust: auto;
+  }
+
+  /* Stroke widths in SVG user units: each plant's viewBox is 24 wide. */
   .home-plant-line {
     fill: none;
     stroke: var(--color-block-ink);
@@ -223,10 +230,6 @@
     fill: var(--color-pink);
     stroke: var(--color-block-ink);
     stroke-width: 1.4;
-  }
-
-  .home-brick:nth-child(odd) .home-plant {
-    --sway-s: 4.6s;
   }
 
   /* Back stems sit behind the rabbit, front stems over it; both under the bricks. */
@@ -353,7 +356,7 @@
     visibility: hidden;
   }
 
-  /* After the dive the rabbit falls beside the reader: sticky in the lane, behind every brick like the printed things, so it lands at the end of the fall. */
+  /* After the dive the rabbit falls beside the reader: sticky in the lane, behind every brick like Alice's things, so it lands at the end of the fall. */
   .home-faller {
     position: sticky;
     top: 45vh;
@@ -438,7 +441,7 @@
   }
 
   /*
-   * The fall. Every word in it sits in an opaque brick, so the printed things
+   * The fall. Every word in it sits in an opaque brick, so Alice's things
    * can pass behind any of it.
    */
   .home-fall {
@@ -617,7 +620,8 @@
       display: none;
     }
 
-    button.home-prop {
+    button.home-prop,
+    .home-hopper-press {
       border: var(--block-edge) solid ButtonText;
     }
   }

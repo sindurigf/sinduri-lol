@@ -144,6 +144,7 @@ const start = (): void => {
   let roamMax = 0;
   let driftHeight = 0;
   let thingSize = 0;
+  let fallReach = 0;
   const hop: Hop = {
     x: 0,
     y: 0,
@@ -165,6 +166,12 @@ const start = (): void => {
     );
     driftHeight = drift.clientHeight;
     thingSize = things[0]?.el.offsetHeight ?? 0;
+    const lane = parseFloat(
+      getComputedStyle(fall ?? document.body).getPropertyValue('--lane'),
+    );
+    fallReach = lane
+      ? Math.max(0, Math.min(FALL_SWAY_PX, (lane - thingSize) / 2))
+      : FALL_SWAY_PHONE_PX;
   };
 
   const setPose = (pose: RabbitPose): void => {
@@ -202,12 +209,19 @@ const start = (): void => {
 
   let dive = -1;
   let diveFrom = 0;
+  /* Where the falling rabbit last stood and faced, so it stays put once it lands. */
+  let fallX = 0;
+  let fallDir: 1 | -1 = 1;
   const mouthX = (): number => {
     const box = band.getBoundingClientRect();
     const m = mouth.getBoundingClientRect();
     return m.left - box.left + m.width / 2;
   };
+  /* The rabbit is gone, so its button goes too: focus moves to the page first (SC 2.4.3). */
   const fallIn = (): void => {
+    if (follow === document.activeElement) {
+      document.querySelector<HTMLElement>('main')?.focus();
+    }
     hopper.dataset.gone = '';
     follow.disabled = true;
     fall?.toggleAttribute('data-rabbit-fell', true);
@@ -231,14 +245,6 @@ const start = (): void => {
     place();
   };
 
-  const fallSway = (): number => {
-    const lane = parseFloat(
-      getComputedStyle(fall ?? document.body).getPropertyValue('--lane'),
-    );
-    if (!lane) return FALL_SWAY_PHONE_PX;
-    return Math.max(0, Math.min(FALL_SWAY_PX, (lane - thingSize) / 2));
-  };
-
   const stepFaller = (): void => {
     if (!fall?.hasAttribute('data-rabbit-fell')) return;
     const landed =
@@ -246,12 +252,12 @@ const start = (): void => {
         fallerSpin.getBoundingClientRect().bottom <
       FALL_LANDED_PX;
     const hopIndex = Math.floor(clock / FALL_HOP_MS);
-    const dir = hopIndex % 2 === 0 ? 1 : -1;
-    const reach = fallSway();
+    const dir = landed ? fallDir : hopIndex % 2 === 0 ? 1 : -1;
+    const reach = fallReach;
     const p = (clock % FALL_HOP_MS) / FALL_HOP_MS;
     let pose: RabbitPose = 'leap';
     let lift = 0;
-    let x = -dir * reach;
+    let x = landed ? fallX : -dir * reach;
     if (landed) pose = 'sit';
     else if (p < FALL_CROUCH) pose = 'crouch';
     else if (p > FALL_LAND) {
@@ -262,6 +268,8 @@ const start = (): void => {
       lift = FALL_HOP_PX * 4 * t * (1 - t);
       x = -dir * reach + 2 * dir * reach * t;
     }
+    fallX = x;
+    fallDir = dir;
     fallerBun.dataset.pose = pose;
     /* The atlas faces left: -1 mirrors it to face the way it hops. */
     fallerBun.style.setProperty('--face', String(-dir));
@@ -388,6 +396,7 @@ const start = (): void => {
   /* Timers keep counting on `clock`, so they are reset, not the clock: motion resumes from rest. */
   const still = (): void => {
     stopJar();
+    if (dive >= 0 && !fall?.hasAttribute('data-rabbit-fell')) fallIn();
     hop.x = roamMax * HOME_SHARE;
     hop.y = 0;
     hop.dir = 1;
@@ -490,6 +499,8 @@ const start = (): void => {
     dive = clock;
     diveFrom = hop.x;
   });
+
+  follow.hidden = false;
 
   pauses.forEach((button) => {
     button.addEventListener('click', toggle);

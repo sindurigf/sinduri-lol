@@ -358,9 +358,8 @@
   --tracking-title: -0.02em;
   --tracking-label: 0.1em;
 
-  /* Zero everywhere except the logo tile, the laughing rabbit tile on /about and the hole's mouth on /. */
+  /* Zero everywhere except the logo tile and the laughing rabbit tile on /about. */
   --radius-nav: 14px;
-  /* The hole's mouth: a half ellipse cut into the meadow's floor. */
 
   /*
    * Hard offset shadows, one job per color: pink is depth and pressables, cyan
@@ -596,7 +595,6 @@
   --size-home-hopper-w-phone: 56px;
   --size-home-hopper-h-phone: 80px;
   --size-home-sticker-throw: 5px;
-  --size-home-mouth-h: 56px;
   --size-home-ledge-h: 36px;
   --size-home-ledge-h-phone: 24px;
   --size-home-post-w: 28px;
@@ -605,11 +603,10 @@
   --size-home-plant-h: 66px;
   --size-home-plant-w-phone: 24px;
   --size-home-plant-h-phone: 44px;
-  --size-home-mouth-h-phone: 36px;
   --size-home-prop: 88px;
   --size-home-prop-md: 72px;
   --size-home-prop-phone: 64px;
-  /* Room each side of the fall's column where the printed things drift. */
+  /* Room each side of the fall's column where Alice's things drift. */
   --spacing-home-lane: 184px;
   --spacing-home-lane-md: 128px;
   /* Below `sm`: how far each joined brick steps sideways, and how far a pair's first brick sits lower. */

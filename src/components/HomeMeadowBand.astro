@@ -27,7 +27,7 @@ const RIGHT: Plant[] = ['sprout', null];
     <span class="home-bun" data-pose="sit" aria-hidden="true">
       <i></i>
     </span>
-    <button type="button" class="home-hopper-press" data-home-follow>
+    <button type="button" class="home-hopper-press" data-home-follow hidden>
       <span class="sr-only">Follow the Rabbit</span>
     </button>
   </span>
@@ -39,7 +39,7 @@ const RIGHT: Plant[] = ['sprout', null];
       {(bricks as Plant[]).map((plant) => (
         <span class="home-brick">
           {plant === 'stem' && (
-            <svg class="home-plant" viewBox="0 0 24 44">
+            <svg class="home-plant" aria-hidden="true" viewBox="0 0 24 44">
               <path
                 class="home-plant-line"
                 d="M12 44Q11 28 13 10M12.4 26Q8 22 5 16"
@@ -62,7 +62,7 @@ const RIGHT: Plant[] = ['sprout', null];
             </svg>
           )}
           {plant === 'flower' && (
-            <svg class="home-plant" viewBox="0 0 24 40">
+            <svg class="home-plant" aria-hidden="true" viewBox="0 0 24 40">
               <path class="home-plant-line" d="M12 40Q12.5 26 12 16" />
               <path
                 class="home-plant-petal"
@@ -71,7 +71,11 @@ const RIGHT: Plant[] = ['sprout', null];
             </svg>
           )}
           {plant === 'sprout' && (
-            <svg class="home-plant home-plant-small" viewBox="0 0 24 24">
+            <svg
+              class="home-plant home-plant-small"
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+            >
               <path class="home-plant-line" d="M12 24V12" />
               <path
                 class="home-plant-leaf"

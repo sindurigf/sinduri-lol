@@ -74,6 +74,14 @@ const SWAY_PX = [2.5, 6] as const;
 const SWAY_PERIOD_S = [2.6, 5.2] as const;
 /* A bud nods behind its stem by this share of a sway cycle. */
 const NOD_LAG = 0.12;
+/* The tip's nod, as a share of the stem's sway. */
+const NOD_SHARE = 0.3;
+/* Where a side branch's curve bends, as shares of its reach. */
+const BRANCH_CURVE_X = 0.5;
+const BRANCH_CURVE_Y = 0.4;
+/* Radians a bud leans: a side bud by branch side, a tip bud with the sway. */
+const BRANCH_BUD_TILT = 0.5;
+const BUD_TILT = 0.08;
 const REACH_PX = 80;
 /* Share of the gap to the target bend closed per frame: a soft spring. */
 const BEND_EASE = 0.16;
@@ -262,7 +270,7 @@ export const createMeadow = ({
       ? 0
       : Math.sin((seconds / stem.period - NOD_LAG) * FULL_TURN + stem.phase) *
         stem.sway *
-        0.3;
+        NOD_SHARE;
     const tipX = stem.x + stem.lean + wave * stem.sway + stem.bend;
     const tipY = ground - stem.height;
     const controlX = stem.x + (tipX - stem.x) * CONTROL_LEAN;
@@ -286,8 +294,8 @@ export const createMeadow = ({
       const reach = stem.height * BRANCH_REACH;
       context.moveTo(bx, by);
       context.quadraticCurveTo(
-        bx + stem.branch * reach * 0.5,
-        by - reach * 0.4,
+        bx + stem.branch * reach * BRANCH_CURVE_X,
+        by - reach * BRANCH_CURVE_Y,
         bx + stem.branch * reach + nod,
         by - reach,
       );
@@ -298,7 +306,7 @@ export const createMeadow = ({
           by - reach - 2.5 * s,
           2 * s,
           3.2 * s,
-          stem.branch * 0.5,
+          stem.branch * BRANCH_BUD_TILT,
           0,
           FULL_TURN,
         ),
@@ -307,6 +315,7 @@ export const createMeadow = ({
       context.stroke();
     }
 
+    /* Bud, flower and leaf shapes below are drawing coordinates in px at size 1, like SVG path data. */
     const x = tipX + nod;
     if (stem.kind === 'bud') {
       blob(context, palette.bud, outline, () =>
@@ -315,7 +324,7 @@ export const createMeadow = ({
           tipY - 3 * s,
           2.6 * s,
           4.2 * s,
-          wave * 0.08,
+          wave * BUD_TILT,
           0,
           FULL_TURN,
         ),

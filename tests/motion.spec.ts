@@ -7,7 +7,7 @@ import { NODE } from './tags';
 
 /**
  * SC 2.2.2 and performance for the homepage motion (src/scripts/home-motion.ts):
- * the rabbit, the grass and the printed things share one frame loop. Tests
+ * the rabbit, the meadow's stems and Alice's things share one frame loop. Tests
  * pump frames and read the transforms the loop writes: real frames under load
  * are too few to count.
  */
