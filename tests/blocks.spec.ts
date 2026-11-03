@@ -4,7 +4,7 @@ import { captures } from './captures';
 import { gotoSettled } from './settle';
 import { AAA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { builtPages, DIST_DIR } from './routes';
-import { NODE } from './tags';
+import { NODE, NO_WEBKIT } from './tags';
 import { DESKTOP_VIEWPORT, NARROW_WIDTH, PHONE_VIEWPORT } from './wcag';
 
 /**
@@ -128,14 +128,12 @@ for (const colorScheme of ['dark', 'light'] as const) {
           `${route} has a block edge under ${NON_TEXT}:1 or text under ${AAA_TEXT}:1`,
         ).toEqual([]);
       });
+    }
 
+    for (const route of LINK_ROUTES) {
       test(`${route}: links in blocks read through hover and focus, rings inside their block`, async ({
         page,
       }) => {
-        test.skip(
-          !LINK_ROUTES.includes(route),
-          'a /brand example; the real page walks its links',
-        );
         await gotoSettled(page, route);
         /* Buttons draw their own hover and focus; tests/states.spec.ts covers them. */
         const links = page.locator(
@@ -220,11 +218,7 @@ test.describe('the Step', () => {
     });
   }
 
-  test('forced colors keep every block edge', async ({ page, browserName }) => {
-    test.skip(
-      browserName === 'webkit',
-      'WebKit reports forced colors but paints the author palette (tests/forced-colors.spec.ts)',
-    );
+  test('forced colors keep every block edge', NO_WEBKIT, async ({ page }) => {
     await page.emulateMedia({ forcedColors: 'active' });
     for (const route of ['/', '/blog', '/contact']) {
       await gotoSettled(page, route);

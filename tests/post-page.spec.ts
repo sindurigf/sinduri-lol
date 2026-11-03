@@ -243,7 +243,6 @@ test.describe('body figures', () => {
             },
           );
         });
-        test.skip(figures.length === 0, `${post.route} has no body figure`);
 
         for (const [index, figure] of figures.entries()) {
           const name = `figure ${index + 1}`;

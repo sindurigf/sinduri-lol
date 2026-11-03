@@ -297,10 +297,10 @@ test('Esc during a send, which stops the post, lets the form send again', async 
 test('a stopped post reported by the Navigation API lets the form send again', async ({
   page,
 }) => {
-  test.skip(
-    !(await page.evaluate(() => 'navigation' in window)),
-    'no Navigation API in this engine',
-  );
+  expect(
+    await page.evaluate(() => 'navigation' in window),
+    'this engine has no Navigation API',
+  ).toBe(true);
   const sent = await sendOnce(page);
 
   await page.evaluate(() =>
