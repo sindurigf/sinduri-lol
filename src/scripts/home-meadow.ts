@@ -13,8 +13,6 @@ interface Layer {
   readonly height: readonly [number, number];
   readonly line: number;
   readonly alpha: number;
-  /** Gold veil drawn over this layer and those behind it, 0 to 1. */
-  readonly haze: number;
   /** Tip push in px when the rabbit is beside the stem. */
   readonly push: number;
   /** Bud and leaf scale. */
@@ -22,13 +20,13 @@ interface Layer {
   readonly front: boolean;
 }
 
+/* Back layers haze by opacity, not a gold veil: a veil's compositing rounds the ground's gold and its edges show. */
 const LAYERS: readonly Layer[] = [
   {
     density: 9,
     height: [0.2, 0.34],
     line: 1,
-    alpha: 0.5,
-    haze: 0.45,
+    alpha: 0.2,
     push: 4,
     size: 0.45,
     front: false,
@@ -37,8 +35,7 @@ const LAYERS: readonly Layer[] = [
     density: 7,
     height: [0.28, 0.46],
     line: 1.3,
-    alpha: 0.7,
-    haze: 0.28,
+    alpha: 0.5,
     push: 10,
     size: 0.6,
     front: false,
@@ -48,7 +45,6 @@ const LAYERS: readonly Layer[] = [
     height: [0.36, 0.58],
     line: 1.7,
     alpha: 1,
-    haze: 0,
     push: 20,
     size: 0.8,
     front: false,
@@ -58,7 +54,6 @@ const LAYERS: readonly Layer[] = [
     height: [0.5, 0.72],
     line: 2.2,
     alpha: 1,
-    haze: 0,
     push: 34,
     size: 1,
     front: true,
@@ -106,7 +101,6 @@ interface Palette {
   readonly ink: string;
   readonly bud: string;
   readonly flower: string;
-  readonly gold: string;
 }
 
 export interface Meadow {
@@ -149,7 +143,6 @@ const readPalette = (band: HTMLElement): Palette => {
     ink: token('--color-block-ink'),
     bud: token('--color-home-grass'),
     flower: token('--color-pink'),
-    gold: token('--color-block-gold'),
   };
 };
 
@@ -351,14 +344,6 @@ export const createMeadow = ({
     }
   };
 
-  /* The veil stops at the ground and skips the hole, so the bricks and opening keep their color. */
-  const veil = (amount: number): void => {
-    behind.globalAlpha = amount;
-    behind.fillStyle = palette.gold;
-    behind.fillRect(0, 0, hole[0], ground);
-    behind.fillRect(hole[1], 0, width - hole[1], ground);
-  };
-
   const draw = (seconds: number, still: boolean): void => {
     behind.clearRect(0, 0, width, height);
     over.clearRect(0, 0, width, height);
@@ -367,7 +352,6 @@ export const createMeadow = ({
       const context = layer.front ? over : behind;
       for (const stem of stems)
         if (stem.layer === layer) drawStem(context, stem, seconds, still, near);
-      if (layer.haze) veil(layer.haze);
     }
     behind.globalAlpha = 1;
     over.globalAlpha = 1;
