@@ -122,7 +122,7 @@ Dark is the default. Colors and rules:
 - `HeroField.vue` (through `use-hero-field.ts`) reads its palette from its own element and rebuilds when a
   `MutationObserver` sees `data-theme` change. Its ground is `hero-ground`.
   A `(resolution)` media query resizes its canvases when only the pixel ratio
-  changes; in forced colors it is hidden (`tests/hero-media.spec.ts`).
+  changes. In forced colors it is hidden (`tests/hero-media.spec.ts`).
 - The About cats (`src/scripts/about-cats.ts`) need neither: the cats are drawings with their outline
   baked in, the same in both themes, and the toys' SVG parts carry classes
   that `about-cats.css` maps to tokens.
@@ -149,8 +149,8 @@ Dark is the default. Colors and rules:
 - a grid column count or split other than those in
   [STYLEGUIDE Grid](docs/STYLEGUIDE.md#grid)
 
-`EXCEPTIONS` lists false positives, each with its reason, and fails when one
-no longer matches.
+`TOKEN_EXCEPTIONS` in `scripts/check-allow-lists.mjs` lists false positives,
+each with its reason, and fails when one no longer matches.
 
 Headings, alt text, focus rings and axe are checked on the rendered page by
 `tests/headings.spec.ts`, `tests/alt-text.spec.ts`, `tests/focus.spec.ts` and
