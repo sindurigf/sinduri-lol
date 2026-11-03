@@ -1,3 +1,5 @@
+@reference '../global.css';
+
 @layer components {
   /*
    * The homepage: a gold meadow with the rabbit, then the fall down the hole,
