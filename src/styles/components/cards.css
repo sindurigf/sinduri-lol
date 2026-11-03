@@ -239,7 +239,7 @@
 
   /* Inside the toggle: outside, the ring would cross the panel's edge. */
   .module-panel > .post-fold > .post-contents-summary:focus-visible {
-    outline-offset: calc(-1 * (var(--focus-width) + var(--focus-gap)));
+    outline-offset: calc(-1 * (var(--edge) + var(--focus-gap)));
   }
 
   /*

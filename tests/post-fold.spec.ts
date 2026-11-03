@@ -423,7 +423,7 @@ test.describe('a post fold', () => {
           if (!ground || !bar) return 0;
           return Math.max(
             edge ? Math.min(ratio(over(edge, ground), ground), ratio(over(edge, bar), bar)) : 0,
-            fill && fill.a === 1 ? ratio(fill, ground) : 0,
+            fill && fill.a === 1 ? Math.min(ratio(fill, ground), ratio(fill, bar)) : 0,
           );
         });
       })()`);
@@ -649,6 +649,39 @@ test.describe('a post fold', () => {
         .toBe(0);
     });
   }
+
+  /* Function: with room, the toggle sits in the bar beside the heading, not below it. */
+  test('keeps the toggle in the heading bar when there is room', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await gotoFoldPost(page);
+
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () =>
+              [...document.querySelectorAll('.module-panel')].filter(
+                (panel) => {
+                  const heading = panel.querySelector(':scope > h2')!;
+                  const toggle = panel.querySelector(
+                    ':scope > details > summary',
+                  )!;
+                  return (
+                    panel.classList.contains('module-panel-stacked') ||
+                    Math.abs(
+                      toggle.getBoundingClientRect().top -
+                        heading.getBoundingClientRect().top,
+                    ) > 1
+                  );
+                },
+              ).length,
+          ),
+        { message: 'panels whose toggle left the heading bar' },
+      )
+      .toBe(0);
+  });
 
   /* Function: a figure in a module keeps the body's inset instead of running into the panel edge. */
   test('keeps a figure inside the panel inset', async ({ page }) => {

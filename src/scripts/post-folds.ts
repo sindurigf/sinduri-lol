@@ -74,18 +74,25 @@ const crowded = (panel: HTMLElement): boolean => {
   return [...range.getClientRects()].some((line) => overlaps(line, box));
 };
 
-/* Measured beside first, so a panel goes back once there is room. */
-const fit = (panel: HTMLElement): void => {
-  panel.classList.remove(STACKED);
-  panel.classList.toggle(STACKED, crowded(panel));
+const panels = [...document.querySelectorAll<HTMLElement>('.module-panel')];
+
+/* Measured beside first, so a panel goes back once there is room; all unstacked, then all measured, for one layout. */
+const fitAll = (): void => {
+  for (const panel of panels) panel.classList.remove(STACKED);
+  const crowdedNow = panels.map(crowded);
+  panels.forEach((panel, index) =>
+    panel.classList.toggle(STACKED, crowdedNow[index]),
+  );
 };
 
-const panels = [...document.querySelectorAll<HTMLElement>('.module-panel')];
+/* At once for a saved Text Size, not a frame later, so the bar settles before the reader sees it shift. */
+fitAll();
+
 let fitting = 0;
 /* A frame later: changing a watched size inside the callback is a ResizeObserver loop error. */
 const watcher = new ResizeObserver(() => {
   cancelAnimationFrame(fitting);
-  fitting = requestAnimationFrame(() => panels.forEach(fit));
+  fitting = requestAnimationFrame(fitAll);
 });
 for (const panel of panels) {
   watcher.observe(panel);
