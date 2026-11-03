@@ -592,8 +592,8 @@
   --size-sticker-lg: 56px;
   --size-sticker-icon: 22px;
   --border-width-sticker: 4px;
-  /* A post code frame: thinner than a block edge, so the gold label leads. */
-  --border-width-code: 2px;
+  /* Light mode's edge on post modules and code, and the post code frame: the full edge reads too heavy on white. */
+  --border-width-thin: 2px;
   --size-footer-rabbit: clamp(96px, 12vw, 160px);
   /* How far the rabbit's box drops below the type's top: the cap gap (0.04em) and the image's rim and throw (9%). */
   --footer-rabbit-sink: calc(0.04em + var(--size-footer-rabbit) * 0.09);
