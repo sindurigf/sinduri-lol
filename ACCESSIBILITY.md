@@ -366,9 +366,9 @@ Limits:
 - Some checks run in fewer engines, by tag (`tests/tags.ts`): forced colors
   not in WebKit; touch and sized full screen not in Firefox; the contact server
   error pages, layout shift, `@engine-invariant` specs and the WAVE alerts in
-  Chromium only; `tests/text-resize.spec.ts` records
-  WebKit without asserting. Specs tagged `@node` read the build with no
-  browser.
+  Chromium only. WebKit's page zoom stops at 300%, so
+  `tests/text-resize.spec.ts` pins the tokens it leaves short of 2x and fails
+  when that list changes. Specs tagged `@node` read the build with no browser.
 
 ### Manual
 
