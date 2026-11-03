@@ -13,7 +13,7 @@ const VIEWPORTS = [
   [305, 568],
 ] as const;
 
-/** Steps through a full rise of the printed things: 40 frames 1.5s apart cover a 60s cycle. */
+/** Steps through a full rise of Alice's things: 40 frames 1.5s apart cover a 60s cycle. */
 const DRIFT_SAMPLES = 40;
 const DRIFT_STEP_MS = 1500;
 
@@ -56,7 +56,7 @@ const coveredBy = (page: Page, scope: string, cover: string) =>
       }
       targets.push(
         ...root.querySelectorAll(
-          'a, button:not([hidden]):not([data-home-jar])',
+          'a, button:not([hidden]):not([data-home-jar]):not([data-home-follow])',
         ),
       );
       /* Each overlap between a decoration's box and a target's box is checked at its center. */
@@ -112,7 +112,7 @@ test.describe('the homepage meadow', () => {
       ).toBeLessThanOrEqual(SUBPIXEL_TOLERANCE);
     });
 
-    test(`the grass, the rabbit and the hole cover no text or control at ${width}x${height} (SC 1.4.3, 2.4.11)`, async ({
+    test(`the meadow, the rabbit and the hole cover no text or control at ${width}x${height} (SC 1.4.3, 2.4.11)`, async ({
       page,
     }) => {
       await open(page, width, height);
@@ -136,7 +136,7 @@ test.describe('the homepage meadow', () => {
   }
 });
 
-test.describe('the printed things in the fall', () => {
+test.describe("Alice's things in the fall", () => {
   for (const [width, height] of VIEWPORTS) {
     test(`pass behind every word and control at ${width}x${height} (SC 1.4.3, 2.4.11)`, async ({
       page,
@@ -148,9 +148,10 @@ test.describe('the printed things in the fall', () => {
         hits.push(...(await coveredBy(page, '.home-fall', '[data-home-prop]')));
         await page.clock.runFor(DRIFT_STEP_MS);
       }
-      expect(hits, 'a printed thing sits on top of text or a control').toEqual(
-        [],
-      );
+      expect(
+        hits,
+        "one of Alice's things sits on top of text or a control",
+      ).toEqual([]);
     });
   }
 
@@ -248,7 +249,10 @@ test.describe('the printed things in the fall', () => {
     await gotoSettled(page, '/');
     const things = page.locator('[data-home-prop]');
     const count = await things.count();
-    expect(count, 'the fall has no printed things to check').toBeGreaterThan(1);
+    expect(
+      count,
+      "the fall has none of Alice's things to check",
+    ).toBeGreaterThan(1);
     for (let index = 0; index < count; index += 1) {
       const thing = things.nth(index);
       if ((await thing.getAttribute('data-home-jar')) !== null) {
@@ -266,6 +270,90 @@ test.describe('the printed things in the fall', () => {
       ).toBe(false);
     }
   });
+});
+
+/** ms a canvas is left alone before it is read again; longer than two 30fps frames. */
+const STILL_CHECK_MS = 600;
+/** CSS px: the smallest target outside a sentence (SC 2.5.5). */
+const TARGET_PX = 44;
+
+test.describe('the rabbit', () => {
+  test('is a named button with a 44px target that hands focus to the page when it dives (SC 4.1.2, 2.5.5, 2.4.3)', async ({
+    page,
+  }) => {
+    await gotoSettled(page, '/');
+    const rabbit = page.locator('[data-home-follow]');
+    await expect(rabbit).toHaveRole('button');
+    await expect(rabbit).toHaveAccessibleName('Follow the Rabbit');
+    const box = await rabbit.boundingBox();
+    expect(box, 'the rabbit has no box to press').not.toBeNull();
+    expect(
+      box?.width ?? 0,
+      'the rabbit is narrower than a target',
+    ).toBeGreaterThanOrEqual(TARGET_PX);
+    expect(
+      box?.height ?? 0,
+      'the rabbit is shorter than a target',
+    ).toBeGreaterThanOrEqual(TARGET_PX);
+
+    await page.locator('[data-home-pause]').first().click();
+    await rabbit.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.home-fall')).toHaveAttribute(
+      'data-rabbit-fell',
+      '',
+    );
+    await expect(
+      page.locator('main'),
+      'focus was lost when the rabbit went',
+    ).toBeFocused();
+  });
+
+  test('under reduced motion goes straight to the lane, without moving (SC 2.3.3)', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await gotoSettled(page, '/');
+    await page.locator('[data-home-follow]').click();
+    await expect(page.locator('.home-fall')).toHaveAttribute(
+      'data-rabbit-fell',
+      '',
+    );
+    const read = () =>
+      page
+        .locator('.home-faller-spin')
+        .evaluate((el) => (el as HTMLElement).style.transform);
+    const first = await read();
+    await page.waitForTimeout(STILL_CHECK_MS);
+    expect(await read(), 'the rabbit moved under reduced motion').toBe(first);
+  });
+
+  test('is no control without JavaScript', async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    /* Not gotoSettled: it waits for the menu script, which cannot run here. */
+    await page.goto('/');
+    await expect(
+      page.locator('[data-home-follow]'),
+      'a button that does nothing without its script is shown',
+    ).toBeHidden();
+    await context.close();
+  });
+});
+
+test('pausing stops the meadow stems (SC 2.2.2)', async ({ page }) => {
+  await gotoSettled(page, '/');
+  await page.locator('[data-home-pause]').first().click();
+  const read = () =>
+    page.evaluate(() =>
+      [
+        ...document.querySelectorAll<HTMLCanvasElement>('[data-home-stems]'),
+      ].map((canvas) => canvas.toDataURL()),
+    );
+  const first = await read();
+  expect(first.length, 'the meadow has no stems to check').toBe(2);
+  await page.waitForTimeout(STILL_CHECK_MS);
+  expect(await read(), 'the stems kept moving while paused').toEqual(first);
 });
 
 test.describe('the homepage in forced colors', NO_WEBKIT, () => {
