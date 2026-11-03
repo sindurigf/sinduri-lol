@@ -61,6 +61,11 @@
     &:focus-visible {
       outline-offset: calc(-1 * (var(--focus-width) + var(--focus-gap)));
     }
+
+    /* Forced colors drop the frame's look: the button needs its own boundary there. */
+    @media (forced-colors: active) {
+      border: var(--border-width-thin) solid ButtonText;
+    }
   }
 
   /* After the frame, on the page ground, on posts and /brand; empty until a copy fails (src/scripts/copy.ts). */

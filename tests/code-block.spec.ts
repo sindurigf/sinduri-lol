@@ -630,11 +630,13 @@ test(
   'the post page wires the code frame styles and the copy script',
   NODE,
   () => {
-    const page = readFileSync('src/pages/blog/[slug].astro', 'utf8');
+    const postPage = readFileSync('src/pages/blog/[slug].astro', 'utf8');
 
-    expect(page).toContain("import '../../styles/components/code-block.css';");
-    expect(page).toMatch(/const codeInPost = hasCodeBlock\(/);
-    expect(page).toContain('{codeInPost && <CodeCopy />}');
+    expect(postPage).toContain(
+      "import '../../styles/components/code-block.css';",
+    );
+    expect(postPage).toMatch(/const codeInPost = hasCodeBlock\(/);
+    expect(postPage).toContain('{codeInPost && <CodeCopy />}');
     expect(readFileSync('src/components/CodeCopy.astro', 'utf8')).toContain(
       "import '../scripts/copy';",
     );
