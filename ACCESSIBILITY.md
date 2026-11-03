@@ -8,17 +8,17 @@ The statement is voluntary for a personal site and follows the
 
 ## 1. Project information
 
-| Field               | Value                                                     |
-| ------------------- | --------------------------------------------------------- |
-| Project             | sinduri.lol                                               |
-| Project type        | Static personal website (Astro, one Vue island, Tailwind) |
-| Accessibility owner | Sinduri Guntupalli                                        |
-| Public reporting    | <https://github.com/sindurigf/sinduri-lol/issues>         |
-| Private reporting   | <lol@sinduri.lol>                                         |
-| Target standard     | WCAG 2.2 Level AA, with AAA text contrast                 |
-| Conformance status  | **Target only. No claim that the site meets it.**         |
-| Last reviewed       | 2026-10-16                                                |
-| Response time       | 7 days                                                    |
+| Field               | Value                                                                            |
+| ------------------- | -------------------------------------------------------------------------------- |
+| Project             | sinduri.lol                                                                      |
+| Project type        | Static personal website (Astro, one Vue island, Tailwind)                        |
+| Accessibility owner | Sinduri Guntupalli                                                               |
+| Public reporting    | <https://github.com/sindurigf/sinduri-lol/issues/new?template=accessibility.yml> |
+| Private reporting   | <lol@sinduri.lol>                                                                |
+| Target standard     | WCAG 2.2 Level AA, with AAA text contrast                                        |
+| Conformance status  | **Target only. No claim that the site meets it.**                                |
+| Last reviewed       | 2026-10-16                                                                       |
+| Response time       | 7 days                                                                           |
 
 `src/lib/accessibility-facts.ts` reads the Target standard, Conformance status,
 Last reviewed, Response time and both reporting rows into `/accessibility` at
