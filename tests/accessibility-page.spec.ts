@@ -109,7 +109,7 @@ test.describe('the accessibility statement', NODE, () => {
   });
 });
 
-/* SC 3.2.6 Consistent Help, in spirit: reporting is reachable without reading the whole statement. */
+/* Findable help: a reader reaches the report links without reading the whole statement. */
 test.describe('reporting on the accessibility statement', () => {
   test('both report links come before the first heading of the statement', async ({
     page,
