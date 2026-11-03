@@ -52,7 +52,6 @@ for (const source of document.querySelectorAll<HTMLElement>('[data-copy]')) {
   const button = make('button', withWord ? 'copy-word-button' : 'copy-button');
   button.type = 'button';
   const word = mute(make('span', '', COPY));
-  word.hidden = !withWord;
   button.append(
     drawIcon(COPY_ICON),
     word,
@@ -62,7 +61,8 @@ for (const source of document.querySelectorAll<HTMLElement>('[data-copy]')) {
   if (!withWord) {
     wrap.append(mute(make('span', 'copy-tip', COPY)));
   }
-  source.parentElement?.append(wrap, make('p', 'copy-error'));
+  source.parentElement?.append(wrap);
+  source.parentElement?.after(make('p', 'copy-error'));
 }
 
 const FAILED = 'Copy failed. The code is selected: press Ctrl+C or Command+C.';
@@ -72,27 +72,26 @@ document.addEventListener('click', async (event) => {
     '.copy-wrap button',
   );
   const wrap = button?.parentElement;
-  const source = wrap?.parentElement?.querySelector<HTMLElement>('[data-copy]');
-  const error = wrap?.nextElementSibling as HTMLElement | null | undefined;
+  const frame = wrap?.parentElement;
+  const source = frame?.querySelector<HTMLElement>('[data-copy]');
+  const error = frame?.nextElementSibling as HTMLElement | null | undefined;
   const word = button?.querySelector('span');
   if (!button || !wrap || !source || !word || !error) return;
+  const reset = (): void => {
+    clearTimeout(timers.get(wrap));
+    word.textContent = COPY;
+    delete wrap.dataset.copied;
+    button.querySelector('svg')?.replaceWith(drawIcon(COPY_ICON));
+  };
+  reset();
   announcer.textContent = error.textContent = '';
   try {
-    await navigator.clipboard.writeText(source.textContent ?? '');
+    /* The fence's last newline would run the last line on a paste into a shell. */
+    await navigator.clipboard.writeText(source.textContent!.replace(/\n$/, ''));
     announcer.textContent = word.textContent = 'Copied';
-    word.hidden = false;
     wrap.dataset.copied = '';
     button.querySelector('svg')?.replaceWith(drawIcon(CHECK_ICON));
-    clearTimeout(timers.get(wrap));
-    timers.set(
-      wrap,
-      window.setTimeout(() => {
-        word.textContent = COPY;
-        word.hidden = button.className === 'copy-button';
-        delete wrap.dataset.copied;
-        button.querySelector('svg')?.replaceWith(drawIcon(COPY_ICON));
-      }, COPIED_VISIBLE_MS),
-    );
+    timers.set(wrap, window.setTimeout(reset, COPIED_VISIBLE_MS));
   } catch {
     getSelection()?.selectAllChildren(source);
     announcer.textContent = error.textContent = FAILED;

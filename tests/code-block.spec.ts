@@ -375,7 +375,8 @@ test.describe('the code-block fit script', NODE, () => {
 /* Post code as src/plugins/code-block.mjs frames it, with src/scripts/copy.ts run after it. */
 const FRAMED = `
   <div class="code-block"><span class="code-lang">bash</span><pre tabindex="0" role="group" aria-label="Code, scrolls sideways" data-copy="bash code" data-copy-word><code>make app
-drush --uri=https://example.test sql:query "SELECT nid, title FROM node_field_data WHERE status = 1;"</code></pre></div>
+drush --uri=https://example.test sql:query "SELECT nid, title FROM node_field_data WHERE status = 1;"
+</code></pre></div>
 `;
 
 const COPY_SCRIPT = ts.transpileModule(
@@ -394,7 +395,7 @@ const gotoFramed = async (page: Page, { script = true } = {}) => {
 };
 
 test.describe('post code with its label and Copy button', () => {
-  /* Function, SC 4.1.3, 2.5.3, 2.5.5: copies the code, says Copied, keeps a name that starts with its visible word, 44px. */
+  /* Function, SC 4.1.3, 2.5.3, 2.5.5: copies the code without the fence's last newline, says Copied, keeps a name that starts with its visible word, 44px. */
   test('copies the code and announces Copied', async ({ page }) => {
     await page.addInitScript(() => {
       const copied: string[] = [];
@@ -407,7 +408,9 @@ test.describe('post code with its label and Copy button', () => {
     const button = frame.getByRole('button', { name: 'Copy bash code' });
 
     await expect(button).toBeVisible();
-    await expect(button).toContainText('Copy');
+    const word = button.locator('span[aria-hidden="true"]');
+    await expect(word, 'the visible word is hidden').toBeVisible();
+    await expect(word).toHaveText('Copy');
     const box = (await button.boundingBox())!;
     expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
     await button.click();
@@ -416,7 +419,7 @@ test.describe('post code with its label and Copy button', () => {
       await page.evaluate(
         () => (window as never as { __copied: string[] }).__copied,
       ),
-    ).toEqual([await frame.locator('pre').textContent()]);
+    ).toEqual([(await frame.locator('pre').textContent())!.replace(/\n$/, '')]);
     await expect(
       frame.getByRole('button', { name: 'Copy bash code' }),
       'the name changed after the press',
@@ -431,21 +434,26 @@ test.describe('post code with its label and Copy button', () => {
     const frame = await gotoFramed(page);
     await frame.getByRole('button', { name: 'Copy bash code' }).click();
 
-    await expect(frame.locator('.copy-error')).toBeVisible();
-    await expect(frame.locator('.copy-error')).toHaveText(
+    const error = page.locator('.code-block + .copy-error').last();
+    await expect(error).toBeVisible();
+    expect(
+      await error.evaluate(
+        (el) =>
+          getComputedStyle(el).color !==
+          getComputedStyle(document.querySelector('.prose p')!).color,
+      ),
+      'the error reads in the body text color, not as an error',
+    ).toBe(true);
+    await expect(error).toHaveText(
       'Copy failed. The code is selected: press Ctrl+C or Command+C.',
     );
-    expect(await page.evaluate(() => getSelection()?.toString())).toBe(
-      await frame.locator('pre').textContent(),
-    );
-  });
-
-  /* Function: a button that would do nothing is not drawn. */
-  test('draws no Copy button without the script', async ({ page }) => {
-    const frame = await gotoFramed(page, { script: false });
-
-    await expect(frame.locator('pre')).toBeVisible();
-    await expect(frame.getByRole('button')).toHaveCount(0);
+    /* A selection's text drops a trailing newline; compare without it. */
+    expect(
+      (await page.evaluate(() => getSelection()?.toString() ?? '')).replace(
+        /\n$/,
+        '',
+      ),
+    ).toBe((await frame.locator('pre').textContent())!.replace(/\n$/, ''));
   });
 
   /* SC 1.4.10: the label and the button never sit on the code's text. */

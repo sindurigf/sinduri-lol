@@ -13,8 +13,13 @@
     border-width: var(--border-width-code);
   }
 
+  /* Below the label and button, its ring inside the frame: outside, it would touch the gold label. */
   .prose .code-block > pre {
-    @apply mt-0 border-0 bg-transparent pt-code-head;
+    @apply mt-code-head border-0 bg-transparent;
+
+    &:focus-visible {
+      outline-offset: calc(-1 * (var(--focus-width) + var(--focus-gap)));
+    }
   }
 
   .code-block > .copy-wrap {
@@ -36,8 +41,9 @@
       forced-color-adjust: auto;
     }
 
+    /* Underline only: light mode's cyan on the light fill is under 7:1 as text. */
     &:hover {
-      @apply text-cyan underline;
+      @apply underline;
     }
 
     /* Inside the frame: outside, the ring would cross its edge. */
@@ -46,8 +52,8 @@
     }
   }
 
-  /* Empty until a copy fails; src/scripts/copy.ts writes what went wrong and how to copy instead. */
-  .copy-error {
+  /* After the frame, on the page ground; empty until a copy fails (src/scripts/copy.ts). */
+  .prose .code-block + .copy-error {
     @apply mx-4 mb-4 text-body text-pink-text;
 
     &:empty {
