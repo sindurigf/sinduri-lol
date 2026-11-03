@@ -66,7 +66,7 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run test:a11y`            | Playwright suite in Chromium and Firefox; CI adds WebKit                                                                                         |
 | `npm run test:webkit`          | The same suite in WebKit, in Playwright's Docker image                                                                                           |
 | `npm run test:a11y:ui`         | The same suite in Playwright's UI mode                                                                                                           |
-| `npm run test:worker`          | Worker specs, local D1: contact, byte ranges, types, /blog pager                                                                                 |
+| `npm run test:worker`          | Worker specs, local D1: contact, byte ranges, types, /blog pager, failed sweeps and missing bindings                                             |
 | `npm run test:coverage`        | `test:a11y` in Chromium, with line and branch coverage of `src/`                                                                                 |
 | `npm run check:live`           | Production headers and markup against this repository                                                                                            |
 | `npm run check:live:console`   | Every production route in a browser, failing on console errors                                                                                   |
@@ -77,6 +77,10 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run check:pdf`            | Every PDF in `public/` against PDF/UA-1, veraPDF in Docker                                                                                       |
 | `npm run publish:cv`           | Print `cv/cv.html` to the tagged CV PDF in `public/`                                                                                             |
 | `npm run publish:talk`         | Print a talk's slideshow to its tagged PDF in `public/talks/`                                                                                    |
+
+`CHECK_ROOT=<dir>` points `check:tokens`, `pins`, `classes`, `csp`,
+`untransformed` and `title-case` at another tree. The `tests/check-*.spec.ts`
+self-tests use it to run each check on a passing and a failing fixture.
 
 ### WebKit
 
@@ -158,13 +162,14 @@ do ([AGENTS.md](../AGENTS.md#what-a-test-is-for)).
   regenerate them all. It skips an entry whose bytes are not its extension's
   format.
 - Helpers, not run directly: `scripts/build-fingerprint.mjs` stamps `dist/`,
-  and checks that read `dist/` refuse a stale build; `scripts/mime-types.mjs`
-  holds content types for the test servers; `scripts/pdf-pages.mjs` counts PDF
-  pages for `publish:talk` and `tests/talk-pdf.spec.ts`;
-  `scripts/warm-browsers.mjs` opens one page per browser in CI before the
-  tests, so no worker's first page builds the browser caches inside a test;
-  `scripts/shard-tests.mjs` deals CI's tests to the shards in turn and checks
-  each shard's `--test-list` selects exactly its share.
+  and checks that read `dist/` refuse a stale build; `scripts/files-under.mjs`
+  lists the files a check script reads; `scripts/mime-types.mjs` holds content
+  types for the test servers; `scripts/pdf-pages.mjs` counts PDF pages for
+  `publish:talk` and `tests/talk-pdf.spec.ts`; `scripts/warm-browsers.mjs`
+  opens one page per browser in CI before the tests, so no worker's first page
+  builds the browser caches inside a test; `scripts/shard-tests.mjs` deals
+  CI's tests to the shards in turn and checks each shard's `--test-list`
+  selects exactly its share.
 - [AGENTS.md](../AGENTS.md) lists what must pass before a change is done.
 
 | Variable                        | Default                | Effect                                                         |
