@@ -1,6 +1,7 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { DESKTOP_VIEWPORT, PHONE_VIEWPORT } from './wcag';
+import { NO_FIREFOX } from './tags';
 
 /** A pressed control drops its shadow, and moves only without reduced motion. `moves` carries the shadow. */
 interface Pressable {
@@ -372,11 +373,7 @@ test.describe('a hover lift', () => {
   }
 });
 
-test.describe('on a touch screen', () => {
-  test.skip(
-    ({ browserName }) => browserName === 'firefox',
-    'Firefox has no isMobile emulation, so it always reports hover: hover',
-  );
+test.describe('on a touch screen', NO_FIREFOX, () => {
   test.use({ isMobile: true, hasTouch: true });
 
   // A tap leaves :hover set on a phone, so a lift would stay on after the finger leaves.

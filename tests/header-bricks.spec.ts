@@ -2,6 +2,7 @@ import { expect, test } from './test';
 import { gotoSettled } from './settle';
 import { AAA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { DESKTOP_VIEWPORT, PHONE_VIEWPORT } from './wcag';
+import { NO_WEBKIT } from './tags';
 
 /*
  * The header's joined bricks draw their focus ring inside the brick
@@ -169,38 +170,35 @@ for (const colorScheme of ['dark', 'light'] as const) {
 test.describe('the logo link in forced colors', () => {
   test.use({ viewport: DESKTOP_VIEWPORT });
 
-  test('draws a solid ring at least 2px wide when focused', async ({
-    page,
-    browserName,
-  }) => {
-    test.skip(
-      browserName === 'webkit',
-      'webkit reports forced-colors as active but paints the author palette (bug 225281)',
-    );
-    await page.emulateMedia({ forcedColors: 'active' });
-    await gotoSettled(page, ROUTE);
-    for (let i = 0; i < MAX_STOPS; i += 1) {
-      await page.keyboard.press('Tab');
-      if (
-        await page.evaluate(() =>
-          document.activeElement?.matches('.header-slab .logo-link'),
+  test(
+    'draws a solid ring at least 2px wide when focused',
+    NO_WEBKIT,
+    async ({ page }) => {
+      await page.emulateMedia({ forcedColors: 'active' });
+      await gotoSettled(page, ROUTE);
+      for (let i = 0; i < MAX_STOPS; i += 1) {
+        await page.keyboard.press('Tab');
+        if (
+          await page.evaluate(() =>
+            document.activeElement?.matches('.header-slab .logo-link'),
+          )
         )
-      )
-        break;
-    }
-    const ring = await page.evaluate(`(() => {
+          break;
+      }
+      const ring = await page.evaluate(`(() => {
       ${PAGE_HELPERS}
       const el = document.activeElement;
       if (!el || !el.matches('.header-slab .logo-link')) return null;
       const s = getComputedStyle(el);
       return { style: s.outlineStyle, width: parseFloat(s.outlineWidth), alpha: parse(s.outlineColor).a };
     })()`);
-    expect(ring, 'the walk never reached the logo link').not.toBeNull();
-    expect(ring, 'the logo ring is not painted in forced colors').toEqual({
-      style: 'solid',
-      width: expect.any(Number),
-      alpha: 1,
-    });
-    expect((ring as { width: number }).width).toBeGreaterThanOrEqual(2);
-  });
+      expect(ring, 'the walk never reached the logo link').not.toBeNull();
+      expect(ring, 'the logo ring is not painted in forced colors').toEqual({
+        style: 'solid',
+        width: expect.any(Number),
+        alpha: 1,
+      });
+      expect((ring as { width: number }).width).toBeGreaterThanOrEqual(2);
+    },
+  );
 });

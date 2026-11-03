@@ -5,6 +5,7 @@ import { GLOBAL_CSS, cssColorToken } from './source';
 import { DESKTOP_VIEWPORT, REFLOW_VIEWPORT } from './wcag';
 import { PAGE_HELPERS } from './contrast';
 import { tabWalk } from './tab-walk';
+import { NO_WEBKIT } from './tags';
 
 /**
  * `forced-colors: active` drops box-shadow, so a control bounded only by `shadow-hard-*`
@@ -172,7 +173,7 @@ const contentLinkColors = (page: Page) =>
     };
   });
 
-/** Pins which engines force colors, so the webkit skip below cannot hide a regression elsewhere. */
+/** Pins which engines force colors, so the NO_WEBKIT tag below cannot hide a regression elsewhere. */
 test('every engine that can force colors still does, and webkit still cannot', async ({
   page,
   browserName,
@@ -194,7 +195,7 @@ test('every engine that can force colors still does, and webkit still cannot', a
   if (browserName === 'webkit') {
     expect(
       painted,
-      `webkit now forces colors (<body> computes ${state.body}); delete the webkit skip below.`,
+      `webkit now forces colors (<body> computes ${state.body}); drop NO_WEBKIT from the tests below.`,
     ).toEqual(authoredText());
     return;
   }
@@ -253,15 +254,8 @@ const CURRENT_MARKS = [
   },
 ] as const;
 
-test.describe('forced colors', () => {
-  // WebKit matches (forced-colors: active) yet paints `--color-text`: it ships the
-  // media query only (https://bugs.webkit.org/show_bug.cgi?id=225281). Skipped by
-  // engine name, not capability, so a chromium or firefox regression still fails.
-  test.skip(
-    ({ browserName }) => browserName === 'webkit',
-    'webkit reports forced-colors as active but paints the author palette; see the note above',
-  );
-
+test.describe('forced colors', NO_WEBKIT, () => {
+  // Scoped by engine name, not capability, so a Chromium or Firefox regression still fails.
   for (const route of SAMPLED_ROUTES) {
     test(`${route} holds up in forced colors`, async ({ page }) => {
       await gotoSettled(page, route);
