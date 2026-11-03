@@ -287,6 +287,47 @@
   }
 
   /*
+   * The Step below `sm`: a stacked wall climbs right, so the higher brick sits
+   * further right; from `pair` the taglines and stats climb side by side.
+   */
+  @variant max-sm {
+    main .card-block {
+      padding-right: var(--hard-throw);
+    }
+
+    main .card-block > :nth-child(2) {
+      margin-right: var(--spacing-home-phone-step);
+    }
+
+    main .card-block > :nth-child(n + 3) {
+      margin-right: calc(var(--spacing-home-phone-step) * 2);
+    }
+
+    main .card-block > :nth-last-child(2) {
+      margin-left: var(--spacing-home-phone-step);
+    }
+
+    main .card-block > :nth-last-child(n + 3) {
+      margin-left: calc(var(--spacing-home-phone-step) * 2);
+    }
+
+    @variant pair {
+      .home-pair {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+      }
+
+      .home-pair > * {
+        margin-inline: 0;
+      }
+
+      .home-pair > :first-child {
+        margin-top: var(--spacing-home-phone-climb);
+      }
+    }
+  }
+
+  /*
    * The fall. Every word in it sits in an opaque brick, so the printed things
    * can pass behind any of it.
    */

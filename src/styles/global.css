@@ -427,6 +427,8 @@
    * 273px box at 305px, so they step down. tests/header-fit.spec.ts.
    */
   --breakpoint-xs: 21rem;
+  /* From here the homepage taglines and stats fit side by side with the SC 1.4.12 spacing. */
+  --breakpoint-pair: 22.5rem;
   /*
    * Reading measure: at most 75 characters per line at 18px in Chromium and
    * Firefox. rem, not `ch`: Lexend's `ch` differs by engine, which an image's
@@ -613,6 +615,9 @@
   /* Room each side of the fall's column where the printed things drift. */
   --spacing-home-lane: 184px;
   --spacing-home-lane-md: 128px;
+  /* Below `sm`: how far each joined brick steps sideways, and how far a pair's first brick sits lower. */
+  --spacing-home-phone-step: 16px;
+  --spacing-home-phone-climb: 32px;
   /* How far each section steps sideways as it falls. */
   --spacing-home-tumble: 32px;
   --spacing-home-tumble-md: 16px;

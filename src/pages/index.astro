@@ -126,7 +126,7 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
         <ul
           role="list"
           class:list={[
-            'card-block home-tags grid sm:grid-cols-2',
+            'card-block home-tags home-pair grid sm:grid-cols-2',
             tagWall.wall,
           ]}
         >
@@ -148,7 +148,10 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
         <div class="home-hero-row">
           <ul
             role="list"
-            class:list={['card-block grid sm:grid-cols-2', statWall.wall]}
+            class:list={[
+              'card-block home-pair grid sm:grid-cols-2',
+              statWall.wall,
+            ]}
           >
             {STATS.map((stat, index) => (
               <li
