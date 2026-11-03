@@ -18,7 +18,7 @@ import {
   hasFold,
 } from '../src/lib/post-folds';
 import { BLOG_CONTENT_DIR } from '../src/lib/paths';
-import { PUBLISHED_POST_ROUTES } from './routes';
+import { builtHtml, POST_ROUTES, PUBLISHED_POST_ROUTES } from './routes';
 import { NODE } from './tags';
 
 /** `src/plugins/post-fold.mjs`, `src/scripts/post-folds.ts` and the `.post-fold` rules. */
@@ -246,26 +246,34 @@ const PLUGINS: Record<string, unknown> = {
 
 const FIXTURE = 'tests/fixtures/post-folds.md';
 
-let fixtureHtml: Promise<string> | undefined;
+type Renderer = Awaited<ReturnType<typeof createSatteriMarkdownProcessor>>;
 
-/** `FIXTURE` rendered by the `hastPlugins` in `astro.config.mjs`, in their order. */
-const renderFixture = (): Promise<string> =>
-  (fixtureHtml ??= (async () => {
+let pipeline: Promise<Renderer> | undefined;
+
+/** Markdown rendered as a post by the `hastPlugins` in `astro.config.mjs`, in their order. */
+const renderPost = async (markdown: string): Promise<string> => {
+  pipeline ??= (async () => {
     const names = configPlugins();
     const unknown = names.filter((name) => !(name in PLUGINS));
     expect(
       unknown,
       'hastPlugins has a plugin this spec does not import',
     ).toEqual([]);
-    const renderer = await createSatteriMarkdownProcessor({
+    return createSatteriMarkdownProcessor({
       hastPlugins: names.map((name) => PLUGINS[name]) as never,
       syntaxHighlight: false,
     });
-    const { code } = await renderer.render(readFileSync(FIXTURE, 'utf8'), {
-      fileURL: pathToFileURL(join(BLOG_CONTENT_DIR, 'post-folds.md')),
-    });
-    return code;
-  })());
+  })();
+  const { code } = await (
+    await pipeline
+  ).render(markdown, {
+    fileURL: pathToFileURL(join(BLOG_CONTENT_DIR, 'post-folds.md')),
+  });
+  return code;
+};
+
+const renderFixture = (): Promise<string> =>
+  renderPost(readFileSync(FIXTURE, 'utf8'));
 
 /* A built page carries the fold script only when its own post has a fold. */
 const FOLD_SCRIPT = ts.transpileModule(
@@ -327,6 +335,54 @@ test(
       count(/<span class="fold-label">Bash Code, \d+ Lines</g),
       'code folds',
     ).toBe(1);
+  },
+);
+
+const NO_FOLD_BODY = 'Text.\n\n## A Heading\n\n### Steps\n\n- One step.\n';
+
+test(
+  'hasFold, which decides the fold script, agrees with the rendered folds',
+  NODE,
+  async () => {
+    const folds = async (markdown: string) =>
+      (await renderPost(markdown)).includes('class="post-fold"');
+    const fixture = readFileSync(FIXTURE, 'utf8');
+
+    expect(hasFold(fixture), 'hasFold missed the fixture folds').toBe(true);
+    expect(await folds(fixture)).toBe(true);
+    expect(hasFold(NO_FOLD_BODY), 'hasFold found a fold in plain text').toBe(
+      false,
+    );
+    expect(await folds(NO_FOLD_BODY)).toBe(false);
+  },
+);
+
+/* Astro names a component's bundled script after the component file. */
+const FOLD_SCRIPT_SRC =
+  /<script[^>]+src="[^"]*\/PostFolds\.astro_astro_type_script_/;
+
+const postSource = (route: string): string =>
+  readFileSync(join(BLOG_CONTENT_DIR, `${route.split('/').pop()}.md`), 'utf8');
+
+test(
+  'a built post ships the fold script exactly when hasFold finds a fold in it',
+  NODE,
+  () => {
+    const html = builtHtml();
+    const wrong = POST_ROUTES.filter((route) => {
+      const page = html.get(route);
+      expect(page, `${route} was not built`).toBeDefined();
+      return (
+        hasFold(postSource(route)) !== FOLD_SCRIPT_SRC.test(page!) ||
+        hasFold(postSource(route)) !== page!.includes('class="post-fold"')
+      );
+    });
+
+    expect(POST_ROUTES.length, 'no built post to check').toBeGreaterThan(0);
+    expect(
+      wrong,
+      'posts whose fold script or folds disagree with hasFold',
+    ).toEqual([]);
   },
 );
 
