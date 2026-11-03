@@ -590,8 +590,9 @@
    */
   --text-home-name: clamp(1.75rem, 6vw, 4rem);
   --text-home-name--line-height: 0.98;
-  --size-home-photo: 22rem;
-  --size-home-photo-phone: 17.5rem;
+  --size-home-photo: 30rem;
+  --size-home-photo-lg: 26rem;
+  --size-home-photo-phone: 32rem;
   --size-home-band: 160px;
   --size-home-band-phone: 120px;
   --size-home-tuft-w: 48px;

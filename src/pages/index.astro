@@ -76,9 +76,9 @@ const categoryWall = wallClasses(
   CATEGORY_CARDS.length,
 );
 
-/* The photo's drawn width inside its 4px frame: --size-home-photo from `lg`, the phone size or the column below (tests/image-size.spec.ts). */
+/* The photo's drawn width inside its 4px frame: --size-home-photo from `xl`, -lg from `lg`, the phone size or the column below (tests/image-size.spec.ts). */
 const HOME_PHOTO_SIZES =
-  '(min-width: 64rem) 21.5rem, min(17rem, calc(100vw - 5.5rem))';
+  '(min-width: 80rem) 29.5rem, (min-width: 64rem) 25.5rem, min(31.5rem, calc(100vw - 5.5rem))';
 
 const TAGLINES = ['Open Source Enthusiast', 'Positivity Advocate'] as const;
 /* Side by side from `sm`, the second climbing (the Step). */
@@ -110,6 +110,18 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
           <span class="block">Sinduri</span>{' '}
           <span class="block">Guntupalli</span>
         </h1>
+
+        <div class="home-photo">
+          <div class="aspect-frame aspect-square border-4">
+            <Picture
+              {...PHOTO_FORMATS}
+              src={portrait}
+              alt="Sinduri smiling in a studio portrait, standing against a dark wall beside a teal block."
+              widths={WIDTHS}
+              sizes={HOME_PHOTO_SIZES}
+            />
+          </div>
+        </div>
 
         <ul
           role="list"
@@ -151,18 +163,6 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
             ))}
           </ul>
           <HomePause />
-        </div>
-      </div>
-
-      <div class="home-photo">
-        <div class="aspect-frame aspect-square border-4">
-          <Picture
-            {...PHOTO_FORMATS}
-            src={portrait}
-            alt="Sinduri smiling in a studio portrait, standing against a dark wall beside a teal block."
-            widths={WIDTHS}
-            sizes={HOME_PHOTO_SIZES}
-          />
         </div>
       </div>
     </div>

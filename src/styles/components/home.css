@@ -15,24 +15,31 @@
     }
   }
 
+  /* One grid: below `lg` the photo follows the name; from `lg` it takes the right column. */
   .home-hero {
     display: grid;
-    gap: --spacing(12);
+    justify-items: start;
+    gap: --spacing(6);
     padding: var(--hero-column-pad-block);
     padding-inline: var(--hero-column-pad-inline);
 
     @variant lg {
       grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: --spacing(12);
       align-items: start;
     }
   }
 
   .home-hero-text {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: --spacing(6);
+    display: contents;
+  }
+
+  .home-hero-text > * {
     min-width: 0;
+
+    @variant lg {
+      grid-column: 1;
+    }
   }
 
   .home-name {
@@ -69,6 +76,12 @@
     width: min(var(--size-home-photo-phone), 100%);
 
     @variant lg {
+      grid-column: 2;
+      grid-row: 1 / span 6;
+      width: var(--size-home-photo-lg);
+    }
+
+    @variant xl {
       width: var(--size-home-photo);
     }
   }
