@@ -225,7 +225,7 @@ compared to the default 100% zoom".
   ceiling; the spec's annotation names them.
 - **Safari:** its Page Zoom list stops at 300% on macOS and iOS, not
   confirmed from an Apple or WebKit source. The spec runs WebKit up to 300%
-  and records which tokens reach 2x there without failing. Others reach 2x in
+  and pins which tokens fall short of 2x there, failing if that changes. Others reach 2x in
   Safari only through system magnification (Zoom on macOS and iOS); the site
   does not use Dynamic Type (`-apple-system-body`). Known limit.
 - **Text-only zoom:** Firefox "Zoom Text Only" scales the `rem` parts only,
