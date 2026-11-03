@@ -676,6 +676,11 @@ const WRAPPING_LABELS = [
     built: /class="card-link"/,
     selector: 'article:has(.card-link) .label',
   },
+  {
+    name: 'a pillar wall',
+    built: /class="pillar-wall"/,
+    selector: '.pillar-wall',
+  },
 ] as const;
 
 test.describe(`at ${REFLOW_WIDTH}px and the largest text size (SC 1.4.4, 1.4.10)`, () => {

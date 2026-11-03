@@ -337,8 +337,8 @@ multiplied into `--text-lead`, `--text-standfirst`, `--text-post-teaser`, `--tex
 queries ignore it, so layouts overflowed at widths such as 768px.
 `tests/reading-tab.spec.ts` holds the no-sideways-scroll rule at 320, 390 and
 1280px. At 200% one uppercase label word outgrows a narrow column (320px, the
-footer's columns up to 1100px), so the breadcrumb, chips, post card labels and
-footer links take `wrap-anywhere`; a
+footer's columns up to 1100px), so the breadcrumb, chips, post card labels,
+footer links and the pillar wall take `wrap-anywhere`; a
 page-wide rule was rejected because it reflows shrink-to-fit text at 100%. The
 control is the reading tab (`ReadingTab.astro`).
 
