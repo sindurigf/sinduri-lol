@@ -16,6 +16,10 @@ const VIEWPORTS = [
 const DRIFT_SAMPLES = 40;
 const DRIFT_STEP_MS = 1500;
 
+/** 250ms steps rise the jar about 8px; 240 cover the 60s cycle. */
+const EDGE_STEP_MS = 250;
+const EDGE_SEARCH_STEPS = 240;
+
 /** CSS px: boxes are fractional; half a pixel hides nothing. */
 const SUBPIXEL_TOLERANCE = 0.5;
 
@@ -187,6 +191,55 @@ test.describe('the printed things in the fall', () => {
       expect(seen, 'the focused jar is covered or out of sight').toBe(true);
     });
   }
+
+  test('a jar focused as it leaves the top of the fall shows its whole focus ring (SC 2.4.11)', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.clock.install();
+    await gotoSettled(page, '/');
+    const drift = page.locator('[data-home-drift]');
+    await drift.scrollIntoViewIfNeeded();
+    const jar = page.getByRole('button', { name: 'Let Go of the Jar' });
+    const crossingTop = () =>
+      jar.evaluate((el) => {
+        const box = el.getBoundingClientRect();
+        const edge = el
+          .closest('[data-home-drift]')!
+          .getBoundingClientRect().top;
+        return box.top < edge && box.top > edge - box.height;
+      });
+    let steps = 0;
+    while (!(await crossingTop())) {
+      steps += 1;
+      expect(
+        steps,
+        'the jar never crossed the top of the fall in one rise',
+      ).toBeLessThanOrEqual(EDGE_SEARCH_STEPS);
+      await page.clock.runFor(EDGE_STEP_MS);
+    }
+    await jar.focus();
+    const clipped = await jar.evaluate((el) => {
+      const style = getComputedStyle(el);
+      const reach =
+        parseFloat(style.outlineOffset) + parseFloat(style.outlineWidth);
+      const ring = el.getBoundingClientRect();
+      const fall = el.closest('[data-home-drift]')!.getBoundingClientRect();
+      return {
+        visible: style.outlineStyle !== 'none' && reach > 0,
+        outside: Math.max(
+          fall.top - (ring.top - reach),
+          ring.bottom + reach - fall.bottom,
+          0,
+        ),
+      };
+    });
+    expect(clipped.visible, 'the focused jar shows no focus ring').toBe(true);
+    expect(
+      clipped.outside,
+      'the focused jar has its ring cut off by the edge of the fall',
+    ).toBeLessThanOrEqual(SUBPIXEL_TOLERANCE);
+  });
 
   test('only the jar is a control; the rest are hidden from assistive technology', async ({
     page,

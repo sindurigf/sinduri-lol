@@ -314,10 +314,18 @@ const start = (): void => {
     jarThing.offset = driftHeight - y - (clock / 1000) * RISE_PX_PER_S;
   };
 
-  /* A focused jar holds still and wholly inside the fall, so focus never leaves sight (SC 2.4.11). */
+  /* How far the focus ring reaches past the jar's box: none when focus is not visible. */
+  const ringReach = (): number => {
+    const style = getComputedStyle(jar);
+    if (style.outlineStyle === 'none') return 0;
+    return parseFloat(style.outlineOffset) + parseFloat(style.outlineWidth);
+  };
+
+  /* A focused jar holds still with its ring wholly inside the fall, which clips, so focus never leaves sight (SC 2.4.11). */
   const holdFocusedJar = (): void => {
     if (!jarThing || !jar.matches(':focus-within')) return;
-    placeJar(clamp(thingY(jarThing), 0, driftHeight - thingSize));
+    const reach = ringReach();
+    placeJar(clamp(thingY(jarThing), reach, driftHeight - thingSize - reach));
   };
 
   const drawThings = (): void => {
