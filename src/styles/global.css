@@ -595,8 +595,8 @@
   --size-home-photo: 30rem;
   --size-home-photo-lg: 26rem;
   --size-home-photo-phone: 32rem;
-  --size-home-band: 160px;
-  --size-home-band-phone: 120px;
+  --size-home-band: 220px;
+  --size-home-band-phone: 150px;
   --size-home-tuft-w: 48px;
   --size-home-tuft-h: 40px;
   --size-home-tuft-front-w: 34px;
@@ -608,11 +608,15 @@
   --size-home-clod: 8px;
   --size-home-clod-edge: 2px;
   --size-home-mouth-h: 56px;
+  --size-home-ledge-h: 36px;
+  --size-home-ledge-h-phone: 24px;
+  --size-home-post-w: 28px;
+  --size-home-post-w-phone: 20px;
+  --size-home-plant-w: 36px;
+  --size-home-plant-h: 66px;
+  --size-home-plant-w-phone: 24px;
+  --size-home-plant-h-phone: 44px;
   --size-home-mouth-h-phone: 36px;
-  /* The brick ledge the meadow stands on, and one brick's length. */
-  --size-home-ledge: 22px;
-  --size-home-ledge-phone: 16px;
-  --size-home-brick: 44px;
   --size-home-prop: 88px;
   --size-home-prop-md: 72px;
   --size-home-prop-phone: 64px;

@@ -1,45 +1,87 @@
 ---
 /*
- * The meadow's floor: grass tufts, the hopping rabbit and the hole's mouth.
- * Decoration only; home-motion.ts moves it.
+ * The meadow's floor: living stems drawn by src/scripts/home-meadow.ts on two
+ * canvases, behind and in front of the rabbit, over a row of joined bricks and
+ * the hole between two posts. The planted SVGs are the no-JS meadow.
  */
-const BACK_TUFTS = ['home-tuft-1', 'home-tuft-2', 'home-tuft-3', 'home-tuft-4'];
-const FRONT_TUFTS = ['home-tuft-5', 'home-tuft-6'];
-const CLODS = 3;
+type Plant = 'stem' | 'flower' | 'sprout' | null;
+/* One entry per brick; a plant sits on top of the brick that names it. */
+const LEFT: Plant[] = [
+  null,
+  'sprout',
+  null,
+  null,
+  'stem',
+  null,
+  null,
+  'flower',
+  null,
+  'stem',
+];
+const RIGHT: Plant[] = ['sprout', null];
 ---
 
 <div class="home-band" aria-hidden="true" data-home-band>
-  {/* Living stems, drawn by src/scripts/home-meadow.ts; the tufts below are the no-JS meadow. */}
-  <canvas class="home-stems" data-home-stems></canvas>
-  {BACK_TUFTS.map((place, index) => (
-    <span class:list={['home-tuft', place]}>
-      <svg viewBox="0 0 48 40" aria-hidden="true">
-        <path
-          d={
-            index % 2 === 0
-              ? 'M4 42 12 12 19 42ZM17 42 26 0 33 42ZM31 42 41 16 45 42Z'
-              : 'M4 42 14 6 21 42ZM20 42 30 18 36 42Z'
-          }
-        />
-      </svg>
-    </span>
-  ))}
+  <canvas class="home-stems" data-home-stems="back"></canvas>
   <span class="home-hopper" data-home-hopper>
     <span class="home-bun" data-pose="sit">
       <i></i>
     </span>
   </span>
-  {FRONT_TUFTS.map((place) => (
-    <span class:list={['home-tuft home-tuft-front', place]}>
-      <svg viewBox="0 0 34 24" aria-hidden="true">
-        <path d="M3 26 10 6 15 26ZM14 26 22 0 28 26Z" />
-      </svg>
+  {[
+    ['l', LEFT],
+    ['r', RIGHT],
+  ].map(([side, bricks]) => (
+    <span class:list={['home-wall', `home-wall-${side}`]}>
+      {(bricks as Plant[]).map((plant) => (
+        <span class="home-brick">
+          {plant === 'stem' && (
+            <svg class="home-plant" viewBox="0 0 24 44">
+              <path
+                class="home-plant-line"
+                d="M12 44Q11 28 13 10M12.4 26Q8 22 5 16"
+              />
+              <ellipse
+                class="home-plant-bud"
+                cx="13"
+                cy="7"
+                rx="2.6"
+                ry="4.2"
+              />
+              <ellipse
+                class="home-plant-bud"
+                cx="4.6"
+                cy="13.5"
+                rx="2"
+                ry="3.2"
+                transform="rotate(-30 4.6 13.5)"
+              />
+            </svg>
+          )}
+          {plant === 'flower' && (
+            <svg class="home-plant" viewBox="0 0 24 40">
+              <path class="home-plant-line" d="M12 40Q12.5 26 12 16" />
+              <path
+                class="home-plant-petal"
+                d="M7 14Q7 4 12 2Q17 4 17 14Q12 17 7 14Z"
+              />
+            </svg>
+          )}
+          {plant === 'sprout' && (
+            <svg class="home-plant home-plant-small" viewBox="0 0 24 24">
+              <path class="home-plant-line" d="M12 24V12" />
+              <path
+                class="home-plant-leaf"
+                d="M12 13Q4 13 3 6Q10 6 12 13ZM12 11Q19 10 21 3Q14 3 12 11Z"
+              />
+            </svg>
+          )}
+        </span>
+      ))}
     </span>
   ))}
-  {Array.from({ length: CLODS }, () => (
-    <span class="home-clod" />
-  ))}
-  <span class="home-ledge home-ledge-start"></span>
-  <span class="home-ledge home-ledge-end"></span>
+  <canvas class="home-stems home-stems-front" data-home-stems="front"></canvas>
+  <span class="home-post home-post-l"></span>
+  <span class="home-post home-post-r"></span>
 </div>
 <span class="home-mouth" aria-hidden="true" data-home-mouth></span>

@@ -36,23 +36,6 @@ const LOOK_FROM = 0.3;
 const LOOK_TO = 0.75;
 const FIRST_REST_MS = 700;
 
-/* Grass sways always and wobbles where the rabbit lands; clods fly up and fall. */
-const SWAY_DEG = 2.5;
-const SWAY_PERIOD_MS = 3400;
-const SWAY_PHASE_STEP = 1.7;
-const WOBBLE_DEG = 7;
-const WOBBLE_MS = 700;
-const WOBBLE_HZ_MS = 45;
-const WOBBLE_REACH_PX = 90;
-const CLOD_MS = 420;
-const CLOD_SPREAD_PX = 10;
-const CLOD_SIDE_SPEED = 0.09;
-const CLOD_JITTER = 0.02;
-const CLOD_LIFT_MIN = 0.32;
-const CLOD_LIFT_MAX = 0.42;
-const CLOD_GRAVITY = 0.0016;
-const CLOD_SPIN_MS_PER_DEG = 3;
-
 /* Things: a 900px view takes about 26 seconds to cross. */
 const RISE_PX_PER_S = 34;
 const TURN_DEG = 4;
@@ -121,8 +104,6 @@ const start = (): void => {
   const pauses = [
     ...document.querySelectorAll<HTMLButtonElement>('[data-home-pause]'),
   ];
-  const tufts = [...band.querySelectorAll<HTMLElement>('.home-tuft')];
-  const clods = [...band.querySelectorAll<HTMLElement>('.home-clod')];
 
   const things: Thing[] = [
     ...drift.querySelectorAll<HTMLElement>('[data-home-prop]'),
@@ -143,9 +124,6 @@ const start = (): void => {
   let roamMax = 0;
   let driftHeight = 0;
   let thingSize = 0;
-  const tuftX = tufts.map(() => 0);
-  const tuftKick = tufts.map(() => -Infinity);
-  const clodState = clods.map(() => ({ born: -Infinity, x: 0, vx: 0, vy: 0 }));
   const hop: Hop = {
     x: 0,
     y: 0,
@@ -165,10 +143,6 @@ const start = (): void => {
       EDGE_PX * 2,
       mouth.getBoundingClientRect().left - box.left - MOUTH_CLEAR_PX,
     );
-    tufts.forEach((tuft, index) => {
-      const r = tuft.getBoundingClientRect();
-      tuftX[index] = r.left - box.left + r.width / 2;
-    });
     driftHeight = drift.clientHeight;
     thingSize = things[0]?.el.offsetHeight ?? 0;
   };
@@ -182,19 +156,6 @@ const start = (): void => {
   };
   const place = (): void => {
     hopper.style.transform = `translate(${hop.x.toFixed(1)}px, ${hop.y.toFixed(1)}px)`;
-  };
-
-  const kick = (x: number): void => {
-    tuftX.forEach((tx, index) => {
-      if (Math.abs(tx - x) < WOBBLE_REACH_PX) tuftKick[index] = clock;
-    });
-    clodState.forEach((clod, index) => {
-      const side = index - 1;
-      clod.born = clock;
-      clod.x = x + side * CLOD_SPREAD_PX;
-      clod.vx = side * CLOD_SIDE_SPEED + random(-CLOD_JITTER, CLOD_JITTER);
-      clod.vy = -random(CLOD_LIFT_MIN, CLOD_LIFT_MAX);
-    });
   };
 
   const nextHop = (): void => {
@@ -247,7 +208,6 @@ const start = (): void => {
         hop.phase = 'land';
         hop.since = clock;
         hop.y = 0;
-        kick(hop.x);
       }
     } else {
       setPose('crouch');
@@ -259,37 +219,6 @@ const start = (): void => {
       }
     }
     place();
-  };
-
-  const stepGrass = (): void => {
-    tufts.forEach((tuft, index) => {
-      const since = clock - (tuftKick[index] ?? -Infinity);
-      const wobble =
-        since < WOBBLE_MS
-          ? WOBBLE_DEG *
-            (1 - since / WOBBLE_MS) *
-            Math.sin(since / WOBBLE_HZ_MS)
-          : 0;
-      const sway =
-        SWAY_DEG *
-        Math.sin(
-          (clock / SWAY_PERIOD_MS) * Math.PI * 2 + index * SWAY_PHASE_STEP,
-        );
-      tuft.style.transform = `rotate(${(sway + wobble).toFixed(2)}deg)`;
-    });
-    clods.forEach((el, index) => {
-      const clod = clodState[index];
-      if (!clod) return;
-      const age = clock - clod.born;
-      if (age > CLOD_MS) {
-        el.style.opacity = '0';
-        return;
-      }
-      const x = clod.x + clod.vx * age;
-      const y = Math.min(0, clod.vy * age + CLOD_GRAVITY * age * age);
-      el.style.opacity = '1';
-      el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${(age / CLOD_SPIN_MS_PER_DEG).toFixed(0)}deg)`;
-    });
   };
 
   const cycle = (): number => driftHeight + thingSize;
@@ -350,7 +279,6 @@ const start = (): void => {
       last = now;
       if (jarThing && jar.matches(':focus-within')) placeJar(held);
       stepRabbit();
-      stepGrass();
       meadow?.draw(clock / 1000, false);
       drawThings();
       return NEXT_FRAME;
@@ -375,19 +303,9 @@ const start = (): void => {
     hop.length = FIRST_REST_MS;
     hop.looks = false;
     lookUntil = -1;
-    tuftKick.fill(-Infinity);
-    clodState.forEach((clod) => {
-      clod.born = -Infinity;
-    });
     setFacing();
     setPose('sit');
     place();
-    tufts.forEach((tuft) => {
-      tuft.style.transform = '';
-    });
-    clods.forEach((clod) => {
-      clod.style.opacity = '0';
-    });
     meadow?.draw(clock / 1000, true);
     drawThings();
   };
@@ -503,10 +421,15 @@ const start = (): void => {
   });
   loop.start();
 
-  const stems = band.querySelector<HTMLCanvasElement>('[data-home-stems]');
-  if (stems) {
+  const back = band.querySelector<HTMLCanvasElement>(
+    '[data-home-stems="back"]',
+  );
+  const front = band.querySelector<HTMLCanvasElement>(
+    '[data-home-stems="front"]',
+  );
+  if (back && front) {
     void import('./home-meadow').then(({ createMeadow }) => {
-      meadow = createMeadow(band, stems, hopper, mouth);
+      meadow = createMeadow({ band, back, front, hopper, mouth });
       band.dataset.stemsLive = '';
       meadow.draw(clock / 1000, state() === 'paused');
     });

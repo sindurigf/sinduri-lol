@@ -105,148 +105,158 @@
     }
   }
 
-  .home-band {
-    --ledge: var(--size-home-ledge-phone);
+  /* The walls meet the hole's opening; values match .home-mouth. */
+  .home-band,
+  .home-mouth {
+    --mouth-l: 56%;
+    --mouth-w: 36%;
+    --ledge-h: var(--size-home-ledge-h-phone);
+    --post-w: var(--size-home-post-w-phone);
+    --plant-w: var(--size-home-plant-w-phone);
+    --plant-h: var(--size-home-plant-h-phone);
 
     @variant md {
-      --ledge: var(--size-home-ledge);
+      --mouth-l: 58%;
+      --mouth-w: 30%;
+      --ledge-h: var(--size-home-ledge-h);
+      --post-w: var(--size-home-post-w);
+      --plant-w: var(--size-home-plant-w);
+      --plant-h: var(--size-home-plant-h);
     }
   }
 
-  .home-stems {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* The canvas replaces the tufts once it draws. */
-  .home-band[data-stems-live] .home-tuft {
-    display: none;
-  }
-
-  /*
-   * One bold brick ledge, broken where the hole opens. Its ends meet the
-   * mouth's edges: the same percentages as `.home-mouth`.
-   */
-  .home-ledge {
+  /* Joined bricks: each draws its top and left edge, the wall closes the right. */
+  .home-wall {
     position: absolute;
     bottom: 0;
-    z-index: 5;
-    height: var(--ledge);
-    border-top: var(--block-edge) solid var(--color-block-ink);
-    background:
-      repeating-linear-gradient(
-        90deg,
-        transparent 0 calc(var(--size-home-brick) - var(--size-home-clod-edge)),
-        var(--color-block-ink) 0 var(--size-home-brick)
-      ),
-      var(--color-block-light);
-  }
-
-  .home-ledge-start {
-    left: 0;
-    width: 56%;
-
-    @variant md {
-      width: 58%;
-    }
-  }
-
-  .home-ledge-end {
-    left: 92%;
-    right: 0;
-    border-left: var(--block-edge) solid var(--color-block-ink);
-
-    @variant md {
-      left: 88%;
-    }
-  }
-
-  .home-ledge-start {
+    z-index: 4;
+    display: flex;
+    height: var(--ledge-h);
     border-right: var(--block-edge) solid var(--color-block-ink);
   }
 
-  .home-tuft {
+  .home-wall-l {
+    left: calc(var(--block-edge) * -1);
+    width: calc(var(--mouth-l) - var(--post-w) + var(--block-edge));
+  }
+
+  .home-wall-r {
+    left: calc(var(--mouth-l) + var(--mouth-w) + var(--post-w));
+    right: calc(var(--block-edge) * -1);
+    border-right: 0;
+  }
+
+  .home-brick {
+    position: relative;
+    flex: 1 1 0;
+    border: var(--block-edge) solid var(--color-block-ink);
+    border-width: var(--block-edge) 0 0 var(--block-edge);
+    background: var(--color-block-light);
+  }
+
+  .home-brick:nth-child(3n + 1) {
+    flex-grow: 1.3;
+  }
+
+  .home-brick:nth-child(4n + 2) {
+    flex-grow: 0.8;
+  }
+
+  /* Fewer, wider bricks on a phone: only the planted ones and the first stay. */
+  .home-brick:not(:first-child, :has(svg)) {
+    @variant max-md {
+      display: none;
+    }
+  }
+
+  /* The posts stand a brick higher either side of the hole, so the gap reads as a door. */
+  .home-post {
     position: absolute;
-    bottom: var(--ledge);
-    width: var(--size-home-tuft-w);
-    height: var(--size-home-tuft-h);
+    bottom: 0;
+    z-index: 2;
+    width: var(--post-w);
+    height: calc(var(--ledge-h) * 2);
+    border: var(--block-edge) solid var(--color-block-ink);
+    border-bottom: 0;
+    background: var(--color-block-light);
+  }
+
+  .home-post-l {
+    left: calc(var(--mouth-l) - var(--post-w));
+    box-shadow: var(--hard-throw) 0 0 var(--color-pink);
+  }
+
+  .home-post-r {
+    left: calc(var(--mouth-l) + var(--mouth-w));
+  }
+
+  .home-plant {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    width: var(--plant-w);
+    height: var(--plant-h);
+    margin-left: calc(var(--plant-w) / -2);
+    overflow: visible;
     transform-origin: 50% 100%;
   }
 
-  /* `auto`, not Chromium's `preserve-parent-color` default for SVG: forced colors repaint the grass too. */
-  .home-tuft :is(svg, path) {
-    forced-color-adjust: auto;
+  .home-plant-small {
+    height: var(--plant-w);
   }
 
-  .home-tuft svg {
-    display: block;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
+  .home-plant-line {
+    fill: none;
+    stroke: var(--color-block-ink);
+    stroke-width: 1.6;
+    stroke-linecap: round;
   }
 
-  .home-tuft path {
+  .home-plant-bud,
+  .home-plant-leaf {
     fill: var(--color-home-grass);
     stroke: var(--color-block-ink);
-    stroke-width: 3;
+    stroke-width: 1.2;
   }
 
-  .home-tuft-front {
-    z-index: 4;
-    width: var(--size-home-tuft-front-w);
-    height: var(--size-home-tuft-front-h);
+  .home-plant-petal {
+    fill: var(--color-pink);
+    stroke: var(--color-block-ink);
+    stroke-width: 1.4;
   }
 
-  .home-tuft-1 {
-    left: 2%;
+  .home-brick:nth-child(odd) .home-plant {
+    --sway-s: 4.6s;
   }
 
-  .home-tuft-2 {
-    left: 17%;
-
-    @variant max-md {
-      display: none;
-    }
-  }
-
-  .home-tuft-3 {
-    left: 33%;
-  }
-
-  .home-tuft-4 {
-    left: 94.5%;
-  }
-
-  .home-tuft-5 {
-    left: 9%;
-  }
-
-  .home-tuft-6 {
-    left: 26%;
-
-    @variant max-md {
-      display: none;
-    }
-  }
-
-  .home-clod {
+  /* Back stems sit behind the rabbit, front stems over it; both under the bricks. */
+  .home-stems {
     position: absolute;
-    bottom: var(--ledge);
-    left: 0;
-    z-index: 4;
-    width: var(--size-home-clod);
-    height: var(--size-home-clod);
-    border: var(--size-home-clod-edge) solid var(--color-block-ink);
-    background: var(--color-home-clod);
-    opacity: 0;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+  }
+
+  .home-stems-front {
+    z-index: 3;
+  }
+
+  /* The canvases replace the planted SVGs once they draw. */
+  .home-band[data-stems-live] .home-plant {
+    display: none;
+  }
+
+  @media (forced-colors: active) {
+    .home-plant :is(path, ellipse) {
+      stroke: CanvasText;
+    }
   }
 
   /* Where the rabbit rests without a script; home-motion.ts moves it from the left edge. */
   .home-hopper {
     position: absolute;
-    bottom: var(--ledge);
+    bottom: var(--ledge-h);
     left: 30%;
     z-index: 3;
     width: var(--size-home-hopper-w-phone);
@@ -325,27 +335,15 @@
     --fy: 233;
   }
 
-  /* The hole's mouth: dark at its rim, opening into the ground below. */
+  /* The hole: a notch cut through the ledge, dark down into the ground. */
   .home-mouth {
     position: absolute;
-    bottom: calc(var(--block-edge) * -1);
-    left: 56%;
+    bottom: 0;
+    left: var(--mouth-l);
     z-index: 2;
-    width: 36%;
-    height: var(--size-home-mouth-h-phone);
-    border: var(--block-edge) solid var(--color-block-ink);
-    border-bottom: 0;
-    border-radius: var(--radius-home-mouth);
-    background: linear-gradient(
-      var(--color-block-ink) 40%,
-      var(--color-background)
-    );
-
-    @variant md {
-      left: 58%;
-      width: 30%;
-      height: var(--size-home-mouth-h);
-    }
+    width: var(--mouth-w);
+    height: var(--ledge-h);
+    background: var(--color-block-ink);
   }
 
   /*
