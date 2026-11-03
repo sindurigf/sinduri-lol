@@ -68,16 +68,16 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
           <li>
             <strong>Two browser settings.</strong> When you choose Light or Dark
             in the Theme menu, your choice is kept in <dfn>local storage</dfn>,
-            a small store of settings in your browser, under the name{' '}
+            a small store of settings in your browser. It is kept under the name{' '}
             <code>{THEME_STORAGE_KEY}</code>. The next page then opens the same
             way. Choosing System deletes it. When you press Drink Me or Eat Me
             in the Text Size controls, the text size is kept the same way, under
-            the name <code>{TEXT_SCALE_KEY}</code>, and Just Right deletes it.
-            Both stay in your browser. Nothing else is stored in your browser.
-            The <dfn>analytics script</dfn>, the code that counts visits, reads
-            one local storage setting, named plausible_ignore, which is
-            Plausible's own off switch, and writes nothing. Clearing this site's
-            data in your browser removes both settings.
+            the name <code>{TEXT_SCALE_KEY}</code>. Just Right deletes it. Both
+            stay in your browser. Nothing else is stored in your browser. The{' '}
+            <dfn>analytics script</dfn>, the code that counts visits, reads one
+            local storage setting, named plausible_ignore, which is Plausible's
+            own off switch, and writes nothing. Clearing this site's data in
+            your browser removes both settings.
           </li>
           <li>
             <strong>Nothing loaded from other websites.</strong> Every file a
@@ -127,7 +127,8 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
 
         <p>
           When you leave the page or switch away from it, it also sends how far
-          down the page you scrolled and how long you had the page in view.
+          down the page you scrolled. At the same time, it sends how long you
+          had the page in view.
         </p>
 
         <p>When you click a link or a button, it also sends:</p>
@@ -183,10 +184,10 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
         </p>
 
         <p>
-          Requests that run this site's own code, which in practice means
-          sending the contact form, are also logged to this site's Cloudflare
-          account so that problems can be fixed. A log entry holds the request
-          and response, which can include your IP address, and your browser and
+          Requests that run this site's own code are also logged to this site's
+          Cloudflare account so that problems can be fixed. In practice, that
+          means sending the contact form. A log entry holds the request and
+          response, which can include your IP address, and your browser and
           approximate location: city, country and network provider. A{' '}
           <dfn>trace</dfn>, a timed record of the same request, holds its timing
           and status and the address requested. It also holds your browser and
@@ -254,8 +255,8 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
           {RETENTION_DAYS} days old. A run that fails is not retried, so a
           message can outlast {RETENTION_DAYS} days until the next day's run
           succeeds. The database can be restored to any moment in the last{' '}
-          {D1_RESTORE_WINDOW_DAYS} days, so a deleted message can still be
-          brought back for {D1_RESTORE_WINDOW_DAYS} days after it is deleted.
+          {D1_RESTORE_WINDOW_DAYS} days. A deleted message can therefore still
+          be brought back for {D1_RESTORE_WINDOW_DAYS} days after it is deleted.
           The emailed copy is kept like any other email, for as long as it is
           needed to reply. To have both removed sooner, write to{' '}
           <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a> and say so; you do not
