@@ -12,9 +12,9 @@ import { LAYOUT_SHIFT, layoutShiftOf } from './layout-shift';
  * so it is checked with Lighthouse on the live site (docs/DEPLOYMENT.md).
  */
 
-/* Decoded script bytes. `/` carries Vue, `/about` the cats; `/brand` is one page with every part's script. */
+/* Decoded script bytes. `/` carries the meadow's motion, `/about` the cats; `/brand` is one page with every part's script. */
 const ROUTE_SCRIPT_BUDGETS: Readonly<Record<string, number>> = {
-  '/': 98_000,
+  '/': 25_000,
   '/about': 131_400,
   '/brand': 21_800,
 };
