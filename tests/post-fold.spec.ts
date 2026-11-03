@@ -15,7 +15,7 @@ import { tableScroll } from '../src/plugins/table-scroll.mjs';
 import {
   CODE_FOLD_MIN_LINES,
   WATCH_OUT_HEADING,
-  hasFold,
+  hasFoldMarkup,
 } from '../src/lib/post-folds';
 import { BLOG_CONTENT_DIR } from '../src/lib/paths';
 import { builtHtml, POST_ROUTES, PUBLISHED_POST_ROUTES } from './routes';
@@ -157,10 +157,10 @@ test.describe('the post-fold visitor', () => {
     NODE,
     () => {
       const h2 = (value: string) => element('h2', [{ type: 'text', value }]);
-      const intro = h2('The Path at a Glance');
-      const one = h2('Module 1: Try Discourse');
-      const side = h2('Side Path: Move an Existing Site');
-      const after = h2('Where to Go Next');
+      const intro = h2('Before You Start');
+      const one = h2('Module 1: Set Up');
+      const side = h2('Side Path: Move a Site');
+      const after = h2('Between Modules');
       const p = () => element('p');
       const root = element('div', [
         intro,
@@ -217,21 +217,6 @@ test.describe('the post-fold visitor', () => {
     expect(replaced).toEqual([]);
   });
 });
-
-test(
-  'hasFold finds a Watch Out list or long code, and passes the rest',
-  NODE,
-  () => {
-    expect(hasFold(`Text.\n\n### ${WATCH_OUT_HEADING}\n\n- a\n`)).toBe(true);
-    expect(
-      hasFold(`\`\`\`sh\n${'x\n'.repeat(CODE_FOLD_MIN_LINES)}\`\`\`\n`),
-    ).toBe(true);
-    expect(
-      hasFold(`\`\`\`sh\n${'x\n'.repeat(CODE_FOLD_MIN_LINES - 1)}\`\`\`\n`),
-    ).toBe(false);
-    expect(hasFold('### Steps\n\n- a\n')).toBe(false);
-  },
-);
 
 /* The site's own pipeline, so the fixture renders as a post would. */
 const PLUGINS: Record<string, unknown> = {
@@ -342,47 +327,50 @@ test(
 const NO_FOLD_BODY = 'Text.\n\n## A Heading\n\n### Steps\n\n- One step.\n';
 
 test(
-  'hasFold, which decides the fold script, agrees with the rendered folds',
+  'hasFoldMarkup, which decides the fold script, finds rendered folds only',
   NODE,
   async () => {
-    const folds = async (markdown: string) =>
-      (await renderPost(markdown)).includes('class="post-fold"');
-    const fixture = readFileSync(FIXTURE, 'utf8');
-
-    expect(hasFold(fixture), 'hasFold missed the fixture folds').toBe(true);
-    expect(await folds(fixture)).toBe(true);
-    expect(hasFold(NO_FOLD_BODY), 'hasFold found a fold in plain text').toBe(
-      false,
-    );
-    expect(await folds(NO_FOLD_BODY)).toBe(false);
+    expect(
+      hasFoldMarkup(await renderFixture()),
+      'hasFoldMarkup missed the fixture folds',
+    ).toBe(true);
+    expect(
+      hasFoldMarkup(await renderPost(NO_FOLD_BODY)),
+      'hasFoldMarkup found a fold in plain text',
+    ).toBe(false);
   },
 );
+
+test('ends the last module before the footnotes', NODE, async () => {
+  const html = await renderFixture();
+  const footnotes = html.indexOf('<section data-footnotes');
+
+  expect(footnotes, 'the fixture has no footnotes').toBeGreaterThan(-1);
+  expect(
+    html.lastIndexOf('</details>'),
+    'the footnotes sit inside a fold',
+  ).toBeLessThan(footnotes);
+});
 
 /* Astro names a component's bundled script after the component file. */
 const FOLD_SCRIPT_SRC =
   /<script[^>]+src="[^"]*\/PostFolds\.astro_astro_type_script_/;
 
-const postSource = (route: string): string =>
-  readFileSync(join(BLOG_CONTENT_DIR, `${route.split('/').pop()}.md`), 'utf8');
-
 test(
-  'a built post ships the fold script exactly when hasFold finds a fold in it',
+  'a built post ships the fold script exactly when it has a fold',
   NODE,
   () => {
     const html = builtHtml();
     const wrong = POST_ROUTES.filter((route) => {
       const page = html.get(route);
       expect(page, `${route} was not built`).toBeDefined();
-      return (
-        hasFold(postSource(route)) !== FOLD_SCRIPT_SRC.test(page!) ||
-        hasFold(postSource(route)) !== page!.includes('class="post-fold"')
-      );
+      return hasFoldMarkup(page!) !== FOLD_SCRIPT_SRC.test(page!);
     });
 
     expect(POST_ROUTES.length, 'no built post to check').toBeGreaterThan(0);
     expect(
       wrong,
-      'posts whose fold script or folds disagree with hasFold',
+      'posts that ship the fold script without a fold, or a fold without it',
     ).toEqual([]);
   },
 );

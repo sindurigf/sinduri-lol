@@ -8,7 +8,7 @@ export const CODE_FOLD_MIN_LINES = 15;
 
 export const FOLD_CLASS = 'post-fold';
 
-/** An h2 that opens a module: "Module 3: Practice with Test Content" or "Side Path: Move an Existing Site". */
+/** An h2 that opens a module: "Module 3: Go Live" or "Side Path: Move a Site". */
 export const MODULE_HEADING = /^(Module \d+|Side Path):/;
 
 /** "Module 3 Steps": a module fold's name, the same open or closed. */
@@ -17,15 +17,11 @@ export const moduleLabel = (heading: string): string | undefined => {
   return match ? `${match[1]} Steps` : undefined;
 };
 
-const FENCE = /^ {0,3}(`{3,}|~{3,})[^\n]*\n([\s\S]*?)^ {0,3}\1[ \t]*$/gm;
+/* src/plugins/post-fold.mjs writes the class first, so the attribute reads exactly this. */
+const FOLD_MARKUP = new RegExp(`<details class="${FOLD_CLASS}"`);
 
-/** Whether Markdown has a module h2, a Watch Out h3 or a long fenced block, so the page needs the fold script. */
-export const hasFold = (markdown: string): boolean =>
-  new RegExp(`^## ${MODULE_HEADING.source.slice(1)}`, 'm').test(markdown) ||
-  new RegExp(`^### ${WATCH_OUT_HEADING}[ \\t]*$`, 'm').test(markdown) ||
-  [...markdown.matchAll(FENCE)].some(
-    ([, , body]) => (body ?? '').split('\n').length - 1 >= CODE_FOLD_MIN_LINES,
-  );
+/** Whether a post's rendered HTML has a fold, so the page needs the fold script. */
+export const hasFoldMarkup = (html: string): boolean => FOLD_MARKUP.test(html);
 
 const LANGUAGES: Record<string, string> = {
   bash: 'Bash',
