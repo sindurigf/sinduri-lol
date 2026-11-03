@@ -337,8 +337,8 @@ multiplied into `--text-lead`, `--text-standfirst`, `--text-post-teaser`, `--tex
 queries ignore it, so layouts overflowed at widths such as 768px.
 `tests/reading-tab.spec.ts` holds the no-sideways-scroll rule at 320, 390 and
 1280px. At 200% one uppercase label word outgrows a narrow column (320px, the
-footer's columns up to 1100px), so the breadcrumb, chips, post card labels and
-footer links take `wrap-anywhere`; a
+footer's columns up to 1100px), so the breadcrumb, chips, post card labels,
+footer links and the pillar wall take `wrap-anywhere`; a
 page-wide rule was rejected because it reflows shrink-to-fit text at 100%. The
 control is the reading tab (`ReadingTab.astro`).
 
@@ -419,8 +419,9 @@ Rejected:
   - net fewer `expect` calls in a running spec, unless a helper it imports
     gained them;
   - an `expect` with no matcher, with a `.catch(`, inside a `try` whose
-    `catch` does not rethrow, or a locator `expect` left unawaited; a negated
-    or renumbered matcher;
+    `catch` does not rethrow, or a locator, `expect.poll` or `toHaveTitle`,
+    `toHaveURL` or `toHaveScreenshot` `expect` left unawaited; a negated or
+    renumbered matcher;
   - an `if` that exits (`return`, `continue`) on `.matches` or `.closest` of
     a selector held in a name, or a filter that drops such a match, the shape
     that exempts elements; and a new `const`, `let` or `var` whose upper-case
