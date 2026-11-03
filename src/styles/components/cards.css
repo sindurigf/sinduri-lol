@@ -188,7 +188,7 @@
     content: '\2212';
   }
 
-  /* A folded extra in a post (src/plugins/post-fold.mjs): the summary on a `surface` fill. */
+  /* A folded extra in a post (src/plugins/post-fold.mjs): a control, so a `border` edge (STYLEGUIDE color 9) on a `surface` fill. */
   .post-fold {
     @apply mt-6;
   }
@@ -198,7 +198,7 @@
   }
 
   .post-fold > .post-contents-summary {
-    @apply bg-surface;
+    @apply border-border bg-surface;
   }
 
   .post-fold > :not(summary) {

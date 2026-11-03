@@ -20,6 +20,7 @@ import {
 import { BLOG_CONTENT_DIR } from '../src/lib/paths';
 import { builtHtml, POST_ROUTES, PUBLISHED_POST_ROUTES } from './routes';
 import { NODE } from './tags';
+import { NON_TEXT, PAGE_HELPERS } from './contrast';
 
 /** `src/plugins/post-fold.mjs`, `src/scripts/post-folds.ts` and the `.post-fold` rules. */
 
@@ -464,6 +465,41 @@ test.describe('a post fold', () => {
 
     expect(short, 'summaries under 44px tall').toEqual([]);
   });
+
+  /* SC 1.4.11: nothing else delimits the bar, so its edge or its fill reaches 3:1 on the page. */
+  for (const colorScheme of ['dark', 'light'] as const) {
+    test(`draws every summary's boundary at 3:1 in ${colorScheme} mode`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ colorScheme });
+      const page = await context.newPage();
+      await gotoFoldPost(page);
+
+      const ratios: number[] = await page.evaluate(`(() => {
+        ${PAGE_HELPERS}
+        return [...document.querySelectorAll('details.post-fold > summary')].map((summary) => {
+          const style = getComputedStyle(summary);
+          const ground = effectiveBackground(summary.parentElement);
+          const edge = parseFloat(style.borderTopWidth) >= 1 ? parse(style.borderTopColor) : null;
+          const fill = parse(style.backgroundColor);
+          if (!ground) return 0;
+          return Math.max(
+            edge ? ratio(over(edge, ground), ground) : 0,
+            fill && fill.a === 1 ? ratio(fill, ground) : 0,
+          );
+        });
+      })()`);
+
+      expect(ratios.length, 'the fixture has no fold summary').toBeGreaterThan(
+        0,
+      );
+      expect(
+        ratios.filter((value) => value < NON_TEXT),
+        'summaries whose edge and fill are both under 3:1',
+      ).toEqual([]);
+      await context.close();
+    });
+  }
 
   /* SC 2.4.3: a link to something inside a closed fold opens it. */
   test('opens for a link to an id inside it', async ({ page }) => {
