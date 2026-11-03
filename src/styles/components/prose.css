@@ -60,7 +60,7 @@
 
     /* Each pillar casts the throw and the next covers it, as in a `.card-block`. */
     & > li {
-      @apply mt-0 flex min-w-0 flex-col;
+      @apply mt-0 flex min-w-0 flex-col wrap-anywhere;
 
       margin: 0 0 calc(var(--block-edge) * -1) calc(var(--block-edge) * -1);
       border: var(--block-edge) solid var(--color-block-ink);
