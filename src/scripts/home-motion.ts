@@ -51,6 +51,11 @@ const TOSS_EASING = 'cubic-bezier(.3, .1, .7, .6)';
 const FLIP_MS = 1500;
 const LOOK_UP_MS = 1400;
 
+/* The dive: the rabbit leaps to the mouth, then drops in. */
+const DIVE_LEAP_MS = 520;
+const DIVE_DROP_MS = 260;
+const DIVE_DROP_PX = 90;
+
 const PAUSE_NAME = 'Pause animations';
 const PLAY_NAME = 'Play animations';
 const PAUSE_GLYPH = '❚❚';
@@ -104,6 +109,8 @@ const start = (): void => {
   const pauses = [
     ...document.querySelectorAll<HTMLButtonElement>('[data-home-pause]'),
   ];
+  const follow = required<HTMLButtonElement>(band, '[data-home-follow]');
+  const fall = drift.parentElement;
 
   const things: Thing[] = [
     ...drift.querySelectorAll<HTMLElement>('[data-home-prop]'),
@@ -180,7 +187,42 @@ const start = (): void => {
     setFacing();
   };
 
+  let dive = -1;
+  let diveFrom = 0;
+  const mouthX = (): number => {
+    const box = band.getBoundingClientRect();
+    const m = mouth.getBoundingClientRect();
+    return m.left - box.left + m.width / 2;
+  };
+  const fallIn = (): void => {
+    hopper.dataset.gone = '';
+    follow.disabled = true;
+    fall?.toggleAttribute('data-rabbit-fell', true);
+  };
+  const stepDive = (): void => {
+    const t = clock - dive;
+    const to = mouthX();
+    if (t < DIVE_LEAP_MS) {
+      const p = t / DIVE_LEAP_MS;
+      setPose('leap');
+      hop.dir = to > diveFrom ? 1 : -1;
+      setFacing();
+      hop.x = diveFrom + (to - diveFrom) * p;
+      hop.y = -HOP_HEIGHT_MAX_PX * 4 * p * (1 - p);
+    } else if (t < DIVE_LEAP_MS + DIVE_DROP_MS) {
+      hop.x = to;
+      hop.y = ((t - DIVE_LEAP_MS) / DIVE_DROP_MS) * DIVE_DROP_PX;
+    } else {
+      fallIn();
+    }
+    place();
+  };
+
   const stepRabbit = (): void => {
+    if (dive >= 0) {
+      stepDive();
+      return;
+    }
     const t = clock - hop.since;
     if (hop.phase === 'rest') {
       const looking =
@@ -316,6 +358,7 @@ const start = (): void => {
   const show = (): void => {
     const reduced = loop.reducedMotion();
     band.dataset.homeMotion = state();
+    if (fall) fall.dataset.homeMotion = state();
     pauses.forEach((button) => {
       if (reduced && button === document.activeElement) {
         document.querySelector('main')?.focus();
@@ -384,6 +427,18 @@ const start = (): void => {
       tossing = false;
     }
   };
+
+  /* Paused or under reduced motion the rabbit is simply gone down the hole. */
+  follow.addEventListener('click', () => {
+    if (dive >= 0) return;
+    if (paused || loop.reducedMotion()) {
+      dive = clock;
+      fallIn();
+      return;
+    }
+    dive = clock;
+    diveFrom = hop.x;
+  });
 
   pauses.forEach((button) => {
     button.addEventListener('click', toggle);

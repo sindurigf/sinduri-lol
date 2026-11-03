@@ -21,18 +21,21 @@ const LEFT: Plant[] = [
 const RIGHT: Plant[] = ['sprout', null];
 ---
 
-<div class="home-band" aria-hidden="true" data-home-band>
-  <canvas class="home-stems" data-home-stems="back"></canvas>
+<div class="home-band" data-home-band>
+  <canvas class="home-stems" aria-hidden="true" data-home-stems="back"></canvas>
   <span class="home-hopper" data-home-hopper>
-    <span class="home-bun" data-pose="sit">
+    <span class="home-bun" data-pose="sit" aria-hidden="true">
       <i></i>
     </span>
+    <button type="button" class="home-hopper-press" data-home-follow>
+      <span class="sr-only">Follow the Rabbit</span>
+    </button>
   </span>
   {[
     ['l', LEFT],
     ['r', RIGHT],
   ].map(([side, bricks]) => (
-    <span class:list={['home-wall', `home-wall-${side}`]}>
+    <span class:list={['home-wall', `home-wall-${side}`]} aria-hidden="true">
       {(bricks as Plant[]).map((plant) => (
         <span class="home-brick">
           {plant === 'stem' && (
@@ -80,8 +83,12 @@ const RIGHT: Plant[] = ['sprout', null];
       ))}
     </span>
   ))}
-  <canvas class="home-stems home-stems-front" data-home-stems="front"></canvas>
-  <span class="home-post home-post-l"></span>
-  <span class="home-post home-post-r"></span>
+  <canvas
+    class="home-stems home-stems-front"
+    aria-hidden="true"
+    data-home-stems="front"
+  ></canvas>
+  <span class="home-post home-post-l" aria-hidden="true"></span>
+  <span class="home-post home-post-r" aria-hidden="true"></span>
 </div>
 <span class="home-mouth" aria-hidden="true" data-home-mouth></span>

@@ -335,6 +335,80 @@
     --fy: 233;
   }
 
+  /* The rabbit itself is the button; it hops, so its target is the whole sprite box. */
+  .home-hopper-press {
+    position: absolute;
+    inset: auto 0 0;
+    height: 100%;
+    min-width: var(--spacing-target);
+    min-height: var(--spacing-target);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  .home-hopper[data-gone] {
+    visibility: hidden;
+  }
+
+  /* After the dive the rabbit falls beside the reader: sticky in the lane, so it lands at the end of the fall. */
+  .home-faller {
+    position: sticky;
+    top: 45vh;
+    z-index: 0;
+    height: 0;
+
+    @variant md {
+      z-index: 2;
+    }
+
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  [data-rabbit-fell] .home-faller {
+    visibility: visible;
+  }
+
+  .home-faller-spin {
+    position: absolute;
+    top: 0;
+    right: 8%;
+    width: var(--size-home-hopper-w);
+    height: var(--size-home-hopper-h);
+
+    @variant md {
+      right: auto;
+      left: calc(var(--lane) / 2);
+    }
+  }
+
+  .home-faller .home-bun {
+    --scale: 0.3;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-rabbit-fell] .home-faller-spin {
+      animation: home-tumble 2.6s linear infinite;
+    }
+
+    [data-rabbit-fell][data-home-motion='paused'] .home-faller-spin {
+      animation-play-state: paused;
+    }
+  }
+
+  @keyframes home-tumble {
+    from {
+      rotate: 0deg;
+    }
+
+    to {
+      rotate: 360deg;
+    }
+  }
+
   /* The hole: a notch cut through the ledge, dark down into the ground. */
   .home-mouth {
     position: absolute;
