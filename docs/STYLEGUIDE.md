@@ -940,6 +940,10 @@ Enforced by `tests/home-hero.spec.ts` and `tests/motion.spec.ts`.
   floor.
 - The fall: every section after it steps sideways (`--spacing-home-tumble`)
   and its title is a gold label brick, so all text sits in an opaque brick.
+- Below `sm` every wall still climbs right: each higher brick steps
+  `--spacing-home-phone-step` (16px, 32px for a third) right, with room for its
+  throw. From `pair` (22.5rem) the roles and stats stay side by side, the first
+  `--spacing-home-phone-climb` lower. Homepage only.
 - Printed things (jar, book, picture, watch, teacup) rise in the lanes beside
   the column (`--spacing-home-lane`), in `--color-print`: gold on dark, ink on
   light. Below `md` there are no lanes and they pass behind the bricks; the
