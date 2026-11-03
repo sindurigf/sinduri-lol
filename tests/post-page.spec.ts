@@ -1,10 +1,13 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test, type Page } from './test';
 import { defined } from '../src/lib/defined';
 import { CONTENTS_POST_ROUTE, POST_ROUTES, POSTS, postsWhere } from './routes';
 import { PHOTOGRAPHERS } from '../src/lib/credits';
 import { gotoSettled } from './settle';
 import { MIN_TARGET, SUBPIXEL_TOLERANCE } from './wcag';
-import { ENGINE_INVARIANT } from './tags';
+import { ENGINE_INVARIANT, NODE } from './tags';
+import { BLOG_CONTENT_DIR } from '../src/lib/paths';
 
 /**
  * A post as a reading page, docs/STYLEGUIDE.md "Posts". Below `xl` the contents
@@ -195,6 +198,26 @@ const FIGURE_VIEWPORT_HEIGHT = 900;
 /* Edges snap to the device pixel. */
 const FIGURE_EDGE_TOLERANCE = 1;
 
+/* A Markdown image alone on its line builds to a body figure. */
+const STANDALONE_IMAGE = /^!\[[^\]]*\]\([^)]*\)\s*$/gm;
+
+const sourceFigureCount = (route: string): number =>
+  readFileSync(
+    join(BLOG_CONTENT_DIR, `${route.replace(/^\/blog\//, '')}.md`),
+    'utf8',
+  ).match(STANDALONE_IMAGE)?.length ?? 0;
+
+test(
+  'some post has a body figure, so the figure checks measure one',
+  NODE,
+  () => {
+    expect(
+      POSTS.map(({ route }) => sourceFigureCount(route)).some((n) => n > 0),
+      'no post source has a standalone image',
+    ).toBe(true);
+  },
+);
+
 /* Body figures: uncropped, never past the viewport or page column (SC 1.4.10), never over the contents list. */
 test.describe('body figures', () => {
   for (const post of POSTS) {
@@ -243,6 +266,11 @@ test.describe('body figures', () => {
             },
           );
         });
+
+        expect(
+          figures.length,
+          `${post.route} builds a different number of body figures than its source has standalone images`,
+        ).toBe(sourceFigureCount(post.route));
 
         for (const [index, figure] of figures.entries()) {
           const name = `figure ${index + 1}`;
