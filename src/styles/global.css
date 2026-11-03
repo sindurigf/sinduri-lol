@@ -171,8 +171,6 @@
   --color-light-subtle: #3f4650;
   --color-light-focus: #0047b3;
   --color-light-pink-text: #b00054;
-  --color-light-hero-veil: rgba(19, 19, 19, 0.025);
-  --color-light-hero-floor: rgba(19, 19, 19, 0.035);
   /*
    * Homepage meadow and fall. Props are printed in --color-print: gold on the
    * dark ground (11.99), ink on the light one (18.58).
@@ -202,24 +200,6 @@
    * stronger color.
    */
   --color-gold-link: #1e0d16;
-
-  /* The homepage canvas's buds on gold. Decoration only; not the link color. */
-  --color-gold-bud: #00363f;
-  /*
-   * Not `gold` directly: light mode keeps gold for fills while this ground goes
-   * white.
-   */
-  --color-hero-ground: var(--color-gold);
-
-  /*
-   * The canvas's veil and floor, read by HeroField.vue. Ink, not border-blue,
-   * because the field draws on gold. One setting with the near-plane blur in
-   * hero-field-scene.ts: change them together.
-   */
-  --color-hero-veil: rgba(19, 19, 19, 0.07);
-  --color-hero-veil-edge: rgba(19, 19, 19, 0);
-  --color-hero-floor: rgba(19, 19, 19, 0.1);
-  --color-hero-floor-edge: rgba(19, 19, 19, 0);
 
   /*
    * Family name from @fontsource-variable/lexend: one wght axis file, latin

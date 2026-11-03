@@ -186,7 +186,7 @@
   /*
    * The rabbit: one pose of the climb atlas at a time, each aligned on its
    * foot point so a pose swap never jumps. Frames match RABBIT_FRAMES in
-   * src/lib/hero-field-rabbit.ts.
+   * src/lib/rabbit-atlas.ts.
    */
   .home-bun {
     --scale: 0.22;

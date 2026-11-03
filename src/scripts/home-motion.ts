@@ -4,7 +4,7 @@
  * (SC 2.2.2). Reduced motion draws one still frame and hides the controls.
  */
 import { NEXT_FRAME, createMotionLoop } from './motion-loop';
-import type { RabbitPose } from '../lib/hero-field-rabbit';
+import type { RabbitPose } from '../lib/rabbit-atlas';
 
 /* Slow, small motion: 30 frames a second is plenty and halves the main-thread cost. */
 const MAX_FRAME_RATE = 30;

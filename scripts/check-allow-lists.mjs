@@ -42,21 +42,6 @@ export const SERVED_AS_IS = new Map([
     'home.css masks a printed thing in the homepage fall with it; a lossless alpha-only WebP already, drawn at most at its own 200px.',
   ]),
   [
-    'hero-still-short.webp',
-    'layout.css links it as the hero background under `scripting: none`; ' +
-      'scripts/make-hero-still.mjs writes it as WebP already.',
-  ],
-  [
-    'hero-still-tall.webp',
-    'layout.css links it as the hero background under `scripting: none`; ' +
-      'scripts/make-hero-still.mjs writes it as WebP already.',
-  ],
-  [
-    'hero-still-wide.webp',
-    'layout.css links it as the hero background under `scripting: none`; ' +
-      'scripts/make-hero-still.mjs writes it as WebP already.',
-  ],
-  [
     'social-icons.svg',
     'the footer imports it with `?url` and every page links it as a <use> sprite.',
   ],

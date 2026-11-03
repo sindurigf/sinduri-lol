@@ -3,7 +3,7 @@
  * Let It Fall's climb: drawn at four times its size, then scaled down, so curved edges are smooth.
  */
 import sharp, { type Sharp } from 'sharp';
-import { ATLAS_SIZE } from './hero-field-rabbit.ts';
+import { ATLAS_SIZE } from './rabbit-atlas.ts';
 
 export const CLIMB_ATLAS_SOURCE = 'src/assets/hero-rabbit.svg';
 export const CLIMB_ATLAS_TARGET = 'src/assets/hero-rabbit-climb.webp';

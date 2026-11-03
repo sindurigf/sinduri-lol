@@ -94,22 +94,21 @@ blur, uppercase headings, tilted marks.
 
 ## Color tokens
 
-| Token        | Hex       | Job                                                |
-| ------------ | --------- | -------------------------------------------------- |
-| `background` | `#0B0B0B` | Page ground; header, footer, bands                 |
-| `surface`    | `#1A1A1A` | Inputs and controls off a block                    |
-| `border`     | `#FFC000` | Every boundary but table lines: the gold edge      |
-| `card-edge`  | none      | Card and plain slab edge; `#131313` in light mode  |
-| `fill-edge`  | `#131313` | Edge of a gold or light fill: buttons, logo tile   |
-| `text`       | `#E5E2E1` | Words and table lines                              |
-| `subtle`     | `#9EB6C7` | Captions, meta, helper text                        |
-| `gold`       | `#FFC000` | The accent, only where the style guide allows      |
-| `cyan`       | `#00DCFD` | Hover and focus only                               |
-| `pink`       | `#FF007A` | Depth and error; never text                        |
-| `pink-text`  | `#FF79B6` | Every pink glyph; never non-text                   |
-| `bunny`      | `#FF007A` | Bunny marks; same in both modes                    |
-| `cat-*`      | 2 fills   | About cat props; decoration, never a boundary      |
-| `hero-*`     | 5 values  | Homepage canvas ground, veil and floor; decoration |
+| Token        | Hex       | Job                                               |
+| ------------ | --------- | ------------------------------------------------- |
+| `background` | `#0B0B0B` | Page ground; header, footer, bands                |
+| `surface`    | `#1A1A1A` | Inputs and controls off a block                   |
+| `border`     | `#FFC000` | Every boundary but table lines: the gold edge     |
+| `card-edge`  | none      | Card and plain slab edge; `#131313` in light mode |
+| `fill-edge`  | `#131313` | Edge of a gold or light fill: buttons, logo tile  |
+| `text`       | `#E5E2E1` | Words and table lines                             |
+| `subtle`     | `#9EB6C7` | Captions, meta, helper text                       |
+| `gold`       | `#FFC000` | The accent, only where the style guide allows     |
+| `cyan`       | `#00DCFD` | Hover and focus only                              |
+| `pink`       | `#FF007A` | Depth and error; never text                       |
+| `pink-text`  | `#FF79B6` | Every pink glyph; never non-text                  |
+| `bunny`      | `#FF007A` | Bunny marks; same in both modes                   |
+| `cat-*`      | 2 fills   | About cat props; decoration, never a boundary     |
 
 The gold-ground set is in [Gold surface](#gold-surface), light values in
 [Light mode](#light-mode).
@@ -199,7 +198,6 @@ every size (SC 1.4.6, as /accessibility claims); non-text needs 3.0 (SC
 | `gold-muted` #3A3020     | `gold` #FFC000       | text       | Secondary text on gold                                    | 7.0   | 7.88  | pass       |
 | `gold-link` #1E0D16      | `gold` #FFC000       | text       | Links on gold                                             | 7.0   | 11.38 | pass       |
 | `gold` #FFC000           | `gold-link` #1E0D16  | text       | A link filled under the pointer                           | 7.0   | 11.38 | pass       |
-| `gold-bud` #00363F       | `gold` #FFC000       | decoration | The canvas buds on gold                                   | n/a   | 8.00  | decoration |
 | `gold-border` #131313    | `gold` #FFC000       | non-text   | Boundaries on gold                                        | 3.0   | 11.32 | pass       |
 | `fill-edge` #131313      | `gold` #FFC000       | non-text   | Edge of a gold fill                                       | 3.0   | 11.32 | pass       |
 | `fill-edge` #131313      | `text` #E5E2E1       | non-text   | Edge of a light fill                                      | 3.0   | 14.42 | pass       |
@@ -240,7 +238,6 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
 | `gold-border`    | Structural rules, dividers, card edges and shadows      |
 | `fill-edge`      | Edge of a gold or light fill, on gold or off it         |
 | `gold-link`      | Links, underlined; the block on hover                   |
-| `gold-bud`       | The canvas buds on gold. Decoration                     |
 | `gold-btn-label` | Label and inner ring on `.btn-gold-primary`'s fill only |
 
 - Build gold with `.surface-gold`, never `bg-gold` by hand. It repaints text,
@@ -297,15 +294,15 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
 - A click, Enter or Space on a choice picks it, closes the menu and returns
   focus to the switch (SC 2.4.3). Arrow keys move the choice and keep it open.
 
-| Token                                               | Light     | on `#ffffff` |
-| --------------------------------------------------- | --------- | ------------ |
-| `background`, `surface`, `hero-ground`              | `#ffffff` | ground       |
-| `text`, `border`, `pink`, `gold-border`, `gold-bud` | `#131313` | 18.58        |
-| `card-edge`                                         | `#131313` | 18.58        |
-| gold as text, `.text-gold`                          | `#131313` | 18.58        |
-| `subtle`                                            | `#3f4650` | 9.53         |
-| `pink-text`                                         | `#b00054` | 7.06         |
-| `cyan` (focus ring and hover text)                  | `#0047b3` | 8.23         |
+| Token                                   | Light     | on `#ffffff` |
+| --------------------------------------- | --------- | ------------ |
+| `background`, `surface`                 | `#ffffff` | ground       |
+| `text`, `border`, `pink`, `gold-border` | `#131313` | 18.58        |
+| `card-edge`                             | `#131313` | 18.58        |
+| gold as text, `.text-gold`              | `#131313` | 18.58        |
+| `subtle`                                | `#3f4650` | 9.53         |
+| `pink-text`                             | `#b00054` | 7.06         |
+| `cyan` (focus ring and hover text)      | `#0047b3` | 8.23         |
 
 - Every hard shadow and edge turns `#131313`.
 - Hover fills are dark mode's `#00dcfd` under `#131313` (11.20).
@@ -1139,7 +1136,7 @@ Enforced by `tests/footer.spec.ts`.
 - Once the heap has settled and after a short beat, the footer rabbit climbs
   in the hero's poses
   (`src/scripts/let-it-fall-rabbit.ts`, frames from
-  `src/lib/hero-field-rabbit.ts`, the hero atlas as a lossless WebP loaded on
+  `src/lib/rabbit-atlas.ts`, the hero atlas as a lossless WebP loaded on
   press, `npm run climb-atlas` after a change to it): crouch,
   leap on an eased arc, crouch on landing, sit, pause, facing the way it
   travels. It
