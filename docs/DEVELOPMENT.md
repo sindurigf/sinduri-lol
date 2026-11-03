@@ -57,16 +57,21 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run format`               | Prettier, write                                                                                                                                  |
 | `npm run check`                | `check:tokens`, `links`, `pins`, `classes`, `csp`, `untransformed`, `title-case`, `exif`, `format:check`, `commits`; needs `npm run build` first |
 | `npm run format:check`         | Prettier, check only                                                                                                                             |
+| `npm run check:tokens`         | No raw color, length or off-scale utility in `src/` bypasses the tokens in `src/styles/global.css`                                               |
 | `npm run check:links`          | Relative Markdown links and `#heading` anchors resolve; no link names a gitignored path; no network                                              |
+| `npm run check:pins`           | Actions pinned by SHA, Docker images by digest, MCP servers to an exact version                                                                  |
 | `npm run check:classes`        | Every class in the built HTML has a CSS rule                                                                                                     |
 | `npm run check:csp`            | `script-src` and `style-src` in `public/_headers` hash exactly the build's inline blocks; `-- --write` fixes them; needs `npm run build`         |
 | `npm run check:untransformed`  | No built file is byte-identical to a source image                                                                                                |
+| `npm run check:title-case`     | Built headings, titles, summaries, `og:title` and button labels are in Chicago title case; needs `npm run build`                                 |
 | `npm run check:exif`           | No EXIF, XMP or IPTC in JPEG, PNG or WebP under `src/assets`, `public` and `artwork`; AVIF is not read                                           |
+| `npm run check:pdf`            | Every PDF in `public/` against PDF/UA-1, veraPDF in Docker                                                                                       |
+| `npm run check:commits`        | Commit subjects match `type: Sentence.` and carry no AI attribution, against `origin/main`                                                       |
 | `npm run check:test-weakening` | Test weakening against `origin/main`, working tree included; CI runs it as the `Test weakening` check                                            |
 | `npm run test:a11y`            | Playwright suite in Chromium and Firefox; CI adds WebKit                                                                                         |
 | `npm run test:webkit`          | The same suite in WebKit, in Playwright's Docker image                                                                                           |
 | `npm run test:a11y:ui`         | The same suite in Playwright's UI mode                                                                                                           |
-| `npm run test:worker`          | Worker specs, local D1: contact, byte ranges, types, /blog pager                                                                                 |
+| `npm run test:worker`          | Worker specs, local D1: contact, byte ranges, types, /blog pager, failed sweeps and missing bindings                                             |
 | `npm run test:coverage`        | `test:a11y` in Chromium, with line and branch coverage of `src/`                                                                                 |
 | `npm run check:live`           | Production headers and markup against this repository                                                                                            |
 | `npm run check:live:console`   | Every production route in a browser, failing on console errors                                                                                   |
@@ -74,7 +79,6 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run hero-still`           | After a build, redraws the hero stills in `src/assets/hero-still-*.webp` shown without JavaScript                                                |
 | `npm run climb-atlas`          | Redraws `src/assets/hero-rabbit-climb.webp`, the lossless raster of the rabbit atlas the Let It Fall climb uses                                  |
 | `npm run about-cats`           | Packs the About cats' drawings in `artwork/about-cats/` into `src/assets/about-cats-*.avif` and `src/lib/about-cats-sheet.ts`                    |
-| `npm run check:pdf`            | Every PDF in `public/` against PDF/UA-1, veraPDF in Docker                                                                                       |
 | `npm run publish:cv`           | Print `cv/cv.html` to the tagged CV PDF in `public/`                                                                                             |
 | `npm run publish:talk`         | Print a talk's slideshow to its tagged PDF in `public/talks/`                                                                                    |
 
@@ -84,8 +88,9 @@ self-tests use it to run each check on a passing and a failing fixture.
 
 ### WebKit
 
-Run before pushing any markup, CSS or image change: WebKit fails where Chromium
-and Firefox pass (e.g. it drops `aspect-ratio` from a failed image).
+CI runs WebKit on every pull request. Run it locally only to debug a failure CI
+reported ([which suites](../AGENTS.md#which-suites-to-run)): WebKit fails where
+Chromium and Firefox pass (e.g. it drops `aspect-ratio` from a failed image).
 
 WebKit cannot run on Ubuntu newer than 24.04 (see `projects` in
 `playwright.config.ts`), so the script runs the suite in
@@ -126,10 +131,14 @@ The `Test weakening` check
 
 1. Review the pull request's changes, choose Approve or, on your own pull
    request, Comment, and write the line `Approved test change: <reason>`.
-2. The review re-runs `Test weakening`. A new push needs a new review.
+2. `.github/workflows/rerun-test-weakening.yml` re-runs `Test weakening` on
+   that review. A new push needs a new review.
+3. On a pull request from a fork, the review's token is read-only and cannot
+   re-run it: re-run the `Test weakening` run by hand.
 
-Agents that use the owner's `gh` login can post that review too; they never
-do ([AGENTS.md](../AGENTS.md#what-a-test-is-for)).
+Agents never post that review
+([AGENTS.md](../AGENTS.md#what-a-test-is-for),
+[why they could](DEPLOYMENT.md#repository-settings)).
 
 ### Other notes
 
@@ -243,12 +252,10 @@ Add a Markdown file to `src/content/blog/`; the filename is the slug. The build
 validates frontmatter against `src/content.config.ts` and fails on a mismatch.
 `open-source-is-not-just-code.md` is a complete example.
 
-- Every post needs `cover` and `coverAlt`; the build fails without them. A
-  cover can have any ratio; the post page and its sharing card show it
-  uncropped. Every post card
-  shows a 4:3 crop: set `coverPosition` (`center`, `top`, `bottom`, `left` or
-  `right`) when the subject is off center. `top` and `bottom` move the crop on
-  a cover taller than 4:3, `left` and `right` on a wider one.
+- Fields: [ARCHITECTURE.md](../ARCHITECTURE.md#content-collection). Post
+  cards crop the cover to 4:3 ([STYLEGUIDE](STYLEGUIDE.md#posts)): set
+  `coverPosition` when the subject is off center. `top` and `bottom` move the
+  crop on a cover taller than 4:3, `left` and `right` on a wider one.
 - Tests read the new post's routes, category and tags from its frontmatter.
 
 ## Writing a talk

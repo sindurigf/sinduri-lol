@@ -9,19 +9,20 @@ unreached check goes in its [§7 Known gaps](../ACCESSIBILITY.md#7-known-gaps).
 
 ## Status
 
-An empty box or blank is an untested check. ACCESSIBILITY.md §6 Manual records
-a pass for the §9 mobile menu button, footer profile tiles and mobile menu
-links only.
+An empty box or blank is an untested check. Passed checks:
+ACCESSIBILITY.md [§6 Manual](../ACCESSIBILITY.md#manual).
 
 | Section                            | Status                                                          |
 | ---------------------------------- | --------------------------------------------------------------- |
 | §1 to §5a, §6a, §7, §9a, §13       | Not run                                                         |
 | §6 (Orca)                          | Not run; ACCESSIBILITY.md §7 gap 2 is open                      |
 | §6.10 (NVDA, VoiceOver), §8 Safari | Not run; needs Windows and Apple hardware                       |
+| §6.10.1 (TalkBack)                 | Not run                                                         |
+| §6.10.2 (Orca widget steps)        | Not run                                                         |
 | §5b (Light Mode)                   | Not run; the automated half is `tests/light-mode.spec.ts`       |
 | §1 to §3, §7 text spacing          | One scripted pass in Chromium and Firefox; not a person's check |
 | §8 WebKit                          | Automated suite only (CI); headless WebKit is not Safari        |
-| §9                                 | Partly run: the three items named above passed, the rest not    |
+| §9                                 | Partly run: passes in ACCESSIBILITY.md §6 Manual, the rest not  |
 | §10                                | One run of keyboard-a11y-tester on `/`; its findings are listed |
 
 ## Setup
@@ -429,9 +430,10 @@ Setup: Firefox, 1280px, `/404` (preview serves it with 200;
 
 Heard: `________________________`
 
-### 6.10 NVDA and VoiceOver
+### 6.10 Other screen readers
 
-Needs Windows and Apple hardware. Open in ACCESSIBILITY.md §7 gap 2.
+NVDA needs Windows and VoiceOver Apple hardware. Open in ACCESSIBILITY.md §7
+gap 2.
 
 - [ ] NVDA: §6 in Chrome and Firefox, plus browse and focus mode in the dialog. → needs Windows
 - [ ] VoiceOver on a Mac: Safari (`Cmd+F5`, rotor `Ctrl+Opt+U`). → needs a Mac
@@ -487,7 +489,7 @@ Let It Fall:
 
 Contact Form:
 
-- [ ] Open sinduri.lol/contact and swipe to the form. Expect: “Name (required)”, an edit box, then “Email (required)” with “Used to reply, and nothing else.”, then “Message (required)” with “Between 10 and 5000 characters.” → SC 1.3.1, 3.3.2
+- [ ] Open sinduri.lol/contact and swipe to the form. Expect: “Name (required)”, an edit box, then “Email (required)” with “Used to reply, and nothing else.”, then “Message (required)” with “Between 10 and 5,000 characters.” → SC 1.3.1, 3.3.2
 - [ ] Leave every field empty and double-tap Send Message. Expect: The page reloads and TalkBack starts at “There Are 3 Problems with This Form”, a heading, with a link for each problem. → SC 3.3.1, 2.4.3
 - [ ] Double-tap the first problem link. Expect: Focus moves into the Name field, and its error is read with it. → SC 3.3.1
 
@@ -551,7 +553,7 @@ Let It Fall:
 
 Contact Form:
 
-- [ ] Open sinduri.lol/contact and press F to reach the first field, then Tab. Expect: “Name (required)”, an entry, then “Email (required)” with “Used to reply, and nothing else.”, then “Message (required)” with “Between 10 and 5000 characters.” → SC 1.3.1, 3.3.2
+- [ ] Open sinduri.lol/contact and press F to reach the first field, then Tab. Expect: “Name (required)”, an entry, then “Email (required)” with “Used to reply, and nothing else.”, then “Message (required)” with “Between 10 and 5,000 characters.” → SC 1.3.1, 3.3.2
 - [ ] Leave every field empty, Tab to Send Message and press Enter. Expect: The page reloads and Orca starts at “There Are 3 Problems with This Form”, a heading, with a link for each problem. → SC 3.3.1, 2.4.3
 - [ ] Press Enter on the first problem link. Expect: Focus moves into the Name field, and its error is read with it. → SC 3.3.1
 
@@ -604,7 +606,7 @@ Let It Fall:
 
 Contact form:
 
-- [ ] Open sinduri.lol/contact and swipe to the form. Expect: “Name (required), text field”, then “Email (required), text field”, with “Used to reply, and nothing else.”, then “Message (required)”, with “Between 10 and 5000 characters.” → SC 1.3.1, 3.3.2
+- [ ] Open sinduri.lol/contact and swipe to the form. Expect: “Name (required), text field”, then “Email (required), text field”, with “Used to reply, and nothing else.”, then “Message (required)”, with “Between 10 and 5,000 characters.” → SC 1.3.1, 3.3.2
 - [ ] Leave every field empty and double-tap Send Message. Expect: The page reloads and VoiceOver starts at “There Are 3 Problems with This Form, heading”, with a link for each problem. → SC 3.3.1, 2.4.3
 - [ ] Double-tap the first problem link. Expect: Focus moves into the Name field, and its error is read with it. → SC 3.3.1
 
@@ -727,7 +729,7 @@ drawings are `aria-hidden`.
       the cat. → SC 2.4.3, 4.1.2
 - [ ] Tab reaches Close and the thank-you link, never the page behind. → SC 2.1.2
 - [ ] Escape closes the card and focus returns to the same cat. → SC 2.4.3
-- [ ] The sleep control reads "Put Minerva to sleep"; Enter stops the cat
+- [ ] The sleep control reads "Let Minerva nap"; Enter stops the cat
       within 5 s and the control then reads "Wake Minerva". → SC 2.2.2, 4.1.2
 - [ ] Tab reaches the paw "Choose a trick for Minerva" after the sleep control;
       Enter opens a list, Random first, and Escape closes it with focus back on
@@ -738,8 +740,7 @@ drawings are `aria-hidden`.
       wakes it first. → SC 2.2.2
 - [ ] Rudra climbs between his two bricks, and a click on him opens his card
       on either brick. → SC 2.5.5
-- [ ] Under reduced motion Rudra sits on the brick under him, never in the
-      air above it. → SC 2.3.3
+- [ ] Under reduced motion Rudra stops climbing. → SC 2.3.3
 - [ ] The drawings announce nothing. → SC 1.1.1
 - [ ] While the trick list loads, or if it fails, its note is read once, as
       a status. → SC 4.1.3

@@ -268,7 +268,7 @@
     }
   }
   /*
-   * Front canvas sits between the hare and the type; the large h1 holds SC
+   * Front canvas sits between the rabbit and the type; the large h1 holds SC
    * 1.4.3 at worst over the field. No `z-index`: a stacking context would cap
    * the pause control's `z-30` (tests/motion.spec.ts).
    */
@@ -282,7 +282,7 @@
 
   /*
    * The reduced-motion frame where no script draws it (scripts/make-hero-still.mjs).
-   * Its sky is cut and `contain` keeps all of the field and hare in a short window.
+   * Its sky is cut and `contain` keeps all of the field and rabbit in a short window.
    */
   @media (scripting: none) {
     .hero-field {

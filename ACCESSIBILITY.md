@@ -72,15 +72,15 @@ In scope:
 Not in scope: third-party sites linked from the footer, the talk presenter
 view (development server only, never published), and forks.
 
-| Environment      | Support                                                                                                              |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Browsers         | Chrome and Edge 120, Firefox 128, Safari and iOS Safari 17 ([ARCHITECTURE.md](ARCHITECTURE.md#browser-support))      |
-| Engines tested   | Chromium and Firefox locally and in CI; WebKit in CI and through Docker (`npm run test:webkit`)                      |
-| Color modes      | Dark by default. With JavaScript, the Theme menu offers System (follows the device), Light and Dark (remembered)     |
-| Forced colors    | Windows High Contrast (`forced-colors: active`)                                                                      |
-| No JavaScript    | Navigation and the contact form work; the page stays dark and the theme switch is hidden; the hero field stays blank |
-| Zoom and spacing | 400% zoom at 1280px (320px reflow), SC 1.4.12 text spacing                                                           |
-| Screen readers   | None tested. See [gap 2](#7-known-gaps)                                                                              |
+| Environment      | Support                                                                                                                |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Browsers         | Chrome and Edge 120, Firefox 128, Safari and iOS Safari 17 ([ARCHITECTURE.md](ARCHITECTURE.md#browser-support))        |
+| Engines tested   | Chromium and Firefox locally and in CI; WebKit in CI and through Docker (`npm run test:webkit`)                        |
+| Color modes      | Dark by default. With JavaScript, the Theme menu offers System (follows the device), Light and Dark (remembered)       |
+| Forced colors    | Windows High Contrast (`forced-colors: active`)                                                                        |
+| No JavaScript    | Navigation and the contact form work; the page stays dark and the theme switch is hidden; the hero shows a still frame |
+| Zoom and spacing | 400% zoom at 1280px (320px reflow), SC 1.4.12 text spacing                                                             |
+| Screen readers   | None tested. See [gap 2](#7-known-gaps)                                                                                |
 
 ## 4. What the site supports
 
@@ -301,7 +301,7 @@ merge.
 | `tests/focus-obscured.spec.ts`      | 2.4.12                                                           | Every stop in the open cat card, photo viewer and menu, each About cat control, and every stop reached from an open trick list, wholly uncovered                                                                                                                                                                |
 | `tests/sticky-header.spec.ts`       | 2.4.11                                                           | Header static under 30rem; no focused control under it                                                                                                                                                                                                                                                          |
 | `tests/edge-contrast.spec.ts`       | 1.4.11                                                           | Every drawn edge 3:1 against its ground unless its fill is, every route, dark and light, 390px and 1280px; at rest only                                                                                                                                                                                         |
-| `tests/edges.spec.ts`               | 1.4.11                                                           | One edge role per ground on `/`; a card is a block with an ink edge and no paper; gold-fill edges against the fill                                                                                                                                                                                              |
+| `tests/edges.spec.ts`               | 1.4.11                                                           | One edge role per ground on `/`: a card's fill or edge, page controls, gold-fill edges and footer tiles reach 3:1, dark and light                                                                                                                                                                               |
 | `tests/states.spec.ts`              | 1.4.1, 1.4.6, 1.4.11                                             | Hover drawn; dark-mode hovered text at 7:1 on every route; current page is a shape; chip rings clear neighbors                                                                                                                                                                                                  |
 | `tests/nav-current.spec.ts`         | 1.3.1, 4.1.2                                                     | `aria-current` in every nav                                                                                                                                                                                                                                                                                     |
 | `tests/link-purpose.spec.ts`        | 2.4.9                                                            | One link name, one destination, on every route; hidden text keeps the visible words first                                                                                                                                                                                                                       |
@@ -323,12 +323,13 @@ merge.
 | `tests/motion.spec.ts`              | 2.2.2, 2.3.3                                                     | Hero field pauses; nothing moves under reduced motion                                                                                                                                                                                                                                                           |
 | `tests/let-it-fall.spec.ts`         | 2.3.3, 2.4.11, 2.5.5, 2.5.8, 4.1.3                               | One press stacks the screen into a heap above the button, which keeps focus; no target covered; axe on the heap; no sideways scroll; button, Esc or keyboard focus restores; a heap link works; rabbit covers no control; announced; reduced motion; no button without JavaScript or on talk decks              |
 | `tests/press.spec.ts`               | 1.4.11, 2.3.3                                                    | A press is drawn; a hover lift keeps the pointer and its ring clears the grown shadow; under reduced motion or without a hovering pointer nothing moves                                                                                                                                                         |
-| `tests/about-cats.spec.ts`          | 1.4.1, 1.4.3, 1.4.10, 1.4.11, 2.2.2, 2.4.11, 2.5.5               | Cat buttons, card dialog, focus return, sleep controls, trick lists, reduced motion; a moving cat never scrolls the page; on a stepped wall a cat stands on, and is clickable on, the brick under it                                                                                                            |
+| `tests/about-cats.spec.ts`          | 1.4.1, 1.4.3, 1.4.10, 1.4.11, 2.2.2, 2.4.11, 2.5.5               | Cat buttons, card dialog, focus return, sleep controls, trick lists, reduced motion; a moving cat never scrolls the page; on a stepped wall a cat on the lower brick stays clickable                                                                                                                            |
 | `tests/headings.spec.ts`            | 1.3.1, 2.4.6                                                     | One `h1`, no skipped level, no heading under 19px                                                                                                                                                                                                                                                               |
 | `tests/structure.spec.ts`           | 1.3.1, 2.4.1, 2.4.6                                              | The accessibility tree: one banner, main and contentinfo in order, named unique landmarks, one `h1` opening main, an `h2` opening each region, the home link named for the site                                                                                                                                 |
 | `tests/titles.spec.ts`              | 2.4.2                                                            | Titles distinct and descriptive                                                                                                                                                                                                                                                                                 |
 | `tests/site-language.spec.ts`       | 3.1.1, 3.1.2                                                     | One declared language everywhere; every Latin phrase in `lang="la"`                                                                                                                                                                                                                                             |
 | `tests/alt-text.spec.ts`            | 1.1.1                                                            | Every image named or decorative on purpose                                                                                                                                                                                                                                                                      |
+| `tests/photo-links.spec.ts`         | 2.4.4, 1.3.1                                                     | Every photo link is named by its alt plus "(opens full size)", with no stray comma                                                                                                                                                                                                                              |
 | `tests/card-click.spec.ts`          | best practice (Intopia Card)                                     | A blog card follows its title link on a click and keeps its teaser selectable on a drag                                                                                                                                                                                                                         |
 | `tests/list-semantics.spec.ts`      | 1.3.1                                                            | Every list drawn without markers outside `<nav>` carries `role="list"`, which Safari needs to keep it a list                                                                                                                                                                                                    |
 | `tests/blog.spec.ts`                | 1.1.1, 1.3.2                                                     | A post card cover is decorative except the newest post's on `/` and `/blog`, which keeps its alt; the cover comes first in reading order and stacked cards draw it above the text (1.3.2)                                                                                                                       |
@@ -404,7 +405,7 @@ links. Not automated:
    with a screen reader. SC 3.3.7 and 3.3.8 do not apply.
 2. **No screen reader testing.** No NVDA, JAWS, VoiceOver or Orca run.
    [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §6 is an Orca pass in Firefox,
-   with §6.4 in Chrome for the uppercase question; §6.10.1 and §6.10.2 are 19
+   with §6.4 in Chrome for the uppercase question; §6.10.1 and §6.10.2 are
    widget steps for TalkBack on Android and Orca. A pass narrows this gap; it
    does not close it. Planned: the §6 Orca pass once the site is ready.
 3. **The gold surface has been measured, not looked at.**
@@ -417,8 +418,7 @@ links. Not automated:
    | every control in `.surface-gold`                     | its fill differs from gold, or its border clears 3:1 |
    | `/contact`'s `.btn-gold-primary` focus ring at 305px | inner `#FFFFFF` ring at 3:1 or more against its fill |
 
-   The inner ring is 18.58 against the `#131313` fill by the tokens; the test
-   asserts 3:1. Nobody has tabbed, zoomed or listened to a gold band.
+   Nobody has tabbed, zoomed or listened to a gold band.
    [MANUAL_TESTING.md](docs/MANUAL_TESTING.md) §5 checks the ring on gold by
    eye only, so it does not close this gap.
 
