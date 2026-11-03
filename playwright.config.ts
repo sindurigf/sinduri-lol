@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 import { assertPortFree, TEST_PORT } from './tests/ports';
 import {
   BUILD_AND_SERVE_TIMEOUT_MS,
+  NO_SKIPS,
   WORKER_SPECS,
 } from './playwright.worker.config';
 import {
@@ -62,8 +63,8 @@ export default defineConfig({
   workers: 2,
   /* `html` carries the traces a11y.yml uploads; without it nothing uploads. */
   reporter: process.env.CI
-    ? [['github'], ['list'], ['html', { open: 'never' }]]
-    : [['list']],
+    ? [['github'], ['list'], ['html', { open: 'never' }], [NO_SKIPS]]
+    : [['list'], [NO_SKIPS]],
 
   use: {
     baseURL: BASE_URL,
