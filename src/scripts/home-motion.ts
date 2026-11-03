@@ -5,6 +5,7 @@
  */
 import { NEXT_FRAME, createMotionLoop } from './motion-loop';
 import type { RabbitPose } from '../lib/rabbit-atlas';
+import type { Meadow } from './home-meadow';
 
 /* Slow, small motion: 30 frames a second is plenty and halves the main-thread cost. */
 const MAX_FRAME_RATE = 30;
@@ -134,6 +135,7 @@ const start = (): void => {
   }));
 
   let paused = false;
+  let meadow: Meadow | undefined;
   let clock = 0;
   let last = 0;
   let lookUntil = -1;
@@ -349,6 +351,7 @@ const start = (): void => {
       if (jarThing && jar.matches(':focus-within')) placeJar(held);
       stepRabbit();
       stepGrass();
+      meadow?.draw(clock / 1000, false);
       drawThings();
       return NEXT_FRAME;
     },
@@ -385,6 +388,7 @@ const start = (): void => {
     clods.forEach((clod) => {
       clod.style.opacity = '0';
     });
+    meadow?.draw(clock / 1000, true);
     drawThings();
   };
 
@@ -498,6 +502,15 @@ const start = (): void => {
     assumeOnScreen: true,
   });
   loop.start();
+
+  const stems = band.querySelector<HTMLCanvasElement>('[data-home-stems]');
+  if (stems) {
+    void import('./home-meadow').then(({ createMeadow }) => {
+      meadow = createMeadow(band, stems, hopper, mouth);
+      band.dataset.stemsLive = '';
+      meadow.draw(clock / 1000, state() === 'paused');
+    });
+  }
 };
 
 start();

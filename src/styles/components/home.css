@@ -105,9 +105,71 @@
     }
   }
 
-  .home-tuft {
+  .home-band {
+    --ledge: var(--size-home-ledge-phone);
+
+    @variant md {
+      --ledge: var(--size-home-ledge);
+    }
+  }
+
+  .home-stems {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* The canvas replaces the tufts once it draws. */
+  .home-band[data-stems-live] .home-tuft {
+    display: none;
+  }
+
+  /*
+   * One bold brick ledge, broken where the hole opens. Its ends meet the
+   * mouth's edges: the same percentages as `.home-mouth`.
+   */
+  .home-ledge {
     position: absolute;
     bottom: 0;
+    z-index: 5;
+    height: var(--ledge);
+    border-top: var(--block-edge) solid var(--color-block-ink);
+    background:
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 calc(var(--size-home-brick) - var(--size-home-clod-edge)),
+        var(--color-block-ink) 0 var(--size-home-brick)
+      ),
+      var(--color-block-light);
+  }
+
+  .home-ledge-start {
+    left: 0;
+    width: 56%;
+
+    @variant md {
+      width: 58%;
+    }
+  }
+
+  .home-ledge-end {
+    left: 92%;
+    right: 0;
+    border-left: var(--block-edge) solid var(--color-block-ink);
+
+    @variant md {
+      left: 88%;
+    }
+  }
+
+  .home-ledge-start {
+    border-right: var(--block-edge) solid var(--color-block-ink);
+  }
+
+  .home-tuft {
+    position: absolute;
+    bottom: var(--ledge);
     width: var(--size-home-tuft-w);
     height: var(--size-home-tuft-h);
     transform-origin: 50% 100%;
@@ -171,7 +233,7 @@
 
   .home-clod {
     position: absolute;
-    bottom: 0;
+    bottom: var(--ledge);
     left: 0;
     z-index: 4;
     width: var(--size-home-clod);
@@ -184,7 +246,7 @@
   /* Where the rabbit rests without a script; home-motion.ts moves it from the left edge. */
   .home-hopper {
     position: absolute;
-    bottom: 0;
+    bottom: var(--ledge);
     left: 30%;
     z-index: 3;
     width: var(--size-home-hopper-w-phone);

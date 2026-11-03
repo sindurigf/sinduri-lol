@@ -9,6 +9,8 @@ const CLODS = 3;
 ---
 
 <div class="home-band" aria-hidden="true" data-home-band>
+  {/* Living stems, drawn by src/scripts/home-meadow.ts; the tufts below are the no-JS meadow. */}
+  <canvas class="home-stems" data-home-stems></canvas>
   {BACK_TUFTS.map((place, index) => (
     <span class:list={['home-tuft', place]}>
       <svg viewBox="0 0 48 40" aria-hidden="true">
@@ -37,5 +39,7 @@ const CLODS = 3;
   {Array.from({ length: CLODS }, () => (
     <span class="home-clod" />
   ))}
+  <span class="home-ledge home-ledge-start"></span>
+  <span class="home-ledge home-ledge-end"></span>
 </div>
 <span class="home-mouth" aria-hidden="true" data-home-mouth></span>
