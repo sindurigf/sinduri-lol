@@ -17,6 +17,8 @@
     --dark-pink-text: var(--color-pink-text);
     --dark-gold-border: var(--color-gold-border);
     --dark-card-edge: var(--color-card-edge);
+    --dark-code-edge: var(--color-code-edge);
+    --dark-code-fill: var(--color-code-fill);
   }
 
   :root[data-theme='light'] :is(main, header, footer),
@@ -31,6 +33,8 @@
     --color-pink-text: var(--color-light-pink-text);
     --color-gold-border: var(--color-light-ink);
     --color-card-edge: var(--color-light-ink);
+    --color-code-edge: var(--color-light-code-edge);
+    --color-code-fill: var(--color-block-light);
     color-scheme: light;
     color: var(--color-text);
     background-color: var(--color-background);
@@ -62,6 +66,8 @@
     --color-pink-text: var(--dark-pink-text);
     --color-gold-border: var(--dark-gold-border);
     --color-card-edge: var(--dark-card-edge);
+    --color-code-edge: var(--dark-code-edge);
+    --color-code-fill: var(--dark-code-fill);
     color-scheme: dark;
     color: var(--color-text);
     background-color: var(--color-background);
