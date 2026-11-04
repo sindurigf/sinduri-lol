@@ -24,8 +24,20 @@ const EDGE_SEARCH_STEPS = 240;
 /** CSS px: boxes are fractional; half a pixel hides nothing. */
 const SUBPIXEL_TOLERANCE = 0.5;
 
+/*
+ * Covering is decided by element boxes, never by the stems' pixels: drawing
+ * them on every clock step is skipped here so forty steps fit WebKit's timeout.
+ */
+const skipStemRaster = (page: Page) =>
+  page.addInitScript(() => {
+    const canvas = CanvasRenderingContext2D.prototype;
+    for (const name of ['stroke', 'fill', 'clearRect'] as const)
+      canvas[name] = () => undefined;
+  });
+
 const open = async (page: Page, width: number, height: number) => {
   await page.setViewportSize({ width, height });
+  await skipStemRaster(page);
   await page.clock.install();
   await gotoSettled(page, '/');
   await fontsSettled(page);
@@ -163,6 +175,7 @@ test.describe("Alice's things in the fall", () => {
       page,
     }) => {
       await page.setViewportSize({ width, height });
+      await skipStemRaster(page);
       await page.clock.install();
       await gotoSettled(page, '/');
       const jar = page.getByRole('button', { name: 'Let Go of the Jar' });
