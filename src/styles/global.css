@@ -384,6 +384,8 @@
    */
   --step-x: clamp(0px, calc((100vw - 640px) / 16), 24px);
   --step-y: clamp(0px, calc((100vw - 640px) / 10), 48px);
+  /* Share of `--step-y` a wall of short bricks (taglines, stats) rises. */
+  --step-y-short-share: 1 / 3;
   /* Card, panel, field, header and rule edges (`edge` utilities); controls, chips, photos and stickers keep `border-4`. */
   --edge: 6px;
   /* Table rules only (`hairline` utilities). */

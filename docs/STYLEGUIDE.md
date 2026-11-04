@@ -131,7 +131,9 @@ The gold-ground set is in [Gold surface](#gold-surface), light values in
   input on an older build and cost raster time (`tests/filter-layers.spec.ts`).
 - The Step Up: the throw falls down and right, so a wall only climbs right.
   Bricks in one row rise by `--step-y` (48px from 1120px; half for the second
-  of three or more); stacked rows bring their right edge in by `--step-x`, at
+  of three or more). A wall of short bricks (the homepage taglines and stats)
+  rises `--step-y-short-share` of that, through `wallClasses(…, { short })`;
+  the wall's room above always equals its rise. Stacked rows bring their right edge in by `--step-x`, at
   most twice. A drop would end the throw against a brick face. The
   post contents juts right and the contact submit and talk slides jut left
   by `--step-x` (24px).

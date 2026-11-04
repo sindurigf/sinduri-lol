@@ -82,7 +82,9 @@ const HOME_PHOTO_SIZES =
 
 const TAGLINES = ['Open Source Enthusiast', 'Positivity Advocate'] as const;
 /* Side by side from `sm`, the second climbing (the Step). */
-const tagWall = wallClasses({ sm: [[0, 1]] }, TAGLINES.length);
+const tagWall = wallClasses({ sm: [[0, 1]] }, TAGLINES.length, {
+  short: true,
+});
 
 const STATS = [
   {
@@ -95,7 +97,9 @@ const STATS = [
   },
 ] as const;
 /* The two stats sit side by side from `sm`, the second climbing (the Step). */
-const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
+const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length, {
+  short: true,
+});
 ---
 
 <BaseLayout
