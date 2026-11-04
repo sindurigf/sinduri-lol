@@ -3,7 +3,7 @@ import { gzipSync } from 'node:zlib';
 import { join } from 'node:path';
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
-import { builtHtml, DIST_DIR, ROUTES } from './routes';
+import { builtHtml, DIST_DIR, ROUTES, TALK_ROUTES } from './routes';
 import { CHROMIUM_ONLY, NODE } from './tags';
 import { LAYOUT_SHIFT, layoutShiftOf } from './layout-shift';
 
@@ -20,8 +20,12 @@ const ROUTE_SCRIPT_BUDGETS: Readonly<Record<string, number>> = {
 };
 const PAGE_SCRIPT_BUDGET = 17_500;
 
-/* Decoded bytes of the stylesheets a page links plus its inline `<style>`. Every route links the one sheet. */
+/* Decoded bytes of the stylesheets a page links plus its inline `<style>`. A talk also links the deck's sheet. */
+const ROUTE_STYLE_BUDGETS: Readonly<Record<string, number>> =
+  Object.fromEntries(TALK_ROUTES.map((route) => [route, 120_500]));
 const PAGE_STYLE_BUDGET = 120_000;
+const styleBudget = (route: string): number =>
+  ROUTE_STYLE_BUDGETS[route] ?? PAGE_STYLE_BUDGET;
 
 const STYLESHEET_HREF = /<link\b[^>]*\brel="stylesheet"[^>]*\bhref="([^"]+)"/g;
 const INLINE_STYLE = /<style\b[^>]*>([\s\S]*?)<\/style>/g;
@@ -88,9 +92,11 @@ test.describe('style weight', NODE, () => {
     ).toBe(true);
     expect(
       pages
-        .filter((page) => page.bytes > PAGE_STYLE_BUDGET)
-        .map((page) => `${page.route} ${page.bytes}`),
-      `these pages ship more than ${PAGE_STYLE_BUDGET} bytes of CSS.`,
+        .filter((page) => page.bytes > styleBudget(page.route))
+        .map(
+          (page) => `${page.route} ${page.bytes} of ${styleBudget(page.route)}`,
+        ),
+      'these pages ship more CSS than their budget.',
     ).toEqual([]);
   });
 });
