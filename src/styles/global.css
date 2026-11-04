@@ -526,7 +526,9 @@
    */
   --hero-column-screen-clear: calc(48px + var(--hard-throw));
 
-  --hero-column-pad-block: clamp(32px, 5vw, 72px) clamp(32px, 5vw, 80px);
+  /* The top also follows the height, so the stats wall and its throw fit a 1366x768 first screen. */
+  --hero-column-pad-block: clamp(24px, min(5vw, 3svh), 72px)
+    clamp(32px, 5vw, 80px);
   --hero-column-pad-inline: clamp(20px, 3.5vw, 64px);
 
   --hero-column-edge: var(--block-edge);
