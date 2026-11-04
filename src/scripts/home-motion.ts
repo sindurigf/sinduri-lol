@@ -208,6 +208,7 @@ const start = (): void => {
   };
 
   let dive = -1;
+  let gone = false;
   let diveFrom = 0;
   /* Where the falling rabbit last stood and faced, so it stays put once it lands. */
   let fallX = 0;
@@ -218,13 +219,27 @@ const start = (): void => {
     return m.left - box.left + m.width / 2;
   };
   /* The rabbit is gone, so its button goes too: focus moves to the page first (SC 2.4.3). */
+  /* Focus moves on to the next control, the fall's pause or else the jar, so it is never lost (SC 2.4.3). */
   const fallIn = (): void => {
+    if (gone) return;
+    gone = true;
     if (follow === document.activeElement) {
-      document.querySelector<HTMLElement>('main')?.focus();
+      const next =
+        pauses.find(
+          (button) =>
+            !button.hidden &&
+            follow.compareDocumentPosition(button) &
+              Node.DOCUMENT_POSITION_FOLLOWING,
+        ) ?? jar;
+      next.focus();
     }
     hopper.dataset.gone = '';
     follow.disabled = true;
     fall?.toggleAttribute('data-rabbit-fell', true);
+    if (paused || loop.reducedMotion()) {
+      fallerBun.dataset.pose = 'sit';
+      fallerSpin.style.transform = '';
+    }
   };
   const stepDive = (): void => {
     const t = clock - dive;
@@ -279,7 +294,7 @@ const start = (): void => {
   const stepRabbit = (): void => {
     stepFaller();
     if (dive >= 0) {
-      stepDive();
+      if (!gone) stepDive();
       return;
     }
     const t = clock - hop.since;
@@ -396,7 +411,7 @@ const start = (): void => {
   /* Timers keep counting on `clock`, so they are reset, not the clock: motion resumes from rest. */
   const still = (): void => {
     stopJar();
-    if (dive >= 0 && !fall?.hasAttribute('data-rabbit-fell')) fallIn();
+    if (dive >= 0) fallIn();
     hop.x = roamMax * HOME_SHARE;
     hop.y = 0;
     hop.dir = 1;
@@ -491,13 +506,9 @@ const start = (): void => {
   /* Paused or under reduced motion the rabbit is simply gone down the hole. */
   follow.addEventListener('click', () => {
     if (dive >= 0) return;
-    if (paused || loop.reducedMotion()) {
-      dive = clock;
-      fallIn();
-      return;
-    }
     dive = clock;
     diveFrom = hop.x;
+    if (paused || loop.reducedMotion()) fallIn();
   });
 
   follow.hidden = false;

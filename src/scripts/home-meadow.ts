@@ -229,7 +229,9 @@ export const createMeadow = ({
     });
   };
 
+  /* Once the rabbit has gone down the hole, no stem bends for it. */
   const rabbitX = (): number => {
+    if (hopper.hasAttribute('data-gone')) return Number.NEGATIVE_INFINITY;
     const box = band.getBoundingClientRect();
     const r = hopper.getBoundingClientRect();
     return r.left - box.left + r.width / 2;
