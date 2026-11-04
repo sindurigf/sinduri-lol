@@ -6,6 +6,7 @@
 import { NEXT_FRAME, createMotionLoop } from './motion-loop';
 import type { RabbitPose } from '../lib/rabbit-atlas';
 import type { Meadow } from './home-meadow';
+import { createFaller } from './home-faller';
 
 /* Slow, small motion: 30 frames a second is plenty and halves the main-thread cost. */
 const MAX_FRAME_RATE = 30;
@@ -57,16 +58,6 @@ const LOOK_UP_MS = 1400;
 const DIVE_LEAP_MS = 520;
 const DIVE_DROP_MS = 260;
 const DIVE_DROP_PX = 90;
-/* Falling, the rabbit keeps hopping on the air: one hop this long, this high, beside the reader. */
-const FALL_HOP_MS = 1400;
-const FALL_HOP_PX = 36;
-const FALL_CROUCH = 0.18;
-const FALL_LAND = 0.82;
-/* Each hop crosses the lane, side to side: at most this far from its middle, and never past half the lane. */
-const FALL_SWAY_PX = 40;
-const FALL_SWAY_PHONE_PX = 20;
-/* Within this of the fall's end, it has landed and sits. */
-const FALL_LANDED_PX = 24;
 
 const PAUSE_NAME = 'Pause animations';
 const PLAY_NAME = 'Play animations';
@@ -126,6 +117,16 @@ const start = (): void => {
   const fallerSpin = required<HTMLElement>(faller, '.home-faller-spin');
   const fallerBun = required<HTMLElement>(faller, '.home-bun');
   const fall = drift.parentElement;
+  const bands = fall
+    ? [...fall.querySelectorAll<HTMLElement>(':scope > .band')]
+    : [];
+  const fallen = createFaller({
+    faller,
+    spin: fallerSpin,
+    bun: fallerBun,
+    mouth,
+    bands,
+  });
 
   const things: Thing[] = [
     ...drift.querySelectorAll<HTMLElement>('[data-home-prop]'),
@@ -146,7 +147,6 @@ const start = (): void => {
   let roamMax = 0;
   let driftHeight = 0;
   let thingSize = 0;
-  let fallReach = 0;
   let meadowOnScreen = true;
   let meadowFrame = 0;
   const hop: Hop = {
@@ -170,12 +170,6 @@ const start = (): void => {
     );
     driftHeight = drift.clientHeight;
     thingSize = things[0]?.el.offsetHeight ?? 0;
-    const lane = parseFloat(
-      getComputedStyle(fall ?? document.body).getPropertyValue('--lane'),
-    );
-    fallReach = lane
-      ? Math.max(0, Math.min(FALL_SWAY_PX, (lane - thingSize) / 2))
-      : FALL_SWAY_PHONE_PX;
   };
 
   const setPose = (pose: RabbitPose): void => {
@@ -216,9 +210,6 @@ const start = (): void => {
   let dive = -1;
   let gone = false;
   let diveFrom = 0;
-  /* Where the falling rabbit last stood and faced, so it stays put once it lands. */
-  let fallX = 0;
-  let fallDir: 1 | -1 = 1;
   const mouthX = (): number => {
     const box = band.getBoundingClientRect();
     const m = mouth.getBoundingClientRect();
@@ -242,10 +233,8 @@ const start = (): void => {
     hopper.dataset.gone = '';
     follow.disabled = true;
     fall?.toggleAttribute('data-rabbit-fell', true);
-    if (paused || loop.reducedMotion()) {
-      fallerBun.dataset.pose = 'sit';
-      fallerSpin.style.transform = '';
-    }
+    fallen.start(clock);
+    fallen.step(clock, loop.reducedMotion());
   };
   const stepDive = (): void => {
     const t = clock - dive;
@@ -266,39 +255,8 @@ const start = (): void => {
     place();
   };
 
-  const stepFaller = (): void => {
-    if (!fall?.hasAttribute('data-rabbit-fell')) return;
-    const landed =
-      fall.getBoundingClientRect().bottom -
-        fallerSpin.getBoundingClientRect().bottom <
-      FALL_LANDED_PX;
-    const hopIndex = Math.floor(clock / FALL_HOP_MS);
-    const dir = landed ? fallDir : hopIndex % 2 === 0 ? 1 : -1;
-    const reach = fallReach;
-    const p = (clock % FALL_HOP_MS) / FALL_HOP_MS;
-    let pose: RabbitPose = 'leap';
-    let lift = 0;
-    let x = landed ? fallX : -dir * reach;
-    if (landed) pose = 'sit';
-    else if (p < FALL_CROUCH) pose = 'crouch';
-    else if (p > FALL_LAND) {
-      pose = 'crouch';
-      x = dir * reach;
-    } else {
-      const t = (p - FALL_CROUCH) / (FALL_LAND - FALL_CROUCH);
-      lift = FALL_HOP_PX * 4 * t * (1 - t);
-      x = -dir * reach + 2 * dir * reach * t;
-    }
-    fallX = x;
-    fallDir = dir;
-    fallerBun.dataset.pose = pose;
-    /* The atlas faces left: -1 mirrors it to face the way it hops. */
-    fallerBun.style.setProperty('--face', String(-dir));
-    fallerSpin.style.transform = `translate(${x.toFixed(1)}px, ${(-lift).toFixed(1)}px)`;
-  };
-
   const stepRabbit = (): void => {
-    stepFaller();
+    fallen.step(clock, false);
     if (dive >= 0) {
       if (!gone) stepDive();
       return;
@@ -521,6 +479,15 @@ const start = (): void => {
 
   follow.hidden = false;
 
+  /* Under reduced motion no frame runs: scrolling alone moves it to the edge the reader has reached. */
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (loop.reducedMotion()) fallen.step(clock, true);
+    },
+    { passive: true },
+  );
+
   pauses.forEach((button) => {
     button.addEventListener('click', toggle);
   });
@@ -534,6 +501,7 @@ const start = (): void => {
 
   new ResizeObserver(() => {
     measure();
+    fallen.measure();
     hop.x = clamp(hop.x, EDGE_PX, roamMax);
     place();
     drawThings();

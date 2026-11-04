@@ -6,7 +6,7 @@
  */
 import HomePause from './HomePause.astro';
 
-/* Degrees each thing leans at rest; they alternate sides of the column. */
+/* Degrees each thing leans at rest. */
 const QUIET = [
   { name: 'book', tilt: 7 },
   { name: 'picture', tilt: 6 },
@@ -26,7 +26,7 @@ const JAR_TILT = -8;
 <div class="home-drift" data-home-drift>
   <button
     type="button"
-    class="home-prop home-prop-jar home-prop-r"
+    class="home-prop home-prop-jar"
     data-home-prop
     data-home-jar
     data-tilt={JAR_TILT}
@@ -36,13 +36,9 @@ const JAR_TILT = -8;
     </span>
     <span class="sr-only">Let Go of the Jar</span>
   </button>
-  {QUIET.map(({ name, tilt }, index) => (
+  {QUIET.map(({ name, tilt }) => (
     <span
-      class:list={[
-        'home-prop',
-        `home-prop-${name}`,
-        index % 2 === 0 ? 'home-prop-l' : 'home-prop-r',
-      ]}
+      class:list={['home-prop', `home-prop-${name}`]}
       aria-hidden="true"
       data-home-prop
       data-tilt={tilt}

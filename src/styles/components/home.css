@@ -357,14 +357,16 @@
   }
 
   /*
-   * After the dive the rabbit falls beside the reader: sticky in the lane,
-   * behind every brick like Alice's things. It hangs above the sticky line,
-   * so it lands on the fall's last edge and never drops into the footer.
+   * After the dive the rabbit goes down the page from section to section;
+   * home-faller.ts places it from the fall's top-left corner, above the
+   * bricks so it can stand on their edges.
    */
   .home-faller {
-    position: sticky;
-    top: 45vh;
-    z-index: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    width: 0;
     height: 0;
 
     visibility: hidden;
@@ -375,21 +377,26 @@
     visibility: visible;
   }
 
+  /* Placed and measured by home-faller.ts each frame; the reduced-motion backstop's transitions would lag its box. */
+  .home-faller-spin,
+  .home-faller-spin * {
+    transition: none !important;
+  }
+
   .home-faller-spin {
     position: absolute;
-    bottom: 0;
-    right: 8%;
+    top: 0;
+    left: 0;
     width: var(--size-home-hopper-w);
     height: var(--size-home-hopper-h);
-
-    @variant md {
-      right: auto;
-      left: calc(var(--lane) / 2);
-    }
   }
 
   .home-faller .home-bun {
-    --scale: 0.3;
+    --scale: 0.22;
+
+    @variant md {
+      --scale: 0.3;
+    }
   }
 
   /* The hole: a notch cut through the ledge, dark down into the ground. */
@@ -477,6 +484,19 @@
     pointer-events: none;
   }
 
+  /* Room above each later section for the sitting rabbit's head; laptops need only a little. */
+  .home-fall > .band ~ .band {
+    margin-block-start: --spacing(6);
+
+    @variant md {
+      margin-block-start: --spacing(10);
+    }
+
+    @variant xl {
+      margin-block-start: --spacing(2);
+    }
+  }
+
   .home-fall > .band > * {
     pointer-events: auto;
   }
@@ -515,29 +535,21 @@
   }
 
   /* Each thing's `top` below is where it rests without a script; home-motion.ts rises them from 0. */
+  /*
+   * Every thing rises on the left: the right side, beside the mouth, is the
+   * falling rabbit's. Below `md` there are no lanes, so they pass behind the bricks.
+   */
   .home-prop {
     position: absolute;
+    left: 4%;
     width: var(--prop);
     height: var(--prop);
     padding: 0;
     border: 0;
     background: none;
-  }
-
-  /* The lanes; below `md` there are none, so the things pass behind the bricks. */
-  .home-prop-l {
-    left: 4%;
 
     @variant md {
       left: calc(var(--lane) / 2 - var(--prop) / 2);
-    }
-  }
-
-  .home-prop-r {
-    right: 4%;
-
-    @variant md {
-      right: calc(var(--lane) / 2 - var(--prop) / 2);
     }
   }
 
@@ -547,12 +559,13 @@
 
   /*
    * Below `md` there are no lanes, so the jar would pass behind the bricks:
-   * it rests in the open ground beside the pause control instead.
+   * it rests in the open ground just right of the pause control instead,
+   * clear of the shaft's foot on the right.
    */
   .home-prop-jar {
     @variant max-md {
       top: --spacing(4) !important;
-      right: --spacing(4);
+      left: calc(var(--spacing-target) + --spacing(4));
       z-index: 2;
       transform: none !important;
     }
