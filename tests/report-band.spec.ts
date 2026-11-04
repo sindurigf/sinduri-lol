@@ -2,6 +2,12 @@ import { expect, test } from './test';
 import { builtHtml, SAMPLED_ROUTES } from './routes';
 import { REPORT_LINK } from '../src/lib/nav';
 import { ACCESSIBILITY_PATH, REPORT_BARRIER_ID } from '../src/lib/paths';
+import {
+  PERCENT,
+  TEXT_SCALE_PROPERTY,
+  TEXT_SCALE_STEPS,
+} from '../src/lib/text-scale';
+import { NARROW_WIDTH } from './wcag';
 import { NODE } from './tags';
 import { gotoSettled } from './settle';
 
@@ -41,10 +47,6 @@ test.describe('the report band', () => {
     const route = ACCESSIBILITY_PATH.replace(/\/$/, '');
     const html = builtHtml().get(route);
     expect(html, `${route} was not built`).toBeDefined();
-    expect(
-      REPORT_LINK.href,
-      'the report link does not point at the accessibility statement.',
-    ).toBe(`${ACCESSIBILITY_PATH}#${REPORT_BARRIER_ID}`);
     expect(
       html,
       `${route} has no h2 with id "${REPORT_BARRIER_ID}" reading "Report a Barrier".`,
@@ -89,10 +91,63 @@ test.describe('the report band', () => {
       'the report link is hidden without JavaScript.',
     ).toBeVisible();
     await link.click();
+    const heading = page.getByRole('heading', {
+      name: 'Report a Barrier',
+      level: 2,
+    });
     await expect(
-      page.getByRole('heading', { name: 'Report a Barrier', level: 2 }),
+      heading,
       'following the report link without JavaScript does not show the Report a Barrier heading.',
     ).toBeInViewport();
+    const [top, headerBottom] = await Promise.all([
+      heading.evaluate((el) => el.getBoundingClientRect().top),
+      page
+        .locator('header.site-header')
+        .evaluate((el) => el.getBoundingClientRect().bottom),
+    ]);
+    expect(
+      top,
+      'the Report a Barrier heading lands under the sticky header (SC 2.4.11).',
+    ).toBeGreaterThanOrEqual(headerBottom);
     await context.close();
   });
+
+  /* The band grows when the link wraps; its padding keeps the whole ring inside it, clear of the header. */
+  for (const step of TEXT_SCALE_STEPS) {
+    test(`at ${NARROW_WIDTH}px and text ${step}% the focused link's ring stays inside the band (SC 2.4.7, 2.4.11)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: NARROW_WIDTH, height: 640 });
+      await gotoSettled(page, '/');
+      await page.evaluate(
+        ([property, scale]) =>
+          document.documentElement.style.setProperty(property, String(scale)),
+        [TEXT_SCALE_PROPERTY, step / PERCENT] as const,
+      );
+      const band = page.getByRole('complementary', {
+        name: 'Accessibility help',
+      });
+      const link = band.getByRole('link', { name: REPORT_LINK.label });
+      await link.focus();
+      const { ring, box } = await link.evaluate((el) => {
+        const style = getComputedStyle(el);
+        const rect = el.getBoundingClientRect();
+        const reach =
+          parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
+        const area = el.closest('aside')!.getBoundingClientRect();
+        return {
+          ring: { top: rect.top - reach, bottom: rect.bottom + reach },
+          box: { top: area.top, bottom: area.bottom },
+        };
+      });
+      expect(
+        ring.top,
+        `at ${step}% the ring runs above the band.`,
+      ).toBeGreaterThanOrEqual(box.top);
+      expect(
+        ring.bottom,
+        `at ${step}% the ring runs below the band, under the header.`,
+      ).toBeLessThanOrEqual(box.bottom);
+    });
+  }
 });
