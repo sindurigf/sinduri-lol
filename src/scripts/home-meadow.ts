@@ -19,6 +19,8 @@ interface Layer {
   /** Bud and leaf scale. */
   readonly size: number;
   readonly front: boolean;
+  /** Drawn once per size on its own canvas, without sway: the costliest layers, too faint for motion to show. */
+  readonly haze: boolean;
 }
 
 /* Back layers haze by opacity, not a gold veil: a veil's compositing rounds the ground's gold and its edges show. */
@@ -31,6 +33,7 @@ const LAYERS: readonly Layer[] = [
     push: 4,
     size: 0.45,
     front: false,
+    haze: true,
   },
   {
     density: 7,
@@ -40,6 +43,7 @@ const LAYERS: readonly Layer[] = [
     push: 10,
     size: 0.6,
     front: false,
+    haze: true,
   },
   {
     density: 4.5,
@@ -49,6 +53,7 @@ const LAYERS: readonly Layer[] = [
     push: 20,
     size: 0.8,
     front: false,
+    haze: false,
   },
   {
     density: 1.4,
@@ -58,6 +63,7 @@ const LAYERS: readonly Layer[] = [
     push: 34,
     size: 1,
     front: true,
+    haze: false,
   },
 ];
 
@@ -113,15 +119,18 @@ interface Palette {
 }
 
 export interface Meadow {
-  /** Draws at `seconds` of meadow time; `still` draws upright stems with no sway or bend. */
-  draw: (seconds: number, still: boolean) => void;
+  /**
+   * Draws at `seconds` of meadow time; `still` draws upright stems with no sway
+   * or bend. `rabbitX` is the rabbit's centre in band px, or -Infinity once it is gone.
+   */
+  draw: (seconds: number, still: boolean, rabbitX: number) => void;
 }
 
 interface MeadowParts {
   readonly band: HTMLElement;
+  readonly haze: HTMLCanvasElement;
   readonly back: HTMLCanvasElement;
   readonly front: HTMLCanvasElement;
-  readonly hopper: HTMLElement;
   readonly mouth: HTMLElement;
 }
 
@@ -163,11 +172,12 @@ const contextOf = (canvas: HTMLCanvasElement): CanvasRenderingContext2D => {
 
 export const createMeadow = ({
   band,
+  haze,
   back,
   front,
-  hopper,
   mouth,
 }: MeadowParts): Meadow => {
+  const far = contextOf(haze);
   const behind = contextOf(back);
   const over = contextOf(front);
   const palette = readPalette(band);
@@ -188,6 +198,7 @@ export const createMeadow = ({
       parseFloat(getComputedStyle(band).getPropertyValue('--post-w')) || 0;
     ground = height - ledge;
     for (const [canvas, context] of [
+      [haze, far],
       [back, behind],
       [front, over],
     ] as const) {
@@ -227,14 +238,6 @@ export const createMeadow = ({
         return x > hole[0] && x < hole[1] ? null : stem;
       }).filter((stem): stem is Stem => stem !== null);
     });
-  };
-
-  /* Once the rabbit has gone down the hole, no stem bends for it. */
-  const rabbitX = (): number => {
-    if (hopper.hasAttribute('data-gone')) return Number.NEGATIVE_INFINITY;
-    const box = band.getBoundingClientRect();
-    const r = hopper.getBoundingClientRect();
-    return r.left - box.left + r.width / 2;
   };
 
   const blob = (
@@ -356,30 +359,47 @@ export const createMeadow = ({
     }
   };
 
-  const draw = (seconds: number, still: boolean): void => {
-    behind.clearRect(0, 0, width, height);
-    over.clearRect(0, 0, width, height);
-    const near = rabbitX();
+  const drawLayers = (
+    hazed: boolean,
+    seconds: number,
+    still: boolean,
+    near: number,
+  ): void => {
     for (const layer of LAYERS) {
-      const context = layer.front ? over : behind;
+      if (layer.haze !== hazed) continue;
+      const context = hazed ? far : layer.front ? over : behind;
       for (const stem of stems)
         if (stem.layer === layer) drawStem(context, stem, seconds, still, near);
     }
+    far.globalAlpha = 1;
     behind.globalAlpha = 1;
     over.globalAlpha = 1;
   };
 
-  let last: [number, boolean] = [0, true];
+  const drawHaze = (): void => {
+    far.clearRect(0, 0, width, height);
+    drawLayers(true, 0, true, Number.NEGATIVE_INFINITY);
+  };
+
+  const draw = (seconds: number, still: boolean, near: number): void => {
+    behind.clearRect(0, 0, width, height);
+    over.clearRect(0, 0, width, height);
+    drawLayers(false, seconds, still, near);
+  };
+
+  let last: [number, boolean, number] = [0, true, Number.NEGATIVE_INFINITY];
   new ResizeObserver(() => {
     plant();
+    drawHaze();
     draw(...last);
   }).observe(band);
   plant();
+  drawHaze();
 
   return {
-    draw: (seconds, still) => {
-      last = [seconds, still];
-      draw(seconds, still);
+    draw: (seconds, still, rabbitX) => {
+      last = [seconds, still, rabbitX];
+      draw(seconds, still, rabbitX);
     },
   };
 };

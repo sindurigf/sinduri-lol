@@ -9,6 +9,8 @@ import type { Meadow } from './home-meadow';
 
 /* Slow, small motion: 30 frames a second is plenty and halves the main-thread cost. */
 const MAX_FRAME_RATE = 30;
+/* The stems sway slowly: every second frame (15 a second) is smooth enough and halves the costliest drawing. */
+const MEADOW_FRAME_EVERY = 2;
 /* Caps the step after a stall so nothing jumps across the page. */
 const MAX_DELTA_MS = 100;
 const VIEW_MARGIN = '120px';
@@ -145,6 +147,8 @@ const start = (): void => {
   let driftHeight = 0;
   let thingSize = 0;
   let fallReach = 0;
+  let meadowOnScreen = true;
+  let meadowFrame = 0;
   const hop: Hop = {
     x: 0,
     y: 0,
@@ -207,6 +211,8 @@ const start = (): void => {
     setFacing();
   };
 
+  /* The rabbit's centre in band px: the hopper sits at the band's left edge and moves by translate. Once gone, no stem bends for it. */
+  const rabbitAt = (): number => (gone ? Number.NEGATIVE_INFINITY : hop.x);
   let dive = -1;
   let gone = false;
   let diveFrom = 0;
@@ -395,7 +401,9 @@ const start = (): void => {
       last = now;
       if (jarThing && jar.matches(':focus-within')) placeJar(held);
       stepRabbit();
-      meadow?.draw(clock / 1000, false);
+      meadowFrame += 1;
+      if (meadowOnScreen && meadowFrame % MEADOW_FRAME_EVERY === 0)
+        meadow?.draw(clock / 1000, false, rabbitAt());
       drawThings();
       return NEXT_FRAME;
     },
@@ -423,7 +431,7 @@ const start = (): void => {
     setFacing();
     setPose('sit');
     place();
-    meadow?.draw(clock / 1000, true);
+    meadow?.draw(clock / 1000, true, rabbitAt());
     drawThings();
   };
 
@@ -543,23 +551,32 @@ const start = (): void => {
   place();
   drawThings();
   show();
+  /* The stems are the costliest drawing: skip them while the meadow is out of view and only the fall moves. */
   loop.observe([band, drift], {
     rootMargin: VIEW_MARGIN,
     assumeOnScreen: true,
+    onEntries: (entries) => {
+      entries.forEach((entry) => {
+        if (entry.target === band) meadowOnScreen = entry.isIntersecting;
+      });
+    },
   });
   loop.start();
 
+  const haze = band.querySelector<HTMLCanvasElement>(
+    '[data-home-stems="haze"]',
+  );
   const back = band.querySelector<HTMLCanvasElement>(
     '[data-home-stems="back"]',
   );
   const front = band.querySelector<HTMLCanvasElement>(
     '[data-home-stems="front"]',
   );
-  if (back && front) {
+  if (haze && back && front) {
     void import('./home-meadow').then(({ createMeadow }) => {
-      meadow = createMeadow({ band, back, front, hopper, mouth });
+      meadow = createMeadow({ band, haze, back, front, mouth });
       band.dataset.stemsLive = '';
-      meadow.draw(clock / 1000, state() === 'paused');
+      meadow.draw(clock / 1000, state() === 'paused', rabbitAt());
     });
   }
 };
