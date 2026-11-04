@@ -4,6 +4,7 @@ import Abbr from '../components/Abbr.astro';
 import PageHero from '../components/PageHero.astro';
 import { accessibilityFacts } from '../lib/accessibility-facts';
 import { formatPostDate } from '../lib/post-date';
+import { REPORT_BARRIER_ID } from '../lib/paths';
 
 /* A summary of ACCESSIBILITY.md; the volatile facts are derived from it at build time. */
 const {
@@ -172,7 +173,8 @@ const FULL_RECORD =
             every visible focusable element with no trap. Each stop shows a
             ring, and no part of it sits under the sticky header. Every stop in
             the open cat card, photo viewer and menu is wholly uncovered. A skip
-            link moves focus to the main content.
+            link moves focus to the main content. The next stop on every page is
+            the link to report an accessibility problem.
           </p>
           <p>
             You can reach every link and button with the Tab key, and the page
@@ -700,7 +702,7 @@ const FULL_RECORD =
             .
           </p>
 
-          <h2>Report a Barrier</h2>
+          <h2 id={REPORT_BARRIER_ID}>Report a Barrier</h2>
 
           <p>
             If something here blocks you, please say so. You do not need to know
