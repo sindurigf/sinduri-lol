@@ -21,9 +21,10 @@ const ROUTE_SCRIPT_BUDGETS: Readonly<Record<string, number>> = {
 const PAGE_SCRIPT_BUDGET = 17_500;
 
 /* Decoded bytes of the stylesheets a page links plus its inline `<style>`. A talk also links the deck's sheet. */
-const ROUTE_STYLE_BUDGETS: Readonly<Record<string, number>> =
-  Object.fromEntries(TALK_ROUTES.map((route) => [route, 120_500]));
+const TALK_STYLE_BUDGET = 120_500;
 const PAGE_STYLE_BUDGET = 120_000;
+const ROUTE_STYLE_BUDGETS: Readonly<Record<string, number>> =
+  Object.fromEntries(TALK_ROUTES.map((route) => [route, TALK_STYLE_BUDGET]));
 const styleBudget = (route: string): number =>
   ROUTE_STYLE_BUDGETS[route] ?? PAGE_STYLE_BUDGET;
 

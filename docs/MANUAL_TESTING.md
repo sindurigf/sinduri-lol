@@ -361,7 +361,7 @@ the banner, every repeated landmark named once, one `h1` opening main, no
 skipped level, an `h2` opening each region, and the home link named
 "sinduri.lol" with its mark silent.
 
-- [ ] `Alt+Shift+M` on `/about` lists the 13 landmarks the spec reads. Judge
+- [ ] `Alt+Shift+M` on `/about` lists the landmarks the spec reads. Judge
       whether the list is useful or crowded. → SC 1.3.1
 - [ ] `M` from the top steps through them in that order. → SC 1.3.1
 - [ ] The "On this page" nav lists all five spreads. → SC 2.4.6
