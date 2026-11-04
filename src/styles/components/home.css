@@ -484,10 +484,8 @@
     pointer-events: none;
   }
 
-  /* Room above each later section for the sitting rabbit's head; laptops need only a little. */
+  /* Room above each later section for the sitting rabbit's head; phones never land there, laptops need only a little. */
   .home-fall > .band ~ .band {
-    margin-block-start: --spacing(6);
-
     @variant md {
       margin-block-start: --spacing(10);
     }

@@ -2,8 +2,9 @@
  * The rabbit after its dive: it drops to the shaft's floor, then goes down the
  * page from one section to the next as the reader scrolls, landing on the
  * heading's top edge on the left and the top brick's edge on the right. Where
- * an open strip runs beside the sections it falls through that; on phones it
- * jumps across in front. home-motion.ts drives it on its clock.
+ * an open strip runs beside the sections it falls through that. Without one
+ * (phones) every way down crosses a card's text, so it stops on the first
+ * heading. home-motion.ts drives it on its clock.
  */
 import type { RabbitPose } from '../lib/rabbit-atlas';
 
@@ -15,8 +16,7 @@ const ARRIVE_SHARE = 0.7;
 const SAME_GAP_PX = 40;
 const HOP_MS_BASE = 300;
 const HOP_MS_PER_PX = 0.5;
-/* A jump across a phone's cards passes over their text: no longer than this. */
-const HOP_MS_MAX = 600;
+const HOP_MS_MAX = 900;
 const HOP_HEIGHT_SHARE = 0.25;
 const HOP_HEIGHT_MIN_PX = 12;
 const HOP_HEIGHT_MAX_PX = 70;
@@ -196,17 +196,22 @@ export const createFaller = ({
       const at = firstFree(xs, list);
       if (at) spots.push(at);
     });
+    /* With no strip, every way past the first section crosses its text: it goes no further. */
+    if (strip === undefined) {
+      const reach = spots.findIndex(
+        (s, i) => i > 0 && Math.abs(s.y - spots[i - 1]!.y) >= SAME_GAP_PX,
+      );
+      if (reach > 0) spots = spots.slice(0, reach);
+    }
   };
 
-  /* Within a gap the arc keeps under the brick above; a jump across cards has no such ceiling. */
-  const hop = (from: Spot | Point, to: Spot | Point, inGap = true): Leg => {
+  /* Within a gap the arc keeps under the brick above. */
+  const hop = (from: Spot | Point, to: Spot | Point): Leg => {
     const distance = Math.hypot(to.x - from.x, to.y - from.y);
-    const room = inGap
-      ? Math.min(
-          'room' in from ? from.room : HOP_HEIGHT_MAX_PX,
-          'room' in to ? to.room : HOP_HEIGHT_MAX_PX,
-        )
-      : HOP_HEIGHT_MAX_PX;
+    const room = Math.min(
+      'room' in from ? from.room : HOP_HEIGHT_MAX_PX,
+      'room' in to ? to.room : HOP_HEIGHT_MAX_PX,
+    );
     return {
       kind: 'hop',
       from,
@@ -229,12 +234,11 @@ export const createFaller = ({
     height: 0,
   });
 
-  /* Across one gap it hops; between gaps it hops into the strip, falls, and hops out, or jumps straight where there is no strip. */
-  const path = (from: Spot, to: Spot): Leg[] => {
+  /* Across one gap it hops; between gaps it hops into the strip, falls, and hops out. */
+  const path = (from: Spot, to: Spot, lane: number): Leg[] => {
     if (Math.abs(to.y - from.y) < SAME_GAP_PX) return [hop(from, to)];
-    if (strip === undefined) return [hop(from, to, false)];
-    const top = { x: strip, y: from.y };
-    const bottom = { x: strip, y: to.y };
+    const top = { x: lane, y: from.y };
+    const bottom = { x: lane, y: to.y };
     return [hop(from, top), drop(top, bottom), hop(bottom, to)];
   };
 
@@ -309,7 +313,7 @@ export const createFaller = ({
       leg = legs[0];
     }
     if (!leg && at < target && at + 1 < spots.length) {
-      legs = path(spots[at]!, spots[at + 1]!);
+      legs = path(spots[at]!, spots[at + 1]!, strip ?? spots[at]!.x);
       legStart = clock;
       leg = legs[0];
     }
