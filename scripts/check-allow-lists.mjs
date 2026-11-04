@@ -37,10 +37,12 @@ export const SERVED_AS_IS = new Map([
     'hero-rabbit-climb.webp',
     "the homepage rabbit and Let It Fall's climbing rabbit draw their poses from it by offset; a lossless WebP from scripts/make-climb-atlas.mjs already.",
   ],
-  ...['jar', 'book', 'picture', 'watch', 'teacup'].map((name) => [
-    `home-stickers/${name}.webp`,
-    'home.css paints a die-cut sticker, its pink throw baked in, in the homepage fall with it; a WebP already, drawn at most at its own 211px.',
-  ]),
+  ...['jar', 'book', 'picture', 'watch', 'teacup']
+    .flatMap((name) => [name, `${name}-ink`])
+    .map((name) => [
+      `home-stickers/${name}.webp`,
+      'home.css paints a die-cut sticker in the homepage fall with it, its throw baked in: pink, or ink in light mode; a WebP already, drawn at most at its own 211px.',
+    ]),
   [
     'social-icons.svg',
     'the footer imports it with `?url` and every page links it as a <use> sprite.',

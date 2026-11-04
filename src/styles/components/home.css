@@ -626,6 +626,29 @@
   }
 }
 
+/* Light mode throws ink, like every other shadow there; the image swaps because the throw is baked in. */
+@layer components {
+  :is(:root[data-theme='light'] main, main .mode-light) .home-prop-jar {
+    --print: url('../../assets/home-stickers/jar-ink.webp');
+  }
+
+  :is(:root[data-theme='light'] main, main .mode-light) .home-prop-book {
+    --print: url('../../assets/home-stickers/book-ink.webp');
+  }
+
+  :is(:root[data-theme='light'] main, main .mode-light) .home-prop-picture {
+    --print: url('../../assets/home-stickers/picture-ink.webp');
+  }
+
+  :is(:root[data-theme='light'] main, main .mode-light) .home-prop-watch {
+    --print: url('../../assets/home-stickers/watch-ink.webp');
+  }
+
+  :is(:root[data-theme='light'] main, main .mode-light) .home-prop-teacup {
+    --print: url('../../assets/home-stickers/teacup-ink.webp');
+  }
+}
+
 /* The meadow stays gold in light mode: the hole needs ground above it in both. */
 @layer utilities {
   :is(:root[data-theme='light'] main, main .mode-light)
