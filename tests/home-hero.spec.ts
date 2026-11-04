@@ -13,6 +13,13 @@ const VIEWPORTS = [
   [305, 568],
 ] as const;
 
+/** The fall is checked at this many scroll positions, a few clock steps at each, so hops and drops are caught midway. */
+const FALL_SCROLL_STEPS = 12;
+const FALL_FRAMES = 6;
+const FALL_FRAME_MS = 150;
+/** Longer than the dive's leap and drop in home-motion.ts. */
+const DIVE_MS = 1000;
+
 /** Steps through a full rise of Alice's things: 40 frames 1.5s apart cover a 60s cycle. */
 const DRIFT_SAMPLES = 40;
 const DRIFT_STEP_MS = 1500;
@@ -31,7 +38,7 @@ const SUBPIXEL_TOLERANCE = 0.5;
 const skipStemRaster = (page: Page) =>
   page.addInitScript(() => {
     const canvas = CanvasRenderingContext2D.prototype;
-    for (const name of ['stroke', 'fill', 'clearRect'] as const)
+    for (const name of ['stroke', 'fill', 'clearRect', 'drawImage'] as const)
       canvas[name] = () => undefined;
   });
 
@@ -44,7 +51,7 @@ const open = async (page: Page, width: number, height: number) => {
   /* The meadow strip ignores the pointer; hit-testing it here makes `elementFromPoint` follow paint order. */
   await page.addStyleTag({
     content:
-      '[data-home-band], [data-home-band] *, [data-home-mouth], [data-home-prop], [data-home-prop] * { pointer-events: auto !important; }',
+      '[data-home-band], [data-home-band] *, [data-home-mouth], .home-hole, .home-hole *, [data-home-faller], [data-home-faller] *, [data-home-prop], [data-home-prop] * { pointer-events: auto !important; }',
   });
 };
 
@@ -135,7 +142,7 @@ test.describe('the homepage meadow', () => {
           ...(await coveredBy(
             page,
             '.home-meadow',
-            '[data-home-band], [data-home-mouth]',
+            '[data-home-band], [data-home-mouth], .home-hole',
           )),
         );
         await page.clock.runFor(DRIFT_STEP_MS);
@@ -331,6 +338,48 @@ test.describe('the rabbit', () => {
     });
   }
 
+  for (const [width, height] of VIEWPORTS) {
+    test(`goes down the fall without covering text or a control at ${width}x${height} (SC 1.4.3, 2.4.11)`, async ({
+      page,
+    }) => {
+      await open(page, width, height);
+      await page.locator('[data-home-band]').scrollIntoViewIfNeeded();
+      /* By keyboard: the forced pointer events above put the stems over the button. */
+      await page.locator('[data-home-follow]').focus();
+      await page.keyboard.press('Enter');
+      await page.clock.runFor(DIVE_MS);
+      await expect(page.locator('.home-fall')).toHaveAttribute(
+        'data-rabbit-fell',
+        '',
+      );
+      const [from, to] = await page.evaluate(() => [
+        window.scrollY,
+        document.documentElement.scrollHeight - window.innerHeight,
+      ]);
+      const hits: string[] = [];
+      for (let step = 0; step <= FALL_SCROLL_STEPS; step += 1) {
+        await page.evaluate(
+          (y) => window.scrollTo(0, y),
+          from + ((to - from) * step) / FALL_SCROLL_STEPS,
+        );
+        for (let frame = 0; frame < FALL_FRAMES; frame += 1) {
+          await page.clock.runFor(FALL_FRAME_MS);
+          hits.push(
+            ...(await coveredBy(
+              page,
+              '.home-fall',
+              '[data-home-faller], .home-hole',
+            )),
+          );
+        }
+      }
+      expect(
+        hits,
+        'the falling rabbit or the shaft sits on top of text or a control',
+      ).toEqual([]);
+    });
+  }
+
   test('lands inside the fall, never over the footer (SC 1.4.3)', async ({
     page,
   }) => {
@@ -360,7 +409,7 @@ test.describe('the rabbit', () => {
     ).toBeLessThanOrEqual(SUBPIXEL_TOLERANCE);
   });
 
-  test('under reduced motion goes straight to the lane, without moving (SC 2.3.3)', async ({
+  test('under reduced motion rests at once, without moving (SC 2.3.3)', async ({
     page,
   }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
