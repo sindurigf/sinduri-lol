@@ -179,11 +179,13 @@
     background: none;
   }
 
+  /* Own layers: the masked shaft is costly to paint, and the stems redraw beside it every frame. */
   .home-hole,
   .home-hole-lip {
     position: absolute;
     overflow: visible;
     pointer-events: none;
+    will-change: transform;
   }
 
   .home-hole {
