@@ -278,7 +278,7 @@ const STILL_CHECK_MS = 600;
 const TARGET_PX = 44;
 
 test.describe('the rabbit', () => {
-  test('is a named button with a 44px target that hands focus to the page when it dives (SC 4.1.2, 2.5.5, 2.4.3)', async ({
+  test('is a named button with a 44px target (SC 4.1.2, 2.5.5)', async ({
     page,
   }) => {
     await gotoSettled(page, '/');
@@ -295,18 +295,56 @@ test.describe('the rabbit', () => {
       box?.height ?? 0,
       'the rabbit is shorter than a target',
     ).toBeGreaterThanOrEqual(TARGET_PX);
+  });
 
+  for (const path of ['paused', 'moving'] as const) {
+    test(`hands focus to the fall's pause control when it dives, ${path} (SC 2.4.3)`, async ({
+      page,
+    }) => {
+      await gotoSettled(page, '/');
+      if (path === 'paused')
+        await page.locator('[data-home-pause]').first().click();
+      const rabbit = page.locator('[data-home-follow]');
+      await rabbit.focus();
+      await page.keyboard.press('Enter');
+      await expect(page.locator('.home-fall')).toHaveAttribute(
+        'data-rabbit-fell',
+        '',
+      );
+      await expect(
+        page.locator('.home-fall [data-home-pause]'),
+        'focus did not move on to the next control when the rabbit went',
+      ).toBeFocused();
+    });
+  }
+
+  test('lands inside the fall, never over the footer (SC 1.4.3)', async ({
+    page,
+  }) => {
+    await gotoSettled(page, '/');
     await page.locator('[data-home-pause]').first().click();
-    await rabbit.focus();
-    await page.keyboard.press('Enter');
+    await page.locator('[data-home-follow]').click();
     await expect(page.locator('.home-fall')).toHaveAttribute(
       'data-rabbit-fell',
       '',
     );
-    await expect(
-      page.locator('main'),
-      'focus was lost when the rabbit went',
-    ).toBeFocused();
+    await page.evaluate(() =>
+      window.scrollTo(0, document.documentElement.scrollHeight),
+    );
+    const overflow = await page.evaluate(() => {
+      const fall = document.querySelector('.home-fall');
+      const rabbit = document.querySelector('.home-faller-spin');
+      if (!fall || !rabbit)
+        throw new Error('the fall or the falling rabbit is not on the page.');
+      return (
+        rabbit.getBoundingClientRect().bottom -
+        fall.getBoundingClientRect().bottom
+      );
+    });
+    expect(
+      overflow,
+      'the landed rabbit hangs below the fall, over the footer',
+    ).toBeLessThanOrEqual(SUBPIXEL_TOLERANCE);
   });
 
   test('under reduced motion goes straight to the lane, without moving (SC 2.3.3)', async ({
