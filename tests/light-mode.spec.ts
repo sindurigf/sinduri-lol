@@ -210,8 +210,14 @@ test.describe('light mode focus ring stands out from the page, and from the cont
   }
 });
 
+/* `md` and the `tab` variant (86rem) in px. */
+const MD_PX = 768;
+const TAB_PX = 1376;
+
 const switchButton = (page: Page) =>
-  page.locator('header').getByRole('button', { name: 'Theme', exact: true });
+  page
+    .locator('header')
+    .getByRole('button', { name: /^Theme( and Text Size)?$/ });
 const headerMenu = (page: Page) => page.locator('header #theme-menu');
 const radio = (page: Page, value: string) =>
   headerMenu(page).locator(`input[value="${value}"]`);
@@ -482,11 +488,15 @@ test.describe('the theme menu', () => {
     expect(button?.height).toBeGreaterThanOrEqual(MIN_TARGET);
     await switchButton(page).click();
     for (const row of await headerMenu(page).locator('label').all()) {
-      const box = await row.boundingBox();
-      expect(box?.height, 'a choice is under 44px tall').toBeGreaterThanOrEqual(
+      /* The layout box, not boundingBox(): Firefox reports a 44px row placed at 157.8px as 43.99998. */
+      const box = await row.evaluate((el) => {
+        const { width, height } = el.getBoundingClientRect();
+        return { width, height };
+      });
+      expect(box.height, 'a choice is under 44px tall').toBeGreaterThanOrEqual(
         MIN_TARGET,
       );
-      expect(box?.width).toBeGreaterThanOrEqual(MIN_TARGET);
+      expect(box.width).toBeGreaterThanOrEqual(MIN_TARGET);
     }
   });
 
@@ -592,6 +602,10 @@ test.describe('the theme menu', () => {
   /* SC 1.3.1: the glyph says the theme in use; the name stays fixed. */
   test('the icon follows the theme in use', async ({ page }) => {
     await gotoSettled(page, '/about');
+    /* From `md` until the edge tab its popover also holds the text size group. */
+    const width = page.viewportSize()?.width ?? 0;
+    const name =
+      width >= MD_PX && width < TAB_PX ? 'Theme and Text Size' : 'Theme';
     const sun = page.locator('header .theme-switch-sun');
     const moon = page.locator('header .theme-switch-moon');
     await expect(moon).toBeVisible();
@@ -599,7 +613,7 @@ test.describe('the theme menu', () => {
     await choose(page, 'Light');
     await expect(sun).toBeVisible();
     await expect(moon).toBeHidden();
-    await expect(switchButton(page)).toHaveAccessibleName('Theme');
+    await expect(switchButton(page)).toHaveAccessibleName(name);
   });
 
   /* SC 1.4.3: no dark frame of <main> before a saved light choice applies. */

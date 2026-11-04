@@ -575,33 +575,33 @@ with a comment beside it.
 Component classes live in `@layer components` in `src/styles/components/`, one
 file per area.
 
-| Class                                   | What                                                                                                                                                                                                                                                                 |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.btn-primary`                          | Gold fill, `gold-text` label, `border-4`, pink 4px shadow, `text-button` 900                                                                                                                                                                                         |
-| `.btn-secondary`                        | Light block: `block-light` fill, `block-ink` label and `border-4`, pink 4px shadow                                                                                                                                                                                   |
-| `.actions`                              | Button row; its 32px row gap clears shadow and ring when buttons wrap                                                                                                                                                                                                |
-| `.card`                                 | A gold block: `block-gold`, 4px `block-ink` edge, pink 8px shadow, padding 24px, 40px from `sm`                                                                                                                                                                      |
-| `.card-title`                           | Every card heading, `text-h3` 900                                                                                                                                                                                                                                    |
-| `.card-link`                            | Title link; a short press on the card follows it, text stays selectable (`card-click.ts`); inline-block, 44px min; card hover turns title and shadow cyan                                                                                                            |
-| `.card-solid`                           | A light block outside a `.card-block`, where alternation does not reach it                                                                                                                                                                                           |
-| `.card-block`                           | A wall: blocks share 4px walls, alternate gold and light, and step up to the right (`card-rise-*`, `card-step-*` from `src/lib/wall.ts`); each brick casts the throw, the next covers it                                                                             |
-| `.lead`                                 | Paragraph under a section heading, `text-lead` 400, 24px under it                                                                                                                                                                                                    |
-| `.standfirst`                           | Line beside PageHero's title, `text-standfirst` 400                                                                                                                                                                                                                  |
-| `.bullet-list`                          | Bulleted list, gold markers                                                                                                                                                                                                                                          |
-| `.chip`                                 | Tags, jump links, filters, pager. Always a link. `border-4`, 44px target; a chip list is `gap-6`. The blog filter and pager are a `.chip-row`: joined light bricks, one throw, the current one gold with an ink marker (`tests/chip-row.spec.ts`)                    |
-| `.badge`                                | A non-link fact or state. Flat `bg-text`, `background` label, no border or shadow                                                                                                                                                                                    |
-| `.nav-cta`                              | Nav call to action: gold, `border-4` in `text`; a brick in the header row, its own 6px throw in the menu; current takes `--inset-shadow-current`                                                                                                                     |
-| `.label`                                | `text-label` 900 uppercase, 0.1em                                                                                                                                                                                                                                    |
-| `.link`                                 | Running-text underline for a classed standalone link                                                                                                                                                                                                                 |
-| `.abbr-trigger`, `.abbr-tip`            | An abbreviation's first use (`src/components/Abbr.astro`): dotted underline; the expansion is a popover in a `surface` box flush below it; inline in brackets where popovers are missing. Punctuation right after it goes in `after`, so a line never starts with it |
-| `.page-gutter`, `max-w-page`, `.band`   | [Gutter and column](#gutter-and-column)                                                                                                                                                                                                                              |
-| `.skip-link`                            | Skip link, visible on focus                                                                                                                                                                                                                                          |
-| `.motion-toggle`                        | 44px SC 2.2.2 pause control; position from a second class                                                                                                                                                                                                            |
-| `.theme-switch`, `.theme-menu`          | 44px gold brick showing the theme in use (moon, sun), named "Theme"; opens a popover `surface` box, 6px `border` edge, pink throw, a "Theme" fieldset of System, Light and Dark radios in 44px rows, `text` accent                                                   |
-| `.prose`                                | Rendered Markdown (no typography plugin)                                                                                                                                                                                                                             |
-| `.aspect-frame`                         | Every photo: [Photo frames](#photo-frames-and-the-failed-photo-state)                                                                                                                                                                                                |
-| `.surface-gold`, `.btn-gold-*`          | [Gold surface](#gold-surface)                                                                                                                                                                                                                                        |
-| `.hero*`, `.post-layout`, `.footer-*` … | Page-specific, documented in place                                                                                                                                                                                                                                   |
+| Class                                   | What                                                                                                                                                                                                                                                                     |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `.btn-primary`                          | Gold fill, `gold-text` label, `border-4`, pink 4px shadow, `text-button` 900                                                                                                                                                                                             |
+| `.btn-secondary`                        | Light block: `block-light` fill, `block-ink` label and `border-4`, pink 4px shadow                                                                                                                                                                                       |
+| `.actions`                              | Button row; its 32px row gap clears shadow and ring when buttons wrap                                                                                                                                                                                                    |
+| `.card`                                 | A gold block: `block-gold`, 4px `block-ink` edge, pink 8px shadow, padding 24px, 40px from `sm`                                                                                                                                                                          |
+| `.card-title`                           | Every card heading, `text-h3` 900                                                                                                                                                                                                                                        |
+| `.card-link`                            | Title link; a short press on the card follows it, text stays selectable (`card-click.ts`); inline-block, 44px min; card hover turns title and shadow cyan                                                                                                                |
+| `.card-solid`                           | A light block outside a `.card-block`, where alternation does not reach it                                                                                                                                                                                               |
+| `.card-block`                           | A wall: blocks share 4px walls, alternate gold and light, and step up to the right (`card-rise-*`, `card-step-*` from `src/lib/wall.ts`); each brick casts the throw, the next covers it                                                                                 |
+| `.lead`                                 | Paragraph under a section heading, `text-lead` 400, 24px under it                                                                                                                                                                                                        |
+| `.standfirst`                           | Line beside PageHero's title, `text-standfirst` 400                                                                                                                                                                                                                      |
+| `.bullet-list`                          | Bulleted list, gold markers                                                                                                                                                                                                                                              |
+| `.chip`                                 | Tags, jump links, filters, pager. Always a link. `border-4`, 44px target; a chip list is `gap-6`. The blog filter and pager are a `.chip-row`: joined light bricks, one throw, the current one gold with an ink marker (`tests/chip-row.spec.ts`)                        |
+| `.badge`                                | A non-link fact or state. Flat `bg-text`, `background` label, no border or shadow                                                                                                                                                                                        |
+| `.nav-cta`                              | Nav call to action: gold, `border-4` in `text`; a brick in the header row, its own 6px throw in the menu; current takes `--inset-shadow-current`                                                                                                                         |
+| `.label`                                | `text-label` 900 uppercase, 0.1em                                                                                                                                                                                                                                        |
+| `.link`                                 | Running-text underline for a classed standalone link                                                                                                                                                                                                                     |
+| `.abbr-trigger`, `.abbr-tip`            | An abbreviation's first use (`src/components/Abbr.astro`): dotted underline; the expansion is a popover in a `surface` box flush below it; inline in brackets where popovers are missing. Punctuation right after it goes in `after`, so a line never starts with it     |
+| `.page-gutter`, `max-w-page`, `.band`   | [Gutter and column](#gutter-and-column)                                                                                                                                                                                                                                  |
+| `.skip-link`                            | Skip link, visible on focus                                                                                                                                                                                                                                              |
+| `.motion-toggle`                        | 44px SC 2.2.2 pause control; position from a second class                                                                                                                                                                                                                |
+| `.theme-switch`, `.theme-menu`          | 44px gold brick showing the theme in use (moon, sun), named "Theme" (from `md` until the edge tab, "Theme and Text Size"); opens a popover `surface` box, 6px `border` edge, pink throw, a "Theme" fieldset of System, Light and Dark radios in 44px rows, `text` accent |
+| `.prose`                                | Rendered Markdown (no typography plugin)                                                                                                                                                                                                                                 |
+| `.aspect-frame`                         | Every photo: [Photo frames](#photo-frames-and-the-failed-photo-state)                                                                                                                                                                                                    |
+| `.surface-gold`, `.btn-gold-*`          | [Gold surface](#gold-surface)                                                                                                                                                                                                                                            |
+| `.hero*`, `.post-layout`, `.footer-*` … | Page-specific, documented in place                                                                                                                                                                                                                                       |
 
 ### Control states
 
@@ -1258,7 +1258,23 @@ No rule or divider joins the footer to the page.
 `src/scripts/mobile-menu.ts`, `src/lib/nav.ts`.
 Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 `tests/no-script.spec.ts`, `tests/states.spec.ts`, `tests/focus.spec.ts`,
-`tests/header-fit.spec.ts` and `tests/sticky-header.spec.ts`.
+`tests/header-fit.spec.ts`, `tests/sticky-header.spec.ts` and
+`tests/report-band.spec.ts`.
+
+### Report band
+
+- An `<aside>` named "Accessibility help" above `<header>`, on the page ground
+  in both modes. It scrolls away; the header still sticks.
+- One link, `REPORT_LINK` in `src/lib/nav.ts`: "Report an Accessibility
+  Problem", to Report a Barrier on `/accessibility`, on that page too. Second
+  in tab order, after the skip link (SC 2.4.1, 3.2.6).
+- `text-label`, `font-black`, `.link` underline in `text` (15.28), cyan on
+  hover. `.hit-target` makes the 44px target. The band is at least 44px
+  (`--spacing-target`) and grows as the link wraps at larger text; its
+  8px padding keeps the ring inside it, clear of the header.
+- Its row takes the bar's margins, so the link ends where the bar does.
+- The slim header's sentinel marks the full header's place under the band.
+- Print hides it with everything outside `<main>`.
 
 ### By width
 
@@ -1299,7 +1315,7 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 
 ### By height
 
-- Sticky, 104px (`--spacing-header`): the 80px bar and 12px above and below;
+- Sticky, 104px (`--spacing-header`), under the report band: the 80px bar and 12px above and below;
   `tests/header-fit.spec.ts` holds both.
 - Once the page scrolls past it, the header goes slim
   (`src/scripts/header-compact.ts`): 80px (`--spacing-header-compact`), a 68px

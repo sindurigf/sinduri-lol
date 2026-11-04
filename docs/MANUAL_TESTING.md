@@ -72,8 +72,8 @@ Setup: Chrome, 1280px, `/`, focus in the address bar.
 - [ ] First Tab lands on "Skip to main content", visible at top left. → SC 2.4.1, 2.4.7
 - [ ] Enter on it: focus moves to main, which shows a cyan outline. → SC 2.4.1
 - [ ] Next Tab reaches the first control in the page (the hero pause control on `/`), not the header. → SC 2.4.1
-- [ ] Reload and Tab through: skip link, logo, About, Career, Blog, the
-      "Theme" button, Get in Touch, the page, footer Social (GitHub, LinkedIn,
+- [ ] Reload and Tab through: skip link, Report an Accessibility Problem, logo, About, Career, Blog, the
+      "Theme and Text Size" button, Get in Touch, the "Aa Text Size" tab at 86rem and up, the page, footer Social (GitHub, LinkedIn,
       Instagram, Bluesky, Mastodon, Drupal, Email), Site (Home, About, Career,
       Blog), About this site (in the order of `POLICY_LINKS` in
       `Footer.astro`), Let It Fall. Re-read `Footer.astro` when a footer
@@ -214,7 +214,7 @@ reload and `/career`, System removing the key and following the device live,
 its place at 320 and 1280px, its ring, forced colors, the theme set before
 `<body>`, and no switch without JavaScript. These checks are the rest.
 
-- [ ] By ear: the button is announced "Theme", "button", collapsed or
+- [ ] By ear: the button is announced "Theme and Text Size", "button", collapsed or
       expanded; open, the group "Theme" and each radio, "System", "Light",
       "Dark", with its checked state. → SC 4.1.2
 - [ ] Tab to the button: a ring shows with a gap, on the dark header. → SC 2.4.7
@@ -347,6 +347,9 @@ Setup: Firefox, 1280px, `/`, click the address bar, Tab once.
       the reading cursor moved. → SC 2.4.1
 - [ ] Tab lands on the hero pause control (reduced motion off; with it on,
       there is no pause control). → SC 2.4.1
+- [ ] Reload and Tab twice: "Report an Accessibility Problem", a link in the
+      "Accessibility help" landmark; Enter opens Report a Barrier on
+      `/accessibility`. → SC 2.4.1, 3.2.6
 
 Heard: `________________________`
 
@@ -377,8 +380,8 @@ Heard / listed: `________________________`
 ### 6.7 The mobile menu at 320px
 
 Setup: Firefox at 320px (window, or Responsive Design Mode with DevTools
-detached), `/`, `Ctrl+Home`, Tab four times to the menu button (skip link, logo, theme
-switch, menu).
+detached), `/`, `Ctrl+Home`, Tab six times to the menu button (skip link, Report an
+Accessibility Problem, logo, theme switch, Aa, menu).
 
 - [ ] The button says "Menu", "button" and collapsed. → SC 4.1.2
 - [ ] Enter: "Menu" and "dialog" announced. → SC 4.1.2

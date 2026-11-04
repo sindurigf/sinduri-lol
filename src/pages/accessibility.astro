@@ -4,6 +4,7 @@ import Abbr from '../components/Abbr.astro';
 import PageHero from '../components/PageHero.astro';
 import { accessibilityFacts } from '../lib/accessibility-facts';
 import { formatPostDate } from '../lib/post-date';
+import { REPORT_BARRIER_ID } from '../lib/paths';
 
 /* A summary of ACCESSIBILITY.md; the volatile facts are derived from it at build time. */
 const {
@@ -31,9 +32,9 @@ const FULL_RECORD =
   {/* The title carries a U+00AD soft hyphen after "Acces": it only paints at a line break. */}
   <PageHero title="Acces­sibility" measure="reading" slab="none">
     <p class="standfirst">
-      Target: <Abbr short="WCAG" long="Web Content Accessibility Guidelines" />
+      Target: <Abbr short="WCAG" long="Web Content Accessibility Guidelines" />{' '}
       2.2 Level{' '}
-      <Abbr short="AA" long="the middle of WCAG's three levels" after="," />
+      <Abbr short="AA" long="the middle of WCAG's three levels" after="," />{' '}
       every Level A and AA success criterion. Also{' '}
       <Abbr short="SC" long="success criterion" /> 1.4.6 Contrast (Enhanced) for
       text, and the{' '}
@@ -147,13 +148,15 @@ const FULL_RECORD =
           <p>
             With JavaScript on, Drink Me, Eat Me and Just Right make the reading
             text smaller or larger, from 75 to 200 percent. On a wide screen
-            they are in a tab on the right edge, named Aa Text Size. On a phone
-            an Aa button in the header opens them. In between they are in the
-            Theme menu. Escape closes the tab and returns you to its button.
-            Pressing elsewhere, or tabbing away, closes it too. If a larger size
-            would make the page scroll sideways, the page keeps the largest size
-            that fits and says so. On some pages and screens the text stops
-            below 200 percent. Your browser's own zoom still works.
+            they are in a tab on the right edge, named Aa Text Size, and the tab
+            is the next stop after the header when you press Tab. On a phone an
+            Aa button in the header opens them. In between they are in the Theme
+            menu, whose button is then named Theme and Text Size. Escape closes
+            the tab and returns you to its button. Pressing elsewhere, or
+            tabbing away, closes it too. If a larger size would make the page
+            scroll sideways, the page keeps the largest size that fits and says
+            so. On some pages and screens the text stops below 200 percent. Your
+            browser's own zoom still works.
           </p>
           <p>
             Learn more:{' '}
@@ -172,7 +175,8 @@ const FULL_RECORD =
             every visible focusable element with no trap. Each stop shows a
             ring, and no part of it sits under the sticky header. Every stop in
             the open cat card, photo viewer and menu is wholly uncovered. A skip
-            link moves focus to the main content.
+            link moves focus to the main content. The next stop on every page is
+            the link to report an accessibility problem.
           </p>
           <p>
             You can reach every link and button with the Tab key, and the page
@@ -700,7 +704,7 @@ const FULL_RECORD =
             .
           </p>
 
-          <h2>Report a Barrier</h2>
+          <h2 id={REPORT_BARRIER_ID}>Report a Barrier</h2>
 
           <p>
             If something here blocks you, please say so. You do not need to know
