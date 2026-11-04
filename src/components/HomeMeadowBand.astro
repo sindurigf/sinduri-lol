@@ -1,9 +1,10 @@
 ---
 /*
- * The meadow's floor: living stems drawn by src/scripts/home-meadow.ts on two
- * canvases, behind and in front of the rabbit, over a row of joined bricks and
- * the hole between two posts. The planted SVGs are the no-JS meadow.
+ * The meadow's floor: stems drawn by src/scripts/home-meadow.ts from the
+ * art atlas, over a row of joined bricks and the hole. The planted SVGs are
+ * the no-JS meadow.
  */
+import meadowArt from '../assets/home-meadow.webp';
 type Plant = 'stem' | 'flower' | 'sprout' | null;
 /* One entry per brick; a plant sits on top of the brick that names it. */
 const LEFT: Plant[] = [
@@ -21,7 +22,7 @@ const LEFT: Plant[] = [
 const RIGHT: Plant[] = ['sprout', null];
 ---
 
-<div class="home-band" data-home-band>
+<div class="home-band" data-home-band data-home-art={meadowArt.src}>
   <canvas class="home-stems" aria-hidden="true" data-home-stems="haze"></canvas>
   <canvas class="home-stems" aria-hidden="true" data-home-stems="back"></canvas>
   <span class="home-hopper" data-home-hopper>

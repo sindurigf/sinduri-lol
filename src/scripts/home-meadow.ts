@@ -1,127 +1,122 @@
 /*
- * Living stems: the planted-brick plants (ink stems, olive buds, a closed pink
- * bud, two-leaf sprouts) in four depth layers, hazed toward the gold behind,
- * each swaying on its own and bending away from the rabbit. It has no frame
- * loop of its own: home-motion.ts calls draw(), so the pause and reduced motion hold it.
+ * The meadow: thin die-cut grasses and small dark buds from one art atlas, in
+ * three rows. The two back rows are soft grey silhouettes drawn once; the front
+ * row leans in one travelling wind wave and bends away from the rabbit. It has
+ * no frame loop of its own: home-motion.ts calls draw(), so the pause and
+ * reduced motion hold it.
  */
 
-type Kind = 'bud' | 'flower' | 'sprout';
+/* Each drawing's place in the atlas: [x, width] in atlas px; every one is ATLAS_HEIGHT tall. */
+const ART = {
+  c2: [0, 63],
+  c6: [65, 33],
+  c9: [100, 52],
+  g0: [154, 40],
+  g1: [196, 38],
+  g3: [236, 47],
+  g4: [285, 36],
+  g6: [323, 40],
+  g7: [365, 23],
+  g9: [390, 34],
+  g11: [426, 46],
+  b0: [474, 56],
+  b2: [532, 47],
+  b4: [581, 48],
+  b6: [631, 48],
+} as const satisfies Record<string, readonly [number, number]>;
+type Art = keyof typeof ART;
+const ATLAS_HEIGHT = 320;
 
-interface Layer {
-  /** Stems per 100 CSS px of band. */
-  readonly density: number;
-  /** Share of the band's height. */
+const SOFT: readonly Art[] = [
+  'g0',
+  'g1',
+  'g3',
+  'g4',
+  'g6',
+  'g7',
+  'g9',
+  'g11',
+  'b0',
+  'b2',
+  'b4',
+  'b6',
+];
+const BUDS: readonly Art[] = ['c2', 'c6', 'c9'];
+const GRASS: readonly Art[] = [
+  'c9',
+  'c9',
+  'g0',
+  'g1',
+  'g3',
+  'g4',
+  'g6',
+  'g9',
+  'g11',
+];
+
+interface Row {
+  /** Mean px between stems; phones space them by PHONE_GAP. */
+  readonly gap: number;
+  /** Stem height as a share of the ground's height above the band's top. */
   readonly height: readonly [number, number];
-  readonly line: number;
-  readonly alpha: number;
-  /** Tip push in px when the rabbit is beside the stem. */
-  readonly push: number;
-  /** Bud and leaf scale. */
-  readonly size: number;
-  readonly front: boolean;
-  /** Drawn once per size on its own canvas, without sway: the costliest layers, too faint for motion to show. */
-  readonly haze: boolean;
+  /** Back rows only: share of the way from ink to light, painted opaque so the gold never mixes in. */
+  readonly tone?: number;
+  readonly plain: readonly Art[];
+  /** Odds a stem carries a bud on a long ink stem instead of a whole drawing. */
+  readonly bud: number;
 }
 
-/* Back layers haze by opacity, not a gold veil: a veil's compositing rounds the ground's gold and its edges show. */
-const LAYERS: readonly Layer[] = [
-  {
-    density: 9,
-    height: [0.2, 0.34],
-    line: 1,
-    alpha: 0.2,
-    push: 4,
-    size: 0.45,
-    front: false,
-    haze: true,
-  },
-  {
-    density: 7,
-    height: [0.28, 0.46],
-    line: 1.3,
-    alpha: 0.5,
-    push: 10,
-    size: 0.6,
-    front: false,
-    haze: true,
-  },
-  {
-    density: 4.5,
-    height: [0.36, 0.58],
-    line: 1.7,
-    alpha: 1,
-    push: 20,
-    size: 0.8,
-    front: false,
-    haze: false,
-  },
-  {
-    density: 1.4,
-    height: [0.5, 0.72],
-    line: 2.2,
-    alpha: 1,
-    push: 34,
-    size: 1,
-    front: true,
-    haze: false,
-  },
+const ROWS: readonly Row[] = [
+  { gap: 14, height: [0.3, 0.44], tone: 0.5, plain: SOFT, bud: 0 },
+  { gap: 22, height: [0.44, 0.62], tone: 0.3, plain: SOFT, bud: 0 },
+  { gap: 30, height: [0.78, 1.04], plain: GRASS, bud: 0.35 },
 ];
-
-const KIND_ODDS: readonly [Kind, number][] = [
-  ['flower', 0.07],
-  ['sprout', 0.2],
-  ['bud', 1],
-];
-const BRANCH_ODDS = 0.4;
-const BRANCH_AT = 0.55;
-const BRANCH_REACH = 0.22;
-const SPROUT_HEIGHT = 0.35;
-const LEAN_PX = 8;
-const SWAY_PX = [2.5, 6] as const;
-const SWAY_PERIOD_S = [2.6, 5.2] as const;
-/* A bud nods behind its stem by this share of a sway cycle. */
-const NOD_LAG = 0.12;
-/* The tip's nod, as a share of the stem's sway. */
-const NOD_SHARE = 0.3;
-/* Where a side branch's curve bends, as shares of its reach. */
-const BRANCH_CURVE_X = 0.5;
-const BRANCH_CURVE_Y = 0.4;
-/* Radians a bud leans: a side bud by branch side, a tip bud with the sway. */
-const BRANCH_BUD_TILT = 0.5;
-const BUD_TILT = 0.08;
-const REACH_PX = 80;
-/* Share of the gap to the target bend closed per frame: a soft spring. */
-const BEND_EASE = 0.16;
+const PHONE_WIDTH = 600;
+const PHONE_GAP = 0.75;
+/* Each gap varies by this much either way. */
+const GAP_JITTER = 0.35;
+/* A bud's drawing shrinks to this share of the stem; an ink stem runs from the ground to it. */
+const BUD_SHARE = [0.4, 0.5] as const;
+const BUD_BOW_PX = 6;
+const SOFT_BLUR_PX = 2.2;
+/* Radians: the meadow's lean, the wave's swing, and the push beside the rabbit. */
+const LEAN = 0.06;
+const SWAY = 0.07;
+const PUSH = 0.3;
+const WAVE_PERIOD_S = 4.4;
+const WAVE_LENGTH_PX = 760;
+const REACH_PX = 90;
+/* Each stem's phase differs by up to this many radians. */
+const JITTER = 0.5;
 const HOLE_CLEAR_PX = 8;
-const SEED = 9137;
-const CONTROL_RISE = 0.55;
-const CONTROL_LEAN = 0.3;
-const OUTLINE = 1.2;
+/* A stem this close to the hole's edge is left out of the front row. */
+const STEM_CLEAR_PX = 16;
+const SEED = 5171;
 const FULL_TURN = Math.PI * 2;
 
 interface Stem {
+  readonly art: Art;
   readonly x: number;
   readonly height: number;
-  readonly lean: number;
-  readonly sway: number;
-  readonly period: number;
-  readonly phase: number;
-  readonly layer: Layer;
-  readonly kind: Kind;
-  readonly branch: number;
-  bend: number;
+  /** 1 for a whole drawing; less for a bud on a long ink stem. */
+  readonly head: number;
+  readonly bow: number;
+  readonly flip: boolean;
+  readonly jitter: number;
 }
 
-interface Palette {
-  readonly ink: string;
-  readonly bud: string;
-  readonly flower: string;
+/* One drawing, ready to stamp: both facings, and where its stem meets the ground and how wide it is. */
+interface Cut {
+  readonly image: HTMLCanvasElement;
+  readonly flipped: HTMLCanvasElement;
+  readonly root: number;
+  readonly stemWidth: number;
 }
 
 export interface Meadow {
   /**
-   * Draws at `seconds` of meadow time; `still` draws upright stems with no sway
-   * or bend. `rabbitX` is the rabbit's centre in band px, or -Infinity once it is gone.
+   * Draws at `seconds` of meadow time; `still` draws the stems at rest with no
+   * wave or bend. `rabbitX` is the rabbit's centre in band px, or -Infinity once it is gone.
    */
   draw: (seconds: number, still: boolean, rabbitX: number) => void;
 }
@@ -142,32 +137,96 @@ const seeded = (seed: number): (() => number) => {
   };
 };
 
-const between = (
-  next: () => number,
-  [low, high]: readonly [number, number],
-): number => low + next() * (high - low);
-
-const pickKind = (roll: number): Kind =>
-  KIND_ODDS.find(([, odds]) => roll < odds)?.[0] ?? 'bud';
-
-const readPalette = (band: HTMLElement): Palette => {
-  const style = getComputedStyle(band);
-  const token = (name: string): string => {
-    const value = style.getPropertyValue(name).trim();
-    if (!value) throw new Error(`home-meadow: ${name} is not set.`);
-    return value;
-  };
-  return {
-    ink: token('--color-block-ink'),
-    bud: token('--color-home-grass'),
-    flower: token('--color-pink'),
-  };
-};
-
 const contextOf = (canvas: HTMLCanvasElement): CanvasRenderingContext2D => {
   const context = canvas.getContext('2d');
   if (!context) throw new Error('home-meadow: no 2D context.');
   return context;
+};
+
+const token = (element: Element, name: string): string => {
+  const value = getComputedStyle(element).getPropertyValue(name).trim();
+  if (!value) throw new Error(`home-meadow: ${name} is not set.`);
+  return value;
+};
+
+const loadImage = (src: string): Promise<HTMLImageElement> =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () =>
+      reject(new Error(`home-meadow: ${src} did not load.`));
+    image.src = src;
+  });
+
+const blankCanvas = (
+  width: number,
+  height: number,
+): [HTMLCanvasElement, CanvasRenderingContext2D] => {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  return [canvas, contextOf(canvas)];
+};
+
+/* The drawing's bottom row: where its stem stands and how wide it is. */
+const rootOf = (canvas: HTMLCanvasElement): Pick<Cut, 'root' | 'stemWidth'> => {
+  const { data, width, height } = contextOf(canvas).getImageData(
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  );
+  const SOLID = 160;
+  const MAX_STEM_PX = 4;
+  for (let y = height - 1; y >= 0; y -= 1) {
+    let sum = 0;
+    let count = 0;
+    for (let x = 0; x < width; x += 1) {
+      if ((data[(y * width + x) * 4 + 3] ?? 0) <= SOLID) continue;
+      sum += x;
+      count += 1;
+    }
+    if (count > 0)
+      return { root: sum / count, stemWidth: Math.min(count, MAX_STEM_PX) };
+  }
+  return { root: width / 2, stemWidth: 1 };
+};
+
+const cutArt = (
+  atlas: HTMLImageElement,
+  art: Art,
+  paint?: (context: CanvasRenderingContext2D, w: number, h: number) => void,
+): Cut => {
+  const [left, width] = ART[art];
+  const pad = paint ? Math.ceil(SOFT_BLUR_PX * 3) : 0;
+  const make = (flip: boolean): HTMLCanvasElement => {
+    const [canvas, context] = blankCanvas(
+      width + pad * 2,
+      ATLAS_HEIGHT + pad * 2,
+    );
+    if (paint) context.filter = `blur(${SOFT_BLUR_PX}px)`;
+    if (flip) {
+      context.translate(canvas.width, 0);
+      context.scale(-1, 1);
+    }
+    context.drawImage(
+      atlas,
+      left,
+      0,
+      width,
+      ATLAS_HEIGHT,
+      pad,
+      pad,
+      width,
+      ATLAS_HEIGHT,
+    );
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.filter = 'none';
+    paint?.(context, canvas.width, canvas.height);
+    return canvas;
+  };
+  const image = make(false);
+  return { image, flipped: make(true), ...rootOf(image) };
 };
 
 export const createMeadow = ({
@@ -178,28 +237,46 @@ export const createMeadow = ({
   mouth,
 }: MeadowParts): Meadow => {
   const far = contextOf(haze);
-  const behind = contextOf(back);
+  const near = contextOf(back);
   const over = contextOf(front);
-  const palette = readPalette(band);
-  let stems: Stem[] = [];
+  const ink = token(band, '--color-block-ink');
+  const light = token(band, '--color-block-light');
+  const src = band.dataset.homeArt;
+  let crisp: Map<Art, Cut> | undefined;
+  const soft = new Map<number, Map<Art, Cut>>();
+  let rows: { row: Row; stems: Stem[] }[] = [];
   let width = 0;
   let height = 0;
   let ground = 0;
-  let hole: readonly [number, number] = [0, 0];
+  let last: [number, boolean, number] = [0, true, Number.NEGATIVE_INFINITY];
+
+  /* Ink with `share` of light over it, painted opaque on the drawing's own shape. */
+  const toned =
+    (share: number) =>
+    (context: CanvasRenderingContext2D, w: number, h: number): void => {
+      context.globalCompositeOperation = 'source-in';
+      context.fillStyle = ink;
+      context.fillRect(0, 0, w, h);
+      context.globalCompositeOperation = 'source-atop';
+      context.globalAlpha = share;
+      context.fillStyle = light;
+      context.fillRect(0, 0, w, h);
+      context.globalAlpha = 1;
+      context.globalCompositeOperation = 'source-over';
+    };
 
   const plant = (): void => {
     const box = band.getBoundingClientRect();
     const scale = window.devicePixelRatio || 1;
     width = box.width;
     height = box.height;
-    const ledge =
-      parseFloat(getComputedStyle(band).getPropertyValue('--ledge-h')) || 0;
-    const post =
-      parseFloat(getComputedStyle(band).getPropertyValue('--post-w')) || 0;
+    const style = getComputedStyle(band);
+    const ledge = parseFloat(style.getPropertyValue('--ledge-h')) || 0;
+    const post = parseFloat(style.getPropertyValue('--post-w')) || 0;
     ground = height - ledge;
     for (const [canvas, context] of [
       [haze, far],
-      [back, behind],
+      [back, near],
       [front, over],
     ] as const) {
       canvas.width = Math.round(width * scale);
@@ -207,194 +284,148 @@ export const createMeadow = ({
       context.setTransform(scale, 0, 0, scale, 0, 0);
     }
     const opening = mouth.getBoundingClientRect();
-    hole = [
+    const hole = [
       opening.left - box.left - post - HOLE_CLEAR_PX,
       opening.right - box.left + post + HOLE_CLEAR_PX,
-    ];
+    ] as const;
     const next = seeded(SEED);
-    stems = LAYERS.flatMap((layer) => {
-      const count = Math.round((width / 100) * layer.density);
-      return Array.from({ length: count }, (): Stem | null => {
-        const x = next() * width;
-        const kind = pickKind(next());
-        const rise = between(next, layer.height) * height;
+    const pick = (list: readonly Art[]): Art =>
+      list[Math.floor(next() * list.length)] ?? list[0]!;
+    const spacing = width < PHONE_WIDTH ? PHONE_GAP : 1;
+    rows = ROWS.map((row) => {
+      const stems: Stem[] = [];
+      for (
+        let x = next() * row.gap;
+        x < width;
+        x += row.gap * spacing * (1 - GAP_JITTER + next() * GAP_JITTER * 2)
+      ) {
+        const tall =
+          ground * (row.height[0] + next() * (row.height[1] - row.height[0]));
+        /* Back rows grow on behind the open shaft; the front row stops at its edges. */
+        const inHole =
+          row.tone === undefined &&
+          x + STEM_CLEAR_PX / 2 > hole[0] &&
+          x - STEM_CLEAR_PX / 2 < hole[1];
+        const bud = next() < row.bud;
+        const head = bud
+          ? BUD_SHARE[0] + next() * (BUD_SHARE[1] - BUD_SHARE[0])
+          : 1;
         const stem: Stem = {
+          art: pick(bud ? BUDS : row.plain),
           x,
-          height: kind === 'sprout' ? rise * SPROUT_HEIGHT : rise,
-          lean: (next() - 0.5) * 2 * LEAN_PX,
-          sway: between(next, SWAY_PX),
-          period: between(next, SWAY_PERIOD_S),
-          phase: next() * FULL_TURN,
-          layer,
-          kind,
-          branch:
-            kind === 'bud' && next() < BRANCH_ODDS
-              ? next() < 0.5
-                ? -1
-                : 1
-              : 0,
-          bend: 0,
+          height: tall,
+          head,
+          bow: (next() - 0.5) * BUD_BOW_PX,
+          flip: next() < 0.5,
+          jitter: (next() - 0.5) * JITTER,
         };
-        return x > hole[0] && x < hole[1] ? null : stem;
-      }).filter((stem): stem is Stem => stem !== null);
+        if (!inHole) stems.push(stem);
+      }
+      return { row, stems };
     });
   };
 
-  const blob = (
-    context: CanvasRenderingContext2D,
-    fill: string,
-    line: number,
-    trace: () => void,
-  ): void => {
-    context.beginPath();
-    trace();
-    context.fillStyle = fill;
-    context.fill();
-    context.lineWidth = line;
-    context.strokeStyle = palette.ink;
-    context.stroke();
-  };
-
-  const drawStem = (
-    context: CanvasRenderingContext2D,
+  const angle = (
     stem: Stem,
     seconds: number,
     still: boolean,
-    near: number,
-  ): void => {
-    const { layer } = stem;
-    const away = stem.x - near;
-    const target =
-      still || Math.abs(away) > REACH_PX
+    rabbitX: number,
+  ): number => {
+    if (still) return LEAN;
+    const wave = Math.sin(
+      FULL_TURN * (seconds / WAVE_PERIOD_S - stem.x / WAVE_LENGTH_PX) +
+        stem.jitter,
+    );
+    const away = stem.x - rabbitX;
+    const bend =
+      Math.abs(away) > REACH_PX
         ? 0
-        : Math.sign(away) * layer.push * (1 - Math.abs(away) / REACH_PX);
-    stem.bend = still ? 0 : stem.bend + (target - stem.bend) * BEND_EASE;
-    const wave = still
-      ? 0
-      : Math.sin((seconds / stem.period) * FULL_TURN + stem.phase);
-    const nod = still
-      ? 0
-      : Math.sin((seconds / stem.period - NOD_LAG) * FULL_TURN + stem.phase) *
-        stem.sway *
-        NOD_SHARE;
-    const tipX = stem.x + stem.lean + wave * stem.sway + stem.bend;
-    const tipY = ground - stem.height;
-    const controlX = stem.x + (tipX - stem.x) * CONTROL_LEAN;
-    const controlY = ground - stem.height * CONTROL_RISE;
-    const s = layer.size;
-    const outline = OUTLINE * s;
-
-    context.globalAlpha = layer.alpha;
-    context.lineCap = 'round';
-    context.lineWidth = layer.line;
-    context.strokeStyle = palette.ink;
-    context.beginPath();
-    context.moveTo(stem.x, ground);
-    context.quadraticCurveTo(controlX, controlY, tipX, tipY);
-    if (stem.branch) {
-      const t = BRANCH_AT;
-      const bx =
-        (1 - t) ** 2 * stem.x + 2 * (1 - t) * t * controlX + t ** 2 * tipX;
-      const by =
-        (1 - t) ** 2 * ground + 2 * (1 - t) * t * controlY + t ** 2 * tipY;
-      const reach = stem.height * BRANCH_REACH;
-      context.moveTo(bx, by);
-      context.quadraticCurveTo(
-        bx + stem.branch * reach * BRANCH_CURVE_X,
-        by - reach * BRANCH_CURVE_Y,
-        bx + stem.branch * reach + nod,
-        by - reach,
-      );
-      context.stroke();
-      blob(context, palette.bud, outline, () =>
-        context.ellipse(
-          bx + stem.branch * reach + nod,
-          by - reach - 2.5 * s,
-          2 * s,
-          3.2 * s,
-          stem.branch * BRANCH_BUD_TILT,
-          0,
-          FULL_TURN,
-        ),
-      );
-    } else {
-      context.stroke();
-    }
-
-    /* Bud, flower and leaf shapes below are drawing coordinates in px at size 1, like SVG path data. */
-    const x = tipX + nod;
-    if (stem.kind === 'bud') {
-      blob(context, palette.bud, outline, () =>
-        context.ellipse(
-          x,
-          tipY - 3 * s,
-          2.6 * s,
-          4.2 * s,
-          wave * BUD_TILT,
-          0,
-          FULL_TURN,
-        ),
-      );
-    } else if (stem.kind === 'flower') {
-      blob(context, palette.flower, outline, () => {
-        context.moveTo(x - 5 * s, tipY);
-        context.quadraticCurveTo(x - 5 * s, tipY - 10 * s, x, tipY - 12 * s);
-        context.quadraticCurveTo(x + 5 * s, tipY - 10 * s, x + 5 * s, tipY);
-        context.quadraticCurveTo(x, tipY + 3 * s, x - 5 * s, tipY);
-      });
-    } else {
-      blob(context, palette.bud, outline, () => {
-        context.moveTo(x, tipY);
-        context.quadraticCurveTo(x - 8 * s, tipY, x - 9 * s, tipY - 7 * s);
-        context.quadraticCurveTo(x - 2 * s, tipY - 7 * s, x, tipY);
-        context.moveTo(x, tipY - 2 * s);
-        context.quadraticCurveTo(
-          x + 7 * s,
-          tipY - 3 * s,
-          x + 9 * s,
-          tipY - 10 * s,
-        );
-        context.quadraticCurveTo(x + 2 * s, tipY - 10 * s, x, tipY - 2 * s);
-      });
-    }
+        : PUSH * Math.sin((Math.PI * away) / REACH_PX);
+    return LEAN + SWAY * wave + bend;
   };
 
-  const drawLayers = (
-    hazed: boolean,
-    seconds: number,
-    still: boolean,
-    near: number,
+  const stamp = (
+    context: CanvasRenderingContext2D,
+    cut: Cut,
+    stem: Stem,
+    tilt: number,
   ): void => {
-    for (const layer of LAYERS) {
-      if (layer.haze !== hazed) continue;
-      const context = hazed ? far : layer.front ? over : behind;
-      for (const stem of stems)
-        if (stem.layer === layer) drawStem(context, stem, seconds, still, near);
+    const image = stem.flip ? cut.flipped : cut.image;
+    const pad = (image.width - ART[stem.art][1]) / 2;
+    const k = (stem.height / ATLAS_HEIGHT) * stem.head;
+    const root = stem.flip ? image.width - cut.root : cut.root;
+    context.save();
+    context.translate(stem.x, ground);
+    context.rotate(tilt);
+    if (stem.head < 1) {
+      const top = stem.height - ATLAS_HEIGHT * k;
+      context.strokeStyle = ink;
+      context.lineWidth = Math.max(1, cut.stemWidth * k);
+      context.lineCap = 'round';
+      context.beginPath();
+      context.moveTo(0, 0);
+      context.quadraticCurveTo(stem.bow, -top / 2, 0, -top);
+      context.stroke();
     }
-    far.globalAlpha = 1;
-    behind.globalAlpha = 1;
-    over.globalAlpha = 1;
+    context.drawImage(
+      image,
+      -root * k,
+      -stem.height - pad * k,
+      image.width * k,
+      image.height * k,
+    );
+    context.restore();
   };
 
-  const drawHaze = (): void => {
+  const drawSoft = (): void => {
     far.clearRect(0, 0, width, height);
-    drawLayers(true, 0, true, Number.NEGATIVE_INFINITY);
+    for (const { row, stems } of rows) {
+      if (row.tone === undefined) continue;
+      const cuts = soft.get(row.tone);
+      if (!cuts) continue;
+      for (const stem of stems) stamp(far, cuts.get(stem.art)!, stem, LEAN);
+    }
   };
 
-  const draw = (seconds: number, still: boolean, near: number): void => {
-    behind.clearRect(0, 0, width, height);
+  const draw = (seconds: number, still: boolean, rabbitX: number): void => {
+    near.clearRect(0, 0, width, height);
     over.clearRect(0, 0, width, height);
-    drawLayers(false, seconds, still, near);
+    if (!crisp) return;
+    for (const { row, stems } of rows) {
+      if (row.tone !== undefined) continue;
+      for (const stem of stems)
+        stamp(
+          near,
+          crisp.get(stem.art)!,
+          stem,
+          angle(stem, seconds, still, rabbitX),
+        );
+    }
   };
 
-  let last: [number, boolean, number] = [0, true, Number.NEGATIVE_INFINITY];
+  if (!src) throw new Error('home-meadow: data-home-art is not set.');
+  void loadImage(src).then((atlas) => {
+    const arts = Object.keys(ART) as Art[];
+    crisp = new Map(arts.map((art) => [art, cutArt(atlas, art)]));
+    for (const row of ROWS) {
+      if (row.tone === undefined) continue;
+      soft.set(
+        row.tone,
+        new Map(
+          row.plain.map((art) => [art, cutArt(atlas, art, toned(row.tone!))]),
+        ),
+      );
+    }
+    drawSoft();
+    draw(...last);
+  });
+
   new ResizeObserver(() => {
     plant();
-    drawHaze();
+    drawSoft();
     draw(...last);
   }).observe(band);
   plant();
-  drawHaze();
 
   return {
     draw: (seconds, still, rabbitX) => {

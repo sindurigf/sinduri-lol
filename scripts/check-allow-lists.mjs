@@ -44,6 +44,10 @@ export const SERVED_AS_IS = new Map([
       'home.css paints a die-cut sticker in the homepage fall with it, its throw baked in: pink, or ink in light mode; a WebP already, drawn at most at its own 211px.',
     ]),
   [
+    'home-meadow.webp',
+    "src/scripts/home-meadow.ts cuts the meadow's grasses and buds from it by offset onto a canvas, drawn smaller than its own 320px; a WebP atlas already.",
+  ],
+  [
     'social-icons.svg',
     'the footer imports it with `?url` and every page links it as a <use> sprite.',
   ],
