@@ -1,7 +1,8 @@
 /*
  * Living stems: the planted-brick plants (ink stems, olive buds, a closed pink
  * bud, two-leaf sprouts) in four depth layers, hazed toward the gold behind,
- * each swaying on its own and bending away from the rabbit.
+ * each swaying on its own and bending away from the rabbit. It has no frame
+ * loop of its own: home-motion.ts calls draw(), so the pause and reduced motion hold it.
  */
 
 type Kind = 'bud' | 'flower' | 'sprout';

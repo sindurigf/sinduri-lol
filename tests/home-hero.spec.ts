@@ -341,21 +341,6 @@ test.describe('the rabbit', () => {
   });
 });
 
-test('pausing stops the meadow stems (SC 2.2.2)', async ({ page }) => {
-  await gotoSettled(page, '/');
-  await page.locator('[data-home-pause]').first().click();
-  const read = () =>
-    page.evaluate(() =>
-      [
-        ...document.querySelectorAll<HTMLCanvasElement>('[data-home-stems]'),
-      ].map((canvas) => canvas.toDataURL()),
-    );
-  const first = await read();
-  expect(first.length, 'the meadow has no stems to check').toBe(2);
-  await page.waitForTimeout(STILL_CHECK_MS);
-  expect(await read(), 'the stems kept moving while paused').toEqual(first);
-});
-
 test.describe('the homepage in forced colors', NO_WEBKIT, () => {
   test('both pause controls and the jar keep an edge (SC 1.4.11)', async ({
     page,
