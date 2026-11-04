@@ -7,6 +7,7 @@ import { NEXT_FRAME, createMotionLoop } from './motion-loop';
 import type { RabbitPose } from '../lib/rabbit-atlas';
 import type { Meadow } from './home-meadow';
 import { createFaller } from './home-faller';
+import { createHole } from './home-hole';
 
 /* Slow, small motion: 30 frames a second is plenty and halves the main-thread cost. */
 const MAX_FRAME_RATE = 30;
@@ -120,6 +121,7 @@ const start = (): void => {
   const bands = fall
     ? [...fall.querySelectorAll<HTMLElement>(':scope > .band')]
     : [];
+  createHole({ band, mouth });
   const fallen = createFaller({
     faller,
     spin: fallerSpin,

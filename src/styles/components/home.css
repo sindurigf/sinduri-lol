@@ -108,16 +108,16 @@
   /* The walls meet the hole's opening; values match .home-mouth. */
   .home-band,
   .home-mouth {
-    --mouth-l: 56%;
-    --mouth-w: 36%;
+    --mouth-l: 66%;
+    --mouth-w: 16.5%;
     --ledge-h: var(--size-home-ledge-h-phone);
     --post-w: var(--size-home-post-w-phone);
     --plant-w: var(--size-home-plant-w-phone);
     --plant-h: var(--size-home-plant-h-phone);
 
     @variant md {
-      --mouth-l: 58%;
-      --mouth-w: 30%;
+      --mouth-l: 66%;
+      --mouth-w: 14%;
       --ledge-h: var(--size-home-ledge-h);
       --post-w: var(--size-home-post-w);
       --plant-w: var(--size-home-plant-w);
@@ -170,6 +170,31 @@
   }
 
   /* The posts stand a brick higher either side of the hole, so the gap reads as a door. */
+  /* With the script, the shaft (home-hole.ts) replaces the posts and the notch's fill. */
+  [data-hole] .home-post {
+    display: none;
+  }
+
+  [data-hole] ~ .home-mouth {
+    background: none;
+  }
+
+  .home-hole,
+  .home-hole-lip {
+    position: absolute;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .home-hole {
+    z-index: 0;
+  }
+
+  .home-hole-lip {
+    left: 0;
+    z-index: 5;
+  }
+
   .home-post {
     position: absolute;
     bottom: 0;
