@@ -1,5 +1,6 @@
 import { expect, test, type Browser, type Page } from './test';
 import { gotoSettled } from './settle';
+import { scrollPastReportBand } from './report-band';
 import { TALK_ROUTES } from './routes';
 import { NO_FIREFOX } from './tags';
 import {
@@ -217,14 +218,7 @@ test.describe('the talk slideshow', () => {
   }) => {
     await open(page);
     /* Slide 2 is taller than the space under the band, so from the top Page Down scrolls first by design. */
-    await page.evaluate(() =>
-      window.scrollTo(
-        0,
-        document
-          .querySelector('aside[aria-label="Accessibility help"]')!
-          .getBoundingClientRect().bottom,
-      ),
-    );
+    await scrollPastReportBand(page);
     const last = await page.locator('.slide').count();
     await page.keyboard.press('ArrowRight');
     await expect(visible(page)).toHaveId('slide-2');
@@ -249,14 +243,7 @@ test.describe('the talk slideshow', () => {
     page,
   }) => {
     await open(page);
-    await page.evaluate(() =>
-      window.scrollTo(
-        0,
-        document
-          .querySelector('aside[aria-label="Accessibility help"]')!
-          .getBoundingClientRect().bottom,
-      ),
-    );
+    await scrollPastReportBand(page);
     const header = page.locator('header.site-header');
     for (const key of ['ArrowRight', 'ArrowRight', 'ArrowLeft']) {
       await page.keyboard.press(key);
