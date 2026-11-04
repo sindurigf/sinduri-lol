@@ -945,10 +945,14 @@ Enforced by `tests/home-hero.spec.ts` and `tests/motion.spec.ts`.
 
 - The meadow is the gold column, gold in both modes: the name as a light brick
   (from `sm`), the two roles as two stepped bricks, the photo, the stats, then
-  the meadow: living stems with buds in four depth layers
-  (`src/scripts/home-meadow.ts`, two canvases, before and behind the rabbit)
-  over a row of joined bricks, and the hole between two posts. Without
-  JavaScript the bricks carry a few planted stems.
+  the meadow: thin die-cut grasses and small dark buds from one atlas
+  (`src/scripts/home-meadow.ts`). Two back rows are grey silhouettes painted
+  opaque (ink toward light, never faded over gold) and drawn once; the front
+  row leans in one travelling wind wave and bends away from the rabbit. They
+  stand on a row of joined bricks with the rabbit hole cut away beside them
+  (`src/scripts/home-hole.ts`): a rugged brick shaft that runs on below the
+  hero, dark inside in both modes. Without JavaScript the bricks carry a few
+  planted stems and the hole is a plain notch between two posts.
 - The fall: every section after it steps sideways (`--spacing-home-tumble`)
   and its title is a gold label brick, so all text sits in an opaque brick.
 - Below `sm` every wall still climbs right: each higher brick steps
@@ -956,12 +960,18 @@ Enforced by `tests/home-hero.spec.ts` and `tests/motion.spec.ts`.
   throw. From `pair` (22.5rem) the roles and stats stay side by side, the first
   `--spacing-home-phone-climb` lower. Homepage only.
 - Alice's things (jar, book, picture, watch, teacup) are die-cut stickers with
-  a pink throw baked into the image (an ink-throw image in light mode) rising in the lanes beside the column
+  a pink throw baked into the image (an ink-throw image in light mode) rising in the left lane beside the column
   (`--spacing-home-lane`). Below `md` there are no lanes and they pass behind
-  the bricks; the jar rests at the top of the fall.
+  the bricks; the jar rests at the top of the fall, beside its pause control.
 - Two controls among the decoration: the jar ("Let Go of the Jar") and the
-  rabbit ("Follow the Rabbit"), which dives into the hole and then hops side to
-  side down the lane, behind the bricks, until it sits at the end of the fall.
+  rabbit ("Follow the Rabbit"), which dives into the shaft, drops to its floor
+  and hops onto the first heading (`src/scripts/home-faller.ts`). Where an open
+  strip runs beside the sections it then goes on as the reader scrolls: off
+  the edge, down the strip, onto the top of the next section, side to side, to
+  the Next card. It only hops on surfaces and never covers text; a phone has no
+  strip, so it stays on the first heading. Alice's things rise on the left, the
+  rabbit's strip is on the right. From `md` each later section has room above
+  it for the sitting rabbit.
   Everything else is `aria-hidden`.
 - Two pause controls, one beside the stats and one at the top of the fall,
   named "Pause animations" / "Play animations" and kept in step.

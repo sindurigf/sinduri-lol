@@ -141,7 +141,8 @@ Setup: `gsettings set org.gnome.desktop.interface enable-animations false`.
 - [ ] `/`: the meadow and rabbit sit still, Alice's things hold still, and there is
       no pause control; pressing the jar turns it over without moving it, and
       pressing the rabbit sends it down the hole without a dive, and it sits
-      still in the lane (behind the cards on a phone, which has no lane).
+      on the edge of the last section scrolled to (on a phone, the first
+      heading), moving only as you scroll.
       → SC 2.3.3, 2.2.2
 - [ ] `/about`: the cats sit still and have no sleep controls or trick buttons. → SC 2.3.3, 2.2.2
 - [ ] Turn it back on: the button moves and the rabbit hops. → SC 2.3.3
