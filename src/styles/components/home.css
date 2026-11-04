@@ -566,21 +566,8 @@
     height: 100%;
   }
 
-  /* A die-cut sticker: the art over a pink block of its own shape. */
-  .home-prop-face::before,
-  .home-prop-face::after {
-    position: absolute;
-    inset: 0;
-    content: '';
-  }
-
-  .home-prop-face::before {
-    background: var(--color-pink);
-    mask: var(--print) center / contain no-repeat;
-    translate: var(--size-home-sticker-throw) var(--size-home-sticker-throw);
-  }
-
-  .home-prop-face::after {
+  /* A die-cut sticker with its pink throw baked in, so each frame paints one image, never a mask. */
+  .home-prop-face {
     background: var(--print) center / contain no-repeat;
   }
 
@@ -620,10 +607,6 @@
 
   /* The things are decoration; in forced colors the jar keeps its button edge. */
   @media (forced-colors: active) {
-    .home-prop-face::before {
-      display: none;
-    }
-
     button.home-prop,
     .home-hopper-press {
       border: var(--block-edge) solid ButtonText;

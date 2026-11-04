@@ -954,7 +954,7 @@ Enforced by `tests/home-hero.spec.ts` and `tests/motion.spec.ts`.
   throw. From `pair` (22.5rem) the roles and stats stay side by side, the first
   `--spacing-home-phone-climb` lower. Homepage only.
 - Alice's things (jar, book, picture, watch, teacup) are die-cut stickers with
-  a pink throw (ink in light mode) rising in the lanes beside the column
+  a pink throw baked into the image (pink in both modes, like the bunny) rising in the lanes beside the column
   (`--spacing-home-lane`). Below `md` there are no lanes and they pass behind
   the bricks; the jar rests at the top of the fall.
 - Two controls among the decoration: the jar ("Let Go of the Jar") and the

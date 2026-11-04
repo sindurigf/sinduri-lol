@@ -39,7 +39,7 @@ export const SERVED_AS_IS = new Map([
   ],
   ...['jar', 'book', 'picture', 'watch', 'teacup'].map((name) => [
     `home-stickers/${name}.webp`,
-    'home.css paints a die-cut sticker in the homepage fall with it, and masks its throw; a WebP already, drawn at most at its own 200px.',
+    'home.css paints a die-cut sticker, its pink throw baked in, in the homepage fall with it; a WebP already, drawn at most at its own 211px.',
   ]),
   [
     'social-icons.svg',
