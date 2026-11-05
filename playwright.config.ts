@@ -20,15 +20,6 @@ import {
  */
 const WEBKIT = Boolean(process.env.CI) || process.env.WEBKIT === '1';
 
-/*
- * Firefox `page.goto` stalls on COOP navigations, worse after 1.62.1, hence the
- * exact pin: https://github.com/microsoft/playwright/issues/42731. Disabling
- * Firefox COOP removes the trigger; Chromium still enforces it.
- */
-const FIREFOX_PREFS = {
-  'browser.tabs.remote.useCrossOriginOpenerPolicy': false,
-};
-
 const PORT = TEST_PORT;
 
 assertPortFree(PORT, 'TEST_PORT');
@@ -88,10 +79,7 @@ export default defineConfig({
     {
       name: 'firefox',
       grepInvert: OUTSIDE_FIREFOX,
-      use: {
-        ...devices['Desktop Firefox'],
-        launchOptions: { firefoxUserPrefs: FIREFOX_PREFS },
-      },
+      use: { ...devices['Desktop Firefox'] },
     },
     ...(WEBKIT
       ? [
