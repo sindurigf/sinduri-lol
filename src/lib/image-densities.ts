@@ -1,4 +1,4 @@
-/** Images and the hero canvases: nothing visible is gained past 2x. */
+/** Images: nothing visible is gained past 2x. */
 export const MAX_PIXEL_RATIO = 2;
 
 export const DENSITIES = [1, MAX_PIXEL_RATIO];

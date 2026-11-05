@@ -6,7 +6,7 @@ import {
   ATLAS_SIZE,
   RABBIT_FRAMES,
   type RabbitPose,
-} from '../lib/hero-field-rabbit';
+} from '../lib/rabbit-atlas';
 
 export type Foot = { x: number; y: number };
 

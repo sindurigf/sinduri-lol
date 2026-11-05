@@ -8,7 +8,7 @@ import {
   type Foot,
   type Hopper,
 } from './let-it-fall-rabbit';
-import { CLIMB_HEIGHT, RABBIT_FRAMES } from '../lib/hero-field-rabbit';
+import { CLIMB_HEIGHT, RABBIT_FRAMES } from '../lib/rabbit-atlas';
 
 const LABEL_FALL = 'Let It Fall';
 const LABEL_BACK = 'Put It Back';
@@ -18,7 +18,6 @@ const NOTHING = 'Nothing on screen to drop. Scroll up and try again.';
 /* Outermost of these move; their contents ride along. */
 const BLOCKS = [
   '.header-slab',
-  '.hero-window',
   'main :is(h1, h2, h3, p, ul, ol, figure, img, blockquote, table, pre, .card, .btn-primary, .btn-secondary, .badge, form > *)',
   /* The footer too: at the button on a phone, it is most of the screen. */
   'footer :is(.footer-stickers > li, nav li, .footer-copyright)',

@@ -35,26 +35,17 @@ export const SERVED_AS_IS = new Map([
   ]),
   [
     'hero-rabbit-climb.webp',
-    "Let It Fall's climbing rabbit draws its poses from it by offset; a lossless WebP from scripts/make-climb-atlas.mjs already.",
+    "the homepage rabbit and Let It Fall's climbing rabbit draw their poses from it by offset; a lossless WebP from scripts/make-climb-atlas.mjs already.",
   ],
+  ...['jar', 'book', 'picture', 'watch', 'teacup']
+    .flatMap((name) => [name, `${name}-ink`])
+    .map((name) => [
+      `home-stickers/${name}.webp`,
+      'home.css paints a die-cut sticker in the homepage fall with it, its throw baked in: pink, or ink in light mode; a WebP already, drawn at most at its own 211px.',
+    ]),
   [
-    'hero-rabbit.svg',
-    'the hero canvas rasterises the vector atlas at the size it draws the rabbit.',
-  ],
-  [
-    'hero-still-short.webp',
-    'layout.css links it as the hero background under `scripting: none`; ' +
-      'scripts/make-hero-still.mjs writes it as WebP already.',
-  ],
-  [
-    'hero-still-tall.webp',
-    'layout.css links it as the hero background under `scripting: none`; ' +
-      'scripts/make-hero-still.mjs writes it as WebP already.',
-  ],
-  [
-    'hero-still-wide.webp',
-    'layout.css links it as the hero background under `scripting: none`; ' +
-      'scripts/make-hero-still.mjs writes it as WebP already.',
+    'home-meadow.webp',
+    "src/scripts/home-meadow.ts cuts the meadow's grasses and buds from it by offset onto a canvas, drawn smaller than its own 320px; a WebP atlas already.",
   ],
   [
     'social-icons.svg',
