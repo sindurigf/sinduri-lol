@@ -192,6 +192,14 @@
     z-index: 0;
   }
 
+  /* `auto`, not Chromium's `preserve-parent-color` default for SVG, as for the plants. */
+  .home-hole,
+  .home-hole *,
+  .home-hole-lip,
+  .home-hole-lip * {
+    forced-color-adjust: auto;
+  }
+
   .home-hole-lip {
     left: 0;
     z-index: 5;
