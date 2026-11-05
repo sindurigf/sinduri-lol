@@ -504,6 +504,56 @@ test.describe('the rabbit', () => {
   });
 });
 
+test.describe('the homepage without JavaScript', () => {
+  for (const [width, height] of VIEWPORTS) {
+    test(`the planted meadow covers no text or control at ${width}x${height} (SC 1.4.3)`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({
+        javaScriptEnabled: false,
+        viewport: { width, height },
+      });
+      const page = await context.newPage();
+      /* Not gotoSettled: it waits for the menu script, which cannot run here. Boxes, not evaluate, since no script runs. */
+      await page.goto('/');
+      const boxes = async (selector: string) =>
+        (
+          await Promise.all(
+            (await page.locator(selector).all()).map((el) => el.boundingBox()),
+          )
+        ).filter((box) => box !== null && box.width >= 1 && box.height >= 1);
+      const plants = await boxes(
+        '.home-meadow .home-plant, .home-meadow [data-home-mouth], .home-meadow .home-post',
+      );
+      const words = await boxes(
+        '.home-meadow :is(h1, p, li, a, button:not([hidden]))',
+      );
+      const overlaps = words.flatMap((word) =>
+        plants
+          .filter(
+            (plant) =>
+              Math.min(word!.x + word!.width, plant!.x + plant!.width) -
+                Math.max(word!.x, plant!.x) >=
+                1 &&
+              Math.min(word!.y + word!.height, plant!.y + plant!.height) -
+                Math.max(word!.y, plant!.y) >=
+                1,
+          )
+          .map(() => `${Math.round(word!.x)},${Math.round(word!.y)}`),
+      );
+      expect(
+        plants.length,
+        'the planted meadow is missing without JavaScript',
+      ).toBeGreaterThan(0);
+      expect(
+        overlaps,
+        'a planted stem or the hole sits on text or a control without JavaScript',
+      ).toEqual([]);
+      await context.close();
+    });
+  }
+});
+
 test.describe('the homepage in forced colors', NO_WEBKIT, () => {
   test('both pause controls and the jar keep an edge (SC 1.4.11)', async ({
     page,
