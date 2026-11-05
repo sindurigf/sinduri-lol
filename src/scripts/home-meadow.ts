@@ -393,6 +393,11 @@ export const createMeadow = ({
     }
   };
 
+  /* Without its art the planted SVGs show again, so the meadow is never empty. */
+  const fail = (error: unknown): void => {
+    delete band.dataset.stemsLive;
+    console.error(error);
+  };
   if (!src) throw new Error('home-meadow: data-home-art is not set.');
   void loadImage(src).then((atlas) => {
     const arts = Object.keys(ART) as Art[];
@@ -408,7 +413,7 @@ export const createMeadow = ({
     }
     drawSoft();
     draw(...last);
-  });
+  }, fail);
 
   new ResizeObserver(() => {
     plant();

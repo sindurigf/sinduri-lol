@@ -554,11 +554,17 @@ const start = (): void => {
     '[data-home-stems="back"]',
   );
   if (haze && back) {
-    void import('./home-meadow').then(({ createMeadow }) => {
-      meadow = createMeadow({ band, haze, back, mouth });
-      band.dataset.stemsLive = '';
-      meadow.draw(clock / 1000, state() === 'paused', rabbitAt());
-    });
+    /* If the stems cannot load, the planted SVGs stay: the meadow is never empty. */
+    void import('./home-meadow')
+      .then(({ createMeadow }) => {
+        meadow = createMeadow({ band, haze, back, mouth });
+        band.dataset.stemsLive = '';
+        meadow.draw(clock / 1000, state() === 'paused', rabbitAt());
+      })
+      .catch((error: unknown) => {
+        delete band.dataset.stemsLive;
+        console.error(error);
+      });
   }
 };
 
