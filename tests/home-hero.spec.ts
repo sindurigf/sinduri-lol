@@ -1,6 +1,7 @@
 import { test, expect, type Page } from './test';
 import { fontsSettled, gotoSettled } from './settle';
 import { NO_WEBKIT } from './tags';
+import { MAX_DELTA_MS as LOOP_STEP_MS } from '../src/lib/home-motion-step';
 
 /** [width, height]: the four layouts the fall has (no lanes, `md`, `lg`, `xl`) and a landscape phone. */
 const VIEWPORTS = [
@@ -35,9 +36,6 @@ const EDGE_SEARCH_STEPS = 240;
 
 /** CSS px: boxes are fractional; half a pixel hides nothing. */
 const SUBPIXEL_TOLERANCE = 0.5;
-
-/** The homepage loop's largest step, MAX_DELTA_MS in home-motion.ts; the two must agree. */
-const LOOP_STEP_MS = 100;
 
 /*
  * Moves the page's clock on one loop step at a time: each step runs one frame

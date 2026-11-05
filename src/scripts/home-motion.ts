@@ -8,13 +8,12 @@ import type { RabbitPose } from '../lib/rabbit-atlas';
 import type { Meadow } from './home-meadow';
 import { createFaller } from './home-faller';
 import { createHole } from './home-hole';
+import { MAX_DELTA_MS } from '../lib/home-motion-step';
 
 /* Slow, small motion: 30 frames a second is plenty and halves the main-thread cost. */
 const MAX_FRAME_RATE = 30;
 /* The stems sway slowly: every second frame (15 a second) is smooth enough and halves the costliest drawing. */
 const MEADOW_FRAME_EVERY = 2;
-/* Caps the step after a stall so nothing jumps across the page. */
-const MAX_DELTA_MS = 100;
 const VIEW_MARGIN = '120px';
 
 /* Rabbit: px from the band's edges and the mouth it never hops into. */
