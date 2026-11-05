@@ -596,12 +596,8 @@
    * Homepage meadow and fall (components/home.css). Each phone value applies
    * below `md`, the middle one from `md`, the wide one from `xl`.
    */
-  /*
-   * Floor: the h2 size, and GUNTUPALLI still fits 225px at 305px with the
-   * SC 1.4.12 spacing; the brick starts at `sm`. Cap: five times the floor
-   * is at least twice the cap (SC 1.4.4).
-   */
-  --text-home-name: clamp(1.75rem, 6vw, 4rem);
+  /* Fixed, so it reaches 2x at 200% zoom (SC 1.4.4); GUNTUPALLI fits 225px at 305px. */
+  --text-home-name: 2rem;
   --text-home-name--line-height: 0.98;
   --size-home-photo: 30rem;
   --size-home-photo-lg: 26rem;

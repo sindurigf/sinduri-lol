@@ -43,6 +43,7 @@ const ROUNDING_TOLERANCE = 0.01;
 const PLAIN_ZOOM_TOKENS = [
   '--text-h1',
   '--text-reading-h1',
+  '--text-home-name',
   '--text-h2',
   '--text-h3',
   '--text-post-title',
@@ -127,7 +128,6 @@ const WEBKIT_SHORTFALL: Record<(typeof WINDOWS)[number]['width'], string[]> = {
     '--text-slide-title-page',
     '--text-slide-number',
     '--text-menu',
-    '--text-home-name',
   ],
   1280: [
     '--text-deck-cover',
@@ -137,7 +137,6 @@ const WEBKIT_SHORTFALL: Record<(typeof WINDOWS)[number]['width'], string[]> = {
     '--text-slide-title',
     '--text-slide-number',
     '--text-menu',
-    '--text-home-name',
   ],
   1920: [
     '--text-quote-mark',
@@ -147,7 +146,6 @@ const WEBKIT_SHORTFALL: Record<(typeof WINDOWS)[number]['width'], string[]> = {
     '--text-slide-title',
     '--text-slide-h3',
     '--text-slide-number',
-    '--text-home-name',
   ],
 };
 

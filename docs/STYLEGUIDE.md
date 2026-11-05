@@ -341,7 +341,7 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 
 | Token                     | Min px | Max px | Line height | Weight | Use                                   |
 | ------------------------- | ------ | ------ | ----------- | ------ | ------------------------------------- |
-| `text-home-name`          | 28     | 64     | 0.98        | 900    | Homepage name only                    |
+| `text-home-name`          | 32     | 32     | 0.98        | 900    | Homepage name only                    |
 | `text-h1`                 | 48     | 48     | 0.94        | 900    | Page title                            |
 | `text-deck-cover`         | 33     | 80     | 0.94        | 900    | Talk cover title                      |
 | `text-reading-h1`         | 40     | 40     | 0.94        | 900    | Privacy, Accessibility title          |
@@ -408,7 +408,7 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 - Headings never skip levels; one `<h1>` per page. No heading is larger than
   the level above it (`tests/headings.spec.ts`); a /brand example, shown at
   another page's size, is exempt.
-- `text-home-name` is the homepage name only: 28px to 64px, two lines.
+- `text-home-name` is the homepage name only: 32px, two lines.
 - `text-reading-h1` is for the Privacy and Accessibility titles only.
 - The talk cover keeps the fluid `text-deck-cover`; the deck has its own
   rule ([ACCESSIBILITY.md](../ACCESSIBILITY.md) gap 7).
@@ -427,7 +427,7 @@ longest word fits there; `tests/reflow.spec.ts` holds them.
 
 - `text-h1` 48px: `CREDITS` fits 273px.
 - `text-reading-h1` 40px: `ACCES-SIBILITY` breaks at its soft hyphen.
-- `text-home-name` 28px: `GUNTUPALLI` fits the meadow's 225px column; the
+- `text-home-name` 32px: `GUNTUPALLI` fits the meadow's 225px column; the
   name's brick starts at `sm`.
 - `text-h2` 28px: `MAINTAINERS` fits. `text-h3` 22px, 0.8 of it.
 - `text-post-title` 32px: `Communities` fits.
