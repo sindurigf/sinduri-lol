@@ -185,8 +185,9 @@ view (development server only, never published), and forks.
   without doubling it for a screen reader.
 - **Motion.** The homepage meadow, rabbit and Alice's things have two pause controls
   and each cat on `/about` a sleep control (SC 2.2.2). Under
-  `prefers-reduced-motion: reduce` the homepage is drawn once and held, the
-  cats sit still on the brick
+  `prefers-reduced-motion: reduce` the homepage is drawn once and held; once
+  the rabbit has gone down the hole it is placed, without animation, on the
+  edge the reader has scrolled to. The cats sit still on the brick
   under them, and a pressed
   control does not move into its shadow (SC 2.3.3); nothing else animates
   ([STYLEGUIDE Motion](docs/STYLEGUIDE.md#motion)).
