@@ -1,7 +1,8 @@
 ---
 /*
  * Alice's things as die-cut stickers, rising past as she falls, and the
- * rabbit once it has dived. The jar is a control: pressing it lets it go.
+ * rabbit once it has dived. The jar is a control: pressing it lets it go;
+ * it stays hidden until home-motion.ts runs, since it does nothing without it.
  * home-motion.ts moves them.
  */
 import HomePause from './HomePause.astro';
@@ -30,6 +31,7 @@ const JAR_TILT = -8;
     data-home-prop
     data-home-jar
     data-tilt={JAR_TILT}
+    hidden
   >
     <span class="home-prop-spin">
       <span class="home-prop-face"></span>

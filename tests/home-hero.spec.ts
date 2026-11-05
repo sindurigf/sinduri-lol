@@ -440,7 +440,9 @@ test.describe('the rabbit', () => {
     expect(await read(), 'the rabbit moved under reduced motion').toBe(first);
   });
 
-  test('is no control without JavaScript', async ({ browser }) => {
+  test('is no control without JavaScript, nor is the jar', async ({
+    browser,
+  }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
     /* Not gotoSettled: it waits for the menu script, which cannot run here. */
@@ -448,6 +450,10 @@ test.describe('the rabbit', () => {
     await expect(
       page.locator('[data-home-follow]'),
       'a button that does nothing without its script is shown',
+    ).toBeHidden();
+    await expect(
+      page.locator('[data-home-jar]'),
+      'the jar, which does nothing without its script, is shown and takes a Tab stop',
     ).toBeHidden();
     await context.close();
   });

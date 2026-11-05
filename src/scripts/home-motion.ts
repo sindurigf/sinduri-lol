@@ -479,6 +479,7 @@ const start = (): void => {
   });
 
   follow.hidden = false;
+  jar.hidden = false;
 
   /* Under reduced motion no frame runs: scrolling alone moves it to the edge the reader has reached. */
   window.addEventListener(
