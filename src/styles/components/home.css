@@ -253,7 +253,7 @@
     stroke-linecap: round;
   }
 
-  /* Dark buds and leaves, like the meadow's drawn ones: no olive (no browns). */
+  /* Dark buds and leaves, like the meadow's drawn ones: no olive. */
   .home-plant-bud,
   .home-plant-leaf {
     fill: var(--color-block-ink);
