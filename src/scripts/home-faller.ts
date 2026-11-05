@@ -1,27 +1,25 @@
 /*
- * The rabbit after its dive: it drops to the shaft's floor, then goes down the
+ * The rabbit after its dive: it drops to the shaft's floor, then hops down the
  * page from one section to the next as the reader scrolls, landing on the
- * heading's top edge on the left and the top brick's edge on the right. Where
- * an open strip runs beside the sections it falls through that. Without one
- * (phones) every way down crosses a card's text, so it stops on the first
- * heading. home-motion.ts drives it on its clock.
+ * heading's top edge on the left and the top brick's edge on the right. A hop
+ * may pass in front of a section; it only ever rests in the gap above one.
+ * home-motion.ts drives it on its clock.
  */
 import type { RabbitPose } from '../lib/rabbit-atlas';
 
-/* Kept between the rabbit and the end of the edge it stands on, and around it in the strip. */
+/* Kept between the rabbit and the end of the edge it stands on. */
 const CLEAR_PX = 8;
 /* A spot is the rabbit's goal once its edge is above this share of the window. */
 const ARRIVE_SHARE = 0.7;
-/* Edges this close in height are in one gap, so it hops straight across. */
-const SAME_GAP_PX = 40;
 const HOP_MS_BASE = 300;
 const HOP_MS_PER_PX = 0.5;
-const HOP_MS_MAX = 900;
+const HOP_MS_MAX = 1100;
 const HOP_HEIGHT_SHARE = 0.25;
 const HOP_HEIGHT_MIN_PX = 12;
 const HOP_HEIGHT_MAX_PX = 70;
 const CROUCH_SHARE = 0.18;
 const LAND_SHARE = 0.85;
+/* Down the shaft from the mouth to its floor. */
 const FALL_PX_PER_S = 1100;
 const FALL_MS_MIN = 200;
 
@@ -73,7 +71,6 @@ export const createFaller = ({
 }): Faller => {
   const art = bun.firstElementChild ?? bun;
   let spots: Spot[] = [];
-  let strip: number | undefined;
   let artSize = { w: 0, h: 0 };
   let begun = false;
   /* The spot it last rested on; -1 while it is still coming down the shaft. */
@@ -113,7 +110,11 @@ export const createFaller = ({
     bun.dataset.pose = 'sit';
     const box = restBox();
     if (pose) bun.dataset.pose = pose;
-    artSize = { w: box.width, h: box.height };
+    /* Its frame is wider than the sitting art; keeping the frame clear keeps every pose clear. */
+    artSize = {
+      w: Math.max(box.width, spin.getBoundingClientRect().width),
+      h: box.height,
+    };
     const boxOf = (el: Element): DOMRect =>
       local(el.getBoundingClientRect(), o);
     const bricks = bands.map((section) =>
@@ -141,12 +142,6 @@ export const createFaller = ({
       ),
       ...controls,
     ].filter((b) => b.width > 0);
-    const width = document.documentElement.clientWidth - o.x;
-    const right = Math.max(...all.map((b) => b.right));
-    strip =
-      width - right - artSize.w - 2 * CLEAR_PX >= 0
-        ? (right + width) / 2
-        : undefined;
     const over = (b: DOMRect, x: number): boolean =>
       b.left < x + artSize.w / 2 && b.right > x - artSize.w / 2;
     /* Feet on the topmost brick under it at `x`, and the room up to whatever is above its head there. */
@@ -183,7 +178,6 @@ export const createFaller = ({
     const firstBricks = bricks[0] ?? [];
     if (all.length === 0 || firstBricks.length === 0) {
       spots = [];
-      strip = undefined;
       return;
     }
     const m = local(mouth.getBoundingClientRect(), o);
@@ -214,22 +208,12 @@ export const createFaller = ({
       const at = firstFree(xs, list);
       if (at) spots.push(at);
     });
-    /* With no strip, every way past the first section crosses its text: it goes no further. */
-    if (strip === undefined) {
-      const reach = spots.findIndex(
-        (s, i) => i > 0 && Math.abs(s.y - spots[i - 1]!.y) >= SAME_GAP_PX,
-      );
-      if (reach > 0) spots = spots.slice(0, reach);
-    }
   };
 
-  /* Within a gap the arc keeps under the brick above. */
+  /* The arc keeps under the brick above where it takes off. */
   const hop = (from: Spot | Point, to: Spot | Point): Leg => {
     const distance = Math.hypot(to.x - from.x, to.y - from.y);
-    const room = Math.min(
-      'room' in from ? from.room : HOP_HEIGHT_MAX_PX,
-      'room' in to ? to.room : HOP_HEIGHT_MAX_PX,
-    );
+    const room = 'room' in from ? from.room : HOP_HEIGHT_MAX_PX;
     return {
       kind: 'hop',
       from,
@@ -252,15 +236,11 @@ export const createFaller = ({
     height: 0,
   });
 
-  /* Across one gap it hops; between gaps it hops into the strip, falls, and hops out. */
-  const path = (from: Spot, to: Spot, lane: number): Leg[] => {
-    if (Math.abs(to.y - from.y) < SAME_GAP_PX) return [hop(from, to)];
-    const top = { x: lane, y: from.y };
-    const bottom = { x: lane, y: to.y };
-    return [hop(from, top), drop(top, bottom), hop(bottom, to)];
-  };
-
   const goal = (): number => {
+    /* A short last section never rises to the line, so the page's end reaches it. */
+    const scrollEnd =
+      document.documentElement.scrollHeight - window.innerHeight;
+    if (window.scrollY >= scrollEnd - 1) return spots.length - 1;
     const line = window.innerHeight * ARRIVE_SHARE - origin().y;
     let index = 0;
     spots.forEach((s, i) => {
@@ -334,7 +314,7 @@ export const createFaller = ({
       leg = legs[0];
     }
     if (!leg && at < target && at + 1 < spots.length) {
-      legs = path(spots[at]!, spots[at + 1]!, strip ?? spots[at]!.x);
+      legs = [hop(spots[at]!, spots[at + 1]!)];
       legStart = clock;
       leg = legs[0];
     }
