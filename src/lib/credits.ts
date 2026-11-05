@@ -131,7 +131,7 @@ export const THANKS = [
     name: 'Vincenzo Gambino',
     href: 'https://www.gambinovincenzo.com/',
     reason:
-      'Thank you for introducing me to Astro at a Drupal session. Its performance still amazes me, and this site is built with Astro.',
+      'Thank you for introducing me to Astro at a Drupal session. Its performance still amazes me, and this site is built with Astro and Vue.',
   },
   {
     name: 'Alexandru Teodor Ieremia',
