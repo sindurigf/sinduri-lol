@@ -217,7 +217,6 @@ const start = (): void => {
     const m = mouth.getBoundingClientRect();
     return m.left - box.left + m.width / 2;
   };
-  /* The rabbit is gone, so its button goes too: focus moves to the page first (SC 2.4.3). */
   /* Focus moves on to the next control, the fall's pause or else the jar, so it is never lost (SC 2.4.3). */
   const fallIn = (): void => {
     if (gone) return;
@@ -236,7 +235,7 @@ const start = (): void => {
     follow.disabled = true;
     fall?.toggleAttribute('data-rabbit-fell', true);
     fallen.start(clock);
-    fallen.step(clock, loop.reducedMotion());
+    fallen.step(clock, paused || loop.reducedMotion());
   };
   const stepDive = (): void => {
     const t = clock - dive;
@@ -471,7 +470,7 @@ const start = (): void => {
     }
   };
 
-  /* Paused or under reduced motion the rabbit is simply gone down the hole. */
+  /* Paused or under reduced motion there is no dive: the rabbit rests at once where its way down has reached. */
   follow.addEventListener('click', () => {
     if (dive >= 0) return;
     dive = clock;
@@ -504,6 +503,7 @@ const start = (): void => {
   new ResizeObserver(() => {
     measure();
     fallen.measure();
+    fallen.step(clock, paused || loop.reducedMotion());
     hop.x = clamp(hop.x, EDGE_PX, roamMax);
     place();
     drawThings();

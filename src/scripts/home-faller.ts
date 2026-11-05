@@ -85,13 +85,24 @@ export const createFaller = ({
   const local = (box: DOMRect, o: Point): DOMRect =>
     new DOMRect(box.left - o.x, box.top - o.y, box.width, box.height);
 
-  /* Where its art sits with no translate, in the faller's px. */
+  /* Where its art sits with no translate, in the faller's px, per pose: measured once per layout. */
+  const restBoxes = new Map<string, DOMRect>();
   const restBox = (): DOMRect => {
+    const pose = bun.dataset.pose ?? '';
+    const known = restBoxes.get(pose);
+    if (known) return known;
+    const shown = spin.style.transform;
     spin.style.transform = '';
-    return local(art.getBoundingClientRect(), origin());
+    const box = local(art.getBoundingClientRect(), origin());
+    spin.style.transform = shown;
+    restBoxes.set(pose, box);
+    return box;
   };
+  let shownAt = '';
 
   const measure = (): void => {
+    restBoxes.clear();
+    shownAt = '';
     const o = origin();
     /* Sitting is its tallest pose, so head room measured for it holds at rest. */
     const pose = bun.dataset.pose;
@@ -141,7 +152,9 @@ export const createFaller = ({
     ): Spot | undefined => {
       const under = list.filter(({ box: b }) => over(b, x));
       if (under.length === 0) return undefined;
-      const y = Math.min(...under.map(({ box: b }) => b.top));
+      return spotAt(x, Math.min(...under.map(({ box: b }) => b.top)));
+    };
+    function spotAt(x: number, y: number): Spot {
       const ceiling = Math.max(
         0,
         ...all
@@ -149,7 +162,7 @@ export const createFaller = ({
           .map((b) => b.bottom),
       );
       return { x, y, room: y - ceiling - artSize.h };
-    };
+    }
     /* The first of `xs` with head room, else the roomiest. */
     const firstFree = (
       xs: readonly number[],
@@ -163,18 +176,19 @@ export const createFaller = ({
         found.sort((a, b) => b.room - a.room)[0]
       );
     };
+    const firstBricks = bricks[0] ?? [];
+    if (all.length === 0 || firstBricks.length === 0) {
+      spots = [];
+      strip = undefined;
+      return;
+    }
     const m = local(mouth.getBoundingClientRect(), o);
-    const mouthX = m.left + m.width / 2;
-    const floor = standOn(mouthX, bricks[0] ?? []) ?? {
-      x: mouthX,
-      y: Math.min(...(bricks[0] ?? []).map(({ box: b }) => b.top)),
-      room: 0,
-    };
+    /* The shaft's floor: level with the first section's top, under the mouth. */
     spots = [
-      {
-        ...floor,
-        y: Math.min(...(bricks[0] ?? []).map(({ box: b }) => b.top)),
-      },
+      spotAt(
+        m.left + m.width / 2,
+        Math.min(...firstBricks.map(({ box: b }) => b.top)),
+      ),
     ];
     const half = artSize.w / 2 + CLEAR_PX;
     bricks.forEach((list, index) => {
@@ -252,6 +266,9 @@ export const createFaller = ({
   };
 
   const place = (feet: Point, pose: RabbitPose): void => {
+    const key = `${feet.x.toFixed(1)} ${feet.y.toFixed(1)} ${pose} ${dir}`;
+    if (key === shownAt) return;
+    shownAt = key;
     if (bun.dataset.pose !== pose) bun.dataset.pose = pose;
     /* The atlas faces left: -1 mirrors it to face the way it goes. */
     bun.style.setProperty('--face', String(-dir));
@@ -333,7 +350,7 @@ export const createFaller = ({
       if (!begun) return;
       measure();
       legs = [];
-      at = Math.max(at, 0);
+      at = Math.min(Math.max(at, 0), spots.length - 1);
     },
   };
 };
