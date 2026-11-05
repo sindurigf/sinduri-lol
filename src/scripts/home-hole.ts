@@ -8,8 +8,35 @@
 
 const SVG = 'http://www.w3.org/2000/svg';
 /* Drawing sizes in px: wall thickness, course height, ground brick length, and how far the shaft runs below the hero. */
-const PHONE = { wall: 14, course: 12, brick: 44, below: 110, groundBricks: 2 };
-const WIDE = { wall: 24, course: 18, brick: 76, below: 170, groundBricks: 3 };
+const PHONE = {
+  wall: 14,
+  course: 12,
+  brick: 44,
+  below: 110,
+  groundBricks: 2,
+  groundScale: 0.7,
+  biteKink: 4,
+  pebble: 3,
+};
+const WIDE = {
+  wall: 24,
+  course: 18,
+  brick: 76,
+  below: 170,
+  groundBricks: 3,
+  groundScale: 1,
+  biteKink: 7,
+  pebble: 5,
+};
+/* The ground's courses are this much taller than the shaft's. */
+const GROUND_COURSE = 1.6;
+/* Mortar and pebble lines, px. */
+const LINE_PX = 1.4;
+/* Shades as the share of light over ink: the shaded left wall, a bite, a pebble, the ground's top course and each course below it. */
+const SHADE = { wall: 84, bite: 30, pebble: 58, ground: 92, groundStep: 6 };
+/* A chipped corner takes this share of the brick's short side, plus up to the spread. */
+const CHIP_SIZE = 0.25;
+const CHIP_SPREAD = 0.35;
 const PHONE_LEDGE_PX = 30;
 /* Share of a wall's thickness its inner face wanders, and the odds a corner is chipped or a course missing. */
 const JAG = 0.45;
@@ -67,10 +94,12 @@ export const createHole = ({
   const light = 'var(--color-block-light)';
   const mix = (share: number): string =>
     `color-mix(in srgb, ${light} ${Math.max(0, Math.min(100, share)).toFixed(0)}%, ${ink})`;
-  const edge =
-    parseFloat(getComputedStyle(band).getPropertyValue('--block-edge')) || 4;
+  const edge = parseFloat(
+    getComputedStyle(band).getPropertyValue('--block-edge'),
+  );
+  if (!edge) throw new Error('home-hole: --block-edge is not set.');
   let layers: Element[] = [];
-  let drawnFor = -1;
+  let drawnFor = '';
 
   const draw = (): void => {
     layers.forEach((layer) => layer.remove());
@@ -101,7 +130,9 @@ export const createHole = ({
       : Number.POSITIVE_INFINITY;
 
     const chip = (w: number, h: number): number =>
-      random() < CHIP ? Math.min(w, h) * (0.25 + random() * 0.35) : 0;
+      random() < CHIP
+        ? Math.min(w, h) * (CHIP_SIZE + random() * CHIP_SPREAD)
+        : 0;
     const brick = (
       x: number,
       y: number,
@@ -238,7 +269,7 @@ export const createHole = ({
           svg(
             'line',
             { x1: x, y1: y, x2: x + (random() - 0.5) * 2, y2: y + ch },
-            { stroke: ink, 'stroke-width': '1.4px' },
+            { stroke: ink, 'stroke-width': `${LINE_PX}px` },
           ),
         );
       }
@@ -246,7 +277,7 @@ export const createHole = ({
         svg(
           'polyline',
           { points: points(jagged([xL, y + ch], [xR, y + ch], 5, JAG * 1.6)) },
-          { fill: 'none', stroke: ink, 'stroke-width': '1.4px' },
+          { fill: 'none', stroke: ink, 'stroke-width': `${LINE_PX}px` },
         ),
       );
     }
@@ -301,26 +332,26 @@ export const createHole = ({
         if (r > 1 && random() < GONE) continue;
         const w = Math.max(t * 0.5, t + JAG * t * (random() - 0.4));
         const x = side > 0 ? xR + t - w : xL - t;
-        walls.push(brick(x, y, w, ch, side > 0 ? light : mix(84)));
+        walls.push(brick(x, y, w, ch, side > 0 ? light : mix(SHADE.wall)));
       }
     }
 
     /* The ground under the hero, cut open beside the shaft: the site's bricks fading down and out. */
     const groundBricks: SVGElement[] = [];
     const top = bandHeight + heroEdge;
-    for (let y = top, r = 0; y < bottom; y += ch * 1.6, r += 1) {
+    for (let y = top, r = 0; y < bottom; y += ch * GROUND_COURSE, r += 1) {
       for (const side of [-1, 1] as const) {
-        if (side === exitSide && y + ch * 1.6 > openFrom) continue;
+        if (side === exitSide && y + ch * GROUND_COURSE > openFrom) continue;
         let x = side < 0 ? xL - t : xR + t;
         for (let n = 0; n < size.groundBricks; n += 1) {
-          const w = size.brick * (0.55 + random() * 0.5) * (phone ? 0.7 : 1);
+          const w = size.brick * (0.55 + random() * 0.5) * size.groundScale;
           groundBricks.push(
             brick(
               side < 0 ? x - w : x,
               y,
               w,
-              ch * 1.6,
-              mix(92 - r * 6),
+              ch * GROUND_COURSE,
+              mix(SHADE.ground - r * SHADE.groundStep),
               edge * 0.6,
             ),
           );
@@ -366,7 +397,7 @@ export const createHole = ({
           [xo, ground - 1],
           [x0 - side * 2, ground + depth],
           6,
-          phone ? 4 : 7,
+          size.biteKink,
         ).slice(0, -1),
         [x0 - side * 2, ground + depth],
       ];
@@ -375,7 +406,7 @@ export const createHole = ({
           'polygon',
           { points: points(cut) },
           {
-            fill: mix(30),
+            fill: mix(SHADE.bite),
             stroke: ink,
             'stroke-width': `${edge * 0.75}px`,
             'stroke-linejoin': 'round',
@@ -385,7 +416,7 @@ export const createHole = ({
       for (let k = 0; k < PEBBLES; k += 1) {
         const px = x0 + side * reach * (0.15 + random() * 0.6);
         const py = ground + depth * (0.3 + random() * 0.5);
-        const s = phone ? 3 : 5;
+        const s = size.pebble;
         lip.push(
           svg(
             'polygon',
@@ -397,7 +428,11 @@ export const createHole = ({
                 [px + s * 0.4, py + s * 0.7],
               ]),
             },
-            { fill: mix(58), stroke: ink, 'stroke-width': '1.4px' },
+            {
+              fill: mix(SHADE.pebble),
+              stroke: ink,
+              'stroke-width': `${LINE_PX}px`,
+            },
           ),
         );
       }
@@ -421,9 +456,13 @@ export const createHole = ({
   };
 
   band.dataset.hole = '';
-  new ResizeObserver(() => {
-    if (drawnFor === band.offsetWidth) return;
-    drawnFor = band.offsetWidth;
+  /* The band keeps its size when the hero grows (text size, fonts), so the hero is watched too, and where the band sits. */
+  const observer = new ResizeObserver(() => {
+    const at = `${band.offsetWidth} ${band.offsetTop}`;
+    if (drawnFor === at) return;
+    drawnFor = at;
     draw();
-  }).observe(band);
+  });
+  observer.observe(band);
+  observer.observe(hero);
 };
