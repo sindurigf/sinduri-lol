@@ -46,8 +46,12 @@ interface Spot extends Point {
 export interface Faller {
   /* The dive has ended at the mouth: the rabbit starts down the shaft. */
   readonly start: (clock: number) => void;
-  /* Moves it on; `still` (reduced motion) puts it where the reader has scrolled to, at rest. */
-  readonly step: (clock: number, still: boolean) => void;
+  /*
+   * Moves it on. `still` (paused) holds it at rest where the reader has
+   * scrolled to; with `atEnd` (reduced motion) it rests on the last edge of its
+   * way down, placed once, so scrolling never moves it.
+   */
+  readonly step: (clock: number, still: boolean, atEnd?: boolean) => void;
   /* Layout changed: measure the edges again. */
   readonly measure: () => void;
 }
@@ -313,12 +317,12 @@ export const createFaller = ({
     legStart = clock;
   };
 
-  const step = (clock: number, still: boolean): void => {
+  const step = (clock: number, still: boolean, atEnd = false): void => {
     if (!begun || spots.length === 0) return;
     const target = goal();
     if (still) {
       legs = [];
-      at = Math.max(at, target, 0);
+      at = atEnd ? spots.length - 1 : Math.max(at, target, 0);
       place(spots[at]!, 'sit');
       return;
     }

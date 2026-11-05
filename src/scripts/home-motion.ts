@@ -235,7 +235,7 @@ const start = (): void => {
     follow.disabled = true;
     fall?.toggleAttribute('data-rabbit-fell', true);
     fallen.start(clock);
-    fallen.step(clock, paused || loop.reducedMotion());
+    fallen.step(clock, paused || loop.reducedMotion(), loop.reducedMotion());
   };
   const stepDive = (): void => {
     const t = clock - dive;
@@ -392,6 +392,7 @@ const start = (): void => {
   const still = (): void => {
     stopJar();
     if (dive >= 0) fallIn();
+    fallen.step(clock, true, true);
     hop.x = roamMax * HOME_SHARE;
     hop.y = 0;
     hop.dir = 1;
@@ -494,15 +495,6 @@ const start = (): void => {
   follow.hidden = false;
   jar.hidden = false;
 
-  /* Under reduced motion no frame runs: scrolling alone moves it to the edge the reader has reached. */
-  window.addEventListener(
-    'scroll',
-    () => {
-      if (loop.reducedMotion()) fallen.step(clock, true);
-    },
-    { passive: true },
-  );
-
   pauses.forEach((button) => {
     button.addEventListener('click', toggle);
   });
@@ -517,7 +509,7 @@ const start = (): void => {
   new ResizeObserver(() => {
     measure();
     fallen.measure();
-    fallen.step(clock, paused || loop.reducedMotion());
+    fallen.step(clock, paused || loop.reducedMotion(), loop.reducedMotion());
     hop.x = clamp(hop.x, EDGE_PX, roamMax);
     place();
     drawThings();
