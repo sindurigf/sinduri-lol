@@ -1380,9 +1380,10 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 - Controls lift off their shadow under a hovering pointer and press into it at
   once ([Control states](#control-states)); no movement under reduced motion.
 - No marquee.
-- Pattern (`src/scripts/home-motion.ts`): the pause controls ship `hidden`
-  and the script shows them as it starts the motion. Under reduced motion it
-  draws one still frame and keeps them hidden. The state lives in the
+- Pattern (`src/scripts/home-motion.ts`): the pause controls ship `data-off`
+  (invisible, holding their place, so showing them shifts nothing) and the
+  script shows them as it starts the motion. Under reduced motion it draws one
+  still frame and keeps them off. The state lives in the
   accessible name ("Play animations" / "Pause animations"), no
   `aria-pressed`. Without JavaScript the rabbit and Alice's things rest
   where `home.css` puts them.
