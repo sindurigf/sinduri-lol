@@ -36,6 +36,19 @@ const EDGE_SEARCH_STEPS = 240;
 /** CSS px: boxes are fractional; half a pixel hides nothing. */
 const SUBPIXEL_TOLERANCE = 0.5;
 
+/** The homepage loop's largest step, MAX_DELTA_MS in home-motion.ts; the two must agree. */
+const LOOP_STEP_MS = 100;
+
+/*
+ * Moves the page's clock on one loop step at a time: each step runs one frame
+ * that advances the motion by exactly that step, as frame-by-frame time would,
+ * at a fraction of the cost (the motion is the same at every sample).
+ */
+const advance = async (page: Page, ms: number) => {
+  for (let done = 0; done < ms; done += LOOP_STEP_MS)
+    await page.clock.fastForward(Math.min(LOOP_STEP_MS, ms - done));
+};
+
 /*
  * Covering is decided by element boxes, never by the stems' pixels: drawing
  * them on every clock step is skipped here so forty steps fit WebKit's timeout.
@@ -150,7 +163,7 @@ test.describe('the homepage meadow', () => {
             '[data-home-band], [data-home-mouth], .home-hole',
           )),
         );
-        await page.clock.runFor(DRIFT_STEP_MS);
+        await advance(page, DRIFT_STEP_MS);
       }
       expect(
         hits,
@@ -170,7 +183,7 @@ test.describe("Alice's things in the fall", () => {
       const hits: string[] = [];
       for (let step = 0; step < DRIFT_SAMPLES; step += 1) {
         hits.push(...(await coveredBy(page, '.home-fall', '[data-home-prop]')));
-        await page.clock.runFor(DRIFT_STEP_MS);
+        await advance(page, DRIFT_STEP_MS);
       }
       expect(
         hits,
@@ -200,7 +213,7 @@ test.describe("Alice's things in the fall", () => {
       };
       const start = await at();
       for (let step = 0; step < DRIFT_SAMPLES; step += 1) {
-        await page.clock.runFor(DRIFT_STEP_MS);
+        await advance(page, DRIFT_STEP_MS);
         const box = await at();
         expect(
           Math.abs(box.y - start.y),
@@ -243,7 +256,7 @@ test.describe("Alice's things in the fall", () => {
         steps,
         'the jar never crossed the top of the fall in one rise',
       ).toBeLessThanOrEqual(EDGE_SEARCH_STEPS);
-      await page.clock.runFor(EDGE_STEP_MS);
+      await advance(page, EDGE_STEP_MS);
     }
     await jar.focus();
     const clipped = await jar.evaluate((el) => {
@@ -352,7 +365,7 @@ test.describe('the rabbit', () => {
       /* By keyboard: the forced pointer events above put the stems over the button. */
       await page.locator('[data-home-follow]').focus();
       await page.keyboard.press('Enter');
-      await page.clock.runFor(DIVE_MS);
+      await advance(page, DIVE_MS);
       await expect(page.locator('.home-fall')).toHaveAttribute(
         'data-rabbit-fell',
         '',
@@ -368,7 +381,7 @@ test.describe('the rabbit', () => {
           from + ((to - from) * step) / FALL_SCROLL_STEPS,
         );
         for (let frame = 0; frame < FALL_FRAMES; frame += 1) {
-          await page.clock.runFor(FALL_FRAME_MS);
+          await advance(page, FALL_FRAME_MS);
           hits.push(
             ...(await coveredBy(
               page,
@@ -443,10 +456,55 @@ test.describe('the rabbit', () => {
     expect(await read(), 'the rabbit moved under reduced motion').toBe(first);
   });
 
-  for (const [width, height] of [
-    [390, 844],
-    [1280, 720],
-  ] as const) {
+  test('under reduced motion sits on its last spot and scrolling never moves it (SC 2.3.3)', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await gotoSettled(page, '/');
+    await page.locator('[data-home-follow]').click();
+    await expect(page.locator('.home-fall')).toHaveAttribute(
+      'data-rabbit-fell',
+      '',
+    );
+    const read = () =>
+      page.evaluate(() => {
+        const spin = document.querySelector<HTMLElement>('.home-faller-spin');
+        const art = document.querySelector('.home-faller .home-bun > i');
+        const last = document.querySelector('.home-fall > :last-child .card');
+        if (!spin || !art || !last)
+          throw new Error('the falling rabbit or the last card is missing.');
+        return {
+          transform: spin.style.transform,
+          offLast: Math.abs(
+            last.getBoundingClientRect().top -
+              art.getBoundingClientRect().bottom,
+          ),
+        };
+      });
+    const first = await read();
+    expect(
+      first.offLast,
+      'the rabbit is not resting on the last section under reduced motion',
+    ).toBeLessThanOrEqual(SUBPIXEL_TOLERANCE * 2);
+    for (const share of [0.5, 1, 0]) {
+      await page.evaluate(
+        (at) =>
+          window.scrollTo(
+            0,
+            (document.documentElement.scrollHeight - window.innerHeight) * at,
+          ),
+        share,
+      );
+      await page.waitForTimeout(STILL_CHECK_MS);
+      expect(
+        (await read()).transform,
+        'scrolling moved the rabbit under reduced motion',
+      ).toBe(first.transform);
+    }
+  });
+
+  /* A phone: there the meadow is short enough for a hop to cut the ring. */
+  for (const [width, height] of [[390, 844]] as const) {
     test(`holds still with its whole focus ring inside the meadow while focused at ${width}x${height} (SC 2.4.11, 2.4.13)`, async ({
       page,
     }) => {
@@ -458,7 +516,7 @@ test.describe('the rabbit', () => {
       await rabbit.focus();
       const outside: number[] = [];
       for (let step = 0; step < FOCUS_STEPS; step += 1) {
-        await page.clock.runFor(FOCUS_STEP_MS);
+        await advance(page, FOCUS_STEP_MS);
         outside.push(
           await rabbit.evaluate((el) => {
             const style = getComputedStyle(el);
@@ -544,6 +602,10 @@ test.describe('the homepage without JavaScript', () => {
       expect(
         plants.length,
         'the planted meadow is missing without JavaScript',
+      ).toBeGreaterThan(0);
+      expect(
+        words.length,
+        'no text or control in the meadow was found to check',
       ).toBeGreaterThan(0);
       expect(
         overlaps,
