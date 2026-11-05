@@ -578,6 +578,12 @@
     cursor: pointer;
   }
 
+  /* Moved only by home-motion.ts; the reduced-motion backstop's brief transitions would still count as moving on a press. */
+  .home-prop,
+  .home-prop * {
+    transition: none !important;
+  }
+
   /*
    * Below `md` there are no lanes, so the jar would pass behind the bricks:
    * it rests in the open ground just right of the pause control instead,
