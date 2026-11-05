@@ -5,6 +5,7 @@
  * its foot. The wall toward the first heading ends above the floor, so the
  * rabbit can hop out (home-faller.ts). Drawn once per size; no motion.
  */
+import { seeded } from '../lib/seeded';
 
 const SVG = 'http://www.w3.org/2000/svg';
 /* Drawing sizes in px: wall thickness, course height, ground brick length, and how far the shaft runs below the hero. */
@@ -37,6 +38,58 @@ const SHADE = { wall: 84, bite: 30, pebble: 58, ground: 92, groundStep: 6 };
 /* A chipped corner takes this share of the brick's short side, plus up to the spread. */
 const CHIP_SIZE = 0.25;
 const CHIP_SPREAD = 0.35;
+/* Brick edges as shares of the site's block edge: shaft bricks, ground bricks. */
+const BRICK_LINE = 0.75;
+const GROUND_LINE = 0.6;
+/* A jagged line's kinks wander this share of a step along it. */
+const KINK_SPREAD = 0.4;
+/* Back wall joints, as shares of a ground brick: where the first sits (odd rows shift half), and the gap to the next. */
+const JOINT = {
+  start: 0.6,
+  stagger: 0.5,
+  jitter: 0.3,
+  gap: 0.45,
+  gapSpread: 0.3,
+  lean: 2,
+};
+/* The back wall's bed joints: kinks per course, and their wander as a share of JAG in px. */
+const BED_KINKS = 5;
+const BED_WANDER = 1.6;
+/* Gradient stops [offset, ink opacity]: the shade cast from the left, and the dark deepening down the shaft. */
+const SHADE_STOPS = [
+  [0, 0.55],
+  [0.45, 0],
+] as const;
+const DEEP_STOPS = [
+  [0.1, 0.1],
+  [0.55, 0.85],
+  [1, 1],
+] as const;
+/* Fades [from, opacity, to, opacity]: the walls toward the shaft's foot, the ground downward. */
+const WALL_FADE = [0.6, 1, 0.97, 0] as const;
+const GROUND_FADE = [0.1, 1, 1, 0] as const;
+/* A wall brick keeps at least this share of the wall, and leans this way when it wanders. */
+const WALL_MIN = 0.5;
+const WALL_BIAS = 0.4;
+/* A ground brick's length: this share of a brick, plus up to the spread. */
+const GROUND_BRICK = { min: 0.55, spread: 0.5 };
+/* A bite's reach varies by this much either side, overlaps the wall by OVERLAP_PX, and its edge has this many kinks. */
+const BITE_SPREAD = { min: 0.7, spread: 0.6 };
+const OVERLAP_PX = 2;
+const BITE_KINKS = 6;
+/* Where a pebble sits in its bite: shares of the reach across and the depth down. */
+const PEBBLE_AT = { x: 0.15, xSpread: 0.6, y: 0.3, ySpread: 0.5 };
+/* A pebble's outline, as multiples of its size. */
+const PEBBLE_SHAPE = [
+  [-1, 0],
+  [-0.2, -0.8],
+  [1, -0.2],
+  [0.4, 0.7],
+] as const;
+/* A mask spans this many band widths, from one band width left, so nothing it covers is cut at its sides. */
+const MASK_SPAN = 3;
+/* Room kept above the ledge for the bites' edges. */
+const LIP_PAD_PX = 4;
 const PHONE_LEDGE_PX = 30;
 /* Share of a wall's thickness its inner face wanders, and the odds a corner is chipped or a course missing. */
 const JAG = 0.45;
@@ -52,14 +105,6 @@ const BACK_STEP = 6;
 /* Head room the rabbit needs above its floor before the exit-side wall may resume. */
 const EXIT_ROOM = { phone: 80, wide: 96 };
 const SEED = 6571;
-
-const seeded = (seed: number): (() => number) => {
-  let state = seed;
-  return () => {
-    state = (state * 16807) % 2147483647;
-    return state / 2147483647;
-  };
-};
 
 type Point = readonly [number, number];
 
@@ -139,7 +184,7 @@ export const createHole = ({
       w: number,
       h: number,
       fill: string,
-      line = edge * 0.75,
+      line = edge * BRICK_LINE,
     ): SVGPolygonElement => {
       const [a, c, d, e] = [chip(w, h), chip(w, h), chip(w, h), chip(w, h)];
       return svg(
@@ -175,7 +220,7 @@ export const createHole = ({
       const length = Math.hypot(dx, dy) || 1;
       const out: Point[] = [from];
       for (let i = 1; i < kinks; i += 1) {
-        const s = i / kinks + ((random() - 0.5) * 0.4) / kinks;
+        const s = i / kinks + ((random() - 0.5) * KINK_SPREAD) / kinks;
         const o = (random() - 0.5) * 2 * amp;
         out.push([
           x0 + dx * s - (dy / length) * o,
@@ -199,7 +244,7 @@ export const createHole = ({
     const fade = (
       name: string,
       top: number,
-      stops: [number, number, number, number],
+      stops: readonly [number, number, number, number],
     ): SVGElement[] => [
       svg(
         'linearGradient',
@@ -221,7 +266,7 @@ export const createHole = ({
           maskUnits: 'userSpaceOnUse',
           x: -bandWidth,
           y: top,
-          width: bandWidth * 3,
+          width: bandWidth * MASK_SPAN,
           height: bottom - top,
         },
         { 'mask-type': 'alpha' },
@@ -229,7 +274,7 @@ export const createHole = ({
           svg('rect', {
             x: -bandWidth,
             y: top,
-            width: bandWidth * 3,
+            width: bandWidth * MASK_SPAN,
             height: bottom - top,
             fill: `url(#${id(`${name}-ramp`)})`,
           }),
@@ -261,14 +306,18 @@ export const createHole = ({
         ),
       );
       for (
-        let x = xL + ((r % 2) * 0.5 + random() * 0.3) * size.brick * 0.6;
+        let x =
+          xL +
+          ((r % 2) * JOINT.stagger + random() * JOINT.jitter) *
+            size.brick *
+            JOINT.start;
         x < xR;
-        x += size.brick * (0.45 + random() * 0.3)
+        x += size.brick * (JOINT.gap + random() * JOINT.gapSpread)
       ) {
         back.push(
           svg(
             'line',
-            { x1: x, y1: y, x2: x + (random() - 0.5) * 2, y2: y + ch },
+            { x1: x, y1: y, x2: x + (random() - 0.5) * JOINT.lean, y2: y + ch },
             { stroke: ink, 'stroke-width': `${LINE_PX}px` },
           ),
         );
@@ -276,7 +325,11 @@ export const createHole = ({
       back.push(
         svg(
           'polyline',
-          { points: points(jagged([xL, y + ch], [xR, y + ch], 5, JAG * 1.6)) },
+          {
+            points: points(
+              jagged([xL, y + ch], [xR, y + ch], BED_KINKS, JAG * BED_WANDER),
+            ),
+          },
           { fill: 'none', stroke: ink, 'stroke-width': `${LINE_PX}px` },
         ),
       );
@@ -292,7 +345,7 @@ export const createHole = ({
         y2: 0,
       },
       {},
-      [stop(0, 0.55), stop(0.45, 0)],
+      SHADE_STOPS.map(([offset, opacity]) => stop(offset, opacity)),
     );
     const deep = svg(
       'linearGradient',
@@ -305,7 +358,7 @@ export const createHole = ({
         y2: bottom,
       },
       {},
-      [stop(0.1, 0.1), stop(0.55, 0.85), stop(1, 1)],
+      DEEP_STOPS.map(([offset, opacity]) => stop(offset, opacity)),
     );
     back.push(
       svg('rect', {
@@ -330,7 +383,7 @@ export const createHole = ({
       for (const side of [-1, 1] as const) {
         if (side === exitSide && y + ch > openFrom) continue;
         if (r > 1 && random() < GONE) continue;
-        const w = Math.max(t * 0.5, t + JAG * t * (random() - 0.4));
+        const w = Math.max(t * WALL_MIN, t + JAG * t * (random() - WALL_BIAS));
         const x = side > 0 ? xR + t - w : xL - t;
         walls.push(brick(x, y, w, ch, side > 0 ? light : mix(SHADE.wall)));
       }
@@ -344,7 +397,10 @@ export const createHole = ({
         if (side === exitSide && y + ch * GROUND_COURSE > openFrom) continue;
         let x = side < 0 ? xL - t : xR + t;
         for (let n = 0; n < size.groundBricks; n += 1) {
-          const w = size.brick * (0.55 + random() * 0.5) * size.groundScale;
+          const w =
+            size.brick *
+            (GROUND_BRICK.min + random() * GROUND_BRICK.spread) *
+            size.groundScale;
           groundBricks.push(
             brick(
               side < 0 ? x - w : x,
@@ -352,7 +408,7 @@ export const createHole = ({
               w,
               ch * GROUND_COURSE,
               mix(SHADE.ground - r * SHADE.groundStep),
-              edge * 0.6,
+              edge * GROUND_LINE,
             ),
           );
           x += side * w;
@@ -374,8 +430,8 @@ export const createHole = ({
         svg('defs', {}, {}, [
           shade,
           deep,
-          ...fade('walls', ground, [0.6, 1, 0.97, 0]),
-          ...fade('ground', top, [0.1, 1, 1, 0]),
+          ...fade('walls', ground, WALL_FADE),
+          ...fade('ground', top, GROUND_FADE),
         ]),
         svg('g', { mask: `url(#${id('ground')})` }, {}, groundBricks),
         ...back,
@@ -387,19 +443,22 @@ export const createHole = ({
     const lip: SVGElement[] = [];
     for (const side of [-1, 1] as const) {
       const x0 = side < 0 ? xL - t : xR + t;
-      const reach = size.brick * BITE_REACH * (0.7 + random() * 0.6);
+      const reach =
+        size.brick *
+        BITE_REACH *
+        (BITE_SPREAD.min + random() * BITE_SPREAD.spread);
       const depth = ledge * BITE_DEPTH;
       const xo = x0 + side * reach;
       const cut: Point[] = [
-        [x0 - side * 2, ground - 1],
-        [xo, ground - 1],
+        [x0 - side * OVERLAP_PX, ground - OVERLAP_PX / 2],
+        [xo, ground - OVERLAP_PX / 2],
         ...jagged(
-          [xo, ground - 1],
-          [x0 - side * 2, ground + depth],
-          6,
+          [xo, ground - OVERLAP_PX / 2],
+          [x0 - side * OVERLAP_PX, ground + depth],
+          BITE_KINKS,
           size.biteKink,
         ).slice(0, -1),
-        [x0 - side * 2, ground + depth],
+        [x0 - side * OVERLAP_PX, ground + depth],
       ];
       lip.push(
         svg(
@@ -408,25 +467,24 @@ export const createHole = ({
           {
             fill: mix(SHADE.bite),
             stroke: ink,
-            'stroke-width': `${edge * 0.75}px`,
+            'stroke-width': `${edge * BRICK_LINE}px`,
             'stroke-linejoin': 'round',
           },
         ),
       );
       for (let k = 0; k < PEBBLES; k += 1) {
-        const px = x0 + side * reach * (0.15 + random() * 0.6);
-        const py = ground + depth * (0.3 + random() * 0.5);
+        const px =
+          x0 + side * reach * (PEBBLE_AT.x + random() * PEBBLE_AT.xSpread);
+        const py =
+          ground + depth * (PEBBLE_AT.y + random() * PEBBLE_AT.ySpread);
         const s = size.pebble;
         lip.push(
           svg(
             'polygon',
             {
-              points: points([
-                [px - s, py],
-                [px - s * 0.2, py - s * 0.8],
-                [px + s, py - s * 0.2],
-                [px + s * 0.4, py + s * 0.7],
-              ]),
+              points: points(
+                PEBBLE_SHAPE.map(([dx, dy]) => [px + dx * s, py + dy * s]),
+              ),
             },
             {
               fill: mix(SHADE.pebble),
@@ -442,11 +500,11 @@ export const createHole = ({
       {
         'aria-hidden': 'true',
         class: 'home-hole-lip',
-        viewBox: `0 ${ground - 4} ${bandWidth} ${ledge + 4}`,
+        viewBox: `0 ${ground - LIP_PAD_PX} ${bandWidth} ${ledge + LIP_PAD_PX}`,
         width: bandWidth,
-        height: ledge + 4,
+        height: ledge + LIP_PAD_PX,
       },
-      { top: `${ground - 4}px` },
+      { top: `${ground - LIP_PAD_PX}px` },
       lip,
     );
 

@@ -630,6 +630,13 @@
   --spacing-home-tumble-md: 16px;
   /* One atlas pixel; the rabbit sprite multiplies its frame sizes by this and the scale. */
   --home-atlas-px: 1px;
+  /* The rabbit's scale of the atlas: phones, then from `md`; the hopping and falling rabbit share it. */
+  --home-rabbit-scale-phone: 0.22;
+  --home-rabbit-scale: 0.3;
+  /* The rabbit hole's opening: its left edge, and its width on phones and from `md`, as shares of the meadow. */
+  --home-mouth-at: 66%;
+  --home-mouth-w-phone: 16.5%;
+  --home-mouth-w: 14%;
 
   /*
    * Menu bars in a 24x16 box; they end at 17px, so they are absolutely

@@ -108,16 +108,15 @@
   /* The walls meet the hole's opening; values match .home-mouth. */
   .home-band,
   .home-mouth {
-    --mouth-l: 66%;
-    --mouth-w: 16.5%;
+    --mouth-l: var(--home-mouth-at);
+    --mouth-w: var(--home-mouth-w-phone);
     --ledge-h: var(--size-home-ledge-h-phone);
     --post-w: var(--size-home-post-w-phone);
     --plant-w: var(--size-home-plant-w-phone);
     --plant-h: var(--size-home-plant-h-phone);
 
     @variant md {
-      --mouth-l: 66%;
-      --mouth-w: 14%;
+      --mouth-w: var(--home-mouth-w);
       --ledge-h: var(--size-home-ledge-h);
       --post-w: var(--size-home-post-w);
       --plant-w: var(--size-home-plant-w);
@@ -310,14 +309,14 @@
    * src/lib/rabbit-atlas.ts.
    */
   .home-bun {
-    --scale: 0.22;
+    --scale: var(--home-rabbit-scale-phone);
 
     position: absolute;
     top: 100%;
     left: 50%;
 
     @variant md {
-      --scale: 0.3;
+      --scale: var(--home-rabbit-scale);
     }
   }
 
@@ -423,10 +422,10 @@
   }
 
   .home-faller .home-bun {
-    --scale: 0.22;
+    --scale: var(--home-rabbit-scale-phone);
 
     @variant md {
-      --scale: 0.3;
+      --scale: var(--home-rabbit-scale);
     }
   }
 

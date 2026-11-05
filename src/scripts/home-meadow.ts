@@ -5,6 +5,7 @@
  * no frame loop of its own: home-motion.ts calls draw(), so the pause and
  * reduced motion hold it.
  */
+import { seeded } from '../lib/seeded';
 
 /* Each drawing's place in the atlas: [x, width] in atlas px; every one is ATLAS_HEIGHT tall. */
 const ART = {
@@ -92,6 +93,8 @@ const HOLE_CLEAR_PX = 8;
 /* A stem this close to the hole's edge is left out of the front row. */
 const STEM_CLEAR_PX = 16;
 const SEED = 5171;
+/* Half the stems face the other way. */
+const FLIP_ODDS = 0.5;
 const FULL_TURN = Math.PI * 2;
 
 interface Stem {
@@ -127,14 +130,6 @@ interface MeadowParts {
   readonly back: HTMLCanvasElement;
   readonly mouth: HTMLElement;
 }
-
-const seeded = (seed: number): (() => number) => {
-  let state = seed;
-  return () => {
-    state = (state * 16807) % 2147483647;
-    return state / 2147483647;
-  };
-};
 
 const contextOf = (canvas: HTMLCanvasElement): CanvasRenderingContext2D => {
   const context = canvas.getContext('2d');
@@ -312,7 +307,7 @@ export const createMeadow = ({
           height: tall,
           head,
           bow: (next() - 0.5) * BUD_BOW_PX,
-          flip: next() < 0.5,
+          flip: next() < FLIP_ODDS,
           jitter: (next() - 0.5) * JITTER,
         };
         if (!inHole) stems.push(stem);
