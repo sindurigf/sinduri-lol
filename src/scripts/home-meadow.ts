@@ -125,7 +125,6 @@ interface MeadowParts {
   readonly band: HTMLElement;
   readonly haze: HTMLCanvasElement;
   readonly back: HTMLCanvasElement;
-  readonly front: HTMLCanvasElement;
   readonly mouth: HTMLElement;
 }
 
@@ -233,12 +232,10 @@ export const createMeadow = ({
   band,
   haze,
   back,
-  front,
   mouth,
 }: MeadowParts): Meadow => {
   const far = contextOf(haze);
   const near = contextOf(back);
-  const over = contextOf(front);
   const ink = token(band, '--color-block-ink');
   const light = token(band, '--color-block-light');
   const src = band.dataset.homeArt;
@@ -277,7 +274,6 @@ export const createMeadow = ({
     for (const [canvas, context] of [
       [haze, far],
       [back, near],
-      [front, over],
     ] as const) {
       canvas.width = Math.round(width * scale);
       canvas.height = Math.round(height * scale);
@@ -389,7 +385,6 @@ export const createMeadow = ({
 
   const draw = (seconds: number, still: boolean, rabbitX: number): void => {
     near.clearRect(0, 0, width, height);
-    over.clearRect(0, 0, width, height);
     if (!crisp) return;
     for (const { row, stems } of rows) {
       if (row.tone !== undefined) continue;

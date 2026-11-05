@@ -539,12 +539,9 @@ const start = (): void => {
   const back = band.querySelector<HTMLCanvasElement>(
     '[data-home-stems="back"]',
   );
-  const front = band.querySelector<HTMLCanvasElement>(
-    '[data-home-stems="front"]',
-  );
-  if (haze && back && front) {
+  if (haze && back) {
     void import('./home-meadow').then(({ createMeadow }) => {
-      meadow = createMeadow({ band, haze, back, front, mouth });
+      meadow = createMeadow({ band, haze, back, mouth });
       band.dataset.stemsLive = '';
       meadow.draw(clock / 1000, state() === 'paused', rabbitAt());
     });

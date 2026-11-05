@@ -268,10 +268,6 @@
     height: 100%;
   }
 
-  .home-stems-front {
-    z-index: 3;
-  }
-
   /* The canvases replace the planted SVGs once they draw. */
   .home-band[data-stems-live] .home-plant {
     display: none;
