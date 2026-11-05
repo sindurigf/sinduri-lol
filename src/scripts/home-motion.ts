@@ -262,6 +262,19 @@ const start = (): void => {
       if (!gone) stepDive();
       return;
     }
+    /* A focused rabbit sits still, so the meadow's edge never cuts its focus ring (SC 2.4.13). */
+    if (follow.matches(':focus-visible')) {
+      if (hop.phase !== 'rest') {
+        if (hop.phase === 'air') hop.x = hop.to;
+        hop.y = 0;
+        hop.phase = 'rest';
+        hop.since = clock;
+        hop.length = FIRST_REST_MS;
+      }
+      setPose('sit');
+      place();
+      return;
+    }
     const t = clock - hop.since;
     if (hop.phase === 'rest') {
       const looking =

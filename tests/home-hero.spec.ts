@@ -17,6 +17,9 @@ const VIEWPORTS = [
 const FALL_SCROLL_STEPS = 12;
 const FALL_FRAMES = 6;
 const FALL_FRAME_MS = 150;
+/** A focused rabbit is watched over several of its hops. */
+const FOCUS_STEPS = 24;
+const FOCUS_STEP_MS = 250;
 /** Long enough for every hop and drop from the shaft to the last section in home-faller.ts. */
 const LANDING_MS = 15_000;
 /** Longer than the dive's leap and drop in home-motion.ts. */
@@ -439,6 +442,48 @@ test.describe('the rabbit', () => {
     await page.waitForTimeout(STILL_CHECK_MS);
     expect(await read(), 'the rabbit moved under reduced motion').toBe(first);
   });
+
+  for (const [width, height] of [
+    [390, 844],
+    [1280, 720],
+  ] as const) {
+    test(`holds still with its whole focus ring inside the meadow while focused at ${width}x${height} (SC 2.4.11, 2.4.13)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height });
+      await page.clock.install();
+      await gotoSettled(page, '/');
+      await page.locator('[data-home-band]').scrollIntoViewIfNeeded();
+      const rabbit = page.locator('[data-home-follow]');
+      await rabbit.focus();
+      const outside: number[] = [];
+      for (let step = 0; step < FOCUS_STEPS; step += 1) {
+        await page.clock.runFor(FOCUS_STEP_MS);
+        outside.push(
+          await rabbit.evaluate((el) => {
+            const style = getComputedStyle(el);
+            const reach =
+              parseFloat(style.outlineOffset) + parseFloat(style.outlineWidth);
+            const ring = el.getBoundingClientRect();
+            const band = el
+              .closest('[data-home-band]')!
+              .getBoundingClientRect();
+            return Math.max(
+              band.left - (ring.left - reach),
+              band.top - (ring.top - reach),
+              ring.right + reach - band.right,
+              ring.bottom + reach - band.bottom,
+              0,
+            );
+          }),
+        );
+      }
+      expect(
+        Math.max(...outside),
+        'the focused rabbit hops so its focus ring is cut off by the meadow',
+      ).toBeLessThanOrEqual(SUBPIXEL_TOLERANCE);
+    });
+  }
 
   test('is no control without JavaScript, nor is the jar', async ({
     browser,
