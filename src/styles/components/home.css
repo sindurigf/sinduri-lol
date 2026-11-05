@@ -597,7 +597,10 @@
    * it rests in the open ground just right of the pause control instead,
    * clear of the shaft's foot on the right.
    */
+  /* Above the other things, so none rises over it while it has focus (SC 2.4.11). */
   .home-prop-jar {
+    z-index: 1;
+
     @variant max-md {
       top: --spacing(4) !important;
       left: calc(var(--spacing-target) + --spacing(4));
