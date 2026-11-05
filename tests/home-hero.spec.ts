@@ -17,6 +17,8 @@ const VIEWPORTS = [
 const FALL_SCROLL_STEPS = 12;
 const FALL_FRAMES = 6;
 const FALL_FRAME_MS = 150;
+/** Long enough for every hop and drop from the shaft to the last section in home-faller.ts. */
+const LANDING_MS = 15_000;
 /** Longer than the dive's leap and drop in home-motion.ts. */
 const DIVE_MS = 1000;
 
@@ -380,11 +382,10 @@ test.describe('the rabbit', () => {
     });
   }
 
-  test('lands inside the fall, never over the footer (SC 1.4.3)', async ({
+  test('lands on the last section, inside the fall and never over the footer (SC 1.4.3)', async ({
     page,
   }) => {
     await gotoSettled(page, '/');
-    await page.locator('[data-home-pause]').first().click();
     await page.locator('[data-home-follow]').click();
     await expect(page.locator('.home-fall')).toHaveAttribute(
       'data-rabbit-fell',
@@ -393,18 +394,29 @@ test.describe('the rabbit', () => {
     await page.evaluate(() =>
       window.scrollTo(0, document.documentElement.scrollHeight),
     );
-    const overflow = await page.evaluate(() => {
-      const fall = document.querySelector('.home-fall');
-      const rabbit = document.querySelector('.home-faller-spin');
-      if (!fall || !rabbit)
-        throw new Error('the fall or the falling rabbit is not on the page.');
-      return (
-        rabbit.getBoundingClientRect().bottom -
-        fall.getBoundingClientRect().bottom
-      );
-    });
+    const where = () =>
+      page.evaluate(() => {
+        const fall = document.querySelector('.home-fall');
+        const rabbit = document.querySelector('.home-faller .home-bun > i');
+        const last = document.querySelector('.home-fall > :last-child .card');
+        if (!fall || !rabbit || !last)
+          throw new Error(
+            'the fall, the falling rabbit or the last card is not on the page.',
+          );
+        const feet = rabbit.getBoundingClientRect().bottom;
+        return {
+          aboveLast: Math.abs(last.getBoundingClientRect().top - feet),
+          overflow: feet - fall.getBoundingClientRect().bottom,
+        };
+      });
+    await expect
+      .poll(async () => (await where()).aboveLast, {
+        message: 'the rabbit never came down to stand on the last section',
+        timeout: LANDING_MS,
+      })
+      .toBeLessThanOrEqual(SUBPIXEL_TOLERANCE * 2);
     expect(
-      overflow,
+      (await where()).overflow,
       'the landed rabbit hangs below the fall, over the footer',
     ).toBeLessThanOrEqual(SUBPIXEL_TOLERANCE);
   });
