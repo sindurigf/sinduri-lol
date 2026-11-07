@@ -14,7 +14,7 @@ const VIEWPORTS = [
   [305, 568],
 ] as const;
 
-/** The fall is checked at this many scroll positions, a few clock steps at each, so hops and drops are caught midway. */
+/** The fall is checked at this many scroll positions, a few clock steps at each, so it is caught both resting and mid-hop. */
 const FALL_SCROLL_STEPS = 12;
 const FALL_FRAMES = 6;
 const FALL_FRAME_MS = 150;
@@ -361,7 +361,7 @@ test.describe('the rabbit', () => {
   }
 
   for (const [width, height] of VIEWPORTS) {
-    test(`goes down the fall without covering text or a control at ${width}x${height} (SC 1.4.3, 2.4.11)`, async ({
+    test(`goes down the fall and rests only where it covers no text or control at ${width}x${height} (SC 1.4.3, 2.4.11)`, async ({
       page,
     }) => {
       await open(page, width, height);
@@ -379,6 +379,7 @@ test.describe('the rabbit', () => {
         document.documentElement.scrollHeight - window.innerHeight,
       ]);
       const hits: string[] = [];
+      let rests = 0;
       for (let step = 0; step <= FALL_SCROLL_STEPS; step += 1) {
         await page.evaluate(
           (y) => window.scrollTo(0, y),
@@ -386,21 +387,67 @@ test.describe('the rabbit', () => {
         );
         for (let frame = 0; frame < FALL_FRAMES; frame += 1) {
           await advance(page, FALL_FRAME_MS);
+          const resting = await page
+            .locator('.home-faller .home-bun')
+            .evaluate((el) => (el as HTMLElement).dataset.pose === 'sit');
+          if (resting) rests += 1;
           hits.push(
             ...(await coveredBy(
               page,
               '.home-fall',
-              '[data-home-faller], .home-hole',
+              resting ? '[data-home-faller], .home-hole' : '.home-hole',
             )),
           );
         }
       }
       expect(
+        rests,
+        'the rabbit never came to rest on the way down',
+      ).toBeGreaterThan(0);
+      expect(
         hits,
-        'the falling rabbit or the shaft sits on top of text or a control',
+        'the resting rabbit or the shaft sits on top of text or a control',
       ).toEqual([]);
     });
   }
+
+  test('paused mid-hop, it comes to rest where it covers no text or control (SC 1.4.3, 2.2.2)', async ({
+    page,
+  }) => {
+    /* A phone: the hop there passes in front of a section. */
+    await open(page, 390, 844);
+    await page.locator('[data-home-band]').scrollIntoViewIfNeeded();
+    await page.locator('[data-home-follow]').focus();
+    await page.keyboard.press('Enter');
+    await advance(page, DIVE_MS);
+    await expect(page.locator('.home-fall')).toHaveAttribute(
+      'data-rabbit-fell',
+      '',
+    );
+    /* One screen on, so the next section is its goal and the hop happens in sight. */
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight));
+    const pose = () =>
+      page
+        .locator('.home-faller .home-bun')
+        .evaluate((el) => (el as HTMLElement).dataset.pose);
+    let hopping = false;
+    for (let frame = 0; frame < FOCUS_STEPS && !hopping; frame += 1) {
+      await advance(page, FALL_FRAME_MS);
+      hopping = (await pose()) === 'leap';
+    }
+    expect(hopping, 'the rabbit never hopped after the page scrolled').toBe(
+      true,
+    );
+    await page
+      .locator('.home-fall [data-home-pause]')
+      .evaluate((el) => (el as HTMLElement).click());
+    await advance(page, FALL_FRAME_MS);
+    expect(await pose(), 'the paused rabbit is still mid-hop').toBe('sit');
+    expect(
+      await coveredBy(page, '.home-fall', '[data-home-faller]'),
+      'the paused rabbit sits on top of text or a control',
+    ).toEqual([]);
+  });
 
   test('lands on the last section, inside the fall and never over the footer (SC 1.4.3)', async ({
     page,
