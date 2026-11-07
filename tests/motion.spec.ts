@@ -6,39 +6,62 @@ import { PHONE_VIEWPORT } from './wcag';
 import { NODE } from './tags';
 
 /**
- * SC 2.2.2 and performance for the homepage motion (src/scripts/home-motion.ts):
- * the rabbit, the meadow's stems and Alice's things share one frame loop. Tests
- * pump frames and read the transforms the loop writes: real frames under load
- * are too few to count.
+ * SC 2.2.2 for the hero canvas. A canvas has no `animation-play-state`, so tests
+ * pump frames and compare pixels: real frames under load are too few to count.
+ * src/scripts/motion-loop.ts also stops the loop off screen and in a hidden tab.
  */
-const HOME_ROUTE = '/';
-const PAUSE_NAME = /^pause animations$/i;
-const PLAY_NAME = /^play animations$/i;
-const ANY_PAUSE_NAME = /^(pause|play) animations$/i;
+const HERO_ROUTE = '/';
+const HERO_PAUSE_NAME = /pause the hero animation/i;
+const HERO_PLAY_NAME = /play the hero animation/i;
 
-/** How long the loop has to stop after the motion leaves the viewport. */
-const STOP_TIMEOUT_MS = 5_000;
+/** How long the field has to stop drawing after it leaves the viewport. */
+const HERO_STOP_TIMEOUT_MS = 5_000;
 
-/** The frame-rate test offers the loop one second of frames at this rate. */
-const PUMP_HZ = 60;
-const PUMP_FRAMES = 60;
+/** The frame-rate test offers the field one second of frames at this rate. */
+const HERO_PUMP_HZ = 60;
+const HERO_PUMP_FRAMES = 60;
 
-/** `MAX_FRAME_RATE` in home-motion.ts is 30; one over allows for where the first drawn frame falls. */
-const DRAWN_MAX = 31;
+/** `MAX_FRAME_RATE` in src/scripts/hero-field.ts is 30; one over allows for where the first drawn frame falls. */
+const HERO_DRAWN_MAX = 31;
 
-/** A view short enough that the footer alone fills it once scrolled to the end. */
-const SHORT_VIEWPORT = { width: 1280, height: 360 };
-
+/** Both put the control inside the content column's box; at 1440px it sits outside and proves nothing. */
 const POINTER_VIEWPORTS = [
   { ...PHONE_VIEWPORT, note: 'phone' },
   { width: 1280, height: 720, note: 'desktop' },
 ] as const;
 
-const motion = (page: Page) => page.locator('[data-home-band]');
+/**
+ * A strip, not the whole canvas: full-viewport `getImageData` is slow. 55% of
+ * the height is below the horizon, inside the hare's band at every viewport.
+ */
+const fieldFingerprint = (page: Page) =>
+  page.evaluate(() => {
+    const layers =
+      document.querySelectorAll<HTMLCanvasElement>('.hero-field-layer');
+    const canvas = layers[1];
+    if (!canvas) return null;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    const top = Math.floor(canvas.height * 0.55);
+    const rows = Math.min(48, canvas.height - top);
+    if (rows < 1) return null;
+
+    const { data } = ctx.getImageData(0, top, canvas.width, rows);
+    let ink = 0;
+    let signature = 0;
+    const alphas = data.filter((_, i) => i % 4 === 3);
+    for (const [pixel, alpha] of alphas.entries()) {
+      ink += alpha;
+      /* Position-weighted, so ink that merely moved still registers. */
+      signature = (signature + alpha * (pixel % 7919)) % 2147483647;
+    }
+    return { ink, signature };
+  });
 
 /*
  * `cancelAnimationFrame` must really remove the callback: `stop()` in
- * motion-loop.ts relies on it. `pumpFrame` returns how many callbacks it ran.
+ * src/scripts/motion-loop.ts relies on it. Ids start at 1, so `frame = 0` means "nothing pending".
  */
 const installFramePump = (page: Page) =>
   page.addInitScript(() => {
@@ -52,197 +75,209 @@ const installFramePump = (page: Page) =>
     window.cancelAnimationFrame = (id: number): void => {
       queue.delete(id);
     };
-    (window as unknown as { pumpFrame: (now: number) => number }).pumpFrame = (
+    (window as unknown as { pumpFrame: (now: number) => void }).pumpFrame = (
       now,
     ) => {
       const due = [...queue.entries()];
       for (const [id] of due) queue.delete(id);
       for (const [, callback] of due) callback(now);
-      return due.length;
     };
   });
 
-/* Runs any frame queued before a stop, so later counts can assert exactly zero. */
+/* Runs any frame queued before the stop, so counts can assert exactly zero. */
 const drainPendingFrame = (page: Page) =>
-  page.evaluate(() =>
-    (window as unknown as { pumpFrame: (now: number) => number }).pumpFrame(
+  page.evaluate(() => {
+    (window as unknown as { pumpFrame: (now: number) => void }).pumpFrame(
       performance.now(),
-    ),
-  );
+    );
+  });
 
-/** Pumps a second of frames; returns how many changed the drawing and how many callbacks ran. */
-const pumpSecond = (page: Page) =>
+const countDrawnFrames = (page: Page) =>
   page.evaluate(
     ({ hz, frames }) => {
-      const pump = (window as unknown as { pumpFrame: (now: number) => number })
+      const pump = (window as unknown as { pumpFrame: (now: number) => void })
         .pumpFrame;
-      const signature = (): string =>
-        [
-          ...document.querySelectorAll<HTMLElement>(
-            '[data-home-hopper], .home-faller-spin, [data-home-prop], .home-prop-face',
-          ),
-        ]
-          .map((el) => `${el.style.transform}/${el.style.rotate}`)
-          .join('|');
-      /* Pumped time runs ahead of the real clock; resuming behind it would read as frames too close together. */
-      const clock = window as unknown as { pumpedTo?: number };
+      const canvas =
+        document.querySelectorAll<HTMLCanvasElement>('.hero-field-layer')[1];
+      if (!canvas) throw new Error('The hero field has no middle layer.');
+      const ctx = canvas.getContext('2d')!;
+      const top = Math.floor(canvas.height * 0.55);
+      const rows = Math.min(48, canvas.height - top);
+      const signature = (): number => {
+        const { data } = ctx.getImageData(0, top, canvas.width, rows);
+        let sum = 0;
+        const alphas = data.filter((_, i) => i % 4 === 3);
+        for (const [pixel, alpha] of alphas.entries()) {
+          sum = (sum + alpha * (pixel % 7919)) % 2147483647;
+        }
+        return sum;
+      };
+
       let last = signature();
       let changes = 0;
-      let callbacks = 0;
-      let now = Math.max(performance.now(), clock.pumpedTo ?? 0);
+      let now = performance.now();
       for (let i = 0; i < frames; i += 1) {
         now += 1000 / hz;
-        callbacks += pump(now);
+        pump(now);
         const next = signature();
         if (next !== last) {
           changes += 1;
           last = next;
         }
       }
-      clock.pumpedTo = now;
-      return { changes, callbacks };
+      return changes;
     },
-    { hz: PUMP_HZ, frames: PUMP_FRAMES },
+    { hz: HERO_PUMP_HZ, frames: HERO_PUMP_FRAMES },
   );
 
-/* The meadow's floor can sit below the first screen; the loop runs only while it or the fall is in view. */
-const showMotion = async (page: Page) => {
-  await motion(page).scrollIntoViewIfNeeded();
+const expectFieldDrawing = async (page: Page, because: string) => {
+  expect(await countDrawnFrames(page), because).toBeGreaterThan(0);
 };
 
-const expectDrawing = async (page: Page, because: string) => {
-  await showMotion(page);
-  await expect
-    .poll(async () => (await pumpSecond(page)).changes, { message: because })
-    .toBeGreaterThan(0);
-};
-
-/* Held: not one frame callback runs, so nothing is even asked to draw. */
-const expectHeld = async (page: Page, because: string) => {
+const expectFieldHeld = async (page: Page, because: string) => {
   await drainPendingFrame(page);
-  const { changes, callbacks } = await pumpSecond(page);
-  expect(callbacks, `${because}: frame callbacks still run`).toBe(0);
-  expect(changes, because).toBe(0);
+  expect(await countDrawnFrames(page), because).toBe(0);
 };
 
-test.describe('the homepage motion', () => {
-  test(
-    'the server sends it still, with both pause controls hidden',
-    NODE,
-    () => {
-      const home = builtPages().find((page) => page.route === HOME_ROUTE);
-      expect(home, 'no built homepage to read').toBeDefined();
-      const html = readFileSync(home!.file, 'utf8');
+/* Every "held" assertion would also pass against a field that never drew. */
+const expectFieldPainted = async (page: Page, because: string) => {
+  const painted = await fieldFingerprint(page);
+  expect(painted, 'the hero field canvases are not in the page').not.toBeNull();
+  expect(painted!.ink, because).toBeGreaterThan(0);
+};
 
-      expect(
-        html.includes('data-home-motion="running"'),
-        'the server-rendered homepage is marked running before its pause control works.',
-      ).toBe(false);
-      const controls = html.match(/<button[^>]*data-home-pause[^>]*>/g) ?? [];
-      expect(
-        controls,
-        'the homepage does not ship two pause controls',
-      ).toHaveLength(2);
-      for (const control of controls) {
-        expect(
-          control,
-          'a pause control is shown before the script that makes it work.',
-        ).toMatch(/\shidden(\s|>|=)/);
-      }
-    },
-  );
+// The SC 2.2.2 tests below visit HERO_ROUTE only, so no other route may carry one.
+test('the hero field is only where its pause control is tested', NODE, () => {
+  expect(
+    builtPages()
+      .filter(({ file }) =>
+        readFileSync(file, 'utf8').includes('data-hero-field'),
+      )
+      .map(({ route }) => route),
+    'the hero field is on a route the SC 2.2.2 tests here do not visit',
+  ).toEqual([HERO_ROUTE]);
+});
 
-  test('moves, and a keyboard press on either control stops all of it and names both', async ({
+test.describe('the hero field on /', () => {
+  test('the server sends a still hero, not a moving one', NODE, () => {
+    const home = builtPages().find((page) => page.route === HERO_ROUTE);
+    expect(home, 'no built homepage to read').toBeDefined();
+    const html = readFileSync(home!.file, 'utf8');
+
+    /* A field that runs before its script has motion with no pause control (SC 2.2.2). */
+    expect(
+      html,
+      'the hero field must not be marked as running in server-rendered HTML',
+    ).toContain('data-hero-motion="paused"');
+    expect(
+      html.includes('data-hero-motion="running"'),
+      'the server-rendered hero is marked running before its pause control exists.',
+    ).toBe(false);
+    expect(
+      html.match(/<button[^>]*hero-motion-toggle[^>]*>/g) ?? [],
+      'the pause control is shown before the script that makes it work.',
+    ).toEqual([expect.stringMatching(/\shidden[\s>]/)]);
+  });
+
+  test('paints, keeps moving, and a keyboard press stops it', async ({
     page,
   }) => {
     await installFramePump(page);
-    await gotoSettled(page, HOME_ROUTE);
+    await gotoSettled(page, HERO_ROUTE);
 
-    await expect(motion(page)).toHaveAttribute('data-home-motion', 'running');
-    await expectDrawing(
+    const field = page.locator('.hero-field');
+    await expect(field).toHaveAttribute('data-hero-motion', 'running');
+    await expectFieldPainted(page, 'the middle canvas is empty');
+    await expectFieldDrawing(
       page,
-      'nothing was moving before the pause, so a stop proves nothing',
+      'the field was not animating before the pause, so a stop proves nothing',
     );
 
-    const controls = page.getByRole('button', { name: PAUSE_NAME });
-    await expect(
-      controls,
-      'the homepage does not show two pause controls',
-    ).toHaveCount(2);
-
     /* By keyboard, not by click(). */
-    const second = controls.nth(1);
-    await second.focus();
-    await expect(second).toBeFocused();
+    const control = page.getByRole('button', { name: HERO_PAUSE_NAME });
+    await expect(control).toBeVisible();
+
+    await control.focus();
+    await expect(control).toBeFocused();
     await page.keyboard.press('Enter');
 
-    await expect(motion(page)).toHaveAttribute('data-home-motion', 'paused');
+    await expect(field).toHaveAttribute('data-hero-motion', 'paused');
     await expect(
-      page.getByRole('button', { name: PLAY_NAME }),
-      'both controls do not change to say what they will do next.',
-    ).toHaveCount(2);
-    await expectHeld(page, 'the controls say paused and something still moves');
+      page.getByRole('button', { name: HERO_PLAY_NAME }),
+      'the control name does not change to say what it will do next.',
+    ).toBeFocused();
+
+    /* And the pixels actually stopped, not just the attribute. */
+    await expectFieldHeld(
+      page,
+      'the attribute says paused and the canvas is still drawing',
+    );
 
     await page.keyboard.press('Enter');
-    await expect(motion(page)).toHaveAttribute('data-home-motion', 'running');
-    await expectDrawing(page, 'pressing play did not restart the motion');
+    await expect(field).toHaveAttribute('data-hero-motion', 'running');
+    await expectFieldDrawing(page, 'pressing play did not restart the field');
   });
 
   /* Frames are pumped at exact 60Hz: real frames under load cannot tell a cap from none. */
   test('draws at most thirty frames a second', async ({ page }) => {
     await installFramePump(page);
-    await page.goto(HOME_ROUTE);
-    await expect(motion(page)).toHaveAttribute('data-home-motion', 'running');
+    await page.goto(HERO_ROUTE);
+    await expect(page.locator('.hero-field')).toHaveAttribute(
+      'data-hero-motion',
+      'running',
+    );
 
-    await expectDrawing(page, 'nothing moved, so a frame count proves nothing');
-    const { changes } = await pumpSecond(page);
-    const said = `the motion drew ${changes} of ${PUMP_FRAMES} frames offered at ${PUMP_HZ}Hz`;
-    expect(changes, `${said}, so it is not animating`).toBeGreaterThan(0);
+    const drawn = await countDrawnFrames(page);
+
+    const said = `the field drew ${drawn} of ${HERO_PUMP_FRAMES} frames offered at ${HERO_PUMP_HZ}Hz`;
+    expect(drawn, `${said}, so it is not animating`).toBeGreaterThan(0);
     expect(
-      changes,
+      drawn,
       `${said}, so the frame cap is not working`,
-    ).toBeLessThanOrEqual(DRAWN_MAX);
+    ).toBeLessThanOrEqual(HERO_DRAWN_MAX);
   });
 
-  test('it stops once the meadow and the fall are scrolled out of view', async ({
-    page,
-  }) => {
+  /* Two viewports is well past the observer's `rootMargin: 120px`. */
+  test('it stops drawing once it is scrolled out of view', async ({ page }) => {
     await installFramePump(page);
-    await page.setViewportSize(SHORT_VIEWPORT);
-    await page.goto(HOME_ROUTE);
-    await expect(motion(page)).toHaveAttribute('data-home-motion', 'running');
-    await expectDrawing(
-      page,
-      'nothing was moving before the page was scrolled, so this proves nothing',
+    await page.goto(HERO_ROUTE);
+    await expect(page.locator('.hero-field')).toHaveAttribute(
+      'data-hero-motion',
+      'running',
     );
+    expect(
+      await countDrawnFrames(page),
+      'the field was not drawing before it was scrolled away, so this proves nothing',
+    ).toBeGreaterThan(0);
 
-    await page.evaluate(() =>
-      window.scrollTo(0, document.documentElement.scrollHeight),
-    );
+    await page.evaluate(() => window.scrollTo(0, window.innerHeight * 2));
     await expect
       .poll(
         async () => {
           await drainPendingFrame(page);
-          return (await pumpSecond(page)).callbacks;
+          return countDrawnFrames(page);
         },
         {
           message:
-            'the loop kept running with the motion out of view, so the observer is not gating it',
-          timeout: STOP_TIMEOUT_MS,
+            'the field kept drawing after it was scrolled out of view, so onScreen is not gating it',
+          timeout: HERO_STOP_TIMEOUT_MS,
         },
       )
       .toBe(0);
   });
 
   /* Playwright cannot background a tab, so the two properties the handler reads are overridden. */
-  test('it stops while the tab is hidden', async ({ page }) => {
+  test('it stops drawing while the tab is hidden', async ({ page }) => {
     await installFramePump(page);
-    await page.goto(HOME_ROUTE);
-    await expect(motion(page)).toHaveAttribute('data-home-motion', 'running');
-    await expectDrawing(
-      page,
-      'nothing was moving before the tab was hidden, so this proves nothing',
+    await page.goto(HERO_ROUTE);
+    await expect(page.locator('.hero-field')).toHaveAttribute(
+      'data-hero-motion',
+      'running',
     );
+    expect(
+      await countDrawnFrames(page),
+      'the field was not drawing before the tab was hidden, so this proves nothing',
+    ).toBeGreaterThan(0);
 
     await page.evaluate(() => {
       Object.defineProperty(document, 'visibilityState', {
@@ -255,7 +290,12 @@ test.describe('the homepage motion', () => {
       });
       document.dispatchEvent(new Event('visibilitychange'));
     });
-    await expectHeld(page, 'the motion kept running while the tab was hidden');
+    await drainPendingFrame(page);
+
+    expect(
+      await countDrawnFrames(page),
+      'the field kept drawing while the tab was hidden, so visibilitychange is not gating it',
+    ).toBe(0);
   });
 
   /*
@@ -263,46 +303,39 @@ test.describe('the homepage motion', () => {
    * names what is on top; `locator.click()` would just time out.
    */
   for (const { width, height, note } of POINTER_VIEWPORTS) {
-    test(`a pointer press on each control stops it at ${width}px (${note})`, async ({
+    test(`a pointer press on the control stops it at ${width}px (${note})`, async ({
       page,
     }) => {
       await page.setViewportSize({ width, height });
-      await gotoSettled(page, HOME_ROUTE);
-      await expect(motion(page)).toHaveAttribute('data-home-motion', 'running');
+      await gotoSettled(page, HERO_ROUTE);
 
-      for (const index of [0, 1]) {
-        const control = page
-          .getByRole('button', { name: ANY_PAUSE_NAME })
-          .nth(index);
-        await control.scrollIntoViewIfNeeded();
-        const box = await control.boundingBox();
-        expect(box, `pause control ${index + 1} has no box`).not.toBeNull();
-        const point = {
-          x: box!.x + box!.width / 2,
-          y: box!.y + box!.height / 2,
+      const field = page.locator('.hero-field');
+      await expect(field).toHaveAttribute('data-hero-motion', 'running');
+
+      const box = await page
+        .getByRole('button', { name: HERO_PAUSE_NAME })
+        .boundingBox();
+      expect(box, 'the hero pause control has no box').not.toBeNull();
+      const point = { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
+
+      const hit = await page.evaluate(({ x, y }) => {
+        const top = document.elementFromPoint(x, y);
+        if (!top) return { reaches: false, what: 'nothing: it is off screen' };
+        return {
+          reaches: top.closest('.hero-motion-toggle') !== null,
+          what: `<${top.tagName.toLowerCase()} class="${top.getAttribute('class') ?? ''}">`,
         };
+      }, point);
+      expect(
+        hit.reaches,
+        `a press at the center of the hero pause control lands on ${hit.what} instead.`,
+      ).toBe(true);
 
-        const hit = await page.evaluate(({ x, y }) => {
-          const top = document.elementFromPoint(x, y);
-          if (!top)
-            return { reaches: false, what: 'nothing: it is off screen' };
-          return {
-            reaches: top.closest('[data-home-pause]') !== null,
-            what: `<${top.tagName.toLowerCase()} class="${top.getAttribute('class') ?? ''}">`,
-          };
-        }, point);
-        expect(
-          hit.reaches,
-          `a press at the center of pause control ${index + 1} lands on ${hit.what} instead.`,
-        ).toBe(true);
-
-        const before = await motion(page).getAttribute('data-home-motion');
-        await page.mouse.click(point.x, point.y);
-        await expect(motion(page)).not.toHaveAttribute(
-          'data-home-motion',
-          before ?? '',
-        );
-      }
+      await page.mouse.click(point.x, point.y);
+      await expect(field).toHaveAttribute('data-hero-motion', 'paused');
+      await expect(
+        page.getByRole('button', { name: HERO_PLAY_NAME }),
+      ).toBeVisible();
     });
   }
 
@@ -311,7 +344,7 @@ test.describe('the homepage motion', () => {
   }) => {
     await installFramePump(page);
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await gotoSettled(page, HOME_ROUTE);
+    await gotoSettled(page, HERO_ROUTE);
 
     expect(
       await page.evaluate(
@@ -320,98 +353,73 @@ test.describe('the homepage motion', () => {
       'the preference was not emulated, so this test proves nothing',
     ).toBe(true);
 
-    await expect(motion(page)).toHaveAttribute('data-home-motion', 'paused');
+    await expect(page.locator('.hero-field')).toHaveAttribute(
+      'data-hero-motion',
+      'paused',
+    );
+
     /* Reduced motion asks for less movement, not less picture. */
-    await expect(page.locator('[data-home-hopper]')).toBeVisible();
-    await expectHeld(page, 'something moved under prefers-reduced-motion');
+    await expectFieldPainted(
+      page,
+      'the field should still be painted under reduced motion, just not moving',
+    );
+    await expectFieldHeld(page, 'the field moved under prefers-reduced-motion');
+
     await expect(
-      page.getByRole('button', { name: ANY_PAUSE_NAME }),
-      'a pause control is shown with nothing to pause.',
+      page.getByRole('button', { name: /the hero animation/i }),
+      'a pause control is rendered with nothing to pause.',
     ).toHaveCount(0);
   });
 
-  /* home-motion.ts follows the preference rather than reading it once. */
-  test('turning reduced motion on during a visit stops it and hides the controls', async ({
+  /* src/scripts/motion-loop.ts listens for the preference rather than reading it once at load. */
+  test('turning reduced motion on during a visit stops the field and drops the control', async ({
     page,
   }) => {
     await installFramePump(page);
-    await gotoSettled(page, HOME_ROUTE);
-    await expect(motion(page)).toHaveAttribute('data-home-motion', 'running');
-    await expectDrawing(
+    await gotoSettled(page, HERO_ROUTE);
+
+    const field = page.locator('.hero-field');
+    await expect(field).toHaveAttribute('data-hero-motion', 'running');
+    await expectFieldDrawing(
       page,
-      'nothing was moving before the preference changed, so this proves nothing',
+      'the field was not animating before the preference changed, so this proves nothing',
     );
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
 
     await expect(
-      motion(page),
-      'reduced motion came on and the motion still says running.',
-    ).toHaveAttribute('data-home-motion', 'paused');
-    await expectHeld(
+      field,
+      'reduced motion came on and the field still says running.',
+    ).toHaveAttribute('data-hero-motion', 'paused');
+    await expectFieldPainted(
       page,
-      'the motion kept running after reduced motion came on',
+      'the field was cleared when reduced motion came on, instead of held',
+    );
+    await expectFieldHeld(
+      page,
+      'the field kept moving after reduced motion was turned on',
     );
     await expect(
-      page.getByRole('button', { name: ANY_PAUSE_NAME }),
+      page.getByRole('button', { name: /the hero animation/i }),
     ).toHaveCount(0);
   });
 
-  test('reduced motion coming on while a pause control has focus keeps focus in the page (SC 2.4.3)', async ({
+  test('reduced motion coming on while the pause control has focus keeps focus in the page (SC 2.4.3)', async ({
     page,
   }) => {
-    await gotoSettled(page, HOME_ROUTE);
-    const control = page.getByRole('button', { name: PAUSE_NAME }).first();
+    await gotoSettled(page, HERO_ROUTE);
+    const control = page.getByRole('button', { name: /the hero animation/i });
     await control.focus();
     await expect(control).toBeFocused();
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
 
-    await expect(
-      page.getByRole('button', { name: ANY_PAUSE_NAME }),
-    ).toHaveCount(0);
+    await expect(control).toHaveCount(0);
     await expect(
       page.locator('main'),
       'the control left and took focus with it, back to the top of the document',
     ).toBeFocused();
   });
-
-  for (const { when, reduce } of [
-    { when: 'while paused', reduce: false },
-    { when: 'under reduced motion', reduce: true },
-  ]) {
-    test(`pressing the jar ${when} moves nothing and stays on the page`, async ({
-      page,
-    }) => {
-      await installFramePump(page);
-      if (reduce) await page.emulateMedia({ reducedMotion: 'reduce' });
-      await gotoSettled(page, HOME_ROUTE);
-      if (!reduce) {
-        await page.getByRole('button', { name: PAUSE_NAME }).first().click();
-        await expect(motion(page)).toHaveAttribute(
-          'data-home-motion',
-          'paused',
-        );
-      }
-      const url = page.url();
-
-      const jar = page.getByRole('button', { name: 'Let Go of the Jar' });
-      await jar.click();
-
-      await expect(
-        jar,
-        'the jar did not answer the press by turning over',
-      ).toHaveAttribute('data-flipped', '');
-      expect(
-        await jar.evaluate((el) =>
-          el.getAnimations({ subtree: true }).map((a) => a.playState),
-        ),
-        'the jar animates where nothing may move',
-      ).toEqual([]);
-      await expectHeld(page, 'pressing the jar started the motion');
-      expect(page.url(), 'pressing the jar left the page').toBe(url);
-    });
-  }
 });
 
 /**

@@ -76,6 +76,7 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run check:live`           | Production headers and markup against this repository                                                                                            |
 | `npm run check:live:console`   | Every production route in a browser, failing on console errors                                                                                   |
 | `npm run og`                   | After a build, redraws `public/images/og-default.png` and every page's card in `public/images/og/`                                               |
+| `npm run hero-still`           | After a build, redraws the hero stills in `src/assets/hero-still-*.webp` shown without JavaScript                                                |
 | `npm run climb-atlas`          | Redraws `src/assets/hero-rabbit-climb.webp`, the lossless raster of the rabbit atlas the Let It Fall climb uses                                  |
 | `npm run about-cats`           | Packs the About cats' drawings in `artwork/about-cats/` into `src/assets/about-cats-*.avif` and `src/lib/about-cats-sheet.ts`                    |
 | `npm run publish:cv`           | Print `cv/cv.html` to the tagged CV PDF in `public/`                                                                                             |
