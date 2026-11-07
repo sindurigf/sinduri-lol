@@ -1,7 +1,7 @@
 /*
  * Backstop for anything animated. SC 2.2.2 needs a real control, which the
- * homepage motion has (home-motion.ts); it also reads this preference itself
- * and draws once.
+ * hero field has (src/scripts/hero-field.ts); it also reads this preference
+ * itself and draws once.
  */
 
 @media (prefers-reduced-motion: reduce) {

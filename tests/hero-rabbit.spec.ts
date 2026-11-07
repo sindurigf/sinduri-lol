@@ -49,7 +49,7 @@ test.describe('the climb atlas', NODE, () => {
   });
 });
 
-/* Build correctness: home.css and the climb draw atlas rects by number; the atlas must hold them and home.css must name the same ones. */
+/* Build correctness: the hero draws atlas rects by number, so a re-exported atlas must still hold them. */
 test.describe('the hero rabbit atlas', NODE, () => {
   test('every frame and its foot lie inside the atlas', async () => {
     const { width = 0, height = 0 } = await sharp(
@@ -68,31 +68,5 @@ test.describe('the hero rabbit atlas', NODE, () => {
         `the ${pose} foot lies outside its frame.`,
       ).toBe(true);
     }
-  });
-
-  test('home.css draws each pose from the frame RABBIT_FRAMES gives it', () => {
-    const css = readFileSync('src/styles/components/home.css', 'utf8');
-    const read = (block: string, name: string) =>
-      Number(new RegExp(`--${name}:\\s*(-?[\\d.]+);`).exec(block)?.[1]);
-    for (const [pose, f] of Object.entries(RABBIT_FRAMES)) {
-      const block =
-        new RegExp(
-          `\\.home-bun\\[data-pose='${pose}'\\] > i \\{([^}]*)\\}`,
-        ).exec(css)?.[1] ?? '';
-      expect(
-        {
-          x: read(block, 'x'),
-          w: read(block, 'w'),
-          h: read(block, 'h'),
-          footX: read(block, 'fx'),
-          footY: read(block, 'fy'),
-        },
-        `home.css draws the ${pose} pose from another frame than RABBIT_FRAMES.`,
-      ).toEqual({ x: f.x, w: f.w, h: f.h, footX: f.footX, footY: f.footY });
-    }
-    expect(
-      css,
-      'home.css sizes the atlas to another width than ATLAS_SIZE.',
-    ).toContain(`background-size: calc(${ATLAS_SIZE.w} * var(--k)) auto;`);
   });
 });

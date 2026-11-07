@@ -151,6 +151,56 @@
   }
 
   /*
+   * `vh` fallback; `.v-column .hero` sets the real height. `min-height` so it
+   * grows at 200% zoom. `svh`: `dvh` reflows mid-scroll, `lvh` hides the pause
+   * control under the toolbar.
+   */
+  .hero {
+    min-height: calc(100vh - var(--spacing-page-top));
+    min-height: calc(100svh - var(--spacing-page-top));
+
+    @apply isolate flex flex-col;
+  }
+
+  /*
+   * A region of the column: no border, extrusion or ground. `isolate` because
+   * the canvases stack inside.
+   */
+  .hero-window {
+    @apply relative isolate flex-1;
+  }
+
+  /*
+   * Hero plus the section under it, one gold area. Two rings, since no color
+   * clears SC 1.4.11 on both sides: gold-border inside, `border` outside for
+   * the page. Top margin is the name's overhang.
+   */
+  .v-column {
+    position: relative;
+    background-color: var(--color-gold);
+    /*
+     * Smaller name in the column: a wrapped GUNTUPALLI moves the break off the
+     * rule.
+     */
+    --text-hero-h1: var(--text-hero-h1-column);
+    /*
+     * Rule, clearance and SINDURI's line box above its letters. Here, not
+     * @theme, because it reads the column's own --text-hero-h1.
+     */
+    --hero-name-overhang: calc(
+      var(--hero-rule) + var(--hero-name-clearance) +
+        (var(--text-hero-h1--line-height) - var(--hero-name-ink-foot)) *
+        var(--text-hero-h1)
+    );
+    margin-block-start: calc(var(--hero-name-overhang) + var(--hero-pad-block));
+    --hero-ledge-h: var(--size-home-ledge-h-phone);
+
+    @variant md {
+      --hero-ledge-h: var(--size-home-ledge-h);
+    }
+  }
+
+  /*
    * Every whole-section gold area: starts at the rail, ends
    * --hero-column-screen-clear from the screen edge or at the rail, whichever
    * is further out. Drawn like a block: the 4px ink edge and the pink throw.
@@ -187,6 +237,31 @@
     margin-block-start: var(--hero-pad-block);
   }
 
+  /* A short window, so the intro starts on the first screen; never taller than the screen at 400% zoom. */
+  .v-column .hero {
+    --hero-screen: calc(
+      100svh - var(--spacing-page-top) - var(--hero-name-overhang) -
+        var(--hero-pad-block) - var(--hero-column-edge) - --spacing(1)
+    );
+
+    padding-block: 0;
+    min-height: min(var(--size-home-window-phone), var(--hero-screen));
+
+    @variant sm {
+      min-height: min(var(--size-home-window), var(--hero-screen));
+    }
+  }
+
+  /*
+   * Cancel `.band`'s negative margins and padding inside the column, or the
+   * gold spills over the column edge.
+   */
+  .v-column section.hero + section {
+    margin-inline: 0;
+    padding-inline: 0;
+    padding-block: var(--hero-column-pad-block);
+  }
+
   /*
    * Phone: the column sits inside the band gutter, the 16px its shadow needs.
    * tests/reflow.spec.ts checks sideways scroll.
@@ -195,5 +270,195 @@
     .gold-column {
       margin-inline: 0;
     }
+
+    .v-column {
+      --text-hero-h1: var(--text-hero-h1-column-phone);
+    }
+  }
+  /*
+   * Front canvas sits between the rabbit and the type; the large h1 holds SC
+   * 1.4.3 at worst over the field. No `z-index`: a stacking context would cap
+   * the pause control's `z-40` (tests/motion.spec.ts).
+   */
+  .hero-field {
+    @apply pointer-events-none absolute top-0;
+
+    right: var(--hero-inset);
+    bottom: calc(var(--hero-gap) + var(--hero-ledge-h));
+    left: var(--hero-inset);
+  }
+
+  /*
+   * The shelf the meadow stands on: joined light bricks, each drawing its top
+   * and left edge; the shelf closes the right and bottom and casts the throw.
+   */
+  .hero-ledge {
+    position: absolute;
+    right: var(--hero-inset);
+    bottom: var(--hero-gap);
+    left: var(--hero-inset);
+    display: flex;
+    height: var(--hero-ledge-h);
+    border-right: var(--block-edge) solid var(--color-block-ink);
+    border-bottom: var(--block-edge) solid var(--color-block-ink);
+    @apply shadow-hard-pink-object;
+  }
+
+  .hero-ledge > * {
+    flex: 1 1 0;
+    border: 0 solid var(--color-block-ink);
+    border-width: var(--block-edge) 0 0 var(--block-edge);
+    background-color: var(--color-block-light);
+  }
+
+  .hero-ledge > :nth-child(3n + 1) {
+    flex-grow: 1.3;
+  }
+
+  .hero-ledge > :nth-child(4n + 2) {
+    flex-grow: 0.8;
+  }
+
+  /* Fewer, wider bricks on a phone. */
+  .hero-ledge > :nth-child(n + 6) {
+    @variant max-sm {
+      display: none;
+    }
+  }
+
+  .hero-field-layer {
+    @apply absolute inset-0 block h-full w-full;
+  }
+
+  /*
+   * The reduced-motion frame where no script draws it (scripts/make-hero-still.mjs).
+   * Its sky is cut and `contain` keeps all of the field and rabbit in a short window.
+   */
+  @media (scripting: none) {
+    .hero-field {
+      background: url('../../assets/hero-still-tall.webp') left bottom / contain
+        no-repeat;
+    }
+
+    @media (width < theme(--breakpoint-md)) and (orientation: landscape) {
+      .hero-field {
+        background-image: url('../../assets/hero-still-short.webp');
+      }
+    }
+
+    @media (width >= theme(--breakpoint-md)) {
+      .hero-field {
+        background-image: url('../../assets/hero-still-wide.webp');
+      }
+    }
+  }
+
+  /*
+   * The SC 2.2.2 pause control, beside the first name above the window, which
+   * can be too low to hold it clear of the name. `z-40`: above the name's line
+   * box, empty there. `pointer-events-auto`: `.hero-field` disables them.
+   */
+  .hero-motion-toggle {
+    @apply pointer-events-auto top-auto z-40;
+
+    right: calc(-1 * var(--hero-inset));
+    bottom: calc(100% + --spacing(4));
+  }
+
+  /* It sits on the page, not the gold: the page's ring, which `.surface-gold` would darken to 1:1. */
+  .surface-gold .hero-motion-toggle:focus-visible {
+    outline-color: var(--color-cyan);
+  }
+
+  /*
+   * Hidden in forced colors: a canvas is a bitmap the mode cannot repaint.
+   * With nothing moving, the pause control goes too.
+   */
+  @media (forced-colors: active) {
+    .hero-field {
+      @apply hidden;
+    }
+  }
+
+  /*
+   * Line gap: the 12px rule plus clearance each side, less the line boxes'
+   * empty leading; not `em` alone because the rule is px. `top` offsets by half
+   * the leading difference so the letters, not the boxes, center on the rule.
+   */
+  .hero-plate span:last-child {
+    margin-top: calc(
+      var(--hero-rule) + 2 * var(--hero-name-clearance) -
+        (var(--hero-name-ink-foot) + var(--hero-name-ink-head)) *
+        var(--text-hero-h1)
+    );
+  }
+
+  /*
+   * `translateY(-50%)` puts the line break on the column's top rule only while
+   * the name is two lines (tests/hero-fit.spec.ts). `right` reserves the stickers.
+   */
+  .hero-plate {
+    top: calc(
+      var(--hero-rule) / -2 +
+        (var(--hero-name-ink-foot) - var(--hero-name-ink-head)) / 2 *
+        var(--text-hero-h1)
+    );
+    right: calc(var(--hero-marks-reserve) + var(--hero-inset));
+    left: var(--hero-inset);
+    transform: translateY(-50%);
+
+    @apply absolute z-30 flex min-w-0 flex-col;
+  }
+
+  /*
+   * Top right, below the rule; never at the foot, over the field. The box ends
+   * on the shelf, one column wide, and clips: a sticker that does not
+   * fit wraps out of sight, so at 400% zoom none hangs over the words below
+   * (SC 1.4.10). The padding is the room the throw and tilt need; a column gap
+   * wider than the box puts a wrapped sticker wholly past the clip, never half a word.
+   */
+  .hero-marks {
+    --marks-room: --spacing(4);
+
+    top: calc(var(--hero-gap) - var(--marks-room));
+    right: calc(var(--hero-inset) - var(--marks-room));
+    bottom: calc(var(--hero-gap) + var(--hero-ledge-h));
+    width: calc(var(--hero-marks-reserve) + 2 * var(--marks-room));
+    padding: var(--marks-room);
+    overflow: clip;
+
+    column-gap: calc(100% + 2 * var(--marks-room));
+
+    @apply absolute z-20 flex flex-col flex-wrap-reverse content-start items-start gap-y-4;
+  }
+
+  /*
+   * A flex column never wraps its first item, so an empty first item lets a
+   * sticker taller than the room wrap out of sight too. The margin cancels its gap.
+   */
+  .hero-marks::before {
+    content: '';
+    margin-top: calc(-1 * --spacing(4));
+  }
+
+  /*
+   * Below `sm` the name takes full width and the words drop under it, still at
+   * the top.
+   */
+  @media (width < 40rem) {
+    .hero-plate {
+      right: var(--hero-inset);
+    }
+
+    .hero-marks {
+      top: calc(var(--hero-gap) + var(--text-hero-h1) - var(--marks-room));
+    }
+  }
+
+  .hero-sticker {
+    font-size: var(--text-hero-sticker);
+    line-height: var(--text-hero-sticker--line-height);
+
+    @apply border-4 px-4 py-2 font-black uppercase;
   }
 }

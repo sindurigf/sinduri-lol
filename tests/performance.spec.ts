@@ -12,15 +12,13 @@ import { LAYOUT_SHIFT, layoutShiftOf } from './layout-shift';
  * so it is checked with Lighthouse on the live site (docs/DEPLOYMENT.md).
  */
 
-/* Decoded script bytes. `/` carries the meadow, the shaft, the falling rabbit and the motion (the owner allows up to 50,000), `/about` the cats; `/brand` is one page with every part's script. */
+/* Decoded script bytes. `/` carries the hero meadow, `/about` the cats; `/brand` is one page with every part's script. */
 const ROUTE_SCRIPT_BUDGETS: Readonly<Record<string, number>> = {
-  '/': 37_000,
+  '/': 27_000,
   '/about': 131_400,
   '/brand': 21_800,
 };
 const PAGE_SCRIPT_BUDGET = 17_500;
-/** CSS px: boxes are fractional; half a pixel moves nothing. */
-const SUBPIXEL_TOLERANCE = 0.5;
 
 /* Decoded bytes of the stylesheets a page links plus its inline `<style>`. A talk also links the deck's sheet. */
 const TALK_STYLE_BUDGET = 120_500;
@@ -133,41 +131,6 @@ test.describe('page weight and stability', CHROMIUM_ONLY, () => {
         shift,
         `${route} shifted its layout while loading (value, element, x,y,w,h before -> after):\n${sources.join('\n')}`,
       ).toBe(0);
-    });
-  }
-
-  /*
-   * Where the homepage's pause control wraps under the stats. A script that runs
-   * after first paint would shift the page by its height unless its place is held.
-   */
-  for (const [width, height] of [
-    [1024, 1366],
-    [1440, 900],
-  ] as const) {
-    test(`/ holds the pause controls' place before its script runs at ${width}x${height}`, async ({
-      browser,
-    }) => {
-      const fallTop = async (javaScriptEnabled: boolean) => {
-        const context = await browser.newContext({
-          viewport: { width, height },
-          javaScriptEnabled,
-        });
-        const page = await context.newPage();
-        await page.goto('/', { waitUntil: 'load' });
-        if (javaScriptEnabled)
-          await expect(page.locator('[data-home-pause]').first()).toBeVisible();
-        const top = await page
-          .locator('.home-fall')
-          .evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
-        await context.close();
-        return top;
-      };
-      const before = await fallTop(false);
-      const after = await fallTop(true);
-      expect(
-        Math.abs(after - before),
-        `showing the pause controls moves the page by ${Math.round(after - before)}px`,
-      ).toBeLessThanOrEqual(SUBPIXEL_TOLERANCE);
     });
   }
 

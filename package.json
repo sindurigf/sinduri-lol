@@ -34,6 +34,7 @@
     "check:live": "sh scripts/check-live.sh",
     "check:live:console": "playwright test -c playwright.live.config.ts",
     "og": "node scripts/make-og.mjs",
+    "hero-still": "node scripts/make-hero-still.mjs",
     "climb-atlas": "node scripts/make-climb-atlas.mjs",
     "about-cats": "node scripts/make-about-cats.mjs",
     "publish:cv": "node scripts/publish-cv.mjs",

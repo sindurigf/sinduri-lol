@@ -19,6 +19,9 @@
     --dark-card-edge: var(--color-card-edge);
     --dark-code-edge: var(--color-code-edge);
     --dark-code-fill: var(--color-code-fill);
+    --dark-gold-bud: var(--color-gold-bud);
+    --dark-hero-veil: var(--color-hero-veil);
+    --dark-hero-floor: var(--color-hero-floor);
   }
 
   :root[data-theme='light'] :is(main, header, footer),
@@ -35,6 +38,9 @@
     --color-card-edge: var(--color-light-ink);
     --color-code-edge: var(--color-light-code-edge);
     --color-code-fill: var(--color-block-light);
+    --color-gold-bud: var(--color-light-ink);
+    --color-hero-veil: var(--color-light-hero-veil);
+    --color-hero-floor: var(--color-light-hero-floor);
     color-scheme: light;
     color: var(--color-text);
     background-color: var(--color-background);
@@ -68,13 +74,16 @@
     --color-card-edge: var(--dark-card-edge);
     --color-code-edge: var(--dark-code-edge);
     --color-code-fill: var(--dark-code-fill);
+    --color-gold-bud: var(--dark-gold-bud);
+    --color-hero-veil: var(--dark-hero-veil);
+    --color-hero-floor: var(--dark-hero-floor);
     color-scheme: dark;
     color: var(--color-text);
     background-color: var(--color-background);
   }
 
   :is(:root[data-theme='light'] main, main .mode-light)
-    .surface-gold:not(.mode-dark *) {
+    :is(.surface-gold, .v-column):not(.mode-dark *) {
     background-color: var(--color-background);
   }
 
@@ -121,7 +130,9 @@
     @apply mr-2 inline-block size-2.5;
   }
 
-  /* `.sticker` is a black block in light mode. */
+  /* RIDET and `.sticker` are black blocks in light mode. */
+  :is(:root[data-theme='light'] main, main .mode-light)
+    .hero-sticker:not(.bg-block-gold):not(.mode-dark *),
   :is(:root[data-theme='light'] main, main .mode-light)
     .sticker:not(.mode-dark *) {
     @apply border-text bg-text text-background;
