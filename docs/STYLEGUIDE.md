@@ -957,6 +957,8 @@ None. Gold buttons lift and press like every control
 
 Homepage only (`src/pages/index.astro`, `src/styles/components/home.css`).
 
+- The window fills the first screen: `min-height` of `100svh` less the header,
+  the name's overhang and the padding, so it grows at 400% zoom.
 - The window ends on a shelf: 11 joined `block-light` bricks (the first 5
   below `sm`), inset by `--hero-inset`, with an ink edge and the pink throw.
   The field and the marks stand on it. It is `aria-hidden`.

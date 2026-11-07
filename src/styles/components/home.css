@@ -44,6 +44,12 @@
         var(--text-hero-h1)
     );
     margin-block-start: calc(var(--hero-name-overhang) + var(--hero-pad-block));
+    /* GUNTUPALLI's line box below the window top, plus clearance: no canvas sits under the name. */
+    --hero-field-top: calc(
+      2 * var(--hero-name-clearance) +
+        (var(--text-hero-h1--line-height) - var(--hero-name-ink-head)) *
+        var(--text-hero-h1)
+    );
     --hero-ledge-h: var(--size-home-ledge-h-phone);
 
     @variant md {
@@ -51,19 +57,13 @@
     }
   }
 
-  /* A short window, so the intro starts on the first screen; never taller than the screen at 400% zoom. */
+  /* The window fills the first screen; `min-height` so it grows rather than clips at 400% zoom. */
   .v-column .hero {
-    --hero-screen: calc(
+    padding-block: 0;
+    min-height: calc(
       100svh - var(--spacing-page-top) - var(--hero-name-overhang) -
         var(--hero-pad-block) - var(--hero-column-edge) - --spacing(1)
     );
-
-    padding-block: 0;
-    min-height: min(var(--size-home-window-phone), var(--hero-screen));
-
-    @variant sm {
-      min-height: min(var(--size-home-window), var(--hero-screen));
-    }
   }
 
   /*
@@ -83,13 +83,14 @@
   }
 
   /*
-   * Front canvas sits between the rabbit and the type; the large h1 holds SC
-   * 1.4.3 at worst over the field. No `z-index`: a stacking context would cap
-   * the pause control's `z-40` (tests/motion.spec.ts).
+   * Starts below the name, so no canvas sits under either line (tests/hero-clear.spec.ts).
+   * No `z-index`: a stacking context would cap the pause control's `z-40`
+   * (tests/motion.spec.ts).
    */
   .hero-field {
-    @apply pointer-events-none absolute top-0;
+    @apply pointer-events-none absolute;
 
+    top: var(--hero-field-top, 0);
     right: var(--hero-inset);
     bottom: calc(var(--hero-gap) + var(--hero-ledge-h));
     left: var(--hero-inset);
@@ -169,7 +170,7 @@
     @apply pointer-events-auto top-auto z-40;
 
     right: calc(-1 * var(--hero-inset));
-    bottom: calc(100% + --spacing(4));
+    bottom: calc(100% + var(--hero-field-top, 0px) + --spacing(4));
   }
 
   /* It sits on the page, not the gold: the page's ring, which `.surface-gold` would darken to 1:1. */
