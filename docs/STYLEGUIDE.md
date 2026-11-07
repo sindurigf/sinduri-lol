@@ -965,8 +965,11 @@ Homepage only (`src/pages/index.astro`, `src/styles/components/home.css`).
   column's edge closes the sides. The field and the marks stand on it. It is
   `aria-hidden`.
 - The two roles under the hero are light bricks in one `<h2>`, `text-h3`, a
-  short-step wall (`wallClasses(…, { short })`); they stack below `sm`. The
-  wall lies over the shelf, its top `--spacing(5)` above the shelf's.
+  short-step wall (`wallClasses(…, { short })`). From `sm` they sit at the
+  shelf's two ends, over it, the wall's top `--spacing(5)` above the shelf's.
+- Below `sm` each role is two lines; the first straddles the shelf at the left,
+  the second stands on it at the right. The window's floor leaves room for the
+  standing one at the SC 1.4.12 line height, so it never covers the name.
 - From `lg` the intro is the 5/7 split: the portrait, tilted -2deg with its
   roundel; then the stats, welcome and button, with no card behind them.
 - Two topics take the 7/5 split at `lg`, the lead card wider; other counts

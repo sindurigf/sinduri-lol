@@ -51,6 +51,7 @@
         var(--text-hero-h1)
     );
     --hero-ledge-h: var(--size-home-ledge-h-phone);
+    --hero-floor: calc(var(--hero-ledge-h) + --spacing(5));
 
     @variant md {
       --hero-ledge-h: var(--size-home-ledge-h);
@@ -59,12 +60,12 @@
 
   /*
    * The window fills the first screen; `min-height` so it grows rather than clips at 400% zoom.
-   * The floor keeps the taglines' lift (`.home-tags`) inside the window, off the pause control.
+   * The floor keeps the taglines (`.home-tags`) inside the window, off the pause control.
    */
   .v-column .hero {
     padding-block: 0;
     min-height: max(
-      var(--hero-ledge-h) + --spacing(5),
+      var(--hero-floor),
       100svh - var(--spacing-page-top) - var(--hero-name-overhang) -
         var(--hero-pad-block) - var(--hero-column-edge) - --spacing(1)
     );
@@ -82,6 +83,18 @@
   @media (width < 40rem) {
     .v-column {
       --text-hero-h1: var(--text-hero-h1-column-phone);
+      /*
+       * The standing tagline at its tallest: two lines of `text-h3` at the SC 1.4.12
+       * line height, so it clears the name under text spacing, plus padding and edges.
+       */
+      --text-spacing-line-height: 1.5;
+      --home-tag-stand: calc(
+        2 * var(--text-h3) * var(--text-spacing-line-height) + 2 *
+          --spacing(2) + 2 * var(--block-edge)
+      );
+      --hero-floor: calc(
+        var(--hero-field-top) + var(--hero-ledge-h) + var(--home-tag-stand)
+      );
     }
   }
 
@@ -259,9 +272,11 @@
       right: var(--hero-inset);
     }
 
+    /* Ends above the standing tagline, so a sticker that does not fit wraps out of sight. */
     .hero-marks {
       top: calc(var(--hero-gap) + var(--text-hero-h1) - var(--marks-room));
       right: calc(var(--hero-inset) - var(--marks-room) + var(--hard-throw));
+      bottom: calc(var(--hero-ledge-h) + var(--home-tag-stand));
     }
   }
 
@@ -274,10 +289,28 @@
 
   /* Laid over the shelf, the wall's top a little above the shelf's (index.astro sets the section's `pt-0`). */
   .home-tags {
+    --home-tags-drop: --spacing(3);
+
     position: relative;
     z-index: 1;
     max-width: 100%;
     margin-top: calc(-1 * (var(--hero-ledge-h) + --spacing(5)));
+  }
+
+  /*
+   * Below `sm` the first straddles the shelf and the second stands on it at the
+   * right end; the wall's negative margin joins its edge to the shelf's.
+   */
+  @media (width < 40rem) {
+    .home-tags {
+      margin-top: calc(var(--home-tags-drop) - var(--hero-ledge-h));
+    }
+
+    .home-tag:last-child {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + var(--home-tags-drop));
+    }
   }
 
   .home-tag {
