@@ -343,6 +343,15 @@ test.describe('the Drupal Planet opening', () => {
       }
     });
 
+    test('rejects numeric entities XML 1.0 cannot carry', () => {
+      for (const entity of ['&#0;', '&#x1;', '&#11;', '&#x1F;', '&#xD800;']) {
+        expect(() => feedExcerpt(`A bad ${entity} entity.`)).toThrow(
+          new RegExp(entity),
+        );
+      }
+      expect(feedExcerpt('Tab&#9; and newline&#10; are fine.')).toBeDefined();
+    });
+
     test('keeps titles and initials inside their sentence', () => {
       expect(
         feedExcerpt('I met Dr. Purer in the U.S. office. It went well.', 40),
