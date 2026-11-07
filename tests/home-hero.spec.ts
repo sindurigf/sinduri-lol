@@ -209,7 +209,17 @@ test.describe("Alice's things in the fall", () => {
         expect(box, 'the focused jar has no box').not.toBeNull();
         return box!;
       };
+      const seen = () =>
+        jar.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          const top = document.elementFromPoint(
+            r.left + r.width / 2,
+            r.top + r.height / 2,
+          );
+          return top !== null && el.contains(top);
+        });
       const start = await at();
+      const covered: number[] = [];
       for (let step = 0; step < DRIFT_SAMPLES; step += 1) {
         await advance(page, DRIFT_STEP_MS);
         const box = await at();
@@ -217,16 +227,12 @@ test.describe("Alice's things in the fall", () => {
           Math.abs(box.y - start.y),
           'the focused jar drifted away from where focus found it',
         ).toBeLessThanOrEqual(SUBPIXEL_TOLERANCE);
+        if (!(await seen())) covered.push(step);
       }
-      const seen = await jar.evaluate((el) => {
-        const r = el.getBoundingClientRect();
-        const top = document.elementFromPoint(
-          r.left + r.width / 2,
-          r.top + r.height / 2,
-        );
-        return top !== null && el.contains(top);
-      });
-      expect(seen, 'the focused jar is covered or out of sight').toBe(true);
+      expect(
+        covered,
+        'the focused jar is covered or out of sight at these steps',
+      ).toEqual([]);
     });
   }
 
