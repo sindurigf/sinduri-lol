@@ -58,7 +58,7 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run format:check`         | Prettier, check only                                                                                                                             |
 | `npm run check:tokens`         | No raw color, length or off-scale utility in `src/` bypasses the tokens in `src/styles/global.css`                                               |
 | `npm run check:links`          | Relative Markdown links and `#heading` anchors resolve; no link names a gitignored path; no network                                              |
-| `npm run check:pins`           | `uses:` in `.github/workflows` pinned by SHA or Docker digest; `.mcp.json` servers to an exact version                                           |
+| `npm run check:pins`           | Actions pinned by SHA, Docker images by digest, MCP servers to an exact version                                                                  |
 | `npm run check:classes`        | Every class in the built HTML has a CSS rule                                                                                                     |
 | `npm run check:csp`            | `script-src` and `style-src` in `public/_headers` hash exactly the build's inline blocks; `-- --write` fixes them; needs `npm run build`         |
 | `npm run check:untransformed`  | No built file is byte-identical to a source image outside `SERVED_AS_IS` in `scripts/check-allow-lists.mjs`                                      |
