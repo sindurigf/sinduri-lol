@@ -176,7 +176,7 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
       >
         {TAGLINES.map((tag, index) => (
           <span class:list={['home-tag', tagWall.bricks[index]]}>
-            {tag}
+            <span>{tag}</span>
             {index < TAGLINES.length - 1 && (
               <>
                 <span class="sr-only">,</span>{' '}
