@@ -57,14 +57,31 @@ const installProbe = (page: Page) =>
     };
     /* `start()` in motion-loop.ts reads it; the real clock would skip frames on a slow machine. */
     performance.now = () => now;
+    /* Only the frame a pause lands on is checked, so the frames before it step without painting. */
+    let painting = true;
     probe.pumpFrames = (count) => {
       for (let frame = 0; frame < count; frame += 1) {
+        painting = frame === count - 1;
         now += 1000 / frameRate;
         const due = [...queue.entries()];
         for (const [id] of due) queue.delete(id);
         for (const [, callback] of due) callback(now);
       }
+      painting = true;
     };
+    const skipsPaint = (ctx: CanvasRenderingContext2D) =>
+      !painting && ctx.canvas.classList.contains('hero-field-layer');
+    const proto = CanvasRenderingContext2D.prototype;
+    for (const name of ['fill', 'stroke', 'fillRect'] as const) {
+      const paint = proto[name] as (...args: unknown[]) => void;
+      Object.defineProperty(proto, name, {
+        configurable: true,
+        writable: true,
+        value(this: CanvasRenderingContext2D, ...args: unknown[]) {
+          if (!skipsPaint(this)) Reflect.apply(paint, this, args);
+        },
+      });
+    }
 
     probe.rabbitOnly = null;
     probe.rabbitDrawn = false;
@@ -82,6 +99,7 @@ const installProbe = (page: Page) =>
 
     const { clearRect, drawImage } = CanvasRenderingContext2D.prototype;
     CanvasRenderingContext2D.prototype.clearRect = function (x, y, w, h) {
+      if (skipsPaint(this)) return;
       if (this.canvas === middle()) {
         const copy = copyFor(this.canvas);
         copy.resetTransform();
@@ -94,6 +112,7 @@ const installProbe = (page: Page) =>
       this: CanvasRenderingContext2D,
       ...args: Parameters<CanvasRenderingContext2D['drawImage']>
     ) {
+      if (skipsPaint(this)) return;
       if (this.canvas === middle() && args[0] instanceof HTMLCanvasElement) {
         const copy = copyFor(this.canvas);
         copy.setTransform(this.getTransform());
