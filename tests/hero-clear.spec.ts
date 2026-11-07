@@ -14,8 +14,8 @@ const HERO_PLAY_NAME = /play the hero animation/i;
 /** `MAX_FRAME_RATE` in src/scripts/hero-field.ts. */
 const FRAME_RATE = 30;
 
-/** Frames run before each pause. At 844x390 the hare passes behind "Ridet" from frame 1284 to 1446. */
-const PAUSE_AT_FRAMES = [150, 600, 1000, 1365, 2000] as const;
+/** Frames run before each pause. At 844x390 the hare passes behind "Ridet" from frame 1230 to 1380. */
+const PAUSE_AT_FRAMES = [150, 600, 1000, 1300, 2000] as const;
 
 /** 844x390 is the window the hare crosses a sticker in; the others are a desktop and a phone. */
 const CROSSING_VIEWPORT = { width: 844, height: 390 } as const;
@@ -55,6 +55,8 @@ const installProbe = (page: Page) =>
     window.cancelAnimationFrame = (id) => {
       queue.delete(id);
     };
+    /* `start()` in motion-loop.ts reads it; the real clock would skip frames on a slow machine. */
+    performance.now = () => now;
     probe.pumpFrames = (count) => {
       for (let frame = 0; frame < count; frame += 1) {
         now += 1000 / frameRate;
