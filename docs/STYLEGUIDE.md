@@ -953,8 +953,9 @@ Enforced by `tests/home-hero.spec.ts` and `tests/motion.spec.ts`.
   (`src/scripts/home-hole.ts`): a rugged brick shaft that runs on below the
   hero, dark inside in both modes. Without JavaScript the bricks carry a few
   planted stems and the hole is a plain notch between two posts.
-- The fall: every section after it steps sideways (`--spacing-home-tumble`)
-  and its title is a gold label brick, so all text sits in an opaque brick.
+- The fall: every section after it steps sideways (`--spacing-home-tumble`,
+  `--spacing-home-phone-step` below `md`) and its title is a gold label brick,
+  so all text sits in an opaque brick.
 - Below `sm` every wall still climbs right: each higher brick steps
   `--spacing-home-phone-step` (16px, 32px for a third) right, with room for its
   throw. From `pair` (22.5rem) the roles and stats stay side by side, the first
@@ -965,13 +966,11 @@ Enforced by `tests/home-hero.spec.ts` and `tests/motion.spec.ts`.
   the bricks; the jar rests at the top of the fall, beside its pause control.
 - Two controls among the decoration: the jar ("Let Go of the Jar") and the
   rabbit ("Follow the Rabbit"), which dives into the shaft, drops to its floor
-  and hops onto the first heading (`src/scripts/home-faller.ts`). Where an open
-  strip runs beside the sections it then goes on as the reader scrolls: off
-  the edge, down the strip, onto the top of the next section, side to side, to
-  the Next card. It only hops on surfaces and never covers text; a phone has no
-  strip, so it stays on the first heading. Alice's things rise on the left, the
-  rabbit's strip is on the right. From `md` each later section has room above
-  it for the sitting rabbit.
+  and hops onto the first heading (`src/scripts/home-faller.ts`). As the reader
+  scrolls it hops from section to section, side to side, to the Next card, at
+  every width. A hop may pass in front of a section; it rests only in the gap
+  above one, clear of text, and pausing sets it down there. Every later
+  section has room above it for the sitting rabbit.
   Everything else is `aria-hidden`.
 - Two pause controls, one beside the stats and one at the top of the fall,
   named "Pause animations" / "Play animations" and kept in step.
@@ -1380,9 +1379,10 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 - Controls lift off their shadow under a hovering pointer and press into it at
   once ([Control states](#control-states)); no movement under reduced motion.
 - No marquee.
-- Pattern (`src/scripts/home-motion.ts`): the pause controls ship `hidden`
-  and the script shows them as it starts the motion. Under reduced motion it
-  draws one still frame and keeps them hidden. The state lives in the
+- Pattern (`src/scripts/home-motion.ts`): the pause controls ship `data-off`
+  (invisible, holding their place, so showing them shifts nothing) and the
+  script shows them as it starts the motion. Under reduced motion it draws one
+  still frame and keeps them off. The state lives in the
   accessible name ("Play animations" / "Pause animations"), no
   `aria-pressed`. Without JavaScript the rabbit and Alice's things rest
   where `home.css` puts them.

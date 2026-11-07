@@ -224,7 +224,7 @@ const start = (): void => {
       const next =
         pauses.find(
           (button) =>
-            !button.hidden &&
+            !button.hasAttribute('data-off') &&
             follow.compareDocumentPosition(button) &
               Node.DOCUMENT_POSITION_FOLLOWING,
         ) ?? jar;
@@ -418,7 +418,7 @@ const start = (): void => {
       if (reduced && button === document.activeElement) {
         document.querySelector('main')?.focus();
       }
-      button.hidden = reduced;
+      button.toggleAttribute('data-off', reduced);
       button.dataset.state = paused ? 'paused' : 'playing';
       const name = button.querySelector('[data-home-pause-name]');
       const glyph = button.querySelector('[data-home-pause-glyph]');
@@ -433,6 +433,8 @@ const start = (): void => {
     if (paused) {
       loop.stop();
       stopJar();
+      /* A hop may cross a section's text, so pausing sets the rabbit down at a rest spot. */
+      fallen.step(clock, true);
     } else {
       loop.start();
     }
