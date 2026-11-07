@@ -103,6 +103,16 @@ interface FieldState {
   /* One-entry memo of `routePoint`, keyed on the frame's exact time. */
   cachedAt: number;
   cached: RoutePoint;
+  /* Blurred hare shadows by air step, for the scene and pixel ratio they were drawn at. */
+  shadows: Map<number, ShadowSprite>;
+  shadowRatio: number;
+}
+
+interface ShadowSprite {
+  readonly canvas: HTMLCanvasElement;
+  /** CSS pixels, centered on the shadow. */
+  readonly width: number;
+  readonly height: number;
 }
 
 const STILL: RoutePoint = { x: 0, cycle: 0, sit: 0, hop: 0 };
@@ -516,29 +526,80 @@ const SHADOW_BLUR = 3.2;
 /** In drawing units: below the feet, then the radii on the ground. */
 const SHADOW_SHAPE = { drop: 1.2, rx: 30, ry: 3.6 } as const;
 
+/** Air levels the shadow is blurred at, each once per layout. */
+const SHADOW_STEPS = 32;
+/** A Gaussian blur reaches about three times its radius. */
+const BLUR_REACH = 3;
+
+/* `ctx.filter` on every frame holds a 4x-throttled field under its frame cap; a cached sprite does not. */
+const shadowSprite = (
+  state: FieldState,
+  palette: HeroPalette,
+  ratio: number,
+  step: number,
+): ShadowSprite => {
+  if (state.shadowRatio !== ratio) {
+    state.shadows.clear();
+    state.shadowRatio = ratio;
+  }
+  const cached = state.shadows.get(step);
+  if (cached) return cached;
+
+  const { hareScale } = state.scene;
+  const air = step / SHADOW_STEPS;
+  const shrink = 1 - air * SHADOW_SHRINK;
+  const rx = SHADOW_SHAPE.rx * hareScale * shrink;
+  const ry = SHADOW_SHAPE.ry * hareScale * shrink;
+  const blur = air * SHADOW_BLUR * hareScale;
+  const pad = Math.ceil(blur * BLUR_REACH) + 1;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil((rx + pad) * 2 * ratio);
+  canvas.height = Math.ceil((ry + pad) * 2 * ratio);
+  const sprite = {
+    canvas,
+    width: canvas.width / ratio,
+    height: canvas.height / ratio,
+  };
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.filter = `blur(${blur.toFixed(2)}px)`;
+    ctx.fillStyle = palette.border;
+    ctx.beginPath();
+    ctx.ellipse(sprite.width / 2, sprite.height / 2, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  state.shadows.set(step, sprite);
+  return sprite;
+};
+
+/* On whole device pixels, so a sharp shadow at rest is not resampled soft. */
+const snap = (value: number, ratio: number): number =>
+  Math.round(value * ratio) / ratio;
+
 const drawHareShadow = (
   ctx: CanvasRenderingContext2D,
   palette: HeroPalette,
-  scene: Scene,
+  state: FieldState,
   x: number,
   air: number,
 ): void => {
-  const shrink = 1 - air * SHADOW_SHRINK;
-  ctx.globalAlpha = SHADOW_ALPHA_FLOOR + SHADOW_ALPHA_RANGE * (1 - air);
-  ctx.filter = `blur(${(air * SHADOW_BLUR * scene.hareScale).toFixed(2)}px)`;
-  ctx.fillStyle = palette.border;
-  ctx.beginPath();
-  ctx.ellipse(
-    x,
-    scene.hareRoot + SHADOW_SHAPE.drop * scene.hareScale,
-    SHADOW_SHAPE.rx * scene.hareScale * shrink,
-    SHADOW_SHAPE.ry * scene.hareScale * shrink,
-    0,
-    0,
-    Math.PI * 2,
+  const { hareRoot, hareScale } = state.scene;
+  const ratio = ctx.getTransform().a;
+  const sprite = shadowSprite(
+    state,
+    palette,
+    ratio,
+    Math.round(air * SHADOW_STEPS),
   );
-  ctx.fill();
-  ctx.filter = 'none';
+  ctx.globalAlpha = SHADOW_ALPHA_FLOOR + SHADOW_ALPHA_RANGE * (1 - air);
+  ctx.drawImage(
+    sprite.canvas,
+    snap(x - sprite.width / 2, ratio),
+    snap(hareRoot + SHADOW_SHAPE.drop * hareScale - sprite.height / 2, ratio),
+    sprite.width,
+    sprite.height,
+  );
   ctx.globalAlpha = 1;
 };
 
@@ -662,7 +723,7 @@ const drawMid = (
   const { hareRoot, hareScale } = state.scene;
 
   if (atlas) {
-    drawHareShadow(ctx, palette, state.scene, here.x, air);
+    drawHareShadow(ctx, palette, state, here.x, air);
     const sheet = atlasAt(atlas, atlasDensity(hareScale, ctx.getTransform().a));
     drawRabbit(
       ctx,
@@ -697,6 +758,8 @@ export const createHeroField = (
     route: { segments: [], total: 1 },
     cachedAt: Number.NaN,
     cached: STILL,
+    shadows: new Map(),
+    shadowRatio: 0,
   };
 
   return {
@@ -705,6 +768,7 @@ export const createHeroField = (
       state.stems = buildStems(state.scene);
       state.route = buildRoute(state.scene);
       state.cachedAt = Number.NaN;
+      state.shadows.clear();
     },
     step: (seconds, delta) => stepSprings(state, seconds, delta),
     back: (ctx, seconds) => drawBack(ctx, palette, state, seconds),
