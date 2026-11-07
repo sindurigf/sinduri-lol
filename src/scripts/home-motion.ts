@@ -433,6 +433,8 @@ const start = (): void => {
     if (paused) {
       loop.stop();
       stopJar();
+      /* A hop may cross a section's text, so pausing sets the rabbit down at a rest spot. */
+      fallen.step(clock, true);
     } else {
       loop.start();
     }
