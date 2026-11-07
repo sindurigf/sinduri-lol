@@ -25,6 +25,12 @@ export const ACCESSLINT_FALSE_POSITIVES: readonly FalsePositive[] = [
     seenOn: '/',
   },
   {
+    rule: 'distinguishable/color-contrast',
+    selector: '.hero-plate h1 > span',
+    holds: 'ground-not-behind',
+    seenOn: '/',
+  },
+  {
     rule: 'aria/aria-hidden-focus',
     selector: '.brand-stage-half[inert] *',
     seenOn: '/brand',

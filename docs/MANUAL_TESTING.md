@@ -138,13 +138,10 @@ Setup: `gsettings set org.gnome.desktop.interface enable-animations false`.
 - [ ] Press and hold a primary button, a `/blog` chip, a footer sticker and
       the logo: each loses its shadow but does not move. → SC 2.3.3
 - [ ] Nothing else moves, fades or slides. → SC 2.3.3
-- [ ] `/`: the meadow and rabbit sit still, Alice's things hold still, and there is
-      no pause control; pressing the jar turns it over without moving it, and
-      pressing the rabbit sends it down the hole without a dive, and it sits
-      at once on the Next card and does not move as you scroll.
-      → SC 2.3.3, 2.2.2
+- [ ] `/`: the hero field is drawn once, reads as a picture, and has no pause
+      control. → SC 2.3.3, 2.2.2
 - [ ] `/about`: the cats sit still and have no sleep controls or trick buttons. → SC 2.3.3, 2.2.2
-- [ ] Turn it back on: the button moves and the rabbit hops. → SC 2.3.3
+- [ ] Turn it back on: the button moves and the field animates. → SC 2.3.3
 
 ## 5. Focus indicator visibility
 
@@ -895,6 +892,7 @@ From the Accessible Astro checklist and
 - Contact form criteria (SC 1.3.5, 3.3.1, 3.3.2, 3.3.3, 4.1.3) by a person:
   ACCESSIBILITY.md §7 gap 1.
 - Plain language: gap 5.
+- Whether the hero field's still frame reads as a picture: §4.
 - Routes with no check of their own: `/contact/sent`, the tag listings, and
   the category listing beyond §3. `/accessibility`, `/credits` and `/brand`
   are read only in §9a; `/privacy` also in §6.4 and §6.12.1a.

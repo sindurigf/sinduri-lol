@@ -33,14 +33,10 @@ How AI tooling was used to build this site.
 - No AI runs on the site, and no visitor data is sent to a model.
 - AI-made and listed under
   [Made with AI on `/credits/`](https://sinduri.lol/credits/#ai):
-  - the hopping bunny on the homepage meadow, drawn with Canva AI and traced
+  - the hopping bunny in the homepage hero, drawn with Canva AI and traced
     with Potrace (`src/assets/hero-rabbit.svg`, `src/lib/rabbit-atlas.ts`),
-    drawn from its raster, which the Let It Fall climb shares
-    (`src/assets/hero-rabbit-climb.webp`);
-  - the grasses and dark buds of the homepage meadow, Canva AI drawings cut
-    out and packed into one atlas (`src/assets/home-meadow.webp`);
-  - the jar, book, picture, watch and teacup down the homepage, Canva AI
-    die-cut stickers (`src/assets/home-stickers/`);
+    its stills shown without JavaScript (`src/assets/hero-still-*.webp`) and
+    its raster for the Let It Fall climb (`src/assets/hero-rabbit-climb.webp`);
   - the sticker bunny in the footer and on the 404 page, drawn with Canva AI and traced with
     Potrace (`src/assets/bunny-footer.svg`);
   - the jumping bunny in the header logo, the hero roundel, every favicon and
