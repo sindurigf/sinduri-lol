@@ -117,8 +117,10 @@ Dark is the default. Colors and rules:
   when focus leaves.
 - Without JavaScript the page is dark and the switch hidden; without popovers
   the switch is hidden and the page follows the system.
-- The homepage motion (`src/scripts/home-motion.ts`) needs neither: its colors
-  are CSS tokens.
+- The hero field (`src/scripts/hero-field.ts`) reads its palette from its own
+  element and rebuilds when a `MutationObserver` sees `data-theme` change. A `(resolution)` media query resizes its canvases
+  when only the pixel ratio changes. In forced colors it is hidden
+  (`tests/hero-media.spec.ts`).
 - The About cats (`src/scripts/about-cats.ts`) need neither: the cats are drawings with their outline
   baked in, the same in both themes, and the toys' SVG parts carry classes
   that `about-cats.css` maps to tokens.
@@ -558,8 +560,11 @@ in `wrangler.jsonc`).
   the white fill and the thin ink edge.
 - The logo, roundel, Lepus Ridet, footer and hero rabbits ship as SVG, with the rim and
   block as strokes of one shared outline (`<use>`), so their lines stay sharp
-  at every size and zoom. The homepage rabbit and the Let It Fall climb draw
-  poses from a lossless raster of the atlas (`hero-rabbit-climb.webp`).
+  at every size and zoom. The hero canvas rasterises its atlas at the size it
+  draws the rabbit (`atlasDensity`), off the animation frame, so the rabbit is
+  drawn at its own resolution rather than scaled from a fixed bitmap. The Let
+  It Fall climb draws poses from a lossless raster of the atlas
+  (`hero-rabbit-climb.webp`).
 - Logo (`src/assets/logo-rabbit.svg`): the hairline die-cut rabbit with an ink
   throw, jumping the tile's top-right corner. The script prints its box;
   `--logo-rabbit-*` in `global.css` must match.
