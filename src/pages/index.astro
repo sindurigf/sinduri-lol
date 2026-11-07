@@ -77,7 +77,7 @@ const categoryWall = wallClasses(
  * grows. tests/image-size.spec.ts fails on drift.
  */
 const TEASER_PHOTO_SIZES =
-  '(min-width: 1829px) calc(25vw + 198px), (min-width: 1396px) calc(21.5vw + 262px), (min-width: 83rem) 562px, (min-width: 64rem) calc(45.7vw - 45px), (min-width: 40rem) calc(93vw - 64px), calc(100vw - 5.5rem)';
+  '(min-width: 1829px) calc(20.8vw + 157px), (min-width: 1396px) calc(18.06vw + 208px), (min-width: 83rem) 460px, (min-width: 64rem) calc(37.8vw - 41px), (min-width: 40rem) calc(93vw - 64px), calc(100vw - 5.5rem)';
 
 const TAGLINES = ['Open Source Enthusiast', 'Positivity Advocate'] as const;
 /* Side by side from `sm`, the second climbing a third of the Step. */
@@ -186,8 +186,8 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
         ))}
       </h2>
 
-      <div class="mt-head grid gap-grid lg:grid-cols-2 lg:items-start">
-        <div class="relative">
+      <div class="mt-head grid gap-grid lg:grid-cols-12 lg:items-center">
+        <div class="relative lg:col-span-5 lg:-rotate-2">
           <div class="aspect-frame aspect-square border-4">
             <Picture
               {...PHOTO_FORMATS}
@@ -201,7 +201,7 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
           <Roundel class="absolute -bottom-8 right-0 sm:-right-3" />
         </div>
 
-        <div class="card">
+        <div class="lg:col-span-7">
           <ul
             role="list"
             class:list={['card-block grid sm:grid-cols-2', statWall.wall]}
