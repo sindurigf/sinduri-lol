@@ -955,8 +955,7 @@ None. Gold buttons lift and press like every control
 
 ### The homepage shelf
 
-Homepage only (`src/pages/index.astro`, `src/styles/components/home.css`,
-`.hero-ledge` in `src/styles/components/layout.css`).
+Homepage only (`src/pages/index.astro`, `src/styles/components/home.css`).
 
 - The window ends on a shelf: 11 joined `block-light` bricks (the first 5
   below `sm`), inset by `--hero-inset`, with an ink edge and the pink throw.

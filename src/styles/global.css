@@ -569,7 +569,7 @@
   --hero-name-clearance: 8px;
 
   /*
-   * The name in the column and below `sm`; layout.css swaps them into
+   * The name in the column and below `sm`; home.css swaps them into
    * --text-hero-h1, so they hold literal values. tests/hero-fit.spec.ts.
    */
   --text-hero-h1-column: 2.25rem;
@@ -640,7 +640,7 @@
   /* Room above post code for the Copy button and its label, so neither sits on a line. */
   --spacing-code-head: calc(var(--spacing-target) + 8px);
 
-  /* Homepage hero (components/layout.css). The window's height, below `sm` and from it. */
+  /* Homepage hero (components/home.css). The window's height, below `sm` and from it. */
   --size-home-window-phone: 17rem;
   --size-home-window: 28rem;
   /* The shelf of bricks the meadow stands on, below `md` and from it. */
