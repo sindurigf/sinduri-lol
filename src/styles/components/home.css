@@ -90,25 +90,23 @@
     @apply pointer-events-none absolute;
 
     top: var(--hero-field-top, 0);
-    right: var(--hero-inset);
-    bottom: calc(var(--hero-gap) + var(--hero-ledge-h));
-    left: var(--hero-inset);
+    right: 0;
+    bottom: var(--hero-ledge-h);
+    left: 0;
   }
 
   /*
-   * The shelf the meadow stands on: joined light bricks, each drawing its top
-   * and left edge; the shelf closes the right and bottom and casts the throw.
+   * The floor of the window, edge to edge: joined light bricks, each drawing
+   * its top and left edge; the shelf closes the bottom.
    */
   .hero-ledge {
     position: absolute;
-    right: var(--hero-inset);
-    bottom: var(--hero-gap);
-    left: var(--hero-inset);
+    right: 0;
+    bottom: 0;
+    left: 0;
     display: flex;
     height: var(--hero-ledge-h);
-    border-right: var(--block-edge) solid var(--color-block-ink);
     border-bottom: var(--block-edge) solid var(--color-block-ink);
-    @apply shadow-hard-pink-object;
   }
 
   .hero-ledge > * {
@@ -168,7 +166,7 @@
   .hero-motion-toggle {
     @apply pointer-events-auto top-auto z-40;
 
-    right: calc(-1 * var(--hero-inset));
+    right: 0;
     bottom: calc(100% + var(--hero-field-top, 0px) + --spacing(4));
   }
 
@@ -229,7 +227,7 @@
 
     top: calc(var(--hero-gap) - var(--marks-room));
     right: calc(var(--hero-inset) - var(--marks-room));
-    bottom: calc(var(--hero-gap) + var(--hero-ledge-h));
+    bottom: var(--hero-ledge-h);
     width: calc(var(--hero-marks-reserve) + 2 * var(--marks-room));
     padding: var(--marks-room);
     overflow: clip;
@@ -250,7 +248,7 @@
 
   /*
    * Below `sm` the name takes full width and the words drop under it, still at
-   * the top.
+   * the top. The narrow inset there would put a sticker's throw on the border.
    */
   @media (width < 40rem) {
     .hero-plate {
@@ -259,6 +257,7 @@
 
     .hero-marks {
       top: calc(var(--hero-gap) + var(--text-hero-h1) - var(--marks-room));
+      right: calc(var(--hero-inset) - var(--marks-room) + var(--hard-throw));
     }
   }
 
