@@ -82,15 +82,15 @@ blur, uppercase headings, tilted marks.
 
 ### Where brutalism and accessibility pull apart
 
-| Tension                             | Resolution                                                                                                                                                                                      |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Heavy uppercase, tight tracking     | Uppercase on headings, labels and buttons only. Tracking -0.05em on h1 and h2, -0.02em on h3 and titles; labels +0.1em. A heading word over 12 characters takes a soft hyphen.                  |
-| Loud accents against 4.5:1          | `pink` `#FF007A` never sets text. `pink-text` `#FF79B6` carries every pink glyph ([Contrast](#contrast)).                                                                                       |
-| Hard shadow looks like a focus ring | The ring is cyan, which appears only on interaction, offset past the element's shadow by `--lift`, so it only touches ground (11.86).                                                           |
-| Error signaled by color             | `pink` against `border` or gold is 2.31. An error is a shape change (a 4px pink inset ring inside the edge, which stays ink in a block), a ✕ mark and words.                                    |
-| Tilt hurts reading                  | Tilt only marks (tile, roundel, stickers), at 3deg. Text and headings never rotate; a sticker's label of one to three words turns with it (close row eyebrow, post tags; `tests/tilt.spec.ts`). |
-| Grayed-out disabled fails SC 1.4.11 | Dashed edge, no shadow. Label stays 9.34; control stays focusable (`aria-disabled`).                                                                                                            |
-| Density against 320px reflow        | Spacing tokens are fluid; every border is counted in the 288px content box before any heading floor changes.                                                                                    |
+| Tension                             | Resolution                                                                                                                                                                                                                          |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Heavy uppercase, tight tracking     | Uppercase on headings, labels and buttons only. Tracking -0.05em on h1 and h2, -0.02em on h3 and titles; labels +0.1em. A heading word over 12 characters takes a soft hyphen.                                                      |
+| Loud accents against 4.5:1          | `pink` `#FF007A` never sets text. `pink-text` `#FF79B6` carries every pink glyph ([Contrast](#contrast)).                                                                                                                           |
+| Hard shadow looks like a focus ring | The ring is cyan, which appears only on interaction, offset past the element's shadow by `--lift`, so it only touches ground (11.86).                                                                                               |
+| Error signaled by color             | `pink` against `border` or gold is 2.31. An error is a shape change (a 4px pink inset ring inside the edge, which stays ink in a block), a ✕ mark and words.                                                                        |
+| Tilt hurts reading                  | Tilt only marks (tile, roundel, stickers), at 3deg, and the homepage portrait, at 2deg. Text and headings never rotate; a sticker's label of one to three words turns with it (close row eyebrow, post tags; `tests/tilt.spec.ts`). |
+| Grayed-out disabled fails SC 1.4.11 | Dashed edge, no shadow. Label stays 9.34; control stays focusable (`aria-disabled`).                                                                                                                                                |
+| Density against 320px reflow        | Spacing tokens are fluid; every border is counted in the 288px content box before any heading floor changes.                                                                                                                        |
 
 ## Color tokens
 
@@ -640,7 +640,8 @@ file per area.
 - ARIA, alt text and text over photographs:
   [ACCESSIBILITY.md §9](../ACCESSIBILITY.md#9-contributor-checklist).
 - Photos: a 4px `border` frame, no shadow or tilt, except the PageHero photo
-  (4px pink shadow).
+  (4px pink shadow) and the homepage portrait (tilted -2deg from `lg`,
+  [The homepage shelf](#the-homepage-shelf)).
 - A block's focus ring is its remapped `cyan`, `gold-link` (11.38 on gold,
   14.49 on light); the block's own ring and hover throw keep the page's cyan.
   Focusable content sits at least 8px inside. `tests/blocks.spec.ts`.
@@ -960,10 +961,19 @@ Homepage only (`src/pages/index.astro`, `src/styles/components/home.css`).
 - The window fills the first screen: `min-height` of `100svh` less the header,
   the name's overhang and the padding, so it grows at 400% zoom.
 - The window ends on a shelf: 11 joined `block-light` bricks (the first 5
-  below `sm`), inset by `--hero-inset`, with an ink edge and the pink throw.
-  The field and the marks stand on it. It is `aria-hidden`.
+  below `sm`), edge to edge, with an ink bottom edge and no throw; the
+  column's edge closes the sides. The field and the marks stand on it. It is
+  `aria-hidden`.
 - The two roles under the hero are light bricks in one `<h2>`, `text-h3`, a
-  short-step wall (`wallClasses(…, { short })`); they stack below `sm`.
+  short-step wall (`wallClasses(…, { short })`). From `sm` they sit at the
+  shelf's two ends, over it, the wall's top `--spacing(5)` above the shelf's.
+- Below `sm` each role is two lines; the first straddles the shelf at the left,
+  the second stands on it at the right. The window's floor leaves room for the
+  standing one at the SC 1.4.12 line height, so it never covers the name.
+- From `lg` the intro is the 5/7 split: the portrait, tilted -2deg with its
+  roundel; then the stats, welcome and button, with no card behind them.
+- Two topics take the 7/5 split at `lg`, the lead card wider; other counts
+  keep the three-column wall. "View All Posts" closes Featured Posts.
 - The section titles after the gold column are gold bricks: `block-gold`,
   `fill-edge` edge, the pink throw.
 

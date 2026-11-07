@@ -14,8 +14,8 @@ const HERO_PLAY_NAME = /play the hero animation/i;
 /** `MAX_FRAME_RATE` in src/scripts/hero-field.ts. */
 const FRAME_RATE = 30;
 
-/** Frames run before each pause. At 844x390 the hare passes behind "Ridet" from frame 1230 to 1380. */
-const PAUSE_AT_FRAMES = [150, 600, 1000, 1300, 2000] as const;
+/** Frames run before each pause. At 844x390 the hare passes behind "Ridet" at frames 1180 and 1270. */
+const PAUSE_AT_FRAMES = [150, 600, 1000, 1270, 2000] as const;
 
 /** 844x390 is the window the hare crosses a sticker in; the others are a desktop and a phone. */
 const CROSSING_VIEWPORT = { width: 844, height: 390 } as const;
@@ -57,14 +57,31 @@ const installProbe = (page: Page) =>
     };
     /* `start()` in motion-loop.ts reads it; the real clock would skip frames on a slow machine. */
     performance.now = () => now;
+    /* Only the frame a pause lands on is checked, so the frames before it step without painting. */
+    let painting = true;
     probe.pumpFrames = (count) => {
       for (let frame = 0; frame < count; frame += 1) {
+        painting = frame === count - 1;
         now += 1000 / frameRate;
         const due = [...queue.entries()];
         for (const [id] of due) queue.delete(id);
         for (const [, callback] of due) callback(now);
       }
+      painting = true;
     };
+    const skipsPaint = (ctx: CanvasRenderingContext2D) =>
+      !painting && ctx.canvas.classList.contains('hero-field-layer');
+    const proto = CanvasRenderingContext2D.prototype;
+    for (const name of ['fill', 'stroke', 'fillRect'] as const) {
+      const paint = proto[name] as (...args: unknown[]) => void;
+      Object.defineProperty(proto, name, {
+        configurable: true,
+        writable: true,
+        value(this: CanvasRenderingContext2D, ...args: unknown[]) {
+          if (!skipsPaint(this)) Reflect.apply(paint, this, args);
+        },
+      });
+    }
 
     probe.rabbitOnly = null;
     probe.rabbitDrawn = false;
@@ -82,6 +99,7 @@ const installProbe = (page: Page) =>
 
     const { clearRect, drawImage } = CanvasRenderingContext2D.prototype;
     CanvasRenderingContext2D.prototype.clearRect = function (x, y, w, h) {
+      if (skipsPaint(this)) return;
       if (this.canvas === middle()) {
         const copy = copyFor(this.canvas);
         copy.resetTransform();
@@ -94,6 +112,7 @@ const installProbe = (page: Page) =>
       this: CanvasRenderingContext2D,
       ...args: Parameters<CanvasRenderingContext2D['drawImage']>
     ) {
+      if (skipsPaint(this)) return;
       if (this.canvas === middle() && args[0] instanceof HTMLCanvasElement) {
         const copy = copyFor(this.canvas);
         copy.setTransform(this.getTransform());

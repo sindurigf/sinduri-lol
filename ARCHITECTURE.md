@@ -860,10 +860,10 @@ evidence.
   it sits on the gold, and `tests/hero-clear.spec.ts` checks no canvas pixel,
   stem, bud or hare, lies under either line of the name.
 - **Blur the near meadow canvas with `ctx.filter` instead of the CSS
-  `filter`:** at 4x CPU throttle the CSS filter holds 28 fps at 1440x900 and 30
-  at 412x915; `ctx.filter` per stroke drops to 2 and 4, one offscreen
-  `ctx.filter` pass to 23 and 30. `tests/filter-layers.spec.ts` allows only
-  that canvas.
+  `filter`:** at 4x CPU throttle, `ctx.filter` per stroke drops the field to a
+  few frames a second, and one offscreen `ctx.filter` pass runs slower than the
+  CSS filter on a wide screen. `tests/filter-layers.spec.ts` allows only that
+  canvas.
 - **Merge `--text-hero-h1-column` and `--text-hero-h1-column-phone`:** they
   size the name in two layouts tuned apart; they are equal by value, not by
   rule, and `tests/hero-fit.spec.ts` checks each.
