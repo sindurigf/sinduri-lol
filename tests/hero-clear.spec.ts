@@ -64,13 +64,30 @@ const installProbe = (page: Page) =>
     };
     /* `start()` in motion-loop.ts reads it; the real clock would skip frames on a slow machine. */
     performance.now = () => now;
+
+    /*
+     * Only a pump's last frame paints: `draw` in hero-field.ts returns on a null
+     * context and drawing fills only caches, so the paused frame is the same.
+     */
+    let painting = true;
+    const { getContext } = HTMLCanvasElement.prototype;
+    HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
+      ...args: Parameters<HTMLCanvasElement['getContext']>
+    ) {
+      if (!painting && this.classList.contains('hero-field-layer')) return null;
+      return Reflect.apply(getContext, this, args);
+    } as HTMLCanvasElement['getContext'];
+
     probe.pumpFrames = (count) => {
       for (let frame = 0; frame < count; frame += 1) {
         now += 1000 / frameRate;
+        painting = frame === count - 1;
         const due = [...queue.entries()];
         for (const [id] of due) queue.delete(id);
         for (const [, callback] of due) callback(now);
       }
+      painting = true;
     };
 
     probe.rabbitOnly = null;
