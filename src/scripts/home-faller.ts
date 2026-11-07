@@ -110,11 +110,7 @@ export const createFaller = ({
     bun.dataset.pose = 'sit';
     const box = restBox();
     if (pose) bun.dataset.pose = pose;
-    /* Its frame is wider than the sitting art; keeping the frame clear keeps every pose clear. */
-    artSize = {
-      w: Math.max(box.width, spin.getBoundingClientRect().width),
-      h: box.height,
-    };
+    artSize = { w: box.width, h: box.height };
     const boxOf = (el: Element): DOMRect =>
       local(el.getBoundingClientRect(), o);
     const bricks = bands.map((section) =>
