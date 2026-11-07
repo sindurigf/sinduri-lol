@@ -92,6 +92,11 @@
     flex: none;
   }
 
+  /* Not `hidden`: preflight's `display: none !important` would collapse its place. */
+  .home-pause[data-off] {
+    visibility: hidden;
+  }
+
   .home-band {
     position: absolute;
     inset: auto 0 0;
@@ -414,12 +419,11 @@
     transition: none !important;
   }
 
+  /* A point that carries the transform; only the art has a box, so nothing invisible sits over text. */
   .home-faller-spin {
     position: absolute;
     top: 0;
     left: 0;
-    width: var(--size-home-hopper-w);
-    height: var(--size-home-hopper-h);
   }
 
   .home-faller .home-bun {
@@ -487,8 +491,8 @@
    * can pass behind any of it.
    */
   .home-fall {
-    --lane: 0px;
-    --tumble: 0px;
+    --lane: var(--spacing-home-phone-step);
+    --tumble: var(--spacing-home-phone-step);
     --prop: var(--size-home-prop-phone);
 
     position: relative;
@@ -515,8 +519,10 @@
     pointer-events: none;
   }
 
-  /* Room above each later section for the sitting rabbit's head; phones never land there, laptops need only a little. */
+  /* Room above each later section for the sitting rabbit's head; laptops need only a little. */
   .home-fall > .band ~ .band {
+    margin-block-start: --spacing(6);
+
     @variant md {
       margin-block-start: --spacing(10);
     }
@@ -597,7 +603,10 @@
    * it rests in the open ground just right of the pause control instead,
    * clear of the shaft's foot on the right.
    */
+  /* Above the other things, so none rises over it while it has focus (SC 2.4.11). */
   .home-prop-jar {
+    z-index: 1;
+
     @variant max-md {
       top: --spacing(4) !important;
       left: calc(var(--spacing-target) + --spacing(4));
