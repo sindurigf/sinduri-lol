@@ -414,12 +414,11 @@
     transition: none !important;
   }
 
+  /* A point that carries the transform; only the art has a box, so nothing invisible sits over text. */
   .home-faller-spin {
     position: absolute;
     top: 0;
     left: 0;
-    width: var(--size-home-hopper-w);
-    height: var(--size-home-hopper-h);
   }
 
   .home-faller .home-bun {
