@@ -32,6 +32,20 @@ npm run build && npx wrangler deploy --dry-run
   next deploy. Previews are public to anyone with the URL and use production
   bindings: a message sent from one lands in the production D1 and inbox.
 
+## Bindings
+
+The Worker's bindings, declared in [`wrangler.jsonc`](../wrangler.jsonc)
+except `ASSETS`, which the Astro adapter adds, and the secret
+([pipeline](../ARCHITECTURE.md#the-contact-endpoint)).
+
+| Binding              | Type          | Used by                                           |
+| -------------------- | ------------- | ------------------------------------------------- |
+| `MESSAGES_DB`        | D1            | Contact messages, the retention sweep, resend     |
+| `CONTACT_MAILER`     | Send Email    | Notification email ([setup](#contact-form-email)) |
+| `CONTACT_RATE_LIMIT` | Rate Limiting | Submissions per sender key                        |
+| `ASSETS`             | Static assets | `/videos/*` byte ranges                           |
+| `CONTACT_NOTIFY_TO`  | Secret        | Notification recipient                            |
+
 ## D1
 
 EU jurisdiction, fixed at creation and stated on `/privacy`. Recreate with
