@@ -89,7 +89,7 @@ const PAIR_SPAN_CLASSES = ['lg:col-span-7', 'lg:col-span-5'] as const;
 const TEASER_PHOTO_SIZES =
   '(min-width: 1829px) calc(20.8vw + 157px), (min-width: 1396px) calc(18.06vw + 208px), (min-width: 83rem) 460px, (min-width: 64rem) calc(37.8vw - 41px), (min-width: 40rem) calc(93vw - 64px), calc(100vw - 5.5rem)';
 
-/* Two lines each below `sm`: a box that wraps on its own fills the column, one broken here is as wide as its longer line. */
+/* Two block lines each below `sm`: a box that wraps on its own fills the column, one split here is as wide as its longer line. */
 const TAGLINES = [
   ['Open Source', 'Enthusiast'],
   ['Positivity', 'Advocate'],
@@ -193,9 +193,9 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
       >
         {TAGLINES.map(([first, second], index) => (
           <span class:list={['home-tag', tagWall.bricks[index]]}>
-            <span>
-              {first} <br class="sm:hidden" />
-              {second}
+            <span class="block">
+              <span class="block sm:inline">{first}</span>{' '}
+              <span class="block sm:inline">{second}</span>
             </span>
             {index < TAGLINES.length - 1 && (
               <>
