@@ -67,7 +67,7 @@ const installProbe = (page: Page) =>
 
     /*
      * Only a pump's last frame paints: `draw` in hero-field.ts returns on a null
-     * context and changes no field state, so the paused frame is the same.
+     * context and drawing fills only caches, so the paused frame is the same.
      */
     let painting = true;
     const { getContext } = HTMLCanvasElement.prototype;
