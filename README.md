@@ -10,9 +10,9 @@ Astro, Tailwind CSS and TypeScript on Cloudflare Workers:
 
 ## Quick start
 
-Setup, commands and the local WebKit run:
-[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#setup). Before calling a change done,
-run the commands in [AGENTS.md](AGENTS.md#done-means).
+[Setup](docs/DEVELOPMENT.md#setup), [commands](docs/DEVELOPMENT.md#commands)
+and [the local WebKit run](docs/DEVELOPMENT.md#webkit). Before calling a change
+done, run the commands in [AGENTS.md](AGENTS.md#done-means).
 
 ## Documentation
 
@@ -23,6 +23,8 @@ run the commands in [AGENTS.md](AGENTS.md#done-means).
 - [ARCHITECTURE.md](ARCHITECTURE.md): stack, tokens, content, assets, headers
 - [docs/STYLEGUIDE.md](docs/STYLEGUIDE.md): visual rules and page patterns
 - [docs/VOICE.md](docs/VOICE.md): how editorial copy sounds
+- [.claude/skills/sinduri-design-system/SKILL.md](.claude/skills/sinduri-design-system/SKILL.md):
+  the design system for agents
 - [ACCESSIBILITY.md](ACCESSIBILITY.md): conformance statement, known gaps,
   and how to report a barrier
 - [docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md): by-hand accessibility checks
@@ -33,9 +35,9 @@ run the commands in [AGENTS.md](AGENTS.md#done-means).
 ## Contributing
 
 Issues are welcome, including accessibility barriers
-([how to report one](ACCESSIBILITY.md)). Report a security vulnerability
-privately instead: [SECURITY.md](SECURITY.md). Pull requests use
-[the template](.github/PULL_REQUEST_TEMPLATE.md) and the rules in
+([how to report one](ACCESSIBILITY.md#8-reporting-a-barrier)). Report a
+security vulnerability privately instead: [SECURITY.md](SECURITY.md). Pull
+requests use [the template](.github/PULL_REQUEST_TEMPLATE.md) and the rules in
 [AGENTS.md](AGENTS.md).
 
 ## License
