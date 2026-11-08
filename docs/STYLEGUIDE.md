@@ -428,9 +428,9 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 - Headings never skip levels; one `<h1>` per page. No heading is larger than
   the level above it (`tests/headings.spec.ts`); a /brand example, shown at
   another page's size, is exempt.
-- `text-hero-h1` is 36px so the homepage name stays two lines. `home.css`
-  swaps in `--text-hero-h1-column` and `--text-hero-h1-column-phone`, both
-  36px (`tests/hero-fit.spec.ts`).
+- `text-hero-h1` is 36px so the homepage name stays two lines
+  (`tests/hero-fit.spec.ts`). `home.css` swaps in `--text-hero-h1-column` and
+  `--text-hero-h1-column-phone`, both 36px.
 - `text-reading-h1` is for the Privacy and Accessibility titles only.
 - The talk cover keeps the fluid `text-deck-cover`; the deck has its own
   rule ([ACCESSIBILITY.md](../ACCESSIBILITY.md) gap 7).
