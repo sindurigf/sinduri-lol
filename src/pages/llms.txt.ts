@@ -33,53 +33,60 @@ const ROUTE_NOTES: { path: string; label: string; note: string }[] = [
   {
     path: '/',
     label: 'Home',
-    note: 'Introduction, featured posts and the blog categories.',
+    note: 'A short introduction, my featured posts and the blog categories.',
   },
   {
     path: ABOUT_PATH,
     label: 'About',
     note:
-      'Who she is: Vienna, cats, Lord of the Rings, and how a civil ' +
-      'engineer came to Drupal.',
+      'My life in Vienna with my husband and three cats, and why my nickname ' +
+      'is Bunny. My friends, the stories, music and food I love, and how I ' +
+      'went from civil engineering to my first Drupal job in 2021.',
   },
   {
     path: CAREER_PATH,
     label: 'Career',
     note:
-      'Work history, education, skills and open source work, with the CV ' +
-      'linked as a PDF.',
+      'My work history, education, skills and open source work, with my CV ' +
+      'as a PDF.',
   },
   {
     path: BLOG_PATH,
     label: 'Blog',
-    note: 'The blog index, newest first.',
+    note: 'All my posts, newest first.',
   },
-  { path: CONTACT_PATH, label: 'Contact', note: 'How to get in touch.' },
+  {
+    path: CONTACT_PATH,
+    label: 'Contact',
+    note: 'How to get in touch with me.',
+  },
   {
     path: BRAND_PATH,
     label: 'Brand',
-    note: "The site's design system on one page, its sections listed below.",
+    note:
+      'The design system of my website on one page, with its sections ' +
+      'listed below.',
   },
   {
     path: ACCESSIBILITY_PATH,
     label: 'Accessibility',
     note:
-      'What the site aims for, what has been tested, what has not, and how ' +
-      'to report a barrier.',
+      'What I aim for on my website, what I have tested, what I have not, ' +
+      'and how to report a barrier.',
   },
   {
     path: PRIVACY_PATH,
     label: 'Privacy',
     note:
-      'What the site collects: cookie-free visit counts and contact form ' +
-      'messages, kept for a set time; no cookies.',
+      'What my website collects: visit counts and contact form messages, ' +
+      'each kept for a set time. It sets no cookies.',
   },
   {
     path: CREDITS_PATH,
     label: 'Credits',
     note:
-      'Where the name comes from, who took the photos, and what the site ' +
-      'was built and tested with.',
+      'Where the name comes from, who took the photos, and what I built ' +
+      'and tested my website with.',
   },
 ];
 
@@ -102,10 +109,9 @@ const noteLines = (
   `- Security contact: ${absolute('/.well-known/security.txt')}`,
   ...(posts.some((post) => post.data.placeholder)
     ? [
-        `- Posts marked ${PLACEHOLDER_MARK} are unfinished drafts whose title, ` +
-          'teaser and body are lorem ipsum rather than writing. Please do not ' +
-          'quote them, summarize them, or treat them as something the author ' +
-          'said.',
+        `- Posts marked ${PLACEHOLDER_MARK} are unfinished drafts. Their ` +
+          'title, teaser and body are lorem ipsum, not my writing. Please do ' +
+          'not quote or summarize them, or treat them as something I said.',
       ]
     : []),
 ];
@@ -128,7 +134,7 @@ export const GET: APIRoute = async ({ site: configuredSite }) => {
   const lines = [
     `# ${site.host}`,
     '',
-    `> The personal site of ${PERSON_NAME}. Prerendered pages and one contact form endpoint, no cookies, cookie-free visit counts.`,
+    `> I am ${PERSON_NAME}, and this is my personal website. It is prerendered pages and one contact form endpoint, with no cookies and cookie-free visit counts.`,
     '',
     '## Pages',
     '',
