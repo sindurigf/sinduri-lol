@@ -21,9 +21,10 @@ import { talkDecks } from '../lib/talk-deck';
 import { BRAND_PATH, BRAND_SECTIONS, brandHref } from '../lib/brand-sections';
 
 /*
- * Descriptions are structural only; titles and teasers are quoted, never
- * summarized, so nothing is put in Sinduri's mouth. Placeholder posts are
- * listed and marked. tests/llms-txt.spec.ts checks against the build.
+ * Route notes say what each page holds; post titles and teasers are quoted,
+ * never summarized, because editorial copy is never invented (AGENTS.md
+ * "Copy"). Placeholder posts are listed and marked. tests/llms-txt.spec.ts
+ * checks against the build.
  */
 
 const PLACEHOLDER_MARK = '(placeholder)';

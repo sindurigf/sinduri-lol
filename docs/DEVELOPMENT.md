@@ -126,14 +126,14 @@ WEBKIT_CPUS=8 npm run test:webkit
 
 ### Approving a test change
 
-The `Test weakening` check
-([rules](../ARCHITECTURE.md#tests)) fails until the owner approves:
+The `Test weakening` check ([rules](../ARCHITECTURE.md#tests)) fails until the
+maintainer approves it from the account named in `GITHUB_REPOSITORY_OWNER`:
 
 1. Review the pull request's changes, choose Approve or, on your own pull
    request, Comment, and write the line `Approved test change: <reason>`.
-2. `.github/workflows/rerun-test-weakening.yml` re-runs `Test weakening` on
-   that review, and when the owner requests changes or a review is
-   dismissed, so a revoked approval fails it again. A new push needs a new
+2. `.github/workflows/rerun-test-weakening.yml` re-runs `Test weakening` on that
+   review, and when the maintainer requests changes or the maintainer's review
+   is dismissed, so a revoked approval fails it again. A new push needs a new
    review.
 3. On a pull request from a fork, the review's token is read-only and cannot
    re-run it: re-run the `Test weakening` run by hand.

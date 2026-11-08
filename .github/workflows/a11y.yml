@@ -44,7 +44,8 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         env:
           BEFORE: ${{ github.event.before }}
-          # Only the owner merges into main, after the pull request's own check.
+          # The main ruleset takes only pull requests, whose own run already
+          # checked these commits.
           TRUST_DEPENDABOT: 1
         run: |
           if git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
