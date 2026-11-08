@@ -78,9 +78,9 @@ missing.
 
 ## Plausible
 
-- Plausible Cloud, EU, whose trial has Business features such as click props
-  (label, area, target). Self-hosted Plausible replaces it before the trial
-  ends. The `plausibleTrial` fact in
+- Plausible Cloud, EU, on the free trial, which has Business features such as
+  click props (label, area, target). Self-hosted Plausible replaces it before
+  the trial ends. The `plausibleTrial` fact in
   [`src/lib/platform-facts.ts`](../src/lib/platform-facts.ts) holds the plan's
   terms, which `/privacy` states in place of a retention period.
 - Registered as `sinduri.lol`. `canSend` in
