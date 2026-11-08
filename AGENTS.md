@@ -45,9 +45,9 @@ security and privacy, or build correctness. "Looks as designed" is not one.
 - Assert the property ("at least 4.5:1 and differs from rest"), not the value
   (`rgb(0, 255, 255)`).
 - A skip, an axe exclusion, fewer `expect` calls, a changed threshold or a new
-  rejected finding fails the `Test weakening` check until the owner approves
-  the head commit with the line `Approved test change: <reason>`. Agents never
-  write it.
+  rejected finding fails the `Test weakening` check. It passes once the
+  maintainer approves the head commit with the line
+  `Approved test change: <reason>`. Agents never write that line.
 
 ### Which suites to run
 
@@ -79,7 +79,8 @@ Record rejected findings beside the code so they are not raised again;
 - Branch per task from `main`, named for the task.
 - Open a pull request with `gh pr create --base main --body-file <file>`, using
   [the template](.github/PULL_REQUEST_TEMPLATE.md). Never `--fill`.
-- CI must pass. The owner reviews and merges.
+- CI must pass, and the diff is reviewed before merge. Only the maintainer, or
+  an agent the maintainer has allowed, merges.
 - One commit per logical change.
 - Update every credit, doc and claim page the change makes stale, in the same
   pull request. The places to check: `src/lib/credits.ts`,
@@ -167,18 +168,19 @@ Rules:
 - An error message says what is wrong and how to fix it, without blame.
 - Headings and labels use Chicago title case; sentences use sentence case
   ([rule](docs/STYLEGUIDE.md#uppercase)).
-- Editorial copy (posts, About, Career, taglines, bios, anything in Sinduri's
-  voice) is never invented. It is drafted only from her own words and follows
-  [docs/VOICE.md](docs/VOICE.md); she approves every line.
-- New images, video or audio: ask the owner whether AI made or edited it. If
-  so, list it under Made with AI on `/credits/` and in
+- Editorial copy (posts, About, Career, taglines, bios, anything else in the
+  first person) is never invented. It is drafted only from the maintainer's own
+  words and follows [docs/VOICE.md](docs/VOICE.md); the maintainer approves
+  every line.
+- New images, video or audio: ask the maintainer whether AI made or edited it.
+  If so, list it under Made with AI on `/credits/` and in
   [AI_DISCLOSURE.md](AI_DISCLOSURE.md#keeping-this-current). Only a realistic
   one (a deep fake, EU AI Act Art. 50(4)) also needs a label on its page.
 - Photos are stripped of EXIF and XMP before commit; `npm run check` fails
   otherwise.
-- Editorial text Claude drafts or edits needs the owner's approval line by line.
-  She holds editorial responsibility, so it needs no page label (EU AI Act
-  Art. 50(4)); AI_DISCLOSURE.md records it.
+- Editorial text Claude drafts or edits needs the maintainer's approval line by
+  line. The maintainer holds editorial responsibility, so the page needs no AI
+  label (EU AI Act Art. 50(4)); AI_DISCLOSURE.md records it.
 
 ## Hard rules
 

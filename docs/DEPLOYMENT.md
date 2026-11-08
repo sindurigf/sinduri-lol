@@ -18,9 +18,12 @@ npm run build && npx wrangler deploy --dry-run
 - Run `npm run check:live` and `npm run check:live:console` after any deploy or
   dashboard change. The console check stubs Plausible, so it counts no visits.
 - After a deploy that changes the hero or what a page loads, run Lighthouse
-  (mobile) on `https://sinduri.lol/` and the changed page; record the
-  performance score and Total Blocking Time in a comment on the change's pull
-  request. CI does not run Lighthouse: timing scores vary on shared runners.
+  (mobile: 412px, 4x CPU, Slow 4G) 5 times on `https://sinduri.lol/` and the
+  changed page; record the median performance score, LCP and Total Blocking
+  Time in a comment on the change's pull request. For a changed control, also
+  record INP from a timespan run that uses it. The bar is Google's
+  [good](https://web.dev/articles/vitals) line: LCP 2500 ms, INP 200 ms. CI
+  does not run Lighthouse: timing scores vary on shared runners.
   `tests/performance.spec.ts` covers script and CSS bytes and layout shift,
   `tests/image-priority.spec.ts` image formats and priority, and
   `tests/head.spec.ts` the font preload.
@@ -64,8 +67,8 @@ npx wrangler d1 migrations apply sinduri-lol --remote
 
 ## Contact form email
 
-Needs Email Routing on the zone, the owner's inbox verified as a destination,
-and that address as a runtime secret:
+Needs Email Routing on the zone, the inbox that receives contact messages
+verified as a destination address, and that address as a runtime secret:
 
 ```sh
 npx wrangler secret put CONTACT_NOTIFY_TO
@@ -163,15 +166,20 @@ Dashboard settings that change what ships without a file change.
   1. Settings, Rules, Rulesets, the `main` ruleset, Require status checks to
      pass, Add checks, type `Test weakening`, pick the GitHub Actions source,
      Save. The name is offered once the check has run on a pull request.
-  2. Add `.github/CODEOWNERS` naming the owner for `/.github/` and
-     `/scripts/check-test-weakening.mjs`, and turn on Require review from Code
-     Owners in the `main` ruleset. A workflow could report a job also named
-     `Test weakening`; this keeps such a change from merging.
-- Agents use the owner's `gh` login, so they could post the marker. To take
-  that away, create a machine account for them with write access and a
-  fine-grained token for both repositories (Contents and Pull requests, read
-  and write), log their `gh` in with it, and remove the owner's token from
-  their keyring.
+  2. Add `.github/CODEOWNERS` naming the maintainer's GitHub account for
+     `/.github/` and `/scripts/check-test-weakening.mjs`, and turn on Require
+     review from Code Owners in the `main` ruleset. A workflow could report a
+     job also named `Test weakening`; this keeps such a change from merging.
+- `Pull request text` (`.github/workflows/pr-text.yml`) checks the title and
+  description for AI attribution and with `check:wording`, and re-runs on each
+  edit. To require it, in both repositories: Settings, Rules, Rulesets, the
+  `main` ruleset, Require status checks to pass, Add checks, type
+  `Pull request text`, pick the GitHub Actions source, Save. Dependabot pull
+  requests skip it, which counts as passed.
+- Agents run `gh` with the maintainer's token, so they can post the marker. Fix:
+  a machine account with write access and a fine-grained token (Contents, Pull
+  requests: read and write) for both repositories; log agents in with it and
+  remove the maintainer token from their keyring.
 - Turn on Dependabot alerts and automated security fixes.
 - Turn on private vulnerability reporting: [SECURITY.md](../SECURITY.md) relies
   on it.

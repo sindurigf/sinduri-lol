@@ -237,9 +237,10 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
   (`src/lib/feed-date.ts`), so a post's `updated` date moves it.
 - The Drupal tag feed is the one for Drupal Planet. Its items carry the post's
   opening, whole sentences up to 300 characters, stopping before a paragraph
-  that ends in a colon (`src/lib/feed-excerpt.ts`); the owner picked the length
-  under [Planet's guidelines](https://www.drupal.org/planet/guidelines). Every
-  other feed carries the teaser.
+  that ends in a colon (`src/lib/feed-excerpt.ts`).
+  `FEED_EXCERPT_MAX_CHARACTERS` sets the 300-character limit; see [Planet's
+  guidelines](https://www.drupal.org/planet/guidelines). Every other feed
+  carries the teaser.
 - Placeholders are excluded. `tests/rss.spec.ts`.
 
 ### Markdown visitors
@@ -410,10 +411,11 @@ Rejected:
 - A count in a comment states its unit.
 - A fact duplicated across Markdown files needs a check that fails when the
   copies disagree; otherwise keep one copy and link.
-- **Test weakening needs the owner, out of band.** The `Test weakening`
-  workflow runs on `pull_request_target`, so the default branch's copy of
-  `scripts/check-test-weakening.mjs` judges each pull request. The head is
-  fetched as git objects; nothing from it is installed or run. It flags:
+- **Test weakening passes only with the maintainer's GitHub review.** The
+  `Test weakening` workflow runs on `pull_request_target`, so the default
+  branch's copy of `scripts/check-test-weakening.mjs` judges each pull request.
+  The head is fetched as git objects; nothing from it is installed or run. It
+  flags:
   - a new or widened skip, fixme or fail, `describe.configure`, a return
     behind an engine or environment test, and an existing test given an
     engine tag from `tests/tags.ts`;
@@ -488,9 +490,10 @@ in `wrangler.jsonc`).
   domain line.
 - The logo's rabbit is `artwork/logo-rabbit-og.png`, which
   `scripts/make-logo.mjs` renders from the header rabbit's box at 14x.
-  `OG_PHOTO_CHOICES` in `src/lib/og-cards.ts` holds the owner's exceptions.
-  `cards.json` records each card's title, photo and alt; `tests/seo.spec.ts`
-  fails when a page's title or first photo no longer matches its card.
+  `OG_PHOTO_CHOICES` in `src/lib/og-cards.ts` overrides the photo for listed
+  pages: a path names another photo, `null` keeps the logo. `cards.json` records
+  each card's title, photo and alt; `tests/seo.spec.ts` fails when a page's
+  title or first photo no longer matches its card.
 - Rerun `npm run build && npm run og` after changing a token, a page title,
   a page's first photo, the name or the tagline, and commit `public/images/`.
   Not part of `npm run build`: the Cloudflare build has no Chromium.
@@ -529,8 +532,8 @@ in `wrangler.jsonc`).
 - From `xl` a landscape figure breaks out right, under the contents rail's
   column: place it below the contents; `tests/post-page.spec.ts` fails a
   figure that overlaps the rail.
-- Markdown images are WebP only, by the owner's choice: Markdown renders
-  `<img>`, not `<Picture>`, so `PHOTO_FORMATS` (AVIF first) does not reach them.
+- Markdown images are WebP only, because Markdown renders `<img>`, not
+  `<Picture>`, so `PHOTO_FORMATS` (AVIF first) does not reach them.
 - Credits: `src/lib/credits.ts`, in order of preference (personal site,
   Drupal.org, LinkedIn). Captions and `/credits` read from it. A Markdown
   image title "Photo: name" links `PHOTOGRAPHERS`, "Screenshot: name" links
@@ -817,8 +820,9 @@ evidence.
   `src/content/blog`:** two posts are tracked there, so the folder cannot be
   missing in this repository.
 - **Drop the About cat card's "beside its cat, not over it" checks as
-  decoration:** the owner asked for the card to open beside its cat, so where
-  it opens is function; the test name in `tests/about-cats.spec.ts` says so.
+  decoration:** the maintainer requires the card to open beside its cat, so
+  where it opens is function; the test name in `tests/about-cats.spec.ts` says
+  so.
 - **Let an About cat keep playing while it has keyboard focus:** the hold is a
   rule, with its reason, in [STYLEGUIDE.md](docs/STYLEGUIDE.md#motion).
 - **Size the hero roundel with a fixed 96px disc, a jump to 128px at `lg`, or
@@ -884,10 +888,10 @@ evidence.
   it sits on the gold, and `tests/hero-clear.spec.ts` checks no canvas pixel,
   stem, bud or hare, lies under either line of the name.
 - **Blur the near meadow canvas with `ctx.filter` instead of the CSS
-  `filter`:** at 4x CPU throttle the CSS filter holds 28 fps at 1440x900 and 30
-  at 412x915; `ctx.filter` per stroke drops to 2 and 4, one offscreen
-  `ctx.filter` pass to 23 and 30. `tests/filter-layers.spec.ts` allows only
-  that canvas.
+  `filter`:** at 4x CPU throttle, `ctx.filter` per stroke drops the field to a
+  few frames a second, and one offscreen `ctx.filter` pass runs slower than the
+  CSS filter on a wide screen. `tests/filter-layers.spec.ts` allows only that
+  canvas.
 - **Merge `--text-hero-h1-column` and `--text-hero-h1-column-phone`:** they
   size the name in two layouts tuned apart; they are equal by value, not by
   rule, and `tests/hero-fit.spec.ts` checks each.

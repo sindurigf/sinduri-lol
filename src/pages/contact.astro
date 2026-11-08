@@ -8,8 +8,8 @@ import { SOCIAL_PROFILES } from '../lib/profiles';
 import { wallClasses } from '../lib/wall';
 
 /*
- * Copy is drawn from Sinduri's own on /about. The form needs `form-action 'self'`
- * in public/_headers: at `'none'` the browser blocks the POST silently.
+ * The greeting is editorial copy based on /about. The form needs `form-action
+ * 'self'` in public/_headers: at `'none'` the browser blocks the POST silently.
  */
 
 type ProfileLabel = (typeof SOCIAL_PROFILES)[number]['label'];
@@ -55,7 +55,7 @@ const REASONS = [
 
 <BaseLayout
   title="Contact"
-  description="Write to Sinduri in Vienna by email, on LinkedIn or GitHub, or with the contact form."
+  description="Write to me by email, on LinkedIn or GitHub, or with the contact form."
 >
   <PageHero title="Get in Touch">
     <p class="standfirst">

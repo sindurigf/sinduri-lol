@@ -53,8 +53,8 @@ import { DENSITIES, WIDTHS } from '../lib/image-densities';
 import { JOURNEY_POST_HREF } from '../lib/paths';
 
 /*
- * Sinduri's own copy: add no line she has not approved, and keep her few
- * apostrophes ("I am", "it is"). Jump links repeat the headings verbatim.
+ * Editorial copy: add no line the maintainer has not approved, and write out
+ * contractions ("I am", "it is"). Jump links repeat the headings verbatim.
  */
 
 /* Matches `size-14`. */
@@ -86,7 +86,7 @@ const SECTIONS = [
 /* On the `.aspect-frame`, so the border stays when a failed photo fades out. */
 const PHOTO = 'border-4 border-border';
 
-/* Uncaptioned by Sinduri's choice; the alt text names who is in each. */
+/* Uncaptioned on purpose; the alt text names who is in each. */
 const PLACES = [
   {
     src: bestFriendBeach,
@@ -253,7 +253,7 @@ const catInfo: CatInfo[] = await Promise.all(
 
 <BaseLayout
   title="About"
-  description="Sinduri Guntupalli lives in Vienna with her husband and three cats. Read about her love of Lord of the Rings and how a civil engineer found Drupal."
+  description="I live in Vienna with my husband and three cats. Read about my love of Lord of the Rings and how I went from civil engineering to my first Drupal job."
   profile
 >
   <PageHero
