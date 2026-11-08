@@ -374,7 +374,8 @@
   --text-footer-name--line-height: 0.82;
   /*
    * Fills the band: its width less padding over the name's width in em, plus
-   * room for SC 1.4.12 letter spacing. Two lines (RIDET, 3.49em), one from md (7.22em).
+   * room for SC 1.4.12 letter spacing. Two lines (RIDET, 3.49em), one from md
+   * (7.22em), which wraps to two under that spacing.
    */
   --text-footer-name-fluid: calc((100cqi - 3rem) / 4.2);
   --text-footer-name-fluid-md: calc((100cqi - 3rem) / 7.6);
