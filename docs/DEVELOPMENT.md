@@ -82,7 +82,7 @@ What happens without the `CONTACT_NOTIFY_TO` secret:
 | `npm run publish:talk`         | Print a talk's slideshow to its tagged PDF in `public/talks/`                                                                                    |
 
 `CHECK_ROOT=<dir>` points `check:tokens`, `pins`, `classes`, `csp`,
-`untransformed` and `title-case` at another tree. The `tests/check-*.spec.ts`
+`untransformed`, `title-case` and `links` at another tree. The `tests/check-*.spec.ts`
 self-tests use it to run each check on a passing and a failing fixture.
 
 ### WebKit
