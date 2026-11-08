@@ -19,14 +19,19 @@ blur, uppercase headings, tilted marks.
   `var(--color-…)` resolves to nothing.
 - `npm run check:tokens` fails on anything else:
   [Token enforcement](../ARCHITECTURE.md#token-enforcement).
+- `npm run check:classes` fails a built page that uses a class with no rule in
+  the sheets it links: Tailwind writes nothing for a missing token.
+- A custom property one sheet needs (`--copy-reach` in `brand.css`,
+  `--hero-ledge-h` in `home.css`) is set in that sheet from `@theme` tokens.
+  The tables here list `@theme` only.
 
 ## Principles
 
 ### The gold register
 
 - `cyan` is what you are touching: hover and focus, never at rest. Inside a
-  block that job goes to `gold-link` (11.38 on gold, 14.49 on light), new with
-  blocks: cyan is 1.01 on gold.
+  block that job goes to `gold-link` (11.38 on gold, 14.49 on light): cyan is
+  1.01 on gold.
 - `pink` is depth and error: hard shadows, the invalid edge.
 - `border` is boundary. `text` is words.
 - Gold is the single accent, held by a register rather than one job. A review
@@ -42,7 +47,6 @@ blur, uppercase headings, tilted marks.
 | 1c  | Ground, mid-page: a `Section surface="gold"`, the kindness quote, `/contact`'s closing band                                        | `/career`, `/about`, `/`, `/contact`   |
 | 2   | The primary action: `.nav-cta`, `.btn-primary`                                                                                     | 11 routes, 4 routes                    |
 | 3   | The bunny marks: the logo tile, the laughing rabbit tile on `/about`, the roundel, the homepage sticker                            | 11 routes, 9 routes                    |
-| 11  | The footer name band: "Lepus Ridet" in ink on a `block-gold` band at every page's end, the rabbit standing on it                   | every route                            |
 | 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                                                  | `/about`, `/accessibility`, `/contact` |
 | 4a  | A talk slide's label, bold words, part number and lead-in term before a colon; its text links, still underlined                    | `/talks/<deck>/`                       |
 | 5   | Category: the blog label and the homepage glyph tiles, ink-edged on gold                                                           | 3 routes                               |
@@ -51,6 +55,7 @@ blur, uppercase headings, tilted marks.
 | 8   | The `gold` swatch and the contrast samples on gold; fills, hex in both modes                                                       | `/brand`                               |
 | 9   | Edges in dark mode: `border` on fields, controls, chips, rules and the outer edge of a gold area                                   | every route                            |
 | 10  | The header bar, a gold ground in both modes; its current-page brick, theme switch and call to action read on it by their ink edges | every route                            |
+| 11  | The footer name band: "Lepus Ridet" in ink on a `block-gold` band at every page's end, the rabbit standing on it                   | every route                            |
 
 - 9 is the edge because the only two colors are ink and gold: an ink edge
   vanishes on the dark page and a light one adds a third color. Gold reads as
@@ -94,24 +99,25 @@ blur, uppercase headings, tilted marks.
 
 ## Color tokens
 
-| Token        | Hex       | Job                                               |
-| ------------ | --------- | ------------------------------------------------- |
-| `background` | `#0B0B0B` | Page ground; header, footer, bands                |
-| `surface`    | `#1A1A1A` | Inputs and controls off a block                   |
-| `border`     | `#FFC000` | Every boundary but table lines: the gold edge     |
-| `card-edge`  | none      | Card and plain slab edge; `#131313` in light mode |
-| `fill-edge`  | `#131313` | Edge of a gold or light fill: buttons, logo tile  |
-| `code-edge`  | `#707070` | Post code frame edge; `#767676` in light mode     |
-| `code-fill`  | `surface` | Post code fill; `block-light` in light mode       |
-| `text`       | `#E5E2E1` | Words and table lines                             |
-| `subtle`     | `#9EB6C7` | Captions, meta, helper text                       |
-| `gold`       | `#FFC000` | The accent, only where the style guide allows     |
-| `cyan`       | `#00DCFD` | Hover and focus only                              |
-| `pink`       | `#FF007A` | Depth and error; never text                       |
-| `pink-text`  | `#FF79B6` | Every pink glyph; never non-text                  |
-| `bunny`      | `#FF007A` | Bunny marks; same in both modes                   |
-| `cat-*`      | 2 fills   | About cat props; decoration, never a boundary     |
-| `hero-*`     | 4 values  | Homepage canvas veil and floor; decoration        |
+| Token         | Hex          | Job                                               |
+| ------------- | ------------ | ------------------------------------------------- |
+| `background`  | `#0B0B0B`    | Page ground; header, footer, bands                |
+| `surface`     | `#1A1A1A`    | Inputs and controls off a block                   |
+| `border`      | `#FFC000`    | Every boundary but table lines: the gold edge     |
+| `card-edge`   | none         | Card and plain slab edge; `#131313` in light mode |
+| `fill-edge`   | `#131313`    | Edge of a gold or light fill: buttons, logo tile  |
+| `code-edge`   | `#707070`    | Post code frame edge; `#767676` in light mode     |
+| `code-fill`   | `surface`    | Post code fill; `block-light` in light mode       |
+| `text`        | `#E5E2E1`    | Words and table lines                             |
+| `subtle`      | `#9EB6C7`    | Captions, meta, helper text                       |
+| `gold`        | `#FFC000`    | The accent, only where the style guide allows     |
+| `cyan`        | `#00DCFD`    | Hover and focus only                              |
+| `pink`        | `#FF007A`    | Depth and error; never text                       |
+| `pink-text`   | `#FF79B6`    | Every pink glyph; never non-text                  |
+| `bunny`       | `#FF007A`    | Bunny marks; same in both modes                   |
+| `button-text` | `ButtonText` | Forced colors only: bars on the button face       |
+| `cat-*`       | 2 fills      | About cat props; decoration, never a boundary     |
+| `hero-*`      | 4 values     | Homepage canvas veil and floor; decoration        |
 
 The gold-ground set is in [Gold surface](#gold-surface), light values in
 [Light mode](#light-mode).
@@ -128,8 +134,8 @@ The gold-ground set is in [Gold surface](#gold-surface), light values in
   `block-gold`, which never remaps. `tests/blocks.spec.ts`.
 - Walls: blocks in a `.card-block` share 4px walls with no gap. Each brick
   casts the throw as a `box-shadow` and the next brick covers it, so it shows
-  on outer edges only. No `filter` on a wall: filter layers stalled Playwright
-  input on an older build and cost raster time (`tests/filter-layers.spec.ts`).
+  on outer edges only. No `filter` on a wall: a filter layer costs raster time
+  and can stall Playwright input (`tests/filter-layers.spec.ts`).
 - The Step Up: the throw falls down and right, so a wall only climbs right.
   Bricks in one row rise by `--step-y` (48px from 1120px; half for the second
   of three or more). A wall of short bricks (the homepage taglines) rises
@@ -292,8 +298,9 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
 - `.btn-gold-secondary`: transparent, `gold-text` label and 4px border, no
   shadow, single ring.
 - Borders are `gold-text`, matching the fill, not `gold-border`.
-  `tests/gold-surface.spec.ts` asserts every control on gold has a visible
-  edge: a fill that differs from the ground, or a border of at least 3:1.
+  `tests/gold-surface.spec.ts` asserts every control in a `.surface-gold`
+  section has a visible edge: a fill that differs from the ground, or a border
+  of at least 3:1.
 - Both are scoped to `.surface-gold` and render unstyled elsewhere.
 - Both `text-button`, 900, 0.1em, uppercase, `px-8 py-4`. No underline on the
   label.
@@ -320,6 +327,9 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
 | `code-fill`                                         | `#e5e2e1` | 1.29         |
 | `cyan` (focus ring and hover text)                  | `#0047b3` | 8.23         |
 
+- Light values are `light-*` tokens in `global.css` (`light-focus` for
+  `cyan`, `light-pink-text`, `light-hero-veil`, `light-hero-floor`), swapped
+  in by `light-mode.css`.
 - Every hard shadow and edge turns `#131313`.
 - Hover fills are dark mode's `#00dcfd` under `#131313` (11.20).
 - `.surface-gold` and `.v-column` go white. Buttons, tiles and stickers keep
@@ -379,7 +389,7 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 | `text-slide-h3-frame`     | 22     | 42     | 1.1         | 900    | Slide label in full screen, by frame  |
 | `text-slide-number-frame` | 72     | 160    | 1           | 900    | Part number in full screen, by frame  |
 | `text-copyright`          | 20     | 20     | 1.2         | 900    | Footer copyright                      |
-| `text-footer-name`        | fills  | fills  | 0.82        | 900    | Footer name band, sized to its width  |
+| `text-footer-name-fluid`  | fills  | fills  | 0.82        | 900    | Footer name band, sized to its width  |
 | `text-section-number`     | 21     | 28     | 1           | 900    | Category glyph tile                   |
 | `text-quote-mark`         | 64     | 144    | 0.75        | 900    | About kindness quote mark             |
 
@@ -410,17 +420,22 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 - 400 for reading text; 900 for headings, card titles, labels, buttons, names
   and quoted text. Never 300 or `font-bold`.
 - Every size is a token. No breakpoint steps.
+- A fluid `clamp()` size has rem bounds and a max at most 2.5 times its min,
+  so 500% zoom still doubles it (SC 1.4.4). `npm run check:tokens` enforces
+  both.
 - Nothing renders under 16px on a phone: `text-label` and `text-button` are
   16px to 40rem (`tests/text-size.spec.ts`).
 - Headings never skip levels; one `<h1>` per page. No heading is larger than
   the level above it (`tests/headings.spec.ts`); a /brand example, shown at
   another page's size, is exempt.
-- `text-hero-h1` is 36px so the homepage name stays two lines.
+- `text-hero-h1` is 36px so the homepage name stays two lines
+  (`tests/hero-fit.spec.ts`). `home.css` swaps in `--text-hero-h1-column` and
+  `--text-hero-h1-column-phone`, both 36px.
 - `text-reading-h1` is for the Privacy and Accessibility titles only.
 - The talk cover keeps the fluid `text-deck-cover`; the deck has its own
   rule ([ACCESSIBILITY.md](../ACCESSIBILITY.md) gap 7).
 - Posts use `text-post-*`. Do not raise them to the page scale.
-- The footer name fills its band by container width (`--text-footer-name-fluid`, `-md`), two lines below 48rem, one from 48rem; it has no rem floor, so a larger default font never pushes it past the band.
+- The footer name fills its band by container width (`--text-footer-name-fluid`, `-md`), two lines below 48rem, one from 48rem that wraps to two under SC 1.4.12 text spacing; it has no rem floor, so a larger default font never pushes it past the band.
 - Tracking: `--tracking-heading` -0.05em on h1 and h2, `--tracking-title`
   -0.02em on h3, post and slide titles, `--tracking-label`
   0.1em on labels and buttons.
@@ -455,13 +470,14 @@ longest word fits there; `tests/reflow.spec.ts` holds them.
   The lower-case words are in `TITLE_CASE_SMALL_WORDS`
   (`src/lib/labels.ts`); the first and last word are always capitalized, and
   each part of a hyphenated compound counts as a word ("One-Keeper Problem").
-  `npm run check:title-case` scans the built headings, titles and summaries,
-  and the visible label of every button and button-styled link; an email or
-  web address keeps its own case. It does not scan `.label` or `.badge`
-  text, which is sentence case, except where the element is a heading or a
-  button: those stay title case.
-  It cannot see server-rendered `/contact/send` or the dev-only presenter;
-  check their headings and buttons by hand.
+  `npm run check:title-case` scans the built headings, titles, `og:title` and
+  summaries, and the visible label of every button and button-styled link; an
+  email or web address, the site name and the entries in `TITLE_CASE_ALLOWED`
+  (`scripts/check-allow-lists.mjs`) keep their own case. It does not scan
+  `.label` or `.badge` text, which is sentence case, except where the element
+  is a heading or a button: those stay title case. It cannot see
+  server-rendered `/contact/send` or the dev-only presenter; check their
+  headings and buttons by hand.
 - `.label`, `.badge`, the buttons and every heading apply
   `text-transform: uppercase`. A post title and a talk slide title keep their
   written case (`.post-title`, `.slide-title`).
@@ -529,8 +545,9 @@ with a comment beside it.
   content at every width.
 - The rabbit art bleeds an eighth past each side of the box; the tests measure
   the drawn image, not the box.
-- `tests/page-hero.spec.ts` checks the roundel and the photo cover no text at
-  320, 640, 768, 1023, 1024 and 1280px.
+- `tests/page-hero.spec.ts` checks the roundel and the photo cover no text on
+  a gold slab at 320, 640, 768, 1023, 1024 and 1280px, and the roundel on a
+  plain slab at 320, 1023 and 1280px.
 
 ## Borders, shadows and radius
 
@@ -564,8 +581,8 @@ with a comment beside it.
 | `shadow-hard-cyan-object`   | A hovered linked card, in place of pink; a contact link brick fills cyan instead, its ring inside in ink              |
 | `shadow-hard-gold-border-4` | A card on gold                                                                                                        |
 | `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                       |
-| `shadow-hard-bunny-8`       | The logo tile, the homepage stickers                                                                                  |
-| `shadow-hard-bunny-12`      | The laughing rabbit tile on `/about`                                                                                  |
+| `shadow-hard-bunny-8`       | The logo tile, the homepage stickers, the laughing rabbit tile on `/about` below `lg`                                 |
+| `shadow-hard-bunny-12`      | The laughing rabbit tile on `/about` from `lg`                                                                        |
 
 - `bunny` is `pink`'s hex but stays pink in light mode, where `pink` turns
   ink.
@@ -644,7 +661,8 @@ file per area.
   [The homepage shelf](#the-homepage-shelf)).
 - A block's focus ring is its remapped `cyan`, `gold-link` (11.38 on gold,
   14.49 on light); the block's own ring and hover throw keep the page's cyan.
-  Focusable content sits at least 8px inside. `tests/blocks.spec.ts`.
+  Focusable content sits far enough inside that its ring stays in the block
+  (`tests/blocks.spec.ts`).
 - Breadcrumbs stop at the parent; JSON-LD `BreadcrumbList` adds the page
   (`tests/breadcrumbs.spec.ts`).
 - An abbreviation's expansion is a `<button popovertarget>` described by its
@@ -672,7 +690,7 @@ The grid rule in `scripts/check-tokens.mjs` enforces the grid;
 
 ### One treatment per type
 
-`tests/section-types.spec.ts` compares instances across pages.
+Kept by review: no spec compares instances across pages.
 
 - **Text section** (heading and short paragraphs): a panel, heading inside at
   `text-h2`, including "Summary" on `/career` and the message on
@@ -845,8 +863,8 @@ tier and takes its padding.
 - Shape: `.gold-column`. Left edge on the page column; right edge reaches past
   it until the pink shadow is 48px from the screen edge, never short of the
   page column. Below 40rem it sits in the page gutter.
-- Edge: one 6px `border` and the 8px pink shadow, as a card. Text inset by
-  `--hero-column-pad-inline`.
+- Edge: one 4px `block-ink` edge (`--block-edge`) and the 8px pink shadow, as
+  a card. Text inset by `--hero-column-pad-inline`.
 - PageHero and `.post-slab` stand `--hero-pad-block` below the header.
 - With a photo, from 1024px: text on 6 of 12 columns, centered; photo on
   columns 8 to 12, 4:5, on the slab's bottom. Below that the photo follows the
@@ -1493,7 +1511,8 @@ shows no alt text. Enforced by `tests/replaced-elements.spec.ts` and
 
 ### The frame
 
-- Every photo sits in an `.aspect-frame` and fills it (`absolute inset-0
+- Every photo but the Fandoms thumbnail on `/about`, a fixed 56px square
+  (`size-14`), sits in an `.aspect-frame` and fills it (`absolute inset-0
 size-full object-cover`). Never put `aspect-ratio` on the image: WebKit
   drops it, and the ratio from `width` and `height`, when the image fails.
 - A designed ratio is a class on the frame, only where every file already has
@@ -1526,7 +1545,9 @@ size-full object-cover`). Never put `aspect-ratio` on the image: WebKit
   links the photographer's site: "Photo: DrupalDevDays 2023 Vienna by Andrey
   Pshenichny (CC BY 2.0)". Set it where the license asks for the title (CC BY
   2.0 §4(b)); each link names where it goes (SC 2.4.9).
-- No source site or changes in the caption. `tests/photo-credits.spec.ts`.
+- No source site name or changes note in the caption.
+  `tests/photo-credits.spec.ts` checks each Creative Commons caption's source
+  and license links.
 
 ### The failed state
 

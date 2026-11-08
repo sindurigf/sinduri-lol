@@ -367,14 +367,12 @@
   /* Just under the 22px footer icons; one line, so a label's line height. */
   --text-copyright: 1.25rem;
   --text-copyright--line-height: 1.2;
-  /*
-   * "Lepus Ridet" in the footer, one line in the 288px phone box: 32px
-   * uppercase Lexend 900 is about 250px wide.
-   */
+  /* "Lepus Ridet" in the footer: capitals only, so no descender room. */
   --text-footer-name--line-height: 0.82;
   /*
    * Fills the band: its width less padding over the name's width in em, plus
-   * room for SC 1.4.12 letter spacing. Two lines (RIDET, 3.49em), one from md (7.22em).
+   * room for SC 1.4.12 letter spacing. Two lines (RIDET, 3.49em), one from md
+   * (7.22em), which wraps to two under that spacing.
    */
   --text-footer-name-fluid: calc((100cqi - 3rem) / 4.2);
   --text-footer-name-fluid-md: calc((100cqi - 3rem) / 7.6);
@@ -392,7 +390,7 @@
   --tracking-title: -0.02em;
   --tracking-label: 0.1em;
 
-  /* Zero everywhere except the logo tile and the laughing rabbit tile on /about. */
+  /* Zero except the logo tile, and the laughing rabbit tile and Fandoms photo on /about. */
   --radius-nav: 14px;
 
   /*
