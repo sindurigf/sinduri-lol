@@ -18,9 +18,12 @@ npm run build && npx wrangler deploy --dry-run
 - Run `npm run check:live` and `npm run check:live:console` after any deploy or
   dashboard change. The console check stubs Plausible, so it counts no visits.
 - After a deploy that changes the hero or what a page loads, run Lighthouse
-  (mobile) on `https://sinduri.lol/` and the changed page; record the
-  performance score and Total Blocking Time in a comment on the change's pull
-  request. CI does not run Lighthouse: timing scores vary on shared runners.
+  (mobile: 412px, 4x CPU, Slow 4G) 5 times on `https://sinduri.lol/` and the
+  changed page; record the median performance score, LCP and Total Blocking
+  Time in a comment on the change's pull request. For a changed control, also
+  record INP from a timespan run that uses it. The bar is Google's
+  [good](https://web.dev/articles/vitals) line: LCP 2500 ms, INP 200 ms. CI
+  does not run Lighthouse: timing scores vary on shared runners.
   `tests/performance.spec.ts` covers script and CSS bytes and layout shift,
   `tests/image-priority.spec.ts` image formats and priority, and
   `tests/head.spec.ts` the font preload.
@@ -31,6 +34,20 @@ npm run build && npx wrangler deploy --dry-run
 - `preview_urls` is set in `wrangler.jsonc`; a dashboard toggle is reset by the
   next deploy. Previews are public to anyone with the URL and use production
   bindings: a message sent from one lands in the production D1 and inbox.
+
+## Bindings
+
+The Worker's bindings, declared in [`wrangler.jsonc`](../wrangler.jsonc)
+except `ASSETS`, which the Astro adapter adds, and the secret
+([pipeline](../ARCHITECTURE.md#the-contact-endpoint)).
+
+| Binding              | Type          | Used by                                           |
+| -------------------- | ------------- | ------------------------------------------------- |
+| `MESSAGES_DB`        | D1            | Contact messages, the retention sweep, resend     |
+| `CONTACT_MAILER`     | Send Email    | Notification email ([setup](#contact-form-email)) |
+| `CONTACT_RATE_LIMIT` | Rate Limiting | Submissions per sender key                        |
+| `ASSETS`             | Static assets | `/videos/*` byte ranges                           |
+| `CONTACT_NOTIFY_TO`  | Secret        | Notification recipient                            |
 
 ## D1
 
@@ -64,9 +81,9 @@ missing.
 
 ## Plausible
 
-- Plausible Cloud, EU, whose trial has Business features such as click props
-  (label, area, target). Self-hosted Plausible replaces it before the trial
-  ends. The `plausibleTrial` fact in
+- Plausible Cloud, EU, on the free trial, which has Business features such as
+  click props (label, area, target). Self-hosted Plausible replaces it before
+  the trial ends. The `plausibleTrial` fact in
   [`src/lib/platform-facts.ts`](../src/lib/platform-facts.ts) holds the plan's
   terms, which `/privacy` states in place of a retention period.
 - Registered as `sinduri.lol`. `canSend` in
