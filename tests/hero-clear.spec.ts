@@ -28,6 +28,13 @@ const VIEWPORTS = [
 /** Reduced motion draws one still frame; these add the other landscape phone. */
 const STILL_VIEWPORTS = [...VIEWPORTS, { width: 667, height: 375 }] as const;
 
+/** `drawImage` with a source rectangle, as `drawRabbit` in src/lib/hero-field-rabbit.ts calls it. */
+const ATLAS_CUT_ARGS = 9;
+const PROBE_OPTIONS = {
+  frameRate: FRAME_RATE,
+  atlasCutArgs: ATLAS_CUT_ARGS,
+} as const;
+
 /** The near canvas is blurred by CSS; its ink spreads about twice the radius. */
 const BLUR_REACH = 2;
 
@@ -42,7 +49,7 @@ interface HeroProbe {
  * canvas onto a canvas of its own, so the rabbit's pixels are known exactly.
  */
 const installProbe = (page: Page) =>
-  page.addInitScript((frameRate) => {
+  page.addInitScript(({ frameRate, atlasCutArgs }) => {
     const probe = window as unknown as HeroProbe;
     const queue = new Map<number, FrameRequestCallback>();
     let nextId = 0;
@@ -57,13 +64,30 @@ const installProbe = (page: Page) =>
     };
     /* `start()` in motion-loop.ts reads it; the real clock would skip frames on a slow machine. */
     performance.now = () => now;
+
+    /*
+     * Only a pump's last frame paints: `draw` in hero-field.ts returns on a null
+     * context and drawing fills only caches, so the paused frame is the same.
+     */
+    let painting = true;
+    const { getContext } = HTMLCanvasElement.prototype;
+    HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
+      ...args: Parameters<HTMLCanvasElement['getContext']>
+    ) {
+      if (!painting && this.classList.contains('hero-field-layer')) return null;
+      return Reflect.apply(getContext, this, args);
+    } as HTMLCanvasElement['getContext'];
+
     probe.pumpFrames = (count) => {
       for (let frame = 0; frame < count; frame += 1) {
         now += 1000 / frameRate;
+        painting = frame === count - 1;
         const due = [...queue.entries()];
         for (const [id] of due) queue.delete(id);
         for (const [, callback] of due) callback(now);
       }
+      painting = true;
     };
 
     probe.rabbitOnly = null;
@@ -89,12 +113,12 @@ const installProbe = (page: Page) =>
       }
       clearRect.call(this, x, y, w, h);
     };
-    /* The rabbit is the one image the middle layer draws; its shadow and stems are paths. */
+    /* The rabbit is the one atlas cut (nine arguments) the middle layer draws; its shadow is a whole sprite. */
     CanvasRenderingContext2D.prototype.drawImage = function (
       this: CanvasRenderingContext2D,
       ...args: Parameters<CanvasRenderingContext2D['drawImage']>
     ) {
-      if (this.canvas === middle() && args[0] instanceof HTMLCanvasElement) {
+      if (this.canvas === middle() && args.length === atlasCutArgs) {
         const copy = copyFor(this.canvas);
         copy.setTransform(this.getTransform());
         Reflect.apply(drawImage, copy, args);
@@ -102,7 +126,7 @@ const installProbe = (page: Page) =>
       }
       Reflect.apply(drawImage, this, args);
     } as CanvasRenderingContext2D['drawImage'];
-  }, FRAME_RATE);
+  }, PROBE_OPTIONS);
 
 const openHero = async (
   page: Page,
