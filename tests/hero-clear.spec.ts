@@ -14,8 +14,8 @@ const HERO_PLAY_NAME = /play the hero animation/i;
 /** `MAX_FRAME_RATE` in src/scripts/hero-field.ts. */
 const FRAME_RATE = 30;
 
-/** Frames run before each pause. At 844x390 the hare passes behind "Ridet" from frame 1230 to 1380. */
-const PAUSE_AT_FRAMES = [150, 600, 1000, 1300, 2000] as const;
+/** Frames run before each pause. At 844x390 the hare passes behind "Ridet" at frames 1180 and 1270. */
+const PAUSE_AT_FRAMES = [150, 600, 1000, 1270, 2000] as const;
 
 /** 844x390 is the window the hare crosses a sticker in; the others are a desktop and a phone. */
 const CROSSING_VIEWPORT = { width: 844, height: 390 } as const;
