@@ -881,6 +881,15 @@ evidence.
 - **Merge `--text-hero-h1-column` and `--text-hero-h1-column-phone`:** they
   size the name in two layouts tuned apart; they are equal by value, not by
   rule, and `tests/hero-fit.spec.ts` checks each.
+- **Drop `#hash` from click-tracking targets:** the privacy page promises only
+  that page and referrer addresses lose `?` and `#`.
+- **Dedupe the two miniflare and workerd copies in `package-lock.json`:** npm
+  resolution, harmless; both run only locally.
+- **Remove the canonical from `noindex, follow` tag pages:** it names the
+  page's own address, so it does not conflict; `BaseLayout.astro` sets the
+  two independently.
+- **Fix Lighthouse `is-crawlable` on tag listings and `/contact/sent/`:** both
+  are `noindex` on purpose, above.
 
 ## Content notes
 
