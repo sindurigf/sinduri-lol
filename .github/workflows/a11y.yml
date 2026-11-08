@@ -68,6 +68,8 @@ jobs:
             exit 1
           fi
           echo "Pull request description: no AI attribution."
+          printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY" > "$RUNNER_TEMP/pull-request.txt"
+          node scripts/check-wording.mjs --text "$RUNNER_TEMP/pull-request.txt"
 
       # Not path-filtered: a workflow `paths:` would stop `Required checks`
       # reporting, blocking merges. docs/MANUAL_TESTING.md §13 covers the rest.
