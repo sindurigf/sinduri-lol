@@ -21,7 +21,7 @@ import { CATEGORIES, CATEGORY_TILE } from '../lib/categories';
 import { packRows, wallClasses } from '../lib/wall';
 import { BLOG_PATH, categoryHref } from '../lib/paths';
 
-/* Editorial copy is Sinduri's own words; add no line she has not approved. */
+/* Editorial copy: add no line the maintainer has not approved. */
 
 const FEATURED_LIMIT = 3;
 const featured = await getFeaturedPosts(FEATURED_LIMIT);
@@ -122,7 +122,7 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
 <BaseLayout
   title="Sinduri Guntupalli, Open Source Enthusiast"
   titleSuffix={false}
-  description="Sinduri Guntupalli, open source enthusiast in Vienna, experienced in product and program management, web development and Drupal community work."
+  description="I am Sinduri Guntupalli, an open source enthusiast in Vienna, with experience in product and program management, web development and Drupal community work."
 >
   {/*
     One gold area for the hero and the section below. No `.surface-gold` on the

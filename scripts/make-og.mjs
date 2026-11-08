@@ -213,7 +213,7 @@ const metaContent = (html, property) =>
     html,
   )?.[1] ?? null;
 
-/** The page's card: its title, and its photo by the owner's pick or the first in `<main>`. */
+/** The page's card: its title, and its photo from `OG_PHOTO_CHOICES` or else the first in `<main>`. */
 const cardFor = (route, html) => {
   const title = metaContent(html, 'og:title');
   if (!title) throw new Error(`make-og: ${route} has no og:title.`);

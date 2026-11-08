@@ -6,6 +6,7 @@ import { CONTACT_EMAIL, CONTACT_MAILTO } from '../lib/contact';
 import { RETENTION_DAYS } from '../lib/contact-form';
 import { PLAUSIBLE_ORIGIN } from '../lib/analytics';
 import { formatPostDate } from '../lib/post-date';
+import { PERSON_NAME } from '../lib/profiles';
 import { SITE_NAME } from '../lib/site';
 import { THEME_STORAGE_KEY } from '../lib/theme';
 import { TEXT_SCALE_KEY } from '../lib/text-scale';
@@ -20,7 +21,7 @@ import {
  */
 
 /* Set by hand when the policy text changes; a build date would re-date it on every deploy. */
-const lastUpdated = '2026-10-25';
+const lastUpdated = '2026-11-08';
 
 const CLOUDFLARE_PRIVACY = 'https://www.cloudflare.com/privacypolicy/';
 const CLOUDFLARE_NEL =
@@ -33,15 +34,15 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
 
 <BaseLayout
   title="Privacy"
-  description="This site sets no cookies, loads nothing from anywhere else, and counts visits with cookie-free analytics."
+  description="My website sets no cookies, loads nothing from anywhere else, and counts visits with cookie-free analytics."
 >
   <PageHero title="Privacy" measure="reading" slab="none">
     <p class="standfirst">
-      This site sets no cookies and loads nothing from any other website. It
-      counts visits with Plausible, which does not use cookies either. It stores
-      what you type into the contact form, so that there is something to reply
-      to. Each form submission's request is logged for{' '}
-      {WORKER_LOG_RETENTION_DAYS} days, including your{' '}
+      I am {PERSON_NAME}, and I decide what this website collects. It sets no
+      cookies and loads nothing from any other website. Visits are counted with
+      Plausible, which does not use cookies either. When you use the contact
+      form, I store what you type so I can reply. The request for each form
+      submission is logged for {WORKER_LOG_RETENTION_DAYS} days, including your{' '}
       <Abbr short="IP" long="Internet Protocol" /> address, the internet address
       of your connection.
     </p>
@@ -58,7 +59,7 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
   <section class="reading-layout band py-section">
     <div class="mx-auto max-w-page">
       <div class="prose mx-auto max-w-measure">
-        <h2>What This Site Does Not Do</h2>
+        <h2>What My Website Does Not Do</h2>
 
         <ul role="list">
           <li>
@@ -76,19 +77,19 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
             stay in your browser. Nothing else is stored in your browser. The{' '}
             <dfn>analytics script</dfn>, the code that counts visits, reads one
             local storage setting, named plausible_ignore, which is Plausible's
-            own off switch, and writes nothing. Clearing this site's data in
+            own off switch, and writes nothing. Clearing this website's data in
             your browser removes both settings.
           </li>
           <li>
             <strong>Nothing loaded from other websites.</strong> Every file a
-            page loads comes from this site: the fonts, the images and the
+            page loads comes from this website: the fonts, the images and the
             analytics script. There are no videos or posts embedded from other
-            sites, no third-party tracking tools and no advertising. The site's
-            own <dfn>security policy</dfn>, a rule your browser enforces, blocks
-            every other website. The one exception: the analytics script may
-            send visit counts to Plausible at {PLAUSIBLE_HOST}. Error reports
-            your browser sends to Cloudflare on its own are described under
-            Hosting.
+            websites, no third-party tracking tools and no advertising. The
+            website's own <dfn>security policy</dfn>, a rule your browser
+            enforces, blocks every other website. The one exception: the
+            analytics script may send visit counts to Plausible at{' '}
+            {PLAUSIBLE_HOST}. Error reports your browser sends to Cloudflare on
+            its own are described under Hosting.
           </li>
           <li>
             <strong>No accounts.</strong> There is nothing to sign up for and
@@ -99,21 +100,21 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
         <h2>Visit Counts</h2>
 
         <p>
-          This site counts visits with{' '}
-          <a href="https://plausible.io/">Plausible</a>, an analytics service
-          that uses no cookies and does not follow you from site to site. The
-          script runs from this site, and what it sends goes to Plausible at{' '}
-          {PLAUSIBLE_HOST}, which stores it on servers in the European Union. It
-          is the only place a page here sends anything to.
+          I count visits with <a href="https://plausible.io/">Plausible</a>, an
+          analytics service that uses no cookies and does not follow you from
+          website to website. The script runs from this website, and what it
+          sends goes to Plausible at {PLAUSIBLE_HOST}, which stores it on
+          servers in the European Union. It is the only place a page here sends
+          anything to.
         </p>
 
         <p>
-          This site uses Plausible's free trial. When the trial ends, Plausible
-          stops counting and later deletes what it stored, as{' '}
+          I use Plausible's free trial. When the trial ends, Plausible stops
+          counting and later deletes what it stored, as{' '}
           <a href={PLAUSIBLE_TRIAL}>its trial terms</a> describe.
         </p>
 
-        <p>For each page you open, it sends:</p>
+        <p>For each page you open, the analytics script sends:</p>
 
         <ul role="list">
           <li>the page's address</li>
@@ -126,9 +127,8 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
         <p>Both addresses are sent without anything after a ? or #.</p>
 
         <p>
-          When you leave the page or switch away from it, it also sends how far
-          down the page you scrolled. At the same time, it sends how long you
-          had the page in view.
+          When you leave the page or switch away from it, the script also sends
+          how far down you scrolled and how long you had the page in view.
         </p>
 
         <p>When you click a link or a button, it also sends:</p>
@@ -160,32 +160,33 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
         <p>
           If your browser sends <dfn>Do Not Track</dfn>, a privacy setting most
           browsers offer, nothing is sent at all. Blocking JavaScript for this
-          site stops it too.
+          website stops it too.
         </p>
 
         <h2>Links Away from Here</h2>
 
         <p>
-          The footer links to profiles on other sites, and posts may link
+          The footer links to my profiles on other websites, and posts may link
           elsewhere. Those are ordinary links: nothing is sent when the page
-          loads, only when you follow one. Once you do, that site's own policy
-          applies and this one does not.
+          loads, only when you follow one. Once you do, that website's own
+          policy applies, not mine.
         </p>
 
         <h2>Hosting</h2>
 
         <p>
-          This site is served by a <dfn>Cloudflare Worker</dfn>, a program that
+          My website is served by a <dfn>Cloudflare Worker</dfn>, a program that
           runs on Cloudflare's servers. Delivering a page means Cloudflare
           receives the request for it, including your IP address, in the same
-          way any web server does. What they keep, and for how long, is covered
-          by <a href={CLOUDFLARE_PRIVACY}>Cloudflare's privacy policy</a> rather
-          than by this one.
+          way any web server does. What Cloudflare keeps, and for how long, is
+          covered by{' '}
+          <a href={CLOUDFLARE_PRIVACY}>Cloudflare's privacy policy</a>, not by
+          this one.
         </p>
 
         <p>
-          Requests that run this site's own code are also logged to this site's
-          Cloudflare account so that problems can be fixed. In practice, that
+          Requests that run my website's own code are also logged to my
+          Cloudflare account, so I can find and fix problems. In practice, that
           means sending the contact form. A log entry holds the request and
           response, which can include your IP address, and your browser and
           approximate location: city, country and network provider. A{' '}
@@ -198,11 +199,11 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
         </p>
 
         <p>
-          Cloudflare also asks your browser to report requests to this site that
-          fail, a feature called Network Error Logging. Only failures are
+          Cloudflare also asks your browser to report requests to my website
+          that fail, a feature called Network Error Logging. Only failures are
           reported, never a successful visit, and only by browsers that support
           it. Your browser sends the report itself, to {NEL_REPORT_HOST}, not to
-          this site, and the page's own security policy does not apply to it. A
+          my website, and the page's own security policy does not apply to it. A
           report holds the address requested, the type of error and its timing.
           Cloudflare says it stores no IP address or other personal data from
           these reports; its{' '}
@@ -214,8 +215,8 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
 
         <p>
           The form on <a href="/contact/">the contact page</a> stores the name,
-          email address and message you type, so that there is something to
-          reply to. Stored with it are:
+          email address and message you type, so I can reply. Stored with it
+          are:
         </p>
 
         <ul role="list">
@@ -228,14 +229,13 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
         <p>
           No IP address, browser or page you came from is stored with it. It is
           stored in a database restricted to the European Union. A copy is
-          emailed to the site owner's inbox, which is hosted by Google, so that
-          the message is seen and can be answered.
+          emailed to my inbox, which Google hosts, so I can read and answer it.
         </p>
 
         <p>
-          To stop the form being used for bulk submissions, the number of
-          submissions from one network address is limited to about five a
-          minute. For an address in the newer format,{' '}
+          To stop the form being used for bulk submissions, I limit submissions
+          from one network address to about five a minute. For an address in the
+          newer format,{' '}
           <Abbr short="IPv6" long="Internet Protocol version 6" after="," /> the
           limit covers its whole /64 network. That is the block a single
           connection is normally given. The limit is counted by Cloudflare's{' '}
@@ -244,7 +244,7 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
           hash, a one-way fingerprint. The hash is made from the current date
           and your address in the older format,{' '}
           <Abbr short="IPv4" long="Internet Protocol version 4" after="," /> or
-          your IPv6 /64. This site writes the hash nowhere else: it is not
+          your IPv6 /64. My website writes the hash nowhere else: it is not
           stored with your message or linked to it. A hash of an address is not
           anonymous. The date is no secret, so anyone holding the hash of an
           IPv4 address could recover the address by hashing every possible one.
@@ -257,8 +257,8 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
           succeeds. The database can be restored to any moment in the last{' '}
           {D1_RESTORE_WINDOW_DAYS} days. A deleted message can therefore still
           be brought back for {D1_RESTORE_WINDOW_DAYS} days after it is deleted.
-          The emailed copy is kept like any other email, for as long as it is
-          needed to reply. To have both removed sooner, write to{' '}
+          I keep the emailed copy like any other email, for as long as I need it
+          to reply. To have both removed sooner, write to{' '}
           <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a> and say so; you do not
           need to give a reason.
         </p>
@@ -266,15 +266,15 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
         <h2>Email</h2>
 
         <p>
-          If you write to <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>, that
-          message is kept in order to reply to it. It is not added to any list
-          and it is not passed on.
+          If you write to <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>, I keep
+          your message so I can reply. I do not add it to any list or pass it
+          on.
         </p>
 
         <h2>Questions</h2>
 
         <p>
-          Ask at <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>.
+          Ask me at <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>.
         </p>
       </div>
     </div>

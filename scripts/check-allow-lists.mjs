@@ -80,3 +80,53 @@ export const TITLE_CASE_ALLOWED = [
     reason: 'curl writes its own name in lower case.',
   },
 ];
+
+/*
+ * Lines check:wording lets through: `file` is a path or a RegExp, `text` a
+ * RegExp the line must match. An entry that no longer matches fails.
+ */
+export const WORDING_EXCEPTIONS = [
+  {
+    file: /\.(?:astro|md|json)$/,
+    rule: 'she-her',
+    text: /\b(?:alt|imageAlt)\s*[:=]|"alt":|!\[/,
+    reason: 'alt text describes the person in the photo.',
+  },
+  {
+    file: 'src/pages/about.astro',
+    rule: 'name',
+    text: /^\s*alt:/,
+    reason: 'alt text describes the person in the photo.',
+  },
+  {
+    file: 'src/pages/about.astro',
+    rule: 'she-her',
+    text: /^\s*role:/,
+    reason: 'a cat bio; the cats are female.',
+  },
+  {
+    file: 'src/lib/about-cats-moves.ts',
+    rule: 'she-her',
+    text: /The queen/,
+    reason: 'Minerva, a cat.',
+  },
+  {
+    file: 'tests/about-cats.spec.ts',
+    rule: 'she-her',
+    text: /./,
+    reason: 'the About cats are female.',
+  },
+  {
+    file: 'docs/VOICE.md',
+    rule: 'she-her',
+    text: /Minerva/,
+    reason: 'quotes the Minerva bio as a voice example.',
+  },
+  {
+    file: 'src/lib/feed-excerpt.ts',
+    rule: 'em-dash',
+    text: /mdash:/,
+    reason:
+      'the HTML entity table decodes the em dash entity in feed excerpts.',
+  },
+];

@@ -9,8 +9,8 @@ import { LICENSED_PHOTOS } from '../src/lib/credits';
 /**
  * SC 3.1.4 Abbreviations, by H28 with a programmatic expansion: on functional
  * pages each abbreviation's first use in `<main>` is described by its
- * expansion (src/components/Abbr.astro). Posts, About and Career are the
- * owner's copy and are not listed.
+ * expansion (src/components/Abbr.astro). Posts, About and Career are editorial
+ * copy (AGENTS.md "Copy") and are not listed.
  */
 const FIRST_USES: readonly {
   route: string;
