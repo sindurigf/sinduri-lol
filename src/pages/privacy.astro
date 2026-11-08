@@ -6,6 +6,7 @@ import { CONTACT_EMAIL, CONTACT_MAILTO } from '../lib/contact';
 import { RETENTION_DAYS } from '../lib/contact-form';
 import { PLAUSIBLE_ORIGIN } from '../lib/analytics';
 import { formatPostDate } from '../lib/post-date';
+import { PERSON_NAME } from '../lib/profiles';
 import { SITE_NAME } from '../lib/site';
 import { THEME_STORAGE_KEY } from '../lib/theme';
 import { TEXT_SCALE_KEY } from '../lib/text-scale';
@@ -37,13 +38,13 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
 >
   <PageHero title="Privacy" measure="reading" slab="none">
     <p class="standfirst">
-      I am Sinduri Guntupalli, and I decide what this website collects. It sets
-      no cookies and loads nothing from any other website. Visits are counted
-      with Plausible, which does not use cookies either. When you use the
-      contact form, I store what you type so I can reply. The request for each
-      form submission is logged for {WORKER_LOG_RETENTION_DAYS} days, including
-      your <Abbr short="IP" long="Internet Protocol" /> address, the internet
-      address of your connection.
+      I am {PERSON_NAME}, and I decide what this website collects. It sets no
+      cookies and loads nothing from any other website. Visits are counted with
+      Plausible, which does not use cookies either. When you use the contact
+      form, I store what you type so I can reply. The request for each form
+      submission is logged for {WORKER_LOG_RETENTION_DAYS} days, including your{' '}
+      <Abbr short="IP" long="Internet Protocol" /> address, the internet address
+      of your connection.
     </p>
 
     <p class="mt-6 text-body">
