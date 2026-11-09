@@ -345,7 +345,7 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
   `pink` or `border`: they do not change with the mode.
 - The label on a gold fill is `gold-text`, never `background` (white in
   light).
-- RIDET and `.sticker` are black blocks.
+- `.sticker` is a black block; RIDET is one in both modes (`block-ink` under `block-light`, 14.42).
 - `tests/light-mode.spec.ts` scans every route in light at WCAG 2.2 AA.
 
 ## Type scale
