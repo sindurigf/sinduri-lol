@@ -40,29 +40,28 @@ blur, uppercase headings, tilted marks.
 - **A gold use not on this list adds a row, with its argument, in the same
   change.**
 
-| #   | Where gold is spent                                                                                                                | Measured on                            |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| 1a  | Ground, full slab: `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`                                                  | 6 routes                               |
-| 1b  | Ground, thin slab: `/contact/sent`, both posts                                                                                     | 3 routes                               |
-| 1c  | Ground, mid-page: a `Section surface="gold"`, the kindness quote, `/contact`'s closing band                                        | `/career`, `/about`, `/`, `/contact`   |
-| 2   | The primary action: `.nav-cta`, `.btn-primary`                                                                                     | 11 routes, 4 routes                    |
-| 3   | The bunny marks: the logo tile, the laughing rabbit tile on `/about`, the roundel, the homepage sticker                            | 11 routes, 9 routes                    |
-| 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                                                  | `/about`, `/accessibility`, `/contact` |
-| 4a  | A talk slide's label, bold words, part number and lead-in term before a colon; its text links, still underlined                    | `/talks/<deck>/`                       |
-| 5   | Category: the blog label and the homepage glyph tiles, ink-edged on gold                                                           | 3 routes                               |
-| 6   | Display words: `Guntupalli`; the homepage section title bricks                                                                     | `/`                                    |
-| 7   | List markers in `.bullet-list`                                                                                                     | wherever a bulleted list is            |
-| 8   | The `gold` swatch and the contrast samples on gold; fills, hex in both modes                                                       | `/brand`                               |
-| 9   | Edges in dark mode: `border` on fields, controls, chips, rules and the outer edge of a gold area                                   | every route                            |
-| 10  | The header bar, a gold ground in both modes; its current-page brick, theme switch and call to action read on it by their ink edges | every route                            |
-| 11  | The footer name band: "Lepus Ridet" in ink on a `block-gold` band at every page's end, the rabbit standing on it                   | every route                            |
+| #   | Where gold is spent                                                                                                                                                                                         | Measured on                            |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| 1a  | Ground, full slab: `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`                                                                                                                           | 6 routes                               |
+| 1b  | Ground, thin slab: `/contact/sent`, both posts                                                                                                                                                              | 3 routes                               |
+| 1c  | Ground, mid-page: a `Section surface="gold"`, the kindness quote, `/contact`'s closing band                                                                                                                 | `/career`, `/about`, `/`, `/contact`   |
+| 2   | The primary action: `.nav-cta`, `.btn-primary`                                                                                                                                                              | 11 routes, 4 routes                    |
+| 3   | The bunny marks: the logo tile, the laughing rabbit tile on `/about`, the roundel, the homepage sticker                                                                                                     | 11 routes, 9 routes                    |
+| 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                                                                                                                           | `/about`, `/accessibility`, `/contact` |
+| 4a  | A talk slide's label, bold words, part number and lead-in term before a colon; its text links, still underlined                                                                                             | `/talks/<deck>/`                       |
+| 5   | Category: the blog label and the homepage glyph tiles, ink-edged on gold                                                                                                                                    | 3 routes                               |
+| 6   | Display words: `Guntupalli`; the homepage section title bricks                                                                                                                                              | `/`                                    |
+| 7   | List markers in `.bullet-list`                                                                                                                                                                              | wherever a bulleted list is            |
+| 8   | The `gold` swatch and the contrast samples on gold; fills, hex in both modes                                                                                                                                | `/brand`                               |
+| 9   | Edges in dark mode: `border` on fields, controls, chips, rules and the outer edge of a gold area                                                                                                            | every route                            |
+| 10  | The header bar's marks: in dark mode the current page's 4px underline on its ink brick; in light mode the current-page brick, theme switch, text size brick and call to action, gold on the ink bar (11.32) | every route                            |
+| 11  | The footer name band: "Lepus Ridet" in ink on a `block-gold` band at every page's end, the rabbit standing on it                                                                                            | every route                            |
 
 - 9 is the edge because the only two colors are ink and gold: an ink edge
   vanishes on the dark page and a light one adds a third color. Gold reads as
   structure there (10.60 or more on both dark grounds), and inside gold every edge
   is ink.
-- 11 closes every page the way the header (10) opens it: the site's own name
-  in ink on gold.
+- 11 closes every page with the site's own name in ink on gold.
 - 4a's lead-in terms and links make a projected slide's key words readable at
   a glance; light mode turns them ink, like bold words.
 - A use with a replacement takes it: a `/career` date is `subtle`; the
@@ -337,8 +336,9 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
 - Gold text turns ink; a `.label.text-gold` and a slide label gain a gold
   square before the word, ink on a gold block (`--label-mark`).
 - Blocks stay gold or light in light mode, with the `#131313` edge (18.58 on white).
-- The header bar keeps its `#FFC000` fill and `#131313` edge; its throw
-  turns `#131313`.
+- The header bar turns `#131313`, fill and edge, the mirror of its light bar in
+  dark mode: light link bricks, gold solid bricks, an ink throw
+  ([Navigation](#navigation)).
 - The footer follows the mode like `<main>`: white in light mode, its words
   7:1 or more and its tiles apart from it (`tests/footer.spec.ts`).
 - Bunny marks use `bunny`, `fill-edge` and `shadow-hard-bunny-*`, never
@@ -567,8 +567,8 @@ with a comment beside it.
 - The default border color is `border`, set in the base layer (Tailwind 4
   defaults to `currentColor`); `gold-border` inside `.surface-gold`.
 - Each ground has one edge role. Dark page: `border` (gold), but post table
-  lines take `text`. A block,
-  the header bar included: `block-ink`, 4px. Inside gold: `gold-border` (ink). A
+  lines take `text`. A block: `block-ink`,
+  4px; the header bar's edge takes its own fill. Inside gold: `gold-border` (ink). A
   gold or light fill: `fill-edge` (ink). Light mode: ink everywhere.
   `tests/edges.spec.ts` asserts each reaches 3:1 in both modes.
 - Shadows are hard offsets, no blur. Gold casts none (gold on gold is 1.00).
@@ -577,16 +577,16 @@ with a comment beside it.
   fringe; when they match, the fill runs under the edge, or the ground shows
   between them as a seam (`tests/tilt.spec.ts`, every route, both modes).
 
-| Utility                     | Casts it                                                                                                              |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `shadow-hard-pink-object`   | Cards, post contents, gold areas, popovers, slide cards, the header bar; `--hard-throw` (8px)                         |
-| `shadow-hard-pink-4`        | The PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, footer stickers, slide cards                        |
-| `shadow-brick`              | The header's brick rows (in `block-ink`), the menu's links, call to action and Close; `--brick-throw` (6px) in `text` |
-| `shadow-hard-cyan-object`   | A hovered linked card, in place of pink; a contact link brick fills cyan instead, its ring inside in ink              |
-| `shadow-hard-gold-border-4` | A card on gold                                                                                                        |
-| `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                       |
-| `shadow-hard-bunny-8`       | The logo tile, the homepage stickers, the laughing rabbit tile on `/about` below `lg`                                 |
-| `shadow-hard-bunny-12`      | The laughing rabbit tile on `/about` from `lg`                                                                        |
+| Utility                     | Casts it                                                                                                          |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `shadow-hard-pink-object`   | Cards, post contents, gold areas, popovers, slide cards, the header bar; `--hard-throw` (8px)                     |
+| `shadow-hard-pink-4`        | The PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, footer stickers, slide cards                    |
+| `shadow-brick`              | The header's brick rows (in `bunny`), the menu's links, call to action and Close; `--brick-throw` (6px) in `text` |
+| `shadow-hard-cyan-object`   | A hovered linked card, in place of pink; a contact link brick fills cyan instead, its ring inside in ink          |
+| `shadow-hard-gold-border-4` | A card on gold                                                                                                    |
+| `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                   |
+| `shadow-hard-bunny-8`       | The logo tile, the homepage stickers, the laughing rabbit tile on `/about` below `lg`                             |
+| `shadow-hard-bunny-12`      | The laughing rabbit tile on `/about` from `lg`                                                                    |
 
 - `bunny` is `pink`'s hex but stays pink in light mode, where `pink` turns
   ink.
@@ -616,7 +616,7 @@ file per area.
 | `.bullet-list`                          | Bulleted list, gold markers                                                                                                                                                                                                                                              |
 | `.chip`                                 | Tags, jump links, filters, pager. Always a link. `border-4`, 44px target; a chip list is `gap-6`. The blog filter and pager are a `.chip-row`: joined light bricks, one throw, the current one gold with an ink marker (`tests/chip-row.spec.ts`)                        |
 | `.badge`                                | A non-link fact or state. Flat `bg-text`, `background` label, no border or shadow                                                                                                                                                                                        |
-| `.nav-cta`                              | Nav call to action: gold, `border-4` in `text`; a brick in the header row, its own 6px throw in the menu; current takes `--inset-shadow-current`                                                                                                                         |
+| `.nav-cta`                              | Nav call to action: the header bar's solid fill (ink on the light bar, gold on the ink bar), gold in the menu, `border-4` in `text`; a brick in the header row, its own 6px throw in the menu; current takes the bar's current mark                                      |
 | `.label`                                | `text-label` 900 uppercase, 0.1em                                                                                                                                                                                                                                        |
 | `.link`                                 | Running-text underline for a classed standalone link                                                                                                                                                                                                                     |
 | `.abbr-trigger`, `.abbr-tip`            | An abbreviation's first use (`src/components/Abbr.astro`): dotted underline; the expansion is a popover in a `surface` box flush below it; inline in brackets where popovers are missing. Punctuation right after it goes in `after`, so a line never starts with it     |
@@ -950,7 +950,7 @@ text-gold-muted` under the standfirst. Color
 
 ### Header relation
 
-- The header is a gold bar on the hero's column, 12px below the top, with the
+- The header is a bar on the hero's column, 12px below the top, with the
   logo tile at its left end, and from 48rem its name too ([Navigation](#navigation)).
 - The logo tile keeps its `bunny` shadow. The die-cut rabbit jumps its
   top-right corner and casts an ink throw, so the corner never doubles the pink.
@@ -1320,28 +1320,44 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 
 - Links come from `NAV_LINKS` and `CTA` in `src/lib/nav.ts`; the desktop
   header uses `HEADER_LINKS` (no Home; the logo links to `/`).
-- The header bar (`.header-slab`): `block-gold` fill in both modes, a 4px
-  `block-ink` edge (`--block-edge`) and `shadow-hard-pink-object` (pink, ink
-  in light mode). 80px tall in a 104px header. Inside it, bricks take
-  `block-light` fills and `block-ink` lines; `.site-header` keeps the page's
+- The header bar (`.header-slab`) mirrors the page: a `block-light` bar on the
+  dark page (17.58), a `block-ink` bar on the light page. Its 4px edge
+  (`--block-edge`) takes its fill; it casts `shadow-hard-pink-object` (pink, ink
+  in light mode). 80px tall in a 104px header. `.site-header` keeps the page's
   values as `--page-*` for the menu dialog.
-- The logo tile, and from 48rem its name, sit inside the bar with no block, edge
-  or throw of their own. The tile keeps its 8px `bunny` shadow inside the link's box
-  (`padding-block-end: var(--lift-mark)`).
-- Focused, the logo link turns into a `block-ink` block with a `block-gold`
-  name (from 48rem) and no ring: the rabbit jumps higher than the bar leaves room for a
-  ring around it. Its ring is transparent, and `CanvasText` in forced colors
-  (`tests/header-bricks.spec.ts`, `tests/focus.spec.ts`).
-- Nav links, the theme switch and the call to action are joined bricks
-  (`.header-bricks`): 44px tall, the target (SC 2.5.5), sharing their 4px
-  edges, one `shadow-brick` per row, in `block-ink` in both modes. Each row
-  sits half its throw high: 11px above it and under its throw. The current
-  page is `block-gold`, the rest `block-light`; a gold brick on the gold bar
-  is set apart by its ink edge. A brick after another drops its left edge, so
-  the two share one 4px wall and never overlap each other's target.
-- Hover fills the site's `cyan` (`--hover-fill`) in both modes under a
-  `gold-text` label (11.20). The ring is `gold-link` in both modes; on a
-  hovered brick it takes the label's ink.
+- The slab sets the bricks through `--slab-fill`, `--brick-edge`,
+  `--solid-fill`, `--solid-label`, `--current-mark`, `--menu-fill`,
+  `--menu-label`, `--logo-name`, `--logo-focus-fill` and `--logo-focus-name`;
+  dark is the base in `buttons-nav.css`, light overrides in `light-mode.css`.
+  The menu dialog and Theme menu reset them, so their bricks stay gold.
+- The logo tile, and from 48rem its name, sit inside the bar with no block or
+  throw of their own; the tile's edge is transparent, so it melts into the bar.
+  The tile keeps its 8px `bunny` shadow inside the link's box
+  (`padding-block-end: var(--lift-mark)`). The name is ink on the light bar,
+  light on the ink bar.
+- Focused, the logo link turns into a block in the bar's opposite color: ink
+  with a `block-gold` name on the light bar, `block-light` with an ink name on
+  the ink bar (14.49), and no ring: the rabbit jumps higher than the bar
+  leaves room for a ring around it. Its ring is transparent, and `CanvasText`
+  in forced colors (`tests/header-bricks.spec.ts`, `tests/focus.spec.ts`).
+- Nav links, the theme switch, the text size brick and the call to action are
+  joined bricks (`.header-bricks`): 44px tall, the target (SC 2.5.5), sharing
+  their 4px edges, one `bunny` `shadow-brick` per row. Each row sits half its
+  throw high: 11px above it and under its throw. A brick after another drops
+  its left edge, so the two share one 4px wall and never overlap each other's
+  target.
+- Dark mode: link bricks are `block-light` with ink labels (14.42) and a
+  transparent edge, so they melt into the bar and forced colors still draw it;
+  the solid bricks (theme, text size, call to action, menu button) are
+  `block-ink` with `block-light` labels. The current page is an ink brick with
+  a 4px `block-gold` underline.
+- Light mode: link bricks are `block-light` with ink edges and labels; the
+  solid bricks and the current page are `block-gold` under `gold-text`
+  (11.32 on the bar) with the `--inset-shadow-current` ring; the menu button
+  is `block-light`.
+- Hover fills dark mode's `cyan` (`--hover-fill`) in both modes under a
+  `gold-text` label (11.20). The ring is `gold-link` inside link bricks; on a
+  solid brick it takes the label color; on a hovered brick, the label's ink.
 - The bar takes `.gold-column`'s margins, so it starts and ends where the gold
   hero does at every width (`tests/header-fit.spec.ts`).
 - The menu follows the same rule on the page ground: `text` edges, each brick
@@ -1368,12 +1384,12 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 
 ### States
 
-| Item                | Current                                                                                                                                                                                                        | Hover                                      | Focus                                                                               |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------- |
-| Nav link, menu link | `aria-current`, `"page"` on the page and `"true"` inside its section: `block-gold` fill, `gold-text` label (11.32) and the 4px `--inset-shadow-current` ring; in the menu, pressed 6px into its shadow instead | cyan fill, `gold-text` label (11.20)       | in the header, the ring inside the brick (ink on gold); in the menu, past the throw |
-| No-JavaScript link  | the same value, a flat `bg-text` block with a `border` edge, label in `background` (15.28)                                                                                                                     | cyan text (11.86), not on the current item | the 4px cyan ring at a 4px offset, on the current item too                          |
-| Call to action      | `aria-current`, `"page"` or `"true"`, a 4px `gold-text` inset ring, no hover fill                                                                                                                              | cyan fill                                  | in the header, inside the brick in `gold-text`; in the menu, past the throw         |
-| Logo link           | `aria-current="page"` on `/`, no visual state: the homepage hero says where you are                                                                                                                            | none                                       | `gold-text`, 4px off the link, inside its gold block (11.32)                        |
+| Item                | Current                                                                                                                                                                                                                                                                                                            | Hover                                      | Focus                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| Nav link, menu link | `aria-current`, `"page"` on the page and `"true"` inside its section: on the light bar an ink brick, `block-light` label and a 4px gold underline; on the ink bar a `block-gold` fill, `gold-text` label (11.32) and the 4px `--inset-shadow-current` ring; in the menu, gold, pressed 6px into its shadow instead | cyan fill, `gold-text` label (11.20)       | in the header, the ring inside the brick, in the label's color; in the menu, past the throw |
+| No-JavaScript link  | the same value, a flat `bg-text` block with a `border` edge, label in `background` (15.28)                                                                                                                                                                                                                         | cyan text (11.86), not on the current item | the 4px cyan ring at a 4px offset, on the current item too                                  |
+| Call to action      | `aria-current`, `"page"` or `"true"`, the bar's current mark, no hover fill                                                                                                                                                                                                                                        | cyan fill                                  | in the header, inside the brick in its label's color; in the menu, past the throw           |
+| Logo link           | `aria-current="page"` on `/`, no visual state: the homepage hero says where you are                                                                                                                                                                                                                                | none                                       | no ring: the link turns into a block in the bar's opposite color (14.49)                    |
 
 - `ariaCurrent` in `src/lib/nav.ts` decides the value.
 - Inactive no-JavaScript links keep a `border-transparent` 4px edge so nothing
