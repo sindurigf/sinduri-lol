@@ -44,7 +44,7 @@ interface Stop {
   /** Probe points under the sticky header. */
   underHeader: number;
   hasRing: boolean;
-  /** The header logo link's ink block: its focus fill, 3:1 or more on the bar. No other stop may go without a ring. */
+  /** The header logo link's focus block: 3:1 or more on the bar. No other stop may go without a ring. */
   hasBlock: boolean;
   outline: string;
   outlineStyle: string;
