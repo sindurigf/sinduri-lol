@@ -1346,8 +1346,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   throw high: 11px above it and under its throw. A brick after another drops
   its left edge, so the two share one 4px wall and never overlap each other's
   target.
-- Dark mode: link bricks are `block-light` with ink labels (14.42) and a
-  transparent edge, so they melt into the bar and forced colors still draw it;
+- Dark mode: link bricks are `block-light` with ink edges and labels (14.42),
+  so the edges separate them as on the light-mode bar;
   the solid bricks (theme, text size, call to action, menu button) are
   `block-ink` with `block-light` labels. The current page is an ink brick with
   a 4px `block-gold` underline.

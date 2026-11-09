@@ -319,13 +319,12 @@
 
   /*
    * The bar mirrors the page: a light slab on dark, an ink slab on light
-   * (light-mode.css), thrown like a card. Here the link bricks melt into the
+   * (light-mode.css), thrown like a card. Here the link bricks are edged in ink on the
    * slab and the solid bricks are ink; the current one carries a gold underline.
    */
   .header-slab {
     --slab-fill: var(--color-block-light);
-    /* Transparent, not the slab's color: forced colors draw a transparent edge. */
-    --brick-edge: transparent;
+    --brick-edge: var(--color-block-ink);
     --solid-fill: var(--color-block-ink);
     --solid-label: var(--color-block-light);
     --current-mark: inset 0 calc(var(--underline-thick) * -1) 0
