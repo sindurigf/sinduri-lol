@@ -577,16 +577,16 @@ with a comment beside it.
   fringe; when they match, the fill runs under the edge, or the ground shows
   between them as a seam (`tests/tilt.spec.ts`, every route, both modes).
 
-| Utility                     | Casts it                                                                                                          |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `shadow-hard-pink-object`   | Cards, post contents, gold areas, popovers, slide cards, the header bar; `--hard-throw` (8px)                     |
-| `shadow-hard-pink-4`        | The PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, footer stickers, slide cards                    |
-| `shadow-brick`              | The header's brick rows (in `bunny`), the menu's links, call to action and Close; `--brick-throw` (6px) in `text` |
-| `shadow-hard-cyan-object`   | A hovered linked card, in place of pink; a contact link brick fills cyan instead, its ring inside in ink          |
-| `shadow-hard-gold-border-4` | A card on gold                                                                                                    |
-| `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                   |
-| `shadow-hard-bunny-8`       | The logo tile, the homepage stickers, the laughing rabbit tile on `/about` below `lg`                             |
-| `shadow-hard-bunny-12`      | The laughing rabbit tile on `/about` from `lg`                                                                    |
+| Utility                     | Casts it                                                                                                                                |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `shadow-hard-pink-object`   | Cards, post contents, gold areas, popovers, slide cards, the header bar; `--hard-throw` (8px)                                           |
+| `shadow-hard-pink-4`        | The PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, footer stickers, slide cards                                          |
+| `shadow-brick`              | The header's brick rows (in `block-ink` on the light slab), the menu's links, call to action and Close; `--brick-throw` (6px) in `text` |
+| `shadow-hard-cyan-object`   | A hovered linked card, in place of pink; a contact link brick fills cyan instead, its ring inside in ink                                |
+| `shadow-hard-gold-border-4` | A card on gold                                                                                                                          |
+| `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                                         |
+| `shadow-hard-bunny-8`       | The logo tile, the homepage stickers, the laughing rabbit tile on `/about` below `lg`                                                   |
+| `shadow-hard-bunny-12`      | The laughing rabbit tile on `/about` from `lg`                                                                                          |
 
 - `bunny` is `pink`'s hex but stays pink in light mode, where `pink` turns
   ink.
