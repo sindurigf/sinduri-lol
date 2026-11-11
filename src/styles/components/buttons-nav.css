@@ -355,7 +355,8 @@
     --hover-label: var(--color-gold-text);
     --shadow-brick: var(--brick-throw) var(--brick-throw) 0
       var(--color-block-ink);
-    --cta-shadow: var(--brick-throw) var(--brick-throw) 0 var(--color-bunny);
+    --slab-throw: var(--color-block-ink);
+    --cta-shadow: var(--brick-throw) var(--brick-throw) 0 var(--slab-throw);
 
     border: var(--block-edge) solid var(--slab-edge, var(--slab-fill));
     background-color: var(--slab-fill);
@@ -366,6 +367,7 @@
   /* The tile's shadow sits inside the link; the side padding is the focus block's margin around the tile and name. */
   .header-slab .logo-link {
     --lift-mark: var(--logo-throw);
+    --color-bunny: var(--slab-throw);
 
     /* Only the start bleeds: a negative end margin lets the theme switch slide over the block at 320px. */
     margin-inline-start: calc(var(--logo-focus-pad) * -1);

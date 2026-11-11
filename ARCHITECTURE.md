@@ -96,7 +96,7 @@ Dark is the default. Colors and rules:
   is set. No `dark:` variants.
 - `<main>`, the header and the footer change; the header bar is gold in dark
   mode and cyan in light mode. The no-JS nav stays dark.
-- `bunny` and `block-ink` hold the logo-tile colors; the light header swaps `bunny` for `bunny-deep`.
+- `block-ink` fills the logo tile; `--slab-throw` is its shadow, ink on the gold slab and light pink on the cyan one.
 - An inline script in `BaseLayout.astro`'s `<head>` sets `data-theme` from the
   saved choice or `prefers-color-scheme` before the body parses, rereads it on
   a back-forward cache restore (`pageshow`), applies a saved `--text-scale`,

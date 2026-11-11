@@ -84,7 +84,7 @@ const PAIRS = [
     'non-text',
     'About cat outline on a card: its white rim',
   ],
-  ['pink', 'gold', 'decoration', 'Shadows on gold'],
+  ['pink', 'gold', 'never', 'Shadows on gold are ink'],
   ['text', 'gold', 'never', 'Dark-surface text is never used on gold'],
   ['subtle', 'gold', 'never', 'Dark-surface meta is never used on gold'],
   ['pink-text', 'gold', 'never', 'Error text is never used on gold'],
