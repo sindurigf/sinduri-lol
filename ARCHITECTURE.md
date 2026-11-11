@@ -478,6 +478,12 @@ in `wrangler.jsonc`).
 | `public/images/og-default.png`  | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
 | `public/images/og/*.jpg`        | Composite | n/a                  | `BaseLayout.astro`, every other page         |
 
+- Each rabbit but the logo has a `-light.svg` twin in `--color-light-pink-text`
+  (`npm run rabbit-light`, `src/lib/rabbit-modes.ts`); `ModeArt.astro` and
+  light-mode.css show the one for the mode. The footer rabbit swaps its `src`
+  in `theme-switch.ts`, as Let It Fall moves that element.
+- `favicon.svg` switches pinks with `prefers-color-scheme`: a tab icon cannot
+  see `data-theme`.
 - `og-default.png`: 1200x630. All gold: the name, the joined Lepus Ridet
   sticker and the tagline in two lines, and the header logo scaled 7x, whole
   inside the card. `npm run og` (`scripts/make-og.mjs`) draws it in Chromium with

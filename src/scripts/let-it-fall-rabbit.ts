@@ -47,7 +47,11 @@ const wait = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
 const easeInOut = (t: number) => 0.5 - Math.cos(Math.PI * t) / 2;
 
-export const createHopper = (sticker: HTMLImageElement, atlasUrl: string) => {
+/* `atlasUrl` is read per climb: the theme may change between falls. */
+export const createHopper = (
+  sticker: HTMLImageElement,
+  atlasUrl: () => string,
+) => {
   const host = sticker.offsetParent;
   if (!(host instanceof HTMLElement)) {
     throw new Error('let-it-fall: the footer rabbit has no positioned parent.');
@@ -60,7 +64,7 @@ export const createHopper = (sticker: HTMLImageElement, atlasUrl: string) => {
   feet.setAttribute('aria-hidden', 'true');
   frame.className = 'fall-hopper-frame';
   atlas.alt = '';
-  atlas.src = atlasUrl;
+  atlas.src = atlasUrl();
   frame.append(atlas);
   squash.append(frame);
   feet.append(squash);
@@ -171,6 +175,8 @@ export const createHopper = (sticker: HTMLImageElement, atlasUrl: string) => {
     /* Leaves the sticker for the hopper and climbs the stones, in the host's coordinates from `local`, to the last; `size` scales the sitting rabbit. */
     async climb(stones: Foot[], size: number) {
       const mine = ++run;
+      const url = atlasUrl();
+      if (atlas.getAttribute('src') !== url) atlas.src = url;
       await atlas.decode();
       if (mine !== run) return;
       scale =

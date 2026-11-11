@@ -155,4 +155,21 @@
     .sticker:not(.mode-dark *) {
     @apply border-text bg-text text-background;
   }
+
+  /* src/components/ModeArt.astro: the rabbit art in the pink of its mode. */
+  .art-light:not(
+    :is(:root[data-theme='light'] :is(main, header, footer), main .mode-light) *
+  ),
+  :root[data-theme='light'] main .mode-dark .art-light,
+  .art-dark:is(
+      :is(:root[data-theme='light'] :is(main, header, footer), main .mode-light)
+        *
+    ):not(:root[data-theme='light'] main .mode-dark *) {
+    display: none;
+  }
+
+  /* Footer.astro's rabbit stays one element, as Let It Fall moves it. */
+  :root[data-theme='light'] .footer-rabbit {
+    content: url('../assets/bunny-footer-light.svg');
+  }
 }

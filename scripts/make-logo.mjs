@@ -21,6 +21,7 @@ const INK = cssColorToken('--color-block-ink');
 const GOLD = cssColorToken('--color-block-gold');
 const PINK = cssColorToken('--color-bunny');
 const WHITE = cssColorToken('--color-light-ground');
+const LIGHT_PINK = cssColorToken('--color-light-pink-text');
 /* Baked into the drawing like the hero atlas; no page sets it. */
 const EAR = '#ff9cc4';
 
@@ -591,7 +592,12 @@ assertClearEdge(
   SVG_FRAME,
   'favicon.svg',
 );
-writeFileSync('public/favicon.svg', iconSvg);
+/* A tab icon cannot see data-theme, so it follows the OS scheme. */
+const schemeStyle = `<style>@media (prefers-color-scheme:light){[fill="${PINK}"]{fill:${LIGHT_PINK};stroke:${LIGHT_PINK}}}</style>`;
+writeFileSync(
+  'public/favicon.svg',
+  iconSvg.replace(/(<svg[^>]*>)/, `$1${schemeStyle}`),
+);
 
 const tabFrame = async (size, file) => {
   const [x, y, side] = framed(fullReach, size, TAB_BORDER);

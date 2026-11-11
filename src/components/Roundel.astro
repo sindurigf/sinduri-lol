@@ -1,5 +1,7 @@
 ---
 import roundelRabbit from '../assets/roundel-rabbit.svg';
+import roundelRabbitLight from '../assets/roundel-rabbit-light.svg';
+import ModeArt from './ModeArt.astro';
 
 /*
  * The rabbit is the badge, with no disc: a die-cut sticker on a pink block
@@ -29,8 +31,9 @@ const BOX_CLASS = {
 <span class:list={['block rotate-3', BOX_CLASS[variant], className]}>
   {/* The art bleeds an eighth past the box (ROUNDEL_BLEED in scripts/make-logo.mjs). */}
   <span class="absolute -inset-1/8">
-    <img
-      src={roundelRabbit.src}
+    <ModeArt
+      dark={roundelRabbit}
+      light={roundelRabbitLight}
       alt=""
       width={roundelRabbit.width}
       height={roundelRabbit.height}
