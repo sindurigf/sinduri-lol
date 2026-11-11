@@ -8,10 +8,10 @@ import { NO_WEBKIT } from './tags';
  * The header's joined bricks draw their focus ring inside the brick
  * (docs/STYLEGUIDE.md "Focus"), so the ring must read against the brick's own
  * fill, at rest and hovered, and stay clear of its label (SC 1.4.11, 2.4.13).
- * The logo link has no ring: focused, it turns into an ink block on the bar.
+ * The logo link has no ring: focused, it turns into a block in the bar's opposite color.
  */
 
-/* A route with a current header link, so a gold brick is walked too. */
+/* A route with a current header link, so a current brick is walked too. */
 const ROUTE = '/about/';
 const BRICKS =
   '.header-slab :is(.logo-link, .header-bricks a, .header-bricks button)';
