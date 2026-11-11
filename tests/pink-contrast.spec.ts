@@ -47,7 +47,18 @@ for (const colorScheme of ['dark', 'light'] as const) {
                 if (!ground) continue;
                 found += 1;
                 const measured = ratio(over(color, ground), ground);
-                if (measured < ${AAA_TEXT}) faint.push(describe(el) + ' ' + measured.toFixed(2));
+                if (measured < ${AAA_TEXT}) {
+                  let source = inset ? el : el.parentElement;
+                  while (source && getComputedStyle(source).backgroundColor === 'rgba(0, 0, 0, 0)') source = source.parentElement;
+                  faint.push(
+                    [
+                      describe(el) + ' ' + measured.toFixed(2),
+                      'mark: ' + (inset ? style.boxShadow : style.boxShadow + ' / border ' + style.borderColor),
+                      'ground: rgba(' + [ground.r, ground.g, ground.b, ground.a].join(', ') + ') from ' + (source ? describe(source) : 'none'),
+                      'readyState: ' + document.readyState + ', data-theme: ' + document.documentElement.dataset.theme,
+                    ].join('; '),
+                  );
+                }
               }
             }
           }
@@ -55,7 +66,10 @@ for (const colorScheme of ['dark', 'light'] as const) {
         })()`)) as { found: number; faint: string[] };
         if (route === '/')
           expect(found, 'no pink edge or throw found on /').toBeGreaterThan(0);
-        expect(faint, `pink below 7:1 on its ground on ${route}`).toEqual([]);
+        expect(
+          faint,
+          `pink below 7:1 on its ground on ${route} in ${colorScheme} mode`,
+        ).toEqual([]);
       });
     }
   });
