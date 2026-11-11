@@ -12,9 +12,9 @@ const CHUNK_AT = 12;
 const CHUNK_TAG = 4;
 
 /* Performance and build correctness: Let It Fall's climb draws a lossless raster of the same atlas, which decodes off the main thread. */
-for (const [source, target] of CLIMB_ATLASES)
-  test.describe(`the climb atlas ${target}`, NODE, () => {
-    test('is lossless WebP at the atlas size', async () => {
+test.describe('the climb atlas', NODE, () => {
+  for (const [source, target] of CLIMB_ATLASES) {
+    test(`${target} is lossless WebP at the atlas size`, async () => {
       const file = readFileSync(target);
       expect(
         file.subarray(CHUNK_AT, CHUNK_AT + CHUNK_TAG).toString(),
@@ -30,7 +30,7 @@ for (const [source, target] of CLIMB_ATLASES)
       });
     });
 
-    test('matches the vector atlas, so it is redrawn with it (npm run climb-atlas)', async () => {
+    test(`${target} matches the vector atlas, so it is redrawn with it (npm run climb-atlas)`, async () => {
       const fresh = await renderClimbAtlas(source)
         .ensureAlpha()
         .raw()
@@ -48,7 +48,8 @@ for (const [source, target] of CLIMB_ATLASES)
         'the climb atlas is stale: run npm run climb-atlas',
       ).toBeLessThanOrEqual(RENDER_DRIFT);
     });
-  });
+  }
+});
 
 /* Build correctness: the hero draws atlas rects by number, so a re-exported atlas must still hold them. */
 test.describe('the hero rabbit atlas', NODE, () => {
