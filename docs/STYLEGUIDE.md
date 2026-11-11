@@ -104,7 +104,7 @@ blur, uppercase headings, tilted marks.
 | `surface`     | `#1A1A1A`    | Inputs and controls off a block                   |
 | `border`      | `#FFC000`    | Every boundary but table lines: the gold edge     |
 | `card-edge`   | none         | Card and plain slab edge; `#131313` in light mode |
-| `fill-edge`   | `#131313`    | Edge of a gold or light fill: buttons, logo tile  |
+| `fill-edge`   | `#131313`    | Edge of a gold or light fill: buttons             |
 | `code-edge`   | `#707070`    | Post code frame edge; `#767676` in light mode     |
 | `code-fill`   | `surface`    | Post code fill; `block-light` in light mode       |
 | `text`        | `#E5E2E1`    | Words and table lines                             |
@@ -113,7 +113,9 @@ blur, uppercase headings, tilted marks.
 | `cyan`        | `#00DCFD`    | Hover and focus only                              |
 | `pink`        | `#FF007A`    | Depth and error; never text                       |
 | `pink-text`   | `#FF79B6`    | Every pink glyph; never non-text                  |
-| `bunny`       | `#FF007A`    | Bunny marks; same in both modes                   |
+| `bunny`       | `#FF007A`    | Bunny marks; `bunny-deep` on the light header     |
+| `bunny-deep`  | `#A3004A`    | Logo and Get in Touch shadow on the cyan slab     |
+| `block-cyan`  | `#1FC8F0`    | Light-mode header slab; ink on it is 9.36         |
 | `button-text` | `ButtonText` | Forced colors only: bars on the button face       |
 | `cat-*`       | 2 fills      | About cat props; decoration, never a boundary     |
 | `hero-*`      | 4 values     | Homepage canvas veil and floor; decoration        |
@@ -577,16 +579,16 @@ with a comment beside it.
   fringe; when they match, the fill runs under the edge, or the ground shows
   between them as a seam (`tests/tilt.spec.ts`, every route, both modes).
 
-| Utility                     | Casts it                                                                                                                                |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `shadow-hard-pink-object`   | Cards, post contents, gold areas, popovers, slide cards, the header bar; `--hard-throw` (8px)                                           |
-| `shadow-hard-pink-4`        | The PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, footer stickers, slide cards                                          |
-| `shadow-brick`              | The header's brick rows (in `block-ink` on the light slab), the menu's links, call to action and Close; `--brick-throw` (6px) in `text` |
-| `shadow-hard-cyan-object`   | A hovered linked card, in place of pink; a contact link brick fills cyan instead, its ring inside in ink                                |
-| `shadow-hard-gold-border-4` | A card on gold                                                                                                                          |
-| `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                                         |
-| `shadow-hard-bunny-8`       | The logo tile, the homepage stickers, the laughing rabbit tile on `/about` below `lg`                                                   |
-| `shadow-hard-bunny-12`      | The laughing rabbit tile on `/about` from `lg`                                                                                          |
+| Utility                     | Casts it                                                                                                              |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `shadow-hard-pink-object`   | Cards, post contents, gold areas, popovers, slide cards, the header bar; `--hard-throw` (8px)                         |
+| `shadow-hard-pink-4`        | The PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, footer stickers, slide cards                        |
+| `shadow-brick`              | The header's brick rows (in `block-ink`), the menu's links, call to action and Close; `--brick-throw` (6px) in `text` |
+| `shadow-hard-cyan-object`   | A hovered linked card, in place of pink; a contact link brick fills cyan instead, its ring inside in ink              |
+| `shadow-hard-gold-border-4` | A card on gold                                                                                                        |
+| `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                       |
+| `shadow-hard-bunny-8`       | The homepage stickers, the laughing rabbit tile on `/about` below `lg`; the logo tile throws 4px (`--logo-throw`)     |
+| `shadow-hard-bunny-12`      | The laughing rabbit tile on `/about` from `lg`                                                                        |
 
 - `bunny` is `pink`'s hex but stays pink in light mode, where `pink` turns
   ink.
@@ -616,7 +618,7 @@ file per area.
 | `.bullet-list`                          | Bulleted list, gold markers                                                                                                                                                                                                                                              |
 | `.chip`                                 | Tags, jump links, filters, pager. Always a link. `border-4`, 44px target; a chip list is `gap-6`. The blog filter and pager are a `.chip-row`: joined light bricks, one throw, the current one gold with an ink marker (`tests/chip-row.spec.ts`)                        |
 | `.badge`                                | A non-link fact or state. Flat `bg-text`, `background` label, no border or shadow                                                                                                                                                                                        |
-| `.nav-cta`                              | Nav call to action: the header bar's solid fill (ink on the light bar, gold on the ink bar), gold in the menu, `border-4` in `text`; a brick in the header row, its own 6px throw in the menu; current takes the bar's current mark                                      |
+| `.nav-cta`                              | Nav call to action: `block-ink` with a `block-light` label and a 6px `bunny` throw in the header, gold in the menu, `border-4` in `text`; current takes the bar's current mark                                                                                           |
 | `.label`                                | `text-label` 900 uppercase, 0.1em                                                                                                                                                                                                                                        |
 | `.link`                                 | Running-text underline for a classed standalone link                                                                                                                                                                                                                     |
 | `.abbr-trigger`, `.abbr-tip`            | An abbreviation's first use (`src/components/Abbr.astro`): dotted underline; the expansion is a popover in a `surface` box flush below it; inline in brackets where popovers are missing. Punctuation right after it goes in `after`, so a line never starts with it     |
@@ -631,14 +633,14 @@ file per area.
 
 ### Control states
 
-- Hover: `.btn-primary`, `.btn-secondary` and `.nav-cta` fill cyan with a
+- Hover: `.btn-primary`, `.btn-secondary` and the menu's `.nav-cta` fill cyan with a
   `background` label (11.86).
 - Lifted: under a hovering pointer the same controls rise `--press-lift` (2px)
   off their shadow, which grows by as much, so its far corner stays put. Not
   on touch screens, where hover sticks after a tap, and not under reduced
   motion.
 - Pressed: buttons, `.btn-gold-primary`, linked chips and footer stickers drop
-  their shadow and move 4px into it; the menu's bricks 6px; the logo tile 8px.
+  their shadow and move 4px into it; the menu's bricks 6px; the logo tile 4px.
   The header's joined bricks and a chip row's chips share their row's throw
   and hold still. No move under reduced motion. `tests/press.spec.ts` presses
   each.
@@ -1320,44 +1322,38 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 
 - Links come from `NAV_LINKS` and `CTA` in `src/lib/nav.ts`; the desktop
   header uses `HEADER_LINKS` (no Home; the logo links to `/`).
-- The header bar (`.header-slab`) mirrors the page: a `block-light` bar on the
-  dark page (17.58), a `block-ink` bar on the light page. Its 4px edge
-  (`--block-edge`) takes its fill; it casts `shadow-hard-pink-object` (pink, ink
-  in light mode). 80px tall in a 104px header. `.site-header` keeps the page's
-  values as `--page-*` for the menu dialog.
-- The slab sets the bricks through `--slab-fill`, `--brick-edge`,
-  `--solid-fill`, `--solid-label`, `--current-mark`, `--menu-fill`,
-  `--menu-label`, `--logo-name`, `--logo-focus-fill` and `--logo-focus-name`;
-  dark is the base in `buttons-nav.css`, light overrides in `light-mode.css`.
-  The menu dialog and Theme menu reset them, so their bricks stay gold.
-- The logo tile, and from 48rem its name, sit inside the bar with no block or
-  throw of their own; the tile's edge is transparent, so it melts into the bar.
-  The tile keeps its 8px `bunny` shadow inside the link's box
-  (`padding-block-end: var(--lift-mark)`). The name is ink on the light bar,
-  light on the ink bar.
-- Focused, the logo link turns into a block in the bar's opposite color: ink
-  with a `block-gold` name on the light bar, `block-light` with an ink name on
-  the ink bar (14.49), and no ring: the rabbit jumps higher than the bar
-  leaves room for a ring around it. Its ring is transparent, and `CanvasText`
-  in forced colors (`tests/header-bricks.spec.ts`, `tests/focus.spec.ts`).
-- Nav links, the theme switch, the text size brick and the call to action are
-  joined bricks (`.header-bricks`): 44px tall, the target (SC 2.5.5), sharing
-  their 4px edges, one `bunny` `shadow-brick` per row. Each row sits half its
-  throw high: 11px above it and under its throw. A brick after another drops
-  its left edge, so the two share one 4px wall and never overlap each other's
-  target.
-- Dark mode: link bricks are `block-light` with ink edges and labels (14.42),
-  so the edges separate them as on the light-mode bar;
-  the solid bricks (theme, text size, call to action, menu button) are
-  `block-ink` with `block-light` labels. The current page is an ink brick with
+- The header bar (`.header-slab`) is a colored block: `block-gold` on the
+  dark page (11.99), `block-cyan` on the light page with a 4px `block-ink`
+  edge (cyan on white is 1.99). Ink on it is 11.32 on gold, 9.36 on cyan.
+  80px tall in a 104px header. `.site-header` keeps the page's values as
+  `--page-*` for the menu dialog.
+- The slab sets the bricks through `--slab-fill`, `--slab-edge`,
+  `--brick-fill`, `--brick-label`, `--solid-fill`, `--solid-label`,
+  `--hover-*`, `--solid-hover-*`, `--current-mark`, `--menu-*`, `--logo-*`
+  and `--cta-shadow`; dark is the base in `buttons-nav.css`, light overrides
+  in `light-mode.css`. The menu dialog and Theme menu reset them.
+- The logo tile is a `block-ink` tile with one 4px `bunny` shadow
+  (`--logo-throw`); light mode's `bunny` on the slab is `bunny-deep` (3.98 on
+  cyan). Dark `bunny` on gold is 2.31: decoration, never a boundary.
+- Focused, the logo link turns into a block in the bar's opposite color, with
+  no ring: the rabbit jumps higher than the bar leaves room for a ring. Its
+  ring is transparent, and `CanvasText` in forced colors
+  (`tests/header-bricks.spec.ts`, `tests/focus.spec.ts`).
+- Nav links are joined bricks (`.header-bricks` in the Primary nav): 44px
+  tall, the target (SC 2.5.5), sharing their 4px edges, one ink `shadow-brick`
+  per row, each row half its throw high. A brick after another drops its left
+  edge, so the two share one 4px wall.
+- `.header-actions` holds Get in Touch, then a 24px gap, then the theme
+  switch, text size brick and menu button as their own `.header-bricks` row.
+  Get in Touch is a `block-ink` brick with a `block-light` label and its own
+  6px `bunny` shadow.
+- Link bricks take the page's ground and text (`--brick-fill`,
+  `--brick-label`): ink in dark mode, white in light mode. The current page has
   a 4px `block-gold` underline.
-- Light mode: link bricks are `block-light` with ink edges and labels; the
-  solid bricks and the current page are `block-gold` under `gold-text`
-  (11.32 on the bar) with the `--inset-shadow-current` ring; the menu button
-  is `block-light`.
-- Hover fills dark mode's `cyan` (`--hover-fill`) in both modes under a
-  `gold-text` label (11.20). The ring is `gold-link` inside link bricks; on a
-  solid brick it takes the label color; on a hovered brick, the label's ink.
+- Hover: link bricks fill `cyan` under ink in dark mode (11.20) and ink under
+  `block-light` in light mode (14.42). Solid bricks hover to `cyan` in dark
+  mode and to the light ground under ink in light mode (18.58). The ring sits
+  inside each brick in its label color.
 - The bar takes `.gold-column`'s margins, so it starts and ends where the gold
   hero does at every width (`tests/header-fit.spec.ts`).
 - The menu follows the same rule on the page ground: `text` edges, each brick
