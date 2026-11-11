@@ -418,7 +418,8 @@
   }
 
   /* Rings drawn inside the brick, on its own fill, so they never cross the next one. */
-  .header-bricks :focus-visible:not(.theme-menu *) {
+  .header-bricks :focus-visible:not(.theme-menu *),
+  .header-actions > * > .nav-cta:focus-visible {
     position: relative;
     z-index: 1;
     outline-offset: calc(-1 * (var(--block-edge) + var(--focus-gap)));
@@ -480,11 +481,8 @@
     }
   }
 
-  /* The call to action's ring, drawn inside it like the joined bricks'. */
+  /* The call to action's ring takes its label's color. */
   .header-actions > * > .nav-cta:focus-visible {
-    position: relative;
-    z-index: 1;
-    outline-offset: calc(-1 * (var(--block-edge) + var(--focus-gap)));
     outline-color: var(--solid-label, var(--color-gold-text));
 
     &:hover:not([aria-current]) {
