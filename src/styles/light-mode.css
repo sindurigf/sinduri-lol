@@ -1,6 +1,6 @@
 /*
  * Light mode: `data-theme="light"` on <html>. <main>, the header and the footer
- * change; ink is #131313, gold stays a fill. On white: text 18.58, subtle 9.53,
+ * change; ink is #131313, gold fills turn cyan. On white: text 18.58, subtle 9.53,
  * pink 14.64, cyan 8.23 (tests/light-mode.spec.ts). Utilities layer beats
  * `.text-gold`.
  */
@@ -23,6 +23,8 @@
     --dark-gold-bud: var(--color-gold-bud);
     --dark-hero-veil: var(--color-hero-veil);
     --dark-hero-floor: var(--color-hero-floor);
+    --dark-block-gold: var(--color-block-gold);
+    --dark-gold-muted: var(--color-gold-muted);
   }
 
   :root[data-theme='light'] :is(main, header, footer),
@@ -43,6 +45,10 @@
     --color-gold-bud: var(--color-light-ink);
     --color-hero-veil: var(--color-light-hero-veil);
     --color-hero-floor: var(--color-light-hero-floor);
+    /* The mirror of dark mode's gold: every gold fill turns cyan, ink on it 9.36. */
+    --color-gold: var(--color-block-cyan);
+    --color-block-gold: var(--color-block-cyan);
+    --color-gold-muted: var(--color-light-ink);
     color-scheme: light;
     color: var(--color-text);
     background-color: var(--color-background);
@@ -54,7 +60,6 @@
    * the slab takes an ink edge. The light pink throws on cyan at 7.38.
    */
   :root[data-theme='light'] .header-slab {
-    --slab-fill: var(--color-block-cyan);
     --slab-edge: var(--color-block-ink);
     --slab-throw: var(--color-light-pink-text);
     --hover-fill: var(--color-block-ink);
@@ -69,13 +74,14 @@
     --hover-label: var(--color-light-ink);
   }
 
+  /* Hover on a cyan fill is ink under white, as on the header slab (18.58). */
   :is(:root[data-theme='light'] main, main .mode-light)
     :is(.btn-primary, .btn-secondary):not([aria-disabled='true']):hover:not(
       .mode-dark *,
       :is(.card, .plain-slab, .post-contents) *
     ) {
-    background-color: var(--dark-cyan);
-    color: var(--color-light-ink);
+    background-color: var(--color-block-ink);
+    color: var(--color-block-light);
   }
 
   :root[data-theme='light'] main .mode-dark {
@@ -95,18 +101,21 @@
     --color-gold-bud: var(--dark-gold-bud);
     --color-hero-veil: var(--dark-hero-veil);
     --color-hero-floor: var(--dark-hero-floor);
+    --color-gold: var(--dark-block-gold);
+    --color-block-gold: var(--dark-block-gold);
+    --color-gold-muted: var(--dark-gold-muted);
     color-scheme: dark;
     color: var(--color-text);
     background-color: var(--color-background);
   }
 
   :is(:root[data-theme='light'] main, main .mode-light)
-    :is(.surface-gold, .v-column):not(.mode-dark *) {
+    .hero-window:not(.mode-dark *) {
     background-color: var(--color-background);
   }
 
   /*
-   * Gold text fails SC 1.4.3 on white, so it is ink with a gold square before
+   * Gold text fails SC 1.4.3 on white, so it is ink with a cyan square before
    * the word.
    */
   :is(:root[data-theme='light'] main, main .mode-light)
