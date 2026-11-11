@@ -3,6 +3,8 @@ import type { ImageMetadata } from 'astro';
 import { getImage, Picture } from 'astro:assets';
 import { PHOTO_FORMATS } from '../lib/photo-formats';
 import lepusRabbit from '../assets/lepus-rabbit.svg';
+import lepusRabbitLight from '../assets/lepus-rabbit-light.svg';
+import ModeArt from '../components/ModeArt.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CloseRow from '../components/CloseRow.astro';
 import PageHero from '../components/PageHero.astro';
@@ -289,8 +291,9 @@ const catInfo: CatInfo[] = await Promise.all(
   <Section id={SECTIONS[0].id} headless>
     <div class="lepus-row flex flex-wrap items-center gap-8 lg:gap-12">
       <span class="lepus-tile relative block shrink-0 rotate-3 rounded-nav border-fill-edge bg-block-gold shadow-hard-bunny-8 lg:shadow-hard-bunny-12">
-        <img
-          src={lepusRabbit.src}
+        <ModeArt
+          dark={lepusRabbit}
+          light={lepusRabbitLight}
           alt=""
           width={lepusRabbit.width}
           height={lepusRabbit.height}

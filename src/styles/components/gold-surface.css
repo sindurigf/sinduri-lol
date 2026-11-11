@@ -27,6 +27,12 @@
     color: var(--color-gold-text);
   }
 
+  /* No pink on gold: every throw cast on it is ink. */
+  :is(.surface-gold, .card, .bg-block-gold) * {
+    --color-pink: var(--color-block-ink);
+    --color-bunny: var(--color-block-ink);
+  }
+
   /* `surface` vanishes on gold and pink fails SC 1.4.11 there, so both change. */
   .surface-gold .card {
     background-color: transparent;
@@ -59,8 +65,7 @@
 
   /*
    * Scoped to .surface-gold so it renders unstyled elsewhere. Label, fill and
-   * `gold-text` edge pass SC 1.4.3 and 1.4.11 on gold. The pink shadow fails
-   * and is decoration: it must never delimit the control.
+   * `gold-text` edge pass SC 1.4.3 and 1.4.11 on gold; its throw is ink.
    */
   .surface-gold .btn-gold-primary {
     @apply inline-block border-4 border-gold-text bg-gold-text

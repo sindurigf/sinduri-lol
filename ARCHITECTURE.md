@@ -94,9 +94,9 @@ Dark is the default. Colors and rules:
 - `data-theme="light"` on `<html>`; `src/styles/light-mode.css`, imported last,
   overrides a subset of tokens on `<main>`, the header and the footer while it
   is set. No `dark:` variants.
-- `<main>`, the header and the footer change; the header bar mirrors the page,
-  light on dark and ink on light. The no-JS nav stays dark.
-- `bunny` and `fill-edge` hold the mode-independent logo-tile colors.
+- `<main>`, the header and the footer change; the header bar is gold in dark
+  mode and cyan in light mode. The no-JS nav stays dark.
+- `block-ink` fills the logo tile; `--slab-throw` is its shadow, ink on the gold slab and light pink on the cyan one.
 - An inline script in `BaseLayout.astro`'s `<head>` sets `data-theme` from the
   saved choice or `prefers-color-scheme` before the body parses, rereads it on
   a back-forward cache restore (`pageshow`), applies a saved `--text-scale`,
@@ -478,6 +478,12 @@ in `wrangler.jsonc`).
 | `public/images/og-default.png`  | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
 | `public/images/og/*.jpg`        | Composite | n/a                  | `BaseLayout.astro`, every other page         |
 
+- Each rabbit but the logo has a `-light.svg` twin in `--color-light-pink-text`
+  (`npm run rabbit-light`, `src/lib/rabbit-modes.ts`); `ModeArt.astro` and
+  light-mode.css show the one for the mode. The footer rabbit swaps its `src`
+  in `theme-switch.ts`, as Let It Fall moves that element.
+- `favicon.svg` switches pinks with `prefers-color-scheme`: a tab icon cannot
+  see `data-theme`.
 - `og-default.png`: 1200x630. All gold: the name, the joined Lepus Ridet
   sticker and the tagline in two lines, and the header logo scaled 7x, whole
   inside the card. `npm run og` (`scripts/make-og.mjs`) draws it in Chromium with
