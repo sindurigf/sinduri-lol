@@ -204,6 +204,8 @@
     @apply grid size-target shrink-0 cursor-pointer place-items-center border-4
       border-text;
 
+    /* Contains the sr-only label: WebKit places it outside a grid button's box otherwise. */
+    position: relative;
     background-color: var(--solid-fill, var(--color-block-gold));
     color: var(--solid-label, var(--color-gold-text));
   }
