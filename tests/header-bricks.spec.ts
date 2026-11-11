@@ -14,7 +14,7 @@ import { NO_WEBKIT } from './tags';
 /* A route with a current header link, so a current brick is walked too. */
 const ROUTE = '/about/';
 const BRICKS =
-  '.header-slab :is(.logo-link, .header-bricks a, .header-bricks button)';
+  '.header-slab :is(.logo-link, .header-bricks a, .header-bricks button, .header-actions > div > .nav-cta)';
 const MAX_STOPS = 12;
 /* Past --spacing-header, so the header goes slim. */
 const SLIM_SCROLL = 900;
@@ -70,7 +70,7 @@ const readStop = `(() => {
     blockArea: box.width * box.height,
     perimeter: 4 * (box.width + box.height),
     label: [...el.querySelectorAll('.label')].map((n) => ratio(parse(getComputedStyle(n).color), parse(s.backgroundColor)))[0] ?? 0,
-    brick: Boolean(el.closest('.header-bricks')),
+    brick: !el.classList.contains('logo-link'),
     onBar,
     inside: offset + width <= 0,
     clear,
