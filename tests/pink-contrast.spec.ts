@@ -14,15 +14,6 @@ for (const colorScheme of ['dark', 'light'] as const) {
     for (const route of SAMPLED_ROUTES) {
       test(route, async ({ page }) => {
         await gotoSettled(page, route);
-        // A control's box-shadow transitions in from transparent after load; measure it at rest.
-        await page.evaluate(() =>
-          Promise.allSettled(
-            document
-              .getAnimations()
-              .filter((animation) => animation instanceof CSSTransition)
-              .map((animation) => animation.finished),
-          ),
-        );
         const { found, faint } = (await page.evaluate(`(() => {
           ${PAGE_HELPERS}
           const root = getComputedStyle(document.documentElement);
