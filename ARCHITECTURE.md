@@ -95,9 +95,9 @@ Dark is the default. Colors and rules:
   on `:root.light`, shorter than the attribute for the CSS budget.
   `src/styles/light-mode.css`, imported last, overrides a subset of tokens on `<main>`, the header and the footer while it
   is set. No `dark:` variants.
-- `<main>`, the header and the footer change; the header bar is gold in dark
-  mode and cyan in light mode. The no-JS nav stays dark.
-- `block-ink` fills the logo tile; `--slab-throw` is its shadow, ink on the gold slab and red on the cyan one.
+- `<main>`, the header and the footer change; the header bar is ink in dark
+  mode and white in light mode. The no-JS nav stays dark.
+- The logo tile is `block-gold` in dark mode and `block-cyan` in light mode, with an 8px `bunny` shadow.
 - An inline script in `BaseLayout.astro`'s `<head>` sets `data-theme` from the
   saved choice or `prefers-color-scheme` before the body parses (a
   `MutationObserver` keeps the `light` class in step with it), rereads it on

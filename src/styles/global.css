@@ -402,8 +402,6 @@
   --block-edge: 4px;
   /* The header's joined bricks and its logo block. */
   --brick-throw: 6px;
-  /* The header logo tile's throw. */
-  --logo-throw: 4px;
   /*
    * The Step: sideways juts and a wall's Step Up, both 0 below 640px so
    * nothing pushes a phone layout off the column.
