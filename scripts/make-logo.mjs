@@ -19,9 +19,9 @@ import { cssColorToken } from '../src/lib/css-token.ts';
 
 const INK = cssColorToken('--color-block-ink');
 const GOLD = cssColorToken('--color-block-gold');
-const PINK = cssColorToken('--color-bunny');
+const RED = cssColorToken('--color-bunny');
 const WHITE = cssColorToken('--color-light-ground');
-const LIGHT_PINK = cssColorToken('--color-light-pink-text');
+const LIGHT_RED = cssColorToken('--color-light-red-text');
 /* Baked into the drawing like the hero atlas; no page sets it. */
 const EAR = '#ff9cc4';
 
@@ -88,13 +88,13 @@ const SVG_FRAME = 16;
 const ICON_PROBE = 512;
 /* Room round the 64-unit grid in the probe, as a share of the icon side. */
 const PROBE_PAD = 0.5;
-/* The tab icon: a gold rabbit, white ear, an ink rim, then a pink block behind it whose back face has an ink edge. */
+/* The tab icon: a gold rabbit, white ear, an ink rim, then a red block behind it whose back face has an ink edge. */
 const ICON_STICKER = { rim: 4, depth: 6, backEdge: 1.5, steps: 8 };
 /* Opaque app icons on gold: artwork scale, and the maskable safe zone. */
 const APP_SCALE = 0.8;
 const MASKABLE_SCALE = 0.62;
 
-/* The hero roundel in a 100-unit box: a die-cut rim, then a pink block behind the rabbit whose back face has an ink edge. */
+/* The hero roundel in a 100-unit box: a die-cut rim, then a red block behind the rabbit whose back face has an ink edge. */
 const ROUNDEL = {
   h: 86,
   /* The rabbit's center in the box, right of 50 so the drawing and its block sit centered. */
@@ -185,7 +185,7 @@ const partition = (d, box) => {
 
 /**
  * The die-cut of the roundel and Lepus Ridet rabbits, drawn under the art in its own mirrored units `u`:
- * a pink block swept down and behind with an ink back edge, then a white rim and an ink edge round `#cut` and `#sil`.
+ * a red block swept down and behind with an ink back edge, then a white rim and an ink edge round `#cut` and `#sil`.
  */
 const dieCut = ({ rim, edge, depth, backEdge, steps }, u) => {
   /* The drawing is mirrored, so a positive offset falls down and behind the rabbit. */
@@ -200,7 +200,7 @@ const dieCut = ({ rim, edge, depth, backEdge, steps }, u) => {
     .filter((d) => d >= backEdge)
     .map((d) => grown(INK, rim + backEdge, d))
     .join('');
-  const block = offsets.map((d) => grown(PINK, rim, d)).join('');
+  const block = offsets.map((d) => grown(RED, rim, d)).join('');
   return `${back}${block}${grown(WHITE, rim)}${grown(INK, edge, 0, 'sil')}`;
 };
 
@@ -210,11 +210,11 @@ function roundelArt() {
   const u = 1 / k;
   const transform = `translate(${ROUNDEL.cx} 50) rotate(${ROUNDEL.rotate}) scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
   const [face, mouthLine] = partition(line, MOUTH_BOX);
-  const [pink, tongue] = partition(TRACE.pink, MOUTH_BOX);
+  const [red, tongue] = partition(TRACE.pink, MOUTH_BOX);
   const mx = (MOUTH_BOX.x0 + MOUTH_BOX.x1) / 2;
   const mouth = `<g transform="translate(${mx} ${MOUTH_BOX.y0}) scale(${MOUTH_SCALE}) translate(${-mx} ${-MOUTH_BOX.y0})">${fill(tongue, EAR)}${fill(mouthLine, INK, ROUNDEL.line * u)}</g>`;
   return `<defs><path id="cut" d="${TRACE.cut}"/><path id="sil" d="${TRACE.sil}"/></defs><g transform="${transform}">${dieCut(ROUNDEL, u)}
-${fill(TRACE.sil, WHITE)}${fill(pink, EAR)}${fill(face, INK, ROUNDEL.line * u)}${mouth}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
+${fill(TRACE.sil, WHITE)}${fill(red, EAR)}${fill(face, INK, ROUNDEL.line * u)}${mouth}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
 }
 
 /** Mirrored to face right, its drawing's center at the origin. */
@@ -375,7 +375,7 @@ function iconArtwork({ precise }) {
   const use = (color, width, off = 0) =>
     `<use href="#r" fill="${color}" stroke="${color}" stroke-width="${width}" stroke-linejoin="round"${off ? ` x="${-off * unit}" y="${off * unit}"` : ''}/>`;
   const block = Array.from({ length: steps }, (_, i) =>
-    use(PINK, outer, (depth * (steps - i)) / steps),
+    use(RED, outer, (depth * (steps - i)) / steps),
   ).join('');
   return `<defs><path id="r" d="${path(TRACE.cut)}"/></defs>${use(INK, 2 * (rim + backEdge) * unit, depth)}${block}${use(INK, outer)}<use href="#r" fill="${GOLD}"/>${fill(path(largest(TRACE.pink)), WHITE)}${fill(path(largest(TRACE.eye)), INK)}`;
 }
@@ -593,7 +593,7 @@ assertClearEdge(
   'favicon.svg',
 );
 /* A tab icon cannot see data-theme, so it follows the OS scheme. */
-const schemeStyle = `<style>@media (prefers-color-scheme:light){[fill="${PINK}"]{fill:${LIGHT_PINK};stroke:${LIGHT_PINK}}}</style>`;
+const schemeStyle = `<style>@media (prefers-color-scheme:light){[fill="${RED}"]{fill:${LIGHT_RED};stroke:${LIGHT_RED}}}</style>`;
 writeFileSync(
   'public/favicon.svg',
   iconSvg.replace(/(<svg[^>]*>)/, `$1${schemeStyle}`),
