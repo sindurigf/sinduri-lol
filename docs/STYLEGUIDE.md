@@ -952,8 +952,8 @@ text-gold-muted` under the standfirst. Color
 
 - The header is a bar on the hero's column, 12px below the top, with the
   logo tile at its left end, and from 48rem its name too ([Navigation](#navigation)).
-- The logo tile keeps its `bunny` shadow. The die-cut rabbit jumps its
-  top-right corner and casts an ink throw, so the corner never doubles the pink.
+- The logo tile keeps an ink shadow. The die-cut rabbit jumps its
+  top-right corner and casts an ink throw that shows on the light tile.
 - The tile is the rabbit's springboard: hovered, the rabbit rises 3px; pressed,
   the tile drops into its shadow and the rabbit crouches with it; released, the
   rabbit springs past its spot and settles (`--ease-spring`). Not under
@@ -1330,9 +1330,9 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   `--hover-*`, `--solid-hover-*`, `--current-mark`, `--menu-*`, `--logo-*`
   `--slab-throw` and `--cta-shadow`; dark is the base in `buttons-nav.css`, light overrides
   in `light-mode.css`. The menu dialog and Theme menu reset them.
-- The logo tile is a `block-ink` tile with one 4px `--slab-throw` shadow
-  (`--logo-throw`), as is Get in Touch at 6px: ink on the gold slab (11.32),
-  light pink on the cyan one (7.38).
+- The logo tile is a `block-light` tile with a `block-ink` edge and one 4px ink
+  shadow (`--logo-throw`) in both modes. Get in Touch casts `--slab-throw` at 6px:
+  ink on the gold slab (11.32), light pink on the cyan one (7.38).
 - Focused, the logo link turns into a block in the bar's opposite color, with
   no ring: the rabbit jumps higher than the bar leaves room for a ring. Its
   ring is transparent, and `CanvasText` in forced colors

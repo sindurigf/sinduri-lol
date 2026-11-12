@@ -373,7 +373,7 @@
   /* The tile's shadow sits inside the link; the side padding is the focus block's margin around the tile and name. */
   .header-slab .logo-link {
     --lift-mark: var(--logo-throw);
-    --color-bunny: var(--slab-throw);
+    --color-bunny: var(--color-block-ink);
 
     /* Only the start bleeds: a negative end margin lets the theme switch slide over the block at 320px. */
     margin-inline-start: calc(var(--logo-focus-pad) * -1);
