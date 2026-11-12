@@ -22,8 +22,6 @@ const GOLD = cssColorToken('--color-block-gold');
 const RED = cssColorToken('--color-bunny');
 const WHITE = cssColorToken('--color-light-ground');
 const LIGHT_RED = cssColorToken('--color-light-red-text');
-/* Baked into the drawing like the hero atlas; no page sets it. */
-const EAR = '#ff9cc4';
 
 /** A Potrace path in relative commands on whole trace units, a twentieth of a pixel at the roundel's largest: a third of the bytes. */
 const relative = (d) => {
@@ -170,6 +168,9 @@ const placement = ({ h, rotate, left, bottom }) => {
 const fill = (d, color, stroke = 0) =>
   `<path d="${d}" fill="${color}"${stroke ? ` stroke="${color}" stroke-width="${stroke}" stroke-linejoin="round"` : ''}/>`;
 
+/* The inner ear stays dark-mode red in both modes; src/lib/rabbit-modes.ts skips `data-ear`. */
+const ear = (d) => `<path d="${d}" fill="${RED}" data-ear=""/>`;
+
 const inside = (d, b) => {
   const q = bbox(d);
   return q.x0 >= b.x0 && q.y0 >= b.y0 && q.x1 <= b.x1 && q.y1 <= b.y1;
@@ -212,9 +213,9 @@ function roundelArt() {
   const [face, mouthLine] = partition(line, MOUTH_BOX);
   const [red, tongue] = partition(TRACE.pink, MOUTH_BOX);
   const mx = (MOUTH_BOX.x0 + MOUTH_BOX.x1) / 2;
-  const mouth = `<g transform="translate(${mx} ${MOUTH_BOX.y0}) scale(${MOUTH_SCALE}) translate(${-mx} ${-MOUTH_BOX.y0})">${fill(tongue, EAR)}${fill(mouthLine, INK, ROUNDEL.line * u)}</g>`;
+  const mouth = `<g transform="translate(${mx} ${MOUTH_BOX.y0}) scale(${MOUTH_SCALE}) translate(${-mx} ${-MOUTH_BOX.y0})">${ear(tongue)}${fill(mouthLine, INK, ROUNDEL.line * u)}</g>`;
   return `<defs><path id="cut" d="${TRACE.cut}"/><path id="sil" d="${TRACE.sil}"/></defs><g transform="${transform}">${dieCut(ROUNDEL, u)}
-${fill(TRACE.sil, WHITE)}${fill(red, EAR)}${fill(face, INK, ROUNDEL.line * u)}${mouth}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
+${fill(TRACE.sil, WHITE)}${ear(red)}${fill(face, INK, ROUNDEL.line * u)}${mouth}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
 }
 
 /** Mirrored to face right, its drawing's center at the origin. */
@@ -224,7 +225,7 @@ function lepusArt() {
   const u = 1 / k;
   const transform = `scale(${-k} ${k}) translate(${-(b.x0 + b.x1) / 2} ${-(b.y0 + b.y1) / 2})`;
   return `<defs><path id="cut" d="${LAUGH.cut}"/><path id="sil" d="${LAUGH.sil}"/></defs><g transform="${transform}">${dieCut(LEPUS, u)}
-${fill(LAUGH.sil, WHITE)}${fill(LAUGH.pink, EAR)}${fill(LAUGH.line, INK, LEPUS.line * u)}</g>`;
+${fill(LAUGH.sil, WHITE)}${ear(LAUGH.pink)}${fill(LAUGH.line, INK, LEPUS.line * u)}</g>`;
 }
 
 function sticker() {
@@ -240,7 +241,7 @@ function sticker() {
   return `<defs><path id="cut" d="${TRACE.cut}"/><path id="sil" d="${TRACE.sil}"/></defs><g transform="${transform}">
 ${use('cut', INK, outer, STICKER.throw * u)}
 ${use('cut', INK, outer)}${use('cut', WHITE, (STICKER.edge + 2 * STICKER.rim) * u)}${use('sil', INK, STICKER.edge * u)}${use('sil', WHITE)}
-${fill(TRACE.pink, EAR)}${fill(line, INK, STICKER.line * u)}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
+${ear(TRACE.pink)}${fill(line, INK, STICKER.line * u)}${fill(TRACE.eye, INK)}${fill(TRACE.shine, WHITE)}</g>`;
 }
 
 /* Bakes a transform into absolute M/L/C coordinates, for the PNG icons. */

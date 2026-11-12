@@ -14,6 +14,9 @@ export const RABBIT_ART = [
 export const DARK_ART_RED = '--color-bunny';
 export const LIGHT_ART_RED = '--color-light-red-text';
 
+/* The inner ear keeps the dark-mode red: #560000 inside the art reads as black. */
+export const EAR_MARK = 'data-ear';
+
 export const lightArtPath = (dark: string): string =>
   dark.replace(/\.svg$/, '-light.svg');
 
@@ -21,5 +24,8 @@ export const lightArt = (svg: string): string => {
   const dark = cssColorToken(DARK_ART_RED);
   if (!svg.includes(dark))
     throw new Error(`rabbit-modes: the art has no ${dark}; was it redrawn?`);
-  return svg.replaceAll(dark, cssColorToken(LIGHT_ART_RED));
+  const light = cssColorToken(LIGHT_ART_RED);
+  return svg.replace(/<[^>]+>/g, (tag) =>
+    tag.includes(EAR_MARK) ? tag : tag.replaceAll(dark, light),
+  );
 };
