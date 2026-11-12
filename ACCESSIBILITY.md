@@ -43,7 +43,7 @@ status is still "Target only. No claim that the site meets it."
 
 | Criterion                            | What we do                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.4.6 Contrast (Enhanced)            | Every text token at rest clears 7:1 on every ground it is used on, dark, light and gold. `pink` is never text; `pink-text` is. Ratios: [contrast table](docs/STYLEGUIDE.md#contrast). Under the pointer, sampled controls on every route are hovered and their text measured at 7:1, large text included: dark mode across header, main and footer (`tests/states.spec.ts`), light mode in `<main>` (`tests/light-mode.spec.ts`).                                                                                                                                                                                                                                                               |
+| 1.4.6 Contrast (Enhanced)            | Every text token at rest clears 7:1 on every ground it is used on, dark, light and gold. `red` is never text; `red-text` is. Ratios: [contrast table](docs/STYLEGUIDE.md#contrast). Under the pointer, sampled controls on every route are hovered and their text measured at 7:1, large text included: dark mode across header, main and footer (`tests/states.spec.ts`), light mode in `<main>` (`tests/light-mode.spec.ts`).                                                                                                                                                                                                                                                                 |
 | 1.4.8 Visual Presentation            | `tests/visual-presentation.spec.ts`, every route at 390, 1280 and 1920: a visible `p`, `li` or `dd` of more than one sentence has at most 80 characters a line, line height 1.5 or more and no justification (not measured: talk slides from 1024px wide, whose text token is 1.35); each `p` followed by a `p` leaves 2.5em of the larger text from its last line box's top to the next one's first. Width at 200%: `tests/reflow.spec.ts`; at the 500% zoom some headings need for 2x, `tests/zoom-lines.spec.ts` keeps every line on screen at 200 and 256px. Colors: browsers can override them (G156); the theme switch offers light and dark (`tests/light-mode.spec.ts`).                |
 | 2.2.4 Interruptions                  | Nothing interrupts: no alerts, assertive live regions or automatic refresh.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | 2.3.3 Animation from Interactions    | See Motion in [section 4](#4-what-the-site-supports).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -258,11 +258,11 @@ CSS and `tests/contrast-table.spec.ts` fails when it drifts.
 
 ### Dark surfaces
 
-- `text`, `subtle`, `gold`, `cyan` and `pink-text` clear 7:1 on `background`
+- `text`, `subtle`, `gold`, `cyan` and `red-text` clear 7:1 on `background`
   and `surface`.
 - `border` carries every boundary but table lines, which
   take `text`; both clear SC 1.4.11.
-- `pink` is non-text only; `pink-text` carries every pink glyph.
+- `red` is non-text only; `red-text` carries every red glyph.
 - The focus ring clears every shadow it could touch
   ([Focus](docs/STYLEGUIDE.md#focus)).
 
@@ -439,7 +439,7 @@ links. Not automated:
    read), axe finds no WCAG 2.2 A or AA violation, typed values stay, each hint
    and error stays tied to its field, and no focused control is covered at
    320px and 1280px, walking Tab from the summary and Shift+Tab from the last
-   footer link. In markup only: `novalidate` and the inset pink error ring.
+   footer link. In markup only: `novalidate` and the inset red error ring.
    `/contact/send/` is outside `tests/routes.ts`, so the route suites never
    render the error state and Firefox and WebKit never see it.
    Nobody has judged whether the messages help (SC 3.3.1, 3.3.3) or heard them
@@ -534,8 +534,8 @@ Rules this repository follows. Values and reasons:
 [docs/STYLEGUIDE.md](docs/STYLEGUIDE.md).
 
 - **Contrast.** Measure a new color on every ground it can meet
-  ([Adding a color](docs/STYLEGUIDE.md#adding-a-color)). Never `pink` on
-  text; never `pink-text` on non-text.
+  ([Adding a color](docs/STYLEGUIDE.md#adding-a-color)). Never `red` on
+  text; never `red-text` on non-text.
 - **Gold.** Build gold grounds with `.surface-gold` only. Never the dark
   tokens, `.btn-primary` or `.btn-secondary` on gold.
 - **Focus.** Never remove an outline. A focusable element that casts a shadow
