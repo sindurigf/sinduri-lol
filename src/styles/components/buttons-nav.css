@@ -336,45 +336,27 @@
   }
 
   /*
-   * A gold slab on dark, a cyan one on light (light-mode.css), thrown like a
-   * card. Link bricks take the page's ground and text, edged in ink; the solid
-   * bricks are ink, and the current link carries a gold underline.
+   * The bar is a slab of the page's own colors: ink on dark, white on light
+   * (light-mode.css), so its bricks keep the page's edges, fills and hovers.
    */
   .header-slab {
-    --slab-fill: var(--color-block-gold);
-    --brick-edge: var(--color-block-ink);
-    --brick-fill: var(--page-ground);
-    --brick-label: var(--page-text);
-    --solid-fill: var(--color-block-ink);
-    --solid-label: var(--color-block-light);
-    --current-mark: inset 0 calc(var(--underline-thick) * -1) 0
-      var(--color-block-gold);
-    --menu-fill: var(--solid-fill);
-    --menu-label: var(--solid-label);
-    --logo-name: var(--color-block-ink);
-    --logo-focus-fill: var(--color-block-ink);
+    --slab-fill: var(--color-block-ink);
+    --menu-fill: var(--color-background);
+    --menu-label: var(--color-text);
+    --logo-name: var(--color-text);
+    --logo-focus-fill: var(--color-text);
     --logo-focus-name: var(--slab-fill);
     --color-background: var(--slab-fill);
-    --color-text: var(--color-block-ink);
-    --color-cyan: var(--color-gold-link);
-    --hover-fill: var(--dark-cyan);
-    --hover-label: var(--color-gold-text);
-    --shadow-brick: var(--brick-throw) var(--brick-throw) 0
-      var(--color-block-ink);
-    --slab-throw: var(--color-block-ink);
-    --cta-shadow: var(--brick-throw) var(--brick-throw) 0 var(--slab-throw);
+    --cta-shadow: var(--shadow-brick);
 
-    border: var(--block-edge) solid var(--slab-edge, var(--slab-fill));
+    border: var(--block-edge) solid transparent;
     background-color: var(--slab-fill);
 
-    @apply px-4 shadow-hard-red-object sm:px-6;
+    @apply px-4 sm:px-6;
   }
 
   /* The tile's shadow sits inside the link; the side padding is the focus block's margin around the tile and name. */
   .header-slab .logo-link {
-    --lift-mark: var(--logo-throw);
-    --color-bunny: var(--slab-throw);
-
     /* Only the start bleeds: a negative end margin lets the theme switch slide over the block at 320px. */
     margin-inline-start: calc(var(--logo-focus-pad) * -1);
     padding: 0 var(--logo-focus-pad) var(--lift-mark);
@@ -464,7 +446,7 @@
       }
     }
 
-    & :is(.nav-cta, .theme-switch, .menu-brick, [aria-current]):focus-visible {
+    & :is(.nav-cta, .theme-switch, [aria-current]):focus-visible {
       outline-color: var(--solid-label, var(--color-gold-text));
     }
 
@@ -497,7 +479,7 @@
   .menu-brick {
     --color-text: var(--menu-label);
 
-    @apply border-block-ink;
+    @apply border-text;
 
     background-color: var(--menu-fill);
   }

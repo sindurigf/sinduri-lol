@@ -48,19 +48,12 @@
     background-color: var(--color-background);
   }
 
-  /*
-   * The cyan bar: the dark bar's cyan hover would vanish on it, so links hover
-   * to ink and the ink solid bricks hover to white. Cyan on white is 1.99, so
-   * the slab takes an ink edge. The red throws on cyan at 7.58.
-   */
   :root[data-theme='light'] .header-slab {
-    --slab-fill: var(--color-block-cyan);
-    --slab-edge: var(--color-block-ink);
-    --slab-throw: var(--color-light-red-text);
-    --hover-fill: var(--color-block-ink);
-    --hover-label: var(--color-block-light);
-    --solid-hover-fill: var(--color-light-ground);
-    --solid-hover-label: var(--color-light-ink);
+    --slab-fill: var(--color-light-ground);
+  }
+
+  :root[data-theme='light'] .header-slab .logo-tile {
+    background-color: var(--color-block-cyan);
   }
 
   /* Hover fills take the dark mode cyan under ink: light mode's cyan is a text color. */
