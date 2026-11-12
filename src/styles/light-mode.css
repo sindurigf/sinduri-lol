@@ -142,10 +142,9 @@
     @apply mr-2 inline-block size-2.5;
   }
 
-  /* RIDET and `.sticker` are black blocks in light mode. */
+  /* RIDET is a black block in light mode. */
   :is(:root.light main, main .mode-light)
-    .hero-sticker:not(.bg-block-gold):not(.mode-dark *),
-  :is(:root.light main, main .mode-light) .sticker:not(.mode-dark *) {
+    .hero-sticker:not(.bg-block-gold):not(.mode-dark *) {
     @apply border-text bg-text text-background;
   }
 
