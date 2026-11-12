@@ -349,7 +349,7 @@
     --color-background: var(--slab-fill);
     --cta-shadow: var(--shadow-brick);
 
-    border: var(--block-edge) solid var(--slab-fill);
+    border: var(--block-edge) solid transparent;
     background-color: var(--slab-fill);
 
     @apply px-4 sm:px-6;
