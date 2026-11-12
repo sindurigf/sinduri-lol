@@ -31,6 +31,7 @@ jobs:
         with:
           # The merge commit's first parent is the base branch tip.
           fetch-depth: 2
+          persist-credentials: false
 
       - name: Set up Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
