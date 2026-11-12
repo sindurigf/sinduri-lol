@@ -120,6 +120,8 @@
    * The floor of the window, edge to edge: joined light bricks, each drawing
    * its top and left edge; the shelf closes the right end and the section
    * under it the bottom. It spans the column's border box, like that section.
+   * Its own fill is the bricks': on the dark page the ink edge reads against
+   * that fill, not the page (SC 1.4.11).
    */
   .hero-ledge {
     position: absolute;
@@ -128,6 +130,7 @@
     left: calc(var(--block-edge) * -1);
     display: flex;
     height: var(--hero-ledge-h);
+    background-color: var(--color-block-light);
     border-right: var(--block-edge) solid var(--color-block-ink);
   }
 
@@ -285,6 +288,11 @@
     line-height: var(--text-hero-sticker--line-height);
 
     @apply border-4 border-block-ink px-4 py-2 font-black uppercase;
+  }
+
+  /* A page-colored fill on the page: its edge is the page's ring (SC 1.4.11). */
+  .hero-sticker.bg-surface {
+    border-color: var(--color-border);
   }
 
   /* Laid over the shelf, the wall's top a little above the shelf's (index.astro sets the section's `pt-0`). */
