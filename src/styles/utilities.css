@@ -39,13 +39,9 @@
   }
 
   .surface-gold
-    :is(.rotate-3, .-rotate-3).sticker:not(
-      :root[data-theme='light'] *,
-      .mode-light *
-    ),
+    :is(.rotate-3, .-rotate-3).sticker:not(:root.light *, .mode-light *),
   .mode-dark .surface-gold :is(.rotate-3, .-rotate-3).sticker,
-  :is(.rotate-3, .-rotate-3).hero-sticker.bg-surface,
-  .logo-tile.bg-block-ink {
+  :is(.rotate-3, .-rotate-3).hero-sticker.bg-surface {
     background-clip: border-box;
   }
 
