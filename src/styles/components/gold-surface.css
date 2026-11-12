@@ -27,13 +27,13 @@
     color: var(--color-gold-text);
   }
 
-  /* No pink on gold: every throw cast on it is ink. */
+  /* No red on gold: every throw cast on it is ink. */
   :is(.surface-gold, .card, .bg-block-gold) * {
-    --color-pink: var(--color-block-ink);
+    --color-red: var(--color-block-ink);
     --color-bunny: var(--color-block-ink);
   }
 
-  /* `surface` vanishes on gold and pink fails SC 1.4.11 there, so both change. */
+  /* `surface` vanishes on gold and red fails SC 1.4.11 there, so both change. */
   .surface-gold .card {
     background-color: transparent;
 

@@ -36,8 +36,8 @@ export const SWATCH: Record<string, Swatch> = {
   subtle: { paint: 'glyph', cls: 'text-subtle' },
   gold: { paint: 'fill', cls: 'bg-gold' },
   cyan: { paint: 'empty', cls: '' },
-  pink: { paint: 'fill', cls: 'bg-pink' },
-  'pink-text': { paint: 'glyph', cls: 'text-pink-text' },
+  red: { paint: 'fill', cls: 'bg-red' },
+  'red-text': { paint: 'glyph', cls: 'text-red-text' },
   bunny: { paint: 'fill', cls: 'bg-bunny' },
   'block-cyan': { paint: 'fill', cls: 'bg-block-cyan' },
 };
@@ -126,9 +126,9 @@ const assertEveryPair = (): void => {
     ['text', 'text'],
     ['subtle', 'text'],
     ['gold', 'text'],
-    ['pink-text', 'text'],
+    ['red-text', 'text'],
     [PAGE_EDGE, 'edge'],
-    ['pink', 'edge'],
+    ['red', 'edge'],
     ['bunny', 'edge'],
     ['cyan', 'edge'],
   ];
@@ -210,10 +210,10 @@ export const roles: Role[] = [
   role(
     'role-depth',
     'shadows and errors.',
-    'Pink casts the shadow; its text color carries error words.',
-    ['pink', 'pink-text', 'bunny'],
+    'Red casts the shadow; its text color carries error words.',
+    ['red', 'red-text', 'bunny'],
     {
-      fg: 'pink-text',
+      fg: 'red-text',
       bg: 'background',
       kind: 'text',
     },
