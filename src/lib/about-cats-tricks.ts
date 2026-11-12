@@ -1,6 +1,7 @@
 /*
  * Each cat's paw-button tricks, signature ones first (about-cats-tricks.json).
- * about-cats.ts fetches the JSON on demand, so /about's script carries none of it, and checks it with isTricksData.
+ * about-cats.ts fetches the JSON on demand, so /about's script carries none of it, and checks it
+ * with isTricksData.
  */
 import { CAT_WEIGHTS, type MoveName } from './about-cats-moves';
 import type { CatId } from './about-cats-types';

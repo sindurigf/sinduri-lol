@@ -1,5 +1,6 @@
 /*
- * Pure. Four traced poses in one atlas (src/assets/hero-rabbit.svg, rastered to hero-rabbit-climb.webp), facing left.
+ * Pure. Four traced poses in one atlas (src/assets/hero-rabbit.svg, rastered to
+ * hero-rabbit-climb.webp), facing left.
  * The rabbit moves as one piece and swaps poses; it never bends.
  */
 

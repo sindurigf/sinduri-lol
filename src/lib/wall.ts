@@ -1,6 +1,7 @@
 /*
  * Step Up classes for a `.card-block` (docs/STYLEGUIDE.md, Blocks).
- * The throw falls down and right, so a wall only climbs right: stacked rows step their right edge in, at most twice.
+ * The throw falls down and right, so a wall only climbs right: stacked rows step their right edge
+ * in, at most twice.
  */
 
 import { itemAt } from './defined';
