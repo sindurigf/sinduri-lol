@@ -14,6 +14,14 @@ for (const colorScheme of ['dark', 'light'] as const) {
     for (const route of SAMPLED_ROUTES) {
       test(route, async ({ page }) => {
         await gotoSettled(page, route);
+        await page.evaluate(() =>
+          Promise.all(
+            document
+              .getAnimations()
+              .filter((animation) => animation instanceof CSSTransition)
+              .map((animation) => animation.finished.catch(() => undefined)),
+          ),
+        );
         const { found, faint } = (await page.evaluate(`(() => {
           ${PAGE_HELPERS}
           const root = getComputedStyle(document.documentElement);
@@ -52,7 +60,7 @@ for (const colorScheme of ['dark', 'light'] as const) {
                   while (source && getComputedStyle(source).backgroundColor === 'rgba(0, 0, 0, 0)') source = source.parentElement;
                   faint.push(
                     [
-                      describe(el) + ' ' + measured.toFixed(2),
+                      describe(el) + ' ' + measured.toFixed(2) + ' (mark alpha ' + color.a + ', running transitions ' + document.getAnimations().filter((a) => a instanceof CSSTransition).length + ')',
                       'mark: ' + (inset ? style.boxShadow : style.boxShadow + ' / border ' + style.borderColor),
                       'ground: rgba(' + [ground.r, ground.g, ground.b, ground.a].join(', ') + ') from ' + (source ? describe(source) : 'none'),
                       'readyState: ' + document.readyState + ', data-theme: ' + document.documentElement.dataset.theme,
