@@ -321,6 +321,6 @@
 /* Utilities layer: replaces the heading's `text-text` utility. */
 @layer utilities {
   .home-head > div > h2 {
-    @apply edge inline-block border-fill-edge bg-block-gold px-6 py-3 text-gold-text shadow-hard-pink-object;
+    @apply edge inline-block border-fill-edge bg-block-gold px-6 py-3 text-gold-text shadow-hard-red-object;
   }
 }

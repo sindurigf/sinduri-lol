@@ -4,11 +4,11 @@ import { gotoSettled } from './settle';
 import { SAMPLED_ROUTES } from './routes';
 
 /*
- * The site's rule for pink, above SC 1.4.11: every pink edge or throw is
+ * The site's rule for red, above SC 1.4.11: every red edge or throw is
  * 7:1 or more on the ground it sits on, in both modes. On gold that means ink.
  */
 for (const colorScheme of ['dark', 'light'] as const) {
-  test.describe(`${colorScheme} mode: every pink is at least 7:1 on its ground`, () => {
+  test.describe(`${colorScheme} mode: every red is at least 7:1 on its ground`, () => {
     test.use({ colorScheme });
 
     for (const route of SAMPLED_ROUTES) {
@@ -21,8 +21,8 @@ for (const colorScheme of ['dark', 'light'] as const) {
             const h = hex.trim().replace('#', '');
             return [0, 2, 4].map((at) => parseInt(h.slice(at, at + 2), 16)).join(',');
           };
-          const pinks = new Set(
-            ['--dark-pink-text', '--color-light-pink-text'].map((name) => toRgb(root.getPropertyValue(name))),
+          const reds = new Set(
+            ['--dark-red-text', '--color-light-red-text'].map((name) => toRgb(root.getPropertyValue(name))),
           );
           const key = (c) => [c.r, c.g, c.b].join(',');
           const colorsIn = (value) => (value.match(/rgba?\\([^)]+\\)/g) || []).map(parse).filter((c) => c && c.a > 0);
@@ -42,7 +42,7 @@ for (const colorScheme of ['dark', 'light'] as const) {
                 .map((side) => ({ inset: false, colors: colorsIn(style['border' + side + 'Color']) })),
             ];
             for (const { inset, colors } of marks) {
-              for (const color of colors.filter((c) => pinks.has(key(c)))) {
+              for (const color of colors.filter((c) => reds.has(key(c)))) {
                 const ground = effectiveBackground(inset ? el : el.parentElement);
                 if (!ground) continue;
                 found += 1;
@@ -65,10 +65,10 @@ for (const colorScheme of ['dark', 'light'] as const) {
           return { found, faint: [...new Set(faint)] };
         })()`)) as { found: number; faint: string[] };
         if (route === '/')
-          expect(found, 'no pink edge or throw found on /').toBeGreaterThan(0);
+          expect(found, 'no red edge or throw found on /').toBeGreaterThan(0);
         expect(
           faint,
-          `pink below 7:1 on its ground on ${route} in ${colorScheme} mode`,
+          `red below 7:1 on its ground on ${route} in ${colorScheme} mode`,
         ).toEqual([]);
       });
     }
