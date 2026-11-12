@@ -279,7 +279,7 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
 - No `gold-subtle`: a third step would be indistinguishable from `gold-text`.
   Below `gold-muted`, hierarchy is weight and size.
 - No `cyan`, `pink` or `pink-text` on gold, not even a shadow: `.surface-gold`
-  turns `pink` and `bunny` ink, so every throw on gold is ink. A `.sticker` carries its own dark ground.
+  turns `pink` and `bunny` ink, so every throw on gold is ink. A `.sticker` carries its own `surface` ground, dark in dark mode and white in light.
 - A utility written inside a gold section (`border-border`, `text-subtle`)
   beats the subtree default and is a bug. axe misses it;
   `tests/gold-surface.spec.ts` catches it.
@@ -345,7 +345,8 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
   `border`. `bunny` is the mode's pink, ink on gold.
 - The label on a gold fill is `gold-text`, never `background` (white in
   light).
-- RIDET and `.sticker` are black blocks.
+- RIDET is a black block. A `.sticker` follows the tokens: white fill,
+  `#131313` edge, `light-pink-text` label.
 - `tests/light-mode.spec.ts` scans every route in light at WCAG 2.2 AA.
 
 ## Type scale
