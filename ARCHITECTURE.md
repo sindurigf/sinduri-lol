@@ -887,14 +887,13 @@ evidence.
   ([H67](https://www.w3.org/WAI/WCAG22/Techniques/html/H67)). Text there would
   be announced twice.
 - **AccessLint engine hits, each checked against the live DOM:**
-  `color-contrast` on the homepage "Sinduri" is read against a gold ancestor
-  the text does not sit on; `landmark-unique` counts the no-JavaScript nav,
-  which is `display: none` with scripts on; `aria-hidden-focus` flags the
-  controls in `/brand`'s light halves, which are `inert` and so never take
-  focus. `ACCESSLINT_FALSE_POSITIVES` in `tests/accesslint.ts` drops each only
-  on those elements and while its reason holds. "Guntupalli" is not dropped:
-  it sits on the gold, and `tests/hero-clear.spec.ts` checks no canvas pixel,
-  stem, bud or hare, lies under either line of the name.
+  `landmark-unique` counts the no-JavaScript nav, which is `display: none`
+  with scripts on; `aria-hidden-focus` flags the controls in `/brand`'s light
+  halves, which are `inert` and so never take focus.
+  `ACCESSLINT_FALSE_POSITIVES` in `tests/accesslint.ts` drops each only on
+  those elements and while its reason holds. `tests/hero-clear.spec.ts` checks
+  no canvas pixel, stem, bud or hare, lies under either line of the homepage
+  name.
 - **Blur the near meadow canvas with `ctx.filter` instead of the CSS
   `filter`:** at 4x CPU throttle, `ctx.filter` per stroke drops the field to a
   few frames a second, and one offscreen `ctx.filter` pass runs slower than the
