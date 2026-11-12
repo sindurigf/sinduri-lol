@@ -42,8 +42,7 @@
   :is(:root.light main, main .mode-light)
     :is(.rotate-3, .-rotate-3).sticker:not(.mode-dark *),
   :is(:root.light main, main .mode-light)
-    :is(.rotate-3, .-rotate-3).hero-sticker.bg-surface:not(.mode-dark *),
-  .logo-tile.bg-block-ink {
+    :is(.rotate-3, .-rotate-3).hero-sticker.bg-surface:not(.mode-dark *) {
     background-clip: border-box;
   }
 
@@ -154,7 +153,7 @@
 
     & > * {
       margin: 0 0 calc(var(--block-edge) * -1) calc(var(--block-edge) * -1);
-      box-shadow: var(--hard-throw) var(--hard-throw) 0 var(--color-pink);
+      box-shadow: var(--hard-throw) var(--hard-throw) 0 var(--color-red);
     }
   }
 
