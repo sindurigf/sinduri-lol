@@ -13,7 +13,6 @@ import {
   BUD_START,
   BUD_TIERS,
   FILL_OUTLINE,
-  FILL_STALK_WIDTH,
   CLUMP_COUNT,
   CLUMP_SPREAD,
   HOP_BASE_SECONDS,
@@ -58,6 +57,7 @@ import {
   SIT,
   SPRING,
   STALK_WIDTH,
+  STALK_WIDTH_SHARE,
   STEM_ALPHA,
   REACH,
   breeze,
@@ -357,33 +357,29 @@ const settle = (
   }
 };
 
-/* The outline stays opaque and the ground goes under the fill, so only the fill fades with distance. */
+/* Full strength in both modes: a faded stalk falls under 7:1 on its ground. */
 const strokeStalk = (
   ctx: CanvasRenderingContext2D,
   palette: HeroPalette,
-  alpha: number,
 ): void => {
   ctx.strokeStyle = palette.stalk;
-  /* A bud fill means the light page: a faded ink stalk falls under 7:1 on it. */
-  ctx.globalAlpha = palette.fill ? 1 : alpha;
-  if (palette.fill) {
-    ctx.lineWidth = Math.max(STALK_WIDTH.min, ctx.lineWidth * FILL_STALK_WIDTH);
-  }
+  ctx.globalAlpha = 1;
+  ctx.lineWidth = Math.max(STALK_WIDTH.min, ctx.lineWidth * STALK_WIDTH_SHARE);
   ctx.stroke();
 };
 
+/* Only a light bud's fill fades with distance: the ground goes under it and its outline stays opaque. */
 const fillBud = (
   ctx: CanvasRenderingContext2D,
   palette: HeroPalette,
   alpha: number,
 ): void => {
-  ctx.globalAlpha = alpha;
+  ctx.globalAlpha = 1;
   if (!palette.fill) {
     ctx.fillStyle = palette.stalk;
     ctx.fill();
     return;
   }
-  ctx.globalAlpha = 1;
   ctx.fillStyle = palette.background;
   ctx.fill();
   ctx.globalAlpha = alpha;
@@ -499,7 +495,7 @@ const drawStem = (
   const alpha =
     (STEM_ALPHA.base + Math.sqrt(stem.scale) * STEM_ALPHA.byScale) * stem.veil;
   traceStalk(ctx, stem, lean);
-  strokeStalk(ctx, palette, alpha);
+  strokeStalk(ctx, palette);
 
   if (stem.height < BUD_MIN_HEIGHT * world) return;
 
