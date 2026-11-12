@@ -5,7 +5,7 @@
 @layer utilities {
   /*
    * Slim once scrolled (src/scripts/header-compact.ts): a 68px bar whose 60px
-   * inside holds the 44px bricks and their throw, and the logo tile at three
+   * inside holds the 44px bricks and their throw, and the logo at three
    * quarters in a 44px link. Not when the header scrolls away. Utilities, to beat the
    * header's `h-header` and `py-3`.
    */
@@ -45,7 +45,7 @@
     background-clip: border-box;
   }
 
-  /* The rabbit jumps the tile's top-right corner, so it overflows the tile and moves with it. */
+  /* The rabbit overflows its 48px box and moves with it. */
   .logo-tile .logo-rabbit {
     position: absolute;
     top: var(--logo-rabbit-top);
@@ -93,29 +93,21 @@
   }
 
   /*
-   * The logo tile's press, as the controls' in buttons-nav.css with the mark's
-   * 8px throw. Only the tile moves, so the link keeps the pointer. The tile is
-   * the rabbit's springboard: pressed, the rabbit crouches with it; released, it springs.
+   * The logo's press, as the controls' in buttons-nav.css. The rabbit carries its
+   * own die-cut throw, so the box under it is unpainted. Only the box moves, so
+   * the link keeps the pointer; pressed, the rabbit crouches; released, it springs.
    */
   .logo-link .logo-tile {
-    box-shadow: var(--lift-mark) var(--lift-mark) 0 var(--color-bunny);
-
     @media (prefers-reduced-motion: no-preference) {
-      transition-property: translate, box-shadow;
+      transition-property: translate;
       transition-duration: var(--press-travel);
       transition-timing-function: linear;
     }
   }
 
-  .logo-link:active .logo-tile {
-    box-shadow: 0 0 0 var(--color-bunny);
-  }
-
   @media (prefers-reduced-motion: no-preference) and (hover: hover) {
     .logo-link:hover:not(:active) .logo-tile {
       translate: calc(var(--press-lift) * -1) calc(var(--press-lift) * -1);
-      box-shadow: calc(var(--lift-mark) + var(--press-lift))
-        calc(var(--lift-mark) + var(--press-lift)) 0 var(--color-bunny);
     }
 
     .logo-link:hover:not(:active) .logo-rabbit {

@@ -96,7 +96,6 @@ Dark is the default. Colors and rules:
   is set. No `dark:` variants.
 - `<main>`, the header and the footer change; the header bar is gold in dark
   mode and cyan in light mode. The no-JS nav stays dark.
-- `block-ink` fills the logo tile; `--slab-throw` is its shadow, ink on the gold slab and light pink on the cyan one.
 - An inline script in `BaseLayout.astro`'s `<head>` sets `data-theme` from the
   saved choice or `prefers-color-scheme` before the body parses, rereads it on
   a back-forward cache restore (`pageshow`), applies a saved `--text-scale`,
@@ -471,7 +470,7 @@ in `wrangler.jsonc`).
 | Path                            | Artwork   | Goes on              | Used by                                      |
 | ------------------------------- | --------- | -------------------- | -------------------------------------------- |
 | `src/assets/roundel-rabbit.svg` | Sticker   | Hero slab edge       | `Roundel.astro`                              |
-| `src/assets/logo-rabbit.svg`    | Sticker   | The logo tile        | `Header.astro` logo tile                     |
+| `src/assets/logo-rabbit.svg`    | Sticker   | The header logo      | `Header.astro` logo link                     |
 | `src/assets/lepus-rabbit.svg`   | Sticker   | The Lepus Ridet tile | `about.astro`                                |
 | `src/assets/hero-rabbit.svg`    | Atlas     | The hero field       | `src/scripts/hero-field.ts`                  |
 | `src/assets/bunny-footer.svg`   | Sticker   | The footer name band | `Footer.astro`                               |

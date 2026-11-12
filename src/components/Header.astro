@@ -60,7 +60,7 @@ const current = (href: string) => ariaCurrent(currentPath, href);
       aria-current={current(HOME_HREF)}
       class="logo-link flex min-w-0 items-center gap-4 max-xs:gap-2 lg:justify-self-start"
     >
-      <span class="logo-tile relative flex h-12 w-12 rotate-3 items-center justify-center rounded-nav border-4 border-block-ink bg-block-light">
+      <span class="logo-tile relative flex h-12 w-12 rotate-3 items-center justify-center">
         <img
           src={logoRabbit.src}
           alt=""
@@ -74,7 +74,7 @@ const current = (href: string) => ariaCurrent(currentPath, href);
         />
       </span>
       {/*
-        Drawn from `md`; below it only the tile shows, which leaves room for the
+        Drawn from `md`; below it only the rabbit shows, which leaves room for the
         Theme, Text Size and Menu bricks at 320px. The link's aria-label names it.
         Untracked below xs; under SC 1.4.12 spacing it breaks after the dot.
       */}
