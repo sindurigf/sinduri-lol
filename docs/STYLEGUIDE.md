@@ -338,7 +338,7 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
 - Gold text turns ink; a `.label.text-gold` and a slide label gain a cyan
   square before the word (`--label-mark`).
 - Blocks keep the `#131313` edge (18.58 on white).
-- The header slab is cyan with an ink edge and `#540038` throws (7.38), the
+- The header slab is cyan with an ink edge and `#560000` throws (7.58), the
   mirror of the gold slab in dark mode ([Navigation](#navigation)).
 - The footer follows the mode like `<main>`: white in light mode, its words
   7:1 or more and its tiles apart from it (`tests/footer.spec.ts`).
