@@ -97,7 +97,7 @@ Dark is the default. Colors and rules:
   is set. No `dark:` variants.
 - `<main>`, the header and the footer change; the header bar is gold in dark
   mode and cyan in light mode. The no-JS nav stays dark.
-- `block-ink` fills the logo tile; `--slab-throw` is its shadow, ink on the gold slab and light pink on the cyan one.
+- `block-ink` fills the logo tile; `--slab-throw` is its shadow, ink on the gold slab and red on the cyan one.
 - An inline script in `BaseLayout.astro`'s `<head>` sets `data-theme` from the
   saved choice or `prefers-color-scheme` before the body parses (a
   `MutationObserver` keeps the `light` class in step with it), rereads it on
@@ -480,11 +480,11 @@ in `wrangler.jsonc`).
 | `public/images/og-default.png`  | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
 | `public/images/og/*.jpg`        | Composite | n/a                  | `BaseLayout.astro`, every other page         |
 
-- Each rabbit but the logo has a `-light.svg` twin in `--color-light-pink-text`
+- Each rabbit but the logo has a `-light.svg` twin in `--color-light-red-text`
   (`npm run rabbit-light`, `src/lib/rabbit-modes.ts`); `ModeArt.astro` and
   light-mode.css show the one for the mode. The footer rabbit swaps its `src`
   in `theme-switch.ts`, as Let It Fall moves that element.
-- `favicon.svg` switches pinks with `prefers-color-scheme`: a tab icon cannot
+- `favicon.svg` switches reds with `prefers-color-scheme`: a tab icon cannot
   see `data-theme`.
 - `og-default.png`: 1200x630. All gold: the name, the joined Lepus Ridet
   sticker and the tagline in two lines, and the header logo scaled 7x, whole
@@ -512,7 +512,7 @@ in `wrangler.jsonc`).
   `<symbol>` per link label in `src/assets/social-icons.svg`. The footer rabbit
   is `src/assets/bunny-footer.svg` with `alt=""`, standing on the name band:
   the Looking Up pose of a Canva sheet, traced with Potrace and
-  exported as a vector die-cut sticker on a pink block behind it, like the roundel;
+  exported as a vector die-cut sticker on a red block behind it, like the roundel;
   sources and scripts are kept outside the repo.
   The footer runs JavaScript only for features
   [loaded on demand](#scripts-loaded-on-demand).

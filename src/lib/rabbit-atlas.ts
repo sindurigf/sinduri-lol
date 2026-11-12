@@ -1,6 +1,6 @@
 /*
  * Pure. The rabbit is four traced poses in one atlas (src/assets/hero-rabbit.svg,
- * rastered to hero-rabbit-climb.webp), die-cut sticker and ink-backed pink
+ * rastered to hero-rabbit-climb.webp), die-cut sticker and ink-backed red
  * block included; they face left. It moves as one piece and swaps poses; it
  * never bends.
  */
