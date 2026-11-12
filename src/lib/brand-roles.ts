@@ -39,6 +39,7 @@ export const SWATCH: Record<string, Swatch> = {
   pink: { paint: 'fill', cls: 'bg-pink' },
   'pink-text': { paint: 'glyph', cls: 'text-pink-text' },
   bunny: { paint: 'fill', cls: 'bg-bunny' },
+  'block-cyan': { paint: 'fill', cls: 'bg-block-cyan' },
 };
 
 /* The page's own edge is the token the `bg-border` swatch paints; spelled out, check-tokens would read it as a width. */

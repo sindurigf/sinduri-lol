@@ -11,6 +11,7 @@ import { createHeroField } from '../lib/hero-field';
 import { MAX_PIXEL_RATIO } from '../lib/image-densities';
 import type { HeroField, HeroPalette } from '../lib/hero-field-scene';
 import heroRabbit from '../assets/hero-rabbit.svg';
+import heroRabbitLight from '../assets/hero-rabbit-light.svg';
 
 /** Any fixed time; this one falls in the hare's first rest. */
 const STILL_SECONDS = 3.4;
@@ -207,12 +208,17 @@ const setUp = (host: HTMLElement): void => {
   };
 
   /* The field draws without the rabbit until the atlas decodes, then rebuilds with it. */
+  const atlasSrc = (): string =>
+    document.documentElement.dataset.theme === 'light'
+      ? heroRabbitLight.src
+      : heroRabbit.src;
   const loadAtlas = (): void => {
     const image = new Image();
-    image.src = heroRabbit.src;
+    image.src = atlasSrc();
     image
       .decode()
       .then(() => {
+        if (image.src !== new URL(atlasSrc(), location.href).href) return;
         atlas = image;
         /* The first draw rasterises the vector atlas, tens of ms: when the page is idle, not mid-load. */
         if (typeof window.requestIdleCallback === 'function')
@@ -245,7 +251,12 @@ const setUp = (host: HTMLElement): void => {
   loop.observe([host], { rootMargin: VIEW_MARGIN, assumeOnScreen: true });
   watchRatio();
   /* Watches data-theme itself, so the hero imports nothing from the switch's module. */
-  new MutationObserver(rebuild).observe(document.documentElement, {
+  const onTheme = (): void => {
+    if (atlas && atlas.src !== new URL(atlasSrc(), location.href).href)
+      loadAtlas();
+    rebuild();
+  };
+  new MutationObserver(onTheme).observe(document.documentElement, {
     attributes: true,
     attributeFilter: ['data-theme'],
   });

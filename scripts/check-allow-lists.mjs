@@ -25,6 +25,9 @@ export const SERVED_AS_IS = new Map([
     'roundel-rabbit.svg',
     'bunny-footer.svg',
     'lepus-rabbit.svg',
+    'roundel-rabbit-light.svg',
+    'bunny-footer-light.svg',
+    'lepus-rabbit-light.svg',
   ].map((name) => [
     name,
     'a vector from scripts/make-logo.mjs or the rabbit trace, drawn sharp at every size as it is.',
@@ -33,14 +36,14 @@ export const SERVED_AS_IS = new Map([
     `about-cats-${cat}.avif`,
     'the About cats draw their frames from it with SVG <image>; it is an AVIF atlas already.',
   ]),
-  [
-    'hero-rabbit-climb.webp',
+  ...['hero-rabbit-climb.webp', 'hero-rabbit-climb-light.webp'].map((name) => [
+    name,
     "Let It Fall's climbing rabbit draws its poses from it by offset; a lossless WebP from scripts/make-climb-atlas.mjs already.",
-  ],
-  [
-    'hero-rabbit.svg',
+  ]),
+  ...['hero-rabbit.svg', 'hero-rabbit-light.svg'].map((name) => [
+    name,
     'the hero canvas rasterises the vector atlas at the size it draws the rabbit.',
-  ],
+  ]),
   [
     'hero-still-short.webp',
     'layout.css links it as the hero background under `scripting: none`; ' +

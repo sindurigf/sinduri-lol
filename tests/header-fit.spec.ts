@@ -109,7 +109,11 @@ for (const width of BRICK_WIDTHS) {
         const inner = slab.getBoundingClientRect();
         const top = inner.top + parseFloat(slabStyle.borderTopWidth);
         const bottom = inner.bottom - parseFloat(slabStyle.borderBottomWidth);
-        const rows = [...slab.querySelectorAll<HTMLElement>('.header-bricks')]
+        const rows = [
+          ...slab.querySelectorAll<HTMLElement>(
+            '.header-bricks, .header-actions > div > .nav-cta',
+          ),
+        ]
           .filter((row) => row.checkVisibility())
           .map((row) => {
             const box = row.getBoundingClientRect();
@@ -267,7 +271,7 @@ test.describe('the slim header once the page scrolls', () => {
       const root = getComputedStyle(document.documentElement);
       const targets = [
         ...header.querySelectorAll<HTMLElement>(
-          '.header-bricks :is(a, button), .logo-link',
+          '.header-bricks :is(a, button), .header-actions > div > .nav-cta, .logo-link',
         ),
       ]
         .filter((el) => el.checkVisibility())

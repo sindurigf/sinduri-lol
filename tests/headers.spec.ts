@@ -40,8 +40,9 @@ const declaredAssets = (): string[][] => {
     ),
   ];
 
-  // A browser fetches one candidate per <picture> or bare <img>, so each is one group.
-  const image = /<picture\b[\s\S]*?<\/picture>|<img\b[^>]*>/g;
+  // A browser fetches one candidate per <picture>, bare <img> or ModeArt pair, whose hidden twin stays unloaded.
+  const image =
+    /<img\b[^>]*\bart-dark\b[^>]*>\s*<img\b[^>]*\bart-light\b[^>]*>|<picture\b[\s\S]*?<\/picture>|<img\b[^>]*>/g;
   const groups = [
     ...[...html.matchAll(image)].map((m) => paths(m[0])),
     ...paths(html.replace(image, '')).map((path) => [path]),
