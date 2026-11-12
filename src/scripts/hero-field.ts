@@ -1,9 +1,6 @@
 /*
- * The homepage meadow: sizes the three canvases in `[data-hero-field]` and
- * runs the frame loop; drawing lives in src/lib/hero-field.ts. The pause
- * control (SC 2.2.2) ships `hidden` and shows once motion can run, so one
- * never ships without the other. Reduced motion draws one fixed frame and
- * keeps the button hidden.
+ * The pause control (SC 2.2.2) ships `hidden` and shows once motion can run, so
+ * one never ships without the other. Reduced motion draws one fixed frame.
  */
 import { NEXT_FRAME, createMotionLoop } from './motion-loop';
 import { requiredElementIn } from './required-element';
