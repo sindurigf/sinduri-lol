@@ -388,7 +388,7 @@
   --tracking-title: -0.02em;
   --tracking-label: 0.1em;
 
-  /* Zero except the laughing rabbit tile and Fandoms photo on /about. */
+  /* Zero except the logo tile, and the laughing rabbit tile and Fandoms photo on /about. */
   --radius-nav: 14px;
 
   /*
@@ -402,8 +402,6 @@
   --block-edge: 4px;
   /* The header's joined bricks and its logo block. */
   --brick-throw: 6px;
-  /* How far the header logo drops when pressed, and the room its link keeps below it. */
-  --logo-throw: 4px;
   /*
    * The Step: sideways juts and a wall's Step Up, both 0 below 640px so
    * nothing pushes a phone layout off the column.
@@ -497,9 +495,9 @@
   --focus-gap: 4px;
   --lift-control: 4px;
   --lift-object: var(--hard-throw);
-  /* Bunny marks keep an 8px shadow, so their ring clears 8px. */
+  /* The logo tile keeps its 8px bunny shadow, so its ring clears 8px. */
   --lift-mark: 8px;
-  /* The logo rabbit's box from its 48px box, as scripts/make-logo.mjs prints it. */
+  /* The logo rabbit's box from the tile's padding box, as scripts/make-logo.mjs prints it. */
   --logo-rabbit-left: 4px;
   --logo-rabbit-top: -19px;
   --logo-rabbit-width: 47px;

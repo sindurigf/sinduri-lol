@@ -40,22 +40,22 @@ blur, uppercase headings, tilted marks.
 - **A gold use not on this list adds a row, with its argument, in the same
   change.**
 
-| #   | Where gold is spent                                                                                                                                                                                         | Measured on                            |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| 1a  | Ground, full slab: `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`                                                                                                                           | 6 routes                               |
-| 1b  | Ground, thin slab: `/contact/sent`, both posts                                                                                                                                                              | 3 routes                               |
-| 1c  | Ground, mid-page: a `Section surface="gold"`, the kindness quote, `/contact`'s closing band                                                                                                                 | `/career`, `/about`, `/`, `/contact`   |
-| 2   | The primary action: `.nav-cta`, `.btn-primary`                                                                                                                                                              | 11 routes, 4 routes                    |
-| 3   | The bunny marks: the header logo, the laughing rabbit tile on `/about`, the roundel, the homepage sticker                                                                                                   | 11 routes, 9 routes                    |
-| 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                                                                                                                           | `/about`, `/accessibility`, `/contact` |
-| 4a  | A talk slide's label, bold words, part number and lead-in term before a colon; its text links, still underlined                                                                                             | `/talks/<deck>/`                       |
-| 5   | Category: the blog label and the homepage glyph tiles, ink-edged on gold                                                                                                                                    | 3 routes                               |
-| 6   | Display words: `Guntupalli`; the homepage section title bricks                                                                                                                                              | `/`                                    |
-| 7   | List markers in `.bullet-list`                                                                                                                                                                              | wherever a bulleted list is            |
-| 8   | The `gold` swatch and the contrast samples on gold; fills, hex in both modes                                                                                                                                | `/brand`                               |
-| 9   | Edges in dark mode: `border` on fields, controls, chips, rules and the outer edge of a gold area                                                                                                            | every route                            |
-| 10  | The header bar's marks: in dark mode the current page's 4px underline on its ink brick; in light mode the current-page brick, theme switch, text size brick and call to action, gold on the ink bar (11.32) | every route                            |
-| 11  | The footer name band: "Lepus Ridet" in ink on a `block-gold` band at every page's end, the rabbit standing on it                                                                                            | every route                            |
+| #   | Where gold is spent                                                                                                           | Measured on                            |
+| --- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| 1a  | Ground, full slab: `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`                                             | 6 routes                               |
+| 1b  | Ground, thin slab: `/contact/sent`, both posts                                                                                | 3 routes                               |
+| 1c  | Ground, mid-page: a `Section surface="gold"`, the kindness quote, `/contact`'s closing band                                   | `/career`, `/about`, `/`, `/contact`   |
+| 2   | The primary action: `.nav-cta`, `.btn-primary`                                                                                | 11 routes, 4 routes                    |
+| 3   | The bunny marks: the logo tile, the laughing rabbit tile on `/about`, the roundel, the homepage sticker                       | 11 routes, 9 routes                    |
+| 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                                             | `/about`, `/accessibility`, `/contact` |
+| 4a  | A talk slide's label, bold words, part number and lead-in term before a colon; its text links, still underlined               | `/talks/<deck>/`                       |
+| 5   | Category: the blog label and the homepage glyph tiles, ink-edged on gold                                                      | 3 routes                               |
+| 6   | Display words: `Guntupalli`; the homepage section title bricks                                                                | `/`                                    |
+| 7   | List markers in `.bullet-list`                                                                                                | wherever a bulleted list is            |
+| 8   | The `gold` swatch and the contrast samples on gold; fills, hex in both modes                                                  | `/brand`                               |
+| 9   | Edges in dark mode: `border` on fields, controls, chips, rules and the outer edge of a gold area                              | every route                            |
+| 10  | The header bar's marks: the current-page brick, theme switch, text size brick and call to action, gold on the ink bar (11.32) | every route                            |
+| 11  | The footer name band: "Lepus Ridet" in ink on a `block-gold` band at every page's end, the rabbit standing on it              | every route                            |
 
 - 9 is the edge because the only two colors are ink and gold: an ink edge
   vanishes on the dark page and a light one adds a third color. Gold reads as
@@ -336,9 +336,8 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
 - Gold text turns ink; a `.label.text-gold` and a slide label gain a gold
   square before the word, ink on a gold block (`--label-mark`).
 - Blocks stay gold or light in light mode, with the `#131313` edge (18.58 on white).
-- The header bar turns `#131313`, fill and edge, the mirror of its light bar in
-  dark mode: light link bricks, gold solid bricks, an ink throw
-  ([Navigation](#navigation)).
+- The header bar turns white, the page's ground, the mirror of its ink bar in
+  dark mode ([Navigation](#navigation)).
 - The footer follows the mode like `<main>`: white in light mode, its words
   7:1 or more and its tiles apart from it (`tests/footer.spec.ts`).
 - Bunny marks use `bunny`, `fill-edge` and `shadow-hard-bunny-*`, never
@@ -579,19 +578,19 @@ with a comment beside it.
 
 | Utility                     | Casts it                                                                                                              |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `shadow-hard-pink-object`   | Cards, post contents, gold areas, popovers, slide cards, the header bar; `--hard-throw` (8px)                         |
+| `shadow-hard-pink-object`   | Cards, post contents, gold areas, popovers, slide cards; `--hard-throw` (8px)                                         |
 | `shadow-hard-pink-4`        | The PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, footer stickers, slide cards                        |
 | `shadow-brick`              | The header's brick rows (in `block-ink`), the menu's links, call to action and Close; `--brick-throw` (6px) in `text` |
 | `shadow-hard-cyan-object`   | A hovered linked card, in place of pink; a contact link brick fills cyan instead, its ring inside in ink              |
 | `shadow-hard-gold-border-4` | A card on gold                                                                                                        |
 | `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                       |
-| `shadow-hard-bunny-8`       | The homepage stickers, the laughing rabbit tile on `/about` below `lg`                                                |
+| `shadow-hard-bunny-8`       | The homepage stickers, the laughing rabbit tile on `/about` below `lg`, the logo tile                                 |
 | `shadow-hard-bunny-12`      | The laughing rabbit tile on `/about` from `lg`                                                                        |
 
 - `bunny` is `pink`, set apart so a surface can turn the bunny throws ink
-  (the gold header slab, `.surface-gold`).
+  (`.surface-gold`).
 - Anything focusable with a shadow sets its lift: [Focus](#focus).
-- Radius is 0 everywhere (base layer). `rounded-nav` (14px):
+- Radius is 0 everywhere (base layer). `rounded-nav` (14px): the logo tile
   (`Header.astro`), the laughing rabbit tile on the Lepus Ridet panel on `/about` and the Star
   Trek thumbnail on `/about`, square so the photo is not cropped. `rounded-full`:
   no current use. No pills; any other rounded corner is a bug.
@@ -638,7 +637,7 @@ file per area.
   on touch screens, where hover sticks after a tap, and not under reduced
   motion.
 - Pressed: buttons, `.btn-gold-primary`, linked chips and footer stickers drop
-  their shadow and move 4px into it; the menu's bricks 6px; the header logo 4px.
+  their shadow and move 4px into it; the menu's bricks 6px; the logo tile 8px.
   The header's joined bricks and a chip row's chips share their row's throw
   and hold still. No move under reduced motion. `tests/press.spec.ts` presses
   each.
@@ -951,11 +950,11 @@ text-gold-muted` under the standfirst. Color
 ### Header relation
 
 - The header is a bar on the hero's column, 12px below the top, with the
-  logo at its left end, and from 48rem its name too ([Navigation](#navigation)).
-- The logo is the die-cut rabbit alone, with no tile, edge or box: its white
-  rim and baked ink throw sit on the bar in both modes.
-- Hovered, the rabbit rises 3px; pressed, it drops 4px (`--logo-throw`) and
-  crouches; released, the
+  logo tile at its left end, and from 48rem its name too ([Navigation](#navigation)).
+- The logo tile keeps its `bunny` shadow. The die-cut rabbit jumps its
+  top-right corner and casts an ink throw, so the corner never doubles the pink.
+- The tile is the rabbit's springboard: hovered, the rabbit rises 3px; pressed,
+  the tile drops into its shadow and the rabbit crouches with it; released, the
   rabbit springs past its spot and settles (`--ease-spring`). Not under
   reduced motion.
 - The sticky header covers the top of the slab on scroll; nothing on the slab
@@ -1238,7 +1237,7 @@ by `tests/reading-tab.spec.ts`.
   mid-height, with the group in its panel; Escape closes it and returns focus
   to the button; a press outside or Tab out closes it. Narrower, below `md` an "Aa" brick beside Theme and Menu opens the group in a
   popover, and from `md` the group is in the theme popover. Below `md` the
-  header shows only the logo rabbit, so the four bricks fit at 320px.
+  header shows only the logo tile, so the four bricks fit at 320px.
   A test asserts the tab covers no link, button or text at rest.
 - While a control in `main` has keyboard focus the tab slides out of the way
   (SC 2.4.11, 2.4.12).
@@ -1312,26 +1311,24 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 
 ### By width
 
-| Width       | Header                                                                                                                                                                                                      |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| below 48rem | the logo rabbit alone (the link keeps its `aria-label`), the theme switch, the "Aa" text size brick, and the menu button that opens the menu dialog; without JavaScript, a nav row under the header instead |
-| from 48rem  | logo link with its name, the Primary nav (About, Career, Blog), the theme switch, and the call to action                                                                                                    |
-| from 64rem  | the same on a three-track grid, the nav centered, wider gaps                                                                                                                                                |
+| Width       | Header                                                                                                                                                                                                    |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| below 48rem | the logo tile alone (the link keeps its `aria-label`), the theme switch, the "Aa" text size brick, and the menu button that opens the menu dialog; without JavaScript, a nav row under the header instead |
+| from 48rem  | logo link with its name, the Primary nav (About, Career, Blog), the theme switch, and the call to action                                                                                                  |
+| from 64rem  | the same on a three-track grid, the nav centered, wider gaps                                                                                                                                              |
 
 - Links come from `NAV_LINKS` and `CTA` in `src/lib/nav.ts`; the desktop
   header uses `HEADER_LINKS` (no Home; the logo links to `/`).
-- The header bar (`.header-slab`) is a colored block: `block-gold` on the
-  dark page (11.99), `block-cyan` on the light page with a 4px `block-ink`
-  edge (cyan on white is 1.99). Ink on it is 11.32 on gold, 9.36 on cyan.
+- The header bar (`.header-slab`) is a slab of the page's own colors:
+  `block-ink` on the dark page, white on the light page, with no edge or
+  shadow of its own. Its bricks keep the page's edges, fills and hovers.
   80px tall in a 104px header. `.site-header` keeps the page's values as
   `--page-*` for the menu dialog.
-- The slab sets the bricks through `--slab-fill`, `--slab-edge`,
-  `--brick-fill`, `--brick-label`, `--solid-fill`, `--solid-label`,
-  `--hover-*`, `--solid-hover-*`, `--current-mark`, `--menu-*`, `--logo-*`
-  `--slab-throw` and `--cta-shadow`; dark is the base in `buttons-nav.css`, light overrides
-  in `light-mode.css`. The menu dialog and Theme menu reset them.
-- Get in Touch casts `--slab-throw` at 6px:
-  ink on the gold slab (11.32), light pink on the cyan one (7.38).
+- The slab sets `--slab-fill`, `--menu-*`, `--logo-*` and `--cta-shadow`;
+  dark is the base in `buttons-nav.css`, light overrides in `light-mode.css`.
+  The menu dialog and Theme menu reset the page's values.
+- The logo tile is a `block-gold` tile in dark mode and a `block-cyan` tile in
+  light mode, no edge, with an 8px `bunny` shadow. Get in Touch throws 6px in `text`.
 - Focused, the logo link turns into a block in the bar's opposite color, with
   no ring: the rabbit jumps higher than the bar leaves room for a ring. Its
   ring is transparent, and `CanvasText` in forced colors
@@ -1362,7 +1359,7 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   12px above and below; `tests/header-fit.spec.ts` holds both.
 - Once the page scrolls past it, the header goes slim
   (`src/scripts/header-compact.ts`): 80px (`--spacing-header-compact`), a 68px
-  bar, the logo at three quarters, bricks still 44px with their throw. A
+  bar, the logo tile at three quarters, bricks still 44px with their throw. A
   state, not an animation. Its flow box keeps 104px, so nothing below moves, and
   the full header's scroll padding still clears it. Not under `short`. `html` keeps focus and anchors
   `--spacing-header` and `--spacing(10)` below the top, so a focused field's
@@ -1493,8 +1490,8 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   a light brick (14.49), `gold-text` on gold (11.32), and `gold-text` on a
   hovered brick's cyan (11.20).
 - `--lift-control` 4px beside a control's 4px shadow, `--lift-object` (the
-  `--hard-throw`, 8px) beside an object's shadow, `--lift-mark` 8px beside a
-  bunny mark's 8px shadow, so the ring clears the shadow (cyan on pink is 2.29). The button,
+  `--hard-throw`, 8px) beside an object's shadow, `--lift-mark` 8px beside the
+  logo tile's 8px shadow, so the ring clears the shadow (cyan on pink is 2.29). The button,
   `.nav-cta` and `.chip` classes carry it. A current item with no shadow sets
   `--lift: 0px`. A new shadow without its lift is a bug.
 - Chip lists and the no-JavaScript nav are `gap-6` so one chip's ring never

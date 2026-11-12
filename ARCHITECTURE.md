@@ -94,8 +94,9 @@ Dark is the default. Colors and rules:
 - `data-theme="light"` on `<html>`; `src/styles/light-mode.css`, imported last,
   overrides a subset of tokens on `<main>`, the header and the footer while it
   is set. No `dark:` variants.
-- `<main>`, the header and the footer change; the header bar is gold in dark
-  mode and cyan in light mode. The no-JS nav stays dark.
+- `<main>`, the header and the footer change; the header bar is ink in dark
+  mode and white in light mode. The no-JS nav stays dark.
+- The logo tile is `block-gold` in dark mode and `block-cyan` in light mode, with an 8px `bunny` shadow.
 - An inline script in `BaseLayout.astro`'s `<head>` sets `data-theme` from the
   saved choice or `prefers-color-scheme` before the body parses, rereads it on
   a back-forward cache restore (`pageshow`), applies a saved `--text-scale`,
@@ -470,7 +471,7 @@ in `wrangler.jsonc`).
 | Path                            | Artwork   | Goes on              | Used by                                      |
 | ------------------------------- | --------- | -------------------- | -------------------------------------------- |
 | `src/assets/roundel-rabbit.svg` | Sticker   | Hero slab edge       | `Roundel.astro`                              |
-| `src/assets/logo-rabbit.svg`    | Sticker   | The header logo      | `Header.astro` logo link                     |
+| `src/assets/logo-rabbit.svg`    | Sticker   | The logo tile        | `Header.astro` logo tile                     |
 | `src/assets/lepus-rabbit.svg`   | Sticker   | The Lepus Ridet tile | `about.astro`                                |
 | `src/assets/hero-rabbit.svg`    | Atlas     | The hero field       | `src/scripts/hero-field.ts`                  |
 | `src/assets/bunny-footer.svg`   | Sticker   | The footer name band | `Footer.astro`                               |
