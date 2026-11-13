@@ -132,6 +132,17 @@ const FIRST_USES: readonly {
     abbreviation: 'IPv4',
     expansion: 'Internet Protocol version 4',
   },
+  { route: '/privacy', abbreviation: 'EU', expansion: 'European Union' },
+  {
+    route: '/privacy',
+    abbreviation: 'GDPR',
+    expansion: 'General Data Protection Regulation',
+  },
+  {
+    route: '/privacy',
+    abbreviation: 'FDPIC',
+    expansion: 'Federal Data Protection and Information Commissioner',
+  },
 ];
 
 /** Names that are written in capitals, not abbreviations a reader must expand. */
