@@ -50,7 +50,7 @@ blur, uppercase headings, tilted marks.
 | 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                                             | `/about`, `/accessibility`, `/contact` |
 | 4a  | A talk slide's label, bold words, part number and lead-in term before a colon; its text links, still underlined               | `/talks/<deck>/`                       |
 | 5   | Category: the blog label and the homepage glyph tiles, ink-edged on gold                                                      | 3 routes                               |
-| 6   | Display words: `Guntupalli`; section title bricks (`Section brick`)                                                           | `/`, `/about`, `/career`               |
+| 6   | Display words: `Guntupalli`; section title bricks (`Section brick`)                                                           | `/`, `/about`, `/career`, `/contact`   |
 | 7   | List markers in `.bullet-list`                                                                                                | wherever a bulleted list is            |
 | 8   | The `gold` swatch and the contrast samples on gold; fills, hex in both modes                                                  | `/brand`                               |
 | 9   | Edges in dark mode: `border` on fields, controls, chips, rules and the outer edge of a gold area                              | every route                            |
