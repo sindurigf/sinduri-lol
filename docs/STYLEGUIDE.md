@@ -107,7 +107,7 @@ blur, uppercase headings, tilted marks.
 | `surface`     | `#1A1A1A`    | Inputs and controls off a block                   |
 | `border`      | `#FFC000`    | Every boundary but table lines: the gold edge     |
 | `card-edge`   | none         | Card and plain slab edge; `#131313` in light mode |
-| `fill-edge`   | `#131313`    | Edge of a gold or light fill: buttons             |
+| `fill-edge`   | `#131313`    | Edge of a gold or light fill, except buttons      |
 | `code-edge`   | `#707070`    | Post code frame edge; `#767676` in light mode     |
 | `code-fill`   | `surface`    | Post code fill; `block-light` in light mode       |
 | `text`        | `#E5E2E1`    | Words and table lines                             |
@@ -161,7 +161,8 @@ The gold-ground set is in [Gold surface](#gold-surface), light values in
   the mode's one red, 7:1 or more on every surface it sits on. Utilities: `bg-red`, `border-red`,
   `text-red-text`.
 - A gold or light fill takes the `fill-edge`, never `border`: the fill is
-  what meets the page. A dark fill (a `.sticker`, a chip, a disabled button)
+  what meets the page. `.btn-primary` and its sending state take `text`
+  instead: #E5E2E1 on the dark ground (15.28), ink inside a block. A dark fill (a `.sticker`, a chip, a disabled button)
   keeps `border`: an ink edge would vanish on it.
 - `tests/edge-contrast.spec.ts`: on every route, both modes, 390 and 1280px,
   a drawn edge reaches 3:1 on its ground unless its fill does.
@@ -259,7 +260,7 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
 | `gold-text`      | Body copy, headings, button borders, the focus ring     |
 | `gold-muted`     | Secondary copy                                          |
 | `gold-border`    | Structural rules, dividers, card edges and shadows      |
-| `fill-edge`      | Edge of a gold or light fill, on gold or off it         |
+| `fill-edge`      | Edge of a gold or light fill except `.btn-primary`      |
 | `gold-link`      | Links, underlined; the block on hover                   |
 | `gold-btn-label` | Label and inner ring on `.btn-gold-primary`'s fill only |
 
@@ -577,7 +578,7 @@ with a comment beside it.
 - Each ground has one edge role. Dark page: `border` (gold), but post table
   lines take `text`. A block: `block-ink`,
   4px; the header bar's edge takes its own fill. Inside gold: `gold-border` (ink). A
-  gold or light fill: `fill-edge` (ink). Light mode: ink everywhere.
+  gold or light fill: `fill-edge` (ink); `.btn-primary`: `text`. Light mode: ink everywhere.
   `tests/edges.spec.ts` asserts each reaches 3:1 in both modes.
 - Shadows are hard offsets, no blur. Gold casts none (gold on gold is 1.00).
 - A tilted box with a drawn edge clips its fill to the padding box when the
