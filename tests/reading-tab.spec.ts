@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, test, type Page } from './test';
+import { expect, test, type Locator, type Page } from './test';
 import { gotoSettled } from './settle';
 import { serveUnderShippedCsp } from './csp';
 import { NODE } from './tags';
@@ -40,6 +40,41 @@ const openTab = async (page: Page) => {
   await expect(
     tab(page).getByRole('button', { name: /Drink Me/ }),
   ).toBeVisible();
+};
+
+/** The word each action's name carries beside its visible label. */
+const SIZE_FUNCTIONS = {
+  smaller: /smaller/i,
+  larger: /larger/i,
+  reset: /100 percent/i,
+};
+
+const escapeRegExp = (text: string) =>
+  text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** SC 2.5.3 and 4.1.2: each name starts with the visible label and says what the button does, once. */
+const expectNamedByFunction = async (group: Locator) => {
+  for (const [action, saysFunction] of Object.entries(SIZE_FUNCTIONS)) {
+    const button = group.locator(`[data-size-action="${action}"]`);
+    const visibleLabel = await button.evaluate((element) => {
+      const shown = element.cloneNode(true) as HTMLElement;
+      shown.querySelectorAll('.sr-only').forEach((hidden) => hidden.remove());
+      return shown.textContent!.trim();
+    });
+    expect(visibleLabel, `${action} has no visible label`).not.toBe('');
+    await expect(
+      button,
+      `the name of ${action} does not start with its visible label`,
+    ).toHaveAccessibleName(new RegExp(`^${escapeRegExp(visibleLabel)}\\b`));
+    await expect(
+      button,
+      `the name of ${action} does not say what the button does`,
+    ).toHaveAccessibleName(saysFunction);
+    await expect(
+      button,
+      `${action} says its function a second time as a description`,
+    ).toHaveAccessibleDescription('');
+  }
 };
 
 const sidewaysPx = (page: Page) =>
@@ -176,9 +211,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
       await expect(group).toHaveCount(1);
       const buttons = group.getByRole('button');
       await expect(buttons).toHaveCount(3);
-      await expect(buttons.nth(0)).toHaveAccessibleName('Drink Me');
-      await expect(buttons.nth(1)).toHaveAccessibleName('Eat Me');
-      await expect(buttons.nth(2)).toHaveAccessibleName('Just Right');
+      await expectNamedByFunction(group);
       for (const box of await Promise.all(
         (await buttons.all()).map((b) => b.boundingBox()),
       )) {
@@ -268,14 +301,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     await expect(button).toHaveAttribute('aria-expanded', 'true');
     const buttons = panel(page).getByRole('button');
     await expect(buttons).toHaveCount(3);
-    await expect(buttons.nth(0)).toHaveAccessibleName('Drink Me');
-    await expect(buttons.nth(0)).toHaveAccessibleDescription('Smaller text');
-    await expect(buttons.nth(1)).toHaveAccessibleName('Eat Me');
-    await expect(buttons.nth(1)).toHaveAccessibleDescription('Larger text');
-    await expect(buttons.nth(2)).toHaveAccessibleName('Just Right');
-    await expect(buttons.nth(2)).toHaveAccessibleDescription(
-      'Back to 100 percent',
-    );
+    await expectNamedByFunction(panel(page));
     for (const box of await Promise.all([
       button.boundingBox(),
       ...(await buttons.all()).map((b) => b.boundingBox()),

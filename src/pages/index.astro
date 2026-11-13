@@ -124,18 +124,10 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
   titleSuffix={false}
   description="I am Sinduri Guntupalli, an open source enthusiast in Vienna, with experience in product and program management, web development and Drupal community work."
 >
-  {/*
-    One gold area for the hero and the section below. No `.surface-gold` on the
-    column: its halves carry it, and nesting double-counts controls in
-    tests/gold-surface.spec.ts.
-  */}
+  {/* The hero stands on the page; the gold block starts at the section below it. */}
   <div class="v-column gold-column">
-    {/*
-    The name's line break sits on the window's top rule: no color clears 4.5:1
-    on both grounds, so each line takes its own.
-  */}
     <section class="band hero relative">
-      <div class="hero-window surface-gold">
+      <div class="hero-window">
         {/* The pause control shows once motion can run (src/scripts/hero-field.ts). */}
         <div class="hero-field" data-hero-field data-hero-motion="paused">
           <canvas aria-hidden="true" class="hero-field-layer"></canvas>
@@ -156,10 +148,7 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
           ))}
         </div>
 
-        {/*
-        Spans, not <p>: WAVE reads short bold paragraphs as headings. No
-        `border-border`: it fails SC 1.4.11 here and would beat `.surface-gold`'s.
-      */}
+        {/* Spans, not <p>: WAVE reads short bold paragraphs as headings. */}
         <div class="hero-marks" aria-hidden="true">
           <span class="hero-sticker -rotate-3 bg-block-gold text-gold-text shadow-hard-bunny-8">
             Lepus
@@ -177,7 +166,7 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
         <div class="hero-plate">
           <h1 class="w-full text-hero-h1">
             <span class="block text-text">Sinduri</span>{' '}
-            <span class="block text-gold-text">Guntupalli</span>
+            <span class="block text-text">Guntupalli</span>
           </h1>
         </div>
       </div>
