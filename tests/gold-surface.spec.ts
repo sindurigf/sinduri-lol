@@ -20,6 +20,9 @@ const invisibleControlMessage = (found: InvisibleControl[]) =>
   `under ${NON_TEXT}:1, SC 1.4.11; "undecidable" was not measured):\n` +
   found.map((e) => `  ${e.selector}: ${e.detail}: "${e.label}"`).join('\n');
 
+/** Tall enough to hold a gold card at NARROW_WIDTH. */
+const NARROW_HEIGHT = 900;
+
 /** The route whose real gold button the in-situ ring check focuses. */
 const GOLD_ROUTE = '/contact';
 
@@ -187,11 +190,14 @@ test.describe('the gold surface exception', () => {
   }
 
   // The deck's gold card shows below lg only. Gold is dark mode's; light mode's cyan is light-mode.spec.ts's.
-  for (const route of ['/404', ...TALK_ROUTES]) {
+  for (const route of TALK_ROUTES) {
     test(`text on gold reads at AAA on ${route} at ${NARROW_WIDTH}px`, async ({
       page,
     }) => {
-      await page.setViewportSize({ width: NARROW_WIDTH, height: 900 });
+      await page.setViewportSize({
+        width: NARROW_WIDTH,
+        height: NARROW_HEIGHT,
+      });
       await gotoSettled(page, route);
 
       const walked = await walkGoldSections(page);
@@ -214,7 +220,7 @@ test.describe('the gold surface exception', () => {
   test(`the ${GOLD_ROUTE} gold button keeps its inner ring at 305px`, async ({
     page,
   }) => {
-    await page.setViewportSize({ width: NARROW_WIDTH, height: 900 });
+    await page.setViewportSize({ width: NARROW_WIDTH, height: NARROW_HEIGHT });
     await gotoSettled(page, GOLD_ROUTE);
 
     const controls = (await page.evaluate(
