@@ -36,7 +36,7 @@ const BUTTONS = [
       data-size-action={action}
     >
       {/* sr-only text, not aria-label, keeps the visible label in the name (SC 2.5.3). */}
-      {label}
+      <span>{label}</span>
       <span class="sr-only">, {purpose}</span>
     </button>
   ))}
