@@ -149,7 +149,7 @@ const EMPTY_BLOG = {
             describeCover={feature}
             eager={index === 0}
             headingLevel={2}
-            class="card-ground w-full"
+            class:list={['w-full', index > 0 && 'card-ground']}
           />
         </li>
       );

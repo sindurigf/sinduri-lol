@@ -23,7 +23,8 @@ before changing anything it covers.
 - `border` on a gold or light fill: it takes `fill-edge`. `fill-edge` on a
   dark fill. A card's own edge or fill: cards are blocks (`block-gold`,
   `block-light`, `block-ink`), set in `cards.css`; a `.card-ground` keeps the
-  page's ground and a `text` edge, on every page but the homepage and /brand.
+  page's ground and a `text` edge: one filled card per section at most, lists
+  and text-heavy cards on the ground (homepage and /brand excepted).
 - `bg-gold` for a fill that may sit in a block: it remaps there; use
   `bg-block-gold`.
 - A shadow class on a brick in a `.card-block`, or a brick that drops:

@@ -136,8 +136,9 @@ The gold-ground set is in [Gold surface](#gold-surface), light values in
   (7.88) or `light-subtle` (7.40), and a badge inverts. Gold fills use
   `block-gold`, which never remaps. `tests/blocks.spec.ts`.
 - Ground cards: `.card-ground` (/about, /career, /credits, blog listings,
-  /contact, /contact/send, /contact/sent) is no block. A page keeps one loud
-  block, its hero. It keeps the page's tokens and ground, takes a 4px `text` edge and
+  /contact, /contact/send, /contact/sent) is no block. A section fills one
+  card at most, 3 to 5 per page; lists and text-heavy cards stay on the
+  ground. It keeps the page's tokens and ground, takes a 4px `text` edge and
   casts the red throw; its controls keep the page's red throws and focus ring.
 - Walls: blocks in a `.card-block` share 4px walls with no gap. Each brick
   casts the throw as a `box-shadow` and the next brick covers it, so it shows
