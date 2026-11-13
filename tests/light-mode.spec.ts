@@ -96,7 +96,7 @@ test.describe('light mode keeps every control edge visible', () => {
           controls += 1;
           if (el.querySelector('img')) continue;
           // A card's title link is drawn by its card (cards.css), so the card's edge is the shape.
-          const shape = el.closest('.card:has(.card-link)') ?? el;
+          const shape = el.matches('.card-link') ? (el.closest('.card') ?? el) : el;
           const box = getComputedStyle(shape);
           const ground = effectiveBackground(shape.parentElement);
           if (!ground) {

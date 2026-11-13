@@ -3,11 +3,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import { talkDecks } from '../../lib/talk-deck';
 import { wallClasses } from '../../lib/wall';
+import { TALKS_PATH } from '../../lib/paths';
 
 const decks = [...(await talkDecks())].map(([deck, slides]) => {
   const cover = slides[0]?.slide;
   if (!cover) throw new Error(`Talk deck ${deck} has no slides.`);
-  return { href: `/talks/${deck}/`, title: cover.data.title };
+  return { href: `${TALKS_PATH}${deck}/`, title: cover.data.title };
 });
 const DECK_WALL = wallClasses({}, decks.length);
 ---
