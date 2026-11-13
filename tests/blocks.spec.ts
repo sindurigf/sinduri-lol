@@ -8,9 +8,9 @@ import { NODE, NO_WEBKIT } from './tags';
 import { DESKTOP_VIEWPORT, NARROW_WIDTH, PHONE_VIEWPORT } from './wcag';
 
 /**
- * Blocks (src/styles/components/cards.css): every card, the plain hero slab
- * and the post contents, gold or light with an ink edge. Inside, the color
- * tokens are remapped, so each block is measured as a ground of its own.
+ * Blocks (src/styles/components/cards.css): cards, the plain hero slab and the
+ * post contents, gold or light with an ink edge, or a `.card-ground` on the page
+ * ground. Each is measured as a ground of its own.
  */
 /* A talk slide is no block, but it is an edged ground of its own, held to the same ratios. */
 const BLOCK =
@@ -22,7 +22,9 @@ const BLOCK_ROUTES = [
   '/blog',
   '/about',
   '/career',
+  '/credits',
   '/contact',
+  '/contact/sent',
   '/accessibility',
   '/blog/five-years-in-drupal',
   '/talks/open-source-is-not-just-code',
