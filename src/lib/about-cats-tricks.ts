@@ -1,5 +1,6 @@
 /*
- * Each cat's paw-button tricks, signature ones first (about-cats-tricks.json).
+ * Each cat's paw-button tricks, signature ones first (CAT_WEIGHTS key order); names and icons are in
+ * about-cats-tricks.json.
  * about-cats.ts fetches the JSON on demand, so /about's script carries none of it, and checks it
  * with isTricksData.
  */

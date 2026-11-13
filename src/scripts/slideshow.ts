@@ -1,6 +1,6 @@
 /*
  * `data-current`, not `hidden`: Tailwind's `hidden` is `!important` in an earlier layer, so print
- * hides slides.
+ * could not show them.
  * `replaceState` so Back leaves the talk. Until `data-deck-ready` slides.css shows only the opening
  * slide; `data-deck-failed` shows every slide.
  */
