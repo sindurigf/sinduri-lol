@@ -277,4 +277,14 @@
     outline-color: var(--color-block-ink);
     outline-offset: calc(-1 * (var(--block-edge) + var(--focus-gap)));
   }
+
+  /* On the ground the ring is the page's focus color; on the cyan hover fill, ink. */
+  .contact-brick.card-ground:focus-visible:not(:hover) {
+    outline-color: var(--color-cyan);
+  }
+
+  .contact-brick.card-ground:hover,
+  .contact-brick.card-ground:hover * {
+    color: var(--color-block-ink);
+  }
 }
