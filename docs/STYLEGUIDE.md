@@ -300,7 +300,11 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
   `tests/gold-surface.spec.ts` asserts every control in a `.surface-gold`
   section has a visible edge: a fill that differs from the ground, or a border
   of at least 3:1.
-- Both are scoped to `.surface-gold` and render unstyled elsewhere.
+- `.btn-gold-primary` is scoped to `.surface-gold` and blocks (`.card`);
+  `.btn-gold-secondary` to `.surface-gold`. Both render unstyled elsewhere.
+- In a block the primary action is `.btn-gold-primary`: the /contact submit and
+  the /brand form sample. Its fill is 11.32 on a gold block and 14.42 on a
+  light one.
 - Both `text-button`, 900, 0.1em, uppercase, `px-8 py-4`. No underline on the
   label.
 

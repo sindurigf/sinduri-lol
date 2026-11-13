@@ -37,7 +37,7 @@
     --press-throw-color: var(--color-red);
   }
 
-  .surface-gold .btn-gold-primary {
+  :is(.surface-gold, .card) .btn-gold-primary {
     --press-throw: var(--lift-control);
     --press-throw-color: var(--color-bunny);
   }
@@ -61,7 +61,7 @@
     a.chip:not(.chip-row *),
     .footer-sticker,
     .press-brick,
-    .surface-gold .btn-gold-primary
+    :is(.surface-gold, .card) .btn-gold-primary
   ):not([aria-disabled='true'], [aria-current]) {
     box-shadow:
       var(--press-ring, 0 0 transparent),

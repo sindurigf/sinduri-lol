@@ -11,12 +11,20 @@ interface Pressable {
   moves: string;
 }
 
+const PRIMARY_SAMPLE = 'main a.btn-primary[href="#primary-button"]';
+
 const PRESSABLE: Pressable[] = [
   {
     name: 'a primary button',
+    route: '/brand/',
+    control: PRIMARY_SAMPLE,
+    moves: PRIMARY_SAMPLE,
+  },
+  {
+    name: 'the contact submit in its block',
     route: '/contact',
-    control: 'main .btn-primary',
-    moves: 'main .btn-primary',
+    control: 'main form .contact-submit',
+    moves: 'main form .contact-submit',
   },
   {
     name: 'a gold primary button',
@@ -381,14 +389,14 @@ test.describe('on a touch screen', NO_FIREFOX, () => {
     page,
   }) => {
     await page.setViewportSize(PHONE_VIEWPORT);
-    await gotoSettled(page, '/contact');
+    await gotoSettled(page, '/brand/');
     expect(
       await page.evaluate(() => matchMedia('(hover: hover)').matches),
     ).toBe(false);
-    const button = page.locator('main .btn-primary').first();
+    const button = page.locator(PRIMARY_SAMPLE).first();
     await button.hover();
     expect(await button.evaluate((node) => node.matches(':hover'))).toBe(true);
-    await transitionsDone(page, 'main .btn-primary');
-    expect(await translateOf(page, 'main .btn-primary')).toEqual([0, 0]);
+    await transitionsDone(page, PRIMARY_SAMPLE);
+    expect(await translateOf(page, PRIMARY_SAMPLE)).toEqual([0, 0]);
   });
 });

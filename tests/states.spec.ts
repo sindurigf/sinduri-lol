@@ -51,6 +51,9 @@ const expectHoverReadsAndDiffers = async (
   await page.mouse.move(0, 0);
   const rest = await look(page, control, surface);
   await surface.hover();
+  await surface.evaluate((el) =>
+    Promise.all(el.getAnimations().map((animation) => animation.finished)),
+  );
   const hovered = await look(page, control, surface);
   expect(
     hovered.paint,
@@ -65,6 +68,9 @@ const expectHoverReadsAndDiffers = async (
   );
 };
 
+const PRIMARY_SAMPLE = 'main a.btn-primary[href="#primary-button"]';
+const CONTACT_SUBMIT = 'main form .contact-submit';
+
 const HOVERED_ON_MAIN = {
   'a linked card': async (page: Page) => {
     await gotoSettled(page, '/blog/');
@@ -75,10 +81,16 @@ const HOVERED_ON_MAIN = {
     await expect(card).toHaveCount(1);
     await expectHoverReadsAndDiffers(page, card.locator('.card-link'), card);
   },
-  // The home page's one primary action sits on gold, as `.btn-gold-primary`.
+  // On gold and in a block the primary action is `.btn-gold-primary`.
   'a primary button': async (page: Page) => {
+    await gotoSettled(page, '/brand/');
+    const button = page.locator(PRIMARY_SAMPLE).first();
+    await expect(button).toHaveCount(1);
+    await expectHoverReadsAndDiffers(page, button);
+  },
+  'the contact submit in its block': async (page: Page) => {
     await gotoSettled(page, '/contact');
-    const button = page.locator('main .btn-primary').first();
+    const button = page.locator(CONTACT_SUBMIT);
     await expect(button).toHaveCount(1);
     await expectHoverReadsAndDiffers(page, button);
   },
@@ -90,6 +102,30 @@ for (const scheme of ['dark', 'light'] as const) {
     for (const [name, run] of Object.entries(HOVERED_ON_MAIN)) {
       test(name, async ({ page }) => run(page));
     }
+  });
+}
+
+for (const scheme of ['dark', 'light'] as const) {
+  test(`the contact submit's fill stands off its block, ${scheme} (SC 1.4.11)`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    await gotoSettled(page, '/contact');
+    await expect(page.locator(CONTACT_SUBMIT)).toHaveCount(1);
+    const against = (await page.evaluate(`(() => {
+      ${PAGE_HELPERS}
+      const button = document.querySelector('${CONTACT_SUBMIT}');
+      const fill = parse(getComputedStyle(button).backgroundColor);
+      const block = compositeBackground(button.closest('.card'));
+      return fill && block ? ratio(over(fill, block), block) : null;
+    })()`)) as number | null;
+    expect(against, 'the button or its block has no resolvable fill').not.toBe(
+      null,
+    );
+    expect(
+      against!,
+      'the button fill against the block it sits in',
+    ).toBeGreaterThanOrEqual(NON_TEXT);
   });
 }
 
