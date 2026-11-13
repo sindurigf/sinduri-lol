@@ -22,13 +22,14 @@
   }
 
   /*
-   * Hero plus the section under it, one gold area. Two rings, since no color
-   * clears SC 1.4.11 on both sides: gold-border inside, `border` outside for
-   * the page. Top margin is the name's overhang.
+   * The hero stands on the page: the column keeps its edge width and a zero
+   * throw for the layout (tests/hero-fit.spec.ts measures both) and draws
+   * neither. Top margin is the name's overhang.
    */
-  .v-column {
+  .v-column.gold-column {
     position: relative;
-    background-color: var(--color-gold);
+    border-color: transparent;
+    box-shadow: 0 0 0 0 transparent;
     /*
      * Smaller name in the column: a wrapped GUNTUPALLI moves the break off the
      * rule.
@@ -72,16 +73,19 @@
   }
 
   /*
-   * Cancel `.band`'s negative margins and padding inside the column, or the
-   * gold spills over the column edge.
+   * The block starts under the hero: this section draws the edge and throw
+   * the column leaves out, on the column's border box.
    */
   .v-column section.hero + section {
-    margin-inline: 0;
+    margin: 0 calc(var(--block-edge) * -1) calc(var(--block-edge) * -1);
     padding-inline: 0;
+    border: var(--block-edge) solid var(--color-block-ink);
+
+    @apply shadow-hard-red-object;
   }
 
   @media (width < 40rem) {
-    .v-column {
+    .v-column.gold-column {
       --text-hero-h1: var(--text-hero-h1-column-phone);
       /*
        * The standing tagline at its tallest: two lines of `text-h3` at the SC 1.4.12
@@ -114,16 +118,20 @@
 
   /*
    * The floor of the window, edge to edge: joined light bricks, each drawing
-   * its top and left edge; the shelf closes the bottom.
+   * its top and left edge; the shelf closes the right end and the section
+   * under it the bottom. It spans the column's border box, like that section.
+   * Its own fill is the bricks': on the dark page the ink edge reads against
+   * that fill, not the page (SC 1.4.11).
    */
   .hero-ledge {
     position: absolute;
-    right: 0;
+    right: calc(var(--block-edge) * -1);
     bottom: 0;
-    left: 0;
+    left: calc(var(--block-edge) * -1);
     display: flex;
     height: var(--hero-ledge-h);
-    border-bottom: var(--block-edge) solid var(--color-block-ink);
+    background-color: var(--color-block-light);
+    border-right: var(--block-edge) solid var(--color-block-ink);
   }
 
   .hero-ledge > * {
@@ -185,11 +193,6 @@
 
     right: 0;
     bottom: calc(100% + var(--hero-field-top, 0px) + --spacing(4));
-  }
-
-  /* It sits on the page, not the gold: the page's ring, which `.surface-gold` would darken to 1:1. */
-  .surface-gold .hero-motion-toggle:focus-visible {
-    outline-color: var(--color-cyan);
   }
 
   /*
@@ -284,7 +287,12 @@
     font-size: var(--text-hero-sticker);
     line-height: var(--text-hero-sticker--line-height);
 
-    @apply border-4 px-4 py-2 font-black uppercase;
+    @apply border-4 border-block-ink px-4 py-2 font-black uppercase;
+  }
+
+  /* A page-colored fill on the page: its edge is the page's ring (SC 1.4.11). */
+  .hero-sticker.bg-surface {
+    border-color: var(--color-border);
   }
 
   /* Laid over the shelf, the wall's top a little above the shelf's (index.astro sets the section's `pt-0`). */
