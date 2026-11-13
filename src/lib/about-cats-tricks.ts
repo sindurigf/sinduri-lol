@@ -1,8 +1,7 @@
 /*
- * The trick lists behind each cat's paw button: a name and an icon per move
- * (about-cats-tricks.json), and each cat's own moves, signature ones first.
- * about-cats.ts fetches the JSON when a person reaches for a paw, so /about's
- * script carries none of it, and checks what came back with isTricksData.
+ * Each cat's paw-button tricks, signature ones first (about-cats-tricks.json).
+ * about-cats.ts fetches the JSON on demand, so /about's script carries none of it, and checks it
+ * with isTricksData.
  */
 import { CAT_WEIGHTS, type MoveName } from './about-cats-moves';
 import type { CatId } from './about-cats-types';

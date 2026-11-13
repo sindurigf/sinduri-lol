@@ -1,8 +1,8 @@
 /*
- * `data-current`, not `hidden`: Tailwind's `hidden` is `!important` in an earlier
- * layer, so print could not show the slides. `replaceState` so Back leaves the
- * talk. Until `data-deck-ready`, slides.css shows only the opening slide; a
- * failed start sets `data-deck-failed`, which shows them all.
+ * `data-current`, not `hidden`: Tailwind's `hidden` is `!important` in an earlier layer, so print
+ * hides slides.
+ * `replaceState` so Back leaves the talk. Until `data-deck-ready` slides.css shows only the opening
+ * slide; `data-deck-failed` shows every slide.
  */
 
 import { requiredElementIn } from './required-element';
