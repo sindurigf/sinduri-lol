@@ -18,20 +18,49 @@ export const WORKER_LOG_RETENTION_DAYS = 3;
 export const D1_RESTORE_WINDOW_DAYS = 7;
 
 export const PLATFORM_FACTS: Readonly<Record<string, PlatformFact>> = {
-  plausibleTrial: {
+  plausibleHost: {
     claim:
-      'The site is on a Plausible free trial; when it ends Plausible stops ' +
-      'counting and later deletes the stats',
+      'Plausible is self-hosted on an Infomaniak server in Geneva, Switzerland',
     check:
-      'Plausible > Account Settings > Subscription: still a trial, and ' +
-      'plausible.io/docs/trial for what happens when it ends',
-    checkedOn: '2026-10-25',
+      'Infomaniak Manager: the server behind stats.sinduri.lol and its ' +
+      'data center',
+    checkedOn: '2026-11-13',
   },
-  plausibleRegion: {
-    claim: 'Plausible stores the visit counts on servers in the European Union',
+  plausibleLogs: {
+    claim:
+      'Caddy in front of Plausible writes no access log, and its error log ' +
+      'drops IP addresses, ports and request headers',
+    check: 'The Caddyfile on the server behind stats.sinduri.lol: log blocks',
+    checkedOn: '2026-11-13',
+  },
+  plausibleDnsOnly: {
+    claim: 'stats.sinduri.lol is DNS-only in Cloudflare, not proxied',
+    check: 'Cloudflare dashboard > DNS > Records: stats shows DNS only',
+    checkedOn: '2026-11-13',
+  },
+  plausibleBackups: {
+    claim:
+      'Nightly backups, encrypted on the server, go to Infomaniak Swiss ' +
+      'Backup in Switzerland and are kept as 7 daily, 4 weekly and 6 monthly',
+    check: 'The backup job on the server: schedule, target and retention',
+    checkedOn: '2026-11-13',
+  },
+  plausibleRetention: {
+    claim: 'The visit stats are kept until they are deleted by hand',
     check:
-      'plausible.io/data-policy: where visitor data is processed and stored',
-    checkedOn: '2026-10-25',
+      'stats.sinduri.lol > Site Settings: no stats reset or deletion since ' +
+      'the last check, and no retention job on the server',
+    checkedOn: '2026-11-13',
+  },
+  dataPrivacyFramework: {
+    claim:
+      'Cloudflare and Google are certified under the EU-U.S. and Swiss-U.S. ' +
+      'Data Privacy Frameworks',
+    check:
+      'cloudflare.com/privacypolicy and policies.google.com/privacy/frameworks ' +
+      'still state both certifications; dataprivacyframework.gov/list shows ' +
+      'whether each is active',
+    checkedOn: '2026-11-13',
   },
   workerLogRetention: {
     claim: `Worker logs and traces are deleted after ${WORKER_LOG_RETENTION_DAYS} days`,
