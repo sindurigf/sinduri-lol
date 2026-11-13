@@ -158,8 +158,9 @@
   }
 
   /*
-   * Summary label `text`, cyan and underlined on hover, 44px target (SC 2.5.5). The
-   * +/- marker is aria-hidden; the expanded state is announced natively.
+   * Summary label `text`, cyan and underlined on hover, 44px target
+   * (SC 2.5.5). The +/- marker is aria-hidden; the expanded state is announced
+   * natively.
    */
   .post-contents-summary {
     @apply flex min-h-target cursor-pointer list-none items-center
