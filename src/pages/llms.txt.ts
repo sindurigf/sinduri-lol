@@ -15,6 +15,7 @@ import {
   PRIVACY_PATH,
   SITE_FEED_PATH,
   SITEMAP_PATH,
+  TALKS_PATH,
 } from '../lib/paths';
 import { PERSON_NAME } from '../lib/profiles';
 import { talkDecks } from '../lib/talk-deck';
@@ -54,6 +55,11 @@ const ROUTE_NOTES: { path: string; label: string; note: string }[] = [
     path: BLOG_PATH,
     label: 'Blog',
     note: 'All my posts, newest first.',
+  },
+  {
+    path: TALKS_PATH,
+    label: 'Talks',
+    note: 'Every talk I have slides for.',
   },
   {
     path: CONTACT_PATH,

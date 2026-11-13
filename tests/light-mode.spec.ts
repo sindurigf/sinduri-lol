@@ -95,15 +95,18 @@ test.describe('light mode keeps every control edge visible', () => {
           // A photo link is identified by its photo, which the fill only backs.
           controls += 1;
           if (el.querySelector('img')) continue;
-          const ground = effectiveBackground(el.parentElement);
+          // A card's title link is drawn by its card (cards.css), so the card's edge is the shape.
+          const shape = el.closest('.card:has(.card-link)') ?? el;
+          const box = getComputedStyle(shape);
+          const ground = effectiveBackground(shape.parentElement);
           if (!ground) {
             faint.push(describe(el) + ' on a ground that cannot be read');
             continue;
           }
-          const fill = parse(style.backgroundColor);
+          const fill = parse(box.backgroundColor);
           const edges = ['Top', 'Right', 'Bottom', 'Left']
-            .filter((side) => parseFloat(style['border' + side + 'Width']) > 0)
-            .map((side) => parse(style['border' + side + 'Color']))
+            .filter((side) => parseFloat(box['border' + side + 'Width']) > 0)
+            .map((side) => parse(box['border' + side + 'Color']))
             .filter((c) => c && c.a > 0);
           const hasFill = fill && fill.a > 0;
           if (!hasFill && edges.length === 0) {

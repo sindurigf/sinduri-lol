@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import { talkDecks } from '../../lib/talk-deck';
+import { wallClasses } from '../../lib/wall';
+
+const decks = [...(await talkDecks())].map(([deck, slides]) => {
+  const cover = slides[0]?.slide;
+  if (!cover) throw new Error(`Talk deck ${deck} has no slides.`);
+  return { href: `/talks/${deck}/`, title: cover.data.title };
+});
+const DECK_WALL = wallClasses({}, decks.length);
+---
+
+<BaseLayout
+  title="Talks"
+  description="Slides from my talks, each one shown as a slideshow, with every slide also as text."
+>
+  <PageHero title="Talks" slab="none" />
+
+  <div class="band py-section">
+    <ul
+      role="list"
+      class="card-block mx-auto flex max-w-page flex-col gap-grid"
+    >
+      {decks.map((deck, index) => (
+        <li class:list={['card', DECK_WALL.bricks[index]]}>
+          <h2 class="card-title">
+            <a href={deck.href} class="card-link">
+              {deck.title}
+            </a>
+          </h2>
+        </li>
+      ))}
+    </ul>
+  </div>
+</BaseLayout>

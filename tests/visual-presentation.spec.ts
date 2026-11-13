@@ -20,6 +20,7 @@ const WIDTHS = [390, 1280, 1920] as const;
 const VIEWPORT_HEIGHT = 900;
 /* Routes with no block of two sentences and no paragraph pair, and why. */
 const NOTHING_TO_MEASURE: Readonly<Record<string, string>> = {
+  '/talks': 'a list of deck titles and no sentences',
   '/talks/open-source-is-not-just-code':
     'one slide of headings and one-sentence bullets',
 };
