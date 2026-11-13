@@ -175,8 +175,6 @@
   --color-light-code-edge: #767676;
   /* A code block's fill: the surface in dark mode, the light block fill in light mode, so it reads as a block on white. */
   --color-code-fill: var(--color-surface);
-  --color-light-hero-veil: rgba(19, 19, 19, 0.025);
-  --color-light-hero-floor: rgba(19, 19, 19, 0.035);
 
   /*
    * The gold surface: an inverted set, since only near-blacks read on gold.
@@ -200,17 +198,11 @@
    */
   --color-gold-link: #1e0d16;
 
-  /* The homepage canvas's buds on gold. Decoration only; not the link color. */
-  --color-gold-bud: #00363f;
   /*
-   * The canvas's veil and floor, read by src/scripts/hero-field.ts. Ink, not border-blue,
-   * because the field draws on gold. One setting with the near-plane blur in
-   * hero-field-scene.ts: change them together.
+   * The homepage canvas's stalks and buds, on the page ground (11.99). Light
+   * mode sets `hero-fill` too: cyan buds with this as their outline.
    */
-  --color-hero-veil: rgba(19, 19, 19, 0.07);
-  --color-hero-veil-edge: rgba(19, 19, 19, 0);
-  --color-hero-floor: rgba(19, 19, 19, 0.1);
-  --color-hero-floor-edge: rgba(19, 19, 19, 0);
+  --color-hero-stalk: var(--color-block-gold);
 
   /*
    * Family name from @fontsource-variable/lexend: one wght axis file, latin
