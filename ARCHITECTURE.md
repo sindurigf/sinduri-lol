@@ -28,14 +28,16 @@ sinduri.lol. Design rules and values are in
   `components/*.css` by area with `reduced-motion.css` among them,
   `utilities.css`, `light-mode.css`. Reordering the imports reorders the
   cascade.
-- Page-only partials are not in that list: `slides.css` (the talk page and the
-  presenter), `about-cats.css` (`/about`) and `not-found.css` (`/404`) are
-  imported by the page that uses them, so each builds as its own sheet, linked
-  after the shared one. Each opens with `@reference '../global.css'` so
-  `@apply` and the tokens resolve; Tailwind then writes token values as `var()`
-  fallbacks and repeats its `@property` block in that sheet.
-  `tests/head.spec.ts` holds the link order, which sets the layer order, and
-  `check:classes` fails a page that uses a class from a sheet it does not link.
+- Page-only partials are not in that list: `home.css` (`/`), `slides.css` (the
+  talk page and the presenter), `about-cats.css` (`/about`), `not-found.css`
+  (`/404`), `code-block.css` and `post-folds.css` (posts) and `brand.css`
+  (`/brand`, which also takes `code-block.css`) are imported by the page that
+  uses them, so each builds as its own sheet, linked after the shared one.
+  Each opens with `@reference '../global.css'` so `@apply` and the tokens
+  resolve; Tailwind then writes token values as `var()` fallbacks and repeats
+  its `@property` block in that sheet. `tests/head.spec.ts` holds the link
+  order, which sets the layer order, and `check:classes` fails a page that
+  uses a class from a sheet it does not link.
 - `@astrojs/tailwind` peers at `astro ^3 || ^4 || ^5` and cannot be used.
 - `overrides.miniflare.undici` lifts miniflare's exact `undici@7.29.1` pin to
   7.30.1, the fix for GHSA-xjj6-f33q-929c, GHSA-4qv8-2p9j-2685 and
@@ -56,8 +58,9 @@ passed to `vite.build.cssTarget`.
   `@mdn/browser-compat-data`, an external source, not a dependency):
   `popover`, for the About cats' trick list and every abbreviation (Chrome
   114, Firefox 125, Safari 17), and `@media (scripting: none)`, without which
-  the no-JavaScript nav is not shown (Chrome 120, Safari 17). `:has()`
-  (Firefox 121) and ARIA reflection (Firefox 119) are inside the floor.
+  the no-JavaScript nav and fallbacks are not shown (Chrome 120, Safari 17).
+  `:has()` (Firefox 121) and ARIA reflection (Firefox 119) are inside the
+  floor.
 - Pinned, not left to the bundler default, which moves between releases.
 - No `browserslist` key: neither Tailwind 4 nor Vite reads it.
 - `tests/css-target.spec.ts` asserts the list and the prefixes it implies
@@ -88,20 +91,23 @@ Rules: [STYLEGUIDE Color tokens](docs/STYLEGUIDE.md#color-tokens).
 Dark is the default. Colors and rules:
 [STYLEGUIDE Light mode](docs/STYLEGUIDE.md#light-mode).
 
-- `data-theme="light"` on `<html>`; `src/styles/light-mode.css`, imported last,
-  overrides a subset of tokens on `<main>`, the header and the footer while it
+- `data-theme="light"` and the `light` class on `<html>`; light-mode CSS keys
+  on `:root.light`, shorter than the attribute for the CSS budget.
+  `src/styles/light-mode.css`, imported last, overrides a subset of tokens on `<main>`, the header and the footer while it
   is set. No `dark:` variants.
-- `<main>`, the header and the footer change; the header bar stays gold and
-  its throw turns ink. The no-JS nav stays dark.
-- `bunny` and `fill-edge` hold the mode-independent logo-tile colors.
+- `<main>`, the header and the footer change; the header bar is ink in dark
+  mode and white in light mode. The no-JS nav stays dark.
+- The logo tile is `block-gold` in dark mode and `block-cyan` in light mode, with an 8px `bunny` shadow.
 - An inline script in `BaseLayout.astro`'s `<head>` sets `data-theme` from the
-  saved choice or `prefers-color-scheme` before the body parses, and adds the
-  `js` class the slideshow's pre-hide keys on. After `DECK_READY_TIMEOUT_MS` it
-  sets `data-deck-failed` on a deck that is not ready, and the deck then shows
-  every slide. Its hash is in `script-src`; `npm run check:csp` fails when a
-  build changes any inline block, and `-- --write` updates the hashes.
-  It sits in `<head>`, not beside the switch, so nothing paints in the wrong
-  theme first.
+  saved choice or `prefers-color-scheme` before the body parses (a
+  `MutationObserver` keeps the `light` class in step with it), rereads it on
+  a back-forward cache restore (`pageshow`), applies a saved `--text-scale`,
+  and adds the `js` class the slideshow's pre-hide keys on. After
+  `DECK_READY_TIMEOUT_MS` it sets `data-deck-failed` on a deck that is not
+  ready, and the deck then shows every slide. Its hash is in `script-src`;
+  `npm run check:csp` fails when a build changes any inline block, and
+  `-- --write` updates the hashes. It sits in `<head>`, not beside the switch,
+  so nothing paints in the wrong theme first.
 - Three choices: System (the default, nothing stored), Light and Dark (stored
   as `light` or `dark` under `THEME_STORAGE_KEY` in `src/lib/theme.ts`).
   `data-theme` always holds the resolved `light` or `dark`.
@@ -125,8 +131,7 @@ Dark is the default. Colors and rules:
   baked in, the same in both themes, and the toys' SVG parts carry classes
   that `about-cats.css` maps to tokens.
 - `playwright.config.ts` sets `colorScheme: 'dark'`; specs that measure light
-  set `colorScheme: 'light'` themselves (`light-mode.spec.ts`, `focus.spec.ts`,
-  `states.spec.ts`, `about-cats.spec.ts`, the talk scan in `a11y.spec.ts`).
+  set `colorScheme: 'light'` themselves.
 
 ### Token enforcement
 
@@ -146,6 +151,8 @@ Dark is the default. Colors and rules:
 - an inline `style` attribute in a component
 - a grid column count or split other than those in
   [STYLEGUIDE Grid](docs/STYLEGUIDE.md#grid)
+- a fluid `--text-*` `clamp()` in `global.css` with bounds not in rem, or a
+  max over 2.5 times its min (SC 1.4.4)
 
 `TOKEN_EXCEPTIONS` in `scripts/check-allow-lists.mjs` lists false positives,
 each with its reason, and fails when one no longer matches.
@@ -204,7 +211,7 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
 - A category page is built only once it has a published post. Tag listings
   are `noindex, follow` and excluded from the sitemap by
   `src/lib/sitemap-filter.ts` (`tests/sitemap.spec.ts`).
-  `/contact/sent/` is `noindex`.
+  `/contact/sent/`, `/404` and placeholder posts are `noindex`.
   Every other page sends `robots` `max-image-preview:large`, so Google may
   show its share image large (`tests/canonical.spec.ts`).
 - Non-placeholder posts get `og:type` `article`,
@@ -232,9 +239,10 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
   (`src/lib/feed-date.ts`), so a post's `updated` date moves it.
 - The Drupal tag feed is the one for Drupal Planet. Its items carry the post's
   opening, whole sentences up to 300 characters, stopping before a paragraph
-  that ends in a colon (`src/lib/feed-excerpt.ts`); the owner picked the length
-  under [Planet's guidelines](https://www.drupal.org/planet/guidelines). Every
-  other feed carries the teaser.
+  that ends in a colon (`src/lib/feed-excerpt.ts`).
+  `FEED_EXCERPT_MAX_CHARACTERS` sets the 300-character limit; see [Planet's
+  guidelines](https://www.drupal.org/planet/guidelines). Every other feed
+  carries the teaser.
 - Placeholders are excluded. `tests/rss.spec.ts`.
 
 ### Markdown visitors
@@ -243,15 +251,15 @@ Sätteri hast visitors in `astro.config.mjs` `hastPlugins`.
 `markdown.rehypePlugins` does nothing without `@astrojs/markdown-remark`,
 which is not installed.
 
-| Visitor                          | Marks                                                                                                                                                                                                                                                                                                                                                                                                          |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/plugins/link-list-item.mjs` | a list item that is only a link (SC 2.5.5)                                                                                                                                                                                                                                                                                                                                                                     |
-| `src/plugins/post-figure.mjs`    | a post image: frame, sizer, `widths`, `sizes`                                                                                                                                                                                                                                                                                                                                                                  |
-| `src/plugins/code-block.mjs`     | `<pre>` as `tabindex="0"` `role="group"` (SC 2.1.1); in a post, also a `.code-block` frame with the fence language as a `.code-lang` label and `data-copy`, so `src/scripts/copy.ts` adds a Copy button. The post page loads the script when its Markdown may hold code (`hasCodeBlock`)                                                                                                                       |
-| `src/plugins/table-scope.mjs`    | a Markdown header cell as `scope="col"` (H63)                                                                                                                                                                                                                                                                                                                                                                  |
-| `src/plugins/table-scroll.mjs`   | a post table, wrapped in a `tabindex="0"` `role="group"` box that scrolls (SC 1.4.10)                                                                                                                                                                                                                                                                                                                          |
-| `src/plugins/table-stack.mjs`    | a post table's explicit table roles and `.table-stack` class, and an `aria-hidden` column label in each value cell for the stacked rows below 640px (SC 1.3.1)                                                                                                                                                                                                                                                 |
-| `src/plugins/post-fold.mjs`      | puts each `## Module N:` or `## Side Path:` h2 and its body, up to the next h2 or the footnotes, in one `.module-panel`; the body is a `<details>` (open on load, with Close All and Open All buttons) and the h2 stays outside it. Nothing folds inside a module. The post page loads the fold script when its rendered HTML has a fold (`hasFoldMarkup`). Only these headings fold (`src/lib/post-folds.ts`) |
+| Visitor                          | Marks                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/plugins/link-list-item.mjs` | a list item that is only a link (SC 2.5.5)                                                                                                                                                                                                                                                                                                                                                                                     |
+| `src/plugins/post-figure.mjs`    | a post image: frame, sizer, `widths`, `sizes`                                                                                                                                                                                                                                                                                                                                                                                  |
+| `src/plugins/code-block.mjs`     | `<pre>` as `tabindex="0"` `role="group"` (SC 2.1.1); in a post, also a `.code-block` frame with the fence language as a `.code-lang` label and `data-copy`, so `src/scripts/copy.ts` adds a Copy button. The post page loads the script when its Markdown may hold code (`hasCodeBlock`)                                                                                                                                       |
+| `src/plugins/table-scope.mjs`    | a Markdown header cell as `scope="col"` (H63)                                                                                                                                                                                                                                                                                                                                                                                  |
+| `src/plugins/table-stack.mjs`    | a post table's explicit table roles and `.table-stack` class, and an `aria-hidden` column label in each value cell for the stacked rows below 640px (SC 1.3.1)                                                                                                                                                                                                                                                                 |
+| `src/plugins/table-scroll.mjs`   | a post table, wrapped in a `tabindex="0"` `role="group"` box that scrolls (SC 1.4.10), named from its caption, else the heading before it, and unique in the post                                                                                                                                                                                                                                                              |
+| `src/plugins/post-fold.mjs`      | puts each `## Module N:` or `## Side Path:` h2 and its body, up to the next h2 or the footnotes, in one `.module-panel`; the body is a `<details>` (open on load, with Close All Modules and Open All Modules buttons) and the h2 stays outside it. Nothing folds inside a module. The post page loads the fold script when its rendered HTML has a fold (`hasFoldMarkup`). Only these headings fold (`src/lib/post-folds.ts`) |
 
 `group`, not `region`, so code blocks and tables are not landmarks.
 
@@ -270,6 +278,7 @@ which is not installed.
   Search, AI Overviews and AI Mode use Googlebot and are unaffected; Search
   Console's Search generative AI control stays on Include. Cloudflare's managed
   robots.txt stays off so it cannot contradict this. `tests/sitemap.spec.ts`.
+- `/.well-known/security.txt`: [SECURITY.md](SECURITY.md).
 
 ### Talks
 
@@ -338,7 +347,7 @@ queries ignore it, so layouts overflowed at widths such as 768px.
 footer's columns up to 1100px), so the breadcrumb, chips, post card labels,
 footer links and the pillar wall take `wrap-anywhere`; a
 page-wide rule was rejected because it reflows shrink-to-fit text at 100%. The
-control is the reading tab (`ReadingTab.astro`).
+control: [STYLEGUIDE.md](docs/STYLEGUIDE.md#text-size).
 
 ### Scripts loaded on demand
 
@@ -404,10 +413,11 @@ Rejected:
 - A count in a comment states its unit.
 - A fact duplicated across Markdown files needs a check that fails when the
   copies disagree; otherwise keep one copy and link.
-- **Test weakening needs the owner, out of band.** The `Test weakening`
-  workflow runs on `pull_request_target`, so the default branch's copy of
-  `scripts/check-test-weakening.mjs` judges each pull request. The head is
-  fetched as git objects; nothing from it is installed or run. It flags:
+- **Test weakening passes only with the maintainer's GitHub review.** The
+  `Test weakening` workflow runs on `pull_request_target`, so the default
+  branch's copy of `scripts/check-test-weakening.mjs` judges each pull request.
+  The head is fetched as git objects; nothing from it is installed or run. It
+  flags:
   - a new or widened skip, fixme or fail, `describe.configure`, a return
     behind an engine or environment test, and an existing test given an
     engine tag from `tests/tags.ts`;
@@ -438,8 +448,7 @@ Rejected:
   A finding passes only with an `APPROVED` or `COMMENTED` review by
   `GITHUB_REPOSITORY_OWNER` on the head commit carrying
   `Approved test change: <reason>`; a later dismissal or change request revokes
-  it. GitHub blocks approving your own pull request, so a comment review
-  counts. It matches text, so indirection evades it. How to approve:
+  it. It matches text, so indirection evades it. How to approve:
   [DEVELOPMENT.md](docs/DEVELOPMENT.md#approving-a-test-change).
 
 ### Claims that rest on a platform setting
@@ -457,7 +466,8 @@ in `wrangler.jsonc`).
   Unimported files are not emitted.
 - `public/images/`: stable URLs for outside consumers (Open Graph images).
 - `artwork/`: source artwork the build never reads (the traced logo and
-  Lepus Ridet rabbits, the `favicon.ico` frames and the logo's share-card copy).
+  Lepus Ridet rabbits, the About cats' drawings, the `favicon.ico` frames and
+  the logo's share-card copy).
   Nothing in it ships.
 
 | Path                            | Artwork   | Goes on              | Used by                                      |
@@ -465,9 +475,17 @@ in `wrangler.jsonc`).
 | `src/assets/roundel-rabbit.svg` | Sticker   | Hero slab edge       | `Roundel.astro`                              |
 | `src/assets/logo-rabbit.svg`    | Sticker   | The logo tile        | `Header.astro` logo tile                     |
 | `src/assets/lepus-rabbit.svg`   | Sticker   | The Lepus Ridet tile | `about.astro`                                |
+| `src/assets/hero-rabbit.svg`    | Atlas     | The hero field       | `src/scripts/hero-field.ts`                  |
+| `src/assets/bunny-footer.svg`   | Sticker   | The footer name band | `Footer.astro`                               |
 | `public/images/og-default.png`  | Composite | n/a                  | `BaseLayout.astro`, the homepage and the 404 |
 | `public/images/og/*.jpg`        | Composite | n/a                  | `BaseLayout.astro`, every other page         |
 
+- Each rabbit but the logo has a `-light.svg` twin in `--color-light-red-text`
+  (`npm run rabbit-light`, `src/lib/rabbit-modes.ts`); `ModeArt.astro` and
+  light-mode.css show the one for the mode. The footer rabbit swaps its `src`
+  in `theme-switch.ts`, as Let It Fall moves that element.
+- `favicon.svg` switches reds with `prefers-color-scheme`: a tab icon cannot
+  see `data-theme`.
 - `og-default.png`: 1200x630. All gold: the name, the joined Lepus Ridet
   sticker and the tagline in two lines, and the header logo scaled 7x, whole
   inside the card. `npm run og` (`scripts/make-og.mjs`) draws it in Chromium with
@@ -480,9 +498,10 @@ in `wrangler.jsonc`).
   domain line.
 - The logo's rabbit is `artwork/logo-rabbit-og.png`, which
   `scripts/make-logo.mjs` renders from the header rabbit's box at 14x.
-  `OG_PHOTO_CHOICES` in `src/lib/og-cards.ts` holds the owner's exceptions.
-  `cards.json` records each card's title, photo and alt; `tests/seo.spec.ts`
-  fails when a page's title or first photo no longer matches its card.
+  `OG_PHOTO_CHOICES` in `src/lib/og-cards.ts` overrides the photo for listed
+  pages: a path names another photo, `null` keeps the logo. `cards.json` records
+  each card's title, photo and alt; `tests/seo.spec.ts` fails when a page's
+  title or first photo no longer matches its card.
 - Rerun `npm run build && npm run og` after changing a token, a page title,
   a page's first photo, the name or the tagline, and commit `public/images/`.
   Not part of `npm run build`: the Cloudflare build has no Chromium.
@@ -493,7 +512,7 @@ in `wrangler.jsonc`).
   `<symbol>` per link label in `src/assets/social-icons.svg`. The footer rabbit
   is `src/assets/bunny-footer.svg` with `alt=""`, standing on the name band:
   the Looking Up pose of a Canva sheet, traced with Potrace and
-  exported as a vector die-cut sticker on a pink block behind it, like the roundel;
+  exported as a vector die-cut sticker on a red block behind it, like the roundel;
   sources and scripts are kept outside the repo.
   The footer runs JavaScript only for features
   [loaded on demand](#scripts-loaded-on-demand).
@@ -521,8 +540,8 @@ in `wrangler.jsonc`).
 - From `xl` a landscape figure breaks out right, under the contents rail's
   column: place it below the contents; `tests/post-page.spec.ts` fails a
   figure that overlaps the rail.
-- Markdown images are WebP only, by the owner's choice: Markdown renders
-  `<img>`, not `<Picture>`, so `PHOTO_FORMATS` (AVIF first) does not reach them.
+- Markdown images are WebP only, because Markdown renders `<img>`, not
+  `<Picture>`, so `PHOTO_FORMATS` (AVIF first) does not reach them.
 - Credits: `src/lib/credits.ts`, in order of preference (personal site,
   Drupal.org, LinkedIn). Captions and `/credits` read from it. A Markdown
   image title "Photo: name" links `PHOTOGRAPHERS`, "Screenshot: name" links
@@ -576,7 +595,7 @@ in `wrangler.jsonc`).
   (`TAB_BORDER`); `favicon.svg` is fitted as the 16px frame. The script
   measures the sticker's reach and fails if a frame draws on its edge.
 - App icons (`apple-touch-icon`, `android-chrome-*`, `maskable-icon`): the same
-  artwork centered on a full-bleed `#FFC000` square.
+  artwork centered on a full-bleed `--color-block-gold` square.
 
 | Path                                | Size         | Notes                                              |
 | ----------------------------------- | ------------ | -------------------------------------------------- |
@@ -638,8 +657,8 @@ in `public/`.
 - `immutable` for a year on `/_astro/*` only: Vite content-hashes those names.
   An unhashed file there stays stale for a year in every browser that has it.
 - Everything else gets `Cache-Control: no-transform` alone, so browsers
-  revalidate against the ETag. Favicons and feeds detach it so Cloudflare
-  compresses them; sitemaps and `llms.txt` would save under 1 KB.
+  revalidate against the ETag. `/favicon.*` and the feeds detach it so
+  Cloudflare compresses them; sitemaps and `llms.txt` are too small to gain.
 - `no-transform` keeps JavaScript Detections (forced on the Free plan) off
   pages: its inline script carries a per-request token no CSP hash allows, and
   it strips the ETag. The cost is uncompressed HTML, since no pattern
@@ -677,9 +696,10 @@ in `public/`.
 
 The policy is the `Content-Security-Policy` line in `public/_headers`.
 
-- No `'unsafe-inline'`, no `'unsafe-eval'`. Everything is same-origin: fonts in
-  `/_astro/`, the Plausible tracker bundled from npm, no embeds, no `data:`
-  URIs.
+- No `'unsafe-inline'`, no `'unsafe-eval'`. Every resource loads from the
+  site: fonts in `/_astro/`, the Plausible tracker bundled from npm, no embeds,
+  no `data:` URIs. The one other origin is Plausible's collector in
+  `connect-src`.
 - `connect-src` names Plausible's collector URL; `tests/headers-rules.spec.ts`
   asserts it equals `PLAUSIBLE_ENDPOINT` in `src/lib/analytics.ts`, so a
   collector change updates both in `public/_headers` and `analytics.ts`
@@ -690,7 +710,7 @@ The policy is the `Content-Security-Policy` line in `public/_headers`.
   origin and updates `tests/headers-rules.spec.ts` and this section in the same
   commit; so does loosening any directive now `'none'`.
 - Trusted Types: no script writes HTML, so `trusted-types 'none'` allows no
-  policy. `tests/headers.spec.ts` opens every page with a script and its
+  policy. `tests/headers.spec.ts` opens the `POLICY_ROUTES` pages and their
   dialogs under the policy.
 - `tests/headers-rules.spec.ts` asserts each directive.
 
@@ -699,13 +719,27 @@ The policy is the `Content-Security-Policy` line in `public/_headers`.
 Hashed inline blocks:
 
 - On every page: the theme script in `BaseLayout.astro`'s `<head>`.
-- JSON-LD needs no hash (not executed).
+- JSON-LD and the `/404` page list (`application/json`) need no hash (not
+  executed).
 
 An Astro upgrade can change a hash; the script then silently fails to run
 (console only). `npm run check:csp` fails on a stale hash; regenerate with
 `npm run build && npm run check:csp -- --write`. Never hand-edit a hash.
 
 `npm run check:live` checks what Cloudflare actually sends.
+
+## The contact endpoint
+
+- `/contact/send/` is the one on-demand page (`src/pages/contact/send.astro`);
+  bindings: [DEPLOYMENT.md](docs/DEPLOYMENT.md#bindings).
+- Order: honeypot, rate limit, validation, D1 insert, notification email, then
+  a 303 to `/contact/sent/`. Errors answer 429, 422 or 503 with the form
+  refilled, and 413 without it.
+- The email goes only while the last hour holds at most `HOURLY_NOTIFY_LIMIT`
+  messages (`src/lib/contact-submission.ts`); an unsent one stays unmarked.
+- The cron in `wrangler.jsonc` runs `scheduled` in `src/worker.ts`: the
+  retention sweep (`RETENTION_DAYS`), then the resend of unmarked messages. A
+  failed sweep does not stop the resend.
 
 ## The contact form's honeypot
 
@@ -715,7 +749,8 @@ An Astro upgrade can change a hash; the script then silently fails to run
   catches naive fillers only; the no-JS form and static `/contact/` rule out
   timing checks and tokens.
 - Volume is bounded by the `CONTACT_RATE_LIMIT` binding (`wrangler.jsonc`) per
-  /64; fail-open paths are logged.
+  IPv4 address or IPv6 /64, keyed on a SHA-256 that rotates daily
+  (`src/lib/rate-limit-key.ts`); fail-open paths are logged.
 
 ## Rejected findings
 
@@ -793,8 +828,9 @@ evidence.
   `src/content/blog`:** two posts are tracked there, so the folder cannot be
   missing in this repository.
 - **Drop the About cat card's "beside its cat, not over it" checks as
-  decoration:** the owner asked for the card to open beside its cat, so where
-  it opens is function; the test name in `tests/about-cats.spec.ts` says so.
+  decoration:** the maintainer requires the card to open beside its cat, so
+  where it opens is function; the test name in `tests/about-cats.spec.ts` says
+  so.
 - **Let an About cat keep playing while it has keyboard focus:** the hold is a
   rule, with its reason, in [STYLEGUIDE.md](docs/STYLEGUIDE.md#motion).
 - **Size the hero roundel with a fixed 96px disc, a jump to 128px at `lg`, or
@@ -851,22 +887,30 @@ evidence.
   ([H67](https://www.w3.org/WAI/WCAG22/Techniques/html/H67)). Text there would
   be announced twice.
 - **AccessLint engine hits, each checked against the live DOM:**
-  `color-contrast` on the homepage "Sinduri" is read against a gold ancestor
-  the text does not sit on; `landmark-unique` counts the no-JavaScript nav,
-  which is `display: none` with scripts on; `aria-hidden-focus` flags the
-  controls in `/brand`'s light halves, which are `inert` and so never take
-  focus. `ACCESSLINT_FALSE_POSITIVES` in `tests/accesslint.ts` drops each only
-  on those elements and while its reason holds. "Guntupalli" is not dropped:
-  it sits on the gold, and `tests/hero-clear.spec.ts` checks no canvas pixel,
-  stem, bud or hare, lies under either line of the name.
+  `landmark-unique` counts the no-JavaScript nav, which is `display: none`
+  with scripts on; `aria-hidden-focus` flags the controls in `/brand`'s light
+  halves, which are `inert` and so never take focus.
+  `ACCESSLINT_FALSE_POSITIVES` in `tests/accesslint.ts` drops each only on
+  those elements and while its reason holds. `tests/hero-clear.spec.ts` checks
+  no canvas pixel, stem, bud or hare, lies under either line of the homepage
+  name.
 - **Blur the near meadow canvas with `ctx.filter` instead of the CSS
-  `filter`:** at 4x CPU throttle the CSS filter holds 28 fps at 1440x900 and 30
-  at 412x915; `ctx.filter` per stroke drops to 2 and 4, one offscreen
-  `ctx.filter` pass to 23 and 30. `tests/filter-layers.spec.ts` allows only
-  that canvas.
+  `filter`:** at 4x CPU throttle, `ctx.filter` per stroke drops the field to a
+  few frames a second, and one offscreen `ctx.filter` pass runs slower than the
+  CSS filter on a wide screen. `tests/filter-layers.spec.ts` allows only that
+  canvas.
 - **Merge `--text-hero-h1-column` and `--text-hero-h1-column-phone`:** they
   size the name in two layouts tuned apart; they are equal by value, not by
   rule, and `tests/hero-fit.spec.ts` checks each.
+- **Drop `#hash` from click-tracking targets:** the privacy page promises only
+  that page and referrer addresses lose `?` and `#`.
+- **Dedupe the two miniflare and workerd copies in `package-lock.json`:** npm
+  resolution, harmless; both run only locally.
+- **Remove the canonical from `noindex, follow` tag pages:** it names the
+  page's own address, so it does not conflict; `BaseLayout.astro` sets the
+  two independently.
+- **Fix Lighthouse `is-crawlable` on tag listings and `/contact/sent/`:** both
+  are `noindex` on purpose, above.
 
 ## Content notes
 

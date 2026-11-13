@@ -12,7 +12,7 @@ import {
   BUD_SIZE,
   BUD_START,
   BUD_TIERS,
-  BUD_TONE,
+  FILL_OUTLINE,
   CLUMP_COUNT,
   CLUMP_SPREAD,
   HOP_BASE_SECONDS,
@@ -26,6 +26,7 @@ import {
   WIND_FORCE,
   WIND_WAVE,
   breezeWave,
+  DENSITY_CAP,
   FIELD_OF_VIEW_FLOOR,
   EXTRA_SEED,
   EXTRA_STEMS,
@@ -56,10 +57,8 @@ import {
   SIT,
   SPRING,
   STALK_WIDTH,
+  STALK_WIDTH_SHARE,
   STEM_ALPHA,
-  VEIL,
-  VEIL_DEPTH,
-  FLOOR_HEIGHT,
   REACH,
   breeze,
   random,
@@ -103,6 +102,16 @@ interface FieldState {
   /* One-entry memo of `routePoint`, keyed on the frame's exact time. */
   cachedAt: number;
   cached: RoutePoint;
+  /* Blurred hare shadows by air step, for the scene and pixel ratio they were drawn at. */
+  shadows: Map<number, ShadowSprite>;
+  shadowRatio: number;
+}
+
+interface ShadowSprite {
+  readonly canvas: HTMLCanvasElement;
+  /** CSS pixels, centered on the shadow. */
+  readonly width: number;
+  readonly height: number;
 }
 
 const STILL: RoutePoint = { x: 0, cycle: 0, sit: 0, hop: 0 };
@@ -171,7 +180,6 @@ const makeStem = (
     x,
     root,
     height: heightRatio * (root - scene.horizon),
-    tone: rng(),
     phase: rng() * Math.PI * 2,
     veil,
     lean: 0,
@@ -182,7 +190,10 @@ const makeStem = (
 /* Density is per scene width, not pixels: a stepped-back camera shows more. */
 const buildStems = (scene: Scene): Stem[] => {
   const { world, view } = scene;
-  const density = scene.boxWidth / world / REFERENCE_WIDTH;
+  const density = Math.min(
+    DENSITY_CAP,
+    scene.boxWidth / world / REFERENCE_WIDTH,
+  );
   const margin = CLUMP_SPREAD * world;
   const rng = random(FIELD_SEED);
   const clumps = clumpCenters(scene, rng, density, margin);
@@ -213,7 +224,7 @@ const buildStems = (scene: Scene): Stem[] => {
     band(BANDS.GRASS, 1, true);
     band(BANDS.MIDDLE, 1, true);
     band(BANDS.HARE, 1, true);
-    /* Near stems stay at the left edge, veiled, so they never blur over type. */
+    /* Near stems stay at the left edge so they never blur over type; the veil fades only their light bud fills. */
     band(BANDS.NEAR, NEAR_VEIL, false);
   };
 
@@ -346,16 +357,44 @@ const settle = (
   }
 };
 
-const budTone = (palette: HeroPalette, tone: number): string => {
-  if (tone > BUD_TONE.bud) return palette.bud;
-  if (tone > BUD_TONE.subtle) return palette.subtle;
-  return palette.border;
+/* Full strength in both modes: a faded stalk falls under 7:1 on its ground. */
+const strokeStalk = (
+  ctx: CanvasRenderingContext2D,
+  palette: HeroPalette,
+): void => {
+  ctx.strokeStyle = palette.stalk;
+  ctx.globalAlpha = 1;
+  ctx.lineWidth = Math.max(STALK_WIDTH.min, ctx.lineWidth * STALK_WIDTH_SHARE);
+  ctx.stroke();
+};
+
+/* Only a light bud's fill fades with distance: the ground goes under it and its outline stays opaque. */
+const fillBud = (
+  ctx: CanvasRenderingContext2D,
+  palette: HeroPalette,
+  alpha: number,
+): void => {
+  ctx.globalAlpha = 1;
+  if (!palette.fill) {
+    ctx.fillStyle = palette.stalk;
+    ctx.fill();
+    return;
+  }
+  ctx.fillStyle = palette.background;
+  ctx.fill();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = palette.fill;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = palette.stalk;
+  ctx.lineWidth = FILL_OUTLINE;
+  ctx.stroke();
 };
 
 const budLayout = (tall: number): { count: number; spacing: number } =>
   BUD_TIERS.find(({ above }) => tall > above) ?? { count: 0, spacing: 0 };
 
-const drawStalk = (
+const traceStalk = (
   ctx: CanvasRenderingContext2D,
   stem: Stem,
   lean: number,
@@ -372,7 +411,6 @@ const drawStalk = (
     stem.x + lean,
     stem.root - stem.height,
   );
-  ctx.stroke();
 };
 
 /** In bud sizes: set off the stalk to alternating sides, radii, and tilt in radians. */
@@ -394,6 +432,7 @@ const drawBuds = (
   bud: number,
   seconds: number,
   world: number,
+  fill: () => void,
 ): void => {
   const { count, spacing } = budLayout(stem.height / world);
   const nod =
@@ -409,22 +448,17 @@ const drawBuds = (
       BUD_START + i * spacing,
     );
     const side = i % 2 ? 1 : -1;
-    ctx.save();
-    ctx.translate(bx + side * BUD_SHAPE.offset * bud, by);
-    ctx.rotate(side * BUD_SHAPE.tilt + nod);
     ctx.beginPath();
     ctx.ellipse(
-      0,
-      0,
+      bx + side * BUD_SHAPE.offset * bud,
+      by,
       BUD_SHAPE.rx * bud,
       BUD_SHAPE.ry * bud,
-      0,
+      side * BUD_SHAPE.tilt + nod,
       0,
       Math.PI * 2,
     );
-    ctx.fillStyle = ctx.strokeStyle;
-    ctx.fill();
-    ctx.restore();
+    fill();
   }
 };
 
@@ -433,6 +467,7 @@ const drawHead = (
   stem: Stem,
   lean: number,
   bud: number,
+  fill: () => void,
 ): void => {
   const [tx, ty] = stemPoint(stem.x, stem.root, stem.height, lean, 1);
   ctx.beginPath();
@@ -445,8 +480,7 @@ const drawHead = (
     0,
     Math.PI * 2,
   );
-  ctx.fillStyle = ctx.strokeStyle;
-  ctx.fill();
+  fill();
 };
 
 /* Detail steps down with distance, with a minimum drawn size at each step. */
@@ -460,49 +494,16 @@ const drawStem = (
 ): void => {
   const alpha =
     (STEM_ALPHA.base + Math.sqrt(stem.scale) * STEM_ALPHA.byScale) * stem.veil;
-  ctx.globalAlpha = alpha;
-  ctx.strokeStyle = palette.border;
-  drawStalk(ctx, stem, lean);
+  traceStalk(ctx, stem, lean);
+  strokeStalk(ctx, palette);
 
   if (stem.height < BUD_MIN_HEIGHT * world) return;
 
   const bud = Math.max(BUD_SIZE.min, stem.size * BUD_SIZE.bySize);
-  ctx.globalAlpha = Math.min(BUD_ALPHA.max, alpha + BUD_ALPHA.lift);
-  /* Buds and head fill from strokeStyle. */
-  ctx.strokeStyle = budTone(palette, stem.tone);
-  drawBuds(ctx, stem, lean, bud, seconds, world);
-  drawHead(ctx, stem, lean, bud);
-};
-
-/* Painted between far and near stems so it veils only the distance. */
-const drawVeil = (
-  ctx: CanvasRenderingContext2D,
-  palette: HeroPalette,
-  scene: Scene,
-): void => {
-  const top = scene.horizon - VEIL.above * scene.world;
-  const depth = VEIL.depth * scene.world;
-  const gradient = ctx.createLinearGradient(0, top, 0, top + depth);
-  gradient.addColorStop(0, palette.veilEdge);
-  gradient.addColorStop(VEIL.peak, palette.veil);
-  gradient.addColorStop(1, palette.veilEdge);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, top, scene.boxWidth, depth);
-};
-
-/* On the back layer: on the front it would darken the hare. */
-const drawFloor = (
-  ctx: CanvasRenderingContext2D,
-  palette: HeroPalette,
-  scene: Scene,
-): void => {
-  const { boxWidth, boxHeight } = scene;
-  const top = boxHeight - FLOOR_HEIGHT * scene.world;
-  const gradient = ctx.createLinearGradient(0, top, 0, boxHeight);
-  gradient.addColorStop(0, palette.floorEdge);
-  gradient.addColorStop(1, palette.floor);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, top, boxWidth, boxHeight - top);
+  const budAlpha = Math.min(BUD_ALPHA.max, alpha + BUD_ALPHA.lift);
+  const fill = (): void => fillBud(ctx, palette, budAlpha);
+  drawBuds(ctx, stem, lean, bud, seconds, world, fill);
+  drawHead(ctx, stem, lean, bud, fill);
 };
 
 /*
@@ -516,29 +517,80 @@ const SHADOW_BLUR = 3.2;
 /** In drawing units: below the feet, then the radii on the ground. */
 const SHADOW_SHAPE = { drop: 1.2, rx: 30, ry: 3.6 } as const;
 
+/** Air levels the shadow is blurred at, each once per layout. */
+const SHADOW_STEPS = 32;
+/** A Gaussian blur reaches about three times its radius. */
+const BLUR_REACH = 3;
+
+/* `ctx.filter` on every frame holds a 4x-throttled field under its frame cap; a cached sprite does not. */
+const shadowSprite = (
+  state: FieldState,
+  palette: HeroPalette,
+  ratio: number,
+  step: number,
+): ShadowSprite => {
+  if (state.shadowRatio !== ratio) {
+    state.shadows.clear();
+    state.shadowRatio = ratio;
+  }
+  const cached = state.shadows.get(step);
+  if (cached) return cached;
+
+  const { hareScale } = state.scene;
+  const air = step / SHADOW_STEPS;
+  const shrink = 1 - air * SHADOW_SHRINK;
+  const rx = SHADOW_SHAPE.rx * hareScale * shrink;
+  const ry = SHADOW_SHAPE.ry * hareScale * shrink;
+  const blur = air * SHADOW_BLUR * hareScale;
+  const pad = Math.ceil(blur * BLUR_REACH) + 1;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil((rx + pad) * 2 * ratio);
+  canvas.height = Math.ceil((ry + pad) * 2 * ratio);
+  const sprite = {
+    canvas,
+    width: canvas.width / ratio,
+    height: canvas.height / ratio,
+  };
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.filter = `blur(${blur.toFixed(2)}px)`;
+    ctx.fillStyle = palette.shadow;
+    ctx.beginPath();
+    ctx.ellipse(sprite.width / 2, sprite.height / 2, rx, ry, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  state.shadows.set(step, sprite);
+  return sprite;
+};
+
+/* On whole device pixels, so a sharp shadow at rest is not resampled soft. */
+const snap = (value: number, ratio: number): number =>
+  Math.round(value * ratio) / ratio;
+
 const drawHareShadow = (
   ctx: CanvasRenderingContext2D,
   palette: HeroPalette,
-  scene: Scene,
+  state: FieldState,
   x: number,
   air: number,
 ): void => {
-  const shrink = 1 - air * SHADOW_SHRINK;
-  ctx.globalAlpha = SHADOW_ALPHA_FLOOR + SHADOW_ALPHA_RANGE * (1 - air);
-  ctx.filter = `blur(${(air * SHADOW_BLUR * scene.hareScale).toFixed(2)}px)`;
-  ctx.fillStyle = palette.border;
-  ctx.beginPath();
-  ctx.ellipse(
-    x,
-    scene.hareRoot + SHADOW_SHAPE.drop * scene.hareScale,
-    SHADOW_SHAPE.rx * scene.hareScale * shrink,
-    SHADOW_SHAPE.ry * scene.hareScale * shrink,
-    0,
-    0,
-    Math.PI * 2,
+  const { hareRoot, hareScale } = state.scene;
+  const ratio = ctx.getTransform().a;
+  const sprite = shadowSprite(
+    state,
+    palette,
+    ratio,
+    Math.round(air * SHADOW_STEPS),
   );
-  ctx.fill();
-  ctx.filter = 'none';
+  ctx.globalAlpha = SHADOW_ALPHA_FLOOR + SHADOW_ALPHA_RANGE * (1 - air);
+  ctx.drawImage(
+    sprite.canvas,
+    snap(x - sprite.width / 2, ratio),
+    snap(hareRoot + SHADOW_SHAPE.drop * hareScale - sprite.height / 2, ratio),
+    sprite.width,
+    sprite.height,
+  );
   ctx.globalAlpha = 1;
 };
 
@@ -609,17 +661,7 @@ const drawBack = (
   state: FieldState,
   seconds: number,
 ): void => {
-  paintWhere(ctx, palette, state, seconds, (z) => z > VEIL_DEPTH);
-  drawVeil(ctx, palette, state.scene);
-  paintWhere(
-    ctx,
-    palette,
-    state,
-    seconds,
-    (z) => z <= VEIL_DEPTH && z >= HARE_DEPTH,
-  );
-  drawFloor(ctx, palette, state.scene);
-  ctx.globalAlpha = 1;
+  paintWhere(ctx, palette, state, seconds, (z) => z >= HARE_DEPTH);
 };
 
 /* Rasterising takes tens of ms on a phone: only a size change past this share redraws it. */
@@ -662,7 +704,7 @@ const drawMid = (
   const { hareRoot, hareScale } = state.scene;
 
   if (atlas) {
-    drawHareShadow(ctx, palette, state.scene, here.x, air);
+    drawHareShadow(ctx, palette, state, here.x, air);
     const sheet = atlasAt(atlas, atlasDensity(hareScale, ctx.getTransform().a));
     drawRabbit(
       ctx,
@@ -697,6 +739,8 @@ export const createHeroField = (
     route: { segments: [], total: 1 },
     cachedAt: Number.NaN,
     cached: STILL,
+    shadows: new Map(),
+    shadowRatio: 0,
   };
 
   return {
@@ -705,6 +749,7 @@ export const createHeroField = (
       state.stems = buildStems(state.scene);
       state.route = buildRoute(state.scene);
       state.cachedAt = Number.NaN;
+      state.shadows.clear();
     },
     step: (seconds, delta) => stepSprings(state, seconds, delta),
     back: (ctx, seconds) => drawBack(ctx, palette, state, seconds),

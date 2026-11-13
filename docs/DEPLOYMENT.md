@@ -18,9 +18,12 @@ npm run build && npx wrangler deploy --dry-run
 - Run `npm run check:live` and `npm run check:live:console` after any deploy or
   dashboard change. The console check stubs Plausible, so it counts no visits.
 - After a deploy that changes the hero or what a page loads, run Lighthouse
-  (mobile) on `https://sinduri.lol/` and the changed page; record the
-  performance score and Total Blocking Time in a comment on the change's pull
-  request. CI does not run Lighthouse: timing scores vary on shared runners.
+  (mobile: 412px, 4x CPU, Slow 4G) 5 times on `https://sinduri.lol/` and the
+  changed page; record the median performance score, LCP and Total Blocking
+  Time in a comment on the change's pull request. For a changed control, also
+  record INP from a timespan run that uses it. The bar is Google's
+  [good](https://web.dev/articles/vitals) line: LCP 2500 ms, INP 200 ms. CI
+  does not run Lighthouse: timing scores vary on shared runners.
   `tests/performance.spec.ts` covers script and CSS bytes and layout shift,
   `tests/image-priority.spec.ts` image formats and priority, and
   `tests/head.spec.ts` the font preload.
@@ -31,6 +34,20 @@ npm run build && npx wrangler deploy --dry-run
 - `preview_urls` is set in `wrangler.jsonc`; a dashboard toggle is reset by the
   next deploy. Previews are public to anyone with the URL and use production
   bindings: a message sent from one lands in the production D1 and inbox.
+
+## Bindings
+
+The Worker's bindings, declared in [`wrangler.jsonc`](../wrangler.jsonc)
+except `ASSETS`, which the Astro adapter adds, and the secret
+([pipeline](../ARCHITECTURE.md#the-contact-endpoint)).
+
+| Binding              | Type          | Used by                                           |
+| -------------------- | ------------- | ------------------------------------------------- |
+| `MESSAGES_DB`        | D1            | Contact messages, the retention sweep, resend     |
+| `CONTACT_MAILER`     | Send Email    | Notification email ([setup](#contact-form-email)) |
+| `CONTACT_RATE_LIMIT` | Rate Limiting | Submissions per sender key                        |
+| `ASSETS`             | Static assets | `/videos/*` byte ranges                           |
+| `CONTACT_NOTIFY_TO`  | Secret        | Notification recipient                            |
 
 ## D1
 
@@ -50,8 +67,8 @@ npx wrangler d1 migrations apply sinduri-lol --remote
 
 ## Contact form email
 
-Needs Email Routing on the zone, the owner's inbox verified as a destination,
-and that address as a runtime secret:
+Needs Email Routing on the zone, the inbox that receives contact messages
+verified as a destination address, and that address as a runtime secret:
 
 ```sh
 npx wrangler secret put CONTACT_NOTIFY_TO
@@ -66,9 +83,9 @@ missing.
 
 - Plausible Cloud, EU, on the free trial, which has Business features such as
   click props (label, area, target). Self-hosted Plausible replaces it before
-  the trial ends. `/privacy` states the trial's terms rather than a retention
-  period; the `plausibleTrial` fact in
-  [`src/lib/platform-facts.ts`](../src/lib/platform-facts.ts) tracks them.
+  the trial ends. The `plausibleTrial` fact in
+  [`src/lib/platform-facts.ts`](../src/lib/platform-facts.ts) holds the plan's
+  terms, which `/privacy` states in place of a retention period.
 - Registered as `sinduri.lol`. `canSend` in
   [`src/lib/analytics.ts`](../src/lib/analytics.ts) keeps the tracker off on
   local, test and preview hosts and under Do Not Track; `filterPayload` strips
@@ -139,6 +156,12 @@ Dashboard settings that change what ships without a file change.
 - CI (`.github/workflows/a11y.yml`) reports one status, `Required checks`,
   which passes only when every job passes. The `main` ruleset requires it by
   the job's `name`: rename it in both at once, or no pull request can merge.
+- A pull request that changes only root `*.md`, `docs/**/*.md` or
+  `.github/*.md` skips the Playwright shards; `Required checks` accepts the
+  skip only then. `ACCESSIBILITY.md`, `ARCHITECTURE.md`, `SECURITY.md` and
+  `docs/STYLEGUIDE.md` always run them: a page or a spec reads each
+  (`scripts/docs-only.mjs`, which `tests/docs-only.spec.ts` keeps complete).
+  Pushes to `main` always run them.
 - CI runs on pushes to `main` and on every pull request, whatever its base
   branch, so a stacked pull request gets the full gate. Its commits are checked
   against its own base branch, not `main`.
@@ -149,15 +172,20 @@ Dashboard settings that change what ships without a file change.
   1. Settings, Rules, Rulesets, the `main` ruleset, Require status checks to
      pass, Add checks, type `Test weakening`, pick the GitHub Actions source,
      Save. The name is offered once the check has run on a pull request.
-  2. Add `.github/CODEOWNERS` naming the owner for `/.github/` and
-     `/scripts/check-test-weakening.mjs`, and turn on Require review from Code
-     Owners in the `main` ruleset. A workflow could report a job also named
-     `Test weakening`; this keeps such a change from merging.
-- Agents use the owner's `gh` login, so they could post the marker. To take
-  that away, create a machine account for them with write access and a
-  fine-grained token for both repositories (Contents and Pull requests, read
-  and write), log their `gh` in with it, and remove the owner's token from
-  their keyring.
+  2. Add `.github/CODEOWNERS` naming the maintainer's GitHub account for
+     `/.github/` and `/scripts/check-test-weakening.mjs`, and turn on Require
+     review from Code Owners in the `main` ruleset. A workflow could report a
+     job also named `Test weakening`; this keeps such a change from merging.
+- `Pull request text` (`.github/workflows/pr-text.yml`) checks the title and
+  description for AI attribution and with `check:wording`, and re-runs on each
+  edit. To require it, in both repositories: Settings, Rules, Rulesets, the
+  `main` ruleset, Require status checks to pass, Add checks, type
+  `Pull request text`, pick the GitHub Actions source, Save. Dependabot pull
+  requests skip it, which counts as passed.
+- Agents run `gh` with the maintainer's token, so they can post the marker. Fix:
+  a machine account with write access and a fine-grained token (Contents, Pull
+  requests: read and write) for both repositories; log agents in with it and
+  remove the maintainer token from their keyring.
 - Turn on Dependabot alerts and automated security fixes.
 - Turn on private vulnerability reporting: [SECURITY.md](../SECURITY.md) relies
   on it.

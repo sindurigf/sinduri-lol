@@ -196,7 +196,7 @@ test.describe('a press on the edge still clicks', () => {
   }
 });
 
-/** The gold primary's inner focus ring is an inset shadow; a press empties box-shadow, so only the pink goes. */
+/** The gold primary's inner focus ring is an inset shadow; a press empties box-shadow, so only the red goes. */
 test('a focused gold primary keeps its inner ring when pressed', async ({
   page,
 }) => {
@@ -272,9 +272,9 @@ test.describe('bricks', () => {
   test('a joined header brick holds still when pressed', async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     await gotoSettled(page, '/blog/');
-    await pressCenter(page, 'header .header-bricks .nav-cta');
+    await pressCenter(page, 'header .header-bricks .theme-switch');
     expect(
-      await translateOf(page, 'header .header-bricks .nav-cta'),
+      await translateOf(page, 'header .header-bricks .theme-switch'),
       'a joined brick moved out of its row',
     ).toEqual([0, 0]);
     await page.mouse.up();
@@ -367,7 +367,7 @@ test.describe('a hover lift', () => {
       }));
       expect(
         offset,
-        'the ring does not clear the throw by its gap: cyan over pink fails SC 1.4.11',
+        'the ring does not clear the throw by its gap: cyan over red fails SC 1.4.11',
       ).toBeGreaterThanOrEqual((await throwOf(page, p.control)) + gap);
     });
   }

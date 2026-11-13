@@ -141,21 +141,19 @@
   --color-block-gold: #ffc000;
   --color-block-light: #e5e2e1;
   --color-block-ink: #131313;
+  /* The light mode header slab: ink on it is 9.4. */
+  --color-block-cyan: #1fc8f0;
   --color-subtle: #9eb6c7;
   --color-gold: #ffc000;
   --color-cyan: #00dcfd;
   /*
-   * Two pinks, split by role, not size: `pink` passes SC 1.4.11 and is for
-   * non-text only; `pink-text` is every pink glyph, AAA (SC 1.4.6) at any size.
-   * Every ratio is in docs/STYLEGUIDE.md's generated table.
+   * One red per mode, 7:1+ on every surface it sits on; on gold the throws
+   * are ink. Ratios: docs/STYLEGUIDE.md's generated table.
    */
-  --color-pink: #ff007a;
-  --color-pink-text: #ff79b6;
-  /*
-   * The bunny marks and the dark gold-slab button's shadow. Same hex as `pink`,
-   * kept apart because light mode turns `pink` ink and this stays.
-   */
-  --color-bunny: #ff007a;
+  --color-red: #ff8080;
+  --color-red-text: #ff8080;
+  /* The bunny marks' throw: `red`, except where a surface turns it ink. */
+  --color-bunny: #ff8080;
   /* The system color forced-colors mode pairs with the button face; bars on it use `forced-colors:bg-button-text`. */
   --color-button-text: ButtonText;
   /* The About cats' toy box and scratching post, read by about-cats.css. */
@@ -170,15 +168,13 @@
   --color-light-ink: #131313;
   --color-light-subtle: #3f4650;
   --color-light-focus: #0047b3;
-  --color-light-pink-text: #b00054;
-  /* A code block's edge in a post, kept grey so the gold label is the only gold. */
+  --color-light-red-text: #560000;
+  /* A code block's edge in a post, kept gray so the gold label is the only gold. */
   --color-code-edge: #707070;
   /* Its light mode value. */
   --color-light-code-edge: #767676;
   /* A code block's fill: the surface in dark mode, the light block fill in light mode, so it reads as a block on white. */
   --color-code-fill: var(--color-surface);
-  --color-light-hero-veil: rgba(19, 19, 19, 0.025);
-  --color-light-hero-floor: rgba(19, 19, 19, 0.035);
 
   /*
    * The gold surface: an inverted set, since only near-blacks read on gold.
@@ -202,17 +198,11 @@
    */
   --color-gold-link: #1e0d16;
 
-  /* The homepage canvas's buds on gold. Decoration only; not the link color. */
-  --color-gold-bud: #00363f;
   /*
-   * The canvas's veil and floor, read by src/scripts/hero-field.ts. Ink, not border-blue,
-   * because the field draws on gold. One setting with the near-plane blur in
-   * hero-field-scene.ts: change them together.
+   * The homepage canvas's stalks and buds, on the page ground (11.99). Light
+   * mode sets `hero-fill` too: cyan buds with this as their outline.
    */
-  --color-hero-veil: rgba(19, 19, 19, 0.07);
-  --color-hero-veil-edge: rgba(19, 19, 19, 0);
-  --color-hero-floor: rgba(19, 19, 19, 0.1);
-  --color-hero-floor-edge: rgba(19, 19, 19, 0);
+  --color-hero-stalk: var(--color-block-gold);
 
   /*
    * Family name from @fontsource-variable/lexend: one wght axis file, latin
@@ -367,14 +357,12 @@
   /* Just under the 22px footer icons; one line, so a label's line height. */
   --text-copyright: 1.25rem;
   --text-copyright--line-height: 1.2;
-  /*
-   * "Lepus Ridet" in the footer, one line in the 288px phone box: 32px
-   * uppercase Lexend 900 is about 250px wide.
-   */
+  /* "Lepus Ridet" in the footer: capitals only, so no descender room. */
   --text-footer-name--line-height: 0.82;
   /*
    * Fills the band: its width less padding over the name's width in em, plus
-   * room for SC 1.4.12 letter spacing. Two lines (RIDET, 3.49em), one from md (7.22em).
+   * room for SC 1.4.12 letter spacing. Two lines (RIDET, 3.49em), one from md
+   * (7.22em), which wraps to two under that spacing.
    */
   --text-footer-name-fluid: calc((100cqi - 3rem) / 4.2);
   --text-footer-name-fluid-md: calc((100cqi - 3rem) / 7.6);
@@ -392,12 +380,12 @@
   --tracking-title: -0.02em;
   --tracking-label: 0.1em;
 
-  /* Zero everywhere except the logo tile and the laughing rabbit tile on /about. */
+  /* Zero except the logo tile, and the laughing rabbit tile and Fandoms photo on /about. */
   --radius-nav: 14px;
 
   /*
-   * Hard offset shadows, one job per color: pink is depth and pressables, cyan
-   * is hover and focus. Gold casts none: gold on gold shows nothing, and pink is
+   * Hard offset shadows, one job per color: red is depth and pressables, cyan
+   * is hover and focus. Gold casts none: gold on gold shows nothing, and red is
    * visible on gold and on the page.
    */
   /* One throw for object shadows; controls keep 4px. */
@@ -418,17 +406,17 @@
   --edge: 6px;
   /* Table rules only (`hairline` utilities). */
   --hairline: 1px;
-  --shadow-hard-pink-4: 4px 4px 0 var(--color-pink);
+  --shadow-hard-red-4: 4px 4px 0 var(--color-red);
   /* In the color opposite the ground, so it shows in both modes. */
   --shadow-brick: var(--brick-throw) var(--brick-throw) 0 var(--color-text);
-  --shadow-hard-pink-object: var(--hard-throw) var(--hard-throw) 0
-    var(--color-pink);
+  --shadow-hard-red-object: var(--hard-throw) var(--hard-throw) 0
+    var(--color-red);
   --shadow-hard-bunny-4: 4px 4px 0 var(--color-bunny);
   --shadow-hard-bunny-8: 8px 8px 0 var(--color-bunny);
   --shadow-hard-bunny-12: 12px 12px 0 var(--color-bunny);
   --shadow-hard-cyan-object: var(--hard-throw) var(--hard-throw) 0
     var(--color-cyan);
-  /* A card on gold: `gold-border` passes SC 1.4.11 there, pink does not. */
+  /* A card on gold: `gold-border` passes SC 1.4.11 there, red does not. */
   --shadow-hard-gold-border-4: 4px 4px 0 var(--color-gold-border);
 
   /*
@@ -443,8 +431,8 @@
    */
   --inset-shadow-current: inset 0 0 0 4px var(--color-gold-text);
 
-  /* A failing field's 4px pink edge doubled by a 4px ring inside it. */
-  --inset-shadow-invalid: inset 0 0 0 4px var(--color-pink);
+  /* A failing field's 4px red edge doubled by a 4px ring inside it. */
+  --inset-shadow-invalid: inset 0 0 0 4px var(--color-red);
 
   /*
    * Header, main and footer all carry the gutter outside and this width inside;
@@ -493,7 +481,7 @@
   /*
    * Focus ring: 4px cyan, clearing SC 1.4.11 on background and surface. A
    * shadowed element sets `--lift` to its shadow offset so the ring clears it:
-   * cyan over pink fails SC 1.4.11. Never set outline-offset to 0.
+   * cyan over red fails SC 1.4.11. Never set outline-offset to 0.
    */
   --focus-width: 4px;
   --focus-gap: 4px;
@@ -557,7 +545,6 @@
    */
   --hero-column-screen-clear: calc(48px + var(--hard-throw));
 
-  --hero-column-pad-block: clamp(32px, 5vw, 72px) clamp(32px, 5vw, 80px);
   --hero-column-pad-inline: clamp(20px, 3.5vw, 64px);
 
   --hero-column-edge: var(--block-edge);
@@ -615,9 +602,8 @@
   --spacing-section: clamp(56px, 8vw, 96px);
 
   /*
-   * PageHero roundel: twice --spacing-section less 56px, so it keeps 24px from
-   * the hero text and 32px from the next section. Floor in rem so it zooms.
-   * tests/page-hero.spec.ts fails if it covers any text.
+   * PageHero roundel: the rem bounds zoom with the text.
+   * tests/page-hero.spec.ts fails if the roundel covers any text.
    */
   --spacing-roundel: clamp(3.5rem, 16vw - 3.5rem, 8rem);
   /* Heading to content, and content to the actions under it. */

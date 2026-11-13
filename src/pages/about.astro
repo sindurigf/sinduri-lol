@@ -3,6 +3,8 @@ import type { ImageMetadata } from 'astro';
 import { getImage, Picture } from 'astro:assets';
 import { PHOTO_FORMATS } from '../lib/photo-formats';
 import lepusRabbit from '../assets/lepus-rabbit.svg';
+import lepusRabbitLight from '../assets/lepus-rabbit-light.svg';
+import ModeArt from '../components/ModeArt.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CloseRow from '../components/CloseRow.astro';
 import PageHero from '../components/PageHero.astro';
@@ -53,8 +55,8 @@ import { DENSITIES, WIDTHS } from '../lib/image-densities';
 import { JOURNEY_POST_HREF } from '../lib/paths';
 
 /*
- * Sinduri's own copy: add no line she has not approved, and keep her few
- * apostrophes ("I am", "it is"). Jump links repeat the headings verbatim.
+ * Editorial copy: add no line the maintainer has not approved, and write out
+ * contractions ("I am", "it is"). Jump links repeat the headings verbatim.
  */
 
 /* Matches `size-14`. */
@@ -86,7 +88,7 @@ const SECTIONS = [
 /* On the `.aspect-frame`, so the border stays when a failed photo fades out. */
 const PHOTO = 'border-4 border-border';
 
-/* Uncaptioned by Sinduri's choice; the alt text names who is in each. */
+/* Uncaptioned on purpose; the alt text names who is in each. */
 const PLACES = [
   {
     src: bestFriendBeach,
@@ -253,7 +255,7 @@ const catInfo: CatInfo[] = await Promise.all(
 
 <BaseLayout
   title="About"
-  description="Sinduri Guntupalli lives in Vienna with her husband and three cats. Read about her love of Lord of the Rings and how a civil engineer found Drupal."
+  description="I live in Vienna with my husband and three cats. Read about my love of Lord of the Rings and how I went from civil engineering to my first Drupal job."
   profile
 >
   <PageHero
@@ -289,8 +291,9 @@ const catInfo: CatInfo[] = await Promise.all(
   <Section id={SECTIONS[0].id} headless>
     <div class="lepus-row flex flex-wrap items-center gap-8 lg:gap-12">
       <span class="lepus-tile relative block shrink-0 rotate-3 rounded-nav border-fill-edge bg-block-gold shadow-hard-bunny-8 lg:shadow-hard-bunny-12">
-        <img
-          src={lepusRabbit.src}
+        <ModeArt
+          dark={lepusRabbit}
+          light={lepusRabbitLight}
           alt=""
           width={lepusRabbit.width}
           height={lepusRabbit.height}

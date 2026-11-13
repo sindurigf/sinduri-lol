@@ -6,7 +6,7 @@ How AI tooling was used to build this site.
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Model | Claude (Anthropic)                                                                                                                                                                                                                    |
 | Tools | Claude Code; Stitch (Google) and Claude Design (Anthropic) for design; Canva AI for the rabbit and cat drawings and the logo                                                                                                          |
-| Scope | Code, tests, docs, functional microcopy, the `/accessibility` and `/privacy` text, the About cat drawings, the home page hero bunny, the footer bunny, the /about tile rabbit, the logo and site icons, and editing my editorial copy |
+| Scope | Code, tests, docs, functional microcopy, the `/accessibility` and `/privacy` text, the About cat drawings, the homepage hero bunny, the footer bunny, the /about/ tile rabbit, the logo and site icons, and editing my editorial copy |
 
 ## Review
 
@@ -31,24 +31,27 @@ How AI tooling was used to build this site.
 ## At runtime
 
 - No AI runs on the site, and no visitor data is sent to a model.
-- AI-made and listed under
-  [Made with AI on `/credits/`](https://sinduri.lol/credits/#ai):
-  - the hopping bunny in the homepage hero, drawn with Canva AI and traced
-    with Potrace (`src/assets/hero-rabbit.svg`, `src/lib/rabbit-atlas.ts`),
-    its stills shown without JavaScript (`src/assets/hero-still-*.webp`) and
-    its raster for the Let It Fall climb (`src/assets/hero-rabbit-climb.webp`);
-  - the sticker bunny in the footer and on the 404 page, drawn with Canva AI and traced with
-    Potrace (`src/assets/bunny-footer.svg`);
-  - the jumping bunny in the header logo, the hero roundel, every favicon and
-    app icon and the share images, the same Canva AI rabbit traced with Potrace
-    (`artwork/rabbit-jump.json`, `scripts/make-logo.mjs`, `scripts/make-og.mjs`);
-  - the laughing bunny on the `/about/` tile, drawn with Canva AI and traced with
-    Potrace (`artwork/rabbit-laugh.json`, `scripts/make-logo.mjs`);
-  - the animated cats on `/about/`, drawn with Canva AI from the cats' photos
-    (`artwork/about-cats/`, packed by `scripts/make-about-cats.mjs`), their
-    sleep, wake and trick-list icons (`src/components/AboutCats.astro`) and
-    their trick icons (`src/lib/about-cats-tricks.json`). The cat photos are
-    real.
+
+## Made with AI
+
+Listed under [Made with AI on `/credits/`](https://sinduri.lol/credits/#ai):
+
+- the hopping bunny in the homepage hero, drawn with Canva AI and traced
+  with Potrace (`src/assets/hero-rabbit.svg`, `src/lib/rabbit-atlas.ts`),
+  its stills shown without JavaScript (`src/assets/hero-still-*.webp`) and
+  its raster for the Let It Fall climb (`src/assets/hero-rabbit-climb.webp`);
+- the sticker bunny in the footer and on the 404 page, drawn with Canva AI and
+  traced with Potrace (`src/assets/bunny-footer.svg`);
+- the jumping bunny in the header logo, the hero roundel, every favicon and
+  app icon and the share images, the same Canva AI rabbit traced with Potrace
+  (`artwork/rabbit-jump.json`, `scripts/make-logo.mjs`, `scripts/make-og.mjs`);
+- the laughing bunny on the `/about/` tile, drawn with Canva AI and traced with
+  Potrace (`artwork/rabbit-laugh.json`, `scripts/make-logo.mjs`);
+- the animated cats on `/about/`, drawn with Canva AI from the cats' photos
+  (`artwork/about-cats/`, packed by `scripts/make-about-cats.mjs`), their
+  sleep, wake and trick-list icons (`src/components/AboutCats.astro`) and
+  their trick icons (`src/lib/about-cats-tricks.json`). The cat photos are
+  real.
 
 ## Keeping this current
 

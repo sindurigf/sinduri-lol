@@ -22,13 +22,14 @@
   }
 
   /*
-   * Hero plus the section under it, one gold area. Two rings, since no color
-   * clears SC 1.4.11 on both sides: gold-border inside, `border` outside for
-   * the page. Top margin is the name's overhang.
+   * The hero stands on the page: the column keeps its edge width and a zero
+   * throw for the layout (tests/hero-fit.spec.ts measures both) and draws
+   * neither. Top margin is the name's overhang.
    */
-  .v-column {
+  .v-column.gold-column {
     position: relative;
-    background-color: var(--color-gold);
+    border-color: transparent;
+    box-shadow: 0 0 0 0 transparent;
     /*
      * Smaller name in the column: a wrapped GUNTUPALLI moves the break off the
      * rule.
@@ -51,34 +52,53 @@
         var(--text-hero-h1)
     );
     --hero-ledge-h: var(--size-home-ledge-h-phone);
+    --hero-floor: calc(var(--hero-ledge-h) + --spacing(5));
 
     @variant md {
       --hero-ledge-h: var(--size-home-ledge-h);
     }
   }
 
-  /* The window fills the first screen; `min-height` so it grows rather than clips at 400% zoom. */
+  /*
+   * The window fills the first screen; `min-height` so it grows rather than clips at 400% zoom.
+   * The floor keeps the taglines (`.home-tags`) inside the window, off the pause control.
+   */
   .v-column .hero {
     padding-block: 0;
-    min-height: calc(
+    min-height: max(
+      var(--hero-floor),
       100svh - var(--spacing-page-top) - var(--hero-name-overhang) -
         var(--hero-pad-block) - var(--hero-column-edge) - --spacing(1)
     );
   }
 
   /*
-   * Cancel `.band`'s negative margins and padding inside the column, or the
-   * gold spills over the column edge.
+   * The block starts under the hero: this section draws the edge and throw
+   * the column leaves out, on the column's border box.
    */
   .v-column section.hero + section {
-    margin-inline: 0;
+    margin: 0 calc(var(--block-edge) * -1) calc(var(--block-edge) * -1);
     padding-inline: 0;
-    padding-block: var(--hero-column-pad-block);
+    border: var(--block-edge) solid var(--color-block-ink);
+
+    @apply shadow-hard-red-object;
   }
 
   @media (width < 40rem) {
-    .v-column {
+    .v-column.gold-column {
       --text-hero-h1: var(--text-hero-h1-column-phone);
+      /*
+       * The standing tagline at its tallest: two lines of `text-h3` at the SC 1.4.12
+       * line height, so it clears the name under text spacing, plus padding and edges.
+       */
+      --text-spacing-line-height: 1.5;
+      --home-tag-stand: calc(
+        2 * var(--text-h3) * var(--text-spacing-line-height) + 2 *
+          --spacing(2) + 2 * var(--block-edge)
+      );
+      --hero-floor: calc(
+        var(--hero-field-top) + var(--hero-ledge-h) + var(--home-tag-stand)
+      );
     }
   }
 
@@ -91,25 +111,25 @@
     @apply pointer-events-none absolute;
 
     top: var(--hero-field-top, 0);
-    right: var(--hero-inset);
-    bottom: calc(var(--hero-gap) + var(--hero-ledge-h));
-    left: var(--hero-inset);
+    right: 0;
+    bottom: var(--hero-ledge-h);
+    left: 0;
   }
 
   /*
-   * The shelf the meadow stands on: joined light bricks, each drawing its top
-   * and left edge; the shelf closes the right and bottom and casts the throw.
+   * The floor of the window: joined light bricks across the column's border box,
+   * each drawing its top and left edge; the shelf closes the right end. Its fill
+   * is the bricks', so on the dark page the ink edge reads against it (1.4.11).
    */
   .hero-ledge {
     position: absolute;
-    right: var(--hero-inset);
-    bottom: var(--hero-gap);
-    left: var(--hero-inset);
+    right: calc(var(--block-edge) * -1);
+    bottom: 0;
+    left: calc(var(--block-edge) * -1);
     display: flex;
     height: var(--hero-ledge-h);
+    background-color: var(--color-block-light);
     border-right: var(--block-edge) solid var(--color-block-ink);
-    border-bottom: var(--block-edge) solid var(--color-block-ink);
-    @apply shadow-hard-pink-object;
   }
 
   .hero-ledge > * {
@@ -169,13 +189,8 @@
   .hero-motion-toggle {
     @apply pointer-events-auto top-auto z-40;
 
-    right: calc(-1 * var(--hero-inset));
+    right: 0;
     bottom: calc(100% + var(--hero-field-top, 0px) + --spacing(4));
-  }
-
-  /* It sits on the page, not the gold: the page's ring, which `.surface-gold` would darken to 1:1. */
-  .surface-gold .hero-motion-toggle:focus-visible {
-    outline-color: var(--color-cyan);
   }
 
   /*
@@ -230,7 +245,7 @@
 
     top: calc(var(--hero-gap) - var(--marks-room));
     right: calc(var(--hero-inset) - var(--marks-room));
-    bottom: calc(var(--hero-gap) + var(--hero-ledge-h));
+    bottom: var(--hero-ledge-h);
     width: calc(var(--hero-marks-reserve) + 2 * var(--marks-room));
     padding: var(--marks-room);
     overflow: clip;
@@ -251,15 +266,18 @@
 
   /*
    * Below `sm` the name takes full width and the words drop under it, still at
-   * the top.
+   * the top. The narrow inset there would put a sticker's throw on the border.
    */
   @media (width < 40rem) {
     .hero-plate {
       right: var(--hero-inset);
     }
 
+    /* Ends above the standing tagline, so a sticker that does not fit wraps out of sight. */
     .hero-marks {
       top: calc(var(--hero-gap) + var(--text-hero-h1) - var(--marks-room));
+      right: calc(var(--hero-inset) - var(--marks-room) + var(--hard-throw));
+      bottom: calc(var(--hero-ledge-h) + var(--home-tag-stand));
     }
   }
 
@@ -267,11 +285,38 @@
     font-size: var(--text-hero-sticker);
     line-height: var(--text-hero-sticker--line-height);
 
-    @apply border-4 px-4 py-2 font-black uppercase;
+    @apply border-4 border-block-ink px-4 py-2 font-black uppercase;
   }
 
+  /* A page-colored fill on the page: its edge is the page's ring (SC 1.4.11). */
+  .hero-sticker.bg-surface {
+    border-color: var(--color-border);
+  }
+
+  /* Laid over the shelf, the wall's top a little above the shelf's (index.astro sets the section's `pt-0`). */
   .home-tags {
+    --home-tags-drop: --spacing(3);
+
+    position: relative;
+    z-index: 1;
     max-width: 100%;
+    margin-top: calc(-1 * (var(--hero-ledge-h) + --spacing(5)));
+  }
+
+  /*
+   * Below `sm` the first straddles the shelf and the second stands on it at the
+   * right end; the wall's negative margin joins its edge to the shelf's.
+   */
+  @media (width < 40rem) {
+    .home-tags {
+      margin-top: calc(var(--home-tags-drop) - var(--hero-ledge-h));
+    }
+
+    .home-tag:last-child {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + var(--home-tags-drop));
+    }
   }
 
   .home-tag {
@@ -282,6 +327,6 @@
 /* Utilities layer: replaces the heading's `text-text` utility. */
 @layer utilities {
   .home-head > div > h2 {
-    @apply edge inline-block border-fill-edge bg-block-gold px-6 py-3 text-gold-text shadow-hard-pink-object;
+    @apply edge inline-block border-fill-edge bg-block-gold px-6 py-3 text-gold-text shadow-hard-red-object;
   }
 }

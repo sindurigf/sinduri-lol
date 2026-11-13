@@ -3,7 +3,7 @@
   .btn-primary {
     @apply lift-control inline-block border-4 border-fill-edge bg-block-gold px-8 py-4
       text-button font-black uppercase tracking-label text-gold-text
-      shadow-hard-pink-4 wrap-anywhere max-w-full;
+      shadow-hard-red-4 wrap-anywhere max-w-full;
   }
 
   /* A summary styled as a button: older Safari draws its own triangle otherwise. */
@@ -15,7 +15,7 @@
   .btn-secondary {
     @apply lift-control inline-block border-4 border-block-ink bg-block-light px-8
       py-4 text-button font-black uppercase tracking-label text-block-ink
-      shadow-hard-pink-4 wrap-anywhere max-w-full;
+      shadow-hard-red-4 wrap-anywhere max-w-full;
   }
 
   /*
@@ -34,7 +34,7 @@
   :is(.btn-primary, .btn-secondary, .footer-sticker),
   a.chip {
     --press-throw: var(--lift-control);
-    --press-throw-color: var(--color-pink);
+    --press-throw-color: var(--color-red);
   }
 
   .surface-gold .btn-gold-primary {
@@ -99,7 +99,7 @@
 
       /* No lift on touch, where :hover sticks after a tap. */
       @media (hover: hover) {
-        /* The ring clears the grown throw: cyan over pink fails SC 1.4.11. */
+        /* The ring clears the grown throw: cyan over red fails SC 1.4.11. */
         &:hover:not(:active) {
           --lift: calc(var(--press-throw) + var(--press-lift));
 
@@ -202,7 +202,16 @@
    */
   .theme-switch {
     @apply grid size-target shrink-0 cursor-pointer place-items-center border-4
-      border-text bg-block-gold text-gold-text;
+      border-text;
+
+    position: relative;
+    background-color: var(--solid-fill, var(--color-block-gold));
+    color: var(--solid-label, var(--color-gold-text));
+  }
+
+  /* WebKit puts an absolute grid child at the content edge, where `sr-only`'s -1px margin moves the name onto the border. */
+  .theme-switch > .sr-only {
+    @apply left-1/2 top-1/2;
   }
 
   :root:not([data-theme]) .theme-switch {
@@ -220,7 +229,7 @@
   /* src/scripts/theme-switch.ts places it beside its button and sets the room it has. */
   .theme-menu {
     @apply my-2 overflow-y-auto edge border-border bg-surface px-4 pt-2 pb-3
-      text-text shadow-hard-pink-object;
+      text-text shadow-hard-red-object;
 
     position: fixed;
     inset: auto;
@@ -259,18 +268,30 @@
   }
 
   /* Hover fills cyan; the header bar and menu set their own fill and label. */
-  :is(.theme-switch, .nav-sticker, .nav-cta):not([aria-current]):hover {
+  .nav-sticker:not([aria-current]):hover {
     background-color: var(--hover-fill, var(--color-cyan));
     color: var(--hover-label, var(--color-background));
   }
 
+  /* Solid bricks may rest in the link hover's fill, so the bar can give them their own. */
+  :is(.theme-switch, .nav-cta):not([aria-current]):hover {
+    background-color: var(
+      --solid-hover-fill,
+      var(--hover-fill, var(--color-cyan))
+    );
+    color: var(
+      --solid-hover-label,
+      var(--hover-label, var(--color-background))
+    );
+  }
+
   /* The glyph is the theme in use: a moon while dark, a sun while light. */
   .theme-switch-sun,
-  :root[data-theme='light'] .theme-switch-moon {
+  :root.light .theme-switch-moon {
     @apply hidden;
   }
 
-  :root[data-theme='light'] .theme-switch-sun {
+  :root.light .theme-switch-sun {
     @apply block;
   }
 
@@ -315,23 +336,23 @@
   }
 
   /*
-   * The bar is gold in both modes, edged in ink and thrown like a card (pink,
-   * ink in light mode). Inside it the bricks take light fills and ink lines, and
-   * the ring, hover label and brick throws are ink (11.32 on gold, 14.49 on light).
+   * The bar is a slab of the page's own colors: ink on dark, white on light
+   * (light-mode.css), so its bricks keep the page's edges, fills and hovers.
    */
   .header-slab {
-    --color-background: var(--color-block-light);
-    --color-text: var(--color-block-ink);
-    --color-cyan: var(--color-gold-link);
-    --hover-fill: var(--dark-cyan);
-    --hover-label: var(--color-gold-text);
-    --shadow-brick: var(--brick-throw) var(--brick-throw) 0
-      var(--color-block-ink);
+    --slab-fill: var(--color-block-ink);
+    --menu-fill: var(--color-background);
+    --menu-label: var(--color-text);
+    --logo-name: var(--color-text);
+    --logo-focus-fill: var(--color-text);
+    --logo-focus-name: var(--slab-fill);
+    --color-background: var(--slab-fill);
+    --cta-shadow: var(--shadow-brick);
 
-    border: var(--block-edge) solid var(--color-block-ink);
-    background-color: var(--color-block-gold);
+    border: var(--block-edge) solid transparent;
+    background-color: var(--slab-fill);
 
-    @apply px-4 shadow-hard-pink-object sm:px-6;
+    @apply px-4 sm:px-6;
   }
 
   /* The tile's shadow sits inside the link; the side padding is the focus block's margin around the tile and name. */
@@ -339,19 +360,21 @@
     /* Only the start bleeds: a negative end margin lets the theme switch slide over the block at 320px. */
     margin-inline-start: calc(var(--logo-focus-pad) * -1);
     padding: 0 var(--logo-focus-pad) var(--lift-mark);
+
+    /* The name's `text-gold-text` utility outranks this layer, so the token is swapped instead. */
+    --color-gold-text: var(--logo-name);
   }
 
   /*
    * The rabbit jumps higher than the bar leaves room for a ring around it, so
-   * focus inverts the link to an ink block instead (SC 2.4.13 by area).
-   * Forced colors drop the fill, so the ring comes back there.
+   * focus inverts the link to a block in the page's opposite color instead
+   * (SC 2.4.13 by area). Forced colors drop the fill, so the ring comes back there.
    */
   .header-slab .logo-link:focus-visible {
-    /* The name's `text-gold-text` utility outranks this layer, so the token is swapped instead. */
-    --color-gold-text: var(--color-block-gold);
+    --color-gold-text: var(--logo-focus-name);
 
     outline-color: transparent;
-    background-color: var(--color-block-ink);
+    background-color: var(--logo-focus-fill);
 
     @media (forced-colors: active) {
       outline-color: CanvasText;
@@ -362,17 +385,33 @@
     --color-background: var(--page-ground);
     --color-text: var(--page-text);
     --color-cyan: var(--page-cyan);
-    /* Unset, so hovers fall back to the page's cyan and ground. */
+    /* Unset, so hovers fall back to the page's cyan and ground, and bricks to gold. */
     --hover-fill: initial;
     --hover-label: initial;
+    --solid-hover-fill: initial;
+    --solid-hover-label: initial;
+    --brick-edge: initial;
+    --brick-fill: initial;
+    --brick-label: initial;
+    --solid-fill: initial;
+    --solid-label: initial;
+    --current-mark: initial;
     --shadow-brick: var(--brick-throw) var(--brick-throw) 0 var(--page-text);
   }
 
   /* Rings drawn inside the brick, on its own fill, so they never cross the next one. */
-  .header-bricks :focus-visible:not(.theme-menu *) {
+  .header-bricks :focus-visible:not(.theme-menu *),
+  .header-actions > * > .nav-cta:focus-visible {
     position: relative;
     z-index: 1;
     outline-offset: calc(-1 * (var(--block-edge) + var(--focus-gap)));
+  }
+
+  /* The call to action stands apart from the joined bricks, with its own throw. */
+  .header-actions > * > .nav-cta {
+    box-shadow: var(--cta-shadow);
+
+    translate: 0 calc(var(--brick-throw) / -2);
   }
 
   /*
@@ -408,30 +447,68 @@
     }
 
     & :is(.nav-cta, .theme-switch, [aria-current]):focus-visible {
-      outline-color: var(--color-gold-text);
+      outline-color: var(--solid-label, var(--color-gold-text));
     }
 
     /* A hovered ring takes the hover label's ink; a current brick has no hover fill. */
     & :focus-visible:hover:not([aria-current], .theme-menu *) {
       outline-color: var(--hover-label, var(--color-background));
     }
+
+    & :is(.theme-switch, .menu-brick):focus-visible:hover {
+      outline-color: var(
+        --solid-hover-label,
+        var(--hover-label, var(--color-background))
+      );
+    }
+  }
+
+  /* The call to action's ring takes its label's color. */
+  .header-actions > * > .nav-cta:focus-visible {
+    outline-color: var(--solid-label, var(--color-gold-text));
+
+    &:hover:not([aria-current]) {
+      outline-color: var(
+        --solid-hover-label,
+        var(--hover-label, var(--color-background))
+      );
+    }
   }
 
   /* The menu button is a brick like the links; hovered, its bars take the label's ink. */
   .menu-brick {
-    @apply border-text bg-background;
+    --color-text: var(--menu-label);
+
+    @apply border-text;
+
+    background-color: var(--menu-fill);
   }
 
   .menu-brick:hover {
-    --color-text: var(--hover-label, var(--color-background));
+    --color-text: var(
+      --solid-hover-label,
+      var(--hover-label, var(--color-background))
+    );
 
-    background-color: var(--hover-fill, var(--color-cyan));
+    background-color: var(
+      --solid-hover-fill,
+      var(--hover-fill, var(--color-cyan))
+    );
   }
 
   /* Nav and menu links: bricks edged in `text`. tests/edge-contrast.spec.ts. */
   .nav-sticker {
-    @apply flex min-h-target items-center border-4 border-text bg-background px-2
-      text-label font-black uppercase tracking-label text-text lg:px-4;
+    @apply flex min-h-target items-center border-4 bg-background px-2 text-label
+      font-black uppercase tracking-label text-text lg:px-4;
+
+    border-color: var(--brick-edge, var(--color-text));
+    background-color: var(--brick-fill, var(--color-background));
+    color: var(--brick-label, var(--color-text));
+  }
+
+  /* The ring takes the label's color, so it reads on whichever fill the brick has. */
+  .header-bricks .nav-sticker:focus-visible {
+    outline-color: currentColor;
   }
 
   .nav-sticker-large {
@@ -443,9 +520,11 @@
   }
 
   .nav-sticker[aria-current] {
-    @apply bg-block-gold text-gold-text;
+    @apply border-text;
 
-    box-shadow: var(--inset-shadow-current);
+    background-color: var(--solid-fill, var(--color-block-gold));
+    color: var(--solid-label, var(--color-gold-text));
+    box-shadow: var(--current-mark, var(--inset-shadow-current));
   }
 
   .nav-sticker-large[aria-current] {
@@ -462,8 +541,10 @@
    * so source order settles `box-shadow`.
    */
   .nav-cta {
-    @apply border-4 border-text bg-block-gold text-label font-black uppercase
-      tracking-label text-gold-text;
+    @apply border-4 border-text text-label font-black uppercase tracking-label;
+
+    background-color: var(--solid-fill, var(--color-block-gold));
+    color: var(--solid-label, var(--color-gold-text));
   }
 
   /* The menu's call to action and Close are bricks like its links. */
@@ -478,7 +559,7 @@
   .nav-cta[aria-current] {
     --lift: 0px;
 
-    box-shadow: var(--inset-shadow-current);
+    box-shadow: var(--current-mark, var(--inset-shadow-current));
   }
 
   /*

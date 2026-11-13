@@ -13,7 +13,8 @@ before changing anything it covers.
 
 - An arbitrary value: no raw hex, `text-[32px]` or `shadow-[8px_8px_0]`. Add a
   token to `@theme` instead ([Tokens only](../../../docs/STYLEGUIDE.md#tokens-only)).
-- `pink` as text, at any size. `pink-text` as a border, shadow or fill.
+- `red` as text, `red-text` as a border, shadow or fill, or any red on
+  gold: throws on gold are ink. Every red is 7:1 or more on its surface.
 - `cyan` at rest. It is hover and focus only; inside a block, hover and focus
   are `gold-link`. A still state sample on `/brand` may show its hover color.
 - A gold ground without `.surface-gold`, or `.btn-primary`/`.btn-secondary`
@@ -56,8 +57,6 @@ before changing anything it covers.
   [Heading floors](../../../docs/STYLEGUIDE.md#heading-floors),
   [Uppercase](../../../docs/STYLEGUIDE.md#uppercase),
   [Soft hyphens](../../../docs/STYLEGUIDE.md#soft-hyphens).
-- Case: headings, page titles and buttons in Chicago title case; `.label` and
-  `.badge` text in sentence case ([Uppercase](../../../docs/STYLEGUIDE.md#uppercase)).
 - Spacing and layout: [Spacing scale](../../../docs/STYLEGUIDE.md#spacing-scale),
   [Gutter and column](../../../docs/STYLEGUIDE.md#gutter-and-column).
 - Borders, shadows, radius:
@@ -68,17 +67,13 @@ before changing anything it covers.
 - Posts: [Posts](../../../docs/STYLEGUIDE.md#posts).
 - Empty and failed states:
   [Empty, loading and error states](../../../docs/STYLEGUIDE.md#empty-loading-and-error-states).
-- Header and menu: [Navigation](../../../docs/STYLEGUIDE.md#navigation). The
-  bar is a gold block in both modes, ink edge, pink throw (ink in light mode).
-  Above it, the report band on the page ground holds one link
-  ([Report band](../../../docs/STYLEGUIDE.md#report-band)).
+- Header and menu: [Navigation](../../../docs/STYLEGUIDE.md#navigation),
+  [Report band](../../../docs/STYLEGUIDE.md#report-band).
 - Footer: [Footer](../../../docs/STYLEGUIDE.md#footer).
 - Animation: [Motion](../../../docs/STYLEGUIDE.md#motion).
 - Focus rings: [Focus](../../../docs/STYLEGUIDE.md#focus).
 - Photos: [Photo frames](../../../docs/STYLEGUIDE.md#photo-frames-and-the-failed-photo-state).
-- Photo captions: "Photo: Name", plus the short license on a Creative Commons
-  photo, and its title first where the license asks for it
-  ([Photo credits](../../../docs/STYLEGUIDE.md#photo-credits)).
+- Photo captions: [Photo credits](../../../docs/STYLEGUIDE.md#photo-credits).
 - A form posting to a new origin: [The CSP](../../../ARCHITECTURE.md#the-csp).
 
 ## Before calling it done

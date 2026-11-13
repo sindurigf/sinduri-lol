@@ -1,9 +1,6 @@
 /*
- * The homepage meadow: sizes the three canvases in `[data-hero-field]` and
- * runs the frame loop; drawing lives in src/lib/hero-field.ts. The pause
- * control (SC 2.2.2) ships `hidden` and shows once motion can run, so one
- * never ships without the other. Reduced motion draws one fixed frame and
- * keeps the button hidden.
+ * The pause control (SC 2.2.2) ships `hidden` and shows once motion can run, so
+ * one never ships without the other. Reduced motion draws one fixed frame.
  */
 import { NEXT_FRAME, createMotionLoop } from './motion-loop';
 import { requiredElementIn } from './required-element';
@@ -11,6 +8,7 @@ import { createHeroField } from '../lib/hero-field';
 import { MAX_PIXEL_RATIO } from '../lib/image-densities';
 import type { HeroField, HeroPalette } from '../lib/hero-field-scene';
 import heroRabbit from '../assets/hero-rabbit.svg';
+import heroRabbitLight from '../assets/hero-rabbit-light.svg';
 
 /** Any fixed time; this one falls in the hare's first rest. */
 const STILL_SECONDS = 3.4;
@@ -60,20 +58,16 @@ const setUp = (host: HTMLElement): void => {
     const style = getComputedStyle(host);
     const read = (token: string): string =>
       style.getPropertyValue(token).trim();
-    /* Gold-surface tokens: the dark set fails SC 1.4.3 and 1.4.11 on gold. */
-    const palette: HeroPalette = {
-      border: read('--color-gold-border'),
-      subtle: read('--color-gold-muted'),
-      bud: read('--color-gold-bud'),
-      veil: read('--color-hero-veil'),
-      veilEdge: read('--color-hero-veil-edge'),
-      floor: read('--color-hero-floor'),
-      floorEdge: read('--color-hero-floor-edge'),
+    const required = {
+      stalk: read('--color-hero-stalk'),
+      background: read('--color-background'),
+      shadow: read('--color-block-ink'),
     };
-    const missing = Object.entries(palette)
+    const missing = Object.entries(required)
       .filter(([, value]) => value.length === 0)
       .map(([name]) => name);
-    if (missing.length === 0) return palette;
+    if (missing.length === 0)
+      return { ...required, fill: read('--color-hero-fill') };
     /* Draw nothing rather than black on black. */
     console.error(`Hero field not drawn: no color for ${missing.join(', ')}.`);
     return null;
@@ -207,12 +201,17 @@ const setUp = (host: HTMLElement): void => {
   };
 
   /* The field draws without the rabbit until the atlas decodes, then rebuilds with it. */
+  const atlasSrc = (): string =>
+    document.documentElement.dataset.theme === 'light'
+      ? heroRabbitLight.src
+      : heroRabbit.src;
   const loadAtlas = (): void => {
     const image = new Image();
-    image.src = heroRabbit.src;
+    image.src = atlasSrc();
     image
       .decode()
       .then(() => {
+        if (image.src !== new URL(atlasSrc(), location.href).href) return;
         atlas = image;
         /* The first draw rasterises the vector atlas, tens of ms: when the page is idle, not mid-load. */
         if (typeof window.requestIdleCallback === 'function')
@@ -245,7 +244,12 @@ const setUp = (host: HTMLElement): void => {
   loop.observe([host], { rootMargin: VIEW_MARGIN, assumeOnScreen: true });
   watchRatio();
   /* Watches data-theme itself, so the hero imports nothing from the switch's module. */
-  new MutationObserver(rebuild).observe(document.documentElement, {
+  const onTheme = (): void => {
+    if (atlas && atlas.src !== new URL(atlasSrc(), location.href).href)
+      loadAtlas();
+    rebuild();
+  };
+  new MutationObserver(onTheme).observe(document.documentElement, {
     attributes: true,
     attributeFilter: ['data-theme'],
   });

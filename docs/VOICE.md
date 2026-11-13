@@ -1,7 +1,8 @@
 # Voice
 
-How editorial copy sounds: posts, About, Career, Contact, taglines, anything in
-Sinduri's voice. Functional copy follows [AGENTS.md](../AGENTS.md#copy).
+How editorial copy sounds: posts, About, Career, Contact, taglines and anything
+else in the first person. Functional copy follows
+[AGENTS.md](../AGENTS.md#copy).
 
 ## Tone
 
@@ -17,8 +18,8 @@ Sinduri's voice. Functional copy follows [AGENTS.md](../AGENTS.md#copy).
 - Short lines for the things that matter.
 - Generous about people; own the embarrassing bits.
 - Thanks are specific: say what the person did.
-- Bios and taglines say what she does and cares about in simple terms: "Open
-  Source Enthusiast, Positivity Advocate, Continuous Learner", not
+- Bios and taglines say in simple terms what the maintainer does and cares
+  about: "Open Source Enthusiast, Positivity Advocate, Continuous Learner", not
   "results-driven professional".
 
 ## Words
@@ -42,8 +43,8 @@ Sinduri's voice. Functional copy follows [AGENTS.md](../AGENTS.md#copy).
   design.").
 - Dramatic setups ("The shift I want to offer is this") and closers that try
   too hard ("People stay for other people, not for a repository").
-- Flippant asides, filler comparisons, rankings she did not make.
-- Stock phrasing she does not use, such as "hooked".
+- Flippant asides, filler comparisons, rankings the maintainer did not make.
+- Stock phrasing the maintainer does not use, such as "hooked".
 - Swear words.
 - Search or meta phrasing lifted into visible copy.
 
@@ -66,17 +67,17 @@ to read, or misread them as the opposite
 
 ## Method
 
-- Drafts use only Sinduri's own words and facts: her writing, her posts, her
-  answers. No invented details, dates, contact details or claims.
-- No fact for a line: ask her, never fill the gap.
+- Drafts use only the maintainer's own words and facts: posts, other writing and
+  answers to questions. No invented details, dates, contact details or claims.
+- No fact for a line: ask the maintainer, never fill the gap.
 - Edit, do not rewrite: change only what is needed, fix spelling and grammar,
-  split long sentences, cut repeats, keep her words and tone.
+  split long sentences, cut repeats, keep the original words and tone.
 - Improve, do not remove: a flippant or unclear line is reworded, never cut,
   and no fact is lost.
 - Bullets where content is a list; prose where it is an argument or a story.
-- No formatting or styling she did not ask for.
+- No formatting or styling the maintainer did not ask for.
 - Feedback is applied as ideas, not copied word for word.
 - Show two to five numbered options with one recommendation, and say what
-  changed; she approves every line.
+  changed; the maintainer approves every line.
 - Keep the whole page cohesive: headings, leads, captions and closers read as
   one set.

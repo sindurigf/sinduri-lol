@@ -21,7 +21,7 @@ import { CATEGORIES, CATEGORY_TILE } from '../lib/categories';
 import { packRows, wallClasses } from '../lib/wall';
 import { BLOG_PATH, categoryHref } from '../lib/paths';
 
-/* Editorial copy is Sinduri's own words; add no line she has not approved. */
+/* Editorial copy: add no line the maintainer has not approved. */
 
 const FEATURED_LIMIT = 3;
 const featured = await getFeaturedPosts(FEATURED_LIMIT);
@@ -57,8 +57,14 @@ const CATEGORY_CARDS = [
 const SM_COLUMNS = 2;
 const LG_COLUMNS = 3;
 const LEAD_SPAN = 2;
+/* Two topics take the 7/5 split at `lg`, so the pair is uneven like the rest of the Step. */
+const PAIR = 2;
+const PAIR_COLUMNS = 12;
+const PAIR_SPANS = [7, 5] as const;
+const pairLg = CATEGORY_CARDS.length === PAIR;
 const leadSpansSm = (CATEGORY_CARDS.length - 1) % SM_COLUMNS === 0;
 const leadSpansLg =
+  !pairLg &&
   CATEGORY_CARDS.length >= LEAD_SPAN &&
   (CATEGORY_CARDS.length - LEAD_SPAN) % LG_COLUMNS === 0;
 const spansWith = (leadSpans: boolean) =>
@@ -66,10 +72,14 @@ const spansWith = (leadSpans: boolean) =>
 const categoryWall = wallClasses(
   {
     sm: packRows(spansWith(leadSpansSm), SM_COLUMNS),
-    lg: packRows(spansWith(leadSpansLg), LG_COLUMNS),
+    lg: pairLg
+      ? packRows(PAIR_SPANS, PAIR_COLUMNS)
+      : packRows(spansWith(leadSpansLg), LG_COLUMNS),
   },
   CATEGORY_CARDS.length,
 );
+/* Written out in full: Tailwind scans source text. */
+const PAIR_SPAN_CLASSES = ['lg:col-span-7', 'lg:col-span-5'] as const;
 
 /*
  * Fitted to measured drawn widths (320 to 2560px, within 1.00 to 1.05). The
@@ -77,11 +87,18 @@ const categoryWall = wallClasses(
  * grows. tests/image-size.spec.ts fails on drift.
  */
 const TEASER_PHOTO_SIZES =
-  '(min-width: 1829px) calc(25vw + 198px), (min-width: 1396px) calc(21.5vw + 262px), (min-width: 83rem) 562px, (min-width: 64rem) calc(45.7vw - 45px), (min-width: 40rem) calc(93vw - 64px), calc(100vw - 5.5rem)';
+  '(min-width: 1829px) calc(20.8vw + 157px), (min-width: 1396px) calc(18.06vw + 208px), (min-width: 83rem) 460px, (min-width: 64rem) calc(37.8vw - 41px), (min-width: 40rem) calc(93vw - 64px), calc(100vw - 5.5rem)';
 
-const TAGLINES = ['Open Source Enthusiast', 'Positivity Advocate'] as const;
-/* Side by side from `sm`, the second climbing a third of the Step. */
-const tagWall = wallClasses({ sm: [[0, 1]] }, TAGLINES.length, {
+/* Two block lines each below `sm`: a box that wraps on its own fills the column, one split here is as wide as its longer line. */
+const TAGLINES = [
+  ['Open Source', 'Enthusiast'],
+  ['Positivity', 'Advocate'],
+] as const;
+/*
+ * From `sm` at the shelf's two ends, the second a third of the Step higher.
+ * Below `sm` the second stands on the shelf, out of the wall (home.css).
+ */
+const tagWall = wallClasses({ base: [[0]], sm: [[0, 1]] }, TAGLINES.length, {
   short: true,
 });
 
@@ -105,20 +122,12 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
 <BaseLayout
   title="Sinduri Guntupalli, Open Source Enthusiast"
   titleSuffix={false}
-  description="Sinduri Guntupalli, open source enthusiast in Vienna, experienced in product and program management, web development and Drupal community work."
+  description="I am Sinduri Guntupalli, an open source enthusiast in Vienna, with experience in product and program management, web development and Drupal community work."
 >
-  {/*
-    One gold area for the hero and the section below. No `.surface-gold` on the
-    column: its halves carry it, and nesting double-counts controls in
-    tests/gold-surface.spec.ts.
-  */}
+  {/* The hero stands on the page; the gold block starts at the section below it. */}
   <div class="v-column gold-column">
-    {/*
-    The name's line break sits on the window's top rule: no color clears 4.5:1
-    on both grounds, so each line takes its own.
-  */}
     <section class="band hero relative">
-      <div class="hero-window surface-gold">
+      <div class="hero-window">
         {/* The pause control shows once motion can run (src/scripts/hero-field.ts). */}
         <div class="hero-field" data-hero-field data-hero-motion="paused">
           <canvas aria-hidden="true" class="hero-field-layer"></canvas>
@@ -139,15 +148,12 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
           ))}
         </div>
 
-        {/*
-        Spans, not <p>: WAVE reads short bold paragraphs as headings. No
-        `border-border`: it fails SC 1.4.11 here and would beat `.surface-gold`'s.
-      */}
+        {/* Spans, not <p>: WAVE reads short bold paragraphs as headings. */}
         <div class="hero-marks" aria-hidden="true">
           <span class="hero-sticker -rotate-3 bg-block-gold text-gold-text shadow-hard-bunny-8">
             Lepus
           </span>
-          <span class="hero-sticker rotate-3 bg-surface text-pink-text shadow-hard-bunny-8">
+          <span class="hero-sticker rotate-3 bg-surface text-red-text shadow-hard-bunny-8">
             Ridet
           </span>
         </div>
@@ -160,23 +166,26 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
         <div class="hero-plate">
           <h1 class="w-full text-hero-h1">
             <span class="block text-text">Sinduri</span>{' '}
-            <span class="block text-gold-text">Guntupalli</span>
+            <span class="block text-text">Guntupalli</span>
           </h1>
         </div>
       </div>
     </section>
 
     {/* Not in the hero: over the moving field the roles fail SC 1.4.3. The sr-only comma separates them. */}
-    <Section surface="gold" headless>
+    <Section surface="gold" headless class="pt-0">
       <h2
         class:list={[
-          'card-block home-tags grid text-h3 text-gold-text sm:w-fit sm:grid-cols-2',
+          'card-block home-tags grid justify-items-start text-h3 text-gold-text sm:flex sm:items-start sm:justify-between',
           tagWall.wall,
         ]}
       >
-        {TAGLINES.map((tag, index) => (
+        {TAGLINES.map(([first, second], index) => (
           <span class:list={['home-tag', tagWall.bricks[index]]}>
-            <span>{tag}</span>
+            <span class="block">
+              <span class="block sm:inline">{first}</span>{' '}
+              <span class="block sm:inline">{second}</span>
+            </span>
             {index < TAGLINES.length - 1 && (
               <>
                 <span class="sr-only">,</span>{' '}
@@ -186,8 +195,8 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
         ))}
       </h2>
 
-      <div class="mt-head grid gap-grid lg:grid-cols-2 lg:items-start">
-        <div class="relative">
+      <div class="mt-head grid gap-grid lg:grid-cols-12 lg:items-center">
+        <div class="relative lg:col-span-5 lg:-rotate-2">
           <div class="aspect-frame aspect-square border-4">
             <Picture
               {...PHOTO_FORMATS}
@@ -201,7 +210,7 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
           <Roundel class="absolute -bottom-8 right-0 sm:-right-3" />
         </div>
 
-        <div class="card">
+        <div class="lg:col-span-7">
           <ul
             role="list"
             class:list={['card-block grid sm:grid-cols-2', statWall.wall]}
@@ -237,7 +246,8 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
     <ul
       role="list"
       class:list={[
-        'card-block grid gap-grid sm:grid-cols-2 lg:grid-cols-3',
+        'card-block grid gap-grid sm:grid-cols-2',
+        pairLg ? 'lg:grid-cols-12' : 'lg:grid-cols-3',
         categoryWall.wall,
       ]}
     >
@@ -248,6 +258,7 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
             categoryWall.bricks[index],
             index === 0 && leadSpansSm && 'sm:col-span-2',
             index === 0 && leadSpansLg && 'lg:col-span-2',
+            pairLg && PAIR_SPAN_CLASSES[index],
           ]}
         >
           <span
@@ -271,12 +282,6 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
         </li>
       ))}
     </ul>
-
-    <p class="mt-head">
-      <a href={BLOG_PATH} class="btn-secondary">
-        View All Posts
-      </a>
-    </p>
   </Section>
 
   <Section title="Featured Posts" class="home-head">
@@ -301,6 +306,12 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
         </li>
       ))}
     </ul>
+
+    <p class="mt-head">
+      <a href={BLOG_PATH} class="btn-secondary">
+        View All Posts
+      </a>
+    </p>
   </Section>
 
   <CloseRow

@@ -11,8 +11,8 @@ export const OG_CARD_MANIFEST = `${OG_CARD_DIR}/cards.json`;
 export const SITE_CARD_ROUTES: readonly string[] = ['/'];
 
 /**
- * The owner's picks where a page's first photo is not its card's: `null`
- * keeps the header logo, a path names a photo under src/assets/.
+ * Pages whose card does not show their first photo: `null` keeps the header
+ * logo, a path names a photo under src/assets/.
  */
 export const OG_PHOTO_CHOICES: Readonly<Record<string, string | null>> = {
   /* Its sample photos are specimens, not the page's subject. */

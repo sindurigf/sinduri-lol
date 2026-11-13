@@ -6,7 +6,7 @@
    */
   .card {
     @apply min-w-0 edge border-card-edge bg-surface p-card-tight
-      shadow-hard-pink-object sm:p-card;
+      shadow-hard-red-object sm:p-card;
   }
 
   /*
@@ -22,7 +22,7 @@
     --color-text: var(--color-block-ink);
     --color-gold: var(--color-block-ink);
     --color-subtle: var(--color-gold-muted);
-    --color-pink-text: var(--color-gold-link);
+    --color-red-text: var(--color-gold-link);
     --color-border: var(--color-block-ink);
     --color-card-edge: var(--color-block-ink);
     /* Light mode's square before a gold label: ink on gold, gold elsewhere. */
@@ -68,8 +68,8 @@
     --color-cyan: var(--color-gold-link);
   }
 
-  /* A gold-surface card keeps its own colors and takes the block edge. */
-  .card.surface-gold:not(.surface-gold *) {
+  /* A gold card or column keeps its own colors and takes the block edge. */
+  :is(.card, .gold-column).surface-gold:not(.surface-gold *) {
     border-width: var(--block-edge);
     border-color: var(--color-block-ink);
   }
@@ -143,7 +143,7 @@
    * (tests/forced-colors.spec.ts).
    */
   .post-contents {
-    @apply self-start bg-surface shadow-hard-pink-object;
+    @apply self-start bg-surface shadow-hard-red-object;
   }
 
   .post-contents ol {
