@@ -259,13 +259,13 @@ test.describe('the privacy policy is true', NODE, () => {
 
     expect(
       section,
-      '/privacy no longer says Plausible stores the counts in the European Union.',
-    ).toContain('European Union');
+      '/privacy no longer says Plausible runs on an Infomaniak server in Switzerland.',
+    ).toMatch(/Infomaniak in Geneva, Switzerland/);
 
     expect(
       section,
-      '/privacy no longer says the trial ends with Plausible deleting the counts.',
-    ).toMatch(/free trial\..*later deletes what it stored/);
+      '/privacy no longer says how long the stats are kept.',
+    ).toMatch(/stats are kept until I delete them/);
 
     expect(
       section,

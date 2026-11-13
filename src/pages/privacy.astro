@@ -21,14 +21,13 @@ import {
  */
 
 /* Set by hand when the policy text changes; a build date would re-date it on every deploy. */
-const lastUpdated = '2026-11-08';
+const lastUpdated = '2026-11-13';
 
 const CLOUDFLARE_PRIVACY = 'https://www.cloudflare.com/privacypolicy/';
 const CLOUDFLARE_NEL =
   'https://developers.cloudflare.com/network-error-logging/';
 const NEL_REPORT_HOST = 'a.nel.cloudflare.com';
 const PLAUSIBLE_DATA_POLICY = 'https://plausible.io/data-policy';
-const PLAUSIBLE_TRIAL = 'https://plausible.io/docs/trial';
 const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
 ---
 
@@ -100,18 +99,17 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
         <h2>Visit Counts</h2>
 
         <p>
-          I count visits with <a href="https://plausible.io/">Plausible</a>, an
-          analytics service that uses no cookies and does not follow you from
-          website to website. The script runs from this website, and what it
-          sends goes to Plausible at {PLAUSIBLE_HOST}, which stores it on
-          servers in the European Union. It is the only place a page here sends
-          anything to.
+          I count visits with <a href="https://plausible.io/">Plausible</a>,
+          analytics software that uses no cookies and does not follow you from
+          website to website. I host Plausible myself on a server run by
+          Infomaniak in Geneva, Switzerland. The script runs from this website,
+          and what it sends goes to that server at {PLAUSIBLE_HOST}. It is the
+          only place a page here sends anything to.
         </p>
 
         <p>
-          I use Plausible's free trial. When the trial ends, Plausible stops
-          counting and later deletes what it stored, as{' '}
-          <a href={PLAUSIBLE_TRIAL}>its trial terms</a> describe.
+          The stats are kept until I delete them. They are not shared with or
+          sold to anyone.
         </p>
 
         <p>For each page you open, the analytics script sends:</p>
@@ -154,7 +152,7 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
           To count each visitor once a day, it turns both, with a random value,
           into an identifier. It deletes the random value every 24 hours. It
           says it does not store the IP address or the browser details
-          themselves. How Plausible handles them is covered by{' '}
+          themselves. How the software handles them is described in{' '}
           <a href={PLAUSIBLE_DATA_POLICY}>Plausible's data policy</a>.
         </p>
 
