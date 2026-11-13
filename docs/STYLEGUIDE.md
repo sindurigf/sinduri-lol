@@ -56,12 +56,15 @@ blur, uppercase headings, tilted marks.
 | 9   | Edges in dark mode: `border` on fields, controls, chips, rules and the outer edge of a gold area                              | every route                            |
 | 10  | The header bar's marks: the current-page brick, theme switch, text size brick and call to action, gold on the ink bar (11.32) | every route                            |
 | 11  | The footer name band: "Lepus Ridet" in ink on a `block-gold` band at every page's end, the rabbit standing on it              | every route                            |
+| 12  | The homepage hero ledge: the gold block's top course, ink joints (11.32), under the taglines                                  | `/`                                    |
 
 - 9 is the edge because the only two colors are ink and gold: an ink edge
   vanishes on the dark page and a light one adds a third color. Gold reads as
   structure there (10.60 or more on both dark grounds), and inside gold every edge
   is ink.
 - 11 closes every page with the site's own name in ink on gold.
+- 12 lets the block rise into the hero, so the field meets one fill, not a
+  third light band; gold on the dark page is 11.99.
 - 4a's lead-in terms and links make a projected slide's key words readable at
   a glance; light mode turns them ink, like bold words.
 - A use with a replacement takes it: a `/career` date is `subtle`; the
