@@ -777,6 +777,9 @@ evidence.
 - **Set `package.json` `"license"` to `"MIT"`:** the code is MIT and the
   content is all rights reserved, so one SPDX identifier would mislabel the
   content. `SEE LICENSE IN README.md` is npm's form for that case.
+- **Name each `table-scroll` group from its caption or heading:** a post has
+  at most one Markdown table, and `ContrastTable.astro` already names its group
+  from the caption, so no page has two groups with the same name.
 - **Hide the honeypot with CSS instead of `hidden`:** if the
   stylesheet fails, a person sees the field and loses their message.
 - **Make `/contact`'s "Or Find Me Here" and "Write to Me About" `h2`:** they
