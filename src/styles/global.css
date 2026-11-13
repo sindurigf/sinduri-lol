@@ -485,6 +485,7 @@
    */
   --focus-width: 4px;
   --focus-gap: 4px;
+  --focus-offset-inset: calc(-1 * (var(--focus-width) + var(--focus-gap)));
   --lift-control: 4px;
   --lift-object: var(--hard-throw);
   /* The logo tile keeps its 8px bunny shadow, so its ring clears 8px. */
