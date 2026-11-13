@@ -335,7 +335,7 @@ const catInfo: CatInfo[] = await Promise.all(
     </div>
   </Section>
 
-  <Section id={SECTIONS[1].id} title={SECTIONS[1].title}>
+  <Section id={SECTIONS[1].id} title={SECTIONS[1].title} brick>
     <div class="card-block grid lg:card-rise-room lg:grid-cols-2">
       <blockquote class="card surface-gold flex flex-col justify-center">
         <span aria-hidden="true" class="self-start text-quote-mark font-black">
@@ -381,6 +381,7 @@ const catInfo: CatInfo[] = await Promise.all(
   <Section
     id={SECTIONS[2].id}
     title={SECTIONS[2].title}
+    brick
     lead="I moved to Vienna in 2017. Making friends gets harder as we grow older and move countries, so I am proud of the people who let me into their world."
   >
     <div class="cat-perch">
@@ -412,7 +413,7 @@ const catInfo: CatInfo[] = await Promise.all(
     </div>
   </Section>
 
-  <Section id={SECTIONS[3].id} title={SECTIONS[3].title}>
+  <Section id={SECTIONS[3].id} title={SECTIONS[3].title} brick>
     {/* A <dl>, so short bold values are not paragraphs WAVE reads as headings. */}
     <div class="cat-perch">
       <div class="cat-spot" id="cat-spot-rudra"></div>
@@ -485,7 +486,7 @@ const catInfo: CatInfo[] = await Promise.all(
     </div>
   </Section>
 
-  <Section id={SECTIONS[4].id} title={SECTIONS[4].title}>
+  <Section id={SECTIONS[4].id} title={SECTIONS[4].title} brick>
     <p slot="lead" class="lead">
       There is a Sinduri before <a href={photographerHref(MENTOR)}>{MENTOR}</a>{' '}
       and Drupal, and a Sinduri after.
@@ -567,7 +568,7 @@ const catInfo: CatInfo[] = await Promise.all(
   </Section>
 
   {/* The cats are drawn by a script; without one, their names and lines are still on the page (ACCESSIBILITY.md, Scripts). */}
-  <Section title="The Cats" class="cats-noscript">
+  <Section title="The Cats" class="cats-noscript" brick>
     <ul role="list" class="flex flex-col gap-4">
       {CATS.map((cat) => (
         <li class="text-body text-text">
