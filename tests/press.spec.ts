@@ -11,14 +11,15 @@ interface Pressable {
   moves: string;
 }
 
-const PRIMARY_SAMPLE = 'main a.btn-primary[href="#primary-button"]';
+const PRIMARY_ROUTE = '/404';
+const PRIMARY_BUTTON = 'main a.btn-primary';
 
 const PRESSABLE: Pressable[] = [
   {
     name: 'a primary button',
-    route: '/brand/',
-    control: PRIMARY_SAMPLE,
-    moves: PRIMARY_SAMPLE,
+    route: PRIMARY_ROUTE,
+    control: PRIMARY_BUTTON,
+    moves: PRIMARY_BUTTON,
   },
   {
     name: 'the contact submit in its block',
@@ -389,14 +390,14 @@ test.describe('on a touch screen', NO_FIREFOX, () => {
     page,
   }) => {
     await page.setViewportSize(PHONE_VIEWPORT);
-    await gotoSettled(page, '/brand/');
+    await gotoSettled(page, PRIMARY_ROUTE);
     expect(
       await page.evaluate(() => matchMedia('(hover: hover)').matches),
     ).toBe(false);
-    const button = page.locator(PRIMARY_SAMPLE).first();
+    const button = page.locator(PRIMARY_BUTTON).first();
     await button.hover();
     expect(await button.evaluate((node) => node.matches(':hover'))).toBe(true);
-    await transitionsDone(page, PRIMARY_SAMPLE);
-    expect(await translateOf(page, PRIMARY_SAMPLE)).toEqual([0, 0]);
+    await transitionsDone(page, PRIMARY_BUTTON);
+    expect(await translateOf(page, PRIMARY_BUTTON)).toEqual([0, 0]);
   });
 });

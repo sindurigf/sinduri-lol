@@ -51,9 +51,11 @@ const expectHoverReadsAndDiffers = async (
   await page.mouse.move(0, 0);
   const rest = await look(page, control, surface);
   await surface.hover();
-  await surface.evaluate((el) =>
-    Promise.all(el.getAnimations().map((animation) => animation.finished)),
-  );
+  for (const part of new Set([surface, control])) {
+    await part.evaluate((el) =>
+      Promise.all(el.getAnimations().map((animation) => animation.finished)),
+    );
+  }
   const hovered = await look(page, control, surface);
   expect(
     hovered.paint,
@@ -68,7 +70,8 @@ const expectHoverReadsAndDiffers = async (
   );
 };
 
-const PRIMARY_SAMPLE = 'main a.btn-primary[href="#primary-button"]';
+const PRIMARY_ROUTE = '/404';
+const PRIMARY_BUTTON = 'main a.btn-primary';
 const CONTACT_SUBMIT = 'main form .contact-submit';
 
 const HOVERED_ON_MAIN = {
@@ -81,10 +84,10 @@ const HOVERED_ON_MAIN = {
     await expect(card).toHaveCount(1);
     await expectHoverReadsAndDiffers(page, card.locator('.card-link'), card);
   },
-  // On gold and in a block the primary action is `.btn-gold-primary`.
+  // The 404 card keeps a `.btn-primary` on a real route.
   'a primary button': async (page: Page) => {
-    await gotoSettled(page, '/brand/');
-    const button = page.locator(PRIMARY_SAMPLE).first();
+    await gotoSettled(page, PRIMARY_ROUTE);
+    const button = page.locator(PRIMARY_BUTTON).first();
     await expect(button).toHaveCount(1);
     await expectHoverReadsAndDiffers(page, button);
   },
