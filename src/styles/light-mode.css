@@ -53,6 +53,9 @@
 
   :root.light .header-slab {
     --slab-fill: var(--color-light-ground);
+    /* `--shadow-brick` resolves `text` at the root, where it keeps the dark value. */
+    --shadow-brick: var(--brick-throw) var(--brick-throw) 0
+      var(--color-light-ink);
   }
 
   :root.light .header-slab .logo-tile {
