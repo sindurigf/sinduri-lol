@@ -1,10 +1,10 @@
 ---
-import { TALKS_PATH } from '../lib/paths';
+import { isDeckPath } from '../lib/paths';
 import textSizeFeature from '../scripts/text-size.ts?worker&url';
 import TextSizeGroup from './TextSizeGroup.astro';
 
 /* The text size control on wide screens: a tab on the right edge, where the page leaves a free gutter. */
-const show = !Astro.url.pathname.startsWith(TALKS_PATH);
+const show = !isDeckPath(Astro.url.pathname);
 ---
 
 {show && (

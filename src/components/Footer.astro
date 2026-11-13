@@ -9,7 +9,7 @@ import {
   SOCIAL_PROFILES,
   profileLinkName,
 } from '../lib/profiles';
-import { TALKS_PATH } from '../lib/paths';
+import { isDeckPath } from '../lib/paths';
 import { SITE_NAME } from '../lib/site';
 /* Hashed under /_astro/ and cached once, instead of inline on every page. */
 import socialIcons from '../assets/social-icons.svg?url';
@@ -38,7 +38,7 @@ const POLICY_LINKS = [
 const current = (href: string) => ariaCurrent(Astro.url.pathname, href);
 
 /* A slide deck keeps its script budget for the deck, and gets no footer controls. */
-const onDemand = !Astro.url.pathname.startsWith(TALKS_PATH);
+const onDemand = !isDeckPath(Astro.url.pathname);
 
 /* The year of first publication, not the build year: a build date goes stale. */
 const FIRST_PUBLISHED = 2026;
