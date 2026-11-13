@@ -216,7 +216,7 @@ const pairWall = (count: number) =>
 
   <Section title="Skills and Education" brick>
     <div class="card-block grid lg:grid-cols-2">
-      <div class="card card-ground lg:row-span-2">
+      <div class="card lg:row-span-2">
         <h3 class="card-title">Education</h3>
         <ul role="list" class="mt-8 flex flex-col gap-4">
           {EDUCATION.map((item) => (
@@ -259,7 +259,7 @@ const pairWall = (count: number) =>
     </div>
   </Section>
 
-  <Section title="Open Source" brick>
+  <Section title="Open Source" surface="gold" class="gold-column">
     <div class="grid gap-grid lg:grid-cols-12 lg:items-start">
       <p class="lead mt-0 lg:col-span-5">
         Open source runs almost everything we depend on, and it exists because
@@ -274,8 +274,9 @@ const pairWall = (count: number) =>
           return (
             <dl class:list={['card-block grid sm:grid-cols-2', wall.wall]}>
               {pair.map((item, index) => (
-                <div class:list={['card card-ground', wall.bricks[index]]}>
-                  <dt class="label">{item.award}</dt>
+                <div class:list={['card', wall.bricks[index]]}>
+                  {/* `text-gold` and `text-text` fail SC 1.4.3 on this ground. */}
+                  <dt class="label text-gold-muted">{item.award}</dt>
                   <dd class="mt-4 text-body text-pretty">{item.detail}</dd>
                 </div>
               ))}
