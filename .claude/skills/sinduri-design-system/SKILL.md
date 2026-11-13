@@ -22,7 +22,8 @@ before changing anything it covers.
   ink text and no controls ([Gold surface](../../../docs/STYLEGUIDE.md#gold-surface)).
 - `border` on a gold or light fill: it takes `fill-edge`. `fill-edge` on a
   dark fill. A card's own edge or fill: cards are blocks (`block-gold`,
-  `block-light`, `block-ink`), set in `cards.css`.
+  `block-light`, `block-ink`), set in `cards.css`; a `.card-ground` keeps the
+  page's ground and a `text` edge.
 - `bg-gold` for a fill that may sit in a block: it remaps there; use
   `bg-block-gold`.
 - A shadow class on a brick in a `.card-block`, or a brick that drops:
