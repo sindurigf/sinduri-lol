@@ -27,7 +27,6 @@ const CLOUDFLARE_PRIVACY = 'https://www.cloudflare.com/privacypolicy/';
 const CLOUDFLARE_NEL =
   'https://developers.cloudflare.com/network-error-logging/';
 const NEL_REPORT_HOST = 'a.nel.cloudflare.com';
-const PLAUSIBLE_DATA_POLICY = 'https://plausible.io/data-policy';
 const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
 ---
 
@@ -42,8 +41,8 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
       Plausible, which does not use cookies either. When you use the contact
       form, I store what you type so I can reply. The request for each form
       submission is logged for {WORKER_LOG_RETENTION_DAYS} days, including your{' '}
-      <Abbr short="IP" long="Internet Protocol" /> address, the internet address
-      of your connection.
+      <Abbr short="IP" long="Internet Protocol" /> address (the internet address
+      of your connection).
     </p>
 
     <p class="mt-6 text-body">
@@ -67,33 +66,33 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
           </li>
           <li>
             <strong>Two browser settings.</strong> When you choose Light or Dark
-            in the Theme menu, your choice is kept in <dfn>local storage</dfn>,
-            a small store of settings in your browser. It is kept under the name{' '}
-            <code>{THEME_STORAGE_KEY}</code>. The next page then opens the same
+            in the Theme menu, your choice is kept in <dfn>local storage</dfn>{' '}
+            (a small store of settings in your browser) under the name{' '}
+            <code>{THEME_STORAGE_KEY}</code>, so the next page opens the same
             way. Choosing System deletes it. When you press Drink Me or Eat Me
             in the Text Size controls, the text size is kept the same way, under
-            the name <code>{TEXT_SCALE_KEY}</code>. Just Right deletes it. Both
-            stay in your browser. Nothing else is stored in your browser. The{' '}
+            the name <code>{TEXT_SCALE_KEY}</code>; Just Right deletes it. Both
+            stay in your browser, and nothing else is stored there. The{' '}
             <dfn>analytics script</dfn>, the code that counts visits, reads one
-            local storage setting, named plausible_ignore, which is Plausible's
-            own off switch, and writes nothing. Clearing this website's data in
-            your browser removes both settings.
+            more setting, plausible_ignore, which is Plausible's own off switch,
+            and writes nothing. Clearing this website's data in your browser
+            removes both settings.
           </li>
           <li>
             <strong>Nothing loaded from other websites.</strong> Every file a
             page loads comes from this website: the fonts, the images and the
             analytics script. There are no videos or posts embedded from other
             websites, no third-party tracking tools and no advertising. The
-            website's own <dfn>security policy</dfn>, a rule your browser
-            enforces, blocks every other website. The one exception: the
-            analytics script may send visit counts to Plausible at{' '}
-            {PLAUSIBLE_HOST}. Error reports your browser sends to Cloudflare on
-            its own are described under Hosting.
+            website's <dfn>security policy</dfn>, a rule your browser enforces,
+            blocks every other website. The one exception is {PLAUSIBLE_HOST},
+            where the analytics script may send visit counts. Error reports that
+            your browser sends to Cloudflare on its own are covered under
+            Hosting.
           </li>
           <li>
             <strong>No accounts.</strong> There is nothing to sign up for and
-            nothing to log in to. What the contact form stores, and the log kept
-            of each submission, are described below.
+            nothing to log in to. The contact form, and the log kept of each
+            submission, are explained below.
           </li>
         </ul>
         <h2>Visit Counts</h2>
@@ -102,14 +101,15 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
           I count visits with <a href="https://plausible.io/">Plausible</a>,
           analytics software that uses no cookies and does not follow you from
           website to website. I host Plausible myself on a server run by
-          Infomaniak in Geneva, Switzerland. The script runs from this website,
-          and what it sends goes to that server at {PLAUSIBLE_HOST}. It is the
-          only place a page here sends anything to.
+          Infomaniak in Geneva, Switzerland. The script runs from this website
+          and sends what it collects to that server at {PLAUSIBLE_HOST}. Apart
+          from this website itself, it is the only place a page here sends
+          anything to.
         </p>
 
         <p>
           The stats are kept until I delete them. They are not shared with or
-          sold to anyone.
+          sold to anyone. Nothing is stored on your device.
         </p>
 
         <p>For each page you open, the analytics script sends:</p>
@@ -122,12 +122,10 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
           </li>
         </ul>
 
-        <p>Both addresses are sent without anything after a ? or #.</p>
-
         <p>
-          When you leave the page or switch away from it, the script also sends
-          how far down you scrolled. It also sends how long you had the page in
-          view.
+          Both addresses are sent without anything after a ? or #. When you
+          leave the page or switch away from it, the script also sends how far
+          down you scrolled and how long you had the page in view.
         </p>
 
         <p>When you click a link or a button, it also sends:</p>
@@ -140,25 +138,37 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
         </ul>
 
         <p>
-          For an email link the address is left out. Nothing you type is ever
+          For an email link, the address is left out. Nothing you type is ever
           sent, including what you write in the contact form.
         </p>
 
         <p>
-          Like any server, Plausible receives your IP address and your browser's
-          details with each request. Plausible says it uses the IP address to
-          work out your country, region and city. It says it uses your browser
-          details to work out your browser, operating system and type of device.
-          To count each visitor once a day, it turns both, with a random value,
-          into an identifier. It deletes the random value every 24 hours. It
-          says it does not store the IP address or the browser details
-          themselves. How the software handles them is described in{' '}
-          <a href={PLAUSIBLE_DATA_POLICY}>Plausible's data policy</a>.
+          Like any server, mine receives your IP address and your browser's
+          details with each request. Plausible uses the IP address to work out
+          your country, and nothing more exact. It uses your browser details to
+          work out your browser, operating system and type of device. To count
+          each visitor once a day, it turns both, with a random value, into an
+          identifier. It deletes the random value every 24 hours. It does not
+          store the IP address or the browser details themselves.
         </p>
 
         <p>
-          If your browser sends <dfn>Do Not Track</dfn>, a privacy setting most
-          browsers offer, nothing is sent at all. Blocking JavaScript for this
+          The server in front of Plausible keeps no log of visits. Its error log
+          leaves out IP addresses, ports and request headers. Requests to{' '}
+          {PLAUSIBLE_HOST} go straight to my server and do not pass through
+          Cloudflare.
+        </p>
+
+        <p>
+          The stats are backed up every night to Infomaniak Swiss Backup in
+          Switzerland. They are encrypted on my server before they are sent, so
+          Infomaniak cannot read them. I keep 7 daily, 4 weekly and 6 monthly
+          backups.
+        </p>
+
+        <p>
+          If your browser sends <dfn>Do Not Track</dfn> (a privacy setting most
+          browsers offer), nothing is sent at all. Blocking JavaScript for this
           website stops it too.
         </p>
 
@@ -168,44 +178,41 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
           The footer links to my profiles on other websites, and posts may link
           elsewhere. Those are ordinary links: nothing is sent when the page
           loads, only when you follow one. Once you do, that website's own
-          policy applies, not mine.
+          policy applies.
         </p>
 
         <h2>Hosting</h2>
 
         <p>
           My website is served by a <dfn>Cloudflare Worker</dfn>, a program that
-          runs on Cloudflare's servers. Delivering a page means Cloudflare
-          receives the request for it, including your IP address, in the same
-          way any web server does. What Cloudflare keeps, and for how long, is
-          covered by{' '}
-          <a href={CLOUDFLARE_PRIVACY}>Cloudflare's privacy policy</a>, not by
-          this one.
+          runs on Cloudflare's servers. To deliver a page, Cloudflare receives
+          the request for it, including your IP address, as any web server
+          would. What Cloudflare keeps, and for how long, is covered by{' '}
+          <a href={CLOUDFLARE_PRIVACY}>Cloudflare's privacy policy</a>.
         </p>
 
         <p>
           Requests that run my website's own code are also logged to my
-          Cloudflare account, so I can find and fix problems. In practice, that
-          means sending the contact form. A log entry holds the request and
-          response, which can include your IP address, and your browser and
-          approximate location: city, country and network provider. A{' '}
-          <dfn>trace</dfn>, a timed record of the same request, holds its timing
-          and status and the address requested. It also holds your browser and
-          device, approximate location, network provider and the database
-          lookups it ran. Logs and traces are deleted automatically after{' '}
-          {WORKER_LOG_RETENTION_DAYS} days and are not stored with your message.
-          Loading a page in a browser is not logged this way.
+          Cloudflare account so I can find and fix problems. In practice, that
+          means sending the contact form; loading a page in a browser is not
+          logged this way. A log entry holds the request and response, which can
+          include your IP address, your browser and your approximate location
+          (city, country and network provider). A <dfn>trace</dfn>, a timed
+          record of the same request, holds its timing, status and the address
+          requested, along with your browser and device, approximate location,
+          network provider and the database lookups it ran. Logs and traces are
+          deleted automatically after {WORKER_LOG_RETENTION_DAYS} days and are
+          not stored with your message.
         </p>
 
         <p>
           Cloudflare also asks your browser to report requests to my website
           that fail, a feature called Network Error Logging. Only failures are
-          reported, never a successful visit, and only by browsers that support
-          it. Your browser sends the report itself, to {NEL_REPORT_HOST}, not to
-          my website, and the page's own security policy does not apply to it. A
-          report holds the address requested, the type of error and its timing.
-          Cloudflare says it stores no IP address or other personal data from
-          these reports; its{' '}
+          reported, and only by browsers that support it. Your browser sends the
+          report itself, to {NEL_REPORT_HOST}, so the page's security policy
+          does not apply to it. A report holds the address requested, the type
+          of error and its timing. Cloudflare says it stores no IP address or
+          other personal data from these reports; its{' '}
           <a href={CLOUDFLARE_NEL}>Network Error Logging documentation</a> says
           how.
         </p>
@@ -220,33 +227,33 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
 
         <ul role="list">
           <li>the time it was sent</li>
-          <li>the time the emailed copy below went out</li>
+          <li>the time a copy was emailed to me</li>
           <li>how many times a failed copy has been retried</li>
           <li>a random identifier that only tells one message from another</li>
         </ul>
 
         <p>
           No IP address, browser or page you came from is stored with it. It is
-          stored in a database restricted to the European Union. A copy is
-          emailed to my inbox, which Google hosts, so I can read and answer it.
+          stored in a database restricted to the European Union. The copy goes
+          to my inbox, which Google hosts, so I can read and answer it.
         </p>
 
         <p>
           To stop the form being used for bulk submissions, I limit submissions
-          from one network address to about five a minute. For an address in the
-          newer format,{' '}
-          <Abbr short="IPv6" long="Internet Protocol version 6" after="," /> the
-          limit covers its whole /64 network. That is the block a single
-          connection is normally given. The limit is counted by Cloudflare's{' '}
-          <dfn>rate limiter</dfn>, the service that enforces it. It counts
-          against a <Abbr short="SHA-256" long="Secure Hash Algorithm 256" />{' '}
-          hash, a one-way fingerprint. The hash is made from the current date
-          and your address in the older format,{' '}
-          <Abbr short="IPv4" long="Internet Protocol version 4" after="," /> or
-          your IPv6 /64. My website writes the hash nowhere else: it is not
-          stored with your message or linked to it. A hash of an address is not
-          anonymous. The date is no secret, so anyone holding the hash of an
-          IPv4 address could recover the address by hashing every possible one.
+          from one network address to about five a minute. For an{' '}
+          <Abbr short="IPv6" long="Internet Protocol version 6" /> address (the
+          newer format), the limit covers its whole /64 network, the block a
+          single connection is normally given. Cloudflare's{' '}
+          <dfn>rate limiter</dfn>, the service that enforces it, counts
+          submissions against a{' '}
+          <Abbr short="SHA-256" long="Secure Hash Algorithm 256" /> hash, a
+          one-way fingerprint made from the current date and your{' '}
+          <Abbr short="IPv4" long="Internet Protocol version 4" /> address or
+          IPv6 /64. My website writes the hash nowhere else: it is not stored
+          with your message or linked to it. A hash of an address is not
+          anonymous, though. The date is no secret, so anyone holding the hash
+          of an IPv4 address could recover the address by hashing every possible
+          one.
         </p>
 
         <p>
@@ -254,9 +261,9 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
           {RETENTION_DAYS} days old. A run that fails is not retried, so a
           message can outlast {RETENTION_DAYS} days until the next day's run
           succeeds. The database can be restored to any moment in the last{' '}
-          {D1_RESTORE_WINDOW_DAYS} days. A deleted message can therefore still
-          be brought back for {D1_RESTORE_WINDOW_DAYS} days after it is deleted.
-          I keep the emailed copy like any other email, for as long as I need it
+          {D1_RESTORE_WINDOW_DAYS} days, so a deleted message can still be
+          brought back for {D1_RESTORE_WINDOW_DAYS} days after it is deleted. I
+          keep the emailed copy like any other email, for as long as I need it
           to reply. To have both removed sooner, write to{' '}
           <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a> and say so; you do not
           need to give a reason.
@@ -268,6 +275,56 @@ const PLAUSIBLE_HOST = new URL(PLAUSIBLE_ORIGIN).host;
           If you write to <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>, I keep
           your message so I can reply. I do not add it to any list or pass it
           on.
+        </p>
+
+        <h2>Why I Use This Data</h2>
+
+        <p>
+          Where the <Abbr short="EU" long="European Union" after="'s" /> General
+          Data Protection Regulation (
+          <Abbr
+            short="GDPR"
+            long="General Data Protection Regulation"
+            after=")"
+          />{' '}
+          applies, the legal basis for everything on this page is my legitimate
+          interest (Article 6(1)(f)): for visit counts, logs, error reports and
+          the rate limit, in keeping this website secure and working, and in
+          knowing roughly how it is used; for the contact form and email, in
+          reading and answering the messages people send me.
+        </p>
+
+        <h2>Data Sent Outside Europe</h2>
+
+        <p>
+          Cloudflare and Google are based in the United States and may process
+          data there. Both are certified under the EU-U.S. and Swiss-U.S. Data
+          Privacy Frameworks, which the European Commission and the Swiss
+          Federal Council recognize as giving adequate protection. The Plausible
+          server is in Switzerland, and the contact form database is restricted
+          to the European Union.
+        </p>
+
+        <h2>Your Rights</h2>
+
+        <p>
+          You can ask me for a copy of the personal data I hold about you, and
+          ask me to correct it, delete it or stop using it. Where the GDPR
+          applies, you can also object to how I use it, ask me to restrict it,
+          and ask for it in a format you can take elsewhere. Write to{' '}
+          <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>, and I will reply within
+          30 days.
+        </p>
+
+        <p>
+          If you think I have handled your data wrongly, you can complain to the
+          data protection authority where you live or work. In Switzerland, that
+          is the Federal Data Protection and Information Commissioner (
+          <Abbr
+            short="FDPIC"
+            long="Federal Data Protection and Information Commissioner"
+            after=")."
+          />
         </p>
 
         <h2>Questions</h2>

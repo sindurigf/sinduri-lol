@@ -26,11 +26,40 @@ export const PLATFORM_FACTS: Readonly<Record<string, PlatformFact>> = {
       'data center',
     checkedOn: '2026-11-13',
   },
+  plausibleLogs: {
+    claim:
+      'Caddy in front of Plausible writes no access log, and its error log ' +
+      'drops IP addresses, ports and request headers',
+    check: 'The Caddyfile on the server behind stats.sinduri.lol: log blocks',
+    checkedOn: '2026-11-13',
+  },
+  plausibleDnsOnly: {
+    claim: 'stats.sinduri.lol is DNS-only in Cloudflare, not proxied',
+    check: 'Cloudflare dashboard > DNS > Records: stats shows DNS only',
+    checkedOn: '2026-11-13',
+  },
+  plausibleBackups: {
+    claim:
+      'Nightly backups, encrypted on the server, go to Infomaniak Swiss ' +
+      'Backup in Switzerland and are kept as 7 daily, 4 weekly and 6 monthly',
+    check: 'The backup job on the server: schedule, target and retention',
+    checkedOn: '2026-11-13',
+  },
   plausibleRetention: {
     claim: 'The visit stats are kept until they are deleted by hand',
     check:
       'stats.sinduri.lol > Site Settings: no stats reset or deletion since ' +
       'the last check, and no retention job on the server',
+    checkedOn: '2026-11-13',
+  },
+  dataPrivacyFramework: {
+    claim:
+      'Cloudflare and Google are certified under the EU-U.S. and Swiss-U.S. ' +
+      'Data Privacy Frameworks',
+    check:
+      'cloudflare.com/privacypolicy and policies.google.com/privacy/frameworks ' +
+      'still state both certifications; dataprivacyframework.gov/list shows ' +
+      'whether each is active',
     checkedOn: '2026-11-13',
   },
   workerLogRetention: {

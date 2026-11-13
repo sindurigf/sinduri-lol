@@ -132,7 +132,7 @@ const expectCopiesDisclosed = (text: string): void => {
   expect(
     text,
     '/privacy no longer says each message is emailed to a Google-hosted inbox.',
-  ).toMatch(/copy is emailed[^.]*Google/);
+  ).toMatch(/copy goes to my inbox[^.]*Google/);
 
   expect(
     text,
