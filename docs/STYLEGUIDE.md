@@ -127,7 +127,7 @@ The gold-ground set is in [Gold surface](#gold-surface), light values in
 
 - Two dark grounds: `background` (page, header, footer, bands) and `surface`
   (cards, inputs). Measure every foreground against both.
-- Blocks: every card, the plain hero slab and the post contents are a gold
+- Blocks: homepage and /brand cards, the plain hero slab and the post contents are a gold
   `block-gold` or light `block-light` fill with a 4px `block-ink` edge
   (`--block-edge`) and the red throw. Cards are gold; every second card in a
   `.card-block`, `.card-solid`, the plain hero slab and the post contents are
@@ -135,8 +135,9 @@ The gold-ground set is in [Gold surface](#gold-surface), light values in
   `text-gold` are ink (11.32 on gold, 14.42 on light), `subtle` is `gold-muted`
   (7.88) or `light-subtle` (7.40), and a badge inverts. Gold fills use
   `block-gold`, which never remaps. `tests/blocks.spec.ts`.
-- Ground cards: `.card-ground` (/contact, /contact/send, /contact/sent) is no
-  block. It keeps the page's tokens and ground, takes a 4px `text` edge and
+- Ground cards: `.card-ground` (/about, /career, /credits, blog listings,
+  /contact, /contact/send, /contact/sent) is no block. A page keeps one loud
+  block, its hero. It keeps the page's tokens and ground, takes a 4px `text` edge and
   casts the red throw; its controls keep the page's red throws and focus ring.
 - Walls: blocks in a `.card-block` share 4px walls with no gap. Each brick
   casts the throw as a `box-shadow` and the next brick covers it, so it shows
