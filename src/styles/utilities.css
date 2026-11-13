@@ -38,10 +38,11 @@
     background-clip: padding-box;
   }
 
-  .surface-gold :is(.rotate-3, .-rotate-3).sticker,
+  .surface-gold
+    :is(.rotate-3, .-rotate-3).sticker:not(:root.light *, .mode-light *),
+  .mode-dark .surface-gold :is(.rotate-3, .-rotate-3).sticker,
   :is(:root.light main, main .mode-light)
-    :is(.rotate-3, .-rotate-3).sticker:not(.mode-dark *),
-  :is(.rotate-3, .-rotate-3).hero-sticker.bg-surface {
+    :is(.rotate-3, .-rotate-3).hero-sticker.bg-surface:not(.mode-dark *) {
     background-clip: border-box;
   }
 

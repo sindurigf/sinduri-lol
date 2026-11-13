@@ -117,7 +117,7 @@ blur, uppercase headings, tilted marks.
 | `block-cyan`  | `#1FC8F0`    | Light-mode header slab; ink on it is 9.36         |
 | `button-text` | `ButtonText` | Forced colors only: bars on the button face       |
 | `cat-*`       | 2 fills      | About cat props; decoration, never a boundary     |
-| `hero-*`      | 4 values     | Homepage canvas veil and floor; decoration        |
+| `hero-*`      | 2 values     | Homepage canvas stalk and bud fill; decoration    |
 
 The gold-ground set is in [Gold surface](#gold-surface), light values in
 [Light mode](#light-mode).
@@ -210,7 +210,6 @@ every size (SC 1.4.6, as /accessibility claims); non-text needs 3.0 (SC
 | `gold-muted` #3A3020      | `gold` #FFC000         | text       | Secondary text on gold                                    | 7.0   | 7.88  | pass       |
 | `gold-link` #1E0D16       | `gold` #FFC000         | text       | Links on gold                                             | 7.0   | 11.38 | pass       |
 | `gold` #FFC000            | `gold-link` #1E0D16    | text       | A link filled under the pointer                           | 7.0   | 11.38 | pass       |
-| `gold-bud` #00363F        | `gold` #FFC000         | decoration | The canvas buds on gold                                   | n/a   | 8.00  | decoration |
 | `gold-border` #131313     | `gold` #FFC000         | non-text   | Boundaries on gold                                        | 3.0   | 11.32 | pass       |
 | `fill-edge` #131313       | `gold` #FFC000         | non-text   | Edge of a gold fill                                       | 3.0   | 11.32 | pass       |
 | `fill-edge` #131313       | `text` #E5E2E1         | non-text   | Edge of a light fill                                      | 3.0   | 14.42 | pass       |
@@ -222,7 +221,7 @@ every size (SC 1.4.6, as /accessibility claims); non-text needs 3.0 (SC
 | `surface` #1A1A1A         | `background` #0B0B0B   | decoration | A surface; its edge sets it apart                         | n/a   | 1.13  | decoration |
 | `surface` #1A1A1A         | `gold` #FFC000         | non-text   | Chip fill on the hero slab                                | 3.0   | 10.60 | pass       |
 | `gold-btn-label` #FFFFFF  | `gold-text` #131313    | text       | Label on the dark button on gold                          | 7.0   | 18.58 | pass       |
-| `gold` #FFC000            | `background` #0B0B0B   | decoration | Object shadow                                             | n/a   | 11.99 | decoration |
+| `gold` #FFC000            | `background` #0B0B0B   | decoration | Object shadow; the canvas stalks                          | n/a   | 11.99 | decoration |
 | `cyan` #00DCFD            | `background` #0B0B0B   | decoration | Hovered card shadow                                       | n/a   | 11.86 | decoration |
 | `light-ground` #FFFFFF    | `background` #0B0B0B   | non-text   | About cat outline, baked into the drawings: its white rim | 3.0   | 19.68 | pass       |
 | `light-ground` #FFFFFF    | `surface` #1A1A1A      | non-text   | About cat outline on a card: its white rim                | 3.0   | 17.40 | pass       |
@@ -256,7 +255,6 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
 | `gold-border`    | Structural rules, dividers, card edges and shadows      |
 | `fill-edge`      | Edge of a gold or light fill, on gold or off it         |
 | `gold-link`      | Links, underlined; the block on hover                   |
-| `gold-bud`       | The canvas buds on gold. Decoration                     |
 | `gold-btn-label` | Label and inner ring on `.btn-gold-primary`'s fill only |
 
 - Build gold with `.surface-gold`, never `bg-gold` by hand. It repaints text,
@@ -279,13 +277,12 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
 - No `gold-subtle`: a third step would be indistinguishable from `gold-text`.
   Below `gold-muted`, hierarchy is weight and size.
 - No `cyan`, `red` or `red-text` on gold, not even a shadow: `.surface-gold`
-  turns `red` and `bunny` ink, so every throw on gold is ink. A `.sticker` carries its own dark ground.
+  turns `red` and `bunny` ink, so every throw on gold is ink. A `.sticker` carries its own `surface` ground, dark in dark mode and white in light.
 - A utility written inside a gold section (`border-border`, `text-subtle`)
   beats the subtree default and is a bug. axe misses it;
   `tests/gold-surface.spec.ts` catches it.
 - No single line of text crosses the gold's edge: nothing clears 4.5 on both
-  grounds. The homepage name breaks on the rule, `text` above and `gold-text`
-  below; `tests/hero-fit.spec.ts` keeps it two lines.
+  grounds.
 
 ### Buttons on gold
 
@@ -314,26 +311,29 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
 - A click, Enter or Space on a choice picks it, closes the menu and returns
   focus to the switch (SC 2.4.3). Arrow keys move the choice and keep it open.
 
-| Token                                       | Light     | on `#ffffff` |
-| ------------------------------------------- | --------- | ------------ |
-| `background`, `surface`                     | `#ffffff` | ground       |
-| `text`, `border`, `gold-border`, `gold-bud` | `#131313` | 18.58        |
-| `card-edge`                                 | `#131313` | 18.58        |
-| gold as text, `.text-gold`                  | `#131313` | 18.58        |
-| `subtle`                                    | `#3f4650` | 9.53         |
-| `red`, `red-text`, `bunny`                  | `#560000` | 15.05        |
-| `code-edge`                                 | `#767676` | 4.54         |
-| `code-fill`                                 | `#e5e2e1` | 1.29         |
-| `cyan` (focus ring and hover text)          | `#0047b3` | 8.23         |
+| Token                                         | Light     | on `#ffffff` |
+| --------------------------------------------- | --------- | ------------ |
+| `background`, `surface`                       | `#ffffff` | ground       |
+| `text`, `border`, `gold-border`, `hero-stalk` | `#131313` | 18.58        |
+| `card-edge`                                   | `#131313` | 18.58        |
+| gold as text, `.text-gold`                    | `#131313` | 18.58        |
+| `subtle`                                      | `#3f4650` | 9.53         |
+| `red`, `red-text`, `bunny`                    | `#560000` | 15.05        |
+| `code-edge`                                   | `#767676` | 4.54         |
+| `code-fill`                                   | `#e5e2e1` | 1.29         |
+| `cyan` (focus ring and hover text)            | `#0047b3` | 8.23         |
 
 - Light values are `light-*` tokens in `global.css` (`light-focus` for
-  `cyan`, `light-red-text`, `light-hero-veil`, `light-hero-floor`), swapped
+  `cyan`, `light-red-text`), swapped
   in by `light-mode.css`.
 - Every hard edge turns `#131313`; red shadows turn `#560000`.
 - Hover fills are dark mode's `#00dcfd` under `#131313` (11.20).
 - Gold mirrors to cyan: `gold` and `block-gold` are `#1FC8F0` in light mode,
   so `.surface-gold`, buttons, tiles and stickers fill cyan under `#131313`
-  (9.36); `gold-muted` is `#131313`. The homepage hero stays white.
+  (9.36); `gold-muted` is `#131313`. The homepage hero stands on the page:
+  both modes draw every stalk at full strength and half width, no thinner than
+  0.55px. Gold stalks and buds in dark mode (11.99); in light mode
+  (`hero-fill`) ink stalks (18.58) with cyan buds.
 - Hover on a cyan fill is `#131313` under `#E5E2E1`.
 - Gold text turns ink; a `.label.text-gold` and a slide label gain a cyan
   square before the word (`--label-mark`).
@@ -346,7 +346,8 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
   `border`. `bunny` is the mode's red, ink on gold.
 - The label on a gold fill is `gold-text`, never `background` (white in
   light).
-- RIDET and `.sticker` are black blocks.
+- RIDET is a black block. A `.sticker` follows the tokens: white fill,
+  `#131313` edge, `light-red-text` label.
 - `tests/light-mode.spec.ts` scans every route in light at WCAG 2.2 AA.
 
 ## Type scale
@@ -972,7 +973,7 @@ None. Gold buttons lift and press like every control
 - Beside the first name at every size (`.hero-motion-toggle`): right edge on
   the window's, `--spacing(4)` above its top rule. The window can be too low to
   hold it clear of the name.
-- It sits on the page, not the gold, so its focus ring is the page's `cyan`.
+- Its focus ring is the page's `cyan`.
 - A first name long enough to reach it would sit under it:
   `tests/hero-fit.spec.ts` measures the letters against its box.
 - It is the first stop in `<main>` at every size.
@@ -983,10 +984,12 @@ Homepage only (`src/pages/index.astro`, `src/styles/components/home.css`).
 
 - The window fills the first screen: `min-height` of `100svh` less the header,
   the name's overhang and the padding, so it grows at 400% zoom.
+- The hero stands on the page ground, with no edge, throw or fill of its own.
 - The window ends on a shelf: 11 joined `block-light` bricks (the first 5
-  below `sm`), edge to edge, with an ink bottom edge and no throw; the
-  column's edge closes the sides. The field and the marks stand on it. It is
-  `aria-hidden`.
+  below `sm`), as wide as the block below, with no throw. The field and the
+  marks stand on it. It is `aria-hidden`.
+- The gold block starts under the shelf: the first section draws the ink edge
+  and the red throw.
 - The two roles under the hero are light bricks in one `<h2>`, `text-h3`, a
   short-step wall (`wallClasses(…, { short })`). From `sm` they sit at the
   shelf's two ends, over it, the wall's top `--spacing(5)` above the shelf's.
@@ -997,7 +1000,7 @@ Homepage only (`src/pages/index.astro`, `src/styles/components/home.css`).
   roundel; then the stats, welcome and button, with no card behind them.
 - Two topics take the 7/5 split at `lg`, the lead card wider; other counts
   keep the three-column wall. "View All Posts" closes Featured Posts.
-- The section titles after the gold column are gold bricks: `block-gold`,
+- The section titles after the gold block are gold bricks: `block-gold`,
   `fill-edge` edge, the red throw.
 
 ## Posts

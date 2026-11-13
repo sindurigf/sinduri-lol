@@ -258,7 +258,7 @@ which is not installed.
 | `src/plugins/code-block.mjs`     | `<pre>` as `tabindex="0"` `role="group"` (SC 2.1.1); in a post, also a `.code-block` frame with the fence language as a `.code-lang` label and `data-copy`, so `src/scripts/copy.ts` adds a Copy button. The post page loads the script when its Markdown may hold code (`hasCodeBlock`)                                                                                                                                       |
 | `src/plugins/table-scope.mjs`    | a Markdown header cell as `scope="col"` (H63)                                                                                                                                                                                                                                                                                                                                                                                  |
 | `src/plugins/table-stack.mjs`    | a post table's explicit table roles and `.table-stack` class, and an `aria-hidden` column label in each value cell for the stacked rows below 640px (SC 1.3.1)                                                                                                                                                                                                                                                                 |
-| `src/plugins/table-scroll.mjs`   | a post table, wrapped in a `tabindex="0"` `role="group"` box that scrolls (SC 1.4.10)                                                                                                                                                                                                                                                                                                                                          |
+| `src/plugins/table-scroll.mjs`   | a post table, wrapped in a `tabindex="0"` `role="group"` box that scrolls (SC 1.4.10), named from its caption, else the heading before it, and unique in the post                                                                                                                                                                                                                                                              |
 | `src/plugins/post-fold.mjs`      | puts each `## Module N:` or `## Side Path:` h2 and its body, up to the next h2 or the footnotes, in one `.module-panel`; the body is a `<details>` (open on load, with Close All Modules and Open All Modules buttons) and the h2 stays outside it. Nothing folds inside a module. The post page loads the fold script when its rendered HTML has a fold (`hasFoldMarkup`). Only these headings fold (`src/lib/post-folds.ts`) |
 
 `group`, not `region`, so code blocks and tables are not landmarks.
@@ -887,14 +887,13 @@ evidence.
   ([H67](https://www.w3.org/WAI/WCAG22/Techniques/html/H67)). Text there would
   be announced twice.
 - **AccessLint engine hits, each checked against the live DOM:**
-  `color-contrast` on the homepage "Sinduri" is read against a gold ancestor
-  the text does not sit on; `landmark-unique` counts the no-JavaScript nav,
-  which is `display: none` with scripts on; `aria-hidden-focus` flags the
-  controls in `/brand`'s light halves, which are `inert` and so never take
-  focus. `ACCESSLINT_FALSE_POSITIVES` in `tests/accesslint.ts` drops each only
-  on those elements and while its reason holds. "Guntupalli" is not dropped:
-  it sits on the gold, and `tests/hero-clear.spec.ts` checks no canvas pixel,
-  stem, bud or hare, lies under either line of the name.
+  `landmark-unique` counts the no-JavaScript nav, which is `display: none`
+  with scripts on; `aria-hidden-focus` flags the controls in `/brand`'s light
+  halves, which are `inert` and so never take focus.
+  `ACCESSLINT_FALSE_POSITIVES` in `tests/accesslint.ts` drops each only on
+  those elements and while its reason holds. `tests/hero-clear.spec.ts` checks
+  no canvas pixel, stem, bud or hare, lies under either line of the homepage
+  name.
 - **Blur the near meadow canvas with `ctx.filter` instead of the CSS
   `filter`:** at 4x CPU throttle, `ctx.filter` per stroke drops the field to a
   few frames a second, and one offscreen `ctx.filter` pass runs slower than the
