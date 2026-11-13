@@ -11,8 +11,10 @@ interface Pressable {
   moves: string;
 }
 
-const PRIMARY_ROUTE = '/404';
-const PRIMARY_BUTTON = 'main a.btn-primary';
+const PRIMARY_ROUTE = '/brand';
+const PRIMARY_BUTTON =
+  'main [data-component="primary-button"] [data-example] a.btn-primary';
+const CONTACT_SUBMIT = 'main form .contact-submit';
 
 const PRESSABLE: Pressable[] = [
   {
@@ -24,8 +26,8 @@ const PRESSABLE: Pressable[] = [
   {
     name: 'the contact submit in its block',
     route: '/contact',
-    control: 'main form .contact-submit',
-    moves: 'main form .contact-submit',
+    control: CONTACT_SUBMIT,
+    moves: CONTACT_SUBMIT,
   },
   {
     name: 'a gold primary button',
@@ -394,7 +396,7 @@ test.describe('on a touch screen', NO_FIREFOX, () => {
     expect(
       await page.evaluate(() => matchMedia('(hover: hover)').matches),
     ).toBe(false);
-    const button = page.locator(PRIMARY_BUTTON).first();
+    const button = page.locator(PRIMARY_BUTTON);
     await button.hover();
     expect(await button.evaluate((node) => node.matches(':hover'))).toBe(true);
     await transitionsDone(page, PRIMARY_BUTTON);

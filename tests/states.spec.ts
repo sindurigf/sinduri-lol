@@ -23,7 +23,12 @@ const look = async (
     const box = document.querySelector('[data-state-surface]');
     const paint = (node) => {
       const s = getComputedStyle(node);
-      return [s.color, s.backgroundColor, s.boxShadow].join(' | ');
+      return [
+        s.color,
+        s.backgroundColor,
+        s.boxShadow,
+        s.textDecorationLine,
+      ].join(' | ');
     };
     const ground = compositeBackground(el);
     const color = parse(getComputedStyle(el).color);
@@ -72,8 +77,9 @@ const expectHoverReadsAndDiffers = async (
   );
 };
 
-const PRIMARY_ROUTE = '/404';
-const PRIMARY_BUTTON = 'main a.btn-primary';
+const PRIMARY_ROUTE = '/brand';
+const PRIMARY_BUTTON =
+  'main [data-component="primary-button"] [data-example] a.btn-primary';
 const CONTACT_SUBMIT = 'main form .contact-submit';
 
 const HOVERED_ON_MAIN = {
@@ -86,10 +92,10 @@ const HOVERED_ON_MAIN = {
     await expect(card).toHaveCount(1);
     await expectHoverReadsAndDiffers(page, card.locator('.card-link'), card);
   },
-  // The 404 card keeps a `.btn-primary` on a real route.
+  // The /brand sample is the `.btn-primary` link on a real route.
   'a primary button': async (page: Page) => {
     await gotoSettled(page, PRIMARY_ROUTE);
-    const button = page.locator(PRIMARY_BUTTON).first();
+    const button = page.locator(PRIMARY_BUTTON);
     await expect(button).toHaveCount(1);
     await expectHoverReadsAndDiffers(page, button);
   },
@@ -107,6 +113,18 @@ for (const scheme of ['dark', 'light'] as const) {
     for (const [name, run] of Object.entries(HOVERED_ON_MAIN)) {
       test(name, async ({ page }) => run(page));
     }
+  });
+}
+
+for (const scheme of ['dark', 'light'] as const) {
+  test(`the contact submit's hover is drawn under reduced motion, ${scheme} (SC 1.4.1)`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' });
+    await gotoSettled(page, '/contact');
+    const button = page.locator(CONTACT_SUBMIT);
+    await expect(button).toHaveCount(1);
+    await expectHoverReadsAndDiffers(page, button);
   });
 }
 
