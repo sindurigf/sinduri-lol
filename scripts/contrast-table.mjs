@@ -48,7 +48,6 @@ const PAIRS = [
   ['gold-muted', 'gold', 'text', 'Secondary text on gold'],
   ['gold-link', 'gold', 'text', 'Links on gold'],
   ['gold', 'gold-link', 'text', 'A link filled under the pointer'],
-  ['gold-bud', 'gold', 'decoration', 'The canvas buds on gold'],
   ['gold-border', 'gold', 'non-text', 'Boundaries on gold'],
   ['fill-edge', 'gold', 'non-text', 'Edge of a gold fill'],
   ['fill-edge', 'text', 'non-text', 'Edge of a light fill'],
@@ -70,7 +69,7 @@ const PAIRS = [
   ['surface', 'background', 'decoration', 'A surface; its edge sets it apart'],
   ['surface', 'gold', 'non-text', 'Chip fill on the hero slab'],
   ['gold-btn-label', 'gold-text', 'text', 'Label on the dark button on gold'],
-  ['gold', 'background', 'decoration', 'Object shadow'],
+  ['gold', 'background', 'decoration', 'Object shadow; the canvas stalks'],
   ['cyan', 'background', 'decoration', 'Hovered card shadow'],
   [
     'light-ground',

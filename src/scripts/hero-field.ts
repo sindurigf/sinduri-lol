@@ -1,9 +1,6 @@
 /*
- * The homepage meadow: sizes the three canvases in `[data-hero-field]` and
- * runs the frame loop; drawing lives in src/lib/hero-field.ts. The pause
- * control (SC 2.2.2) ships `hidden` and shows once motion can run, so one
- * never ships without the other. Reduced motion draws one fixed frame and
- * keeps the button hidden.
+ * The pause control (SC 2.2.2) ships `hidden` and shows once motion can run, so
+ * one never ships without the other. Reduced motion draws one fixed frame.
  */
 import { NEXT_FRAME, createMotionLoop } from './motion-loop';
 import { requiredElementIn } from './required-element';
@@ -61,20 +58,16 @@ const setUp = (host: HTMLElement): void => {
     const style = getComputedStyle(host);
     const read = (token: string): string =>
       style.getPropertyValue(token).trim();
-    /* Gold-surface tokens: the dark set fails SC 1.4.3 and 1.4.11 on gold. */
-    const palette: HeroPalette = {
-      border: read('--color-gold-border'),
-      subtle: read('--color-gold-muted'),
-      bud: read('--color-gold-bud'),
-      veil: read('--color-hero-veil'),
-      veilEdge: read('--color-hero-veil-edge'),
-      floor: read('--color-hero-floor'),
-      floorEdge: read('--color-hero-floor-edge'),
+    const required = {
+      stalk: read('--color-hero-stalk'),
+      background: read('--color-background'),
+      shadow: read('--color-block-ink'),
     };
-    const missing = Object.entries(palette)
+    const missing = Object.entries(required)
       .filter(([, value]) => value.length === 0)
       .map(([name]) => name);
-    if (missing.length === 0) return palette;
+    if (missing.length === 0)
+      return { ...required, fill: read('--color-hero-fill') };
     /* Draw nothing rather than black on black. */
     console.error(`Hero field not drawn: no color for ${missing.join(', ')}.`);
     return null;

@@ -20,9 +20,7 @@
     --dark-card-edge: var(--color-card-edge);
     --dark-code-edge: var(--color-code-edge);
     --dark-code-fill: var(--color-code-fill);
-    --dark-gold-bud: var(--color-gold-bud);
-    --dark-hero-veil: var(--color-hero-veil);
-    --dark-hero-floor: var(--color-hero-floor);
+    --dark-hero-stalk: var(--color-hero-stalk);
     --dark-block-gold: var(--color-block-gold);
     --dark-gold-muted: var(--color-gold-muted);
   }
@@ -42,9 +40,8 @@
     --color-card-edge: var(--color-light-ink);
     --color-code-edge: var(--color-light-code-edge);
     --color-code-fill: var(--color-block-light);
-    --color-gold-bud: var(--color-light-ink);
-    --color-hero-veil: var(--color-light-hero-veil);
-    --color-hero-floor: var(--color-light-hero-floor);
+    --color-hero-stalk: var(--color-light-ink);
+    --color-hero-fill: var(--color-block-cyan);
     /* The mirror of dark mode's gold: every gold fill turns cyan, ink on it 9.36. */
     --color-gold: var(--color-block-cyan);
     --color-block-gold: var(--color-block-cyan);
@@ -92,18 +89,13 @@
     --color-card-edge: var(--dark-card-edge);
     --color-code-edge: var(--dark-code-edge);
     --color-code-fill: var(--dark-code-fill);
-    --color-gold-bud: var(--dark-gold-bud);
-    --color-hero-veil: var(--dark-hero-veil);
-    --color-hero-floor: var(--dark-hero-floor);
+    --color-hero-stalk: var(--dark-hero-stalk);
+    --color-hero-fill: initial;
     --color-gold: var(--dark-block-gold);
     --color-block-gold: var(--dark-block-gold);
     --color-gold-muted: var(--dark-gold-muted);
     color-scheme: dark;
     color: var(--color-text);
-    background-color: var(--color-background);
-  }
-
-  :is(:root.light main, main .mode-light) .hero-window:not(.mode-dark *) {
     background-color: var(--color-background);
   }
 
