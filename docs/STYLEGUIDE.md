@@ -1234,8 +1234,9 @@ Enforced by `tests/footer.spec.ts`.
 by `tests/reading-tab.spec.ts`.
 
 - One group, "Text Size": Drink Me (smaller), Eat Me (larger) and Just Right
-  (100 percent), each 44px at least, hints as descriptions, and a polite
-  status. Hidden without a script, and absent on talk decks and in print.
+  (100 percent), each 44px at least, and a polite status. Each name is the
+  visible label, then what the button does in `sr-only` text: "Drink Me,
+  smaller text". Hidden without a script, and absent on talk decks and in print.
 - Where it sits depends on the width. From 86rem (the `tab` variant) the page
   leaves a free gutter beside its 80rem column, and the control is an edge tab
   in it: a `popover` button named "Aa Text Size", fixed to the right at
