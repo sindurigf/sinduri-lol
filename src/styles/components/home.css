@@ -117,11 +117,9 @@
   }
 
   /*
-   * The floor of the window, edge to edge: joined light bricks, each drawing
-   * its top and left edge; the shelf closes the right end and the section
-   * under it the bottom. It spans the column's border box, like that section.
-   * Its own fill is the bricks': on the dark page the ink edge reads against
-   * that fill, not the page (SC 1.4.11).
+   * The floor of the window: joined light bricks across the column's border box,
+   * each drawing its top and left edge; the shelf closes the right end. Its fill
+   * is the bricks', so on the dark page the ink edge reads against it (1.4.11).
    */
   .hero-ledge {
     position: absolute;
