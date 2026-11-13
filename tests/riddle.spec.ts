@@ -32,6 +32,38 @@ test.describe("The Hatter's riddle on the message sent page", () => {
     });
   }
 
+  for (const scheme of ['dark', 'light'] as const) {
+    test(`its label is underlined under the pointer and its marker is not, ${scheme} (SC 1.4.1)`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.setViewportSize(DESKTOP_VIEWPORT);
+      await gotoSettled(page, SENT_PATH);
+      const summary = page.locator('summary', { hasText: RIDDLE.question });
+      const label = summary.getByText(RIDDLE.question);
+      const marker = summary.locator('.post-contents-marker');
+      const underlined = (part: typeof label) =>
+        part.evaluate((el) =>
+          getComputedStyle(el).textDecorationLine.includes('underline'),
+        );
+      expect(
+        await underlined(label),
+        'the label is underlined at rest, so hover adds nothing to it',
+      ).toBe(false);
+      await summary.hover();
+      expect(
+        await underlined(label),
+        'the hovered label differs from rest by color alone',
+      ).toBe(true);
+      for (const part of [summary, marker]) {
+        expect(
+          await underlined(part),
+          'the underline reaches the plus marker, which then reads as a plus-minus sign',
+        ).toBe(false);
+      }
+    });
+  }
+
   test('it works without a script', async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();

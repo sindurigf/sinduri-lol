@@ -1116,9 +1116,12 @@ Enforced by `tests/post-page.spec.ts`.
   This Post", around a native `<details>`.
 - Closed below `xl`. From `xl`, `src/scripts/post-contents.ts` opens it and
   follows width changes. Without JavaScript it stays closed.
-- The summary: `text-label` 900 uppercase in `text` (13.51 on `surface`), cyan
-  on hover, at least 44px tall, a plus or minus marker hidden from assistive
-  technology.
+- The summary: `text-label` 900 uppercase in `text` (13.51 on `surface`), at
+  least 44px tall, a plus or minus marker hidden from assistive technology.
+  On hover the label is cyan (`gold-link` in a block) under a
+  `--underline-thick` underline; the marker takes no underline. The same
+  `.post-contents-summary` is the `/contact/sent/` riddle's and the module
+  toggle's.
 - Tags follow the text under a 6px `border` rule: a label 16px above a row of
   `.chip` links.
 
