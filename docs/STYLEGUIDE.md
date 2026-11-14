@@ -308,9 +308,10 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
   of at least 3:1.
 - `.btn-gold-primary` is scoped to `.surface-gold` and blocks (`.card`);
   `.btn-gold-secondary` to `.surface-gold`. Both render unstyled elsewhere.
-- The /contact submit and the /brand form sample are `.btn-gold-primary` in a
-  block. Its fill is 11.32 on a gold block, 9.36 on light mode's cyan block
-  and 14.42 on a light one.
+- The /brand form sample is `.btn-gold-primary` in a block. Its fill is 11.32
+  on a gold block, 9.36 on light mode's cyan block and 14.42 on a light one.
+- The /contact submit sits on a ground card and is `.btn-primary`. In light
+  mode it is ink with a white label, and blue on hover.
 - Both `text-button`, 900, 0.1em, uppercase, `px-8 py-4`. No underline on the
   label at rest. `.btn-gold-primary` underlines it under the pointer
   (`--underline-thin`), so hover still shows where reduced motion drops the

@@ -171,7 +171,8 @@
     @apply cursor-not-allowed shadow-none;
   }
 
-  form[data-sending='true'] .btn-gold-primary[aria-disabled='true'] {
+  form[data-sending='true']
+    :is(.btn-gold-primary, .contact-submit)[aria-disabled='true'] {
     @apply cursor-progress;
   }
 
