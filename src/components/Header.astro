@@ -12,7 +12,7 @@ import { SITE_NAME } from '../lib/site';
 import NavList from './NavList.astro';
 import ThemeSwitch from './ThemeSwitch.astro';
 import TextSizeButton from './TextSizeButton.astro';
-import { TALKS_PATH } from '../lib/paths';
+import { isDeckPath } from '../lib/paths';
 
 /* The rabbit's drawn height in px: `--logo-rabbit-height`, as scripts/make-logo.mjs prints it. */
 const RABBIT_HEIGHT = 64;
@@ -20,7 +20,7 @@ const RABBIT_HEIGHT = 64;
 const currentPath = Astro.url.pathname;
 
 /* A slide deck loads no on-demand script, so it has no text size control. */
-const sizeControls = !currentPath.startsWith(TALKS_PATH);
+const sizeControls = !isDeckPath(currentPath);
 
 const current = (href: string) => ariaCurrent(currentPath, href);
 ---
