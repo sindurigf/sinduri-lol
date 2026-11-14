@@ -27,8 +27,8 @@
     color: var(--color-gold-text);
   }
 
-  /* No red on gold: every throw cast on it is ink. */
-  :is(.surface-gold, .card, .bg-block-gold) * {
+  /* No red on gold: every throw cast on it is ink. A ground card is not gold. */
+  :is(.surface-gold, .card:not(.card-ground), .bg-block-gold) * {
     --color-red: var(--color-block-ink);
     --color-bunny: var(--color-block-ink);
   }
