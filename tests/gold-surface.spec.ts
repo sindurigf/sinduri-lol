@@ -1,7 +1,7 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { AAA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
-import { goldRoutesFromBuild, ROUTES } from './routes';
+import { goldRoutesFromBuild, ROUTES, TALK_ROUTES } from './routes';
 import { cssColorToken } from './source';
 import { NARROW_WIDTH } from './wcag';
 
@@ -19,6 +19,9 @@ const invisibleControlMessage = (found: InvisibleControl[]) =>
   `controls on .surface-gold with no edge (fill equal to the ground, or border ` +
   `under ${NON_TEXT}:1, SC 1.4.11; "undecidable" was not measured):\n` +
   found.map((e) => `  ${e.selector}: ${e.detail}: "${e.label}"`).join('\n');
+
+/** Tall enough to hold a gold card at NARROW_WIDTH. */
+const NARROW_HEIGHT = 900;
 
 /** The route whose real gold button the in-situ ring check focuses. */
 const GOLD_ROUTE = '/contact';
@@ -74,7 +77,10 @@ const walkGoldSections = (page: Page) =>
   page.evaluate(`(() => {
     ${PAGE_HELPERS}
     ${TEXT_ON_GOLD_IN}
-    const sections = [...document.querySelectorAll('.surface-gold')];
+    // A section hidden at this width has no ground to measure.
+    const sections = [...document.querySelectorAll('.surface-gold')].filter((node) =>
+      node.checkVisibility(),
+    );
     if (sections.length === 0) {
       return { section: false, controls: 0, textInside: 0, invisible: [] };
     }
@@ -156,7 +162,10 @@ test.describe('the gold surface exception', () => {
 
       const walked = await walkGoldSections(page);
 
-      expectGoldSectionWalked(route, walked);
+      // A deck's gold card is hidden at this width; the 305px test walks it.
+      if (!(TALK_ROUTES as readonly string[]).includes(route)) {
+        expectGoldSectionWalked(route, walked);
+      }
 
       expect(
         walked.invisible,
@@ -180,10 +189,38 @@ test.describe('the gold surface exception', () => {
     });
   }
 
+  // The deck's gold card shows below lg only. Gold is dark mode's; light mode's cyan is light-mode.spec.ts's.
+  for (const route of TALK_ROUTES) {
+    test(`text on gold reads at AAA on ${route} at ${NARROW_WIDTH}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({
+        width: NARROW_WIDTH,
+        height: NARROW_HEIGHT,
+      });
+      await gotoSettled(page, route);
+
+      const walked = await walkGoldSections(page);
+      expectGoldSectionWalked(route, walked);
+      expect(
+        walked.invisible,
+        invisibleControlMessage(walked.invisible),
+      ).toEqual([]);
+
+      const failing = (await textOnGold(page)).filter(
+        (entry) => entry.ratio < AAA_TEXT,
+      );
+      expect(
+        failing,
+        `text on gold below ${AAA_TEXT}:1 on ${route} (SC 1.4.6)`,
+      ).toEqual([]);
+    });
+  }
+
   test(`the ${GOLD_ROUTE} gold button keeps its inner ring at 305px`, async ({
     page,
   }) => {
-    await page.setViewportSize({ width: NARROW_WIDTH, height: 900 });
+    await page.setViewportSize({ width: NARROW_WIDTH, height: NARROW_HEIGHT });
     await gotoSettled(page, GOLD_ROUTE);
 
     const controls = (await page.evaluate(
