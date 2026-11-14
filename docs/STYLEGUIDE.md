@@ -50,7 +50,7 @@ blur, uppercase headings, tilted marks.
 | 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                                             | `/about`, `/accessibility`, `/contact` |
 | 4a  | A talk slide's label, bold words, part number and lead-in term before a colon; its text links, still underlined               | `/talks/<deck>/`                       |
 | 5   | Category: the blog label and the homepage glyph tiles, ink-edged on gold                                                      | 3 routes                               |
-| 6   | Display words: `Guntupalli`; section title bricks (`Section brick`)                                                           | `/`, `/about`, `/career`               |
+| 6   | Display words: `Guntupalli`; section title bricks (`Section brick`)                                                           | `/`, `/about`, `/career`, `/contact`   |
 | 7   | List markers in `.bullet-list`                                                                                                | wherever a bulleted list is            |
 | 8   | The `gold` swatch and the contrast samples on gold; fills, hex in both modes                                                  | `/brand`                               |
 | 9   | Edges in dark mode: `border` on fields, controls, chips, rules and the outer edge of a gold area                              | every route                            |
@@ -127,7 +127,7 @@ The gold-ground set is in [Gold surface](#gold-surface), light values in
 
 - Two dark grounds: `background` (page, header, footer, bands) and `surface`
   (cards, inputs). Measure every foreground against both.
-- Blocks: every card, the plain hero slab and the post contents are a gold
+- Blocks: homepage and /brand cards, the plain hero slab and the post contents are a gold
   `block-gold` or light `block-light` fill with a 4px `block-ink` edge
   (`--block-edge`) and the red throw. Cards are gold; every second card in a
   `.card-block`, `.card-solid`, the plain hero slab and the post contents are
@@ -135,6 +135,11 @@ The gold-ground set is in [Gold surface](#gold-surface), light values in
   `text-gold` are ink (11.32 on gold, 14.42 on light), `subtle` is `gold-muted`
   (7.88) or `light-subtle` (7.40), and a badge inverts. Gold fills use
   `block-gold`, which never remaps. `tests/blocks.spec.ts`.
+- Ground cards: `.card-ground` (/about, /career, /credits, blog listings,
+  /contact, /contact/send, /contact/sent) is no block. A section fills one
+  card at most, 3 to 5 per page; lists and text-heavy cards stay on the
+  ground. It keeps the page's tokens and ground, takes a 4px `text` edge and
+  casts the red throw; its controls keep the page's red throws and focus ring.
 - Walls: blocks in a `.card-block` share 4px walls with no gap. Each brick
   casts the throw as a `box-shadow` and the next brick covers it, so it shows
   on outer edges only. No `filter` on a wall: a filter layer costs raster time
@@ -251,14 +256,14 @@ rows 1a to 1c. L(`#FFC000`) is 0.5896, so AAA needs a foreground luminance of
 `text`, `subtle`, `red-text`, `red`, `cyan`) fails on gold. Use the inverted
 set; hex values and ratios are in the generated [Contrast](#contrast) table:
 
-| Token            | Job                                                     |
-| ---------------- | ------------------------------------------------------- |
-| `gold-text`      | Body copy, headings, button borders, the focus ring     |
-| `gold-muted`     | Secondary copy                                          |
-| `gold-border`    | Structural rules, dividers, card edges and shadows      |
-| `fill-edge`      | Edge of a gold or light fill, on gold or off it         |
-| `gold-link`      | Links, underlined; the block on hover                   |
-| `gold-btn-label` | Label and inner ring on `.btn-gold-primary`'s fill only |
+| Token            | Job                                                                                                                         |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `gold-text`      | Body copy, headings, button borders, the focus ring                                                                         |
+| `gold-muted`     | Secondary copy                                                                                                              |
+| `gold-border`    | Structural rules, dividers, card edges and shadows                                                                          |
+| `fill-edge`      | Edge of a gold or light fill, on gold or off it                                                                             |
+| `gold-link`      | Links, underlined; the block on hover                                                                                       |
+| `gold-btn-label` | Label on the `gold-text` fill of `.btn-gold-primary` and a hovered `.btn-gold-secondary`; inner ring on `.btn-gold-primary` |
 
 - Build gold with `.surface-gold`, never `bg-gold` by hand. It repaints text,
   `.lead`, `.panel-lead` and `.standfirst` (`gold-text`), links (`gold-link`,
@@ -275,8 +280,8 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
   `.surface-gold` to repaint.
 - Keep the link underline: `gold-link` is 1.01 against `gold-text`, so the
   underline carries SC 1.4.1.
-- `gold-btn-label` sits only on `.btn-gold-primary`'s `#131313` fill (18.58),
-  never on gold.
+- `gold-btn-label` sits only on a `#131313` button fill (18.58):
+  `.btn-gold-primary` and a hovered `.btn-gold-secondary`, never on gold.
 - No `gold-subtle`: a third step would be indistinguishable from `gold-text`.
   Below `gold-muted`, hierarchy is weight and size.
 - No `cyan`, `red` or `red-text` on gold, not even a shadow: `.surface-gold`
@@ -295,14 +300,22 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
   `gold-text` border, `shadow-hard-bunny-4`, the two-tone ring
   ([Focus](#focus)).
 - `.btn-gold-secondary`: transparent, `gold-text` label and 4px border, no
-  shadow, single ring.
+  shadow, single ring. Hover fills `gold-text` under a `gold-btn-label` label;
+  the ring sits outside the gold gap, so it needs no inner half.
 - Borders are `gold-text`, matching the fill, not `gold-border`.
   `tests/gold-surface.spec.ts` asserts every control in a `.surface-gold`
   section has a visible edge: a fill that differs from the ground, or a border
   of at least 3:1.
-- Both are scoped to `.surface-gold` and render unstyled elsewhere.
+- `.btn-gold-primary` is scoped to `.surface-gold` and blocks (`.card`);
+  `.btn-gold-secondary` to `.surface-gold`. Both render unstyled elsewhere.
+- The /brand form sample is `.btn-gold-primary` in a block. Its fill is 11.32
+  on a gold block, 9.36 on light mode's cyan block and 14.42 on a light one.
+- The /contact submit sits on a ground card and is `.btn-primary`. In light
+  mode it is ink with a white label, and blue on hover.
 - Both `text-button`, 900, 0.1em, uppercase, `px-8 py-4`. No underline on the
-  label.
+  label at rest. `.btn-gold-primary` underlines it under the pointer
+  (`--underline-thin`), so hover still shows where reduced motion drops the
+  lift (SC 1.4.1).
 
 ## Light mode
 
@@ -608,7 +621,7 @@ file per area.
 
 | Class                                   | What                                                                                                                                                                                                                                                                    |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.btn-primary`                          | Gold fill, `gold-text` label, `border-4`, red 4px shadow, `text-button` 900                                                                                                                                                                                             |
+| `.btn-primary`                          | Gold fill, `gold-text` label, `border-4` in `text` (ink inside a block), red 4px shadow, `text-button` 900                                                                                                                                                              |
 | `.btn-secondary`                        | Light block: `block-light` fill, `block-ink` label and `border-4`, red 4px shadow                                                                                                                                                                                       |
 | `.actions`                              | Button row; its 32px row gap clears shadow and ring when buttons wrap                                                                                                                                                                                                   |
 | `.card`                                 | A gold block: `block-gold`, 4px `block-ink` edge, red 8px shadow, padding 24px, 40px from `sm`                                                                                                                                                                          |
@@ -637,11 +650,13 @@ file per area.
 ### Control states
 
 - Hover: `.btn-primary`, `.btn-secondary` and the menu's `.nav-cta` fill cyan with a
-  `background` label (11.86).
+  `background` label (11.86). On gold, see [Buttons on gold](#buttons-on-gold).
 - Lifted: under a hovering pointer the same controls rise `--press-lift` (2px)
   off their shadow, which grows by as much, so its far corner stays put. Not
   on touch screens, where hover sticks after a tap, and not under reduced
   motion.
+- Under reduced motion `.btn-gold-primary` takes `.btn-gold-secondary`'s
+  empty fill on hover instead, without its inner ring (`tests/states.spec.ts`).
 - Pressed: buttons, `.btn-gold-primary`, linked chips and footer stickers drop
   their shadow and move 4px into it; the menu's bricks 6px; the logo tile 8px.
   The header's joined bricks and a chip row's chips share their row's throw
@@ -652,9 +667,12 @@ file per area.
   it slides instead of fading (`buttons-nav.css`).
 - Unavailable: `aria-disabled="true"`, never `disabled`. Dashed `border`
   (the dash says unavailable, the gold keeps the shape), `bg-background`,
-  `subtle` label, no shadow; still focusable.
+  `subtle` label, no shadow; still focusable. An `aria-disabled`
+  `.btn-gold-primary` keeps its ink fill and label instead and is drawn
+  pressed, in or out of a form.
 - Sending: the contact submit is `aria-disabled` in a `data-sending` form but
-  drawn pressed and gold, not unavailable (`src/scripts/contact-sending.ts`).
+  keeps its ink fill and is drawn pressed, not unavailable
+  (`src/scripts/contact-sending.ts`).
 - Current: [Navigation states](#states).
 
 ### Markup
@@ -830,7 +848,7 @@ how important the page is.
 | ----- | -------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------ | -------------------- |
 | Full  | `"full"` | `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`; `/contact/send`, `/blog/page/<n>` | gold                                                                | `text-h1`; `text-h2` on the last two                                     | `.standfirst`      | `py-section`         |
 | Thin  | `"thin"` | `/contact/sent` and a post's own `.post-slab`                                                     | gold                                                                | `text-post-title`                                                        | `text-post-teaser` | `pt-head pb-section` |
-| Plain | `"none"` | `/privacy`, `/accessibility`, category and tag listings, `/404`                                   | light block; gold block on categories and tags (`plainFill="gold"`) | `text-reading-h1`; `text-h1` on `/404`; `text-h2` on categories and tags | `text-post-teaser` | `pt-head pb-section` |
+| Plain | `"none"` | `/privacy`, `/accessibility`, `/talks`, category and tag listings, `/404`                         | light block; gold block on categories and tags (`plainFill="gold"`) | `text-reading-h1`; `text-h1` on `/404`; `text-h2` on categories and tags | `text-post-teaser` | `pt-head pb-section` |
 
 - **Full:** the opening is a statement and the other half of the composition
   has content.
@@ -1116,9 +1134,13 @@ Enforced by `tests/post-page.spec.ts`.
   This Post", around a native `<details>`.
 - Closed below `xl`. From `xl`, `src/scripts/post-contents.ts` opens it and
   follows width changes. Without JavaScript it stays closed.
-- The summary: `text-label` 900 uppercase in `text` (13.51 on `surface`), cyan
-  on hover, at least 44px tall, a plus or minus marker hidden from assistive
-  technology.
+- The summary: `text-label` 900 uppercase in `text` (13.51 on `surface`), at
+  least 44px tall, a plus or minus marker hidden from assistive technology.
+  On hover the label is cyan (`gold-link` in a block) under a
+  `--underline-thin` underline, which clears the next line of a wrapped
+  label; the marker takes no underline. Every
+  `.post-contents-summary` takes it: the `/contact/sent/` riddle, the module
+  toggle and the `/brand` disclosures.
 - Tags follow the text under a 6px `border` rule: a label 16px above a row of
   `.chip` links.
 

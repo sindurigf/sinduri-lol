@@ -104,6 +104,11 @@
     "photo": null,
     "alt": "Privacy, sinduri.lol, beside a drawing of a rabbit jumping over a gold tile."
   },
+  "/talks": {
+    "title": "Talks",
+    "photo": null,
+    "alt": "Talks, sinduri.lol, beside a drawing of a rabbit jumping over a gold tile."
+  },
   "/talks/open-source-is-not-just-code": {
     "title": "Open Source Is Not Just Code, the Slides",
     "photo": "/_astro/sinduri-studio.BXKCzLan_Yx6sa.webp",
