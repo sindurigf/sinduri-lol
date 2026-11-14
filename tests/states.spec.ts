@@ -23,7 +23,12 @@ const look = async (
     const box = document.querySelector('[data-state-surface]');
     const paint = (node) => {
       const s = getComputedStyle(node);
-      return [s.color, s.backgroundColor, s.boxShadow].join(' | ');
+      return [
+        s.color,
+        s.backgroundColor,
+        s.boxShadow,
+        s.textDecorationLine,
+      ].join(' | ');
     };
     const ground = compositeBackground(el);
     const color = parse(getComputedStyle(el).color);
@@ -51,6 +56,13 @@ const expectHoverReadsAndDiffers = async (
   await page.mouse.move(0, 0);
   const rest = await look(page, control, surface);
   await surface.hover();
+  await surface.evaluate((el) =>
+    Promise.all(
+      el
+        .getAnimations({ subtree: true })
+        .map((animation) => animation.finished),
+    ),
+  );
   const hovered = await look(page, control, surface);
   expect(
     hovered.paint,
@@ -65,6 +77,11 @@ const expectHoverReadsAndDiffers = async (
   );
 };
 
+const PRIMARY_ROUTE = '/brand';
+const PRIMARY_BUTTON =
+  'main [data-component="primary-button"] [data-example] a.btn-primary';
+const CONTACT_SUBMIT = 'main form .contact-submit';
+
 const HOVERED_ON_MAIN = {
   'a linked card': async (page: Page) => {
     await gotoSettled(page, '/blog/');
@@ -75,13 +92,61 @@ const HOVERED_ON_MAIN = {
     await expect(card).toHaveCount(1);
     await expectHoverReadsAndDiffers(page, card.locator('.card-link'), card);
   },
-  // The home page's one primary action sits on gold, as `.btn-gold-primary`.
-  'a primary button': async (page: Page) => {
-    await gotoSettled(page, '/contact');
-    const button = page.locator('main .btn-primary').first();
+  // The one `.btn-primary` link on a real route; its stage is dark in both schemes.
+  "a primary button on /brand's dark sample": async (page: Page) => {
+    await gotoSettled(page, PRIMARY_ROUTE);
+    const button = page.locator(PRIMARY_BUTTON);
     await expect(button).toHaveCount(1);
     await expectHoverReadsAndDiffers(page, button);
   },
+  'the contact submit in its block': async (page: Page) => {
+    await gotoSettled(page, '/contact');
+    const button = page.locator(CONTACT_SUBMIT);
+    await expect(button).toHaveCount(1);
+    await expectHoverReadsAndDiffers(page, button);
+  },
+  'a gold primary button under reduced motion: label 7:1, edge 7:1, ring 3:1 (SC 1.4.3, 1.4.11)':
+    async (page: Page) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await gotoSettled(page, '/blog/');
+      const button = page
+        .locator('main .surface-gold a.btn-gold-primary')
+        .first();
+      await expect(button).toHaveCount(1);
+      await expectHoverReadsAndDiffers(page, button);
+      await button.focus();
+      await page.keyboard.press('Shift+Tab');
+      await page.keyboard.press('Tab');
+      await button.hover();
+      const { edge, ring, ringDrawn } = (await button.evaluate(
+        (el, source) => (0, eval)(source)(el),
+        `(el => {
+      ${PAGE_HELPERS}
+      const s = getComputedStyle(el);
+      const ground = compositeBackground(el.parentElement);
+      return {
+        edge: ratio(over(parse(s.borderTopColor), ground), ground),
+        ring: ratio(over(parse(s.outlineColor), ground), ground),
+        ringDrawn:
+          el.matches(':focus-visible') &&
+          s.outlineStyle !== 'none' &&
+          parseFloat(s.outlineWidth) > 0,
+      };
+    })`,
+      )) as { edge: number; ring: number; ringDrawn: boolean };
+      expect(
+        ringDrawn,
+        'the hovered button has no visible focus ring (SC 2.4.7)',
+      ).toBe(true);
+      expect(
+        edge,
+        'the hovered edge is below 7:1 on its ground (SC 1.4.11)',
+      ).toBeGreaterThanOrEqual(AAA_TEXT);
+      expect(
+        ring,
+        'the focus ring on the hovered button is below 3:1 (SC 1.4.11)',
+      ).toBeGreaterThanOrEqual(NON_TEXT);
+    },
   'a secondary button on gold': async (page: Page) => {
     await gotoSettled(page, '/');
     const button = page
@@ -106,6 +171,42 @@ for (const scheme of ['dark', 'light'] as const) {
     for (const [name, run] of Object.entries(HOVERED_ON_MAIN)) {
       test(name, async ({ page }) => run(page));
     }
+  });
+}
+
+for (const scheme of ['dark', 'light'] as const) {
+  test(`the contact submit's hover is drawn under reduced motion, ${scheme} (SC 1.4.1)`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' });
+    await gotoSettled(page, '/contact');
+    const button = page.locator(CONTACT_SUBMIT);
+    await expect(button).toHaveCount(1);
+    await expectHoverReadsAndDiffers(page, button);
+  });
+}
+
+for (const scheme of ['dark', 'light'] as const) {
+  test(`the contact submit's fill stands off its block, ${scheme} (SC 1.4.11)`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    await gotoSettled(page, '/contact');
+    await expect(page.locator(CONTACT_SUBMIT)).toHaveCount(1);
+    const against = (await page.evaluate(`(() => {
+      ${PAGE_HELPERS}
+      const button = document.querySelector('${CONTACT_SUBMIT}');
+      const fill = parse(getComputedStyle(button).backgroundColor);
+      const block = compositeBackground(button.closest('.card'));
+      return fill && block ? ratio(over(fill, block), block) : null;
+    })()`)) as number | null;
+    expect(against, 'the button or its block has no resolvable fill').not.toBe(
+      null,
+    );
+    expect(
+      against!,
+      'the button fill against the block it sits in',
+    ).toBeGreaterThanOrEqual(NON_TEXT);
   });
 }
 
