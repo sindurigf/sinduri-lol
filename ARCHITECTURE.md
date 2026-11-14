@@ -760,6 +760,9 @@ evidence.
 - **Fix axe's forced-colors `color-contrast` on `.sticker` in a `.card`:** axe
   reads the authored gold; the computed color there is CanvasText on Canvas,
   and `tests/forced-colors.spec.ts` passes.
+- **Run `/videos/*` responses through `withSiteHeaders`:** the `ASSETS`
+  response already carries the `public/_headers` headers, and
+  `tests/video-range.spec.ts` asserts `nosniff` and the CSP on a `206`.
 - **Delete the video byte-range pipeline as dead code:** the next
   published video would not play in Safari and iOS, which need `206`.
 - **Keep an About cat's `cut` set until its frame changes:** `stepFrame` clears
