@@ -405,7 +405,7 @@
   }
 
   /* Rings drawn inside the brick, on its own fill, so they never cross the next one. */
-  .header-bricks :focus-visible:not(.theme-menu *),
+  .header-bricks :focus-visible:not(.theme-menu *, [data-menu-close]),
   .header-actions > * > .nav-cta:focus-visible {
     position: relative;
     z-index: 1;
