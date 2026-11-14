@@ -701,7 +701,7 @@ const WRAPPING_LABELS = [
   },
   {
     name: "a post card's category and date",
-    built: /class="card-link"/,
+    built: /<article class="card[^"]*"[\s\S]*?class="card-link"/,
     selector: 'article:has(.card-link) .label',
   },
   {

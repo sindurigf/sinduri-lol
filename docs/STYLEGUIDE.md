@@ -840,7 +840,7 @@ how important the page is.
 | ----- | -------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------ | -------------------- |
 | Full  | `"full"` | `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`; `/contact/send`, `/blog/page/<n>` | gold                                                                | `text-h1`; `text-h2` on the last two                                     | `.standfirst`      | `py-section`         |
 | Thin  | `"thin"` | `/contact/sent` and a post's own `.post-slab`                                                     | gold                                                                | `text-post-title`                                                        | `text-post-teaser` | `pt-head pb-section` |
-| Plain | `"none"` | `/privacy`, `/accessibility`, category and tag listings, `/404`                                   | light block; gold block on categories and tags (`plainFill="gold"`) | `text-reading-h1`; `text-h1` on `/404`; `text-h2` on categories and tags | `text-post-teaser` | `pt-head pb-section` |
+| Plain | `"none"` | `/privacy`, `/accessibility`, `/talks`, category and tag listings, `/404`                         | light block; gold block on categories and tags (`plainFill="gold"`) | `text-reading-h1`; `text-h1` on `/404`; `text-h2` on categories and tags | `text-post-teaser` | `pt-head pb-section` |
 
 - **Full:** the opening is a statement and the other half of the composition
   has content.

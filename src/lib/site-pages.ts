@@ -16,6 +16,7 @@ import {
   CV_PATH,
   PRIVACY_PATH,
   SITE_FEED_PATH,
+  TALKS_PATH,
   categoryHref,
   postHref,
   tagHref,
@@ -40,6 +41,7 @@ export const sitePages = async (): Promise<MatchablePage[]> => {
     { title: 'Privacy', path: PRIVACY_PATH },
     { title: 'Credits', path: CREDITS_PATH },
     { title: 'CV', path: CV_PATH },
+    { title: 'Talks', path: TALKS_PATH },
     ...(await getCategoriesWithPosts()).map((category) => ({
       title: categoryLabel(category),
       path: categoryHref(category),

@@ -11,6 +11,10 @@ export const REPORT_BARRIER_HREF = `${ACCESSIBILITY_PATH}#${REPORT_BARRIER_ID}`;
 export const PRIVACY_PATH = '/privacy/';
 export const CREDITS_PATH = '/credits/';
 export const TALKS_PATH = '/talks/';
+
+/** A slideshow, not the /talks/ listing. */
+export const isDeckPath = (path: string): boolean =>
+  path.startsWith(TALKS_PATH) && path.length > TALKS_PATH.length;
 export const SITEMAP_PATH = '/sitemap-index.xml';
 export const SITE_FEED_PATH = '/rss.xml';
 export const CV_PATH = '/sinduri-guntupalli-cv.pdf';
