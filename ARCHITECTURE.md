@@ -31,7 +31,7 @@ sinduri.lol. Design rules and values are in
 - Page-only partials are not in that list: `home.css` (`/`), `slides.css` (the
   talk page and the presenter), `about-cats.css` (`/about`), `not-found.css`
   (`/404`), `code-block.css` and `post-folds.css` (posts) and `brand.css`
-  (`/brand`, which also takes `code-block.css`) are imported by the page that
+  (`/brand`, which `@import`s `code-block.css` to link one sheet) are imported by the page that
   uses them, so each builds as its own sheet, linked after the shared one.
   Each opens with `@reference '../global.css'` so `@apply` and the tokens
   resolve; Tailwind then writes token values as `var()` fallbacks and repeats
