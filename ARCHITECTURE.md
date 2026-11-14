@@ -31,7 +31,7 @@ sinduri.lol. Design rules and values are in
 - Page-only partials are not in that list: `home.css` (`/`), `slides.css` (the
   talk page and the presenter), `about-cats.css` (`/about`), `not-found.css`
   (`/404`), `code-block.css` and `post-folds.css` (posts) and `brand.css`
-  (`/brand`, which also takes `code-block.css`) are imported by the page that
+  (`/brand`, which `@import`s `code-block.css` to link one sheet) are imported by the page that
   uses them, so each builds as its own sheet, linked after the shared one.
   Each opens with `@reference '../global.css'` so `@apply` and the tokens
   resolve; Tailwind then writes token values as `var()` fallbacks and repeats
@@ -284,7 +284,7 @@ which is not installed.
 
 One deck per talk, `src/content/talks/<deck>/slides.md`, Slidev Markdown
 format, rendered by the site as a slideshow at `/talks/<deck>/`, a dev-only
-presenter view and a PDF. Authoring rules:
+presenter view and a PDF. `/talks/` lists every deck by its cover title. Authoring rules:
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#writing-a-talk).
 
 - **Not Slidev.** Its output has no `<main>`, no slide-change announcement,
@@ -355,7 +355,7 @@ control: [STYLEGUIDE.md](docs/STYLEGUIDE.md#text-size).
 it stays out of the per-page script budgets (`tests/performance.spec.ts`).
 
 - A feature is a `?worker&url` file. `Footer.astro` renders the registry on
-  every page except under `/talks/`.
+  every page except a deck (`isDeckPath`).
 - A trigger is `[data-on-demand="<feature file URL>"]`, shipped `hidden`; the
   registry unhides it. Without JavaScript nothing shows. A trigger that takes
   room in the layout is drawn from first paint instead, so nothing moves when
