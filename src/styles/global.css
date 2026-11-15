@@ -458,6 +458,8 @@
    * track, so the reading column stays centered.
    */
   --container-rail: 18rem;
+  /* /brand's menu: its search placeholder needs 20rem to show in full. */
+  --container-brand-rail: 20rem;
   /*
    * Narrowest slide card before wrapping: three per row down to a 1024x768
    * projector.
