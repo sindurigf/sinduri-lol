@@ -240,7 +240,7 @@ const shapeOf = (link: Locator): Promise<string> =>
   });
 
 const FOOTER_CURRENT = [
-  ['/privacy', 'About this site'],
+  ['/privacy', 'About This Site'],
   ['/about', 'Site'],
 ] as const;
 
