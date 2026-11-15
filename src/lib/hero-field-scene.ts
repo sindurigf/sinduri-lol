@@ -12,7 +12,7 @@ export interface HeroPalette {
   readonly fill: string;
   /** `--color-background`: under a bud's fill, so a faded bud hides the stalks behind it. */
   readonly background: string;
-  /** `--color-block-ink`: the rabbit's ground shadow. */
+  /** `--color-block-ink` with a hero fill, else empty: the rabbit's ground shadow. */
   readonly shadow: string;
 }
 

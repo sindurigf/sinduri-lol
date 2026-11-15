@@ -61,13 +61,14 @@ const setUp = (host: HTMLElement): void => {
     const required = {
       stalk: read('--color-hero-stalk'),
       background: read('--color-background'),
-      shadow: read('--color-block-ink'),
     };
     const missing = Object.entries(required)
       .filter(([, value]) => value.length === 0)
       .map(([name]) => name);
-    if (missing.length === 0)
-      return { ...required, fill: read('--color-hero-fill') };
+    const fill = read('--color-hero-fill');
+    /* Ink cannot show on the dark ground, so the shadow follows the light-mode fill. */
+    const shadow = fill ? read('--color-block-ink') : '';
+    if (missing.length === 0) return { ...required, fill, shadow };
     /* Draw nothing rather than black on black. */
     console.error(`Hero field not drawn: no color for ${missing.join(', ')}.`);
     return null;

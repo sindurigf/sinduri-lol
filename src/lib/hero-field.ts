@@ -704,7 +704,7 @@ const drawMid = (
   const { hareRoot, hareScale } = state.scene;
 
   if (atlas) {
-    drawHareShadow(ctx, palette, state, here.x, air);
+    if (palette.shadow) drawHareShadow(ctx, palette, state, here.x, air);
     const sheet = atlasAt(atlas, atlasDensity(hareScale, ctx.getTransform().a));
     drawRabbit(
       ctx,
