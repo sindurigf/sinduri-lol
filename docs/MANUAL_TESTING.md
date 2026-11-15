@@ -162,7 +162,7 @@ Look, do not measure.
       gold name, the rabbit uncut. → SC 1.4.11, 2.4.7, 2.4.13
 - [ ] Header logo in Windows High Contrast (forced colors): focused, a solid
       ring shows around the link. → SC 2.4.7
-- [ ] Gold skip link and "Get in Touch": the ring is on the dark ground, never
+- [ ] Gold skip link and "Get in Touch": the ring is on the page ground, never
       on gold. → SC 1.4.11
 - [ ] On a gold slab or band: the `#131313` ring is visible. → SC 1.4.11
 - [ ] No ring is clipped by a parent or hidden under the header. → SC 2.4.11
@@ -203,8 +203,8 @@ Zoom (forced colors off, 1280px, 200% then 400%):
 
 ## 5b. Light Mode
 
-Setup: Chrome, 1280px, `/about`. The Theme menu's Light turns `<main>`, the
-header and the footer light ([ACCESSIBILITY.md](../ACCESSIBILITY.md#light-mode),
+Setup: Chrome, 1280px, `/about`. The Theme menu's Light turns the page light
+([ACCESSIBILITY.md](../ACCESSIBILITY.md#light-mode),
 [STYLEGUIDE.md](STYLEGUIDE.md#light-mode)). `tests/light-mode.spec.ts` covers
 axe, control edges, hover contrast, ring contrast, and the menu: the Theme
 button and group, Enter, Space, arrows and Escape, Light and Dark across a

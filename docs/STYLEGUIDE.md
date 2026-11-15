@@ -356,6 +356,8 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
 - Blocks keep the `#131313` edge (18.58 on white).
 - The header bar turns white, the page's ground, the mirror of its ink bar in
   dark mode ([Navigation](#navigation)).
+- The report band, the skip link and the text size tab follow the mode: the
+  band and the tab white, the skip link cyan under `gold-text`.
 - The footer follows the mode like `<main>`: white in light mode, its words
   7:1 or more and its tiles apart from it (`tests/footer.spec.ts`).
 - Bunny marks use `bunny`, `fill-edge` and `shadow-hard-bunny-*`, never
