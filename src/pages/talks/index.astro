@@ -35,7 +35,9 @@ const DECK_WALL = wallClasses({}, decks.length);
               {deck.title}
             </a>
           </h2>
-          <p class="label mt-8 text-subtle">{deck.slideCount} slides</p>
+          <span class="label mt-8 block text-subtle">
+            {deck.slideCount} slides
+          </span>
         </li>
       ))}
     </ul>
