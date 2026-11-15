@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import { talkDecks } from '../../lib/talk-deck';
+import { slideCountLabel } from '../../lib/slides';
 import { wallClasses } from '../../lib/wall';
 import { TALKS_PATH } from '../../lib/paths';
 
@@ -36,7 +37,7 @@ const DECK_WALL = wallClasses({}, decks.length);
             </a>
           </h2>
           <span class="label mt-8 block text-subtle">
-            {deck.slideCount} slides
+            {slideCountLabel(deck.slideCount)}
           </span>
         </li>
       ))}
