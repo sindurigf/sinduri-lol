@@ -6,7 +6,7 @@ export const NEXT_FRAME = 0;
 /** A `frame` result: nothing to draw until `start()` is called. */
 export const IDLE = Infinity;
 
-export interface MotionLoopOptions {
+interface MotionLoopOptions {
   /**
    * Steps and draws. Returns when it next needs a frame: `NEXT_FRAME`, a later
    * `performance.now()` time to sleep until, or `IDLE`.
@@ -29,7 +29,7 @@ interface ObserveOptions {
   assumeOnScreen?: boolean;
 }
 
-export interface MotionLoop {
+interface MotionLoop {
   /** Read from the media query by `connect()`. */
   reducedMotion: () => boolean;
   onScreen: () => boolean;

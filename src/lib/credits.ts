@@ -85,8 +85,7 @@ export const LICENSED_PHOTOS = {
   },
 } as const satisfies Readonly<Record<string, LicensedPhoto>>;
 
-export type CaptionPart =
-  string | { readonly text: string; readonly href: string };
+type CaptionPart = string | { readonly text: string; readonly href: string };
 
 /**
  * The credit after "Photo: ". With `titleInCaption`: the title linked to
