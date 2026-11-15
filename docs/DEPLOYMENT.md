@@ -67,8 +67,8 @@ npx wrangler d1 migrations apply sinduri-lol --remote
 
 ## Contact form email
 
-Needs Email Routing on the zone, the owner's inbox verified as a destination,
-and that address as a runtime secret:
+Needs Email Routing on the zone, the inbox that receives contact messages
+verified as a destination address, and that address as a runtime secret:
 
 ```sh
 npx wrangler secret put CONTACT_NOTIFY_TO
@@ -81,11 +81,10 @@ missing.
 
 ## Plausible
 
-- Plausible Cloud, EU, on the free trial, which has Business features such as
-  click props (label, area, target). Self-hosted Plausible replaces it before
-  the trial ends. The `plausibleTrial` fact in
-  [`src/lib/platform-facts.ts`](../src/lib/platform-facts.ts) holds the plan's
-  terms, which `/privacy` states in place of a retention period.
+- Plausible Community Edition, self-hosted at `stats.sinduri.lol` on an
+  Infomaniak server in Geneva. The `plausibleHost` and `plausibleRetention`
+  facts in [`src/lib/platform-facts.ts`](../src/lib/platform-facts.ts) hold
+  what `/privacy` states about the host and how long stats are kept.
 - Registered as `sinduri.lol`. `canSend` in
   [`src/lib/analytics.ts`](../src/lib/analytics.ts) keeps the tracker off on
   local, test and preview hosts and under Do Not Track; `filterPayload` strips
@@ -156,6 +155,12 @@ Dashboard settings that change what ships without a file change.
 - CI (`.github/workflows/a11y.yml`) reports one status, `Required checks`,
   which passes only when every job passes. The `main` ruleset requires it by
   the job's `name`: rename it in both at once, or no pull request can merge.
+- A pull request that changes only root `*.md`, `docs/**/*.md` or
+  `.github/*.md` skips the Playwright shards; `Required checks` accepts the
+  skip only then. `ACCESSIBILITY.md`, `ARCHITECTURE.md`, `SECURITY.md` and
+  `docs/STYLEGUIDE.md` always run them: a page or a spec reads each
+  (`scripts/docs-only.mjs`, which `tests/docs-only.spec.ts` keeps complete).
+  Pushes to `main` always run them.
 - CI runs on pushes to `main` and on every pull request, whatever its base
   branch, so a stacked pull request gets the full gate. Its commits are checked
   against its own base branch, not `main`.
@@ -166,15 +171,20 @@ Dashboard settings that change what ships without a file change.
   1. Settings, Rules, Rulesets, the `main` ruleset, Require status checks to
      pass, Add checks, type `Test weakening`, pick the GitHub Actions source,
      Save. The name is offered once the check has run on a pull request.
-  2. Add `.github/CODEOWNERS` naming the owner for `/.github/` and
-     `/scripts/check-test-weakening.mjs`, and turn on Require review from Code
-     Owners in the `main` ruleset. A workflow could report a job also named
-     `Test weakening`; this keeps such a change from merging.
-- Agents use the owner's `gh` login, so they could post the marker. To take
-  that away, create a machine account for them with write access and a
-  fine-grained token for both repositories (Contents and Pull requests, read
-  and write), log their `gh` in with it, and remove the owner's token from
-  their keyring.
+  2. Add `.github/CODEOWNERS` naming the maintainer's GitHub account for
+     `/.github/` and `/scripts/check-test-weakening.mjs`, and turn on Require
+     review from Code Owners in the `main` ruleset. A workflow could report a
+     job also named `Test weakening`; this keeps such a change from merging.
+- `Pull request text` (`.github/workflows/pr-text.yml`) checks the title and
+  description for AI attribution and with `check:wording`, and re-runs on each
+  edit. To require it, in both repositories: Settings, Rules, Rulesets, the
+  `main` ruleset, Require status checks to pass, Add checks, type
+  `Pull request text`, pick the GitHub Actions source, Save. Dependabot pull
+  requests skip it, which counts as passed.
+- Agents run `gh` with the maintainer's token, so they can post the marker. Fix:
+  a machine account with write access and a fine-grained token (Contents, Pull
+  requests: read and write) for both repositories; log agents in with it and
+  remove the maintainer token from their keyring.
 - Turn on Dependabot alerts and automated security fixes.
 - Turn on private vulnerability reporting: [SECURITY.md](../SECURITY.md) relies
   on it.

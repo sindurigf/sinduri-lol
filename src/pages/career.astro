@@ -136,7 +136,7 @@ const pairWall = (count: number) =>
 
 <BaseLayout
   title="Career"
-  description="Sinduri Guntupalli: work history, education and skills, from Drupal development to product management and developer programs, with a CV to download."
+  description="I am Sinduri Guntupalli. My work history, education and skills, from Drupal development to product management and developer programs, with my CV to download."
 >
   <PageHero title="Career">
     <p class="standfirst">
@@ -178,14 +178,14 @@ const pairWall = (count: number) =>
     </p>
   </Section>
 
-  <Section title="Work Experience">
+  <Section title="Work Experience" brick>
     <ol role="list" class="card-block flex flex-col gap-grid">
       {
         /* Title first, so heading navigation lands before the employer. */
         EXPERIENCE.map((role, index) => (
           <li
             class:list={[
-              'card grid gap-8 lg:grid-cols-12',
+              'card card-ground grid gap-8 lg:grid-cols-12',
               EXPERIENCE_WALL.bricks[index],
             ]}
           >
@@ -214,7 +214,7 @@ const pairWall = (count: number) =>
     </ol>
   </Section>
 
-  <Section title="Skills and Education">
+  <Section title="Skills and Education" brick>
     <div class="card-block grid lg:grid-cols-2">
       <div class="card lg:row-span-2">
         <h3 class="card-title">Education</h3>
@@ -235,7 +235,7 @@ const pairWall = (count: number) =>
         </ul>
       </div>
 
-      <div class="card card-step-1 lg:card-step-0">
+      <div class="card card-ground card-step-1 lg:card-step-0">
         <h3 class="card-title">Skills</h3>
         <ul role="list" class="mt-8 flex flex-wrap gap-3">
           {SKILLS.map((skill) => (
@@ -244,7 +244,7 @@ const pairWall = (count: number) =>
         </ul>
       </div>
 
-      <div class="card card-step-2 lg:card-step-1">
+      <div class="card card-ground card-step-2 lg:card-step-1">
         <h3 class="card-title">Languages</h3>
         <ul role="list" class="mt-8 flex flex-col gap-4">
           {LANGUAGES.map((item) => (

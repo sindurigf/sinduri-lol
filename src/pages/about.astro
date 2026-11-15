@@ -3,6 +3,8 @@ import type { ImageMetadata } from 'astro';
 import { getImage, Picture } from 'astro:assets';
 import { PHOTO_FORMATS } from '../lib/photo-formats';
 import lepusRabbit from '../assets/lepus-rabbit.svg';
+import lepusRabbitLight from '../assets/lepus-rabbit-light.svg';
+import ModeArt from '../components/ModeArt.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CloseRow from '../components/CloseRow.astro';
 import PageHero from '../components/PageHero.astro';
@@ -53,8 +55,8 @@ import { DENSITIES, WIDTHS } from '../lib/image-densities';
 import { JOURNEY_POST_HREF } from '../lib/paths';
 
 /*
- * Sinduri's own copy: add no line she has not approved, and keep her few
- * apostrophes ("I am", "it is"). Jump links repeat the headings verbatim.
+ * Editorial copy: add no line the maintainer has not approved, and write out
+ * contractions ("I am", "it is"). Jump links repeat the headings verbatim.
  */
 
 /* Matches `size-14`. */
@@ -86,7 +88,7 @@ const SECTIONS = [
 /* On the `.aspect-frame`, so the border stays when a failed photo fades out. */
 const PHOTO = 'border-4 border-border';
 
-/* Uncaptioned by Sinduri's choice; the alt text names who is in each. */
+/* Uncaptioned on purpose; the alt text names who is in each. */
 const PLACES = [
   {
     src: bestFriendBeach,
@@ -189,7 +191,7 @@ const CATS = [
   },
 ] as const;
 
-/* Match `.cat-dialog-body`: w-48 on phones, w-72 from md (48rem). */
+/* Match `.cat-dialog-body`: 12rem on phones, 18rem from md (48rem). */
 const CAT_PHOTO_WIDTHS = [192, 288, 384, 576];
 const CAT_PHOTO_SIZES = '(min-width: 48rem) 288px, 192px';
 
@@ -253,7 +255,7 @@ const catInfo: CatInfo[] = await Promise.all(
 
 <BaseLayout
   title="About"
-  description="Sinduri Guntupalli lives in Vienna with her husband and three cats. Read about her love of Lord of the Rings and how a civil engineer found Drupal."
+  description="I live in Vienna with my husband and three cats. Read about my love of Lord of the Rings and how I went from civil engineering to my first Drupal job."
   profile
 >
   <PageHero
@@ -266,7 +268,7 @@ const catInfo: CatInfo[] = await Promise.all(
       friends, Lord of the Rings and One Piece.
     </p>
 
-    <nav aria-label="On this page" class="mt-8">
+    <nav aria-label="On This Page" class="mt-8">
       <ul role="list" class="flex flex-wrap gap-6">
         {SECTIONS.map((section) => (
           <li>
@@ -289,8 +291,9 @@ const catInfo: CatInfo[] = await Promise.all(
   <Section id={SECTIONS[0].id} headless>
     <div class="lepus-row flex flex-wrap items-center gap-8 lg:gap-12">
       <span class="lepus-tile relative block shrink-0 rotate-3 rounded-nav border-fill-edge bg-block-gold shadow-hard-bunny-8 lg:shadow-hard-bunny-12">
-        <img
-          src={lepusRabbit.src}
+        <ModeArt
+          dark={lepusRabbit}
+          light={lepusRabbitLight}
           alt=""
           width={lepusRabbit.width}
           height={lepusRabbit.height}
@@ -313,7 +316,7 @@ const catInfo: CatInfo[] = await Promise.all(
 
     <div class="cat-perch mt-head">
       <div class="cat-spot" id="cat-spot-minerva"></div>
-      <div class="card">
+      <div class="card card-ground">
         <p class="mb-paragraph max-w-2xl text-lead font-black text-text text-pretty">
           My pet name is Bunny. My uncle started it: in a Telugu children’s
           poem, Bunny means a doll.
@@ -332,7 +335,7 @@ const catInfo: CatInfo[] = await Promise.all(
     </div>
   </Section>
 
-  <Section id={SECTIONS[1].id} title={SECTIONS[1].title}>
+  <Section id={SECTIONS[1].id} title={SECTIONS[1].title} brick>
     <div class="card-block grid lg:card-rise-room lg:grid-cols-2">
       <blockquote class="card surface-gold flex flex-col justify-center">
         <span aria-hidden="true" class="self-start text-quote-mark font-black">
@@ -378,6 +381,7 @@ const catInfo: CatInfo[] = await Promise.all(
   <Section
     id={SECTIONS[2].id}
     title={SECTIONS[2].title}
+    brick
     lead="I moved to Vienna in 2017. Making friends gets harder as we grow older and move countries, so I am proud of the people who let me into their world."
   >
     <div class="cat-perch">
@@ -409,12 +413,12 @@ const catInfo: CatInfo[] = await Promise.all(
     </div>
   </Section>
 
-  <Section id={SECTIONS[3].id} title={SECTIONS[3].title}>
+  <Section id={SECTIONS[3].id} title={SECTIONS[3].title} brick>
     {/* A <dl>, so short bold values are not paragraphs WAVE reads as headings. */}
     <div class="cat-perch">
       <div class="cat-spot" id="cat-spot-rudra"></div>
       <div class="card-block flex flex-col lg:card-rise-room lg:flex-row">
-        <dl class="card min-w-0 divide-y-4 divide-border lg:flex-1">
+        <dl class="card card-ground min-w-0 divide-y-4 divide-border lg:flex-1">
           <div class="pb-6">
             <dt class="label text-gold">Favorite story</dt>
             <dd class="mt-4">
@@ -482,13 +486,13 @@ const catInfo: CatInfo[] = await Promise.all(
     </div>
   </Section>
 
-  <Section id={SECTIONS[4].id} title={SECTIONS[4].title}>
+  <Section id={SECTIONS[4].id} title={SECTIONS[4].title} brick>
     <p slot="lead" class="lead">
       There is a Sinduri before <a href={photographerHref(MENTOR)}>{MENTOR}</a>{' '}
       and Drupal, and a Sinduri after.
     </p>
 
-    <div class="card">
+    <div class="card card-ground">
       <figure class="mb-8">
         <div class:list={['aspect-frame', PHOTO]}>
           <svg
@@ -564,7 +568,7 @@ const catInfo: CatInfo[] = await Promise.all(
   </Section>
 
   {/* The cats are drawn by a script; without one, their names and lines are still on the page (ACCESSIBILITY.md, Scripts). */}
-  <Section title="The Cats" class="cats-noscript">
+  <Section title="The Cats" class="cats-noscript" brick>
     <ul role="list" class="flex flex-col gap-4">
       {CATS.map((cat) => (
         <li class="text-body text-text">

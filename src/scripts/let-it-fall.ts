@@ -59,7 +59,8 @@ const REPEAT_MS = 300;
 const button = document.querySelector<HTMLButtonElement>('[data-let-it-fall]');
 const header = document.querySelector<HTMLElement>('.site-header');
 const rabbit = document.querySelector<HTMLImageElement>('.footer-rabbit');
-const atlasUrl = button?.dataset.rabbitAtlas;
+const darkAtlas = button?.dataset.rabbitAtlas;
+const lightAtlas = button?.dataset.rabbitAtlasLight ?? darkAtlas;
 let hopper: Hopper | null = null;
 const status = document.querySelector<HTMLElement>('[data-let-it-fall-status]');
 if (!button || !status) {
@@ -1184,8 +1185,12 @@ const fall = (): void => {
     )
     .filter((a): a is Animation => a !== null)
     .map((a) => a.finished);
-  if (motion.matches && rabbit && atlasUrl) {
-    hopper ??= createHopper(rabbit, atlasUrl);
+  if (motion.matches && rabbit && darkAtlas && lightAtlas) {
+    hopper ??= createHopper(rabbit, () =>
+      document.documentElement.dataset.theme === 'light'
+        ? lightAtlas
+        : darkAtlas,
+    );
   }
   void settle(fallen, moves).catch(ignoreCancel);
   width = innerWidth;

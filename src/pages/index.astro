@@ -21,7 +21,7 @@ import { CATEGORIES, CATEGORY_TILE } from '../lib/categories';
 import { packRows, wallClasses } from '../lib/wall';
 import { BLOG_PATH, categoryHref } from '../lib/paths';
 
-/* Editorial copy is Sinduri's own words; add no line she has not approved. */
+/* Editorial copy: add no line the maintainer has not approved. */
 
 const FEATURED_LIMIT = 3;
 const featured = await getFeaturedPosts(FEATURED_LIMIT);
@@ -122,20 +122,12 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
 <BaseLayout
   title="Sinduri Guntupalli, Open Source Enthusiast"
   titleSuffix={false}
-  description="Sinduri Guntupalli, open source enthusiast in Vienna, experienced in product and program management, web development and Drupal community work."
+  description="I am Sinduri Guntupalli, an open source enthusiast in Vienna, with experience in product and program management, web development and Drupal community work."
 >
-  {/*
-    One gold area for the hero and the section below. No `.surface-gold` on the
-    column: its halves carry it, and nesting double-counts controls in
-    tests/gold-surface.spec.ts.
-  */}
+  {/* The hero stands on the page; the gold block starts at the section below it. */}
   <div class="v-column gold-column">
-    {/*
-    The name's line break sits on the window's top rule: no color clears 4.5:1
-    on both grounds, so each line takes its own.
-  */}
     <section class="band hero relative">
-      <div class="hero-window surface-gold">
+      <div class="hero-window">
         {/* The pause control shows once motion can run (src/scripts/hero-field.ts). */}
         <div class="hero-field" data-hero-field data-hero-motion="paused">
           <canvas aria-hidden="true" class="hero-field-layer"></canvas>
@@ -156,15 +148,12 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
           ))}
         </div>
 
-        {/*
-        Spans, not <p>: WAVE reads short bold paragraphs as headings. No
-        `border-border`: it fails SC 1.4.11 here and would beat `.surface-gold`'s.
-      */}
+        {/* Spans, not <p>: WAVE reads short bold paragraphs as headings. */}
         <div class="hero-marks" aria-hidden="true">
           <span class="hero-sticker -rotate-3 bg-block-gold text-gold-text shadow-hard-bunny-8">
             Lepus
           </span>
-          <span class="hero-sticker rotate-3 bg-surface text-pink-text shadow-hard-bunny-8">
+          <span class="hero-sticker rotate-3 bg-surface text-red-text shadow-hard-bunny-8">
             Ridet
           </span>
         </div>
@@ -177,7 +166,7 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
         <div class="hero-plate">
           <h1 class="w-full text-hero-h1">
             <span class="block text-text">Sinduri</span>{' '}
-            <span class="block text-gold-text">Guntupalli</span>
+            <span class="block text-text">Guntupalli</span>
           </h1>
         </div>
       </div>
@@ -253,7 +242,7 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
     </Section>
   </div>
 
-  <Section title="What I Write About" class="home-head">
+  <Section title="What I Write About" brick>
     <ul
       role="list"
       class:list={[
@@ -295,7 +284,7 @@ const statWall = wallClasses({ sm: [[0, 1]] }, STATS.length);
     </ul>
   </Section>
 
-  <Section title="Featured Posts" class="home-head">
+  <Section title="Featured Posts" brick>
     {/* Class names written out in full: Tailwind scans source text. */}
     <ul
       role="list"

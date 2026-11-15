@@ -183,7 +183,7 @@
   /* The page's own ground, not a gold block: gold stays on labels, bold words and edges. */
   .slide {
     @apply relative flex min-w-0 flex-col justify-center border-border bg-background
-      shadow-hard-pink-object;
+      shadow-hard-red-object;
     border-width: var(--block-edge);
     translate: calc(var(--step-x) * -1) 0;
     --deck-chrome: calc(var(--spacing-deck-bar) + --spacing(20));
@@ -368,7 +368,7 @@
 
   /*
    * Group cards from `cardGroups` in src/lib/slides.ts: the site card one size
-   * down, 4px edge and pink shadow. They wrap on narrow screens.
+   * down, 4px edge and red shadow. They wrap on narrow screens.
    */
   .slide-cards {
     @apply mt-6 grid items-stretch gap-6;
@@ -380,7 +380,7 @@
 
   /* Cards in a row share one height (`items-stretch` above). */
   .slide-card {
-    @apply edge border-border bg-background px-6 py-6 shadow-hard-pink-object;
+    @apply edge border-border bg-background px-6 py-6 shadow-hard-red-object;
   }
 
   .slide-body .slide-card li + li {

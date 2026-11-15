@@ -11,8 +11,8 @@ export const OG_CARD_MANIFEST = `${OG_CARD_DIR}/cards.json`;
 export const SITE_CARD_ROUTES: readonly string[] = ['/'];
 
 /**
- * The owner's picks where a page's first photo is not its card's: `null`
- * keeps the header logo, a path names a photo under src/assets/.
+ * Pages whose card does not show their first photo: `null` keeps the header
+ * logo, a path names a photo under src/assets/.
  */
 export const OG_PHOTO_CHOICES: Readonly<Record<string, string | null>> = {
   /* Its sample photos are specimens, not the page's subject. */
@@ -20,7 +20,7 @@ export const OG_PHOTO_CHOICES: Readonly<Record<string, string | null>> = {
   '/career': 'src/assets/photos/sinduri-studio.jpg',
 };
 
-export interface OgCard {
+interface OgCard {
   title: string;
   /** The built photo URL, hash included, so a new photo shows as stale; null for the header logo. */
   photo: string | null;
@@ -29,7 +29,7 @@ export interface OgCard {
 
 export type OgCardManifest = Record<string, OgCard>;
 
-export interface FirstPhoto {
+interface FirstPhoto {
   src: string;
   alt: string;
 }

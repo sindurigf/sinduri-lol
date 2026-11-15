@@ -18,15 +18,15 @@ const GROUNDS = ['background', 'surface'] as const;
 /** The ratio every text color reaches, for the facts on /brand. */
 export const TEXT_TARGET_RATIO = NEEDS.text;
 
-export type Paint = 'fill' | 'glyph' | 'empty';
+type Paint = 'fill' | 'glyph' | 'empty';
 
-export interface Swatch {
+interface Swatch {
   paint: Paint;
   cls: string;
 }
 
 /* A text color is drawn as "Aa" and cyan stays unpainted, as the design rules ask; class names are literal so Tailwind builds them. */
-export const SWATCH: Record<string, Swatch> = {
+const SWATCH: Record<string, Swatch> = {
   background: { paint: 'fill', cls: 'bg-background' },
   surface: { paint: 'fill', cls: 'bg-surface' },
   border: { paint: 'fill', cls: 'bg-border' },
@@ -36,9 +36,10 @@ export const SWATCH: Record<string, Swatch> = {
   subtle: { paint: 'glyph', cls: 'text-subtle' },
   gold: { paint: 'fill', cls: 'bg-gold' },
   cyan: { paint: 'empty', cls: '' },
-  pink: { paint: 'fill', cls: 'bg-pink' },
-  'pink-text': { paint: 'glyph', cls: 'text-pink-text' },
+  red: { paint: 'fill', cls: 'bg-red' },
+  'red-text': { paint: 'glyph', cls: 'text-red-text' },
   bunny: { paint: 'fill', cls: 'bg-bunny' },
+  'block-cyan': { paint: 'fill', cls: 'bg-block-cyan' },
 };
 
 /* The page's own edge is the token the `bg-border` swatch paints; spelled out, check-tokens would read it as a width. */
@@ -76,14 +77,14 @@ interface Reading {
   kind: Kind;
 }
 
-export interface RoleToken {
+interface RoleToken {
   token: string;
   job: string;
   swatch: Swatch;
   hex: Record<Mode, string>;
 }
 
-export interface RoleRead {
+interface RoleRead {
   /** The pair's tokens as painted: light mode's gold text becomes ink on the page ground. */
   fg: string;
   bg: string;
@@ -125,9 +126,9 @@ const assertEveryPair = (): void => {
     ['text', 'text'],
     ['subtle', 'text'],
     ['gold', 'text'],
-    ['pink-text', 'text'],
+    ['red-text', 'text'],
     [PAGE_EDGE, 'edge'],
-    ['pink', 'edge'],
+    ['red', 'edge'],
     ['bunny', 'edge'],
     ['cyan', 'edge'],
   ];
@@ -209,10 +210,10 @@ export const roles: Role[] = [
   role(
     'role-depth',
     'shadows and errors.',
-    'Pink casts the shadow; its text color carries error words.',
-    ['pink', 'pink-text', 'bunny'],
+    'Red casts the shadow; its text color carries error words.',
+    ['red', 'red-text', 'bunny'],
     {
-      fg: 'pink-text',
+      fg: 'red-text',
       bg: 'background',
       kind: 'text',
     },

@@ -516,7 +516,7 @@ test(
   },
 );
 
-/** Device px from any point of a frame's outer edge to its white rim: the ink edge and the pink block lie between. */
+/** Device px from any point of a frame's outer edge to its white rim: the ink edge and the red block lie between. */
 const RIM_WITHIN = 12;
 /** A channel this bright is the white rim, not the coat. */
 const RIM_WHITE = 240;
@@ -967,6 +967,10 @@ test.describe('Rudra on a stepped wall', () => {
     await rudraClimbing(page, DESKTOP_VIEWPORT.width);
     await rudraOnLowerBrick(page);
     await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(
+      napControl(page, 'rudra'),
+      'the page never applied reduced motion',
+    ).toHaveCount(0);
     await page.clock.runFor(SAMPLE_MS);
     expect(
       await drawnOver(page, 'rudra', CLIMB_WINDOW_MS),

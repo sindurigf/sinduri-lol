@@ -12,7 +12,7 @@ import {
   BUD_SIZE,
   BUD_START,
   BUD_TIERS,
-  BUD_TONE,
+  FILL_OUTLINE,
   CLUMP_COUNT,
   CLUMP_SPREAD,
   HOP_BASE_SECONDS,
@@ -57,10 +57,8 @@ import {
   SIT,
   SPRING,
   STALK_WIDTH,
+  STALK_WIDTH_SHARE,
   STEM_ALPHA,
-  VEIL,
-  VEIL_DEPTH,
-  FLOOR_HEIGHT,
   REACH,
   breeze,
   random,
@@ -182,7 +180,6 @@ const makeStem = (
     x,
     root,
     height: heightRatio * (root - scene.horizon),
-    tone: rng(),
     phase: rng() * Math.PI * 2,
     veil,
     lean: 0,
@@ -227,7 +224,7 @@ const buildStems = (scene: Scene): Stem[] => {
     band(BANDS.GRASS, 1, true);
     band(BANDS.MIDDLE, 1, true);
     band(BANDS.HARE, 1, true);
-    /* Near stems stay at the left edge, veiled, so they never blur over type. */
+    /* Near stems stay at the left edge so they never blur over type; the veil fades only their light bud fills. */
     band(BANDS.NEAR, NEAR_VEIL, false);
   };
 
@@ -360,16 +357,44 @@ const settle = (
   }
 };
 
-const budTone = (palette: HeroPalette, tone: number): string => {
-  if (tone > BUD_TONE.bud) return palette.bud;
-  if (tone > BUD_TONE.subtle) return palette.subtle;
-  return palette.border;
+/* Full strength in both modes: a faded stalk falls under 7:1 on its ground. */
+const strokeStalk = (
+  ctx: CanvasRenderingContext2D,
+  palette: HeroPalette,
+): void => {
+  ctx.strokeStyle = palette.stalk;
+  ctx.globalAlpha = 1;
+  ctx.lineWidth = Math.max(STALK_WIDTH.min, ctx.lineWidth * STALK_WIDTH_SHARE);
+  ctx.stroke();
+};
+
+/* Only a light bud's fill fades with distance: the ground goes under it and its outline stays opaque. */
+const fillBud = (
+  ctx: CanvasRenderingContext2D,
+  palette: HeroPalette,
+  alpha: number,
+): void => {
+  ctx.globalAlpha = 1;
+  if (!palette.fill) {
+    ctx.fillStyle = palette.stalk;
+    ctx.fill();
+    return;
+  }
+  ctx.fillStyle = palette.background;
+  ctx.fill();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = palette.fill;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = palette.stalk;
+  ctx.lineWidth = FILL_OUTLINE;
+  ctx.stroke();
 };
 
 const budLayout = (tall: number): { count: number; spacing: number } =>
   BUD_TIERS.find(({ above }) => tall > above) ?? { count: 0, spacing: 0 };
 
-const drawStalk = (
+const traceStalk = (
   ctx: CanvasRenderingContext2D,
   stem: Stem,
   lean: number,
@@ -386,7 +411,6 @@ const drawStalk = (
     stem.x + lean,
     stem.root - stem.height,
   );
-  ctx.stroke();
 };
 
 /** In bud sizes: set off the stalk to alternating sides, radii, and tilt in radians. */
@@ -408,6 +432,7 @@ const drawBuds = (
   bud: number,
   seconds: number,
   world: number,
+  fill: () => void,
 ): void => {
   const { count, spacing } = budLayout(stem.height / world);
   const nod =
@@ -433,7 +458,7 @@ const drawBuds = (
       0,
       Math.PI * 2,
     );
-    ctx.fill();
+    fill();
   }
 };
 
@@ -442,6 +467,7 @@ const drawHead = (
   stem: Stem,
   lean: number,
   bud: number,
+  fill: () => void,
 ): void => {
   const [tx, ty] = stemPoint(stem.x, stem.root, stem.height, lean, 1);
   ctx.beginPath();
@@ -454,7 +480,7 @@ const drawHead = (
     0,
     Math.PI * 2,
   );
-  ctx.fill();
+  fill();
 };
 
 /* Detail steps down with distance, with a minimum drawn size at each step. */
@@ -468,48 +494,16 @@ const drawStem = (
 ): void => {
   const alpha =
     (STEM_ALPHA.base + Math.sqrt(stem.scale) * STEM_ALPHA.byScale) * stem.veil;
-  ctx.globalAlpha = alpha;
-  ctx.strokeStyle = palette.border;
-  drawStalk(ctx, stem, lean);
+  traceStalk(ctx, stem, lean);
+  strokeStalk(ctx, palette);
 
   if (stem.height < BUD_MIN_HEIGHT * world) return;
 
   const bud = Math.max(BUD_SIZE.min, stem.size * BUD_SIZE.bySize);
-  ctx.globalAlpha = Math.min(BUD_ALPHA.max, alpha + BUD_ALPHA.lift);
-  ctx.fillStyle = budTone(palette, stem.tone);
-  drawBuds(ctx, stem, lean, bud, seconds, world);
-  drawHead(ctx, stem, lean, bud);
-};
-
-/* Painted between far and near stems so it veils only the distance. */
-const drawVeil = (
-  ctx: CanvasRenderingContext2D,
-  palette: HeroPalette,
-  scene: Scene,
-): void => {
-  const top = scene.horizon - VEIL.above * scene.world;
-  const depth = VEIL.depth * scene.world;
-  const gradient = ctx.createLinearGradient(0, top, 0, top + depth);
-  gradient.addColorStop(0, palette.veilEdge);
-  gradient.addColorStop(VEIL.peak, palette.veil);
-  gradient.addColorStop(1, palette.veilEdge);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, top, scene.boxWidth, depth);
-};
-
-/* On the back layer: on the front it would darken the hare. */
-const drawFloor = (
-  ctx: CanvasRenderingContext2D,
-  palette: HeroPalette,
-  scene: Scene,
-): void => {
-  const { boxWidth, boxHeight } = scene;
-  const top = boxHeight - FLOOR_HEIGHT * scene.world;
-  const gradient = ctx.createLinearGradient(0, top, 0, boxHeight);
-  gradient.addColorStop(0, palette.floorEdge);
-  gradient.addColorStop(1, palette.floor);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, top, boxWidth, boxHeight - top);
+  const budAlpha = Math.min(BUD_ALPHA.max, alpha + BUD_ALPHA.lift);
+  const fill = (): void => fillBud(ctx, palette, budAlpha);
+  drawBuds(ctx, stem, lean, bud, seconds, world, fill);
+  drawHead(ctx, stem, lean, bud, fill);
 };
 
 /*
@@ -561,7 +555,7 @@ const shadowSprite = (
   if (ctx) {
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.filter = `blur(${blur.toFixed(2)}px)`;
-    ctx.fillStyle = palette.border;
+    ctx.fillStyle = palette.shadow;
     ctx.beginPath();
     ctx.ellipse(sprite.width / 2, sprite.height / 2, rx, ry, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -667,17 +661,7 @@ const drawBack = (
   state: FieldState,
   seconds: number,
 ): void => {
-  paintWhere(ctx, palette, state, seconds, (z) => z > VEIL_DEPTH);
-  drawVeil(ctx, palette, state.scene);
-  paintWhere(
-    ctx,
-    palette,
-    state,
-    seconds,
-    (z) => z <= VEIL_DEPTH && z >= HARE_DEPTH,
-  );
-  drawFloor(ctx, palette, state.scene);
-  ctx.globalAlpha = 1;
+  paintWhere(ctx, palette, state, seconds, (z) => z >= HARE_DEPTH);
 };
 
 /* Rasterising takes tens of ms on a phone: only a size change past this share redraws it. */

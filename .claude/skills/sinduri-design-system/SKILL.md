@@ -13,7 +13,8 @@ before changing anything it covers.
 
 - An arbitrary value: no raw hex, `text-[32px]` or `shadow-[8px_8px_0]`. Add a
   token to `@theme` instead ([Tokens only](../../../docs/STYLEGUIDE.md#tokens-only)).
-- `pink` as text, at any size. `pink-text` as a border, shadow or fill.
+- `red` as text, `red-text` as a border, shadow or fill, or any red on
+  gold: throws on gold are ink. Every red is 7:1 or more on its surface.
 - `cyan` at rest. It is hover and focus only; inside a block, hover and focus
   are `gold-link`. A still state sample on `/brand` may show its hover color.
 - A gold ground without `.surface-gold`, or `.btn-primary`/`.btn-secondary`
@@ -21,7 +22,9 @@ before changing anything it covers.
   ink text and no controls ([Gold surface](../../../docs/STYLEGUIDE.md#gold-surface)).
 - `border` on a gold or light fill: it takes `fill-edge`. `fill-edge` on a
   dark fill. A card's own edge or fill: cards are blocks (`block-gold`,
-  `block-light`, `block-ink`), set in `cards.css`.
+  `block-light`, `block-ink`), set in `cards.css`; a `.card-ground` keeps the
+  page's ground and a `text` edge: one filled card per section at most, lists
+  and text-heavy cards on the ground (homepage and /brand excepted).
 - `bg-gold` for a fill that may sit in a block: it remaps there; use
   `bg-block-gold`.
 - A shadow class on a brick in a `.card-block`, or a brick that drops:

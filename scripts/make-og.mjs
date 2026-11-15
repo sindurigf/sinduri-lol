@@ -84,8 +84,8 @@ const TOKENS = {
   background: cssColorToken('--color-background'),
   fillEdge: cssColorToken('--color-fill-edge'),
   bunny: cssColorToken('--color-bunny'),
-  pink: cssColorToken('--color-pink'),
-  pinkText: cssColorToken('--color-pink-text'),
+  red: cssColorToken('--color-red'),
+  redText: cssColorToken('--color-red-text'),
 };
 
 const dataUri = (path, type) =>
@@ -109,12 +109,12 @@ html,body{margin:0}
 .tile{position:absolute;left:${TILE_LEFT}px;top:${TILE_TOP}px;box-sizing:border-box;width:${TILE.size}px;height:${TILE.size}px;display:grid;place-items:center;background:${TOKENS.gold};border:${TILE.edge}px solid ${TOKENS.fillEdge};border-radius:${TILE.radius}px;box-shadow:${TILE.shadow}px ${TILE.shadow}px 0 ${TOKENS.bunny};rotate:5deg}
 .tile img{position:absolute;left:${RABBIT.left}px;top:${RABBIT.top}px;width:${RABBIT.width}px;height:${RABBIT.height}px}
 .photo{position:absolute;display:flex;align-items:center;justify-content:center}
-.photo img{box-sizing:border-box;border:${PHOTO_EDGE}px solid ${TOKENS.fillEdge};box-shadow:${PHOTO_SHADOW}px ${PHOTO_SHADOW}px 0 ${TOKENS.pink};rotate:2deg}
-.sticker{display:inline-flex;align-self:flex-start;margin-top:34px;rotate:-3deg;box-shadow:10px 10px 0 ${TOKENS.pink}}
+.photo img{box-sizing:border-box;border:${PHOTO_EDGE}px solid ${TOKENS.fillEdge};box-shadow:${PHOTO_SHADOW}px ${PHOTO_SHADOW}px 0 ${TOKENS.red};rotate:2deg}
+.sticker{display:inline-flex;align-self:flex-start;margin-top:34px;rotate:-3deg;box-shadow:10px 10px 0 ${TOKENS.red}}
 .sticker span{padding:14px 26px;background:${TOKENS.background};font-size:40px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
 .sticker span+span{border-left:4px solid ${TOKENS.gold}}
 .lepus{color:${TOKENS.gold}}
-.ridet{color:${TOKENS.pinkText}}
+.ridet{color:${TOKENS.redText}}
 </style></head><body><div class="og">
 ${art}
 <div class="text"><div class="name"></div><div class="eyebrow"></div><div class="title"></div><div class="sticker" lang="la"><span class="lepus">Lepus</span><span class="ridet">Ridet</span></div><div class="tag"></div><div class="domain"></div></div>
@@ -213,7 +213,7 @@ const metaContent = (html, property) =>
     html,
   )?.[1] ?? null;
 
-/** The page's card: its title, and its photo by the owner's pick or the first in `<main>`. */
+/** The page's card: its title, and its photo from `OG_PHOTO_CHOICES` or else the first in `<main>`. */
 const cardFor = (route, html) => {
   const title = metaContent(html, 'og:title');
   if (!title) throw new Error(`make-og: ${route} has no og:title.`);

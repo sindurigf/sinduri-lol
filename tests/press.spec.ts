@@ -11,12 +11,23 @@ interface Pressable {
   moves: string;
 }
 
+const PRIMARY_ROUTE = '/brand';
+const PRIMARY_BUTTON =
+  'main [data-component="primary-button"] [data-example] a.btn-primary';
+const CONTACT_SUBMIT = 'main form .contact-submit';
+
 const PRESSABLE: Pressable[] = [
   {
     name: 'a primary button',
+    route: PRIMARY_ROUTE,
+    control: PRIMARY_BUTTON,
+    moves: PRIMARY_BUTTON,
+  },
+  {
+    name: 'the contact submit in its block',
     route: '/contact',
-    control: 'main .btn-primary',
-    moves: 'main .btn-primary',
+    control: CONTACT_SUBMIT,
+    moves: CONTACT_SUBMIT,
   },
   {
     name: 'a gold primary button',
@@ -196,7 +207,7 @@ test.describe('a press on the edge still clicks', () => {
   }
 });
 
-/** The gold primary's inner focus ring is an inset shadow; a press empties box-shadow, so only the pink goes. */
+/** The gold primary's inner focus ring is an inset shadow; a press empties box-shadow, so only the red goes. */
 test('a focused gold primary keeps its inner ring when pressed', async ({
   page,
 }) => {
@@ -272,9 +283,9 @@ test.describe('bricks', () => {
   test('a joined header brick holds still when pressed', async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     await gotoSettled(page, '/blog/');
-    await pressCenter(page, 'header .header-bricks .nav-cta');
+    await pressCenter(page, 'header .header-bricks .theme-switch');
     expect(
-      await translateOf(page, 'header .header-bricks .nav-cta'),
+      await translateOf(page, 'header .header-bricks .theme-switch'),
       'a joined brick moved out of its row',
     ).toEqual([0, 0]);
     await page.mouse.up();
@@ -367,7 +378,7 @@ test.describe('a hover lift', () => {
       }));
       expect(
         offset,
-        'the ring does not clear the throw by its gap: cyan over pink fails SC 1.4.11',
+        'the ring does not clear the throw by its gap: cyan over red fails SC 1.4.11',
       ).toBeGreaterThanOrEqual((await throwOf(page, p.control)) + gap);
     });
   }
@@ -381,14 +392,14 @@ test.describe('on a touch screen', NO_FIREFOX, () => {
     page,
   }) => {
     await page.setViewportSize(PHONE_VIEWPORT);
-    await gotoSettled(page, '/contact');
+    await gotoSettled(page, PRIMARY_ROUTE);
     expect(
       await page.evaluate(() => matchMedia('(hover: hover)').matches),
     ).toBe(false);
-    const button = page.locator('main .btn-primary').first();
+    const button = page.locator(PRIMARY_BUTTON);
     await button.hover();
     expect(await button.evaluate((node) => node.matches(':hover'))).toBe(true);
-    await transitionsDone(page, 'main .btn-primary');
-    expect(await translateOf(page, 'main .btn-primary')).toEqual([0, 0]);
+    await transitionsDone(page, PRIMARY_BUTTON);
+    expect(await translateOf(page, PRIMARY_BUTTON)).toEqual([0, 0]);
   });
 });

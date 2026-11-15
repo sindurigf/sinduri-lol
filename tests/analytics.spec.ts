@@ -34,7 +34,7 @@ const PAYLOAD_DISCLOSED: Record<string, string | null> = {
   u: "the page's address",
   r: 'the address of the page that linked you here',
   p: 'its label',
-  sd: 'how far down the page you scrolled',
+  sd: 'how far down you scrolled',
   e: 'how long you had the page in view',
   /* Tracker version, site domain, interactive flag, hash routing. */
   v: null,

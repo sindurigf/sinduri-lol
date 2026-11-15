@@ -8,7 +8,7 @@ import { ogCardPath, ogRoute, type OgCardManifest } from './og-cards';
 const CARD_WIDTH = 1200;
 const CARD_HEIGHT = 630;
 
-export interface OgImage {
+interface OgImage {
   /** Root-relative; BaseLayout makes it absolute against `site`. */
   src: string;
   width: number;
@@ -16,7 +16,7 @@ export interface OgImage {
   alt: string;
 }
 
-export const DEFAULT_OG_IMAGE: OgImage = {
+const DEFAULT_OG_IMAGE: OgImage = {
   src: '/images/og-default.png',
   width: CARD_WIDTH,
   height: CARD_HEIGHT,

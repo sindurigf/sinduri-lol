@@ -162,14 +162,13 @@ test.describe('navigation without JavaScript', () => {
 
         // SC 1.4.11: a hidden theme switch must not leave the first brick open on its left.
         const edges = await page
-          .locator('header .header-bricks:has(.theme-switch)')
+          .locator('header .header-actions')
           .evaluate((row) =>
-            [...row.children]
-              .map((child) =>
-                child.matches('a, button')
-                  ? child
-                  : child.querySelector(':scope > :is(a, button)'),
-              )
+            [
+              ...row.querySelectorAll(
+                ':scope > div > .nav-cta, .header-bricks > :is(a, button), .header-bricks > * > :is(a, button)',
+              ),
+            ]
               .filter(
                 (brick): brick is Element =>
                   !!brick && brick.getBoundingClientRect().width > 0,

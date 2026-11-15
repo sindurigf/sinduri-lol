@@ -48,7 +48,7 @@ const pdfKb = existsSync(pdfFile)
 <BaseLayout title={`${cover.data.title}, the Slides`} description={description}>
   <div class="deck" data-deck={cover.data.deck}>
     {/* No `download` attribute and no new window: the browser's viewer opens in place (SC 3.2.5). */}
-    <div class="deck-narrow card">
+    <div class="deck-narrow card surface-gold">
       <p class="text-body">
         The slideshow needs a wider screen.{' '}
         {pdfKb === undefined
@@ -57,7 +57,7 @@ const pdfKb = existsSync(pdfFile)
       </p>
       {pdfKb !== undefined && (
         <p class="actions mt-6">
-          <a href={pdfHref} class="btn-primary">
+          <a href={pdfHref} class="btn-gold-primary">
             Download the Slides (PDF, {pdfKb} KB)
           </a>
         </p>
