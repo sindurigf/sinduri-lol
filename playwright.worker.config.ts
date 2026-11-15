@@ -21,6 +21,7 @@ export const WORKER_SPECS = [
   'served-types.spec.ts',
   'blog-pages.spec.ts',
   'worker-failures.spec.ts',
+  'html-compression.spec.ts',
 ] as const;
 
 /*
