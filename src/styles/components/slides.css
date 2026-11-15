@@ -302,6 +302,11 @@
     @apply mt-4;
   }
 
+  /* In em, so the step between paragraphs stays 2.5em at any body size (SC 1.4.8). */
+  .slide-body p + p {
+    margin-top: var(--spacing-paragraph);
+  }
+
   :is(.deck:fullscreen, .presenter) .slide-body :is(p, ul, ol, table) {
     @apply text-slide;
   }
@@ -395,11 +400,6 @@
   /* Under `.slide-body` to outrank its margin rule. */
   .slide-body .slide-card > :first-child {
     @apply mt-0;
-  }
-
-  /* 16px: paragraph spacing 1.5 times the line spacing at body size (SC 1.4.8). */
-  .slide-body .slide-card > h3:first-child + * {
-    @apply mt-4;
   }
 
   .slide-body li {
