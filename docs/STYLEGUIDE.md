@@ -1195,7 +1195,7 @@ Enforced by `tests/footer.spec.ts`.
 - `nav` "Social": seven sticker links, each an `aria-hidden` icon and a
   visually hidden name
 - `nav` "Site": Home, About, Career, Blog
-- `nav` "About this site": the links in `POLICY_LINKS` in `Footer.astro`
+- `nav` "About This Site": the links in `POLICY_LINKS` in `Footer.astro`
 - the copyright
 - Let It Fall (`src/scripts/let-it-fall.ts`, loaded on demand), above the
   copyright: one press drops everything on screen, the header bar, hero, page
@@ -1283,7 +1283,7 @@ by `tests/reading-tab.spec.ts`.
 | Width       | Layout                                                                                                                            |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | below 48rem | one centered column in source order; the stickers a 4-column grid, the last three offset by `--spacing(8)`; the name on two lines |
-| from 48rem  | three columns, stickers, Site, About this site, `column-gap` `--spacing(8)`; the copyright left; the name on one line             |
+| from 48rem  | three columns, stickers, Site, About This Site, `column-gap` `--spacing(8)`; the copyright left; the name on one line             |
 | from 64rem  | inset `--spacing(8)` either side; stickers `--size-sticker-lg`                                                                    |
 
 ### Footer spacing
@@ -1300,7 +1300,7 @@ No rule or divider joins the footer to the page.
 
 ### Links and stickers
 
-- Links are `.label`: Site in `text` (15.28), About this site in `subtle`
+- Links are `.label`: Site in `text` (15.28), About This Site in `subtle`
   (9.34), cyan on hover (11.86). Each row is 44px tall (`--spacing-target`).
 - The current page has `aria-current` and the 2px text-link underline; hover
   changes color only, so the two never look alike.

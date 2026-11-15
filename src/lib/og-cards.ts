@@ -20,7 +20,7 @@ export const OG_PHOTO_CHOICES: Readonly<Record<string, string | null>> = {
   '/career': 'src/assets/photos/sinduri-studio.jpg',
 };
 
-export interface OgCard {
+interface OgCard {
   title: string;
   /** The built photo URL, hash included, so a new photo shows as stale; null for the header logo. */
   photo: string | null;
@@ -29,7 +29,7 @@ export interface OgCard {
 
 export type OgCardManifest = Record<string, OgCard>;
 
-export interface FirstPhoto {
+interface FirstPhoto {
   src: string;
   alt: string;
 }
