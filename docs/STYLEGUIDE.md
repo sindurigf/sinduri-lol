@@ -350,7 +350,8 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
   both modes draw every stalk at full strength and half width, no thinner than
   0.55px or 1.5 device pixels (thinner antialiases under 7:1 on a 1x screen).
   Gold stalks and buds in dark mode (11.99); in light mode
-  (`hero-fill`) ink stalks (18.58) with cyan buds.
+  (`hero-fill`) ink stalks (18.58) with cyan buds, and the rabbit's ground
+  shadow, which ink cannot show on the dark ground.
 - Hover on a cyan fill is `#131313` under `#E5E2E1`.
 - Gold text turns ink; a `.label.text-gold` and a slide label gain a cyan
   square before the word (`--label-mark`).
