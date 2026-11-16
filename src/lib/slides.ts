@@ -346,3 +346,6 @@ export const printedContent = (source: string, file: string): string =>
       body,
     ]),
   );
+
+export const slideCountLabel = (count: number): string =>
+  `${count} ${count === 1 ? 'slide' : 'slides'}`;
