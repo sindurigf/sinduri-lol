@@ -8,9 +8,10 @@
  *   npm run build && npm run og
  */
 
-import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { basename, dirname, join, relative, sep } from 'node:path';
 import { chromium } from '@playwright/test';
+import { filesUnder } from './files-under.mjs';
 import { cssColorToken } from '../src/lib/css-token.ts';
 import {
   OG_CARD_DIR,
@@ -192,21 +193,14 @@ const fill = (tab, copy) =>
     { copy, size: TITLE_SIZE, boxes: PHOTO_BOXES, edge: PHOTO_EDGE },
   );
 
-const builtRoutes = () => {
-  const routes = [];
-  const walk = (dir) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) walk(full);
-      else if (entry.name === 'index.html') {
-        const path = relative(DIST, dir).split(sep).join('/');
-        routes.push({ route: path ? `/${path}` : '/', file: full });
-      }
-    }
-  };
-  walk(DIST);
-  return routes.sort((a, b) => a.route.localeCompare(b.route));
-};
+const builtRoutes = () =>
+  filesUnder(DIST, ['index.html'])
+    .filter((file) => basename(file) === 'index.html')
+    .map((file) => {
+      const path = relative(DIST, dirname(file)).split(sep).join('/');
+      return { route: path ? `/${path}` : '/', file };
+    })
+    .sort((a, b) => a.route.localeCompare(b.route));
 
 const metaContent = (html, property) =>
   new RegExp(`<meta property="${property}" content="([^"]*)"`).exec(

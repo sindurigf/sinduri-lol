@@ -6,7 +6,7 @@
 
 import { isTalk } from './post-figure.mjs';
 
-export const TABLE_SCROLL_CLASS = 'table-scroll';
+const TABLE_SCROLL_CLASS = 'table-scroll';
 
 const FALLBACK_NAME = 'Table';
 /* Must match SCROLLS_SUFFIX in src/scripts/scroll-fit.ts, which strips it while the table fits. */

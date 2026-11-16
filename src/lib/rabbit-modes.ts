@@ -11,11 +11,11 @@ export const RABBIT_ART = [
   'src/assets/hero-rabbit.svg',
 ] as const;
 
-export const DARK_ART_RED = '--color-bunny';
-export const LIGHT_ART_RED = '--color-light-red-text';
+const DARK_ART_RED = '--color-bunny';
+const LIGHT_ART_RED = '--color-light-red-text';
 
 /* The inner ear keeps the dark-mode red: #560000 inside the art reads as black. */
-export const EAR_MARK = 'data-ear';
+const EAR_MARK = 'data-ear';
 
 export const lightArtPath = (dark: string): string =>
   dark.replace(/\.svg$/, '-light.svg');
