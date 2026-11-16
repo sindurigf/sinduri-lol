@@ -13,7 +13,7 @@ An empty box or blank is an untested check.
 
 | Section                            | Status                                                          |
 | ---------------------------------- | --------------------------------------------------------------- |
-| §1 to §5a, §6a, §7, §9a, §13       | Not run                                                         |
+| §1 to §5a, §6a, §7, §9a, §13       | Not run, except the text spacing checks in the row below        |
 | §6 (Orca)                          | Not run; ACCESSIBILITY.md §7 gap 2 is open                      |
 | §6.10 (NVDA, VoiceOver), §8 Safari | Not run; needs Windows and Apple hardware                       |
 | §6.10.1 (TalkBack)                 | Not run                                                         |
