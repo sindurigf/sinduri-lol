@@ -19,7 +19,7 @@ import { cssColorToken } from '../src/lib/css-token.ts';
 
 const INK = cssColorToken('--color-block-ink');
 const GOLD = cssColorToken('--color-block-gold');
-const RED = cssColorToken('--color-bunny');
+const RED = cssColorToken('--color-red');
 const WHITE = cssColorToken('--color-light-ground');
 const LIGHT_RED = cssColorToken('--color-light-red-text');
 

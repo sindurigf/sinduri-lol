@@ -152,8 +152,6 @@
    */
   --color-red: #ff8080;
   --color-red-text: #ff8080;
-  /* The bunny marks' throw: `red`, except where a surface turns it ink. */
-  --color-bunny: #ff8080;
   /* The system color forced-colors mode pairs with the button face; bars on it use `forced-colors:bg-button-text`. */
   --color-button-text: ButtonText;
   /* The About cats' toy box and scratching post, read by about-cats.css. */
@@ -412,9 +410,9 @@
   --shadow-brick: var(--brick-throw) var(--brick-throw) 0 var(--color-text);
   --shadow-hard-red-object: var(--hard-throw) var(--hard-throw) 0
     var(--color-red);
-  --shadow-hard-bunny-4: 4px 4px 0 var(--color-bunny);
-  --shadow-hard-bunny-8: 8px 8px 0 var(--color-bunny);
-  --shadow-hard-bunny-12: 12px 12px 0 var(--color-bunny);
+  --shadow-hard-bunny-4: 4px 4px 0 var(--color-red);
+  --shadow-hard-bunny-8: 8px 8px 0 var(--color-red);
+  --shadow-hard-bunny-12: 12px 12px 0 var(--color-red);
   --shadow-hard-cyan-object: var(--hard-throw) var(--hard-throw) 0
     var(--color-cyan);
   /* A card on gold: `gold-border` passes SC 1.4.11 there, red does not. */

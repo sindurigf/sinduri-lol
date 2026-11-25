@@ -96,7 +96,7 @@ Dark is the default. Colors and rules:
   `src/styles/light-mode.css`, imported last, overrides a subset of tokens on `<body>` while it is set. No `dark:` variants.
 - The whole `<body>` changes; the header bar is ink in dark
   mode and white in light mode. The no-JS nav stays dark.
-- The logo tile is `block-gold` in dark mode and `block-cyan` in light mode, with an 8px `bunny` shadow.
+- The logo tile is `block-gold` in dark mode and `block-cyan` in light mode, with an 8px `red` shadow.
 - An inline script in `BaseLayout.astro`'s `<head>` sets `data-theme` from the
   saved choice or `prefers-color-scheme` before the body parses (a
   `MutationObserver` keeps the `light` class in step with it), rereads it on
@@ -593,7 +593,7 @@ in `wrangler.jsonc`).
   `--logo-rabbit-*` in `global.css` must match.
 - Tab icons (`favicon.*`, `artwork/favicon-*`): the logo's jumping rabbit
   alone, on a transparent ground: a gold body, a white ear, a thick ink rim,
-  then a `bunny` block behind the rabbit whose back face has an ink edge. Gold
+  then a `red` block behind the rabbit whose back face has an ink edge. Gold
   reads on dark tabs, the ink rim on light tabs.
 - Each tab frame fits the whole sticker with a 1px clear border
   (`TAB_BORDER`); `favicon.svg` is fitted as the 16px frame. The script

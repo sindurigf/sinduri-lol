@@ -229,7 +229,7 @@
   }
 
   .cat-prop-toy {
-    fill: var(--color-bunny);
+    fill: var(--color-red);
   }
 
   .cat-prop-feather {
@@ -258,7 +258,7 @@
   }
 
   .cat-prop-yarn-end {
-    stroke: var(--color-bunny);
+    stroke: var(--color-red);
   }
 
   /*

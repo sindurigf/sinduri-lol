@@ -43,7 +43,7 @@
 
   :is(.surface-gold, .card) .btn-gold-primary {
     --press-throw: var(--lift-control);
-    --press-throw-color: var(--color-bunny);
+    --press-throw-color: var(--color-red);
   }
 
   /* The menu's bricks; the header's joined bricks share their row's throw and hold still. */
