@@ -5,10 +5,12 @@ import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import TalkSlide from '../../components/TalkSlide.astro';
 import DeckBar from '../../components/DeckBar.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import '../../styles/components/slides.css';
 import { talkDecks } from '../../lib/talk-deck';
 import { getSortedPosts } from '../../lib/blog';
 import { postHref } from '../../lib/paths';
+import { talkTrail } from '../../lib/breadcrumbs';
 
 /*
  * Every slide is in the HTML; without JavaScript, and below `lg`, the page is a
@@ -35,6 +37,8 @@ if (!cover || description === undefined) {
   throw new Error('A deck needs a cover slide with info: (talk-loader.ts).');
 }
 
+const trail = talkTrail(cover.data.title);
+
 const PUBLIC_DIR = 'public';
 const BYTES_PER_KB = 1024;
 /* npm run publish:talk writes it; from cwd, as career.astro reads the CV. */
@@ -45,7 +49,11 @@ const pdfKb = existsSync(pdfFile)
   : undefined;
 ---
 
-<BaseLayout title={`${cover.data.title}, the Slides`} description={description}>
+<BaseLayout
+  title={`${cover.data.title}, the Slides`}
+  description={description}
+  trail={trail}
+>
   <div class="deck" data-deck={cover.data.deck}>
     {/* No `download` attribute and no new window: the browser's viewer opens in place (SC 3.2.5). */}
     <div class="deck-narrow card surface-gold">
@@ -76,6 +84,10 @@ const pdfKb = existsSync(pdfFile)
       <a href={postHref(post.id)}>{post.data.title}</a>.
     </p>
   )}
+  {/* After the deck: above it, the trail pushes slides past the fold under the header. */}
+  <div class="mx-auto max-w-page pb-section print:hidden">
+    <Breadcrumbs crumbs={trail.crumbs} />
+  </div>
 </BaseLayout>
 
 <script>

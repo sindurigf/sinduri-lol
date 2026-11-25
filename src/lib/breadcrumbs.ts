@@ -1,5 +1,5 @@
 import { categoryLabel } from './blog';
-import { BLOG_PATH, categoryHref } from './paths';
+import { BLOG_PATH, TALKS_PATH, categoryHref } from './paths';
 
 /*
  * The visible trail stops at the parent (the <h1> follows it); the JSON-LD
@@ -19,6 +19,7 @@ export interface Trail {
 
 const HOME: Crumb = { label: 'Home', href: '/' };
 const BLOG: Crumb = { label: 'Blog', href: BLOG_PATH };
+const TALKS: Crumb = { label: 'Talks', href: TALKS_PATH };
 
 const categoryCrumb = (category: string): Crumb => ({
   label: categoryLabel(category),
@@ -32,5 +33,10 @@ export const blogTrail = (current: string): Trail => ({
 
 export const postTrail = (category: string, current: string): Trail => ({
   crumbs: [HOME, BLOG, categoryCrumb(category)],
+  current,
+});
+
+export const talkTrail = (current: string): Trail => ({
+  crumbs: [HOME, TALKS],
   current,
 });

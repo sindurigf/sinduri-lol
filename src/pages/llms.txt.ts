@@ -133,7 +133,7 @@ export const GET: APIRoute = async ({ site: configuredSite }) => {
     if (!cover) throw new Error(`Talk deck ${deck} has no slides.`);
     return (
       `- [${cover.data.title}](${absolute(`/talks/${deck}/`)}): ` +
-      'the slides, as a page.'
+      `the slides, as a page. ${cover.data.info}`
     );
   });
 
