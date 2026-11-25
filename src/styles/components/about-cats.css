@@ -94,7 +94,7 @@
     .cat-button {
       border-color: ButtonText;
 
-      @apply border-4 border-solid;
+      @apply edge-block border-solid;
     }
   }
 
@@ -126,7 +126,7 @@
   /* Under the sleep control, in the same corner column the cat's track stops short of. */
   .cat-tricks-button {
     @apply pointer-events-auto absolute right-0 grid size-target
-      place-items-center border-4 border-border bg-surface text-gold;
+      place-items-center edge-block border-border bg-surface text-gold;
 
     top: --spacing(12);
   }
@@ -286,7 +286,7 @@
 
   /* The home hero's gold sticker (gold-text on gold), hung off the photo's edge. */
   .cat-name {
-    @apply absolute -bottom-4 -left-2 -rotate-3 border-4 border-fill-edge bg-block-gold
+    @apply absolute -bottom-4 -left-2 -rotate-3 edge-block border-fill-edge bg-block-gold
       px-3 py-1 text-label font-black uppercase tracking-label text-gold-text
       shadow-hard-bunny-4;
   }

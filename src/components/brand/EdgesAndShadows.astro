@@ -36,8 +36,11 @@ for (const { utility } of shadows) {
             class:list={[
               SWATCH_BOX,
               SHADOW_CLASS[utility] === null
-                ? 'border-4 border-dashed border-border'
-                : ['border-4 border-border bg-surface', SHADOW_CLASS[utility]],
+                ? 'edge-block border-dashed border-border'
+                : [
+                    'edge-block border-border bg-surface',
+                    SHADOW_CLASS[utility],
+                  ],
             ]}
             aria-hidden="true"
           />

@@ -67,13 +67,13 @@
    * fill and `gold-text` edge pass SC 1.4.3 and 1.4.11 on both; its throw is ink.
    */
   :is(.surface-gold, .card) .btn-gold-primary {
-    @apply inline-block border-4 border-gold-text bg-gold-text
+    @apply inline-block edge-block border-gold-text bg-gold-text
       px-8 py-4 text-button font-black uppercase
       tracking-label text-gold-btn-label shadow-hard-bunny-4 lift-control;
   }
 
   .surface-gold .btn-gold-secondary {
-    @apply inline-block border-4 border-gold-text bg-transparent
+    @apply inline-block edge-block border-gold-text bg-transparent
       px-8 py-4 text-button font-black uppercase
       tracking-label text-gold-text;
   }

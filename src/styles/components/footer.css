@@ -74,7 +74,7 @@
      * Transparent, so the throw meets the fill: an ink edge is 1.07:1 on the
      * footer and reads as a gap. Forced colors draw it.
      */
-    border: var(--border-width-sticker) solid transparent;
+    border: var(--block-edge) solid transparent;
     --lift: var(--lift-control);
     rotate: var(--tilt, 0deg);
     /* One treatment for all seven: the `.badge` inversion and the red press shadow. */

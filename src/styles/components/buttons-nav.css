@@ -1,7 +1,7 @@
 @layer components {
   /* A label with no break point, such as an email address, wraps (SC 1.4.10). */
   .btn-primary {
-    @apply lift-control inline-block border-4 border-text bg-block-gold px-8 py-4
+    @apply lift-control inline-block edge-block border-text bg-block-gold px-8 py-4
       text-button font-black uppercase tracking-label text-gold-text
       shadow-hard-red-4 wrap-anywhere max-w-full;
   }
@@ -17,7 +17,7 @@
 
   /* A light block: quieter than the gold primary, in the same block language. */
   .btn-secondary {
-    @apply lift-control inline-block border-4 border-block-ink bg-block-light px-8
+    @apply lift-control inline-block edge-block border-block-ink bg-block-light px-8
       py-4 text-button font-black uppercase tracking-label text-block-ink
       shadow-hard-red-4 wrap-anywhere max-w-full;
   }
@@ -214,7 +214,7 @@
    * without data-theme, which the head script always sets when JavaScript runs.
    */
   .theme-switch {
-    @apply grid size-target shrink-0 cursor-pointer place-items-center border-4
+    @apply grid size-target shrink-0 cursor-pointer place-items-center edge-block
       border-text;
 
     position: relative;
@@ -322,7 +322,7 @@
     .theme-switch {
       border-color: ButtonText;
 
-      @apply border-4 border-solid;
+      @apply edge-block border-solid;
     }
 
     .theme-switch svg {
@@ -511,7 +511,7 @@
 
   /* Nav and menu links: bricks edged in `text`. tests/edge-contrast.spec.ts. */
   .nav-sticker {
-    @apply flex min-h-target items-center border-4 bg-background px-2 text-label
+    @apply flex min-h-target items-center edge-block bg-background px-2 text-label
       font-black uppercase tracking-label text-text lg:px-4;
 
     border-color: var(--brick-edge, var(--color-text));
@@ -554,7 +554,7 @@
    * so source order settles `box-shadow`.
    */
   .nav-cta {
-    @apply border-4 border-text text-label font-black uppercase tracking-label;
+    @apply edge-block border-text text-label font-black uppercase tracking-label;
 
     background-color: var(--solid-fill, var(--color-block-gold));
     color: var(--solid-label, var(--color-gold-text));

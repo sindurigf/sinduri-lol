@@ -142,7 +142,7 @@
    */
   .gold-column .hero-roundel {
     right: var(--hero-column-pad-inline);
-    bottom: calc(-1 * var(--hero-column-edge));
+    bottom: calc(-1 * var(--block-edge));
   }
 
   /* A hero shown as a /brand example: room below for the roundel's overhang, as under a real slab. */

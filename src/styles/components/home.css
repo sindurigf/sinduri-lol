@@ -68,7 +68,7 @@
     min-height: max(
       var(--hero-floor),
       100svh - var(--spacing-page-top) - var(--hero-name-overhang) -
-        var(--hero-pad-block) - var(--hero-column-edge) - --spacing(1)
+        var(--hero-pad-block) - var(--block-edge) - --spacing(1)
     );
   }
 
@@ -285,7 +285,7 @@
     font-size: var(--text-hero-sticker);
     line-height: var(--text-hero-sticker--line-height);
 
-    @apply border-4 border-block-ink px-4 py-2 font-black uppercase;
+    @apply edge-block border-block-ink px-4 py-2 font-black uppercase;
   }
 
   /* A page-colored fill on the page: its edge is the page's ring (SC 1.4.11). */
