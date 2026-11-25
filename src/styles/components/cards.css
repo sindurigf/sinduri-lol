@@ -40,14 +40,15 @@
   }
 
   /*
-   * Light blocks: every second card in a block, `.card-solid` and the post
-   * contents. Ink 14.42, subtle 7.40 on the fill.
+   * Light: odd cards in `.card-block-paper-first`, else even ones; `.card-solid`
+   * and the post contents. Ink 14.42, subtle 7.40 on the fill.
    */
   :is(
     .card-solid,
     .post-contents,
-    .card-block > .card:nth-child(even),
-    .card-block > :nth-child(even) > .card
+    .card-block:where(:not(.card-block-paper-first)) > .card:nth-child(even),
+    .card-block:where(:not(.card-block-paper-first)) > :nth-child(even) > .card,
+    .card-block-paper-first > .card:nth-child(odd)
   ):not(.surface-gold, .surface-gold *, .card-ground) {
     --color-background: var(--color-block-light);
     --color-surface: var(--color-block-light);
