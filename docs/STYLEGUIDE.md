@@ -399,7 +399,7 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 | `text-code`               | 16     | none   | 1.5         | 400    | Code, `--font-mono`; tracks body      |
 | `text-button`             | 16     | 18     | 1.2         | 900    | Buttons; same as `text-label`         |
 | `text-label`              | 16     | 18     | 1.2         | 900    | Labels; 18 to 40rem, 16 at 48rem      |
-| `text-hero-sticker`       | 18     | 30     | 1.02        | 900    | Homepage hero stickers                |
+| `text-hero-sticker`       | 16     | 20     | 1.02        | 900    | Homepage hero stickers                |
 | `text-menu`               | 34     | 56     | 1           | 900    | Mobile menu links                     |
 | `text-slide`              | 17     | 34     | 1.35        | 400    | Slide text: full screen, print        |
 | `text-slide-title`        | 26     | 65     | 1           | 900    | Talk slide title, its own case        |
