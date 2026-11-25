@@ -377,7 +377,8 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
 
 ## Type scale
 
-Lexend Variable, weights 400 and 900 only. Heading sizes are fixed so 200%
+Lexend Variable, weights 400 and 900 only: `--font-weight-normal` and
+`--font-weight-black`, the only weight tokens. Heading sizes are fixed so 200%
 zoom doubles them (SC 1.4.4); other sizes are `clamp()` tokens; the
 copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 0.92 of the text around it with a 16px floor.
@@ -451,8 +452,7 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
   the level above it (`tests/headings.spec.ts`); a /brand example, shown at
   another page's size, is exempt.
 - `text-hero-h1` is 36px so the homepage name stays two lines
-  (`tests/hero-fit.spec.ts`). `home.css` swaps in `--text-hero-h1-column` and
-  `--text-hero-h1-column-phone`, both 36px.
+  (`tests/hero-fit.spec.ts`), in every layout and at every width.
 - `text-reading-h1` is for the Privacy and Accessibility titles only.
 - The talk cover keeps the fluid `text-deck-cover`; the deck has its own
   rule ([ACCESSIBILITY.md](../ACCESSIBILITY.md) gap 7).

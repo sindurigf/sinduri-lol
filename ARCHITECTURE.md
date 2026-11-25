@@ -909,9 +909,6 @@ evidence.
   few frames a second, and one offscreen `ctx.filter` pass runs slower than the
   CSS filter on a wide screen. `tests/filter-layers.spec.ts` allows only that
   canvas.
-- **Merge `--text-hero-h1-column` and `--text-hero-h1-column-phone`:** they
-  size the name in two layouts tuned apart; they are equal by value, not by
-  rule, and `tests/hero-fit.spec.ts` checks each.
 - **Drop `#hash` from click-tracking targets:** the privacy page promises only
   that page and referrer addresses lose `?` and `#`.
 - **Dedupe the two miniflare and workerd copies in `package-lock.json`:** npm
