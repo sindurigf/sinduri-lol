@@ -129,7 +129,7 @@ The gold-ground set is in [Gold surface](#gold-surface), light values in
 - Blocks: homepage and /brand cards, the plain hero slab (always gold) and the post contents are a gold
   `block-gold` or light `block-light` fill with a 4px `block-ink` edge
   (`--block-edge`) and the red throw. Cards are gold; every second card in a
-  `.card-block`, `.card-solid` and the post contents are light. Inside a block the color tokens are remapped, so `text-text` and
+  `.card-block` (every first in `.card-block-paper-first`), `.card-solid` and the post contents are light. Inside a block the color tokens are remapped, so `text-text` and
   `text-gold` are ink (11.32 on gold, 14.42 on light), `subtle` is `gold-muted`
   (7.88) or `light-subtle` (7.40), and a badge inverts. Gold fills use
   `block-gold`, which never remaps. `tests/blocks.spec.ts`.
@@ -623,7 +623,7 @@ file per area.
 | `.card-title`                           | Every card heading, `text-h3` 900                                                                                                                                                                                                                                       |
 | `.card-link`                            | Title link; a short press on the card follows it, text stays selectable (`card-click.ts`); inline-block, 44px min; card hover turns title and shadow cyan                                                                                                               |
 | `.card-solid`                           | A light block outside a `.card-block`, where alternation does not reach it                                                                                                                                                                                              |
-| `.card-block`                           | A wall: blocks share 4px walls, alternate gold and light, and step up to the right (`card-rise-*`, `card-step-*` from `src/lib/wall.ts`); each brick casts the throw, the next covers it                                                                                |
+| `.card-block`                           | A wall: blocks share 4px walls, alternate gold and light (light first with `.card-block-paper-first`, /talks), and step up to the right (`card-rise-*`, `card-step-*` from `src/lib/wall.ts`); each brick casts the throw, the next covers it                           |
 | `.lead`                                 | Paragraph under a section heading, `text-lead` 400, 24px under it                                                                                                                                                                                                       |
 | `.standfirst`                           | Line beside PageHero's title, `text-standfirst` 400                                                                                                                                                                                                                     |
 | `.bullet-list`                          | Bulleted list, gold markers                                                                                                                                                                                                                                             |
