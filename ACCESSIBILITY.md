@@ -277,8 +277,8 @@ underlined (SC 1.4.1) and the dark buttons are replaced by gold ones:
 
 ### Blocks
 
-Every card, the plain hero slab and the post contents are gold or light blocks
-with a 4px ink edge. Inside, the color tokens are remapped, so text is ink at
+Every card and the post contents are gold or light blocks, and the plain hero
+slab a gold block, with a 4px ink edge. Inside, the color tokens are remapped, so text is ink at
 7:1 or more and the focus ring is `gold-link` (`tests/blocks.spec.ts`,
 [Colors](docs/STYLEGUIDE.md#color-tokens)).
 
