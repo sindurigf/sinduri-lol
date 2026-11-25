@@ -67,8 +67,9 @@
     padding-block: 0;
     min-height: max(
       var(--hero-floor),
-      100svh - var(--spacing-page-top) - var(--hero-name-overhang) -
-        var(--hero-pad-block) - var(--hero-column-edge) - --spacing(1)
+      var(--hero-screen-share, 1) * 100svh - var(--spacing-page-top) -
+        var(--hero-name-overhang) - var(--hero-pad-block) -
+        var(--hero-column-edge) - --spacing(1)
     );
   }
 
@@ -99,6 +100,8 @@
       --hero-floor: calc(
         var(--hero-field-top) + var(--hero-ledge-h) + var(--home-tag-stand)
       );
+      /* Share of the screen the hero fills on a phone, so the gold block shows in the first view. */
+      --hero-screen-share: 0.8;
     }
   }
 
