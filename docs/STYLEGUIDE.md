@@ -305,8 +305,13 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
   `tests/gold-surface.spec.ts` asserts every control in a `.surface-gold`
   section has a visible edge: a fill that differs from the ground, or a border
   of at least 3:1.
+- Paper (a light block) takes the same two buttons and a linked chip, not new
+  forms: ink edges and labels on `block-light`, 14.42.
 - `.btn-gold-primary` is scoped to `.surface-gold` and blocks (`.card`);
-  `.btn-gold-secondary` to `.surface-gold`. Both render unstyled elsewhere.
+  `.btn-gold-secondary` and the linked chip's ink edge to `.surface-gold` and
+  every block but `.card-ground`. Both buttons render unstyled elsewhere.
+- `tests/states.spec.ts` measures the /brand paper sample at rest, hover, focus
+  and press: label 7:1, edge and ring 3:1, dark and light.
 - The /brand form sample is `.btn-gold-primary` in a block. Its fill is 11.32
   on a gold block, 9.36 on light mode's cyan block and 14.42 on a light one.
 - The /contact submit sits on a ground card and is `.btn-primary`. In light
