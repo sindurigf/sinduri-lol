@@ -4,8 +4,10 @@
  */
 import { NEXT_FRAME, createMotionLoop } from './motion-loop';
 import { requiredElementIn } from './required-element';
+import { clamp } from '../lib/clamp';
 import { createHeroField } from '../lib/hero-field';
 import { MAX_PIXEL_RATIO } from '../lib/image-densities';
+import { SECOND_MS } from '../lib/time';
 import type { HeroField, HeroPalette } from '../lib/hero-field-scene';
 import heroRabbit from '../assets/hero-rabbit.svg';
 import heroRabbitLight from '../assets/hero-rabbit-light.svg';
@@ -107,7 +109,7 @@ const setUp = (host: HTMLElement): void => {
 
   const tick = (now: number): number => {
     if (field) {
-      const delta = Math.min(MAX_DELTA, Math.max(0, (now - lastStep) / 1000));
+      const delta = clamp((now - lastStep) / SECOND_MS, 0, MAX_DELTA);
       lastStep = now;
       elapsed += delta;
       field.step(elapsed, delta);
