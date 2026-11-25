@@ -126,11 +126,10 @@ The gold-ground set is in [Gold surface](#gold-surface), light values in
 
 - Two dark grounds: `background` (page, header, footer, bands) and `surface`
   (cards, inputs). Measure every foreground against both.
-- Blocks: homepage and /brand cards, the plain hero slab and the post contents are a gold
+- Blocks: homepage and /brand cards, the plain hero slab (always gold) and the post contents are a gold
   `block-gold` or light `block-light` fill with a 4px `block-ink` edge
   (`--block-edge`) and the red throw. Cards are gold; every second card in a
-  `.card-block`, `.card-solid`, the plain hero slab and the post contents are
-  light. Inside a block the color tokens are remapped, so `text-text` and
+  `.card-block`, `.card-solid` and the post contents are light. Inside a block the color tokens are remapped, so `text-text` and
   `text-gold` are ink (11.32 on gold, 14.42 on light), `subtle` is `gold-muted`
   (7.88) or `light-subtle` (7.40), and a badge inverts. Gold fills use
   `block-gold`, which never remaps. `tests/blocks.spec.ts`.
@@ -915,7 +914,7 @@ roundel.**
   `--spacing-roundel`; the page variant is 96px, 128px from `lg`.
 - Its center sits `--spacing(1)` above the slab's bottom edge; its right side
   on the column's text edge (`.hero-roundel`).
-- On a plain tier it straddles the light block's bottom edge too, and is never
+- On a plain tier it straddles the gold block's bottom edge too, and is never
   left off. The slab's bottom padding is half the box plus 24px; the text
   under it starts 32px past the box's lower half.
 - The roundel sets a slab's minimum bottom padding: half its box plus its lift
