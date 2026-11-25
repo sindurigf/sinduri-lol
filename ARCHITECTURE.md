@@ -242,6 +242,11 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
   `FEED_EXCERPT_MAX_CHARACTERS` sets the 300-character limit; see [Planet's
   guidelines](https://www.drupal.org/planet/guidelines). Every other feed
   carries the teaser.
+- Every item also carries `content:encoded` for reposts: the cover linked to
+  the post, the photo credit, the opening up to `FEED_CONTENT_MAX_CHARACTERS`
+  (1200) and a "Read the rest" link (`src/lib/feed-content.ts`). It is built
+  from escaped plain text only. The cover, 1200 px JPEG, is also in
+  `media:content` with its alt text and credit.
 - Placeholders are excluded. `tests/rss.spec.ts`.
 
 ### Markdown visitors
