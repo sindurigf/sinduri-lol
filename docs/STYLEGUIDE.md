@@ -601,7 +601,7 @@ with a comment beside it.
 | Utility                     | Casts it                                                                                                                                                                |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `shadow-hard-red-object`    | Cards, post contents, gold areas, popovers, slide cards; `--hard-throw` (8px)                                                                                           |
-| `shadow-hard-red-4`         | The PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, footer stickers, slide cards                                                                          |
+| `shadow-hard-red-4`         | The PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, footer stickers, slide cards; `--control-throw` (4px)                                                 |
 | `shadow-brick`              | The header's brick rows (in `block-ink`), the menu's links, call to action and Close; `--brick-throw` (6px) in `text`                                                   |
 | `shadow-hard-cyan-object`   | A hovered linked card, in place of red; a contact link brick fills instead, cyan in dark mode and ink in light mode (label 14.42), its ring inside in the label's color |
 | `shadow-hard-gold-border-4` | A card on gold                                                                                                                                                          |
@@ -1521,7 +1521,7 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   plus `--focus-gap` in, so it never crosses the next brick: `gold-link` on
   a light brick (14.49), `gold-text` on gold (11.32), and `gold-text` on a
   hovered brick's cyan (11.20).
-- `--lift-control` 4px beside a control's 4px shadow, `--lift-object` (the
+- `--lift-control` (the `--control-throw`, 4px) beside a control's shadow, `--lift-object` (the
   `--hard-throw`, 8px) beside an object's shadow, `--lift-mark` 8px beside the
   logo tile's 8px shadow, so the ring clears the shadow (cyan on red is 1.46). The button,
   `.nav-cta` and `.chip` classes carry it. A current item with no shadow sets

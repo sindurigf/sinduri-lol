@@ -387,8 +387,9 @@
    * is hover and focus. Gold casts none: gold on gold shows nothing, and red is
    * visible on gold and on the page.
    */
-  /* One throw for object shadows; controls keep 4px. */
+  /* One throw for object shadows, one for controls. */
   --hard-throw: 8px;
+  --control-throw: 4px;
   /* A block's ink edge; blocks in a `.card-block` share it as one wall. */
   --block-edge: 4px;
   /* The header's joined bricks and its logo block. */
@@ -405,18 +406,21 @@
   --edge: 6px;
   /* Table rules only (`hairline` utilities). */
   --hairline: 1px;
-  --shadow-hard-red-4: 4px 4px 0 var(--color-red);
+  --shadow-hard-red-4: var(--control-throw) var(--control-throw) 0
+    var(--color-red);
   /* In the color opposite the ground, so it shows in both modes. */
   --shadow-brick: var(--brick-throw) var(--brick-throw) 0 var(--color-text);
   --shadow-hard-red-object: var(--hard-throw) var(--hard-throw) 0
     var(--color-red);
-  --shadow-hard-bunny-4: 4px 4px 0 var(--color-red);
+  --shadow-hard-bunny-4: var(--control-throw) var(--control-throw) 0
+    var(--color-red);
   --shadow-hard-bunny-8: 8px 8px 0 var(--color-red);
   --shadow-hard-bunny-12: 12px 12px 0 var(--color-red);
   --shadow-hard-cyan-object: var(--hard-throw) var(--hard-throw) 0
     var(--color-cyan);
   /* A card on gold: `gold-border` passes SC 1.4.11 there, red does not. */
-  --shadow-hard-gold-border-4: 4px 4px 0 var(--color-gold-border);
+  --shadow-hard-gold-border-4: var(--control-throw) var(--control-throw) 0
+    var(--color-gold-border);
 
   /*
    * Inner half of .btn-gold-primary's two-tone focus ring, visible against the
@@ -487,7 +491,7 @@
   --focus-width: 4px;
   --focus-gap: 4px;
   --focus-offset-inset: calc(-1 * (var(--focus-width) + var(--focus-gap)));
-  --lift-control: 4px;
+  --lift-control: var(--control-throw);
   --lift-object: var(--hard-throw);
   /* The logo tile keeps its 8px bunny shadow, so its ring clears 8px. */
   --lift-mark: 8px;
