@@ -9,6 +9,8 @@ import {
   DIST_DIR,
   POST_ROUTES,
   routesFromBuild,
+  TALK_ROUTES,
+  TALKS_DIR,
 } from './routes';
 import { NODE } from './tags';
 import { looksLorem } from './lorem';
@@ -155,5 +157,20 @@ test.describe('llms.txt', NODE, () => {
       text.includes(`Posts marked ${PLACEHOLDER_MARK}`),
       'The placeholder note appears only while some post carries the mark.',
     ).toBe(anyPlaceholder);
+  });
+  test('every talk deck is described by its cover info', () => {
+    const text = llmsTxt();
+    const undescribed = TALK_ROUTES.filter((route) => {
+      const deck = route.split('/').pop()!;
+      const info = frontmatterField(
+        postFrontmatter('slides.md', join(TALKS_DIR, deck)),
+        'info',
+      );
+      return info === undefined || !text.includes(info);
+    });
+    expect(
+      undescribed,
+      `llms.txt does not carry the cover info of these decks: ${undescribed.join(', ')}`,
+    ).toEqual([]);
   });
 });
