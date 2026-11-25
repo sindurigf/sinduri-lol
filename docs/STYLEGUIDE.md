@@ -840,31 +840,28 @@ Four openings, no fifth: Home's canvas hero, a talk's cover slide, a post's
 Set by `PageHero`'s `slab` prop. The tier follows what is under the title, not
 how important the page is.
 
-| Tier  | `slab`   | Routes                                                                                            | Ground                                                              | Title                                                                    | Aside             | Padding              |
-| ----- | -------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ | ----------------- | -------------------- |
-| Full  | `"full"` | `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`; `/contact/send`, `/blog/page/<n>` | gold                                                                | `text-h1`; `text-h2` on the last two                                     | `.standfirst`     | `py-section`         |
-| Thin  | `"thin"` | `/contact/sent` and a post's own `.post-slab`                                                     | gold                                                                | `text-post-title`                                                        | `text-standfirst` | `pt-head pb-section` |
-| Plain | `"none"` | `/privacy`, `/accessibility`, `/talks`, category and tag listings, `/404`                         | light block; gold block on categories and tags (`plainFill="gold"`) | `text-reading-h1`; `text-h1` on `/404`; `text-h2` on categories and tags | `text-standfirst` | `pt-head pb-section` |
+| Tier  | `slab`   | Routes                                                                                                                                            | Ground     | Title                                                                                      | Aside             | Padding              |
+| ----- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------ | ----------------- | -------------------- |
+| Full  | `"full"` | `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`, `/talks`, `/accessibility`, `/privacy`, `/404`; `/contact/send`, `/blog/page/<n>` | gold       | `text-h1`; `text-reading-h1` on `/accessibility` and `/privacy`; `text-h2` on the last two | `.standfirst`     | `py-section`         |
+| Thin  | `"thin"` | `/contact/sent` and a post's own `.post-slab`                                                                                                     | gold       | `text-post-title`                                                                          | `text-standfirst` | `pt-head pb-section` |
+| Plain | `"none"` | category and tag listings                                                                                                                         | gold block | `text-h2`                                                                                  | `text-standfirst` | `pt-head pb-section` |
 
 - **Full:** the opening is a statement and the other half of the composition
   has content.
 - **Thin:** one short line and no section headings after it. A 32px thin title
   over 28px panel headings is not a 0.8 step, so a page with panels is never
   thin. `/blog` is not thin: its featured title is `text-h2`.
-- **Plain:** a document, or a page whose chips and cards say what it is. Takes
-  `.reading-layout` in the same change, which sets `.prose h2` to
-  `text-h2` (40px title over a 28px first heading).
-- The plain tier is a light block in the gold column's shape holding the title
+- **Plain:** a listing whose chips and cards say what it is.
+- The plain tier is a gold block in the gold column's shape holding the title
   and roundel; the breadcrumb sits above it and everything else under it, on
-  the page body's column (the measure on a reading page, the page column on a
-  listing).
+  the page column.
 
 ### Variants
 
 | Variant  | Where                                                        | Title                            | Column                             |
 | -------- | ------------------------------------------------------------ | -------------------------------- | ---------------------------------- |
 | Home     | `/` only                                                     | `text-hero-h1`, `.hero-plate`    | its own composition                |
-| Standard | About, Career, Contact, Blog, Credits, Brand, `/404`         | `text-h1`                        | `max-w-page`; 6 of 12 with a photo |
+| Standard | About, Career, Contact, Blog, Credits, Brand, Talks, `/404`  | `text-h1`                        | `max-w-page`; 6 of 12 with a photo |
 | Reading  | Privacy, Accessibility (`measure="reading"`)                 | `text-reading-h1`                | `max-w-measure`, the prose column  |
 | Compact  | category and tag listings, `/contact/send`, `/blog/page/<n>` | `text-h2`, still the page's `h1` | `max-w-page`                       |
 | Thin     | `/contact/sent`                                              | `text-post-title`                | `max-w-page`                       |

@@ -25,7 +25,7 @@ const BLOCK_ROUTES = [
   '/credits',
   '/contact',
   '/contact/sent',
-  '/accessibility',
+  '/blog/open-source',
   '/blog/five-years-in-drupal',
   '/talks/open-source-is-not-just-code',
   '/brand',

@@ -40,12 +40,11 @@
   }
 
   /*
-   * Light blocks: every second card in a block, `.card-solid`, the plain hero
-   * slab and the post contents. Ink 14.42, subtle 7.40 on the fill.
+   * Light blocks: every second card in a block, `.card-solid` and the post
+   * contents. Ink 14.42, subtle 7.40 on the fill.
    */
   :is(
     .card-solid,
-    .plain-slab:not(.plain-slab-gold),
     .post-contents,
     .card-block > .card:nth-child(even),
     .card-block > :nth-child(even) > .card
