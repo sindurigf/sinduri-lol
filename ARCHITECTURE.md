@@ -762,6 +762,28 @@ An Astro upgrade can change a hash; the script then silently fails to run
 Review findings investigated and rejected. Do not re-raise without new
 evidence.
 
+- **Add site headers to video responses:** they carry them;
+  `tests/video-range.spec.ts` asserts them through the Worker.
+- **Remove exports only tests import:** `PLATFORM_FACTS` drives the /privacy
+  staleness test; `highestPoint` and `tricksOf` are exported on purpose.
+- **Shrink the 772 KB WebP photo:** it is the `src` fallback of a 2186px
+  master; browsers pick a smaller file from `srcset` and `sizes`.
+- **Add AVIF:** `PHOTO_FORMATS` has it; markdown images stay WebP by design.
+- **Load the home portrait eagerly for LCP:** the LCP element is text at
+  360px and 1280px, so the lazy portrait does not delay it.
+- **Make the two "Primary" navs unique (`landmark-unique`):** `.noscript-nav`
+  is `display: none` with scripting on, so only one is exposed.
+- **Keep the copy button's name fixed when it says Copied:** the name still
+  contains "Copy" (SC 2.5.3), and a status region announces the change.
+- **Give `Person.image` an unhashed URL:** the hash changes only when the
+  portrait does, and every build writes the current URL.
+- **Allow AI search bots by name in robots.txt:** an agent with no group of its
+  own follows `User-agent: *`, which allows everything.
+- **Add a PresentationDigitalDocument node to talk decks:** Google shows no
+  rich result for it; the breadcrumb trail is the structured data that does.
+- **Write /contact/sent's description in the first person:** the page's
+  own copy is impersonal ("A reply will come"); the description matches it.
+
 - **Fix axe's forced-colors `color-contrast` on `.sticker` in a `.card`:** axe
   reads the authored gold; the computed color there is CanvasText on Canvas,
   and `tests/forced-colors.spec.ts` passes.
@@ -881,8 +903,8 @@ evidence.
   duplicate:** it is the only sideways check at 336px (`--breakpoint-xs`), and
   it reads one number from the page state the test already measures.
 - **Change the contact endpoint for an over-cap chunked 500
-  (template run 37695518322):** the dev proxy (`@cloudflare/vite-plugin` 1.62.5)
-  answers 500 after the endpoint's 413. It can recur in CI under
+  (template run 37695518322):** the dev proxy (`@cloudflare/vite-plugin`, seen on
+  1.62.5) answers 500 after the endpoint's 413. It can recur in CI under
   `--fail-on-flaky-tests`: the log shows `POST /contact/send/ 413`, then
   undici "fetch failed". Keep the test strict.
 - **Give the bunny mark alt text (Bing Webmaster Tools "Alt attribute for

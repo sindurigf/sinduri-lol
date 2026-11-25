@@ -40,23 +40,23 @@ blur, uppercase headings, tilted marks.
 - **A gold use not on this list adds a row, with its argument, in the same
   change.**
 
-| #   | Where gold is spent                                                                                                           | Measured on                            |
-| --- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| 1a  | Ground, full slab: `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`                                             | 6 routes                               |
-| 1b  | Ground, thin slab: `/contact/sent`, both posts                                                                                | 3 routes                               |
-| 1c  | Ground, mid-page: a `Section surface="gold"`, the kindness quote, `/contact`'s closing band                                   | `/career`, `/about`, `/`, `/contact`   |
-| 2   | The primary action: `.nav-cta`, `.btn-primary`                                                                                | 11 routes, 4 routes                    |
-| 3   | The bunny marks: the logo tile, the laughing rabbit tile on `/about`, the roundel, the homepage sticker                       | 11 routes, 9 routes                    |
-| 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                                             | `/about`, `/accessibility`, `/contact` |
-| 4a  | A talk slide's label, bold words, part number and lead-in term before a colon; its text links, still underlined               | `/talks/<deck>/`                       |
-| 5   | Category: the blog label and the homepage glyph tiles, ink-edged on gold                                                      | 3 routes                               |
-| 6   | Display words: `Guntupalli`; section title bricks (`Section brick`)                                                           | `/`, `/about`, `/career`, `/contact`   |
-| 7   | List markers in `.bullet-list`                                                                                                | wherever a bulleted list is            |
-| 8   | The `gold` swatch and the contrast samples on gold; fills, hex in both modes                                                  | `/brand`                               |
-| 9   | Edges in dark mode: `border` on fields, controls, chips, rules and the outer edge of a gold area                              | every route                            |
-| 10  | The header bar's marks: the current-page brick, theme switch, text size brick and call to action, gold on the ink bar (11.32) | every route                            |
-| 11  | The footer name band: "Lepus Ridet" in ink on a `block-gold` band at every page's end, the rabbit standing on it              | every route                            |
-| 12  | The homepage hero ledge: the gold block's top course, ink joints (11.32), under the taglines                                  | `/`                                    |
+| #   | Where gold is spent                                                                                                           | Measured on                             |
+| --- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| 1a  | Ground, full slab: `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`                                             | the routes listed                       |
+| 1b  | Ground, thin slab: `/contact/sent`, every post                                                                                | the routes listed                       |
+| 1c  | Ground, mid-page: a `Section surface="gold"`, the kindness quote, `/contact`'s closing band                                   | `/career`, `/about`, `/`, `/contact`    |
+| 2   | The primary action: `.nav-cta`, `.btn-primary`                                                                                | every page; pages with a `.btn-primary` |
+| 3   | The bunny marks: the logo tile, the laughing rabbit tile on `/about`, the roundel, the homepage sticker                       | every page; the pages listed            |
+| 4   | Card labels, `.label text-gold`; a form's field labels are `text`                                                             | `/about`, `/accessibility`, `/contact`  |
+| 4a  | A talk slide's label, bold words, part number and lead-in term before a colon; its text links, still underlined               | `/talks/<deck>/`                        |
+| 5   | Category: the blog label and the homepage glyph tiles, ink-edged on gold                                                      | blog listings and `/`                   |
+| 6   | Display words: `Guntupalli`; section title bricks (`Section brick`)                                                           | `/`, `/about`, `/career`, `/contact`    |
+| 7   | List markers in `.bullet-list`                                                                                                | wherever a bulleted list is             |
+| 8   | The `gold` swatch and the contrast samples on gold; fills, hex in both modes                                                  | `/brand`                                |
+| 9   | Edges in dark mode: `border` on fields, controls, chips, rules and the outer edge of a gold area                              | every route                             |
+| 10  | The header bar's marks: the current-page brick, theme switch, text size brick and call to action, gold on the ink bar (11.32) | every route                             |
+| 11  | The footer name band: "Lepus Ridet" in ink on a `block-gold` band at every page's end, the rabbit standing on it              | every route                             |
+| 12  | The homepage hero ledge: the gold block's top course, ink joints (11.32), under the taglines                                  | `/`                                     |
 
 - 9 is the edge because the only two colors are ink and gold: an ink edge
   vanishes on the dark page and a light one adds a third color. Gold reads as
