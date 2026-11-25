@@ -64,6 +64,8 @@ import {
   breeze,
   random,
   stemPoint,
+  PHONE_FIELD,
+  PHONE_MAX_WIDTH,
 } from './hero-field-scene';
 import { ATLAS_SIZE } from './rabbit-atlas';
 import {
@@ -174,13 +176,17 @@ const makeStem = (
   veil: number,
 ): Stem => {
   const root = groundAt(scene, z);
+  const lift =
+    scene.boxWidth < PHONE_MAX_WIDTH && z >= BANDS.NEAR.far
+      ? PHONE_FIELD.lift
+      : 1;
   return {
     z,
     scale: 1 / z,
     size: (root - scene.horizon) / REFERENCE_PROJECTION,
     x,
     root,
-    height: heightRatio * (root - scene.horizon),
+    height: heightRatio * lift * (root - scene.horizon),
     phase: rng() * Math.PI * 2,
     veil,
     lean: 0,
@@ -191,10 +197,9 @@ const makeStem = (
 /* Density is per scene width, not pixels: a stepped-back camera shows more. */
 const buildStems = (scene: Scene): Stem[] => {
   const { world, view } = scene;
-  const density = Math.min(
-    DENSITY_CAP,
-    scene.boxWidth / world / REFERENCE_WIDTH,
-  );
+  const sowShare = scene.boxWidth < PHONE_MAX_WIDTH ? PHONE_FIELD.sow : 1;
+  const density =
+    Math.min(DENSITY_CAP, scene.boxWidth / world / REFERENCE_WIDTH) * sowShare;
   const margin = CLUMP_SPREAD * world;
   const rng = random(FIELD_SEED);
   const clumps = clumpCenters(scene, rng, density, margin);
