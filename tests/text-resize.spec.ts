@@ -131,7 +131,6 @@ const WEBKIT_SHORTFALL: Record<(typeof WINDOWS)[number]['width'], string[]> = {
     '--text-deck-cover',
     '--text-quote-mark',
     '--text-display',
-    '--text-standfirst',
     '--text-slide-title',
     '--text-slide-number',
     '--text-menu',
@@ -139,7 +138,6 @@ const WEBKIT_SHORTFALL: Record<(typeof WINDOWS)[number]['width'], string[]> = {
   1920: [
     '--text-quote-mark',
     '--text-display',
-    '--text-standfirst',
     '--text-slide',
     '--text-slide-title',
     '--text-slide-h3',
