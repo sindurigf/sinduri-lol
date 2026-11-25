@@ -96,7 +96,7 @@
   }
 
   .page-hero-thin .standfirst {
-    @apply text-post-teaser;
+    @apply text-standfirst;
   }
 
   /*
@@ -104,7 +104,7 @@
    * the title shares the prose's left edge.
    */
   .page-hero-plain .standfirst {
-    @apply text-post-teaser;
+    @apply text-standfirst;
   }
 
   /* Bottom room for the roundel's upper half plus 24px. */

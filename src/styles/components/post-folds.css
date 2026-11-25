@@ -9,7 +9,7 @@
    */
   .prose .module-panel {
     --module-bar: calc(
-      var(--text-post-h2) * var(--text-post-h2--line-height) + --spacing(8)
+      var(--text-h2) * var(--text-h2--line-height) + --spacing(8)
     );
     --module-edge: var(--edge);
 

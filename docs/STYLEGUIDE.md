@@ -376,43 +376,38 @@ zoom doubles them (SC 1.4.4); other sizes are `clamp()` tokens; the
 copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 0.92 of the text around it with a 16px floor.
 
-| Token                     | Min px | Max px | Line height | Weight | Use                                   |
-| ------------------------- | ------ | ------ | ----------- | ------ | ------------------------------------- |
-| `text-hero-h1`            | 36     | 36     | 0.94        | 900    | Homepage name only                    |
-| `text-h1`                 | 48     | 48     | 0.94        | 900    | Page title                            |
-| `text-deck-cover`         | 33     | 80     | 0.94        | 900    | Talk cover title                      |
-| `text-reading-h1`         | 40     | 40     | 0.94        | 900    | Privacy, Accessibility title          |
-| `text-h2`                 | 28     | 28     | 0.96        | 900    | Section and panel heading             |
-| `text-h3`                 | 22     | 22     | 1.1         | 900    | Third-level heading, card title       |
-| `text-display`            | 20     | 32     | 1.1         | 900    | Links, values and stats, not headings |
-| `text-lead`               | 24     | 24     | 1.55        | 400    | Lead; card paragraph                  |
-| `text-post-title`         | 32     | 32     | 1.06        | 900    | Post title, in its own case           |
-| `text-post-h2`            | 28     | 28     | 1.02        | 900    | Post section; `.reading-layout`       |
-| `text-post-h3`            | 22     | 22     | 1.15        | 900    | Post subsection, last level           |
-| `text-post-card`          | 24     | 24     | 1.15        | 900    | Post card title (an `h2`)             |
-| `text-post-card-feature`  | 28     | 28     | 1.02        | 900    | Featured post card title              |
-| `text-contents`           | 16     | 16     | 1.35        | 400    | A post's contents list                |
-| `text-standfirst`         | 20     | 36     | 1.55        | 400    | Slab aside, `.standfirst`             |
-| `text-post-teaser`        | 21     | 26     | 1.55        | 400    | Post and plain-tier aside             |
-| `text-body`               | 19.96  | 19.96  | 1.62        | 400    | Reading text                          |
-| `text-code`               | 16     | none   | 1.5         | 400    | Code, `--font-mono`; tracks body      |
-| `text-button`             | 16     | 18     | 1.2         | 900    | Buttons; same as `text-label`         |
-| `text-label`              | 16     | 18     | 1.2         | 900    | Labels; 18 to 40rem, 16 at 48rem      |
-| `text-hero-sticker`       | 18     | 30     | 1.02        | 900    | Homepage hero stickers                |
-| `text-menu`               | 34     | 56     | 1           | 900    | Mobile menu links                     |
-| `text-slide`              | 17     | 34     | 1.35        | 400    | Slide text: full screen, print        |
-| `text-slide-title`        | 26     | 65     | 1           | 900    | Talk slide title, its own case        |
-| `text-slide-title-page`   | 24     | 56     | 1           | 900    | Slide title on the page               |
-| `text-slide-h3`           | 22     | 42     | 1.1         | 900    | Slide group label: full screen, print |
-| `text-slide-number`       | 72     | 160    | 1           | 900    | Talk part number                      |
-| `text-slide-frame`        | 17     | 34     | 1.35        | 400    | Slide text in full screen, by frame   |
-| `text-slide-title-frame`  | 26     | 65     | 1           | 900    | Slide title in full screen, by frame  |
-| `text-slide-h3-frame`     | 22     | 42     | 1.1         | 900    | Slide label in full screen, by frame  |
-| `text-slide-number-frame` | 72     | 160    | 1           | 900    | Part number in full screen, by frame  |
-| `text-copyright`          | 20     | 20     | 1.2         | 900    | Footer copyright                      |
-| `text-footer-name-fluid`  | fills  | fills  | 0.82        | 900    | Footer name band, sized to its width  |
-| `text-section-number`     | 21     | 28     | 1           | 900    | Category glyph tile                   |
-| `text-quote-mark`         | 64     | 144    | 0.75        | 900    | About kindness quote mark             |
+| Token                     | Min px | Max px | Line height | Weight | Use                                    |
+| ------------------------- | ------ | ------ | ----------- | ------ | -------------------------------------- |
+| `text-hero-h1`            | 36     | 36     | 0.94        | 900    | Homepage name only                     |
+| `text-h1`                 | 48     | 48     | 0.94        | 900    | Page title                             |
+| `text-deck-cover`         | 33     | 80     | 0.94        | 900    | Talk cover title                       |
+| `text-reading-h1`         | 40     | 40     | 0.94        | 900    | Privacy, Accessibility title           |
+| `text-h2`                 | 28     | 28     | 1.02        | 900    | Section, post section, featured card   |
+| `text-h3`                 | 22     | 22     | 1.15        | 900    | Third level, post card title (an `h2`) |
+| `text-display`            | 20     | 32     | 1.1         | 900    | Links, values and stats, not headings  |
+| `text-lead`               | 24     | 24     | 1.55        | 400    | Lead; card paragraph                   |
+| `text-post-title`         | 32     | 32     | 1.06        | 900    | Post title, in its own case            |
+| `text-contents`           | 16     | 16     | 1.35        | 400    | A post's contents list                 |
+| `text-standfirst`         | 21     | 26     | 1.55        | 400    | Slab aside, post teaser                |
+| `text-body`               | 19.96  | 19.96  | 1.62        | 400    | Reading text                           |
+| `text-code`               | 16     | none   | 1.5         | 400    | Code, `--font-mono`; tracks body       |
+| `text-button`             | 16     | 18     | 1.2         | 900    | Buttons; same as `text-label`          |
+| `text-label`              | 16     | 18     | 1.2         | 900    | Labels; 18 to 40rem, 16 at 48rem       |
+| `text-hero-sticker`       | 18     | 30     | 1.02        | 900    | Homepage hero stickers                 |
+| `text-menu`               | 34     | 56     | 1           | 900    | Mobile menu links                      |
+| `text-slide`              | 17     | 34     | 1.35        | 400    | Slide text: full screen, print         |
+| `text-slide-title`        | 26     | 65     | 1           | 900    | Talk slide title, its own case         |
+| `text-slide-title-page`   | 24     | 56     | 1           | 900    | Slide title on the page                |
+| `text-slide-h3`           | 22     | 42     | 1.1         | 900    | Slide group label: full screen, print  |
+| `text-slide-number`       | 72     | 160    | 1           | 900    | Talk part number                       |
+| `text-slide-frame`        | 17     | 34     | 1.35        | 400    | Slide text in full screen, by frame    |
+| `text-slide-title-frame`  | 26     | 65     | 1           | 900    | Slide title in full screen, by frame   |
+| `text-slide-h3-frame`     | 22     | 42     | 1.1         | 900    | Slide label in full screen, by frame   |
+| `text-slide-number-frame` | 72     | 160    | 1           | 900    | Part number in full screen, by frame   |
+| `text-copyright`          | 20     | 20     | 1.2         | 900    | Footer copyright                       |
+| `text-footer-name-fluid`  | fills  | fills  | 0.82        | 900    | Footer name band, sized to its width   |
+| `text-section-number`     | 21     | 28     | 1           | 900    | Category glyph tile                    |
+| `text-quote-mark`         | 64     | 144    | 0.75        | 900    | About kindness quote mark              |
 
 - Lexend, self-hosted from `@fontsource-variable/lexend` (OFL-1.1), family
   `'Lexend Variable'`. Only the latin subset is declared, in the `@font-face`
@@ -845,20 +840,20 @@ Four openings, no fifth: Home's canvas hero, a talk's cover slide, a post's
 Set by `PageHero`'s `slab` prop. The tier follows what is under the title, not
 how important the page is.
 
-| Tier  | `slab`   | Routes                                                                                            | Ground                                                              | Title                                                                    | Aside              | Padding              |
-| ----- | -------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------ | -------------------- |
-| Full  | `"full"` | `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`; `/contact/send`, `/blog/page/<n>` | gold                                                                | `text-h1`; `text-h2` on the last two                                     | `.standfirst`      | `py-section`         |
-| Thin  | `"thin"` | `/contact/sent` and a post's own `.post-slab`                                                     | gold                                                                | `text-post-title`                                                        | `text-post-teaser` | `pt-head pb-section` |
-| Plain | `"none"` | `/privacy`, `/accessibility`, `/talks`, category and tag listings, `/404`                         | light block; gold block on categories and tags (`plainFill="gold"`) | `text-reading-h1`; `text-h1` on `/404`; `text-h2` on categories and tags | `text-post-teaser` | `pt-head pb-section` |
+| Tier  | `slab`   | Routes                                                                                            | Ground                                                              | Title                                                                    | Aside             | Padding              |
+| ----- | -------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ | ----------------- | -------------------- |
+| Full  | `"full"` | `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`; `/contact/send`, `/blog/page/<n>` | gold                                                                | `text-h1`; `text-h2` on the last two                                     | `.standfirst`     | `py-section`         |
+| Thin  | `"thin"` | `/contact/sent` and a post's own `.post-slab`                                                     | gold                                                                | `text-post-title`                                                        | `text-standfirst` | `pt-head pb-section` |
+| Plain | `"none"` | `/privacy`, `/accessibility`, `/talks`, category and tag listings, `/404`                         | light block; gold block on categories and tags (`plainFill="gold"`) | `text-reading-h1`; `text-h1` on `/404`; `text-h2` on categories and tags | `text-standfirst` | `pt-head pb-section` |
 
 - **Full:** the opening is a statement and the other half of the composition
   has content.
 - **Thin:** one short line and no section headings after it. A 32px thin title
   over 28px panel headings is not a 0.8 step, so a page with panels is never
-  thin. `/blog` is not thin: its featured title is `text-post-card-feature`.
+  thin. `/blog` is not thin: its featured title is `text-h2`.
 - **Plain:** a document, or a page whose chips and cards say what it is. Takes
   `.reading-layout` in the same change, which sets `.prose h2` to
-  `text-post-h2` (40px title over a 28px first heading).
+  `text-h2` (40px title over a 28px first heading).
 - The plain tier is a light block in the gold column's shape holding the title
   and roundel; the breadcrumb sits above it and everything else under it, on
   the page body's column (the measure on a reading page, the page column on a
@@ -1090,8 +1085,8 @@ Enforced by `tests/post-page.spec.ts`.
 | Element     | Treatment                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Paragraph   | `mt-6`, `text-body` (19.96px, line height 1.62), `text`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `h2`        | `mt-16`, `text-post-h2` (28px); its text follows at the next `mt-6`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `h3`        | `mt-12`, `text-post-h3` (22px). The last level                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `h2`        | `mt-16`, `text-h2` (28px); its text follows at the next `mt-6`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `h3`        | `mt-12`, `text-h3` (22px). The last level                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | Inline code | `.prose code`: the mono stack at `--text-code`, on a `surface` fill with `px-1` and no border                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Code block  | `.prose pre`: mono, scrolls sideways, a named tab stop while it overflows. In a post, `.code-block` (`src/styles/components/code-block.css`): a `--border-width-thin` `code-edge` frame on `code-fill`, the fence language in a gold label brick on its top edge (`block-gold`, `fill-edge`, 4px in both modes), and a Copy button in its top-right corner, the word beside the icon, named "Copy `<language>` code", 44px, its ring inside. The code group is named "`<language>` code"; the label is hidden from assistive technology. The room for the button is kept only with JavaScript (`.js`). A failed copy (no clipboard, or the browser refuses) selects the code and says how to copy it, in `red-text` under the block, on the page ground. No script, no button                                                                                                                                                                                                                                       |
 | Lists       | `mt-6 pl-6`, items `mt-3`, gold markers; a link-only item is 44px tall                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -1124,7 +1119,7 @@ Enforced by `tests/post-page.spec.ts`.
 
 - `tests/headings.spec.ts` holds a post at 1280px and 320px to a 19px floor
   (`HEADING_FLOOR`) and a 0.8 step (`STEP`) between levels.
-- `--text-post-h3` is 22px, so an `h4` would need to be at most 17.6px and
+- `--text-h3` is 22px, so an `h4` would need to be at most 17.6px and
   at least 19px. The spec fails it at 320px.
 - The heading floor stays 19px and level 4 is not exempt from `STEP`.
 - A post that needs a fourth level is reopened as a deliberate decision.

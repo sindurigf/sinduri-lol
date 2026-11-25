@@ -49,10 +49,6 @@ const PLAIN_ZOOM_TOKENS = [
   '--text-h2',
   '--text-h3',
   '--text-post-title',
-  '--text-post-card',
-  '--text-post-card-feature',
-  '--text-post-h2',
-  '--text-post-h3',
 ] as const;
 
 const PLAIN_ZOOM = 2;

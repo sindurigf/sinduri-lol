@@ -219,11 +219,11 @@
    * close to the title's size to read as a level below it.
    */
   :is(.post-layout, .reading-layout) .prose h2 {
-    @apply text-post-h2;
+    @apply text-h2;
   }
 
   :is(.post-layout, .reading-layout) .prose h3 {
-    @apply text-post-h3;
+    @apply text-h3;
   }
 
   /*
