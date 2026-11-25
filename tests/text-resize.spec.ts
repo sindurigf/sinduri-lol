@@ -144,7 +144,6 @@ const WEBKIT_SHORTFALL: Record<(typeof WINDOWS)[number]['width'], string[]> = {
     '--text-slide-title',
     '--text-slide-h3',
     '--text-slide-number',
-    '--text-hero-sticker',
   ],
 };
 
