@@ -129,11 +129,14 @@ The gold-ground set is in [Gold surface](#gold-surface), light values in
 - Blocks: homepage and /brand cards, the plain hero slab and the post contents are a gold
   `block-gold` or light `block-light` fill with a 4px `block-ink` edge
   (`--block-edge`) and the red throw. Cards are gold; every second card in a
-  `.card-block`, `.card-solid`, the plain hero slab and the post contents are
+  `.card-block` (the first in `.card-block-paper-first`), `.card-solid`, the plain hero slab and the post contents are
   light. Inside a block the color tokens are remapped, so `text-text` and
   `text-gold` are ink (11.32 on gold, 14.42 on light), `subtle` is `gold-muted`
   (7.88) or `light-subtle` (7.40), and a badge inverts. Gold fills use
   `block-gold`, which never remaps. `tests/blocks.spec.ts`.
+- Three card forms: ground (`.card-ground`), paper (`block-light`) and gold
+  (`block-gold`, the plain `.card` and `.card.surface-gold`). A card on gold
+  sits in a `.card-block` wall and is paper with an ink throw (/career).
 - Ground cards: `.card-ground` (/about, /career, /credits, blog listings,
   /contact, /contact/send, /contact/sent) is no block. A section fills one
   card at most, 3 to 5 per page; lists and text-heavy cards stay on the
@@ -268,8 +271,7 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
   `.lead`, `.panel-lead` and `.standfirst` (`gold-text`), links (`gold-link`,
   underlined), the focus ring (`gold-text`) and default borders
   (`gold-border`); the area's own outer edge keeps `border`, gold on gold,
-  since it meets the page. A card inside turns transparent with
-  `shadow-hard-gold-border-4`; a `.card-block` wall on gold is light blocks
+  since it meets the page. A card on gold sits in a `.card-block` wall: light blocks
   with the ink edge (`/career`); a linked chip keeps its dark fill with a
   `gold-text` edge.
 - A whole gold section (hero slab, gold band) is also a `.gold-column`.
@@ -598,16 +600,15 @@ with a comment beside it.
   fringe; when they match, the fill runs under the edge, or the ground shows
   between them as a seam (`tests/tilt.spec.ts`, every route, both modes).
 
-| Utility                     | Casts it                                                                                                                                                                |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `shadow-hard-red-object`    | Cards, post contents, gold areas, popovers, slide cards; `--hard-throw` (8px)                                                                                           |
-| `shadow-hard-red-4`         | The PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, footer stickers, slide cards; `--control-throw` (4px)                                                 |
-| `shadow-brick`              | The header's brick rows (in `block-ink`), the menu's links, call to action and Close; `--brick-throw` (6px) in `text`                                                   |
-| `shadow-hard-cyan-object`   | A hovered linked card, in place of red; a contact link brick fills instead, cyan in dark mode and ink in light mode (label 14.42), its ring inside in the label's color |
-| `shadow-hard-gold-border-4` | A card on gold                                                                                                                                                          |
-| `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                                                                         |
-| `shadow-hard-bunny-8`       | The homepage stickers, the laughing rabbit tile on `/about` below `lg`, the logo tile                                                                                   |
-| `shadow-hard-bunny-12`      | The laughing rabbit tile on `/about` from `lg`                                                                                                                          |
+| Utility                   | Casts it                                                                                                                                                                |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shadow-hard-red-object`  | Cards, post contents, gold areas, popovers, slide cards; `--hard-throw` (8px)                                                                                           |
+| `shadow-hard-red-4`       | The PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, footer stickers, slide cards; `--control-throw` (4px)                                                 |
+| `shadow-brick`            | The header's brick rows (in `block-ink`), the menu's links, call to action and Close; `--brick-throw` (6px) in `text`                                                   |
+| `shadow-hard-cyan-object` | A hovered linked card, in place of red; a contact link brick fills instead, cyan in dark mode and ink in light mode (label 14.42), its ring inside in the label's color |
+| `shadow-hard-bunny-4`     | `.sticker`, `.btn-gold-primary`                                                                                                                                         |
+| `shadow-hard-bunny-8`     | The homepage stickers, the laughing rabbit tile on `/about` below `lg`, the logo tile                                                                                   |
+| `shadow-hard-bunny-12`    | The laughing rabbit tile on `/about` from `lg`                                                                                                                          |
 
 - Anything focusable with a shadow sets its lift: [Focus](#focus).
 - Radius is 0 everywhere (base layer). `rounded-nav` (14px): the logo tile

@@ -401,9 +401,6 @@
   --shadow-hard-bunny-12: 12px 12px 0 var(--color-red);
   --shadow-hard-cyan-object: var(--hard-throw) var(--hard-throw) 0
     var(--color-cyan);
-  /* A card on gold: `gold-border` passes SC 1.4.11 there, red does not. */
-  --shadow-hard-gold-border-4: var(--control-throw) var(--control-throw) 0
-    var(--color-gold-border);
 
   /*
    * Inner half of .btn-gold-primary's two-tone focus ring, visible against the
