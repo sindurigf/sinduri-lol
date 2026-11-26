@@ -5,7 +5,7 @@
   /* The light half's copy holds no headings (mirror.ts); its divs keep their look. */
   [data-heading] {
     text-transform: uppercase;
-    font-weight: 900;
+    font-weight: var(--font-weight-black);
     letter-spacing: var(--tracking-heading);
   }
 }
@@ -156,7 +156,7 @@
   }
 
   .copy-button {
-    @apply inline-flex min-h-target min-w-target items-center justify-center gap-2 border-4 border-border bg-surface px-2 text-label font-black uppercase tracking-label text-text;
+    @apply inline-flex min-h-target min-w-target items-center justify-center gap-2 edge-block border-border bg-surface px-2 text-label font-black uppercase tracking-label text-text;
 
     flex-direction: row-reverse;
 
@@ -188,7 +188,7 @@
 
   /* Above the button and touching it, so the pointer can move onto the tip (SC 1.4.13). */
   .copy-tip {
-    @apply absolute right-0 hidden border-4 border-border bg-surface px-3 py-1 text-label font-black uppercase tracking-label whitespace-nowrap text-text;
+    @apply absolute right-0 hidden edge-block border-border bg-surface px-3 py-1 text-label font-black uppercase tracking-label whitespace-nowrap text-text;
 
     bottom: 100%;
   }
@@ -213,7 +213,7 @@
   }
 
   .brand-code {
-    @apply whitespace-break-spaces border-4 border-border bg-surface p-4 font-mono text-label text-text wrap-anywhere;
+    @apply whitespace-break-spaces edge-block border-border bg-surface p-4 font-mono text-label text-text wrap-anywhere;
 
     /* A float the width of the button and its Copied label, so the top lines wrap around it. */
     &::before {
@@ -225,7 +225,7 @@
   }
 
   .brand-pair {
-    @apply min-w-0 flex-1 basis-60 space-y-4 border-4 border-border p-4;
+    @apply min-w-0 flex-1 basis-60 space-y-4 edge-block border-border p-4;
   }
 
   .brand-pair-sample {
@@ -260,7 +260,7 @@
     --step-x: 0px;
     --step-y: 0px;
 
-    @apply min-w-0 overflow-clip border-4 bg-background text-text;
+    @apply min-w-0 overflow-clip edge-block bg-background text-text;
 
     border-color: var(--stage-edge);
     padding: calc(var(--spacing-card-tight) - var(--block-edge));
@@ -295,7 +295,7 @@
   }
 
   .role-swatch {
-    @apply flex size-12 shrink-0 items-center justify-center border-4 border-text;
+    @apply flex size-12 shrink-0 items-center justify-center edge-block border-text;
   }
 
   /* A named swatch's color is its content, so forced colors keep it, edged in CanvasText (https://blogs.windows.com/msedgedev/2020/09/17/styling-for-windows-high-contrast-with-new-standards-for-forced-colors/). */

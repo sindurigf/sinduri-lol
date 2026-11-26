@@ -38,7 +38,6 @@ const SWATCH: Record<string, Swatch> = {
   cyan: { paint: 'empty', cls: '' },
   red: { paint: 'fill', cls: 'bg-red' },
   'red-text': { paint: 'glyph', cls: 'text-red-text' },
-  bunny: { paint: 'fill', cls: 'bg-bunny' },
   'block-cyan': { paint: 'fill', cls: 'bg-block-cyan' },
 };
 
@@ -129,7 +128,6 @@ const assertEveryPair = (): void => {
     ['red-text', 'text'],
     [PAGE_EDGE, 'edge'],
     ['red', 'edge'],
-    ['bunny', 'edge'],
     ['cyan', 'edge'],
   ];
   for (const [fg, kind] of pairs) {
@@ -211,7 +209,7 @@ export const roles: Role[] = [
     'role-depth',
     'shadows and errors.',
     'Red casts the shadow; its text color carries error words.',
-    ['red', 'red-text', 'bunny'],
+    ['red', 'red-text'],
     {
       fg: 'red-text',
       bg: 'background',

@@ -11,7 +11,7 @@ export const RABBIT_ART = [
   'src/assets/hero-rabbit.svg',
 ] as const;
 
-const DARK_ART_RED = '--color-bunny';
+const DARK_ART_RED = '--color-red';
 const LIGHT_ART_RED = '--color-light-red-text';
 
 /* The inner ear keeps the dark-mode red: #560000 inside the art reads as black. */

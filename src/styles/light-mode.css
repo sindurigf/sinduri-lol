@@ -15,7 +15,6 @@
     --dark-cyan: var(--color-cyan);
     --dark-red: var(--color-red);
     --dark-red-text: var(--color-red-text);
-    --dark-bunny: var(--color-bunny);
     --dark-gold-border: var(--color-gold-border);
     --dark-card-edge: var(--color-card-edge);
     --dark-code-edge: var(--color-code-edge);
@@ -35,7 +34,6 @@
     --color-cyan: var(--color-light-focus);
     --color-red: var(--color-light-red-text);
     --color-red-text: var(--color-light-red-text);
-    --color-bunny: var(--color-light-red-text);
     --color-gold-border: var(--color-light-ink);
     --color-card-edge: var(--color-light-ink);
     --color-code-edge: var(--color-light-code-edge);
@@ -107,7 +105,6 @@
     --color-cyan: var(--dark-cyan);
     --color-red: var(--dark-red);
     --color-red-text: var(--dark-red-text);
-    --color-bunny: var(--dark-bunny);
     --color-gold-border: var(--dark-gold-border);
     --color-card-edge: var(--dark-card-edge);
     --color-code-edge: var(--dark-code-edge);

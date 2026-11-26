@@ -99,7 +99,7 @@
    * the rabbit's springboard: pressed, the rabbit crouches with it; released, it springs.
    */
   .logo-link .logo-tile {
-    box-shadow: var(--lift-mark) var(--lift-mark) 0 var(--color-bunny);
+    box-shadow: var(--lift-mark) var(--lift-mark) 0 var(--color-red);
 
     @media (prefers-reduced-motion: no-preference) {
       transition-property: translate, box-shadow;
@@ -109,14 +109,14 @@
   }
 
   .logo-link:active .logo-tile {
-    box-shadow: 0 0 0 var(--color-bunny);
+    box-shadow: 0 0 0 var(--color-red);
   }
 
   @media (prefers-reduced-motion: no-preference) and (hover: hover) {
     .logo-link:hover:not(:active) .logo-tile {
       translate: calc(var(--press-lift) * -1) calc(var(--press-lift) * -1);
       box-shadow: calc(var(--lift-mark) + var(--press-lift))
-        calc(var(--lift-mark) + var(--press-lift)) 0 var(--color-bunny);
+        calc(var(--lift-mark) + var(--press-lift)) 0 var(--color-red);
     }
 
     .logo-link:hover:not(:active) .logo-rabbit {

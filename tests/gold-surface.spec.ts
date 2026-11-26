@@ -1,7 +1,12 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { AAA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
-import { goldRoutesFromBuild, ROUTES, TALK_ROUTES } from './routes';
+import {
+  goldControlsInBuild,
+  goldRoutesFromBuild,
+  ROUTES,
+  TALK_ROUTES,
+} from './routes';
 import { cssColorToken } from './source';
 import { NARROW_WIDTH } from './wcag';
 
@@ -97,8 +102,9 @@ const walkGoldSections = (page: Page) =>
   })()`) as Promise<GoldWalk>;
 
 /*
- * Every gold section has controls and text for the walks to measure, so a page
- * that loses its section or a resolver that stops matching fails here.
+ * Every gold section has text, and controls where its build has them, for the
+ * walks to measure, so a page that loses its section or a resolver that stops
+ * matching fails here.
  */
 const expectGoldSectionWalked = (route: string, walked: GoldWalk) => {
   if (!goldRoutesFromBuild().includes(route)) return;
@@ -106,10 +112,11 @@ const expectGoldSectionWalked = (route: string, walked: GoldWalk) => {
     walked.section,
     `${route} renders .surface-gold in its build but not in the page`,
   ).toBe(true);
-  expect(
-    walked.controls,
-    `${route} has no control on gold for the edge check to walk`,
-  ).toBeGreaterThan(0);
+  if (goldControlsInBuild(route) > 0)
+    expect(
+      walked.controls,
+      `${route} has no control on gold for the edge check to walk`,
+    ).toBeGreaterThan(0);
   expect(
     walked.textInside,
     `no text on a gold ground inside ${route}'s .surface-gold sections.`,

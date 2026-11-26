@@ -12,7 +12,7 @@
    * `aria-current` and a marker. A non-link fact is a `.badge`.
    */
   .chip {
-    @apply inline-flex min-h-target items-center gap-2 border-4 border-border
+    @apply inline-flex min-h-target items-center gap-2 edge-block border-border
       bg-surface px-4 py-2 text-label font-black uppercase tracking-label
       text-text wrap-anywhere;
   }
@@ -23,7 +23,7 @@
    * Tilt comes from markup.
    */
   .sticker {
-    @apply inline-block border-4 border-border bg-surface px-4 py-2 text-label
+    @apply inline-block edge-block border-border bg-surface px-4 py-2 text-label
       font-black uppercase tracking-label text-red-text shadow-hard-bunny-4;
   }
 

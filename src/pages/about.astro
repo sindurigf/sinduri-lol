@@ -62,7 +62,7 @@ import { JOURNEY_POST_HREF } from '../lib/paths';
 /* Matches `size-14`. */
 const THUMB_SIZE = 56;
 
-/* Both `border-4` edges of `PHOTO`. */
+/* Both `edge-block` edges of `PHOTO`. */
 const PHOTO_BORDERS = '8px';
 
 /* Drawn widths net of gutter, padding and borders; tests/image-size.spec.ts fails on drift. */
@@ -86,7 +86,7 @@ const SECTIONS = [
 ] as const;
 
 /* On the `.aspect-frame`, so the border stays when a failed photo fades out. */
-const PHOTO = 'border-4 border-border';
+const PHOTO = 'edge-block border-border';
 
 /* Uncaptioned on purpose; the alt text names who is in each. */
 const PLACES = [
@@ -418,7 +418,7 @@ const catInfo: CatInfo[] = await Promise.all(
     <div class="cat-perch">
       <div class="cat-spot" id="cat-spot-rudra"></div>
       <div class="card-block flex flex-col lg:card-rise-room lg:flex-row">
-        <dl class="card card-ground min-w-0 divide-y-4 divide-border lg:flex-1">
+        <dl class="card card-ground min-w-0 divide-y-(length:--block-edge) divide-border lg:flex-1">
           <div class="pb-6">
             <dt class="label text-gold">Favorite story</dt>
             <dd class="mt-4">
@@ -442,7 +442,7 @@ const catInfo: CatInfo[] = await Promise.all(
                 width={THUMB_SIZE}
                 height={THUMB_SIZE}
                 densities={DENSITIES}
-                class="size-14 rounded-nav border-4 border-border object-cover"
+                class="size-14 rounded-nav edge-block border-border object-cover"
                 pictureAttributes={{ class: 'shrink-0' }}
               />
             </dd>
