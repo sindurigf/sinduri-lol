@@ -98,13 +98,6 @@
     border-color: var(--color-block-ink);
   }
 
-  /* A card inside a block is part of it: no second fill, edge or throw. */
-  :is(.card, .plain-slab, .post-contents) .card {
-    border-color: transparent;
-    background-color: transparent;
-    box-shadow: none;
-  }
-
   /*
    * One size for every card title, so a card is never louder than its section.
    */

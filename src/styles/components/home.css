@@ -31,11 +31,6 @@
     border-color: transparent;
     box-shadow: 0 0 0 0 transparent;
     /*
-     * Smaller name in the column: a wrapped GUNTUPALLI moves the break off the
-     * rule.
-     */
-    --text-hero-h1: var(--text-hero-h1-column);
-    /*
      * Rule, clearance and SINDURI's line box above its letters. Here, not
      * @theme, because it reads the column's own --text-hero-h1.
      */
@@ -87,7 +82,6 @@
 
   @media (width < 40rem) {
     .v-column.gold-column {
-      --text-hero-h1: var(--text-hero-h1-column-phone);
       /*
        * The standing tagline at its tallest: two lines of `text-h3` at the SC 1.4.12
        * line height, so it clears the name under text spacing, plus padding and edges.
