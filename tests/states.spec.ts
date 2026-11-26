@@ -419,3 +419,78 @@ test('a focused chip ring stays clear of the chips beside it', async ({
   ).toBeGreaterThan(1);
   expect(overlaps).toEqual([]);
 });
+
+const PAPER_CONTROLS = 'main [data-example] [data-paper-buttons] a';
+const PAPER_STATES = ['rest', 'hover', 'focus', 'active'] as const;
+
+type PaperPaint = {
+  label: string;
+  text: number;
+  edge: number;
+  ring: number | null;
+};
+
+const paperPaint = (control: Locator): Promise<PaperPaint> =>
+  control.evaluate(
+    (el, source) => (0, eval)(source)(el),
+    `(el => {
+      ${PAGE_HELPERS}
+      const s = getComputedStyle(el);
+      const card = compositeBackground(el.closest('.card'));
+      const own = compositeBackground(el);
+      const ringDrawn = el.matches(':focus-visible') && s.outlineStyle !== 'none' && parseFloat(s.outlineWidth) > 0;
+      return {
+        label: el.textContent.trim(),
+        text: ratio(over(parse(s.color), own), own),
+        edge: ratio(over(parse(s.borderTopColor), card), card),
+        ring: ringDrawn ? ratio(over(parse(s.outlineColor), card), card) : null,
+      };
+    })`,
+  ) as Promise<PaperPaint>;
+
+/* `:visited` is not set on these controls, so visited paints as rest; getComputedStyle cannot read it. */
+for (const scheme of ['dark', 'light'] as const) {
+  test(`controls on paper read at 7:1 with 3:1 edges and ring in every state, ${scheme} (SC 1.4.6, 1.4.11, 2.4.7)`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    await gotoSettled(page, PRIMARY_ROUTE);
+    const controls = page.locator(PAPER_CONTROLS);
+    await expect(controls).toHaveCount(3);
+    for (const control of await controls.all()) {
+      for (const state of PAPER_STATES) {
+        await page.mouse.move(0, 0);
+        if (state === 'hover') await control.hover();
+        if (state === 'focus') {
+          await control.focus();
+          await page.keyboard.press('Shift+Tab');
+          await page.keyboard.press('Tab');
+        }
+        if (state === 'active') {
+          await control.hover();
+          await page.mouse.down();
+        }
+        const paint = await paperPaint(control);
+        if (state === 'active') await page.mouse.up();
+        expect(
+          paint.text,
+          `${paint.label} ${state}: label below 7:1`,
+        ).toBeGreaterThanOrEqual(AAA_TEXT);
+        expect(
+          paint.edge,
+          `${paint.label} ${state}: edge below 3:1 on paper`,
+        ).toBeGreaterThanOrEqual(NON_TEXT);
+        if (state === 'focus') {
+          expect(
+            paint.ring,
+            `${paint.label}: no visible focus ring`,
+          ).not.toBeNull();
+          expect(
+            paint.ring!,
+            `${paint.label}: focus ring below 3:1 on paper`,
+          ).toBeGreaterThanOrEqual(NON_TEXT);
+        }
+      }
+    }
+  });
+}
