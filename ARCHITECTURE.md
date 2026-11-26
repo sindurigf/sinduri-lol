@@ -231,6 +231,9 @@ Headings, alt text, focus rings and axe are checked on the rendered page by
   `src/lib/feed.ts`, with `atom:link rel="self"` and RFC 822 dates.
 - `lastBuildDate` is the latest `updated`, else `date`, of the feed's posts
   (`src/lib/feed-date.ts`), so a post's `updated` date moves it.
+- Every feed carries `sy:updatePeriod` `weekly` and `sy:updateFrequency` `1`
+  (`FEED_UPDATE_PERIOD`, `FEED_UPDATE_FREQUENCY` in `src/lib/feed.ts`), so
+  readers poll about once a week.
 - The Drupal tag feed is the one for Drupal Planet. Its items carry the post's
   opening, whole sentences up to 300 characters, stopping before a paragraph
   that ends in a colon (`src/lib/feed-excerpt.ts`).
