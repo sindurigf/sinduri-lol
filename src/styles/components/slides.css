@@ -80,7 +80,7 @@
   }
 
   :fullscreen:not(.presenter) .deck-count {
-    @apply ml-0 grid h-target place-items-center border-4 border-border
+    @apply ml-0 grid h-target place-items-center edge-block border-border
       bg-surface px-3;
   }
 

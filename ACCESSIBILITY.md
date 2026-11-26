@@ -131,7 +131,7 @@ view (development server only, never published), and forks.
   (talk titles: [gap 7](#7-known-gaps)); other text reaches 2x by
   page zoom in Chromium and Firefox ([Text resize](#text-resize-sc-144)).
 - **Text size control.** Drink Me, Eat Me and Just Right step the reading text
-  (lead, standfirst, post teaser, body, label) from 75 to 200 percent. From
+  (lead, standfirst, body, label) from 75 to 200 percent. From
   86rem wide it is an "Aa Text Size" button on the right edge that opens a
   native popover, the first tab stop after the header (SC 2.4.3); below that an
   "Aa Text Size" button in the header opens the same group in a popover below
@@ -277,8 +277,8 @@ underlined (SC 1.4.1) and the dark buttons are replaced by gold ones:
 
 ### Blocks
 
-Every card, the plain hero slab and the post contents are gold or light blocks
-with a 4px ink edge. Inside, the color tokens are remapped, so text is ink at
+Every card and the post contents are gold or light blocks, and the plain hero
+slab a gold block, with a 4px ink edge. Inside, the color tokens are remapped, so text is ink at
 7:1 or more and the focus ring is `gold-link` (`tests/blocks.spec.ts`,
 [Colors](docs/STYLEGUIDE.md#color-tokens)).
 

@@ -84,7 +84,7 @@ const TOKENS = {
   goldText: cssColorToken('--color-gold-text'),
   background: cssColorToken('--color-background'),
   fillEdge: cssColorToken('--color-fill-edge'),
-  bunny: cssColorToken('--color-bunny'),
+  bunny: cssColorToken('--color-red'),
   red: cssColorToken('--color-red'),
   redText: cssColorToken('--color-red-text'),
 };
