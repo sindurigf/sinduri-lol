@@ -1,7 +1,5 @@
 ---
-import bunnyFooter from '../assets/bunny-footer.svg';
 import bunnyFooterLight from '../assets/bunny-footer-light.svg';
-import ModeArt from '../components/ModeArt.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import { HEADER_LINKS } from '../lib/nav';
@@ -53,12 +51,13 @@ const pagesJson = JSON.stringify(
         </span>
         {/* <div>s: a large bold <p> trips WAVE's "Possible heading" (tests/wave-alerts.spec.ts). */}
         <div class="flex items-end gap-6">
-          <ModeArt
-            dark={bunnyFooter}
-            light={bunnyFooterLight}
+          {/* The light art in both modes: its #560000 holds 7:1 on the paper card. */}
+          <img
+            src={bunnyFooterLight.src}
             alt=""
             width={Math.round(
-              (bunnyFooter.width * RABBIT_HEIGHT) / bunnyFooter.height,
+              (bunnyFooterLight.width * RABBIT_HEIGHT) /
+                bunnyFooterLight.height,
             )}
             height={RABBIT_HEIGHT}
             loading="lazy"

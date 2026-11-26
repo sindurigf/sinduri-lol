@@ -32,13 +32,6 @@
     --color-red: var(--color-block-ink);
   }
 
-  /* `surface` vanishes on gold and red fails SC 1.4.11 there, so both change. */
-  .surface-gold .card {
-    background-color: transparent;
-
-    @apply shadow-hard-gold-border-4;
-  }
-
   /* A wall on gold: light blocks with the ink edge; each casts the throw. */
   .surface-gold .card-block > * {
     border-width: var(--block-edge);
