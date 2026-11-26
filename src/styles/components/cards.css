@@ -40,15 +40,15 @@
   }
 
   /*
-   * Light blocks: every second card in a block, `.card-solid`, the plain hero
-   * slab and the post contents. Ink 14.42, subtle 7.40 on the fill.
+   * Light: odd cards in `.card-block-paper-first`, else even ones; `.card-solid`
+   * and the post contents. Ink 14.42, subtle 7.40 on the fill.
    */
   :is(
     .card-solid,
-    .plain-slab:not(.plain-slab-gold),
     .post-contents,
-    .card-block > .card:nth-child(even),
-    .card-block > :nth-child(even) > .card
+    .card-block:where(:not(.card-block-paper-first)) > .card:nth-child(even),
+    .card-block:where(:not(.card-block-paper-first)) > :nth-child(even) > .card,
+    .card-block-paper-first > .card:nth-child(odd)
   ):not(.surface-gold, .surface-gold *, .card-ground) {
     --color-background: var(--color-block-light);
     --color-surface: var(--color-block-light);
@@ -96,13 +96,6 @@
   :is(.card, .gold-column).surface-gold:not(.surface-gold *) {
     border-width: var(--block-edge);
     border-color: var(--color-block-ink);
-  }
-
-  /* A card inside a block is part of it: no second fill, edge or throw. */
-  :is(.card, .plain-slab, .post-contents) .card {
-    border-color: transparent;
-    background-color: transparent;
-    box-shadow: none;
   }
 
   /*
