@@ -132,10 +132,7 @@ const readableDate = formatPostDate(date);
       </span>
 
       <Heading
-        class:list={[
-          'post-title mt-4',
-          feature ? 'text-post-card-feature' : 'text-post-card',
-        ]}
+        class:list={['post-title mt-4', feature ? 'text-h2' : 'text-h3']}
       >
         <a href={href} class="card-link">
           {title}

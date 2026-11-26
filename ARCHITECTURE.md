@@ -343,7 +343,7 @@ Commits, copy rules and process: [AGENTS.md](AGENTS.md).
 ### Text size
 
 `--text-scale` (Drink Me and Eat Me) is a unitless number on the root,
-multiplied into `--text-lead`, `--text-standfirst`, `--text-post-teaser`, `--text-body` and
+multiplied into `--text-lead`, `--text-standfirst`, `--text-body` and
 `--text-label` in `global.css`. Scaling the root font size was rejected: media
 queries ignore it, so layouts overflowed at widths such as 768px.
 `tests/reading-tab.spec.ts` holds the no-sideways-scroll rule at 320, 390 and
@@ -909,9 +909,6 @@ evidence.
   few frames a second, and one offscreen `ctx.filter` pass runs slower than the
   CSS filter on a wide screen. `tests/filter-layers.spec.ts` allows only that
   canvas.
-- **Merge `--text-hero-h1-column` and `--text-hero-h1-column-phone`:** they
-  size the name in two layouts tuned apart; they are equal by value, not by
-  rule, and `tests/hero-fit.spec.ts` checks each.
 - **Drop `#hash` from click-tracking targets:** the privacy page promises only
   that page and referrer addresses lose `?` and `#`.
 - **Dedupe the two miniflare and workerd copies in `package-lock.json`:** npm

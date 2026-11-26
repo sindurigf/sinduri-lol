@@ -123,6 +123,9 @@
 @custom-variant stickers-wrap (@media (width < 17.5rem));
 
 @theme static {
+  --font-weight-*: initial;
+  --font-weight-normal: 400;
+  --font-weight-black: 900;
   --color-background: #0b0b0b;
   --color-surface: #1a1a1a;
   --color-border: #ffc000;
@@ -258,27 +261,13 @@
   /* Blog post title, in its own case; "Communities" fits at 305px. */
   --text-post-title: 2rem;
   --text-post-title--line-height: 1.06;
-  /* The post teaser beside the title on its slab, read as a standfirst. */
-  --text-post-teaser: calc(
-    clamp(1.3125rem, 2vw, 1.625rem) * var(--text-scale, 1)
-  );
-  --text-post-teaser--line-height: var(--leading-paragraph);
-  /* Under the post title, over the h3 at 0.8 or less (tests/headings.spec.ts). */
-  --text-post-h2: 1.75rem;
-  --text-post-h2--line-height: 1.02;
-  --text-post-h3: 1.375rem;
-  --text-post-h3--line-height: 1.15;
   --text-contents: 1rem;
   --text-contents--line-height: 1.35;
-  /* Card titles are h2s, at or under the 28px h1 of tag and category pages. */
-  --text-post-card: 1.5rem;
-  --text-post-card--line-height: 1.15;
-  --text-post-card-feature: 1.75rem;
-  --text-post-card-feature--line-height: 1.02;
+  /* The h3 is 0.8 of the h2 or less (tests/headings.spec.ts); a post card title is set at h3 size, a featured one at h2. */
   --text-h2: 1.75rem;
-  --text-h2--line-height: 0.96;
+  --text-h2--line-height: 1.02;
   --text-h3: 1.375rem;
-  --text-h3--line-height: 1.1;
+  --text-h3--line-height: 1.15;
   /*
    * Display-size text that is a paragraph, not a heading: SC 1.4.8 asks 1.5 of
    * a block of more than one sentence; 1.55 stays clear after sub-pixel rounding.
@@ -287,16 +276,13 @@
   /* Display text that is not a heading: links, values and stats. */
   --text-display: clamp(1.25rem, 2.6vw, 2rem);
   --text-display--line-height: 1.1;
-  /* --text-scale (Drink Me and Eat Me) multiplies the reading sizes only: lead, standfirst, post teaser, body and label. */
+  /* --text-scale (Drink Me and Eat Me) multiplies the reading sizes only: lead, standfirst, body and label. */
   /* A lead or card paragraph: fixed, under the 28px h2 (SC 1.4.4 at 200% zoom). */
   --text-lead: calc(1.5rem * var(--text-scale, 1));
   --text-lead--line-height: var(--leading-paragraph);
-  /*
-   * PageHero standfirst. Its own token because --text-lead also sizes card
-   * paragraphs and section leads.
-   */
+  /* The standfirst on a slab and the post teaser beside its title. Its own token because --text-lead also sizes card paragraphs and section leads. */
   --text-standfirst: calc(
-    clamp(1.25rem, 2.8vw, 2.25rem) * var(--text-scale, 1)
+    clamp(1.3125rem, 2vw, 1.625rem) * var(--text-scale, 1)
   );
   --text-standfirst--line-height: var(--leading-paragraph);
   /*
@@ -418,9 +404,6 @@
   --shadow-hard-bunny-12: 12px 12px 0 var(--color-red);
   --shadow-hard-cyan-object: var(--hard-throw) var(--hard-throw) 0
     var(--color-cyan);
-  /* A card on gold: `gold-border` passes SC 1.4.11 there, red does not. */
-  --shadow-hard-gold-border-4: var(--control-throw) var(--control-throw) 0
-    var(--color-gold-border);
 
   /*
    * Inner half of .btn-gold-primary's two-tone focus ring, visible against the
@@ -562,12 +545,6 @@
    */
   --hero-name-clearance: 8px;
 
-  /*
-   * The name in the column and below `sm`; home.css swaps them into
-   * --text-hero-h1, so they hold literal values. tests/hero-fit.spec.ts.
-   */
-  --text-hero-h1-column: 2.25rem;
-  --text-hero-h1-column-phone: 2.25rem;
   /*
    * Reserved for the two sticker words at the top right, since `max-width` on
    * the name cannot see them. Holds the widest sticker plus border, padding,

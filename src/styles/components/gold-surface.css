@@ -32,13 +32,6 @@
     --color-red: var(--color-block-ink);
   }
 
-  /* `surface` vanishes on gold and red fails SC 1.4.11 there, so both change. */
-  .surface-gold .card {
-    background-color: transparent;
-
-    @apply shadow-hard-gold-border-4;
-  }
-
   /* A wall on gold: light blocks with the ink edge; each casts the throw. */
   .surface-gold .card-block > * {
     border-width: var(--block-edge);
@@ -72,7 +65,7 @@
       tracking-label text-gold-btn-label shadow-hard-bunny-4 lift-control;
   }
 
-  .surface-gold .btn-gold-secondary {
+  :is(.surface-gold, .card:where(:not(.card-ground))) .btn-gold-secondary {
     @apply inline-block edge-block border-gold-text bg-transparent
       px-8 py-4 text-button font-black uppercase
       tracking-label text-gold-text;
@@ -89,15 +82,12 @@
 
   /* No underline: the box already marks it as a control (SC 1.4.1). */
   :is(.surface-gold, .card) a.btn-gold-primary,
-  .surface-gold a.btn-gold-secondary {
+  :is(.surface-gold, .card:where(:not(.card-ground))) a.btn-gold-secondary {
     text-decoration: none;
   }
 
-  /*
-   * Keeps its dark fill and `text` label; edge `gold-text` like
-   * the gold buttons.
-   */
-  .surface-gold a.chip {
+  /* Keeps its dark fill and label; edge `gold-text` like the gold buttons. */
+  :is(.surface-gold, .card:where(:not(.card-ground))) a.chip {
     @apply border-gold-text text-text no-underline;
   }
 
@@ -107,7 +97,7 @@
 
   /* Without the lift, hover takes the secondary's empty rest fill; the inner ring has no fill left to sit on. */
   @media (prefers-reduced-motion: reduce) and (hover: hover) {
-    .surface-gold a.btn-gold-primary:hover:not(:active) {
+    :is(.surface-gold, .card) a.btn-gold-primary:hover:not(:active) {
       --press-ring: 0 0 transparent;
       background-color: transparent;
       color: var(--color-gold-text);
@@ -123,7 +113,8 @@
   }
 
   /* Fills like the primary at rest; the ring stays clear of the fill across the gold gap. */
-  .surface-gold :is(a, summary).btn-gold-secondary:hover {
+  :is(.surface-gold, .card:where(:not(.card-ground)))
+    :is(a, summary).btn-gold-secondary:hover {
     background-color: var(--color-gold-text);
     color: var(--color-gold-btn-label);
   }
