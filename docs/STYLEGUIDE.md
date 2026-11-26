@@ -886,6 +886,8 @@ tier and takes its padding.
   `h1`.
 - Breadcrumbs go in the `eyebrow` slot above the `h1`, as a named `nav`,
   with `tone="gold"` on a slab.
+- A talk deck has no hero: its breadcrumbs follow the deck
+  (`src/pages/talks/[deck].astro`), so the slides stay above the fold.
 - The photo is a `<figure>`; its credit, if any, a `figcaption`.
 - The roundel is decoration: `alt=""`, no role, no focus.
 

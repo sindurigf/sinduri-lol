@@ -826,9 +826,6 @@ evidence.
 - **Give the talk page one `h1` above the slides:** the cover slide's heading
   is the `h1` and every other slide carries its own `h2`; another would repeat
   the title.
-- **Add a `BreadcrumbList` to the talk page:** pages outside `/blog` carry no
-  breadcrumbs (`tests/breadcrumbs.spec.ts`); the link to the talk's post
-  covers the way back.
 - **Move every `href` in page markup into `paths.ts`:** a route used by code
   (redirects, nav, sitemap, `llms.txt`) is a constant there; a link in prose
   stays markup, and `tests/internal-links.spec.ts` fails on a broken one.
