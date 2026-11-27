@@ -8,6 +8,7 @@ import {
   BLOG_CONTENT_DIR,
   postFrontmatter,
   builtHtml as builtHtmlByRoute,
+  CATEGORY_ROUTES,
   DIST_DIR,
   POST_ROUTES,
   PUBLISHED_POST_ROUTES,
@@ -33,44 +34,31 @@ const SITE_ORIGIN = configuredSite();
 const builtHtml = (): { route: string; html: string }[] =>
   [...builtHtmlByRoute()].map(([route, html]) => ({ route, html }));
 
-/**
- * The only comments the build may emit: Vue's fragment and empty-node markers,
- * which hydration needs, and Astro's island end marker.
- */
-const FRAMEWORK_COMMENTS = new Set([
-  '<!--[-->',
-  '<!--]-->',
-  '<!---->',
-  '<!--astro:end-->',
-]);
 const SHOWN_COMMENTS = 10;
 const COMMENT_PREVIEW_CHARS = 60;
 
 test.describe('built HTML', NODE, () => {
   // Astro emits <!-- --> template comments verbatim; JSX-style ones not.
-  test('carries no authored HTML comments', () => {
-    const comments = builtHtml().flatMap(({ route, html }) =>
+  test('carries no HTML comments', () => {
+    const pages = builtHtml();
+    expect(
+      pages.length,
+      'no built pages, so the scan is not reading the build',
+    ).toBeGreaterThan(0);
+    const comments = pages.flatMap(({ route, html }) =>
       (html.match(/<!--[\s\S]*?-->/g) ?? []).map((comment) => ({
         route,
         comment,
       })),
     );
     expect(
-      comments.length,
-      'no comments found at all, so the scan is not reading the build',
-    ).toBeGreaterThan(0);
-
-    const authored = comments.filter(
-      ({ comment }) => !FRAMEWORK_COMMENTS.has(comment),
-    );
-    expect(
-      authored
+      comments
         .slice(0, SHOWN_COMMENTS)
         .map(
           ({ route, comment }) =>
             `${route}: ${comment.slice(0, COMMENT_PREVIEW_CHARS)}`,
         ),
-      `${authored.length} authored comment(s) in the build, first ${SHOWN_COMMENTS} shown`,
+      `${comments.length} comment(s) in the build, first ${SHOWN_COMMENTS} shown`,
     ).toEqual([]);
   });
 });
@@ -472,24 +460,31 @@ test.describe(
     });
 
     // llms.txt lists placeholders on purpose, and is not HTML.
-    test('nothing links to a placeholder post', () => {
+    test('every built link to a post leads to a published post that is not a placeholder', () => {
       const placeholders = placeholderPosts();
-      test.skip(
-        placeholders.size === 0,
-        'no post is a placeholder, so there is no link to find',
+      const offered = new Set(
+        PUBLISHED_POST_ROUTES.filter((route) => !placeholders.has(route)),
       );
-      const offered: string[] = [];
+      const listings = new Set(CATEGORY_ROUTES);
+      const postLinks: string[] = [];
+      const wrong: string[] = [];
 
       for (const [route, html] of builtHtmlByRoute()) {
         if (placeholders.has(route)) continue;
-        for (const placeholder of placeholders) {
-          if (html.includes(`href="${placeholder}/"`)) {
-            offered.push(`${route} links ${placeholder}`);
-          }
+        for (const [, target] of html.matchAll(
+          /href="(\/blog\/[a-z0-9-]+)\/"/g,
+        )) {
+          if (!target || listings.has(target)) continue;
+          postLinks.push(target);
+          if (!offered.has(target)) wrong.push(`${route} links ${target}`);
         }
       }
 
-      expect(offered, 'a listing links a placeholder post.').toEqual([]);
+      expect(postLinks.length, 'no built page links a post').toBeGreaterThan(0);
+      expect(
+        wrong,
+        'a page links a placeholder, unpublished or missing post.',
+      ).toEqual([]);
     });
 
     test('the sitemap lists a post only while it is not a placeholder', () => {

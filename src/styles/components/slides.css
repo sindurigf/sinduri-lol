@@ -6,8 +6,11 @@
    * JavaScript and in print; src/scripts/slideshow.ts shows one. On the page
    * slides grow; in full screen a tall one scrolls with Space and the Page keys.
    */
+  /* Never a scroll anchor: swapping slides of another height would scroll the new one under the header. */
   .deck {
     @apply mx-auto flex w-full max-w-page flex-col gap-6 py-6;
+
+    overflow-anchor: none;
   }
 
   /*
@@ -77,7 +80,7 @@
   }
 
   :fullscreen:not(.presenter) .deck-count {
-    @apply ml-0 grid h-target place-items-center border-4 border-border
+    @apply ml-0 grid h-target place-items-center edge-block border-border
       bg-surface px-3;
   }
 
@@ -180,13 +183,13 @@
   /* The page's own ground, not a gold block: gold stays on labels, bold words and edges. */
   .slide {
     @apply relative flex min-w-0 flex-col justify-center border-border bg-background
-      shadow-hard-pink-object;
+      shadow-hard-red-object;
     border-width: var(--block-edge);
     translate: calc(var(--step-x) * -1) 0;
     --deck-chrome: calc(var(--spacing-deck-bar) + --spacing(20));
     --slide-pad-inline: var(--spacing-card-tight);
     --slide-pad-block: var(--spacing-card-tight);
-    min-height: calc(100svh - var(--spacing-header) - var(--deck-chrome));
+    min-height: calc(100svh - var(--spacing-page-top) - var(--deck-chrome));
     padding-inline: max(var(--slide-pad-inline), 8cqi);
     padding-block: max(var(--slide-pad-block), 4cqi);
   }
@@ -299,6 +302,11 @@
     @apply mt-4;
   }
 
+  /* In em, so the step between paragraphs stays 2.5em at any body size (SC 1.4.8). */
+  .slide-body p + p {
+    margin-top: var(--spacing-paragraph);
+  }
+
   :is(.deck:fullscreen, .presenter) .slide-body :is(p, ul, ol, table) {
     @apply text-slide;
   }
@@ -365,7 +373,7 @@
 
   /*
    * Group cards from `cardGroups` in src/lib/slides.ts: the site card one size
-   * down, 4px edge and pink shadow. They wrap on narrow screens.
+   * down, 4px edge and red shadow. They wrap on narrow screens.
    */
   .slide-cards {
     @apply mt-6 grid items-stretch gap-6;
@@ -377,7 +385,7 @@
 
   /* Cards in a row share one height (`items-stretch` above). */
   .slide-card {
-    @apply edge border-border bg-background px-6 py-6 shadow-hard-pink-object;
+    @apply edge border-border bg-background px-6 py-6 shadow-hard-red-object;
   }
 
   .slide-body .slide-card li + li {
@@ -392,11 +400,6 @@
   /* Under `.slide-body` to outrank its margin rule. */
   .slide-body .slide-card > :first-child {
     @apply mt-0;
-  }
-
-  /* 16px: paragraph spacing 1.5 times the line spacing at body size (SC 1.4.8). */
-  .slide-body .slide-card > h3:first-child + * {
-    @apply mt-4;
   }
 
   .slide-body li {

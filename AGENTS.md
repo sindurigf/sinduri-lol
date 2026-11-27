@@ -8,16 +8,18 @@ system and conventions: [ARCHITECTURE.md](ARCHITECTURE.md).
 ```sh
 npm run build
 npm run typecheck
-npm run check        # tokens, links, pins, classes, csp, untransformed, title-case, exif, format, commits
-npm run test:a11y    # Chromium, Firefox; WebKit in CI or with WEBKIT=1
-npm run test:webkit  # test:a11y in WebKit via Docker
+npm run check        # steps: docs/DEVELOPMENT.md#commands
+npm run check:pdf    # PDFs in public/ against PDF/UA, in Docker
+npm run test:a11y    # node, Chromium, Firefox; WebKit in CI or with WEBKIT=1
+npm run test:webkit  # CI's WebKit run, locally via Docker: only to debug CI
 npm run test:worker  # WORKER_SPECS through the Worker
 ```
 
 - CI runs all of it; `Required checks` is the one required status, and
   `Test weakening` once the ruleset lists it
   ([DEPLOYMENT.md](docs/DEPLOYMENT.md#repository-settings)).
-- A suite passed only if its summary total matches `npx playwright test --list`.
+- A suite passed only if its summary total matches `npx playwright test --list`
+  (`-c playwright.worker.config.ts` for `test:worker`).
 - Green means the steps ran, not that the tests assert the right things.
 - Report and fix every warning, hint, error and flaky test, pre-existing or
   not, in its own commit. A false positive is named with its reason.
@@ -35,15 +37,17 @@ security and privacy, or build correctness. "Looks as designed" is not one.
 - A review that finds a decorative test weak deletes it; it never strengthens
   it.
 - Accessibility rules about decoration are tested: reduced motion, pause
-  control, hidden from assistive technology, never covering text.
+  control, hidden from assistive technology, never resting on text. Moving
+  decoration may pass in front of text; pause and reduced motion stop it clear
+  of text.
 - Interaction states (hover, focus, active, visited, current, disabled) are
   accessibility: SC 1.4.3, 1.4.11, 1.4.1.
 - Assert the property ("at least 4.5:1 and differs from rest"), not the value
   (`rgb(0, 255, 255)`).
 - A skip, an axe exclusion, fewer `expect` calls, a changed threshold or a new
-  rejected finding fails the `Test weakening` check until the owner approves
-  the head commit with the line `Approved test change: <reason>`. Agents never
-  write it.
+  rejected finding fails the `Test weakening` check. It passes once the
+  maintainer approves the head commit with the line
+  `Approved test change: <reason>`. Agents never write that line.
 
 ### Which suites to run
 
@@ -53,7 +57,8 @@ It is the test of record. Locally:
 - Every change: `build`, `typecheck` and `check`.
 - A change to the Worker: also `test:worker`.
 - A major change to code, CSS or tests: the specs it touches, in Chromium only,
-  while iterating: `npx playwright test <specs> --project=chromium`.
+  while iterating:
+  `npx playwright test <specs> --project=chromium --project=node`.
 - No full suites and no other engines locally. Run
   `npm run test:webkit -- <specs>` only to debug a failure CI reported.
 
@@ -74,7 +79,8 @@ Record rejected findings beside the code so they are not raised again;
 - Branch per task from `main`, named for the task.
 - Open a pull request with `gh pr create --base main --body-file <file>`, using
   [the template](.github/PULL_REQUEST_TEMPLATE.md). Never `--fill`.
-- CI must pass. The owner reviews and merges.
+- CI must pass, and the diff is reviewed before merge. Only the maintainer, or
+  an agent the maintainer has allowed, merges.
 - One commit per logical change.
 - Update every credit, doc and claim page the change makes stale, in the same
   pull request. The places to check: `src/lib/credits.ts`,
@@ -108,13 +114,13 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `chore`, `perf`, `security`,
 `config`, `revert`, `test`.
 
 No AI attribution trailers in commits or PRs. [AI_DISCLOSURE.md](AI_DISCLOSURE.md)
-covers attribution once. `scripts/check-commits.sh` enforces it in CI;
-`.githooks/commit-msg` strips trailers locally once
+covers attribution once. `scripts/check-commits.sh` rejects Claude and Anthropic
+trailers in CI; `.githooks/commit-msg` strips them locally once
 [enabled](docs/DEVELOPMENT.md#setup).
 
 ## Code
 
-- Idiomatic Astro, Vue, TypeScript and Playwright. Follow the framework's docs
+- Idiomatic Astro, TypeScript and Playwright. Follow the framework's docs
   before inventing a pattern.
 - Functional style, no classes without a reason.
 - Named constants, no magic numbers.
@@ -123,8 +129,8 @@ covers attribution once. `scripts/check-commits.sh` enforces it in CI;
 - UI: native elements with a visible focus indicator, targets outside a
   sentence at least 44x44 CSS px (SC 2.5.5), colors only as tokens from
   `src/styles/global.css`.
-- Vue only for `HeroField.vue`. Everything else is a plain module, stateful
-  or not, e.g. `src/scripts/mobile-menu.ts` and `src/scripts/about-cats.ts`.
+- No framework islands. Every script is a plain module, stateful or not, e.g.
+  `src/scripts/mobile-menu.ts` and `src/scripts/about-cats.ts`.
 
 ## Comments
 
@@ -162,18 +168,19 @@ Rules:
 - An error message says what is wrong and how to fix it, without blame.
 - Headings and labels use Chicago title case; sentences use sentence case
   ([rule](docs/STYLEGUIDE.md#uppercase)).
-- Editorial copy (posts, About, Career, taglines, bios, anything in Sinduri's
-  voice) is never invented. It is drafted only from her own words and follows
-  [docs/VOICE.md](docs/VOICE.md); she approves every line.
-- New images, video or audio: ask the owner whether AI made or edited it. If
-  so, list it under Made with AI on `/credits/` and in
+- Editorial copy (posts, About, Career, taglines, bios, anything else in the
+  first person) is never invented. It is drafted only from the maintainer's own
+  words and follows [docs/VOICE.md](docs/VOICE.md); the maintainer approves
+  every line.
+- New images, video or audio: ask the maintainer whether AI made or edited it.
+  If so, list it under Made with AI on `/credits/` and in
   [AI_DISCLOSURE.md](AI_DISCLOSURE.md#keeping-this-current). Only a realistic
   one (a deep fake, EU AI Act Art. 50(4)) also needs a label on its page.
 - Photos are stripped of EXIF and XMP before commit; `npm run check` fails
   otherwise.
-- Editorial text Claude drafts or edits needs the owner's approval line by line.
-  She holds editorial responsibility, so it needs no page label (EU AI Act
-  Art. 50(4)); AI_DISCLOSURE.md records it.
+- Editorial text Claude drafts or edits needs the maintainer's approval line by
+  line. The maintainer holds editorial responsibility, so the page needs no AI
+  label (EU AI Act Art. 50(4)); AI_DISCLOSURE.md records it.
 
 ## Hard rules
 

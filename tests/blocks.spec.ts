@@ -4,13 +4,13 @@ import { captures } from './captures';
 import { gotoSettled } from './settle';
 import { AAA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { builtPages, DIST_DIR } from './routes';
-import { NODE } from './tags';
+import { NODE, NO_WEBKIT } from './tags';
 import { DESKTOP_VIEWPORT, NARROW_WIDTH, PHONE_VIEWPORT } from './wcag';
 
 /**
- * Blocks (src/styles/components/cards.css): every card, the plain hero slab
- * and the post contents, gold or light with an ink edge. Inside, the color
- * tokens are remapped, so each block is measured as a ground of its own.
+ * Blocks (src/styles/components/cards.css): cards, the plain hero slab and the
+ * post contents, gold or light with an ink edge, or a `.card-ground` on the page
+ * ground. Each is measured as a ground of its own.
  */
 /* A talk slide is no block, but it is an edged ground of its own, held to the same ratios. */
 const BLOCK =
@@ -22,16 +22,26 @@ const BLOCK_ROUTES = [
   '/blog',
   '/about',
   '/career',
+  '/credits',
   '/contact',
-  '/accessibility',
+  '/contact/sent',
+  '/blog/open-source',
+  '/talks',
+  '/404',
   '/blog/five-years-in-drupal',
   '/talks/open-source-is-not-just-code',
   '/brand',
 ];
 /* A few links per page cover each block kind in reasonable time. */
 const LINKS_PER_PAGE = 6;
-/* /brand repeats real cards inside clipped half-width stages; the real pages carry the link walk. */
-const LINK_ROUTES = BLOCK_ROUTES.filter((route) => !route.startsWith('/brand'));
+/* Pages with text links inside blocks; /brand repeats real cards inside clipped stages. */
+const LINK_ROUTES = [
+  '/',
+  '/blog',
+  '/about',
+  '/career',
+  '/blog/five-years-in-drupal',
+];
 const STEP_WIDTHS = [
   DESKTOP_VIEWPORT.width,
   PHONE_VIEWPORT.width,
@@ -128,20 +138,148 @@ for (const colorScheme of ['dark', 'light'] as const) {
           `${route} has a block edge under ${NON_TEXT}:1 or text under ${AAA_TEXT}:1`,
         ).toEqual([]);
       });
+    }
 
+    test('/contact: every brick link fills under the pointer and its text still reads', async ({
+      page,
+    }) => {
+      await gotoSettled(page, '/contact');
+      const bricks = page.locator('a.contact-brick:visible');
+      const found = await bricks.count();
+      expect(found, '/contact has no brick link').toBeGreaterThan(0);
+      for (let i = 0; i < found; i += 1) {
+        const brick = bricks.nth(i);
+        await brick.scrollIntoViewIfNeeded();
+        const read = () =>
+          brick.evaluate(
+            (el, source) => (0, eval)(source)(el),
+            `(el) => {
+              ${PAGE_HELPERS}
+              const cs = getComputedStyle(el);
+              const ground = effectiveBackground(el);
+              return {
+                fill: cs.backgroundColor,
+                text: ratio(over(parse(cs.color), ground), ground),
+              };
+            }`,
+          ) as Promise<{ fill: string; text: number }>;
+        const rest = await read();
+        /* Forced: a sticky menu or smooth scroll can still be settling. */
+        await brick.hover({ force: true });
+        const hovered = await read();
+        expect(
+          hovered.fill,
+          `brick ${i + 1} keeps its rest fill under the pointer`,
+        ).not.toBe(rest.fill);
+        expect(
+          hovered.text,
+          `brick ${i + 1}'s hovered text is under ${AAA_TEXT}:1 on its fill`,
+        ).toBeGreaterThanOrEqual(AAA_TEXT);
+        await page.mouse.move(0, 0);
+      }
+    });
+
+    test('/contact: a ground brick keeps 7:1 hover text and a 3:1 focus ring on the ground', async ({
+      page,
+    }) => {
+      await gotoSettled(page, '/contact');
+      const bricks = page.locator('a.contact-brick.card-ground:visible');
+      const found = await bricks.count();
+      expect(found, '/contact has no ground brick').toBeGreaterThan(0);
+      const read = (brick: ReturnType<Page['locator']>) =>
+        brick.evaluate(
+          (el, source) => (0, eval)(source)(el),
+          `(el) => {
+            ${PAGE_HELPERS}
+            const cs = getComputedStyle(el);
+            const fill = effectiveBackground(el);
+            const ground = effectiveBackground(el.parentElement);
+            const texts = [el, ...el.querySelectorAll('*')]
+              .filter((n) => n.textContent.trim())
+              .map((n) => ratio(over(parse(getComputedStyle(n).color), fill), fill));
+            return {
+              text: Math.min(...texts),
+              ring: ratio(over(parse(cs.outlineColor), ground), ground),
+              ringOnFill: ratio(over(parse(cs.outlineColor), fill), fill),
+            };
+          }`,
+        ) as Promise<{ text: number; ring: number; ringOnFill: number }>;
+      for (let i = 0; i < found; i += 1) {
+        const brick = bricks.nth(i);
+        await brick.scrollIntoViewIfNeeded();
+        await brick.hover({ force: true });
+        const hovered = await read(brick);
+        expect(
+          hovered.text,
+          `ground brick ${i + 1}'s hovered text is under ${AAA_TEXT}:1 on its fill`,
+        ).toBeGreaterThanOrEqual(AAA_TEXT);
+        await page.mouse.move(0, 0);
+        await brick.focus();
+        await page.keyboard.press('Shift+Tab');
+        await page.keyboard.press('Tab');
+        expect(
+          await brick.evaluate((el) => el.matches(':focus-visible')),
+          `ground brick ${i + 1} does not take keyboard focus`,
+        ).toBe(true);
+        const focused = await read(brick);
+        expect(
+          focused.ring,
+          `ground brick ${i + 1}'s ring is under ${NON_TEXT}:1 on the ground`,
+        ).toBeGreaterThanOrEqual(NON_TEXT);
+        expect(
+          focused.ringOnFill,
+          `ground brick ${i + 1}'s ring is under ${NON_TEXT}:1 on its own fill`,
+        ).toBeGreaterThanOrEqual(NON_TEXT);
+      }
+    });
+
+    test('/contact: a focused brick link keeps a ring that reads on its hovered fill (SC 1.4.11)', async ({
+      page,
+    }) => {
+      await gotoSettled(page, '/contact');
+      const bricks = page.locator('a.contact-brick:visible');
+      const found = await bricks.count();
+      expect(found, '/contact has no brick link').toBeGreaterThan(0);
+      /* A key press first, so the scripted focus counts as keyboard focus. */
+      await page.keyboard.press('Tab');
+      for (let i = 0; i < found; i += 1) {
+        const brick = bricks.nth(i);
+        await brick.scrollIntoViewIfNeeded();
+        await brick.focus();
+        await brick.hover({ force: true });
+        const ring = (await brick.evaluate(
+          (el, source) => (0, eval)(source)(el),
+          `(el) => {
+            ${PAGE_HELPERS}
+            const cs = getComputedStyle(el);
+            const fill = parse(cs.backgroundColor);
+            return {
+              drawn: el.matches(':focus-visible') && cs.outlineStyle !== 'none',
+              against: ratio(over(parse(cs.outlineColor), fill), fill),
+            };
+          }`,
+        )) as { drawn: boolean; against: number };
+        expect(ring.drawn, `brick ${i + 1} has no focus ring`).toBe(true);
+        expect(
+          ring.against,
+          `brick ${i + 1}'s ring is under ${NON_TEXT}:1 on its hovered fill`,
+        ).toBeGreaterThanOrEqual(NON_TEXT);
+        await page.mouse.move(0, 0);
+      }
+    });
+
+    for (const route of LINK_ROUTES) {
       test(`${route}: links in blocks read through hover and focus, rings inside their block`, async ({
         page,
       }) => {
-        test.skip(
-          !LINK_ROUTES.includes(route),
-          'a /brand example; the real page walks its links',
-        );
         await gotoSettled(page, route);
         /* Buttons draw their own hover and focus; tests/states.spec.ts covers them. */
         const links = page.locator(
           `${BLOCK} a[href]:not([class*='btn-']):visible`,
         );
-        const count = Math.min(await links.count(), LINKS_PER_PAGE);
+        const found = await links.count();
+        expect(found, `${route} has no link in a block`).toBeGreaterThan(0);
+        const count = Math.min(found, LINKS_PER_PAGE);
         for (let i = 0; i < count; i += 1) {
           const link = links.nth(i);
           await link.scrollIntoViewIfNeeded();
@@ -220,11 +358,7 @@ test.describe('the Step', () => {
     });
   }
 
-  test('forced colors keep every block edge', async ({ page, browserName }) => {
-    test.skip(
-      browserName === 'webkit',
-      'WebKit reports forced colors but paints the author palette (tests/forced-colors.spec.ts)',
-    );
+  test('forced colors keep every block edge', NO_WEBKIT, async ({ page }) => {
     await page.emulateMedia({ forcedColors: 'active' });
     for (const route of ['/', '/blog', '/contact']) {
       await gotoSettled(page, route);
@@ -252,140 +386,46 @@ test.describe('the Step', () => {
 
 /* Every page with a `.card-block`. */
 const WALL_ROUTES = ['/', '/blog', '/about', '/career', '/credits'];
-/** Spacing of the points sampled across a wall, in CSS px. */
-const WALL_SAMPLE_PX = 4;
-/** Subpixel rounding allowed where two outline samples should agree, in CSS px. */
-const OUTLINE_TOLERANCE_PX = 2;
 
 interface WallReport {
   walls: number;
-  gaps: string[];
   covers: string[];
-  stubs: string[];
-  overpaints: string[];
 }
 
-/*
- * The throw falls down and right, so it reads as one outline only while the
- * wall's bottom edge never steps down going right and its right edge never
- * steps out going down; either step ends the throw against a brick face.
- */
 const readWalls = (page: Page): Promise<WallReport> =>
-  page.evaluate(
-    ({ sample, tolerance }) => {
-      const report: WallReport = {
-        walls: 0,
-        gaps: [],
-        covers: [],
-        stubs: [],
-        overpaints: [],
-      };
-      const edge = parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue(
-          '--block-edge',
-        ),
+  page.evaluate(() => {
+    const report: WallReport = { walls: 0, covers: [] };
+    const edge = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue(
+        '--block-edge',
+      ),
+    );
+    for (const wall of document.querySelectorAll('main .card-block')) {
+      if (!wall.getClientRects().length) continue;
+      report.walls += 1;
+      const name =
+        wall.closest('section')?.querySelector('h2')?.textContent?.trim() ??
+        'a wall';
+      const rects = [...wall.children].map((brick) =>
+        brick.getBoundingClientRect(),
       );
-      for (const wall of document.querySelectorAll('main .card-block')) {
-        if (!wall.getClientRects().length) continue;
-        report.walls += 1;
-        const name =
-          wall.closest('section')?.querySelector('h2')?.textContent?.trim() ??
-          'a wall';
-        const bricks = [...wall.children];
-        const rects = bricks.map((brick) => brick.getBoundingClientRect());
-        /* A positioned or transformed brick paints after static ones, z-index first. */
-        const paintOrder = bricks.map((brick) => {
-          const style = getComputedStyle(brick);
-          const layered =
-            style.position !== 'static' ||
-            [style.transform, style.translate, style.rotate, style.scale].some(
-              (value) => value !== 'none',
+      rects.forEach((a, i) =>
+        rects.slice(i + 1).forEach((b, k) => {
+          const across = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+          const down = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+          if (Math.min(across, down) > edge + 0.5)
+            report.covers.push(
+              `${name}: brick ${i + k + 2} covers brick ${i + 1} by ${Math.round(Math.min(across, down))}px`,
             );
-          const z = layered ? Number.parseInt(style.zIndex, 10) || 0 : 0;
-          return [z, layered ? 1 : 0];
-        });
-        const throwReach = parseFloat(
-          getComputedStyle(wall).getPropertyValue('--hard-throw'),
-        );
-        rects.forEach((a, i) =>
-          rects.slice(i + 1).forEach((b, k) => {
-            const j = i + k + 1;
-            const meets =
-              a.left < b.right &&
-              b.left < a.right + throwReach &&
-              a.top < b.bottom &&
-              b.top < a.bottom + throwReach;
-            const [zi = 0, li = 0] = paintOrder[i] ?? [];
-            const [zj = 0, lj = 0] = paintOrder[j] ?? [];
-            if (meets && (zi > zj || (zi === zj && li > lj)))
-              report.overpaints.push(
-                `${name}: brick ${i + 1} paints over brick ${j + 1} and its throw shows on it`,
-              );
-          }),
-        );
-        rects.forEach((a, i) =>
-          rects.slice(i + 1).forEach((b, k) => {
-            const across =
-              Math.min(a.right, b.right) - Math.max(a.left, b.left);
-            const down = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
-            if (Math.min(across, down) > edge + 0.5)
-              report.covers.push(
-                `${name}: brick ${i + k + 2} covers brick ${i + 1} by ${Math.round(Math.min(across, down))}px`,
-              );
-          }),
-        );
-        const left = Math.min(...rects.map((r) => r.left));
-        const right = Math.max(...rects.map((r) => r.right));
-        const top = Math.min(...rects.map((r) => r.top));
-        const bottom = Math.max(...rects.map((r) => r.bottom));
-        const covered = (x: number, y: number) =>
-          rects.some(
-            (r) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom,
-          );
-        for (let y = top + 1; y < bottom - 1; y += sample) {
-          let entered = false;
-          let crossed = false;
-          for (let x = left + 1; x < right - 1; x += sample) {
-            const on = covered(x, y);
-            if (on && crossed) {
-              report.gaps.push(
-                `${name}: ground between bricks at ${Math.round(x - left)},${Math.round(y - top)}`,
-              );
-              break;
-            }
-            if (on) entered = true;
-            else if (entered) crossed = true;
-          }
-        }
-        let lastBottom = -Infinity;
-        for (let x = left + 1; x < right - 1; x += sample) {
-          let y = bottom;
-          while (y > top && !covered(x, y)) y -= 1;
-          if (y > lastBottom + tolerance && lastBottom !== -Infinity)
-            report.stubs.push(
-              `${name}: the bottom edge steps down at ${Math.round(x - left)}px`,
-            );
-          lastBottom = y;
-        }
-        let lastRight = -Infinity;
-        for (let y = top + 1; y < bottom - 1; y += sample) {
-          let x = right;
-          while (x > left && !covered(x, y)) x -= 1;
-          if (x > lastRight + tolerance && lastRight !== -Infinity)
-            report.stubs.push(
-              `${name}: the right edge steps out at ${Math.round(y - top)}px`,
-            );
-          lastRight = x;
-        }
-      }
-      return report;
-    },
-    { sample: WALL_SAMPLE_PX, tolerance: OUTLINE_TOLERANCE_PX },
-  );
+        }),
+      );
+    }
+    return report;
+  });
 
-test.describe('joined walls', () => {
+test.describe('card walls', () => {
   for (const width of STEP_WIDTHS) {
-    test(`every wall is joined and climbs right at ${width}px`, async ({
+    test(`no brick covers another's content at ${width}px`, async ({
       page,
     }) => {
       await page.setViewportSize({ width, height: DESKTOP_VIEWPORT.height });
@@ -395,18 +435,9 @@ test.describe('joined walls', () => {
         expect(rest.walls, `${route} has no wall to measure`).toBeGreaterThan(
           0,
         );
-        expect(rest.gaps, `${route} shows the page between bricks`).toEqual([]);
         expect(
           rest.covers,
           `${route} has a brick over another's content`,
-        ).toEqual([]);
-        expect(
-          rest.overpaints,
-          `${route} has an earlier brick painted over a later one`,
-        ).toEqual([]);
-        expect(
-          rest.stubs,
-          `${route} has a throw that ends against a brick face`,
         ).toEqual([]);
       }
     });

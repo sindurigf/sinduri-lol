@@ -2,18 +2,19 @@ import { expect, test } from './test';
 import { gotoSettled } from './settle';
 import { AAA_TEXT, NON_TEXT, PAGE_HELPERS } from './contrast';
 import { DESKTOP_VIEWPORT, PHONE_VIEWPORT } from './wcag';
+import { NO_WEBKIT } from './tags';
 
 /*
  * The header's joined bricks draw their focus ring inside the brick
  * (docs/STYLEGUIDE.md "Focus"), so the ring must read against the brick's own
  * fill, at rest and hovered, and stay clear of its label (SC 1.4.11, 2.4.13).
- * The logo link has no ring: focused, it turns into an ink block on the bar.
+ * The logo link has no ring: focused, it turns into a block in the bar's opposite color.
  */
 
-/* A route with a current header link, so a gold brick is walked too. */
+/* A route with a current header link, so a current brick is walked too. */
 const ROUTE = '/about/';
 const BRICKS =
-  '.header-slab :is(.logo-link, .header-bricks a, .header-bricks button)';
+  '.header-slab :is(.logo-link, .header-bricks a, .header-bricks button, .header-actions > div > .nav-cta)';
 const MAX_STOPS = 12;
 /* Past --spacing-header, so the header goes slim. */
 const SLIM_SCROLL = 900;
@@ -69,7 +70,7 @@ const readStop = `(() => {
     blockArea: box.width * box.height,
     perimeter: 4 * (box.width + box.height),
     label: [...el.querySelectorAll('.label')].map((n) => ratio(parse(getComputedStyle(n).color), parse(s.backgroundColor)))[0] ?? 0,
-    brick: Boolean(el.closest('.header-bricks')),
+    brick: !el.classList.contains('logo-link'),
     onBar,
     inside: offset + width <= 0,
     clear,
@@ -169,38 +170,35 @@ for (const colorScheme of ['dark', 'light'] as const) {
 test.describe('the logo link in forced colors', () => {
   test.use({ viewport: DESKTOP_VIEWPORT });
 
-  test('draws a solid ring at least 2px wide when focused', async ({
-    page,
-    browserName,
-  }) => {
-    test.skip(
-      browserName === 'webkit',
-      'webkit reports forced-colors as active but paints the author palette (bug 225281)',
-    );
-    await page.emulateMedia({ forcedColors: 'active' });
-    await gotoSettled(page, ROUTE);
-    for (let i = 0; i < MAX_STOPS; i += 1) {
-      await page.keyboard.press('Tab');
-      if (
-        await page.evaluate(() =>
-          document.activeElement?.matches('.header-slab .logo-link'),
+  test(
+    'draws a solid ring at least 2px wide when focused',
+    NO_WEBKIT,
+    async ({ page }) => {
+      await page.emulateMedia({ forcedColors: 'active' });
+      await gotoSettled(page, ROUTE);
+      for (let i = 0; i < MAX_STOPS; i += 1) {
+        await page.keyboard.press('Tab');
+        if (
+          await page.evaluate(() =>
+            document.activeElement?.matches('.header-slab .logo-link'),
+          )
         )
-      )
-        break;
-    }
-    const ring = await page.evaluate(`(() => {
+          break;
+      }
+      const ring = await page.evaluate(`(() => {
       ${PAGE_HELPERS}
       const el = document.activeElement;
       if (!el || !el.matches('.header-slab .logo-link')) return null;
       const s = getComputedStyle(el);
       return { style: s.outlineStyle, width: parseFloat(s.outlineWidth), alpha: parse(s.outlineColor).a };
     })()`);
-    expect(ring, 'the walk never reached the logo link').not.toBeNull();
-    expect(ring, 'the logo ring is not painted in forced colors').toEqual({
-      style: 'solid',
-      width: expect.any(Number),
-      alpha: 1,
-    });
-    expect((ring as { width: number }).width).toBeGreaterThanOrEqual(2);
-  });
+      expect(ring, 'the walk never reached the logo link').not.toBeNull();
+      expect(ring, 'the logo ring is not painted in forced colors').toEqual({
+        style: 'solid',
+        width: expect.any(Number),
+        alpha: 1,
+      });
+      expect((ring as { width: number }).width).toBeGreaterThanOrEqual(2);
+    },
+  );
 });

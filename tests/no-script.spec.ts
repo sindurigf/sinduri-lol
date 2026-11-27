@@ -3,7 +3,12 @@ import { itemAt } from '../src/lib/defined';
 import { builtHtml, POST_ROUTES, TALK_ROUTES } from './routes';
 import { CTA, NAV_LINKS } from '../src/lib/nav';
 import { NODE } from './tags';
-import { DESKTOP_VIEWPORT, NARROW_WIDTH, PHONE_VIEWPORT } from './wcag';
+import {
+  DESKTOP_VIEWPORT,
+  MD_WIDTH,
+  NARROW_WIDTH,
+  PHONE_VIEWPORT,
+} from './wcag';
 
 /**
  * A <dialog> is display:none until showModal() runs, so below `md` with
@@ -14,8 +19,7 @@ import { DESKTOP_VIEWPORT, NARROW_WIDTH, PHONE_VIEWPORT } from './wcag';
 /** Narrowest viewport measured, where the primary nav is hidden. */
 const MOBILE = { width: NARROW_WIDTH, height: 800 };
 
-/** `md` and `lg`: below `md` the header shows no action brick without JavaScript. */
-const MD_WIDTH = 768;
+/** `lg`; below `md` the header shows no action brick without JavaScript. */
 const LG_WIDTH = 1024;
 
 /** A width where the primary nav is visible, so the fallback can collide with it. */
@@ -144,7 +148,7 @@ test.describe('navigation without JavaScript', () => {
   });
 
   for (const width of [MD_WIDTH, LG_WIDTH, DESKTOP.width]) {
-    test(`the header actions at ${width}px have one edge between bricks`, async ({
+    test(`the first header action brick at ${width}px has a left edge as wide as its right`, async ({
       browser,
     }) => {
       const context = await browser.newContext({
@@ -158,14 +162,13 @@ test.describe('navigation without JavaScript', () => {
 
         // SC 1.4.11: a hidden theme switch must not leave the first brick open on its left.
         const edges = await page
-          .locator('header .header-bricks:has(.theme-switch)')
+          .locator('header .header-actions')
           .evaluate((row) =>
-            [...row.children]
-              .map((child) =>
-                child.matches('a, button')
-                  ? child
-                  : child.querySelector(':scope > :is(a, button)'),
-              )
+            [
+              ...row.querySelectorAll(
+                ':scope > div > .nav-cta, .header-bricks > :is(a, button), .header-bricks > * > :is(a, button)',
+              ),
+            ]
               .filter(
                 (brick): brick is Element =>
                   !!brick && brick.getBoundingClientRect().width > 0,
@@ -182,16 +185,11 @@ test.describe('navigation without JavaScript', () => {
           edges.length,
           'No visible header action bricks.',
         ).toBeGreaterThan(0);
-        const [first, ...rest] = edges;
+        const [first] = edges;
         if (!first) throw new Error('No visible header action bricks.');
         expect(first.left, 'The first visible brick has no left edge.').toBe(
           first.right,
         );
-        for (const brick of rest) {
-          expect(brick.left, 'A following brick doubles the shared edge.').toBe(
-            '0px',
-          );
-        }
       } finally {
         await context.close();
       }

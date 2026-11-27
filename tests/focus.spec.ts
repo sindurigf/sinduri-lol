@@ -22,8 +22,8 @@ const WIDTHS = [
 const MAX_STOPS = 300;
 
 /*
- * Per step, scaled by control count. `/` has few controls and an animated
- * HeroField canvas; webkit under load measured up to 441ms a step there.
+ * Per step, scaled by control count; webkit under load measured up to 441ms a
+ * step on `/`.
  */
 const WALK_BUDGET_PER_STEP_MS = 600;
 
@@ -44,7 +44,7 @@ interface Stop {
   /** Probe points under the sticky header. */
   underHeader: number;
   hasRing: boolean;
-  /** The header logo link's ink block: its focus fill, 3:1 or more on the bar. No other stop may go without a ring. */
+  /** The header logo link's focus block: 3:1 or more on the bar. No other stop may go without a ring. */
   hasBlock: boolean;
   outline: string;
   outlineStyle: string;
@@ -322,7 +322,7 @@ const walkFor = async (page: Page, colorScheme: (typeof SCHEMES)[number]) => {
 
   /* Backward: the direction that lands controls under the sticky header. */
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  /* The no-script fallback link is not rendered when scripts run; the reading tab follows the footer. */
+  /* The no-script fallback link is not rendered when scripts run. */
   const last = await page.evaluateHandle(
     (selector) =>
       [...document.querySelectorAll(selector)]

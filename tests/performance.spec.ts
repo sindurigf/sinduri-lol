@@ -3,8 +3,8 @@ import { gzipSync } from 'node:zlib';
 import { join } from 'node:path';
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
-import { builtHtml, DIST_DIR, ROUTES } from './routes';
-import { NODE } from './tags';
+import { builtHtml, DIST_DIR, ROUTES, TALK_ROUTES } from './routes';
+import { CHROMIUM_ONLY, NODE } from './tags';
 import { LAYOUT_SHIFT, layoutShiftOf } from './layout-shift';
 
 /*
@@ -12,16 +12,21 @@ import { LAYOUT_SHIFT, layoutShiftOf } from './layout-shift';
  * so it is checked with Lighthouse on the live site (docs/DEPLOYMENT.md).
  */
 
-/* Decoded script bytes. `/` carries Vue, `/about` the cats; `/brand` is one page with every part's script. */
+/* Decoded script bytes. `/` carries the hero meadow, `/about` the cats; `/brand` is one page with every part's script. */
 const ROUTE_SCRIPT_BUDGETS: Readonly<Record<string, number>> = {
-  '/': 98_000,
+  '/': 27_000,
   '/about': 131_400,
   '/brand': 21_800,
 };
 const PAGE_SCRIPT_BUDGET = 17_500;
 
-/* Decoded bytes of the stylesheets a page links plus its inline `<style>`. Every route links the one sheet. */
+/* Decoded bytes of the stylesheets a page links plus its inline `<style>`. A talk also links the deck's sheet. */
+const TALK_STYLE_BUDGET = 120_500;
 const PAGE_STYLE_BUDGET = 120_000;
+const ROUTE_STYLE_BUDGETS: Readonly<Record<string, number>> =
+  Object.fromEntries(TALK_ROUTES.map((route) => [route, TALK_STYLE_BUDGET]));
+const styleBudget = (route: string): number =>
+  ROUTE_STYLE_BUDGETS[route] ?? PAGE_STYLE_BUDGET;
 
 const STYLESHEET_HREF = /<link\b[^>]*\brel="stylesheet"[^>]*\bhref="([^"]+)"/g;
 const INLINE_STYLE = /<style\b[^>]*>([\s\S]*?)<\/style>/g;
@@ -60,6 +65,7 @@ const RABBIT_SVG_BUDGETS: Readonly<Record<string, number>> = {
   'logo-rabbit.svg': 12_000,
   'roundel-rabbit.svg': 12_000,
   'bunny-footer.svg': 13_000,
+  'bunny-footer-light.svg': 13_000,
   'lepus-rabbit.svg': 4_000,
   'hero-rabbit.svg': 48_000,
 };
@@ -88,19 +94,16 @@ test.describe('style weight', NODE, () => {
     ).toBe(true);
     expect(
       pages
-        .filter((page) => page.bytes > PAGE_STYLE_BUDGET)
-        .map((page) => `${page.route} ${page.bytes}`),
-      `these pages ship more than ${PAGE_STYLE_BUDGET} bytes of CSS.`,
+        .filter((page) => page.bytes > styleBudget(page.route))
+        .map(
+          (page) => `${page.route} ${page.bytes} of ${styleBudget(page.route)}`,
+        ),
+      'these pages ship more CSS than their budget.',
     ).toEqual([]);
   });
 });
 
-test.describe('page weight and stability', () => {
-  test.skip(
-    ({ browserName }) => browserName !== 'chromium',
-    'layout-shift is Chromium-only, and script bytes do not vary by engine',
-  );
-
+test.describe('page weight and stability', CHROMIUM_ONLY, () => {
   for (const route of ROUTES) {
     test(`${route} stays within its script budget`, async ({ page }) => {
       const scripts = await scriptsFetched(page, route);

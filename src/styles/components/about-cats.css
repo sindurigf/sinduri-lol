@@ -94,7 +94,7 @@
     .cat-button {
       border-color: ButtonText;
 
-      @apply border-4 border-solid;
+      @apply edge-block border-solid;
     }
   }
 
@@ -126,7 +126,7 @@
   /* Under the sleep control, in the same corner column the cat's track stops short of. */
   .cat-tricks-button {
     @apply pointer-events-auto absolute right-0 grid size-target
-      place-items-center border-4 border-border bg-surface text-gold;
+      place-items-center edge-block border-border bg-surface text-gold;
 
     top: --spacing(12);
   }
@@ -153,7 +153,7 @@
   /* about-cats.ts places it under the band. */
   .cat-tricks {
     @apply pointer-events-auto m-0 w-60 overflow-y-auto edge border-border
-      bg-surface p-0 text-text shadow-hard-pink-object;
+      bg-surface p-0 text-text shadow-hard-red-object;
 
     position: fixed;
     inset: auto;
@@ -229,7 +229,7 @@
   }
 
   .cat-prop-toy {
-    fill: var(--color-bunny);
+    fill: var(--color-red);
   }
 
   .cat-prop-feather {
@@ -258,7 +258,7 @@
   }
 
   .cat-prop-yarn-end {
-    stroke: var(--color-bunny);
+    stroke: var(--color-red);
   }
 
   /*
@@ -272,7 +272,7 @@
   }
 
   .cat-card {
-    @apply edge border-border bg-surface p-4 shadow-hard-pink-object;
+    @apply edge border-border bg-surface p-4 shadow-hard-red-object;
   }
 
   /* The site button, small: still a 44px target (SC 2.5.5). */
@@ -286,7 +286,7 @@
 
   /* The home hero's gold sticker (gold-text on gold), hung off the photo's edge. */
   .cat-name {
-    @apply absolute -bottom-4 -left-2 -rotate-3 border-4 border-fill-edge bg-block-gold
+    @apply absolute -bottom-4 -left-2 -rotate-3 edge-block border-fill-edge bg-block-gold
       px-3 py-1 text-label font-black uppercase tracking-label text-gold-text
       shadow-hard-bunny-4;
   }

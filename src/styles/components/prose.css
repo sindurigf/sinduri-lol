@@ -60,13 +60,13 @@
 
     /* Each pillar casts the throw and the next covers it, as in a `.card-block`. */
     & > li {
-      @apply mt-0 flex min-w-0 flex-col;
+      @apply mt-0 flex min-w-0 flex-col wrap-anywhere;
 
       margin: 0 0 calc(var(--block-edge) * -1) calc(var(--block-edge) * -1);
       border: var(--block-edge) solid var(--color-block-ink);
       background-color: var(--color-block-light);
       color: var(--color-block-ink);
-      box-shadow: var(--hard-throw) var(--hard-throw) 0 var(--color-pink);
+      box-shadow: var(--hard-throw) var(--hard-throw) 0 var(--color-red);
     }
 
     & strong {
@@ -124,8 +124,8 @@
     }
   }
 
-  /* `xl` only: below it the rail and the measure leave each name too narrow. */
-  .post-layout .prose .pillar-wall {
+  /* `xl` only: below it the rail and the measure leave each name too narrow. Not in a module panel, which keeps the measure. */
+  .post-layout .prose > .pillar-wall {
     @variant xl {
       --pillar-outdent: calc((100cqi - 100%) / 2);
 
@@ -213,7 +213,7 @@
    * would make every block a landmark.
    */
   .prose pre {
-    @apply mt-6 min-w-0 overflow-x-auto border-4 border-border bg-surface p-4
+    @apply mt-6 min-w-0 overflow-x-auto edge-block border-border bg-surface p-4
       font-mono text-code text-text;
   }
 
@@ -261,7 +261,7 @@
    * measures.
    */
   .prose figure :is(.aspect-frame, video) {
-    @apply block h-auto w-full ring-4 ring-border;
+    @apply block h-auto w-full ring-(length:--block-edge) ring-border;
   }
 
   .prose figcaption {
@@ -325,7 +325,7 @@
   /* tests/forced-colors.spec.ts: a scroller needs its own edge there; the table's may be scrolled away. */
   @media (forced-colors: active) {
     .prose .table-scroll {
-      @apply border-4;
+      @apply edge-block;
     }
   }
 

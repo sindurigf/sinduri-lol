@@ -11,12 +11,17 @@ const PORT = TEST_WORKER_PORT;
 
 assertPortFree(PORT, 'TEST_WORKER_PORT');
 
+/* Both configs report through it, so a skipped test fails the run. */
+export const NO_SKIPS = './tests/reporters/no-skips.ts';
+
 /* playwright.config.ts ignores exactly these. */
 export const WORKER_SPECS = [
   'contact.spec.ts',
   'video-range.spec.ts',
   'served-types.spec.ts',
   'blog-pages.spec.ts',
+  'worker-failures.spec.ts',
+  'html-compression.spec.ts',
 ] as const;
 
 /*
@@ -42,7 +47,9 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   workers: 1,
-  reporter: process.env.CI ? [['github'], ['list']] : [['list']],
+  reporter: process.env.CI
+    ? [['github'], ['list'], [NO_SKIPS]]
+    : [['list'], [NO_SKIPS]],
 
   use: {
     baseURL: BASE_URL,

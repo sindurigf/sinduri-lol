@@ -5,13 +5,14 @@ import {
   HEADER_LINKS,
   HOME_HREF,
   NAV_LINKS,
+  REPORT_LINK,
   ariaCurrent,
 } from '../lib/nav';
 import { SITE_NAME } from '../lib/site';
 import NavList from './NavList.astro';
 import ThemeSwitch from './ThemeSwitch.astro';
 import TextSizeButton from './TextSizeButton.astro';
-import { TALKS_PATH } from '../lib/paths';
+import { isDeckPath } from '../lib/paths';
 
 /* The rabbit's drawn height in px: `--logo-rabbit-height`, as scripts/make-logo.mjs prints it. */
 const RABBIT_HEIGHT = 64;
@@ -19,17 +20,31 @@ const RABBIT_HEIGHT = 64;
 const currentPath = Astro.url.pathname;
 
 /* A slide deck loads no on-demand script, so it has no text size control. */
-const sizeControls = !currentPath.startsWith(TALKS_PATH);
+const sizeControls = !isDeckPath(currentPath);
 
 const current = (href: string) => ariaCurrent(currentPath, href);
 ---
 
-{/* The slim header's trigger: out of view once the page scrolls past the full header (header-compact.ts). */}
-<div
-  class="pointer-events-none absolute inset-x-0 top-0 h-header"
-  aria-hidden="true"
-  data-header-sentinel
-></div>
+{/* Before the header and outside it, so it scrolls away while the header sticks. Second in tab order, after the skip link. */}
+<aside
+  class="page-gutter relative bg-background"
+  aria-label="Accessibility help"
+>
+  {/* The slim header's trigger: the full header's place under the band, out of view once the page scrolls past it (header-compact.ts). */}
+  <div
+    class="pointer-events-none absolute inset-x-0 top-full h-header"
+    aria-hidden="true"
+    data-header-sentinel
+  ></div>
+  <div class="report-band-row flex min-h-target items-center justify-end py-2">
+    <a
+      href={REPORT_LINK.href}
+      class="link relative inline-flex min-h-target items-center text-label font-black"
+    >
+      {REPORT_LINK.label}
+    </a>
+  </div>
+</aside>
 {/* Gutter on <header>, not the column, so its content box matches <main> and the footer. */}
 <header class="site-header page-gutter sticky top-0 z-50 h-header py-3 bg-background short:static">
   {/* Grid from `lg`, not `md`: between 768 and 1023px the row barely fits and centering wastes slack. */}
@@ -45,7 +60,7 @@ const current = (href: string) => ariaCurrent(currentPath, href);
       aria-current={current(HOME_HREF)}
       class="logo-link flex min-w-0 items-center gap-4 max-xs:gap-2 lg:justify-self-start"
     >
-      <span class="logo-tile relative flex h-12 w-12 rotate-3 items-center justify-center rounded-nav border-4 border-fill-edge bg-block-gold">
+      <span class="logo-tile relative flex h-12 w-12 rotate-3 items-center justify-center rounded-nav bg-block-gold">
         <img
           src={logoRabbit.src}
           alt=""
@@ -83,9 +98,7 @@ const current = (href: string) => ariaCurrent(currentPath, href);
       The CTA is outside the Primary nav so the nav stays centered; `ml-auto`
       inside the list would push the links off-center by half its width.
     */}
-    <div class="header-bricks lg:justify-self-end">
-      <ThemeSwitch textSize={sizeControls} />
-      {sizeControls && <TextSizeButton />}
+    <div class="header-actions flex items-center md:gap-6 lg:justify-self-end">
       <div class="hidden md:block">
         <a
           href={CTA.href}
@@ -95,62 +108,66 @@ const current = (href: string) => ariaCurrent(currentPath, href);
           {CTA.label}
         </a>
       </div>
+      <div class="header-bricks">
+        <ThemeSwitch textSize={sizeControls} />
+        {sizeControls && <TextSizeButton />}
 
-      {/*
+        {/*
       The script loads at every width: 400% zoom crosses `md` (SC 1.4.10). The
       name stays "Menu"; aria-expanded carries the state and drives the icon.
     */}
-      <div class="mobile-menu md:hidden" data-mobile-menu>
-        <button
-          type="button"
-          class="menu-brick group flex size-target items-center justify-center border-4"
-          aria-expanded="false"
-          aria-controls="mobile-menu-panel"
-          aria-label="Menu"
-          data-menu-trigger
-        >
-          <span aria-hidden="true" class="relative block h-4 w-6">
-            <span class="absolute left-0 top-0 block h-menu-bar w-6 bg-text forced-colors:bg-button-text group-aria-expanded:top-menu-bar-mid group-aria-expanded:rotate-45" />
-            <span class="absolute left-0 top-menu-bar-mid block h-menu-bar w-6 bg-text forced-colors:bg-button-text opacity-100 group-aria-expanded:opacity-0" />
-            <span class="absolute left-0 top-menu-bar-end block h-menu-bar w-6 bg-text forced-colors:bg-button-text group-aria-expanded:top-menu-bar-mid group-aria-expanded:-rotate-45" />
-          </span>
-        </button>
+        <div class="mobile-menu md:hidden" data-mobile-menu>
+          <button
+            type="button"
+            class="menu-brick group flex size-target items-center justify-center edge-block"
+            aria-expanded="false"
+            aria-controls="mobile-menu-panel"
+            aria-label="Menu"
+            data-menu-trigger
+          >
+            <span aria-hidden="true" class="relative block h-4 w-6">
+              <span class="absolute left-0 top-0 block h-menu-bar w-6 bg-text forced-colors:bg-button-text group-aria-expanded:top-menu-bar-mid group-aria-expanded:rotate-45" />
+              <span class="absolute left-0 top-menu-bar-mid block h-menu-bar w-6 bg-text forced-colors:bg-button-text opacity-100 group-aria-expanded:opacity-0" />
+              <span class="absolute left-0 top-menu-bar-end block h-menu-bar w-6 bg-text forced-colors:bg-button-text group-aria-expanded:top-menu-bar-mid group-aria-expanded:-rotate-45" />
+            </span>
+          </button>
 
-        {/* aria-label, not an sr-only h2, which would precede the page h1. */}
-        <dialog
-          id="mobile-menu-panel"
-          class="mobile-menu-dialog"
-          aria-label="Menu"
-        >
-          <div class="mobile-menu-content">
-            {/* Unnamed: "Primary" would duplicate the header nav's landmark name (SC 1.3.1). */}
-            <nav>
-              <NavList
-                links={NAV_LINKS}
-                class="flex flex-col items-start gap-6"
-                linkClass="nav-sticker nav-sticker-large press-brick"
-                activeClass=""
-                restClass=""
-              />
+          {/* aria-label, not an sr-only h2, which would precede the page h1. */}
+          <dialog
+            id="mobile-menu-panel"
+            class="mobile-menu-dialog"
+            aria-label="Menu"
+          >
+            <div class="mobile-menu-content">
+              {/* Unnamed: "Primary" would duplicate the header nav's landmark name (SC 1.3.1). */}
+              <nav>
+                <NavList
+                  links={NAV_LINKS}
+                  class="flex flex-col items-start gap-6"
+                  linkClass="nav-sticker nav-sticker-large press-brick"
+                  activeClass=""
+                  restClass=""
+                />
 
-              <a
-                href={CTA.href}
-                aria-current={current(CTA.href)}
-                class="nav-cta press-brick mt-12 block px-8 py-4 text-center"
+                <a
+                  href={CTA.href}
+                  aria-current={current(CTA.href)}
+                  class="nav-cta press-brick mt-12 block px-8 py-4 text-center"
+                >
+                  {CTA.label}
+                </a>
+              </nav>
+
+              <button
+                type="button"
+                class="btn-secondary press-brick mt-12 w-full"
+                data-menu-close
               >
-                {CTA.label}
-              </a>
-            </nav>
-
-            <button
-              type="button"
-              class="btn-secondary press-brick mt-12 w-full"
-              data-menu-close
-            >
-              Close
-            </button>
-          </div>
-        </dialog>
+                Close
+              </button>
+            </div>
+          </dialog>
+        </div>
       </div>
     </div>
   </div>
@@ -168,7 +185,7 @@ const current = (href: string) => ariaCurrent(currentPath, href);
   <NavList
     links={[...NAV_LINKS, CTA]}
     class="mx-auto flex max-w-page flex-wrap items-center gap-6"
-    linkClass="hit-target label block border-4 border-border px-4 py-2"
+    linkClass="hit-target label block edge-block border-border px-4 py-2"
     activeClass="bg-text text-background"
     restClass="text-text hover:text-cyan"
   />

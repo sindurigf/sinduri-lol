@@ -13,6 +13,7 @@ import {
   REFLOW_VIEWPORT,
 } from './wcag';
 import { THEME_CHOICES, THEME_STORAGE_KEY } from '../src/lib/theme';
+import { NO_WEBKIT } from './tags';
 
 /** SC 2.4.13's minimum ring thickness. */
 const MIN_RING_PX = 2;
@@ -81,27 +82,37 @@ test.describe('light mode keeps every control edge visible', () => {
   for (const route of SAMPLED_ROUTES) {
     test(route, async ({ page }) => {
       await gotoSettled(page, route);
-      const { shaped, faint } = (await page.evaluate(`(() => {
+      const { shaped, controls, faint, unmarked } =
+        (await page.evaluate(`(() => {
         ${PAGE_HELPERS}
         let shaped = 0;
+        let controls = 0;
         const faint = [];
+        const unmarked = [];
         for (const el of document.querySelectorAll('main :is(${FOCUSABLE_SELECTOR.replaceAll("'", "\\'")})')) {
           const style = getComputedStyle(el);
           if (style.display === 'none' || el.getBoundingClientRect().width === 0) continue;
           // A photo link is identified by its photo, which the fill only backs.
+          controls += 1;
           if (el.querySelector('img')) continue;
-          const ground = effectiveBackground(el.parentElement);
+          // A card's title link is drawn by its card (cards.css), so the card's edge is the shape.
+          const shape = el.matches('.card-link') ? (el.closest('.card') ?? el) : el;
+          const box = getComputedStyle(shape);
+          const ground = effectiveBackground(shape.parentElement);
           if (!ground) {
             faint.push(describe(el) + ' on a ground that cannot be read');
             continue;
           }
-          const fill = parse(style.backgroundColor);
+          const fill = parse(box.backgroundColor);
           const edges = ['Top', 'Right', 'Bottom', 'Left']
-            .filter((side) => parseFloat(style['border' + side + 'Width']) > 0)
-            .map((side) => parse(style['border' + side + 'Color']))
+            .filter((side) => parseFloat(box['border' + side + 'Width']) > 0)
+            .map((side) => parse(box['border' + side + 'Color']))
             .filter((c) => c && c.a > 0);
           const hasFill = fill && fill.a > 0;
-          if (!hasFill && edges.length === 0) continue;
+          if (!hasFill && edges.length === 0) {
+            if (!style.textDecorationLine.includes('underline')) unmarked.push(describe(el));
+            continue;
+          }
           shaped += 1;
           const ratios = [
             ...(hasFill ? [ratio(over(fill, ground), ground)] : []),
@@ -111,12 +122,26 @@ test.describe('light mode keeps every control edge visible', () => {
             faint.push(describe(el) + ' best edge ' + Math.max(...ratios).toFixed(2));
           }
         }
-        return { shaped, faint };
-      })()`)) as { shaped: number; faint: string[] };
+        return { shaped, controls, faint, unmarked };
+      })()`)) as {
+          shaped: number;
+          controls: number;
+          faint: string[];
+          unmarked: string[];
+        };
       // The home page always has shaped controls; a prose page may have none.
       if (route === '/')
         expect(shaped, 'no shaped control found on /').toBeGreaterThan(0);
-      test.skip(shaped === 0, `${route} draws no control as a shape`);
+      if (shaped === 0) {
+        expect(
+          controls,
+          `${route} has no control in its main region`,
+        ).toBeGreaterThan(0);
+        expect(
+          unmarked,
+          `${route} draws no control as a shape, so each must be an underlined text link`,
+        ).toEqual([]);
+      }
       expect(faint, `${route} in light mode`).toEqual([]);
     });
   }
@@ -188,8 +213,14 @@ test.describe('light mode focus ring stands out from the page, and from the cont
   }
 });
 
+/* `md` and the `tab` variant (86rem) in px. */
+const MD_PX = 768;
+const TAB_PX = 1376;
+
 const switchButton = (page: Page) =>
-  page.locator('header').getByRole('button', { name: 'Theme', exact: true });
+  page
+    .locator('header')
+    .getByRole('button', { name: /^Theme( and Text Size)?$/ });
 const headerMenu = (page: Page) => page.locator('header #theme-menu');
 const radio = (page: Page, value: string) =>
   headerMenu(page).locator(`input[value="${value}"]`);
@@ -252,6 +283,31 @@ test.describe('the theme menu', () => {
     await gotoSettled(page, '/career');
     await expect(radio(page, 'light')).toBeChecked();
     expect(await mainIsLight(page)).toBe(true);
+  });
+
+  test('with storage blocked, Light still applies and nothing throws', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'localStorage', {
+        get() {
+          throw new DOMException('Storage is blocked', 'SecurityError');
+        },
+      });
+    });
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+
+    await gotoSettled(page, '/about');
+    expect(await mainIsLight(page)).toBe(false);
+
+    await choose(page, 'Light');
+    await expect(radio(page, 'light')).toBeChecked();
+    expect(
+      await mainIsLight(page),
+      'Light was not applied when storage is blocked.',
+    ).toBe(true);
+    expect(errors, 'blocked storage threw on the page.').toEqual([]);
   });
 
   test('Dark holds on a light device across a reload', async ({ browser }) => {
@@ -435,11 +491,15 @@ test.describe('the theme menu', () => {
     expect(button?.height).toBeGreaterThanOrEqual(MIN_TARGET);
     await switchButton(page).click();
     for (const row of await headerMenu(page).locator('label').all()) {
-      const box = await row.boundingBox();
-      expect(box?.height, 'a choice is under 44px tall').toBeGreaterThanOrEqual(
+      /* The layout box, not boundingBox(): Firefox reports a 44px row placed at 157.8px as 43.99998. */
+      const box = await row.evaluate((el) => {
+        const { width, height } = el.getBoundingClientRect();
+        return { width, height };
+      });
+      expect(box.height, 'a choice is under 44px tall').toBeGreaterThanOrEqual(
         MIN_TARGET,
       );
-      expect(box?.width).toBeGreaterThanOrEqual(MIN_TARGET);
+      expect(box.width).toBeGreaterThanOrEqual(MIN_TARGET);
     }
   });
 
@@ -518,36 +578,37 @@ test.describe('the theme menu', () => {
     });
   }
 
-  test('forced colors keep the menu edged and the choices visible', async ({
-    page,
-    browserName,
-  }) => {
-    test.skip(
-      browserName === 'webkit',
-      'webkit ships the forced-colors query only; see tests/forced-colors.spec.ts',
-    );
-    await gotoSettled(page, '/about');
-    await page.emulateMedia({ forcedColors: 'active' });
-    await switchButton(page).click();
-    const edge = await headerMenu(page).evaluate((menu) => {
-      const cs = getComputedStyle(menu);
-      return {
-        width: parseFloat(cs.borderTopWidth),
-        style: cs.borderTopStyle,
-        differs: cs.borderTopColor !== cs.backgroundColor,
-      };
-    });
-    expect(edge.width, 'the menu loses its edge').toBeGreaterThan(0);
-    expect(edge.style).not.toBe('none');
-    expect(edge.differs, 'the edge is the menu fill').toBe(true);
-    for (const choice of THEME_CHOICES) {
-      await expect(radio(page, choice.value)).toBeVisible();
-    }
-  });
+  test(
+    'forced colors keep the menu edged and the choices visible',
+    NO_WEBKIT,
+    async ({ page }) => {
+      await gotoSettled(page, '/about');
+      await page.emulateMedia({ forcedColors: 'active' });
+      await switchButton(page).click();
+      const edge = await headerMenu(page).evaluate((menu) => {
+        const cs = getComputedStyle(menu);
+        return {
+          width: parseFloat(cs.borderTopWidth),
+          style: cs.borderTopStyle,
+          differs: cs.borderTopColor !== cs.backgroundColor,
+        };
+      });
+      expect(edge.width, 'the menu loses its edge').toBeGreaterThan(0);
+      expect(edge.style).not.toBe('none');
+      expect(edge.differs, 'the edge is the menu fill').toBe(true);
+      for (const choice of THEME_CHOICES) {
+        await expect(radio(page, choice.value)).toBeVisible();
+      }
+    },
+  );
 
   /* SC 1.3.1: the glyph says the theme in use; the name stays fixed. */
   test('the icon follows the theme in use', async ({ page }) => {
     await gotoSettled(page, '/about');
+    /* From `md` until the edge tab its popover also holds the text size group. */
+    const width = page.viewportSize()?.width ?? 0;
+    const name =
+      width >= MD_PX && width < TAB_PX ? 'Theme and Text Size' : 'Theme';
     const sun = page.locator('header .theme-switch-sun');
     const moon = page.locator('header .theme-switch-moon');
     await expect(moon).toBeVisible();
@@ -555,7 +616,7 @@ test.describe('the theme menu', () => {
     await choose(page, 'Light');
     await expect(sun).toBeVisible();
     await expect(moon).toBeHidden();
-    await expect(switchButton(page)).toHaveAccessibleName('Theme');
+    await expect(switchButton(page)).toHaveAccessibleName(name);
   });
 
   /* SC 1.4.3: no dark frame of <main> before a saved light choice applies. */

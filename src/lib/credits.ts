@@ -85,8 +85,7 @@ export const LICENSED_PHOTOS = {
   },
 } as const satisfies Readonly<Record<string, LicensedPhoto>>;
 
-export type CaptionPart =
-  string | { readonly text: string; readonly href: string };
+type CaptionPart = string | { readonly text: string; readonly href: string };
 
 /**
  * The credit after "Photo: ". With `titleInCaption`: the title linked to
@@ -131,7 +130,7 @@ export const THANKS = [
     name: 'Vincenzo Gambino',
     href: 'https://www.gambinovincenzo.com/',
     reason:
-      'Thank you for introducing me to Astro at a Drupal session. Its performance still amazes me, and this site is built with Astro and Vue.',
+      'Thank you for introducing me to Astro at a Drupal session. Its performance still amazes me, and this site is built with Astro.',
   },
   {
     name: 'Alexandru Teodor Ieremia',

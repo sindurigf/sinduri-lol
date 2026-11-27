@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { expect, test, type Page } from './test';
 import {
   FORM_MEDIA_TYPE,
+  formatCount,
   LIMITS,
   MAX_BODY_BYTES,
   MESSAGES,
@@ -520,7 +521,7 @@ test.describe('the contact endpoint', () => {
     }
   });
 
-  test('a stored message is emailed to the owner', async ({
+  test('a stored message is emailed to CONTACT_NOTIFY_TO', async ({
     request,
     baseURL,
   }) => {
@@ -572,7 +573,7 @@ test.describe('the contact endpoint', () => {
         ...POLL,
         message:
           'a stored message whose notification failed was not resent by the ' +
-          'daily job, so the owner never learns it arrived.',
+          'daily job, so no email ever reports that it arrived.',
       })
       .toBeDefined();
 
@@ -625,6 +626,25 @@ test.describe('the contact endpoint', () => {
       unicodeBreaks.subject,
       'a C1 control or Unicode line separator in the name reached the subject.',
     ).toBe('Contact form: Ada Bcc Eve');
+  });
+
+  test('the notification subject drops direction overrides and keeps joiners in names', () => {
+    const subjectFor = (name: string) =>
+      notificationFor(
+        { name, email: 'ada@example.com', body: 'Hi.' },
+        NOTIFY_TO,
+        new Date(0),
+      ).subject;
+
+    expect(
+      subjectFor('Ada\u202EBcc\u2066Eve\u200B'),
+      'a bidi override, isolate or zero-width space in the name reached the subject.',
+    ).toBe('Contact form: Ada Bcc Eve');
+    const joined = '\u0915\u094D\u200D\u0937 \u{1F469}\u200D\u{1F4BB}';
+    expect(
+      subjectFor(joined),
+      'a zero-width joiner in a name was stripped, which breaks Indic and emoji names.',
+    ).toBe(`Contact form: ${joined}`);
   });
 
   test('the notification sender is the one wrangler.jsonc allows', () => {
@@ -693,13 +713,13 @@ test.describe('the contact endpoint', () => {
       /<h1\b[^>]*>[^<]*Message Too Long/,
     );
     expect(html, 'the refusal does not name the limit.').toContain(
-      String(LIMITS.bodyMax),
+      formatCount(LIMITS.bodyMax),
     );
     expect(html, 'the refusal does not offer the email address.').toContain(
       `href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>`,
     );
     expect(html, 'the refusal adds words of its own to the message.').toContain(
-      `>${MESSAGES.bodyLong}</p>`,
+      `>${MESSAGES.bodyTooLarge}</p>`,
     );
     expect(html, 'the refusal has no link back to the form.').toContain(
       `href="${CONTACT_PATH}"`,

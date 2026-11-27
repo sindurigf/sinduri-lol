@@ -274,7 +274,7 @@ test.describe('/brand', () => {
               ? [`${role.id} ${mode} ${row.token}: only cyan stays unpainted`]
               : []),
             ...(row.paint === 'fill' &&
-            ['text', 'subtle', 'pink-text', 'cyan'].includes(row.token)
+            ['text', 'subtle', 'red-text', 'cyan'].includes(row.token)
               ? [`${role.id} ${mode} ${row.token}: painted as a fill`]
               : []),
           ]);
@@ -363,10 +363,13 @@ test.describe('/brand', () => {
       await menu.evaluate((el) => getComputedStyle(el).position),
       'the sections list is not sticky on a laptop screen',
     ).toBe('sticky');
-    const header = (await page.locator('header').first().boundingBox())!;
     const content = page.locator('.brand-content');
+    /* Measured once scrolled: at the top the header sits lower, under the report band. */
+    const stuckHeader = async () =>
+      (await page.locator('header').first().boundingBox())!;
     for (const y of [SCROLLED, SCROLLED * 2]) {
       await page.evaluate((to) => window.scrollTo(0, to), y);
+      const header = await stuckHeader();
       const box = (await menu.boundingBox())!;
       expect(
         box.y,
@@ -387,6 +390,7 @@ test.describe('/brand', () => {
       .locator('visible=true')
       .last();
     await last.focus();
+    const header = await stuckHeader();
     const link = (await last.boundingBox())!;
     const list = (await menu.boundingBox())!;
     expect(

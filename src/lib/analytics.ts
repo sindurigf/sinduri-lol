@@ -1,10 +1,10 @@
 /*
- * Plausible Analytics (EU). No cookies or browser storage: tests/privacy.spec.ts.
+ * Plausible Analytics, self-hosted. No cookies or browser storage: tests/privacy.spec.ts.
  * Bundled from @plausible-analytics/tracker, so `script-src` stays same-origin.
  */
 import type { PlausibleRequestPayload } from '@plausible-analytics/tracker';
 
-export const PLAUSIBLE_ORIGIN = 'https://plausible.io';
+export const PLAUSIBLE_ORIGIN = 'https://stats.sinduri.lol';
 
 /* CSP `connect-src` names this URL: tests/headers-rules.spec.ts. */
 export const PLAUSIBLE_ENDPOINT = `${PLAUSIBLE_ORIGIN}/api/event`;
@@ -20,7 +20,6 @@ export const CLICK_EVENTS = {
 
 export type ClickEventName = (typeof CLICK_EVENTS)[keyof typeof CLICK_EVENTS];
 
-/* Custom properties show only on Plausible's Business plan. */
 export type ClickEventData = {
   label: string;
   area: string;

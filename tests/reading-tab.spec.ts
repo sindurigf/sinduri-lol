@@ -1,14 +1,21 @@
 import { readFileSync } from 'node:fs';
-import { expect, test, type Page } from './test';
+import { expect, test, type Locator, type Page } from './test';
 import { gotoSettled } from './settle';
 import { serveUnderShippedCsp } from './csp';
 import { NODE } from './tags';
 import { timedScan } from './axe';
-import { TEXT_SCALE_KEY, TEXT_SCALE_STEPS } from '../src/lib/text-scale';
+import {
+  PERCENT,
+  TEXT_SCALE_DEFAULT,
+  TEXT_SCALE_KEY,
+  TEXT_SCALE_PROPERTY,
+  TEXT_SCALE_STEPS,
+} from '../src/lib/text-scale';
+import { builtHtml } from './routes';
+import { MD_WIDTH, TAB_WIDTH } from './wcag';
 
 const WIDE_ROUTES = ['/', '/about/', '/blog/', '/credits/', '/career/'];
-/** From 86rem the page leaves a free gutter and the control is the edge tab (the `tab` variant in global.css). */
-const TAB_WIDTH = 1376;
+/** From TAB_WIDTH the page leaves a free gutter and the control is the edge tab. */
 const TAB_WIDTHS = [TAB_WIDTH, 1440, 1920];
 const BELOW_TAB_WIDTHS = [1375, 1280, 1024, 768, 390, 320];
 const SCRIPTS = ['src/scripts/text-size.ts'];
@@ -34,6 +41,41 @@ const openTab = async (page: Page) => {
   await expect(
     tab(page).getByRole('button', { name: /Drink Me/ }),
   ).toBeVisible();
+};
+
+/** The word each action's name carries beside its visible label. */
+const SIZE_FUNCTIONS = {
+  smaller: /smaller/i,
+  larger: /larger/i,
+  reset: /100 percent/i,
+};
+
+const escapeRegExp = (text: string) =>
+  text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** SC 2.5.3 and 4.1.2: each name starts with the visible label and says what the button does, once. */
+const expectNamedByFunction = async (group: Locator) => {
+  for (const [action, saysFunction] of Object.entries(SIZE_FUNCTIONS)) {
+    const button = group.locator(`[data-size-action="${action}"]`);
+    const visibleLabel = await button.evaluate((element) => {
+      const shown = element.cloneNode(true) as HTMLElement;
+      shown.querySelectorAll('.sr-only').forEach((hidden) => hidden.remove());
+      return shown.textContent!.trim();
+    });
+    expect(visibleLabel, `${action} has no visible label`).not.toBe('');
+    await expect(
+      button,
+      `the name of ${action} does not start with its visible label`,
+    ).toHaveAccessibleName(new RegExp(`^${escapeRegExp(visibleLabel)}\\b`));
+    await expect(
+      button,
+      `the name of ${action} does not say what the button does`,
+    ).toHaveAccessibleName(saysFunction);
+    await expect(
+      button,
+      `${action} says its function a second time as a description`,
+    ).toHaveAccessibleDescription('');
+  }
 };
 
 const sidewaysPx = (page: Page) =>
@@ -135,12 +177,16 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     await page.getByRole('button', { name: 'Aa Text Size' }).click();
     const group = page.locator('#text-menu');
     const eat = group.getByRole('button', { name: /^Eat Me/ });
-    for (let i = 0; i < TEXT_SCALE_STEPS.length; i += 1) {
+    const status = group.locator('[data-size-status]');
+    /* Clicks before the script loads replay when it resolves, which can move Eat Me under a click already aimed. */
+    await eat.click({ force: true });
+    await expect(status).toHaveText(
+      `Text is ${TEXT_SCALE_STEPS[TEXT_SCALE_STEPS.indexOf(TEXT_SCALE_DEFAULT) + 1]}%.`,
+    );
+    for (let i = 1; i < TEXT_SCALE_STEPS.length; i += 1) {
       await eat.click({ force: true });
     }
-    await expect(group.locator('[data-size-status]')).toContainText(
-      'the most this page fits',
-    );
+    await expect(status).toContainText('the most this page fits');
     await expect(eat).toHaveAttribute('aria-disabled', 'true');
     expect(await sidewaysPx(page)).toBeLessThanOrEqual(0);
     await page.evaluate((key) => localStorage.removeItem(key), TEXT_SCALE_KEY);
@@ -160,7 +206,9 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
         'the edge tab shows below its width',
       ).toBeHidden();
       await page
-        .getByRole('button', { name: width < 768 ? 'Aa Text Size' : 'Theme' })
+        .getByRole('button', {
+          name: width < MD_WIDTH ? 'Aa Text Size' : 'Theme',
+        })
         .click();
       const group = page
         .getByRole('group', { name: 'Text Size' })
@@ -168,9 +216,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
       await expect(group).toHaveCount(1);
       const buttons = group.getByRole('button');
       await expect(buttons).toHaveCount(3);
-      await expect(buttons.nth(0)).toHaveAccessibleName('Drink Me');
-      await expect(buttons.nth(1)).toHaveAccessibleName('Eat Me');
-      await expect(buttons.nth(2)).toHaveAccessibleName('Just Right');
+      await expectNamedByFunction(group);
       for (const box of await Promise.all(
         (await buttons.all()).map((b) => b.boundingBox()),
       )) {
@@ -260,14 +306,7 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
     await expect(button).toHaveAttribute('aria-expanded', 'true');
     const buttons = panel(page).getByRole('button');
     await expect(buttons).toHaveCount(3);
-    await expect(buttons.nth(0)).toHaveAccessibleName('Drink Me');
-    await expect(buttons.nth(0)).toHaveAccessibleDescription('Smaller text');
-    await expect(buttons.nth(1)).toHaveAccessibleName('Eat Me');
-    await expect(buttons.nth(1)).toHaveAccessibleDescription('Larger text');
-    await expect(buttons.nth(2)).toHaveAccessibleName('Just Right');
-    await expect(buttons.nth(2)).toHaveAccessibleDescription(
-      'Back to 100 percent',
-    );
+    await expectNamedByFunction(panel(page));
     for (const box of await Promise.all([
       button.boundingBox(),
       ...(await buttons.all()).map((b) => b.boundingBox()),
@@ -639,4 +678,194 @@ test.describe('The reading tab: Drink Me, Eat Me and Just Right', () => {
       }
     },
   );
+});
+
+/** The narrowest reflow width (SC 1.4.10) and the largest Drink Me step, as --text-scale. */
+const REFLOW_WIDTH = 320;
+const LARGEST_SCALE = Math.max(...TEXT_SCALE_STEPS) / PERCENT;
+
+/*
+ * Labels whose single words outgrow a 320px column at the largest step; each
+ * breaks inside a word instead. Other routes may still cap the step (ACCESSIBILITY.md).
+ */
+const WRAPPING_LABELS = [
+  {
+    name: 'the breadcrumb',
+    built: /<nav\b[^>]*aria-label="Breadcrumb"/,
+    selector: 'nav[aria-label="Breadcrumb"]',
+  },
+  {
+    name: 'the footer page links',
+    built: /class="footer-policies"/,
+    selector: '.footer-pages, .footer-policies',
+  },
+  {
+    name: 'a category or tag chip',
+    built: /<a\b[^>]*class="chip[\s"]/,
+    selector: 'a.chip',
+  },
+  {
+    name: "a post card's category and date",
+    built: /<article class="card[^"]*"[\s\S]*?class="card-link"/,
+    selector: 'article:has(.card-link) .label',
+  },
+  {
+    name: 'a pillar wall',
+    built: /class="pillar-wall"/,
+    selector: '.pillar-wall',
+  },
+] as const;
+
+test.describe(`at ${REFLOW_WIDTH}px and the largest text size (SC 1.4.4, 1.4.10)`, () => {
+  test.use({ viewport: { width: REFLOW_WIDTH, height: 800 } });
+
+  for (const { name, built, selector } of WRAPPING_LABELS) {
+    test(`nothing in ${name} runs past the viewport on any page that has it`, async ({
+      page,
+    }) => {
+      const routes = [...builtHtml()]
+        .filter(([, html]) => built.test(html))
+        .map(([route]) => route);
+      expect(routes.length, `no built page has ${name}`).toBeGreaterThan(0);
+
+      for (const route of routes) {
+        await gotoSettled(page, route);
+        const found = page.locator(selector);
+        await expect(found.first(), `${route} has no ${name}`).toBeAttached();
+        await page.evaluate(
+          ({ property, scale }) =>
+            document.documentElement.style.setProperty(property, String(scale)),
+          { property: TEXT_SCALE_PROPERTY, scale: LARGEST_SCALE },
+        );
+        /* Text, not boxes: a full-width link keeps its box while its word spills out. */
+        const past = await found.evaluateAll((elements) => {
+          const edge = document.documentElement.clientWidth;
+          return elements.flatMap((element) => {
+            const walker = document.createTreeWalker(
+              element,
+              NodeFilter.SHOW_TEXT,
+            );
+            const spilled: string[] = [];
+            for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+              const range = document.createRange();
+              range.selectNodeContents(node);
+              const out = [...range.getClientRects()].some(
+                (rect) =>
+                  rect.width > 0 && (rect.right > edge || rect.left < 0),
+              );
+              if (out) spilled.push((node.textContent ?? '').trim());
+            }
+            return spilled;
+          });
+        });
+        expect(
+          past,
+          `${route}: text in ${name} runs past the viewport`,
+        ).toEqual([]);
+      }
+    });
+  }
+});
+
+/* SC 2.4.3 and 2.4.6: a keyboard finds a control named for text size among the header's own stops, at every width. */
+test.describe('finding the text size control from the keyboard', () => {
+  for (const width of [390, 768, 1024, 1280, 1920]) {
+    test(`at ${width}px a control named Text Size comes right after the header`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await gotoSettled(page, '/about/');
+      const entry = page.locator(
+        width >= TAB_WIDTH
+          ? '.reading-tab-button'
+          : width < MD_WIDTH
+            ? 'header .aa-switch'
+            : 'header .theme-switch:not(.aa-switch)',
+      );
+      await expect(
+        entry,
+        `no text size entry is shown at ${width}px`,
+      ).toBeVisible();
+
+      /* Every stop up to the header's end (skip link, report link, header), then the edge tab. */
+      const limit =
+        (await page
+          .locator('header')
+          .evaluate(
+            (header, selector) =>
+              [...document.querySelectorAll(selector)].filter(
+                (el) =>
+                  el.checkVisibility() &&
+                  (header.contains(el) ||
+                    Boolean(
+                      el.compareDocumentPosition(header) &
+                      Node.DOCUMENT_POSITION_FOLLOWING,
+                    )),
+              ).length,
+            'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+          )) + 1;
+      let found = false;
+      for (let stop = 0; stop < limit && !found; stop += 1) {
+        await page.keyboard.press('Tab');
+        found = await page.evaluate(() => {
+          const el = document.activeElement;
+          return el instanceof HTMLElement && /Text Size/.test(el.innerText);
+        });
+      }
+      expect(
+        found,
+        `no control named Text Size within the first ${limit} tab stops at ${width}px.`,
+      ).toBe(true);
+      const focused = page.locator(':focus');
+      await expect(focused).toHaveAccessibleName(/Text Size/);
+
+      await page.keyboard.press('Enter');
+      await expect(
+        page.getByRole('group', { name: 'Text Size' }).locator('visible=true'),
+        `the control at ${width}px does not open the Text Size group.`,
+      ).toHaveCount(1);
+    });
+  }
+
+  test('the edge tab comes before the main content in focus order', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: TAB_WIDTH, height: 800 });
+    await gotoSettled(page, '/about/');
+    await expect(tab(page), 'the edge tab is missing').toBeAttached();
+    expect(
+      await tab(page).evaluate((el) =>
+        Boolean(
+          el.compareDocumentPosition(document.querySelector('main') as Node) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+        ),
+      ),
+      'the edge tab comes after <main>, so a keyboard reaches it only after the page.',
+    ).toBe(true);
+  });
+
+  test('the Theme button names the text size group only where it holds it', async ({
+    page,
+  }) => {
+    for (const [width, name] of [
+      [390, 'Theme'],
+      [1024, 'Theme and Text Size'],
+      [1920, 'Theme'],
+    ] as const) {
+      await page.setViewportSize({ width, height: 800 });
+      await gotoSettled(page, '/about/');
+      const theme = page.locator('header .theme-switch:not(.aa-switch)');
+      await expect(theme, 'the Theme button is missing').toBeAttached();
+      await expect(
+        theme,
+        `the Theme button at ${width}px does not say what its menu holds.`,
+      ).toHaveAccessibleName(name);
+      const group = page.locator('#theme-menu .popover-text-size');
+      await expect(group, 'the Theme menu has no size group').toBeAttached();
+      expect(
+        await group.evaluate((el) => getComputedStyle(el).display !== 'none'),
+        `at ${width}px the Theme menu's size group does not match its name.`,
+      ).toBe(name !== 'Theme');
+    }
+  });
 });

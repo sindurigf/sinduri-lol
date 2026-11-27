@@ -12,6 +12,8 @@ import type {
 } from './about-cats-types';
 import { WALK_SPEED } from './about-cats-frames';
 
+export const clamp01 = (v: number): number => Math.min(1, Math.max(0, v));
+
 export type { Pose };
 
 const BASE: Pose = {
@@ -360,6 +362,7 @@ const FLY_LANDS = 2500;
 const FLY_ARRIVES_MS = 300;
 const FLY_TAKES_OFF = 4600;
 const FLY_ESCAPES = 8600;
+const FLY_AWAY_MS = 700;
 /** Reared up where the second pounce lands, both paws swipe at the fly overhead. */
 const FLY_SWIPE = step(
   160,
@@ -505,8 +508,7 @@ const YARN_FADE_IN_MS = 200;
 const YARN_FADE_OUT_MS = 300;
 /** The ball turns once for each 2πr it rolls. */
 const turned = (px: number): number => (px / YARN_RADIUS) * (180 / Math.PI);
-const easeOut = (k: number): number =>
-  1 - (1 - Math.min(1, Math.max(0, k))) ** 2;
+const easeOut = (k: number): number => 1 - (1 - clamp01(k)) ** 2;
 /** Where the ball is along [ms, px] points, easing to rest between each pair. */
 const ballAt = (
   points: readonly (readonly [number, number])[],
@@ -581,10 +583,8 @@ export const knockAt = (lip: number, depth = Infinity): Move => {
     prop: 'cup',
     propAt: (t, cat) => {
       const slide = Math.max(0, lip - CUP_AT_PAW[cat]);
-      const pushed = EASE.out(
-        Math.min(1, Math.max(0, (t - pushFrom) / CUP_SLIDE_MS)),
-      );
-      const tip = Math.min(1, Math.max(0, (t - tipFrom) / CUP_TIP_MS));
+      const pushed = EASE.out(clamp01((t - pushFrom) / CUP_SLIDE_MS));
+      const tip = clamp01((t - tipFrom) / CUP_TIP_MS);
       const fall = Math.max(0, t - tipFrom - CUP_TIP_MS);
       const y = Math.min(depth, 0.5 * CUP_GRAVITY * fall ** 2);
       return {
@@ -713,7 +713,7 @@ export const MOVES = {
     propAt: (t) => {
       const [x, y] = along(FLY_PATH, t);
       const buzz = t < FLY_LANDS || t > FLY_TAKES_OFF ? 1 : 0;
-      const away = Math.min(1, Math.max(0, (t - FLY_ESCAPES) / 700));
+      const away = clamp01((t - FLY_ESCAPES) / FLY_AWAY_MS);
       return {
         kind: 'fly',
         x: x + buzz * 10 * Math.sin(t / 260),
@@ -850,8 +850,8 @@ export const MOVES = {
       propAt: (u, cat) => {
         const [ahead, up] = YARN_HELD[cat];
         const held =
-          Math.min(1, Math.max(0, (u - rollFrom) / ROLL_MS)) *
-          (1 - Math.min(1, Math.max(0, (u - letGo) / ROLL_MS)));
+          clamp01((u - rollFrom) / ROLL_MS) *
+          (1 - clamp01((u - letGo) / ROLL_MS));
         const kicks = Math.min(
           YARN_KICKS,
           Math.max(0, (u - kicksFrom) / YARN_KICK_MS),

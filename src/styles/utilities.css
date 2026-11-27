@@ -38,10 +38,11 @@
     background-clip: padding-box;
   }
 
-  .surface-gold :is(.rotate-3, .-rotate-3).sticker,
-  :is(:root[data-theme='light'] main, main .mode-light)
-    :is(.rotate-3, .-rotate-3).sticker:not(.mode-dark *),
-  :is(.rotate-3, .-rotate-3).hero-sticker.bg-surface {
+  .surface-gold
+    :is(.rotate-3, .-rotate-3).sticker:not(:root.light *, .mode-light *),
+  .mode-dark .surface-gold :is(.rotate-3, .-rotate-3).sticker,
+  :is(:root.light main, main .mode-light)
+    :is(.rotate-3, .-rotate-3).hero-sticker.bg-surface:not(.mode-dark *) {
     background-clip: border-box;
   }
 
@@ -98,7 +99,7 @@
    * the rabbit's springboard: pressed, the rabbit crouches with it; released, it springs.
    */
   .logo-link .logo-tile {
-    box-shadow: var(--lift-mark) var(--lift-mark) 0 var(--color-bunny);
+    box-shadow: var(--lift-mark) var(--lift-mark) 0 var(--color-red);
 
     @media (prefers-reduced-motion: no-preference) {
       transition-property: translate, box-shadow;
@@ -108,14 +109,14 @@
   }
 
   .logo-link:active .logo-tile {
-    box-shadow: 0 0 0 var(--color-bunny);
+    box-shadow: 0 0 0 var(--color-red);
   }
 
   @media (prefers-reduced-motion: no-preference) and (hover: hover) {
     .logo-link:hover:not(:active) .logo-tile {
       translate: calc(var(--press-lift) * -1) calc(var(--press-lift) * -1);
       box-shadow: calc(var(--lift-mark) + var(--press-lift))
-        calc(var(--lift-mark) + var(--press-lift)) 0 var(--color-bunny);
+        calc(var(--lift-mark) + var(--press-lift)) 0 var(--color-red);
     }
 
     .logo-link:hover:not(:active) .logo-rabbit {
@@ -152,7 +153,7 @@
 
     & > * {
       margin: 0 0 calc(var(--block-edge) * -1) calc(var(--block-edge) * -1);
-      box-shadow: var(--hard-throw) var(--hard-throw) 0 var(--color-pink);
+      box-shadow: var(--hard-throw) var(--hard-throw) 0 var(--color-red);
     }
   }
 
@@ -171,12 +172,16 @@
 /*
  * Step Up (src/lib/wall.ts sets these): bricks in one row rise, rows below the
  * first bring their right edge in. `&:is(.card-block > *)` beats the wall's
- * margin reset.
+ * margin reset. `--wall-rise` is set on the wall, so its room and rise agree.
  */
 @utility card-rise-room {
   &.card-block {
-    padding-top: var(--step-y);
+    padding-top: var(--wall-rise, var(--step-y));
   }
+}
+
+@utility card-rise-short {
+  --wall-rise: calc(var(--step-y) * var(--step-y-short-share));
 }
 
 @utility card-rise-room-0 {
@@ -190,11 +195,11 @@
 }
 
 @utility card-rise-half {
-  translate: 0 calc(var(--step-y) / -2);
+  translate: 0 calc(var(--wall-rise, var(--step-y)) / -2);
 }
 
 @utility card-rise-full {
-  translate: 0 calc(var(--step-y) * -1);
+  translate: 0 calc(var(--wall-rise, var(--step-y)) * -1);
 }
 
 @utility card-step-0 {

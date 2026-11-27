@@ -1,0 +1,322 @@
+@reference '../global.css';
+
+@layer components {
+  /*
+   * `vh` fallback; `.v-column .hero` sets the real height. `min-height` so it
+   * grows at 200% zoom. `svh`: `dvh` reflows mid-scroll, `lvh` hides the pause
+   * control under the toolbar.
+   */
+  .hero {
+    min-height: calc(100vh - var(--spacing-page-top));
+    min-height: calc(100svh - var(--spacing-page-top));
+
+    @apply isolate flex flex-col;
+  }
+
+  /*
+   * A region of the column: no border, extrusion or ground. `isolate` because
+   * the canvases stack inside.
+   */
+  .hero-window {
+    @apply relative isolate flex-1;
+  }
+
+  /*
+   * The hero stands on the page: the column keeps its edge width and a zero
+   * throw for the layout (tests/hero-fit.spec.ts measures both) and draws
+   * neither. Top margin is the name's overhang.
+   */
+  .v-column.gold-column {
+    position: relative;
+    border-color: transparent;
+    box-shadow: 0 0 0 0 transparent;
+    /*
+     * Rule, clearance and SINDURI's line box above its letters. Here, not
+     * @theme, because it reads the column's own --text-hero-h1.
+     */
+    --hero-name-overhang: calc(
+      var(--hero-rule) + var(--hero-name-clearance) +
+        (var(--text-hero-h1--line-height) - var(--hero-name-ink-foot)) *
+        var(--text-hero-h1)
+    );
+    margin-block-start: calc(var(--hero-name-overhang) + var(--hero-pad-block));
+    /* GUNTUPALLI's line box below the window top, plus clearance: no canvas sits under the name. */
+    --hero-field-top: calc(
+      2 * var(--hero-name-clearance) +
+        (var(--text-hero-h1--line-height) - var(--hero-name-ink-head)) *
+        var(--text-hero-h1)
+    );
+    --hero-ledge-h: var(--size-home-ledge-h-phone);
+    --hero-floor: calc(var(--hero-ledge-h) + --spacing(5));
+
+    @variant md {
+      --hero-ledge-h: var(--size-home-ledge-h);
+    }
+  }
+
+  /*
+   * The window fills the first screen; `min-height` so it grows rather than clips at 400% zoom.
+   * The floor keeps the taglines (`.home-tags`) inside the window, off the pause control.
+   */
+  .v-column .hero {
+    padding-block: 0;
+    min-height: max(
+      var(--hero-floor),
+      var(--hero-screen-share, 1) * 100svh - var(--spacing-page-top) -
+        var(--hero-name-overhang) - var(--hero-pad-block) - var(--block-edge) -
+        --spacing(1)
+    );
+  }
+
+  /*
+   * The block starts under the hero: this section draws the edge and throw
+   * the column leaves out, on the column's border box.
+   */
+  .v-column section.hero + section {
+    margin: 0 calc(var(--block-edge) * -1) calc(var(--block-edge) * -1);
+    padding-inline: 0;
+    border: var(--block-edge) solid var(--color-block-ink);
+
+    @apply shadow-hard-red-object;
+  }
+
+  @media (width < 40rem) {
+    .v-column.gold-column {
+      /*
+       * The standing tagline at its tallest: two lines of `text-h3` at the SC 1.4.12
+       * line height, so it clears the name under text spacing, plus padding and edges.
+       */
+      --text-spacing-line-height: 1.5;
+      --home-tag-stand: calc(
+        2 * var(--text-h3) * var(--text-spacing-line-height) + 2 *
+          --spacing(2) + 2 * var(--block-edge)
+      );
+      --hero-floor: calc(
+        var(--hero-field-top) + var(--hero-ledge-h) + var(--home-tag-stand)
+      );
+      /* Share of the screen the hero fills on a phone, so the gold block shows in the first view. */
+      --hero-screen-share: 0.8;
+    }
+  }
+
+  /*
+   * Starts below the name, so no canvas sits under either line (tests/hero-clear.spec.ts).
+   * No `z-index`: a stacking context would cap the pause control's `z-40`
+   * (tests/motion.spec.ts).
+   */
+  .hero-field {
+    @apply pointer-events-none absolute;
+
+    top: var(--hero-field-top, 0);
+    right: 0;
+    bottom: var(--hero-ledge-h);
+    left: 0;
+  }
+
+  /*
+   * The floor of the window: joined bricks in the block's fill across the
+   * column's border box, each drawing its top and left edge; the shelf closes
+   * the right end. The block rises one course into the hero.
+   */
+  .hero-ledge {
+    position: absolute;
+    right: calc(var(--block-edge) * -1);
+    bottom: 0;
+    left: calc(var(--block-edge) * -1);
+    display: flex;
+    height: var(--hero-ledge-h);
+    background-color: var(--color-block-gold);
+    border-right: var(--block-edge) solid var(--color-block-ink);
+  }
+
+  .hero-ledge > * {
+    flex: 1 1 0;
+    border: 0 solid var(--color-block-ink);
+    border-width: var(--block-edge) 0 0 var(--block-edge);
+    background-color: var(--color-block-gold);
+  }
+
+  .hero-ledge > :nth-child(3n + 1) {
+    flex-grow: 1.3;
+  }
+
+  .hero-ledge > :nth-child(4n + 2) {
+    flex-grow: 0.8;
+  }
+
+  /* Fewer, wider bricks on a phone. */
+  .hero-ledge > :nth-child(n + 6) {
+    @variant max-sm {
+      display: none;
+    }
+  }
+
+  .hero-field-layer {
+    @apply absolute inset-0 block h-full w-full;
+  }
+
+  /*
+   * The reduced-motion frame where no script draws it (scripts/make-hero-still.mjs).
+   * Its sky is cut and `contain` keeps all of the field and rabbit in a short window.
+   */
+  @media (scripting: none) {
+    .hero-field {
+      background: url('../../assets/hero-still-tall.webp') left bottom / contain
+        no-repeat;
+    }
+
+    @media (width < theme(--breakpoint-md)) and (orientation: landscape) {
+      .hero-field {
+        background-image: url('../../assets/hero-still-short.webp');
+      }
+    }
+
+    @media (width >= theme(--breakpoint-md)) {
+      .hero-field {
+        background-image: url('../../assets/hero-still-wide.webp');
+      }
+    }
+  }
+
+  /*
+   * The SC 2.2.2 pause control, beside the first name above the window, which
+   * can be too low to hold it clear of the name. `z-40`: above the name's line
+   * box, empty there. `pointer-events-auto`: `.hero-field` disables them.
+   */
+  .hero-motion-toggle {
+    @apply pointer-events-auto top-auto z-40;
+
+    right: 0;
+    bottom: calc(100% + var(--hero-field-top, 0px) + --spacing(4));
+  }
+
+  /*
+   * Hidden in forced colors: a canvas is a bitmap the mode cannot repaint.
+   * With nothing moving, the pause control goes too.
+   */
+  @media (forced-colors: active) {
+    .hero-field {
+      @apply hidden;
+    }
+  }
+
+  /*
+   * Line gap: the 12px rule plus clearance each side, less the line boxes'
+   * empty leading; not `em` alone because the rule is px. `top` offsets by half
+   * the leading difference so the letters, not the boxes, center on the rule.
+   */
+  .hero-plate span:last-child {
+    margin-top: calc(
+      var(--hero-rule) + 2 * var(--hero-name-clearance) -
+        (var(--hero-name-ink-foot) + var(--hero-name-ink-head)) *
+        var(--text-hero-h1)
+    );
+  }
+
+  /*
+   * `translateY(-50%)` puts the line break on the column's top rule only while
+   * the name is two lines (tests/hero-fit.spec.ts). `right` reserves the stickers.
+   */
+  .hero-plate {
+    top: calc(
+      var(--hero-rule) / -2 +
+        (var(--hero-name-ink-foot) - var(--hero-name-ink-head)) / 2 *
+        var(--text-hero-h1)
+    );
+    right: calc(var(--hero-marks-reserve) + var(--hero-inset));
+    left: var(--hero-inset);
+    transform: translateY(-50%);
+
+    @apply absolute z-30 flex min-w-0 flex-col;
+  }
+
+  /*
+   * Top right, below the rule; never at the foot, over the field. The box ends
+   * on the shelf, one column wide, and clips: a sticker that does not
+   * fit wraps out of sight, so at 400% zoom none hangs over the words below
+   * (SC 1.4.10). The padding is the room the throw and tilt need; a column gap
+   * wider than the box puts a wrapped sticker wholly past the clip, never half a word.
+   */
+  .hero-marks {
+    --marks-room: --spacing(4);
+
+    top: calc(var(--hero-gap) - var(--marks-room));
+    right: calc(var(--hero-inset) - var(--marks-room));
+    bottom: var(--hero-ledge-h);
+    width: calc(var(--hero-marks-reserve) + 2 * var(--marks-room));
+    padding: var(--marks-room);
+    overflow: clip;
+
+    column-gap: calc(100% + 2 * var(--marks-room));
+
+    @apply absolute z-20 flex flex-col flex-wrap-reverse content-start items-start gap-y-4;
+  }
+
+  /*
+   * A flex column never wraps its first item, so an empty first item lets a
+   * sticker taller than the room wrap out of sight too. The margin cancels its gap.
+   */
+  .hero-marks::before {
+    content: '';
+    margin-top: calc(-1 * --spacing(4));
+  }
+
+  /*
+   * Below `sm` the name takes full width and the words drop under it, still at
+   * the top. The narrow inset there would put a sticker's throw on the border.
+   */
+  @media (width < 40rem) {
+    .hero-plate {
+      right: var(--hero-inset);
+    }
+
+    /* Ends above the standing tagline, so a sticker that does not fit wraps out of sight. */
+    .hero-marks {
+      top: calc(var(--hero-gap) + var(--text-hero-h1) - var(--marks-room));
+      right: calc(var(--hero-inset) - var(--marks-room) + var(--hard-throw));
+      bottom: calc(var(--hero-ledge-h) + var(--home-tag-stand));
+    }
+  }
+
+  .hero-sticker {
+    font-size: var(--text-hero-sticker);
+    line-height: var(--text-hero-sticker--line-height);
+
+    @apply edge-block border-block-ink px-4 py-2 font-black uppercase;
+  }
+
+  /* A page-colored fill on the page: its edge is the page's ring (SC 1.4.11). */
+  .hero-sticker.bg-surface {
+    border-color: var(--color-border);
+  }
+
+  /* Laid over the shelf, the wall's top a little above the shelf's (index.astro sets the section's `pt-0`). */
+  .home-tags {
+    --home-tags-drop: --spacing(3);
+
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
+    margin-top: calc(-1 * (var(--hero-ledge-h) + --spacing(5)));
+  }
+
+  /*
+   * Below `sm` the first straddles the shelf and the second stands on it at the
+   * right end; the wall's negative margin joins its edge to the shelf's.
+   */
+  @media (width < 40rem) {
+    .home-tags {
+      margin-top: calc(var(--home-tags-drop) - var(--hero-ledge-h));
+    }
+
+    .home-tag:last-child {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + var(--home-tags-drop));
+    }
+  }
+
+  .home-tag {
+    @apply px-4 py-2 font-black;
+  }
+}

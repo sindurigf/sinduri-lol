@@ -94,7 +94,7 @@ const sourceFiles = (dir: string): string[] => {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) out.push(...sourceFiles(full));
-    else if (/\.(astro|vue|ts|js|css)$/.test(entry.name)) out.push(full);
+    else if (/\.(astro|ts|js|css)$/.test(entry.name)) out.push(full);
   }
   return out;
 };
@@ -132,7 +132,7 @@ const expectCopiesDisclosed = (text: string): void => {
   expect(
     text,
     '/privacy no longer says each message is emailed to a Google-hosted inbox.',
-  ).toMatch(/copy is emailed[^.]*Google/);
+  ).toMatch(/copy goes to my inbox[^.]*Google/);
 
   expect(
     text,
@@ -259,13 +259,13 @@ test.describe('the privacy policy is true', NODE, () => {
 
     expect(
       section,
-      '/privacy no longer says Plausible stores the counts in the European Union.',
-    ).toContain('European Union');
+      '/privacy no longer says Plausible runs on an Infomaniak server in Switzerland.',
+    ).toMatch(/Infomaniak in Geneva, Switzerland/);
 
     expect(
       section,
-      '/privacy no longer says the trial ends with Plausible deleting the counts.',
-    ).toMatch(/free trial\..*later deletes what it stored/);
+      '/privacy no longer says how long the stats are kept.',
+    ).toMatch(/stats are kept until I delete them/);
 
     expect(
       section,

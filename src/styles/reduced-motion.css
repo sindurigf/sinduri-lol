@@ -1,10 +1,14 @@
 /*
- * Backstop for anything animated. SC 2.2.2 needs a real control, which the hero
- * field has (HeroField.vue); the field also reads this preference itself and
- * draws once.
+ * Backstop for anything animated. SC 2.2.2 needs a real control, which the
+ * hero field has (src/scripts/hero-field.ts); it also reads this preference
+ * itself and draws once.
  */
 
 @media (prefers-reduced-motion: reduce) {
+  :root {
+    --press-rise: 0px;
+  }
+
   *,
   ::before,
   ::after {

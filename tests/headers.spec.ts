@@ -7,6 +7,7 @@ import { collectViolations } from './policy-server';
 import { REFLOW_VIEWPORT } from './wcag';
 import { ASSET_CACHE_CONTROL, usePolicyServer } from './headers-fixture';
 import { LD_JSON } from './html';
+import { CHROMIUM_ONLY } from './tags';
 
 /** Browser behavior under the served headers; tests/headers-rules.spec.ts checks the rules. */
 
@@ -39,8 +40,9 @@ const declaredAssets = (): string[][] => {
     ),
   ];
 
-  // A browser fetches one candidate per <picture> or bare <img>, so each is one group.
-  const image = /<picture\b[\s\S]*?<\/picture>|<img\b[^>]*>/g;
+  // A browser fetches one candidate per <picture>, bare <img> or ModeArt pair, whose hidden twin stays unloaded.
+  const image =
+    /<img\b[^>]*\bart-dark\b[^>]*>\s*<img\b[^>]*\bart-light\b[^>]*>|<picture\b[\s\S]*?<\/picture>|<img\b[^>]*>/g;
   const groups = [
     ...[...html.matchAll(image)].map((m) => paths(m[0])),
     ...paths(html.replace(image, '')).map((path) => [path]),
@@ -170,27 +172,24 @@ test.describe('security headers', () => {
   });
 
   /* Chromium loads no rule set when the file arrives as application/json. */
-  test('Chromium accepts the speculation rules', async ({
-    page,
-    browserName,
-  }) => {
-    test.skip(
-      browserName !== 'chromium',
-      'speculation rules are Chromium only',
-    );
-    const cdp = await page.context().newCDPSession(page);
-    const ruleSets: { errorType?: string }[] = [];
-    cdp.on('Preload.ruleSetUpdated', (event) => ruleSets.push(event.ruleSet));
-    await cdp.send('Preload.enable');
-    await page.goto(`${policy().origin}/`);
-    await expect
-      .poll(() => ruleSets.length, { message: 'no rule set was loaded' })
-      .toBeGreaterThan(0);
-    expect(
-      ruleSets.map((set) => set.errorType ?? 'ok'),
-      'Chromium rejected the speculation rules',
-    ).toEqual(['ok']);
-  });
+  test(
+    'Chromium accepts the speculation rules',
+    CHROMIUM_ONLY,
+    async ({ page }) => {
+      const cdp = await page.context().newCDPSession(page);
+      const ruleSets: { errorType?: string }[] = [];
+      cdp.on('Preload.ruleSetUpdated', (event) => ruleSets.push(event.ruleSet));
+      await cdp.send('Preload.enable');
+      await page.goto(`${policy().origin}/`);
+      await expect
+        .poll(() => ruleSets.length, { message: 'no rule set was loaded' })
+        .toBeGreaterThan(0);
+      expect(
+        ruleSets.map((set) => set.errorType ?? 'ok'),
+        'Chromium rejected the speculation rules',
+      ).toEqual(['ok']);
+    },
+  );
 
   test('the site runs clean under the policy: no violations, fonts load', async ({
     page,

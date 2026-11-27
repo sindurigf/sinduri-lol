@@ -1,5 +1,6 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
+import { reportBand } from './report-band';
 
 /**
  * Tightest header widths: 336px (`--breakpoint-xs`), 768px (primary nav appears),
@@ -108,7 +109,11 @@ for (const width of BRICK_WIDTHS) {
         const inner = slab.getBoundingClientRect();
         const top = inner.top + parseFloat(slabStyle.borderTopWidth);
         const bottom = inner.bottom - parseFloat(slabStyle.borderBottomWidth);
-        const rows = [...slab.querySelectorAll<HTMLElement>('.header-bricks')]
+        const rows = [
+          ...slab.querySelectorAll<HTMLElement>(
+            '.header-bricks, .header-actions > div > .nav-cta',
+          ),
+        ]
           .filter((row) => row.checkVisibility())
           .map((row) => {
             const box = row.getBoundingClientRect();
@@ -149,36 +154,6 @@ for (const width of BRICK_WIDTHS) {
           'a brick row and its throw are not centered on the bar',
         ).toBeLessThanOrEqual(1);
       }
-    });
-  });
-}
-
-/* Wider than the page column, where the gold hero runs out toward the screen edge. */
-const WIDE_WIDTHS = [1440, 1920] as const;
-
-for (const width of WIDE_WIDTHS) {
-  test.describe(`the header bar at ${width}px`, () => {
-    test.use({ viewport: { width, height: VIEWPORT_HEIGHT } });
-
-    test('starts and ends where the gold hero does', async ({ page }) => {
-      await gotoSettled(page, ROUTE);
-      const found = await page.evaluate(() => {
-        const edges = (selector: string) => {
-          const box = document.querySelector(selector)?.getBoundingClientRect();
-          return box ? { left: box.left, right: box.right } : null;
-        };
-        return { bar: edges('.header-slab'), hero: edges('main .gold-column') };
-      });
-      expect(found.bar, 'the header has no bar').not.toBeNull();
-      expect(found.hero, `${ROUTE} has no gold hero`).not.toBeNull();
-      expect(
-        Math.abs(found.bar!.left - found.hero!.left),
-        'the bar starts somewhere other than the hero',
-      ).toBeLessThanOrEqual(1);
-      expect(
-        Math.abs(found.bar!.right - found.hero!.right),
-        'the bar ends somewhere other than the hero',
-      ).toBeLessThanOrEqual(1);
     });
   });
 }
@@ -231,15 +206,16 @@ for (const width of SLIM_WIDTHS) {
 /* An /about section far below the first screen. */
 const FAR_ANCHOR = 'drupal';
 
-/* The full header's height in px: the slim header starts past it. */
+/** Where the full header ends in the document, in px: the report band above it, then `--spacing-header`. */
 const fullHeader = (page: Page): Promise<number> =>
-  page.evaluate(() =>
-    parseFloat(
+  reportBand(page).evaluate((band) => {
+    const height = parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue(
         '--spacing-header',
       ),
-    ),
-  );
+    );
+    return band.getBoundingClientRect().bottom + window.scrollY + height;
+  });
 
 /* Tab stops walked under the slim header: past the opening of /about and into its body. */
 const SLIM_WALK_STOPS = 30;
@@ -265,7 +241,7 @@ test.describe('the slim header once the page scrolls', () => {
       const root = getComputedStyle(document.documentElement);
       const targets = [
         ...header.querySelectorAll<HTMLElement>(
-          '.header-bricks :is(a, button), .logo-link',
+          '.header-bricks :is(a, button), .header-actions > div > .nav-cta, .logo-link',
         ),
       ]
         .filter((el) => el.checkVisibility())

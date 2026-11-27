@@ -50,8 +50,8 @@
 
   /*
    * A failed photo fades out and the message reads on `background` (15.28),
-   * never over the photo. `loading` draws nothing: the previous photo stays
-   * while the count says "Loading".
+   * never over the photo. `loading` draws nothing: during a step the previous
+   * photo stays while the count says "Loading".
    */
   .photo-viewer-figure[data-state='failed'] img {
     @apply opacity-0;
@@ -137,7 +137,7 @@
    */
   .photo-strip {
     @apply flex snap-x snap-mandatory items-start gap-4 overflow-x-auto
-      border-4 border-transparent pb-3;
+      edge-block border-transparent pb-3;
 
     container-type: inline-size;
 
@@ -160,7 +160,7 @@
 
   /* 44px square (SC 2.5.5). */
   .strip-button {
-    @apply grid size-11 place-items-center border-4 border-border bg-surface
+    @apply grid size-11 place-items-center edge-block border-border bg-surface
       font-black text-text;
   }
 

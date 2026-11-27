@@ -2,7 +2,8 @@
  * Fails when a change weakens the tests: a skip, an axe narrowing, fewer or
  * hollow assertions, a changed threshold, a new rejected finding, or an edit to
  * the gate itself. CI runs the default branch's copy
- * (.github/workflows/test-weakening.yml); the owner approves the head commit.
+ * (.github/workflows/test-weakening.yml); a review of the head commit by
+ * GITHUB_REPOSITORY_OWNER approves a finding.
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -36,6 +37,7 @@ const RUNNER_FILES = [
   'playwright.worker.config.ts',
   'tests/tags.ts',
   'tests/test.ts',
+  'tests/reporters/no-skips.ts',
   'tests/ports.ts',
   'scripts/shard-tests.mjs',
 ];
@@ -74,14 +76,16 @@ const NUMBER = /\d[\d_]*(?:\.\d+)?/;
 const NEGATION = /\.not\./;
 const NUMBERS = new RegExp(NUMBER.source, 'g');
 const TRY_BLOCK = /\btry\s*\{/g;
-/** An expect that returns a promise: a locator, the page, or `expect.poll`. */
+/** An expect that returns a promise: a locator, `expect.poll`, or `page` before a page matcher, as `page` may name a string. */
 const ASYNC_EXPECT =
-  /\bexpect\s*(?:\.\s*poll\b|\(\s*(?:page\s*\)|[\w.$]*(?:[Ll]ocator|getBy\w+)\b))/g;
+  /\bexpect\s*(?:\.\s*poll\b|\(\s*(?:page\s*\)\s*(?:\.\s*not\s*)?\.\s*toHave(?:Title|URL|Screenshot)\b|[\w.$]*(?:[Ll]ocator|getBy\w+)\b))/g;
 const AWAITED = /(?:\bawait|\breturn|=>)\s*$/;
 /** A return behind an engine, device or environment test: the usual way to skip a test quietly. */
 const GUARDED_RETURN =
   /\bif\s*\([^)]*\b(?:browserName|isMobile|channel|project|process\.env|testInfo)\b[^)]*\)\s*\{?\s*return\b/g;
-const ENGINE_INVARIANT = /\bENGINE_INVARIANT\b/;
+/** An engine or feature tag (tests/tags.ts, tests/feature-tags.ts) that narrows where a test runs, by name or as its literal. */
+const ENGINE_SCOPE =
+  /\b(?:NODE|ENGINE_INVARIANT|CHROMIUM_ONLY|WEBKIT_ONLY|NO_WEBKIT|NO_FIREFOX|WITH(?:OUT)?_[A-Z][A-Z_]*?)(?:_TAG)?\b|['"`]@(?:node|engine-invariant|chromium-only|webkit-only|no-webkit|no-firefox|with-|without-)/;
 const TEST_CALL = /\b(?:test|describe)(?:\.describe)?\s*\(/g;
 const GATE_SCRIPT = /^(?:pre|post)?(?:test|check|build)\b/;
 const GATE_HOOK = /^(?:pre|post)(?:test|check|build)\b/;
@@ -309,7 +313,7 @@ const unawaitedExpects = (code) =>
     .filter((match) => !AWAITED.test(code.slice(0, match.index)))
     .map((match) => match.index);
 
-/** Each test or describe call: its title text, line, and whether its header carries ENGINE_INVARIANT. */
+/** Each test or describe call: its title text, line, and whether its header carries an engine-scope tag. */
 const testHeaders = (text, code) =>
   [...code.matchAll(TEST_CALL)].map((match) => {
     const open = match.index + match[0].length - 1;
@@ -329,9 +333,11 @@ const testHeaders = (text, code) =>
     }
     return {
       line: lineAt(code, match.index),
+      start: match.index,
+      end,
       title: {
         key: normalize(text.slice(open + 1, comma)),
-        tagged: ENGINE_INVARIANT.test(text.slice(open, headerEnd)),
+        tagged: ENGINE_SCOPE.test(text.slice(open, headerEnd)),
       },
     };
   });
@@ -614,9 +620,18 @@ export const fileFindings = ({ path, oldPath = path, oldText, newText }) => {
         'returns early behind an engine or environment test',
       );
     const headersBefore = testHeaders(oldText, oldCode);
-    for (const { title, line } of testHeaders(runs, newCode)) {
-      const was = headersBefore.find(({ title: old }) => old.key === title.key);
-      if (title.tagged && was && !was.title.tagged)
+    const headersNow = testHeaders(runs, newCode);
+    const existed = (key) =>
+      headersBefore.find(({ title: old }) => old.key === key);
+    for (const { title, line, start, end } of headersNow) {
+      if (!title.tagged) continue;
+      const was = existed(title.key);
+      if (was?.title.tagged) continue;
+      const wrapsExisting = headersNow.some(
+        (inner) =>
+          inner.start > start && inner.end <= end && existed(inner.title.key),
+      );
+      if (was || wrapsExisting)
         add(line, 'runs an existing test in fewer engines');
     }
   }
@@ -779,23 +794,24 @@ const approvalReason = (body) => {
   return null;
 };
 
-/* GitHub blocks approving your own pull request, so the owner's comment review counts too. */
+/* GitHub blocks approving your own pull request, so a comment review counts too. */
 const MARKER_STATES = new Set([APPROVED, 'COMMENTED']);
 const REVOKING_STATES = new Set(['CHANGES_REQUESTED', 'DISMISSED']);
 
 /**
- * The reason from the owner's latest approving or comment review of `headSha`
- * that carries the marker and that no one else edited, unless a later owner
- * review requests changes or was dismissed; `null` otherwise. Oldest first.
+ * The reason from the latest approving or comment review of `headSha` by
+ * `GITHUB_REPOSITORY_OWNER` that carries the marker and that no one else
+ * edited, unless a later review by that account requests changes or was
+ * dismissed; `null` otherwise. Oldest first.
  */
-export const ownerApproval = (reviews, owner, headSha) => {
-  const isOwner = (login) =>
-    (login ?? '').toLowerCase() === owner.toLowerCase();
+export const maintainerApproval = (reviews, maintainer, headSha) => {
+  const isMaintainer = (login) =>
+    (login ?? '').toLowerCase() === maintainer.toLowerCase();
   let reason = null;
   for (const { login, commitId, state, body, editor } of reviews) {
-    if (!isOwner(login) || commitId !== headSha) continue;
+    if (!isMaintainer(login) || commitId !== headSha) continue;
     if (REVOKING_STATES.has(state)) reason = null;
-    else if (MARKER_STATES.has(state) && (!editor || isOwner(editor)))
+    else if (MARKER_STATES.has(state) && (!editor || isMaintainer(editor)))
       reason = approvalReason(body) ?? reason;
   }
   return reason;
@@ -938,13 +954,13 @@ export const main = async ({
       return 0;
     }
     log(
-      '\nTest weakening: the owner approves in the pull request. Set APPROVED_TEST_CHANGE to pass locally.',
+      '\nTest weakening: in CI, a review with "Approved test change: <reason>" passes it. Set APPROVED_TEST_CHANGE to pass locally.',
     );
     return 1;
   }
 
   const owner = requireEnv(env, 'GITHUB_REPOSITORY_OWNER');
-  const reason = ownerApproval(
+  const reason = maintainerApproval(
     await pullRequestReviews(
       fetchImpl,
       requireEnv(env, 'GITHUB_REPOSITORY'),

@@ -12,7 +12,8 @@ import { join } from 'node:path';
 import { assertBuildCurrent } from './build-fingerprint.mjs';
 import { hashesFor, inlineBlocks } from './csp-hashes.mjs';
 
-const ROOT = fileURLToPath(new URL('..', import.meta.url));
+const ROOT =
+  process.env.CHECK_ROOT ?? fileURLToPath(new URL('..', import.meta.url));
 const HEADERS = join(ROOT, 'public/_headers');
 const HASH = /'sha256-[A-Za-z0-9+/=]+'/g;
 
@@ -34,7 +35,7 @@ for (const [name, expected] of Object.entries(wanted)) {
     const listed = (hashes.match(HASH) ?? []).sort();
     if (listed.join(' ') === expected.join(' ')) return whole;
     stale.push(`${name}: ${expected.join(' ')}`);
-    return `${head.trimEnd()} ${expected.join(' ')}${end}`;
+    return `${[head.trimEnd(), ...expected].join(' ')}${end}`;
   });
 }
 

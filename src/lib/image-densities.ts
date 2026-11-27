@@ -17,7 +17,7 @@ export const MARKDOWN_WIDTHS = [...WIDTHS, 1920, 2400];
  * cover. Arms turn where the column passes the rail (1396px) and its `vw`
  * inset caps (1829px). tests/image-size.spec.ts fails on drift.
  */
-/* The figure's `max-w-sm` less both `border-4` edges of its frame. */
+/* The figure's `max-w-sm` less both `edge-block` edges of its frame. */
 const HERO_PHOTO_CAP = 'calc(24rem - 8px)';
 
 export const HERO_PHOTO_SIZES = `(min-width: 1829px) calc(20.93vw + 178px), (min-width: 1396px) calc(17.9vw + 234px), (min-width: 83rem) 484px, (min-width: 64rem) calc(39vw - 34px), min(calc(100vw - 5.5rem), ${HERO_PHOTO_CAP})`;
@@ -53,7 +53,7 @@ export const CARD_COVER_SIZES = {
 
 /*
  * The post card on /brand, in the brand page's own columns: its content
- * column splits at 51rem and again past the menu at 1143px.
+ * column splits at 51rem and again past the menu at 1176px.
  */
 export const BRAND_CARD_COVER_SIZES =
-  '(min-width: 83rem) 332px, (min-width: 1143px) calc(50vw - 331px), (min-width: 64rem) calc(96.62vw - 480px), (min-width: 51rem) calc(50vw - 168px), (min-width: 40rem) calc(100vw - 192px), calc(100vw - 144px)';
+  '(min-width: 83rem) 316px, (min-width: 1176px) calc(50vw - 348px), (min-width: 64rem) calc(96.62vw - 512px), (min-width: 51rem) calc(50vw - 168px), (min-width: 40rem) calc(100vw - 192px), calc(100vw - 144px)';

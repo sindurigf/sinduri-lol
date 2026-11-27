@@ -34,7 +34,7 @@ const PAYLOAD_DISCLOSED: Record<string, string | null> = {
   u: "the page's address",
   r: 'the address of the page that linked you here',
   p: 'its label',
-  sd: 'how far down the page you scrolled',
+  sd: 'how far down you scrolled',
   e: 'how long you had the page in view',
   /* Tracker version, site domain, interactive flag, hash routing. */
   v: null,
@@ -160,6 +160,17 @@ const expectSilent = async (
   await page.waitForLoadState('networkidle');
   expect(sent, 'a page view or click was sent.').toEqual([]);
 };
+
+/* Site content carries no link with a query string, so the test adds its own. */
+const addLinks = (page: Page, hrefs: string[]): Promise<void> =>
+  page.locator('main').evaluate((main, links) => {
+    for (const href of links) {
+      const link = document.createElement('a');
+      link.href = href;
+      link.textContent = 'Added link';
+      main.prepend(link);
+    }
+  }, hrefs);
 
 /* Runs after the document-level capture listener under test. */
 const holdNavigation = async (page: Page, selector: string): Promise<void> => {
@@ -416,6 +427,73 @@ test.describe('analytics', () => {
       }
     });
 
+    test('a link click never sends the link query string', async ({ page }) => {
+      const sent = await openAsProduction(page, '/');
+      const query = '?token=x';
+      const hrefs = [`https://example.org/path${query}`, `/privacy/${query}`];
+      await addLinks(page, hrefs);
+
+      for (const href of hrefs) {
+        const link = `main a[href="${href}"]`;
+        await holdNavigation(page, link);
+        await page.locator(link).click();
+      }
+
+      const linkEvents = (): ClickEvent[] =>
+        events(sent).filter((event) => event.data.target !== undefined);
+      await expect
+        .poll(() => linkEvents().length, { timeout: SEND_TIMEOUT_MS })
+        .toBe(hrefs.length);
+      expect(
+        linkEvents().map((event) => event.data.target),
+        'a link query string can carry tokens; /privacy says only where it goes is sent',
+      ).toEqual(['https://example.org/path', '/privacy/']);
+      expect(JSON.stringify(sent), 'the query string was sent').not.toContain(
+        query,
+      );
+    });
+
+    test('a middle click on a link is counted once; a right click is not counted', async ({
+      page,
+    }) => {
+      const sent = await openAsProduction(page, '/');
+      const href = '/privacy/';
+      await addLinks(page, [href]);
+      const link = page.locator(`main a[href="${href}"]`).last();
+      await link.evaluate((element) =>
+        element.addEventListener('auxclick', (event) => event.preventDefault()),
+      );
+
+      const linkEvents = (): ClickEvent[] =>
+        events(sent).filter((event) => event.data.target === href);
+
+      await link.click({ button: 'right' });
+      await page.keyboard.press('Escape');
+      await sendProbe(page);
+      await expect
+        .poll(() => events(sent).map((event) => event.name), {
+          timeout: SEND_TIMEOUT_MS,
+        })
+        .toContain(PROBE_EVENT);
+      expect(linkEvents(), 'a right click on a link was counted').toEqual([]);
+
+      await link.click({ button: 'middle' });
+      await expect
+        .poll(() => linkEvents().length, { timeout: SEND_TIMEOUT_MS })
+        .toBe(1);
+      await sendProbe(page);
+      await expect
+        .poll(
+          () => events(sent).filter(({ name }) => name === PROBE_EVENT).length,
+          { timeout: SEND_TIMEOUT_MS },
+        )
+        .toBe(2);
+      expect(
+        linkEvents().map((event) => event.name),
+        'a middle click, which opens the link in a new tab, was not counted once',
+      ).toEqual([CLICK_EVENTS.internalLink]);
+    });
+
     test('only the mobile menu reports area menu; the photo viewer and cat card report main', async ({
       page,
     }) => {
@@ -501,6 +579,75 @@ test.describe('analytics', () => {
         JSON.stringify(emailEvents()),
         '/privacy says an email click leaves the address out',
       ).not.toContain(CONTACT_EMAIL);
+    });
+
+    test('a tel link sends no event and no phone number', async ({ page }) => {
+      const phone = '+43 660 1234567';
+      const sent = await openAsProduction(page, '/contact/');
+      await page.locator('main').evaluate((main, number) => {
+        const link = document.createElement('a');
+        link.href = `tel:${number.replace(/\s/g, '')}`;
+        link.textContent = number;
+        link.addEventListener('click', (event) => event.preventDefault());
+        main.prepend(link);
+      }, phone);
+      await page.locator('main a[href^="tel:"]').click();
+
+      const sentinel = 'footer a[href^="/"]';
+      await holdNavigation(page, sentinel);
+      await page.locator(sentinel).first().click();
+      await expect
+        .poll(() => events(sent).length, { timeout: SEND_TIMEOUT_MS })
+        .toBeGreaterThan(0);
+
+      expect(
+        events(sent).map(({ name }) => name),
+        'only the sentinel link click should be sent',
+      ).toEqual([CLICK_EVENTS.internalLink]);
+      expect(
+        JSON.stringify(events(sent)),
+        '/privacy lists no phone number or "null" address',
+      ).not.toMatch(/null|1234567/);
+    });
+
+    test('an SVG link counts as a link and an unparseable href throws nothing', async ({
+      page,
+    }) => {
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      const sent = await openAsProduction(page, '/contact/');
+      await page.locator('main').evaluate((main) => {
+        const namespace = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(namespace, 'svg');
+        svg.setAttribute('width', '60');
+        svg.setAttribute('height', '30');
+        const link = document.createElementNS(namespace, 'a');
+        link.setAttribute('href', '/privacy/');
+        link.id = 'svg-link';
+        const box = document.createElementNS(namespace, 'rect');
+        box.setAttribute('width', '60');
+        box.setAttribute('height', '30');
+        link.append(box);
+        svg.append(link);
+        const broken = document.createElement('a');
+        broken.href = 'http://[broken';
+        broken.id = 'broken-link';
+        broken.textContent = 'Broken';
+        main.prepend(svg, broken);
+        for (const element of [link, broken]) {
+          element.addEventListener('click', (event) => event.preventDefault());
+        }
+      });
+      await page.locator('#broken-link').click();
+      await page.locator('#svg-link').click();
+
+      await expect
+        .poll(() => events(sent).length, { timeout: SEND_TIMEOUT_MS })
+        .toBeGreaterThan(0);
+      expect(events(sent)).toMatchObject([
+        { name: CLICK_EVENTS.internalLink, data: { target: '/privacy/' } },
+      ]);
+      expect(errors, 'a click listener threw').toEqual([]);
     });
 
     test('typing into the contact form sends nothing', async ({ page }) => {

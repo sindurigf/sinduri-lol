@@ -27,6 +27,7 @@
     display: flex;
     align-items: center;
     min-height: var(--spacing-target);
+    overflow-wrap: anywhere;
   }
 
   /* The current page takes the text-link underline: a mark that is not color (SC 1.4.1). */
@@ -73,9 +74,13 @@
      * Transparent, so the throw meets the fill: an ink edge is 1.07:1 on the
      * footer and reads as a gap. Forced colors draw it.
      */
-    border: var(--border-width-sticker) solid transparent;
+    border: var(--block-edge) solid transparent;
     --lift: var(--lift-control);
     rotate: var(--tilt, 0deg);
+    /* One treatment for all seven: the `.badge` inversion and the red press shadow. */
+    background-color: var(--color-text);
+    color: var(--color-background);
+    box-shadow: var(--shadow-hard-red-4);
   }
 
   .footer-sticker:is(:hover, :focus-visible) {
@@ -91,16 +96,6 @@
     height: var(--size-sticker-icon);
     fill: currentColor;
     pointer-events: none;
-  }
-
-  /*
-   * One treatment for all seven: the `.badge` inversion and the pink
-   * press shadow.
-   */
-  .footer-sticker {
-    background-color: var(--color-text);
-    color: var(--color-background);
-    box-shadow: var(--shadow-hard-pink-4);
   }
 
   .footer-stickers li:nth-child(1) {
@@ -173,6 +168,8 @@
     width: auto;
     height: var(--size-footer-rabbit);
     pointer-events: none;
+    /* Scaled from its top left, as the script measures. */
+    transform-origin: 0 0;
   }
 
   /* Let It Fall: centered above the copyright. */
@@ -208,11 +205,6 @@
     & > a {
       display: inline-flex;
     }
-  }
-
-  /* The rabbit on its perch, clear of every control; scaled from its top left, as the script measures. */
-  .footer-rabbit {
-    transform-origin: 0 0;
   }
 
   /* Over every fallen block while the page is down, as the climbing rabbit is. */
@@ -320,7 +312,7 @@
     }
 
     .footer-name-text {
-      width: max-content;
+      width: fit-content;
       font-size: var(--text-footer-name-fluid-md);
     }
   }

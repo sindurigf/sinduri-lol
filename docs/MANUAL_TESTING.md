@@ -9,19 +9,19 @@ unreached check goes in its [§7 Known gaps](../ACCESSIBILITY.md#7-known-gaps).
 
 ## Status
 
-An empty box or blank is an untested check. ACCESSIBILITY.md §6 Manual records
-a pass for the §9 mobile menu button, footer profile tiles and mobile menu
-links only.
+An empty box or blank is an untested check.
 
 | Section                            | Status                                                          |
 | ---------------------------------- | --------------------------------------------------------------- |
-| §1 to §5a, §6a, §7, §9a, §13       | Not run                                                         |
+| §1 to §5a, §6a, §7, §9a, §13       | Not run, except the text spacing checks in the row below        |
 | §6 (Orca)                          | Not run; ACCESSIBILITY.md §7 gap 2 is open                      |
 | §6.10 (NVDA, VoiceOver), §8 Safari | Not run; needs Windows and Apple hardware                       |
+| §6.10.1 (TalkBack)                 | Not run                                                         |
+| §6.10.2 (Orca widget steps)        | Not run                                                         |
 | §5b (Light Mode)                   | Not run; the automated half is `tests/light-mode.spec.ts`       |
 | §1 to §3, §7 text spacing          | One scripted pass in Chromium and Firefox; not a person's check |
 | §8 WebKit                          | Automated suite only (CI); headless WebKit is not Safari        |
-| §9                                 | Partly run: the three items named above passed, the rest not    |
+| §9                                 | Partly run: passes in ACCESSIBILITY.md §6 Manual, the rest not  |
 | §10                                | One run of keyboard-a11y-tester on `/`; its findings are listed |
 
 ## Setup
@@ -59,7 +59,7 @@ npm run build && npm run preview   # http://localhost:4340
 | Orca and its log            | §6.1                                               | `Super+Alt+S`, `rm /tmp/orca-pass.log`                                  |
 | GTK `toolkit-accessibility` | §6.1 fallback only                                 | `gsettings set org.gnome.desktop.interface toolkit-accessibility false` |
 | DevTools Offline            | Network panel, §6.12.1                             | Untick Offline                                                          |
-| `*.webp` request blocking   | Network panel, §6.12.3                             | Remove the pattern, reload                                              |
+| `*.avif`, `*.webp` blocking | Network panel, §6.12.3                             | Remove the patterns, reload                                             |
 | Firefox 320px window        | Window or Responsive Design Mode, §6.7 and §6.12.5 | Close Responsive Design Mode, restore the window size                   |
 
 - [ ] Teardown done.
@@ -71,10 +71,10 @@ Setup: Chrome, 1280px, `/`, focus in the address bar.
 - [ ] First Tab lands on "Skip to main content", visible at top left. → SC 2.4.1, 2.4.7
 - [ ] Enter on it: focus moves to main, which shows a cyan outline. → SC 2.4.1
 - [ ] Next Tab reaches the first control in the page (the hero pause control on `/`), not the header. → SC 2.4.1
-- [ ] Reload and Tab through: skip link, logo, About, Career, Blog, the
-      "Theme" button, Get in Touch, the page, footer Social (GitHub, LinkedIn,
+- [ ] Reload and Tab through: skip link, Report an Accessibility Problem, logo, About, Career, Blog, the
+      "Theme and Text Size" button, Get in Touch, the "Aa Text Size" tab at 86rem and up, the page, footer Social (GitHub, LinkedIn,
       Instagram, Bluesky, Mastodon, Drupal, Email), Site (Home, About, Career,
-      Blog), About this site (in the order of `POLICY_LINKS` in
+      Blog), About This Site (in the order of `POLICY_LINKS` in
       `Footer.astro`), Let It Fall. Re-read `Footer.astro` when a footer
       control changes. → SC 2.4.3
 - [ ] Enter on Let It Fall: the blocks drop, Put It Back rises to the top
@@ -91,18 +91,18 @@ Setup: Chrome, 1280px, `/`, focus in the address bar.
 
 ## 2. The mobile menu, keyboard only
 
-Setup: Chrome at 375px. No mouse.
+Setup: Chrome at 375px. No mouse. `tests/mobile-menu.spec.ts` covers opening,
+focus moving into the panel, Escape and Close returning focus, every link
+reachable and every ring on screen. These checks are the rest.
 
 - [ ] The menu button shows a focus ring. → SC 2.4.7
-- [ ] Enter opens the panel; Escape closes; Space reopens. → SC 2.1.1
+- [ ] Space reopens the panel. → SC 2.1.1
 - [ ] On open, focus is on the first link. → SC 2.4.3
 - [ ] Tab cycles Home, About, Career, Blog, Get in Touch, Close, one stop in
       the browser UI (correct `<dialog>` behavior), Home. The theme switch is
       not in the dialog. Focus never reaches the page behind. → SC 2.1.2
 - [ ] Shift+Tab from the first item stays in the dialog: the browser's own stop
       or the dialog itself (Firefox), then Close. → SC 2.1.2
-- [ ] Escape closes and focus returns to the menu button. → SC 2.1.2, 2.4.3
-- [ ] Close button: focus returns to the menu button. → SC 2.4.3
 - [ ] A nav link activated with Enter navigates. → SC 2.1.1
 - [ ] Arrow keys and Page Down do not scroll the page behind. → SC 2.1.1
 - [ ] Repeat in Firefox. → SC 2.1.2
@@ -123,7 +123,8 @@ Resizing is not zooming, so this stays manual even though
 - [ ] The mobile menu button replaces the desktop nav and the menu is fully
       operable. → SC 1.4.10
 - [ ] Nothing overlaps or is cut off. → SC 1.4.10
-- [ ] Tab through: the 104px sticky header never covers the focused element. → SC 2.4.11
+- [ ] Tab through: the header never covers the focused element. Under 30rem
+      (480 CSS px) tall it scrolls away with the page. → SC 2.4.11
 - [ ] Repeat on `/blog/open-source-is-not-just-code`. → SC 1.4.10, 2.4.11
 - [ ] Repeat at 200% and 250%. → SC 1.4.10
 - [ ] Repeat at 400% in a window 1024px tall (256px CSS): the header does not
@@ -133,34 +134,35 @@ Resizing is not zooming, so this stays manual even though
 
 Setup: `gsettings set org.gnome.desktop.interface enable-animations false`.
 `matchMedia('(prefers-reduced-motion: reduce)').matches` returns `true`.
+`tests/motion.spec.ts` and `tests/about-cats.spec.ts` cover the hero field drawn
+once with no pause control and the cats still with no sleep control.
 
 - [ ] Press and hold a primary button, a `/blog` chip, a footer sticker and
       the logo: each loses its shadow but does not move. → SC 2.3.3
 - [ ] Nothing else moves, fades or slides. → SC 2.3.3
-- [ ] `/`: the hero field is drawn once, reads as a picture, and has no pause
-      control. → SC 2.3.3, 2.2.2
-- [ ] `/about`: the cats sit still and have no sleep controls or trick buttons. → SC 2.3.3, 2.2.2
+- [ ] `/`: the hero field's still frame reads as a picture. → SC 2.3.3
 - [ ] Turn it back on: the button moves and the field animates. → SC 2.3.3
 
 ## 5. Focus indicator visibility
 
-The ring is 4px cyan at a 4px offset plus the element's shadow (4px, or 8px for
-the contact cards); `#131313` on gold. The header logo has no ring: focused, it
-turns into an ink block with a gold name. Look, do not measure.
+The ring is 4px cyan at a 4px offset plus the element's shadow; `#131313` on
+gold. The `/contact` bricks draw an ink ring inside the brick instead. The
+header logo has no ring: focused, it turns into an ink block with a gold name.
+Look, do not measure.
 
 - [ ] On `#0B0B0B`: header links, footer. → SC 1.4.11, 2.4.7
 - [ ] On a gold and a light block: a link in a card. → SC 1.4.11, 2.4.7
-- [ ] Chips and footer tiles: the ring sits past the pink shadow, follows the
+- [ ] Chips and footer tiles: the ring sits past the red shadow, follows the
       tilt, and never touches the next chip. → SC 1.4.11, 2.4.7
 - [ ] Current nav item and current chip: the ring reads as separate from the
       block. → SC 1.4.11, 2.4.7
-- [ ] Contact cards (8px shadow, ring 12px out): the ring still reads as
-      belonging to the control. → SC 1.4.11, 2.4.7
+- [ ] `/contact` bricks: the ink ring sits inside the brick, reads against
+      its fill and never crosses the next brick. → SC 1.4.11, 2.4.7
 - [ ] Header logo, dark and light: focused, the link is an ink block with a
       gold name, the rabbit uncut. → SC 1.4.11, 2.4.7, 2.4.13
 - [ ] Header logo in Windows High Contrast (forced colors): focused, a solid
       ring shows around the link. → SC 2.4.7
-- [ ] Gold skip link and "Get in Touch": the ring is on the dark ground, never
+- [ ] Gold skip link and "Get in Touch": the ring is on the page ground, never
       on gold. → SC 1.4.11
 - [ ] On a gold slab or band: the `#131313` ring is visible. → SC 1.4.11
 - [ ] No ring is clipped by a parent or hidden under the header. → SC 2.4.11
@@ -201,8 +203,8 @@ Zoom (forced colors off, 1280px, 200% then 400%):
 
 ## 5b. Light Mode
 
-Setup: Chrome, 1280px, `/about`. The Theme menu's Light turns `<main>`, the
-header and the footer light ([ACCESSIBILITY.md](../ACCESSIBILITY.md#light-mode),
+Setup: Chrome, 1280px, `/about`. The Theme menu's Light turns the page light
+([ACCESSIBILITY.md](../ACCESSIBILITY.md#light-mode),
 [STYLEGUIDE.md](STYLEGUIDE.md#light-mode)). `tests/light-mode.spec.ts` covers
 axe, control edges, hover contrast, ring contrast, and the menu: the Theme
 button and group, Enter, Space, arrows and Escape, Light and Dark across a
@@ -210,12 +212,9 @@ reload and `/career`, System removing the key and following the device live,
 its place at 320 and 1280px, its ring, forced colors, the theme set before
 `<body>`, and no switch without JavaScript. These checks are the rest.
 
-- [ ] By ear: the button is announced "Theme", "button", collapsed or
+- [ ] By ear: the button is announced "Theme and Text Size", "button", collapsed or
       expanded; open, the group "Theme" and each radio, "System", "Light",
       "Dark", with its checked state. → SC 4.1.2
-- [ ] Tab to the button: a ring shows with a gap, on the dark header. → SC 2.4.7
-- [ ] Choose System, then switch the device between light and dark: the page
-      follows without a reload. → SC 1.4.3
 - [ ] In light, Tab through `<main>`: every ring reads against white and
       against its control (`#0047b3`). → SC 1.4.11, 2.4.7
 - [ ] A focused tag chip, the current chip, the current nav link in the dark
@@ -300,22 +299,28 @@ not transform it. What a reader says for an all-caps name is unverified. The
 answer applies to every heading, `.label`, `.badge`, button, `.nav-cta`, menu
 link and the skip link.
 
-**6.4.1** Record Orca's Capitalization style, then set it to None.
+#### 6.4.1 Capitalization style
+
+Record Orca's Capitalization style, then set it to None.
 
 - [ ] It was: `________________________`
 
-**6.4.2 Firefox (control).** `/about` at 1280px, click the page, `Ctrl+Home`,
-`K` to the header link Career, then `Orca+Return`.
+#### 6.4.2 Firefox (control)
+
+`/about` at 1280px, click the page, `Ctrl+Home`, `K` to the header link Career,
+then `Orca+Return`.
 
 - [ ] Heard: `________________________`
 - [ ] `SPEECH OUTPUT:` `________________________`
 
-**6.4.3 Chrome.** The same steps.
+#### 6.4.3 Chrome
+
+The same steps.
 
 - [ ] Heard: `________________________`
 - [ ] `SPEECH OUTPUT:` `________________________`
 
-**6.4.4 Outcomes.**
+#### 6.4.4 Outcomes
 
 1. Both read "career": replace "untested" in STYLEGUIDE.md
    [Uppercase](STYLEGUIDE.md#uppercase) with both quotes, and narrow
@@ -327,10 +332,10 @@ link and the skip link.
 No outcome changes the practice: real case in markup ([case rule](STYLEGUIDE.md#uppercase)),
 `text-transform` in CSS. Dropping uppercase would be a design decision, not a fix.
 
-**6.4.5 Chrome, other elements.**
+#### 6.4.5 Chrome, other elements
 
 - [ ] `/privacy` `h1` ("Privacy"): `________________________`
-- [ ] `/404` "Follow Me" (`.btn-primary`): `________________________`
+- [ ] `/404` "Follow Me" (`.btn-gold-primary`): `________________________`
 - [ ] 6.4.3 again at the other verbosity (`Orca+V`): `________________________`
 
 ### 6.5 Skip link
@@ -343,6 +348,9 @@ Setup: Firefox, 1280px, `/`, click the address bar, Tab once.
       the reading cursor moved. → SC 2.4.1
 - [ ] Tab lands on the hero pause control (reduced motion off; with it on,
       there is no pause control). → SC 2.4.1
+- [ ] Reload and Tab twice: "Report an Accessibility Problem", a link in the
+      "Accessibility help" landmark; Enter opens Report a Barrier on
+      `/accessibility`. → SC 2.4.1, 3.2.6
 
 Heard: `________________________`
 
@@ -357,10 +365,10 @@ the banner, every repeated landmark named once, one `h1` opening main, no
 skipped level, an `h2` opening each region, and the home link named
 "sinduri.lol" with its mark silent.
 
-- [ ] `Alt+Shift+M` on `/about` lists the 13 landmarks the spec reads. Judge
+- [ ] `Alt+Shift+M` on `/about` lists the landmarks the spec reads. Judge
       whether the list is useful or crowded. → SC 1.3.1
 - [ ] `M` from the top steps through them in that order. → SC 1.3.1
-- [ ] The "On this page" nav lists all five spreads. → SC 2.4.6
+- [ ] The "On This Page" nav lists all five spreads. → SC 2.4.6
 - [ ] `G` finds no footer bunny. → SC 1.1.1
 - [ ] `K` to About: announced as the current page. → SC 4.1.2
 - [ ] The current-page box adds nothing to the announcement. → SC 1.3.1
@@ -373,8 +381,8 @@ Heard / listed: `________________________`
 ### 6.7 The mobile menu at 320px
 
 Setup: Firefox at 320px (window, or Responsive Design Mode with DevTools
-detached), `/`, `Ctrl+Home`, Tab four times to the menu button (skip link, logo, theme
-switch, menu).
+detached), `/`, `Ctrl+Home`, Tab six times to the menu button (skip link, Report an
+Accessibility Problem, logo, theme switch, Aa, menu).
 
 - [ ] The button says "Menu", "button" and collapsed. → SC 4.1.2
 - [ ] Enter: "Menu" and "dialog" announced. → SC 4.1.2
@@ -393,8 +401,7 @@ Heard: `________________________`
 
 ### 6.8 A blog post
 
-Setup: Firefox, 1280px, `/blog/open-source-is-not-just-code` (25 headings:
-1 `h1`, 12 `h2`, 12 `h3`).
+Setup: Firefox, 1280px, `/blog/open-source-is-not-just-code`.
 
 `tests/structure.spec.ts` covers the heading outline and the landmark set.
 
@@ -429,9 +436,10 @@ Setup: Firefox, 1280px, `/404` (preview serves it with 200;
 
 Heard: `________________________`
 
-### 6.10 NVDA and VoiceOver
+### 6.10 Other screen readers
 
-Needs Windows and Apple hardware. Open in ACCESSIBILITY.md §7 gap 2.
+NVDA needs Windows and VoiceOver Apple hardware. Open in ACCESSIBILITY.md §7
+gap 2.
 
 - [ ] NVDA: §6 in Chrome and Firefox, plus browse and focus mode in the dialog. → needs Windows
 - [ ] VoiceOver on a Mac: Safari (`Cmd+F5`, rotor `Ctrl+Opt+U`). → needs a Mac
@@ -470,7 +478,7 @@ Menu:
 
 Text Size:
 
-- [ ] Double-tap “Aa Text Size”, then swipe right. Expect: “expanded”, then “Text Size”, then “Drink Me, Smaller text”, “Eat Me, Larger text” and “Just Right, Back to 100 percent”, each a button. Just Right says “disabled” at 100%. → SC 4.1.2
+- [ ] Double-tap “Aa Text Size”, then swipe right. Expect: “expanded”, then “Text Size”, then “Drink Me, smaller text”, “Eat Me, larger text” and “Just Right, back to 100 percent”, each a button. Just Right says “disabled” at 100%. → SC 4.1.2
 - [ ] Double-tap Eat Me. Expect: “Text is 125%.” and the text grows. → SC 4.1.3, 1.4.4
 - [ ] Double-tap Just Right. Expect: “Text is 100%.” and the text is back to normal. → SC 4.1.3
 
@@ -487,7 +495,7 @@ Let It Fall:
 
 Contact Form:
 
-- [ ] Open sinduri.lol/contact and swipe to the form. Expect: “Name (required)”, an edit box, then “Email (required)” with “Used to reply, and nothing else.”, then “Message (required)” with “Between 10 and 5000 characters.” → SC 1.3.1, 3.3.2
+- [ ] Open sinduri.lol/contact and swipe to the form. Expect: “Name (required)”, an edit box, then “Email (required)” with “Used to reply, and nothing else.”, then “Message (required)” with “Between 10 and 5,000 characters.” → SC 1.3.1, 3.3.2
 - [ ] Leave every field empty and double-tap Send Message. Expect: The page reloads and TalkBack starts at “There Are 3 Problems with This Form”, a heading, with a link for each problem. → SC 3.3.1, 2.4.3
 - [ ] Double-tap the first problem link. Expect: Focus moves into the Name field, and its error is read with it. → SC 3.3.1
 
@@ -524,7 +532,7 @@ Wording and recording work as in §6.10.1.
 Header:
 
 - [ ] Open sinduri.lol in Firefox. Press Ctrl+Home, then Down Arrow through the header. Expect: “sinduri.lol link”, with no separate image announced for the rabbit. → SC 1.1.1, 4.1.2
-- [ ] Zoom in with Ctrl and + until the Menu button shows (about 250 to 300%), then press Tab through the header. Expect: “Theme”, “Aa Text Size” and “Menu”, each with “button” and “collapsed”. → SC 4.1.2
+- [ ] Zoom in with Ctrl and + until the Menu button shows (under 768 CSS px wide: 170% in a 1280px window), then press Tab through the header. Expect: “Theme”, “Aa Text Size” and “Menu”, each with “button” and “collapsed”. → SC 4.1.2
 
 Menu:
 
@@ -534,7 +542,7 @@ Menu:
 
 Text Size:
 
-- [ ] Press Enter on “Aa Text Size”, then Tab. Expect: “expanded”, then “Text Size”, then “Drink Me, Smaller text”, “Eat Me, Larger text” and “Just Right, Back to 100 percent”, each a button. Just Right says “grayed” or “unavailable” at 100%. → SC 4.1.2
+- [ ] Press Enter on “Aa Text Size”, then Tab. Expect: “expanded”, then “Text Size”, then “Drink Me, smaller text”, “Eat Me, larger text” and “Just Right, back to 100 percent”, each a button. Just Right says “grayed” or “unavailable” at 100%. → SC 4.1.2
 - [ ] Press Enter on Eat Me. Expect: “Text is 125%.” and the text grows. → SC 4.1.3, 1.4.4
 - [ ] Press Enter on Just Right. Expect: “Text is 100%.” and the text is back to normal. → SC 4.1.3
 
@@ -551,7 +559,7 @@ Let It Fall:
 
 Contact Form:
 
-- [ ] Open sinduri.lol/contact and press F to reach the first field, then Tab. Expect: “Name (required)”, an entry, then “Email (required)” with “Used to reply, and nothing else.”, then “Message (required)” with “Between 10 and 5000 characters.” → SC 1.3.1, 3.3.2
+- [ ] Open sinduri.lol/contact and press F to reach the first field, then Tab. Expect: “Name (required)”, an entry, then “Email (required)” with “Used to reply, and nothing else.”, then “Message (required)” with “Between 10 and 5,000 characters.” → SC 1.3.1, 3.3.2
 - [ ] Leave every field empty, Tab to Send Message and press Enter. Expect: The page reloads and Orca starts at “There Are 3 Problems with This Form”, a heading, with a link for each problem. → SC 3.3.1, 2.4.3
 - [ ] Press Enter on the first problem link. Expect: Focus moves into the Name field, and its error is read with it. → SC 3.3.1
 
@@ -587,7 +595,7 @@ Menu:
 
 Text size:
 
-- [ ] Double-tap “Aa Text Size”, then swipe right. Expect: It says “expanded”, then “Text Size”, “Drink Me, button, Smaller text”, “Eat Me, button, Larger text”, “Just Right, button, Back to 100 percent” (Just Right dimmed at 100%). → SC 4.1.2
+- [ ] Double-tap “Aa Text Size”, then swipe right. Expect: It says “expanded”, then “Text Size”, “Drink Me, smaller text, button”, “Eat Me, larger text, button”, “Just Right, back to 100 percent, button” (Just Right dimmed at 100%). → SC 4.1.2
 - [ ] Double-tap Eat Me. Expect: It says “Text is 125%.” and the text grows. → SC 4.1.3, 1.4.4
 - [ ] Double-tap Just Right. Expect: It says “Text is 100%.” and the text is back to normal. → SC 4.1.3
 
@@ -604,7 +612,7 @@ Let It Fall:
 
 Contact form:
 
-- [ ] Open sinduri.lol/contact and swipe to the form. Expect: “Name (required), text field”, then “Email (required), text field”, with “Used to reply, and nothing else.”, then “Message (required)”, with “Between 10 and 5000 characters.” → SC 1.3.1, 3.3.2
+- [ ] Open sinduri.lol/contact and swipe to the form. Expect: “Name (required), text field”, then “Email (required), text field”, with “Used to reply, and nothing else.”, then “Message (required)”, with “Between 10 and 5,000 characters.” → SC 1.3.1, 3.3.2
 - [ ] Leave every field empty and double-tap Send Message. Expect: The page reloads and VoiceOver starts at “There Are 3 Problems with This Form, heading”, with a link for each problem. → SC 3.3.1, 2.4.3
 - [ ] Double-tap the first problem link. Expect: Focus moves into the Name field, and its error is read with it. → SC 3.3.1
 
@@ -670,7 +678,7 @@ Setup: `/blog/open-source-is-not-just-code` at 1280px (open), then below 1280px
 - [ ] The landmark is named "In This Post". → SC 1.3.1
 - [ ] The summary announces a state (collapsed or expanded). → SC 4.1.2
 - [ ] No "plus", "minus" or stray character in the name. → SC 4.1.2
-- [ ] Enter: state flips; an ordered list of 12 items. → SC 1.3.1
+- [ ] Enter: state flips; an ordered list, one item per `h2`. → SC 1.3.1
 - [ ] At 1280px it is announced expanded on arrival. → SC 4.1.2
 - [ ] An entry moves to its heading, which is announced. → SC 2.4.1
 
@@ -678,8 +686,8 @@ Heard: `________________________`
 
 #### 6.12.3 A failed photo's alt text
 
-Setup: `/about`, DevTools → Network → block `*.webp`, reload. The visible copy
-of the alt text is `aria-hidden`.
+Setup: `/about`, DevTools → Network → block `*.avif` and `*.webp`, reload. The
+visible copy of the alt text is `aria-hidden`.
 
 `tests/failed-images.spec.ts` checks, with and without JavaScript, that each
 failed photo's alt is the name of one image, never also text, and that the
@@ -692,8 +700,9 @@ Heard: `________________________`
 
 #### 6.12.4 The contact error summary
 
-Setup: a rate-limited or server-failed submit (`npm run test:worker` serves
-it, or submit on preview until the limit trips).
+Setup: a rate-limited submit: `npm run preview` after the local D1 setup
+([DEVELOPMENT.md](DEVELOPMENT.md#setup)), or a preview deploy, submitting until
+the limit trips.
 
 - [ ] The summary is announced on arrival without a key press. → SC 3.3.1
 - [ ] "Your Message Was Not Sent" comes before the reason. → SC 3.3.1
@@ -718,28 +727,18 @@ Heard: `________________________`
 
 Setup: `/about` at 1280px, the cats' band on screen. Each cat is a "Meet"
 button with a sleep control beside it; one `<dialog>` holds the card. The
-drawings are `aria-hidden`.
+drawings are `aria-hidden`. `tests/about-cats.spec.ts` covers focus order,
+focus return, the sleep control, the trick list's keys and Rudra's climb.
+These checks are by ear.
 
-- [ ] Tab reaches each cat, then its sleep control; a focused cat holds
-      still. → SC 2.4.3, 2.2.2
 - [ ] Each cat is a button named "Meet Minerva", "Meet Hela" or "Meet Rudra". → SC 4.1.2
 - [ ] Enter opens the card: focus is on Close, and the dialog is named after
       the cat. → SC 2.4.3, 4.1.2
 - [ ] Tab reaches Close and the thank-you link, never the page behind. → SC 2.1.2
-- [ ] Escape closes the card and focus returns to the same cat. → SC 2.4.3
-- [ ] The sleep control reads "Put Minerva to sleep"; Enter stops the cat
-      within 5 s and the control then reads "Wake Minerva". → SC 2.2.2, 4.1.2
-- [ ] Tab reaches the paw "Choose a trick for Minerva" after the sleep control;
-      Enter opens a list, Random first, and Escape closes it with focus back on
-      the paw. → SC 2.4.3, 4.1.2
-- [ ] With the list open near the window's end, Shift+Tab reaches the paw,
-      uncovered, and the list closes once focus is past the paw. → SC 2.4.12
-- [ ] Choosing "Chase the Fly" plays it; choosing a trick for a sleeping cat
-      wakes it first. → SC 2.2.2
-- [ ] Rudra climbs between his two bricks, and a click on him opens his card
-      on either brick. → SC 2.5.5
-- [ ] Under reduced motion Rudra sits on the brick under him, never in the
-      air above it. → SC 2.3.3
+- [ ] The sleep control is heard as "Let Minerva nap", then "Wake Minerva"
+      once pressed. → SC 4.1.2
+- [ ] The paw is heard as "Choose a trick for Minerva"; open, the list is read
+      with Random first. → SC 4.1.2
 - [ ] The drawings announce nothing. → SC 1.1.1
 - [ ] While the trick list loads, or if it fails, its note is read once, as
       a status. → SC 4.1.3
@@ -751,7 +750,7 @@ Heard: `________________________`
 Setup: a post with a photo strip at 1280px. Open a photo, then press Next
 twice.
 
-- [ ] Each step is heard once: the count ("Photo 2 of N") and the caption,
+- [ ] Each step is heard once: the count ("2 of N") and the caption,
       neither cut off nor doubled. → SC 4.1.3
 - [ ] Nothing is read before the new photo shows. → SC 4.1.3
 
@@ -792,7 +791,7 @@ Setup: Firefox, Settings → General → Zoom → "Zoom text only", Ctrl+`+` to 
 
 - [ ] No text clipped, truncated or hidden.
 - [ ] Header and footer labels fit their boxes, the current-page box included.
-- [ ] Nothing spills out of the 104px header.
+- [ ] Nothing spills out of the header, full height or slim once scrolled.
 - [ ] The mobile menu, if shown, works.
 - [ ] Repeat on `/blog/open-source-is-not-just-code`.
 
@@ -888,7 +887,6 @@ From the Accessible Astro checklist and
 - Contact form criteria (SC 1.3.5, 3.3.1, 3.3.2, 3.3.3, 4.1.3) by a person:
   ACCESSIBILITY.md §7 gap 1.
 - Plain language: gap 5.
-- Whether the hero field's still frame reads as a picture: §4.
 - Routes with no check of their own: `/contact/sent`, the tag listings, and
   the category listing beyond §3. `/accessibility`, `/credits` and `/brand`
   are read only in §9a; `/privacy` also in §6.4 and §6.12.1a.
@@ -947,11 +945,6 @@ page numbers or running headers read as content, decoration announced.
       hears each slide once. → SC 1.4.10, 1.3.2, 3.2.5
 - [ ] Orca and NVDA: Next, Previous and arrow keys speak "Slide N of" the
       deck's slide count and the title once; the slide text can be read after.
-- [ ] Home and End go to the first and last slide; Page Up and Page Down turn
-      the slide, or first scroll one taller than the screen. → SC 2.1.1
-- [ ] A link to one slide opens on it; a `#slide-N` link followed within the
-      page moves focus to its heading. Focus inside a slide that turns moves
-      to the new heading. → SC 2.4.3
 - [ ] Full Screen: one 16:9 slide. Every slide fits a projector screen
       without scrolling. → SC 1.4.10
 - [ ] In full screen a pointer move or a tap shows arrows named Previous and
@@ -970,7 +963,7 @@ page numbers or running headers read as content, decoration announced.
       headless Firefox ignores the test screen size. → SC 2.1.1, 2.4.3, 2.4.7
 - [ ] Full screen at 200% zoom and with the text-spacing bookmarklet: nothing
       is cut off, long slides scroll. Titles reach 2x only at higher zoom
-      ([ACCESSIBILITY.md](../ACCESSIBILITY.md) §7). → SC 1.4.4, 1.4.12
+      ([ACCESSIBILITY.md §7](../ACCESSIBILITY.md#7-known-gaps)). → SC 1.4.4, 1.4.12
 - [ ] Page view at 200% zoom: slide text doubles; titles double at 200% from
       1280, by 500% from narrower screens. At 320px no title word is cut
       without a hyphen and nothing scrolls sideways. → SC 1.4.4, 1.4.10

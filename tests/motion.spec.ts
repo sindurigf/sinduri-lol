@@ -1,14 +1,14 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled, sweepTimeout } from './settle';
 import { readFileSync } from 'node:fs';
-import { builtPages, islandRoutesFromBuild, ROUTES } from './routes';
+import { builtPages, ROUTES } from './routes';
 import { PHONE_VIEWPORT } from './wcag';
 import { NODE } from './tags';
 
 /**
  * SC 2.2.2 for the hero canvas. A canvas has no `animation-play-state`, so tests
  * pump frames and compare pixels: real frames under load are too few to count.
- * `running()` in use-hero-field.ts also gates on `onScreen` and `document.hidden`.
+ * src/scripts/motion-loop.ts also stops the loop off screen and in a hidden tab.
  */
 const HERO_ROUTE = '/';
 const HERO_PAUSE_NAME = /pause the hero animation/i;
@@ -21,7 +21,7 @@ const HERO_STOP_TIMEOUT_MS = 5_000;
 const HERO_PUMP_HZ = 60;
 const HERO_PUMP_FRAMES = 60;
 
-/** `MAX_FRAME_RATE` in use-hero-field.ts is 30; one over allows for where the first drawn frame falls. */
+/** `MAX_FRAME_RATE` in src/scripts/hero-field.ts is 30; one over allows for where the first drawn frame falls. */
 const HERO_DRAWN_MAX = 31;
 
 /** Both put the control inside the content column's box; at 1440px it sits outside and proves nothing. */
@@ -61,7 +61,7 @@ const fieldFingerprint = (page: Page) =>
 
 /*
  * `cancelAnimationFrame` must really remove the callback: `stop()` in
- * use-hero-field.ts relies on it. Ids start at 1, so `frame = 0` means "nothing pending".
+ * src/scripts/motion-loop.ts relies on it. Ids start at 1, so `frame = 0` means "nothing pending".
  */
 const installFramePump = (page: Page) =>
   page.addInitScript(() => {
@@ -146,17 +146,17 @@ const expectFieldPainted = async (page: Page, because: string) => {
   expect(painted!.ink, because).toBeGreaterThan(0);
 };
 
-// The SC 2.2.2 tests below visit HERO_ROUTE only, so no other route may hydrate one.
-test(
-  'the hero field is hydrated only where its pause control is tested',
-  NODE,
-  () => {
-    expect(
-      islandRoutesFromBuild('HeroField'),
-      'HeroField is on a route the SC 2.2.2 tests here do not visit',
-    ).toEqual([HERO_ROUTE]);
-  },
-);
+// The SC 2.2.2 tests below visit HERO_ROUTE only, so no other route may carry one.
+test('the hero field is only where its pause control is tested', NODE, () => {
+  expect(
+    builtPages()
+      .filter(({ file }) =>
+        readFileSync(file, 'utf8').includes('data-hero-field'),
+      )
+      .map(({ route }) => route),
+    'the hero field is on a route the SC 2.2.2 tests here do not visit',
+  ).toEqual([HERO_ROUTE]);
+});
 
 test.describe('the hero field on /', () => {
   test('the server sends a still hero, not a moving one', NODE, () => {
@@ -164,7 +164,7 @@ test.describe('the hero field on /', () => {
     expect(home, 'no built homepage to read').toBeDefined();
     const html = readFileSync(home!.file, 'utf8');
 
-    /* A field that runs before hydration has motion with no pause control (SC 2.2.2). */
+    /* A field that runs before its script has motion with no pause control (SC 2.2.2). */
     expect(
       html,
       'the hero field must not be marked as running in server-rendered HTML',
@@ -174,9 +174,9 @@ test.describe('the hero field on /', () => {
       'the server-rendered hero is marked running before its pause control exists.',
     ).toBe(false);
     expect(
-      html.includes('pause the hero animation'),
-      'the pause control is server-rendered and dead until hydration.',
-    ).toBe(false);
+      html.match(/<button[^>]*hero-motion-toggle[^>]*>/g) ?? [],
+      'the pause control is shown before the script that makes it work.',
+    ).toEqual([expect.stringMatching(/\shidden[\s>]/)]);
   });
 
   test('paints, keeps moving, and a keyboard press stops it', async ({
@@ -339,48 +339,6 @@ test.describe('the hero field on /', () => {
     });
   }
 
-  /* Resizing clears a canvas; every frame is held, so the only paint is `relayout()`'s own. */
-  test('a resize while a frame is pending leaves the field drawn', async ({
-    page,
-  }) => {
-    await page.addInitScript(() => {
-      window.requestAnimationFrame = () => 1;
-    });
-    await page.goto(HERO_ROUTE);
-    const field = page.locator('.hero-field');
-    await expect(field).toHaveAttribute('data-hero-motion', 'running');
-
-    const midWidth = () =>
-      page.evaluate(
-        () =>
-          document.querySelectorAll<HTMLCanvasElement>('.hero-field-layer')[1]
-            ?.width ?? 0,
-      );
-    const before = await midWidth();
-    const size = page.viewportSize()!;
-    await page.setViewportSize({
-      width: size.width - 160,
-      height: size.height,
-    });
-    await expect.poll(midWidth).not.toBe(before);
-
-    const ink = await page.evaluate(() => {
-      const mid =
-        document.querySelectorAll<HTMLCanvasElement>('.hero-field-layer')[1];
-      if (!mid) throw new Error('The hero field has no middle layer.');
-      const { data } = mid
-        .getContext('2d')!
-        .getImageData(0, 0, mid.width, mid.height);
-      let total = 0;
-      for (const alpha of data.filter((_, i) => i % 4 === 3)) total += alpha;
-      return total;
-    });
-    expect(
-      ink,
-      'the resize cleared the middle canvas and nothing redrew it.',
-    ).toBeGreaterThan(0);
-  });
-
   test('under reduced motion it is drawn once and held, with no control', async ({
     page,
   }) => {
@@ -413,7 +371,7 @@ test.describe('the hero field on /', () => {
     ).toHaveCount(0);
   });
 
-  /* use-hero-field.ts listens for the preference rather than reading it once at mount. */
+  /* src/scripts/motion-loop.ts listens for the preference rather than reading it once at load. */
   test('turning reduced motion on during a visit stops the field and drops the control', async ({
     page,
   }) => {

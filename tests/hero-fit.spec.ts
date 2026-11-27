@@ -30,7 +30,7 @@ const SHORT_WINDOWS = [
 /** CSS px. Boxes are fractional and the stickers tilt three degrees; half a pixel hides no mark. */
 const SUBPIXEL_TOLERANCE = 0.5;
 
-/* The island wait and waitForHydration each take up to HYDRATION_TIMEOUT, more than the 30s default. */
+/* The control wait and waitForHydration each take up to HYDRATION_TIMEOUT, more than the 30s default. */
 const openHero = async (page: Page): Promise<void> => {
   test.slow();
   await page.goto('/', { waitUntil: 'load' });

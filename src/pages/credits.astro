@@ -16,7 +16,6 @@ import { wallClasses } from '../lib/wall';
 /* Keep in step with package.json, wrangler.jsonc, src/assets/social-icons.svg and AI_DISCLOSURE.md. */
 const BUILT_WITH = [
   { name: 'Astro', href: 'https://astro.build/' },
-  { name: 'Vue', href: 'https://vuejs.org/' },
   { name: 'Tailwind CSS', href: 'https://tailwindcss.com/' },
   { name: 'Lexend', href: 'https://www.lexend.com/' },
   { name: 'Fontsource', href: 'https://fontsource.org/' },
@@ -90,7 +89,7 @@ const GUIDES = [
       name: 'Upstream First contributors',
       href: 'https://github.com/mgifford/upstream-first/graphs/contributors',
     },
-    use: "Upstream First explains why a bug should go back to the people who can fix it for everyone, and it has a template for reporting one. On this site, a workaround for a browser bug links the browser's own bug report. Thank you to everyone who contributes to it.",
+    use: "Upstream First explains why a bug should go back to the people who can fix it for everyone. It also has a template for reporting one. On this site, a workaround for a browser bug links the browser's own bug report. Thank you to everyone who contributes to it.",
   },
   {
     name: 'Spec-First Coding',
@@ -99,7 +98,7 @@ const GUIDES = [
       name: 'Laurence Lewis',
       href: 'https://github.com/LaurenceRLewis',
     },
-    use: 'This makes coding assistants cite the specification before they write any code, which is a good lesson for people too. This site treats the Web Content Accessibility Guidelines and the specifications behind them as the rule, their Understanding documents as the explanation, and everything else as opinion. Thank you for sharing it.',
+    use: 'This makes coding assistants cite the specification before they write any code, which is a good lesson for people too. This site treats the Web Content Accessibility Guidelines and the specifications behind them as the rule. It treats their Understanding documents as the explanation and everything else as opinion. Thank you for sharing it.',
   },
   {
     name: 'Intopia Web Accessibility Skill',
@@ -129,7 +128,7 @@ const GUIDES = [
       name: 'Government Digital Service',
       href: 'https://www.gov.uk/government/organisations/government-digital-service',
     },
-    use: 'Its patterns for names, email addresses and error messages shaped the contact form of this site, from the error summary to the page title when something goes wrong. Thank you for making them public.',
+    use: 'Its patterns for names, email addresses and error messages shaped the contact form of this site. They shaped it from the error summary to the page title when something goes wrong. Thank you for making them public.',
   },
   {
     name: 'OWASP Secure Headers Project',
@@ -172,7 +171,7 @@ const GUIDES = [
   },
 ] as const;
 
-/* Keep in step with AI_DISCLOSURE.md "At runtime". */
+/* Keep in step with AI_DISCLOSURE.md "Made with AI". */
 const MADE_WITH_AI = [
   { name: 'The hopping bunny on the homepage', href: '/' },
   { name: 'The About cats and their control and trick icons', href: '/about/' },
@@ -181,7 +180,7 @@ const MADE_WITH_AI = [
     href: '/',
   },
   {
-    name: 'The laughing bunny on the /about tile',
+    name: 'The laughing bunny on the /about/ tile',
     href: '/about/',
   },
   {
@@ -204,7 +203,7 @@ const CARD_HEADING = 'text-h2 text-text';
 
 const NAMED_LIST = 'mt-6 grid gap-4';
 /* `min-w-0`: otherwise "ACCESSIBILITY.md" under SC 1.4.12 spacing overflows its grid track at 305px. */
-const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight';
+const NAMED_ENTRY = 'min-w-0 bg-background p-card-tight wrap-anywhere';
 
 /* `lg:grid-cols-12` and spans: the 3/9 split; one column below `lg`. */
 const GUIDE_ROW = 'lg:grid lg:grid-cols-12 lg:gap-x-grid';
@@ -216,7 +215,7 @@ const TOOLS_WALL = wallClasses({ lg: [[0, 1], [2], [3], [4]] }, 5);
 
 <BaseLayout
   title="Credits"
-  description="Where the name sinduri.lol comes from, who helped, who took the photos and what the site was designed, built and tested with."
+  description="Where the name sinduri.lol comes from, who helped, who took the photos and what I designed, built and tested my website with."
 >
   <PageHero title="Credits">
     <p class="standfirst">
@@ -249,7 +248,7 @@ const TOOLS_WALL = wallClasses({ lg: [[0, 1], [2], [3], [4]] }, 5);
         </p>
       </div>
 
-      <div class:list={['card', PEOPLE_WALL.bricks[1]]}>
+      <div class:list={['card card-ground', PEOPLE_WALL.bricks[1]]}>
         <h2 class={CARD_HEADING}>Thank You</h2>
         <dl class:list={[NAMED_LIST, 'md:grid-cols-2']}>
           {THANKS.map((person) => (
@@ -271,7 +270,7 @@ const TOOLS_WALL = wallClasses({ lg: [[0, 1], [2], [3], [4]] }, 5);
 
   <section class="band pb-section">
     <div class="card-block mx-auto max-w-page">
-      <div class="card">
+      <div class="card card-ground">
         <h2 class={CARD_HEADING}>Guides</h2>
 
         <dl class={NAMED_LIST}>
@@ -295,7 +294,7 @@ const TOOLS_WALL = wallClasses({ lg: [[0, 1], [2], [3], [4]] }, 5);
 
   <section class="band pb-section">
     <div class="card-block mx-auto max-w-page">
-      <div class="card">
+      <div class="card card-ground">
         <h2 class={CARD_HEADING}>Photos</h2>
 
         <p class="mt-6 text-body text-text text-pretty">
@@ -370,10 +369,10 @@ const TOOLS_WALL = wallClasses({ lg: [[0, 1], [2], [3], [4]] }, 5);
         </dl>
       </div>
 
-      <div class:list={['card', TOOLS_WALL.bricks[1]]}>
+      <div class:list={['card card-ground', TOOLS_WALL.bricks[1]]}>
         <h2 class={CARD_HEADING}>Built and Tested With</h2>
 
-        <ul class="bullet-list mt-6 gap-x-12 sm:grid sm:grid-cols-2 lg:grid-cols-3">
+        <ul class="bullet-list mt-6 wrap-anywhere gap-x-12 sm:grid sm:grid-cols-2 lg:grid-cols-3">
           {BUILT_WITH.map((tool) => (
             <li>
               <a href={tool.href} class={LINK_ITEM}>
@@ -391,7 +390,7 @@ const TOOLS_WALL = wallClasses({ lg: [[0, 1], [2], [3], [4]] }, 5);
 
       <div
         id="not-found"
-        class:list={['card lg:col-span-2', TOOLS_WALL.bricks[2]]}
+        class:list={['card card-ground lg:col-span-2', TOOLS_WALL.bricks[2]]}
       >
         <h2 class={CARD_HEADING}>The 404 Page</h2>
         <p class="mt-6 mb-paragraph max-w-4xl text-lead font-normal text-text text-pretty">
@@ -405,7 +404,10 @@ const TOOLS_WALL = wallClasses({ lg: [[0, 1], [2], [3], [4]] }, 5);
         </p>
       </div>
 
-      <div id="alice" class:list={['card lg:col-span-2', TOOLS_WALL.bricks[3]]}>
+      <div
+        id="alice"
+        class:list={['card card-ground lg:col-span-2', TOOLS_WALL.bricks[3]]}
+      >
         <h2 class={CARD_HEADING}>Alice in Wonderland</h2>
         <p class="mt-6 mb-paragraph max-w-4xl text-lead font-normal text-text text-pretty">
           The text size buttons are a nod to{' '}
@@ -424,7 +426,10 @@ const TOOLS_WALL = wallClasses({ lg: [[0, 1], [2], [3], [4]] }, 5);
         </p>
       </div>
 
-      <div id="ai" class:list={['card lg:col-span-2', TOOLS_WALL.bricks[4]]}>
+      <div
+        id="ai"
+        class:list={['card card-ground lg:col-span-2', TOOLS_WALL.bricks[4]]}
+      >
         <h2 class={CARD_HEADING}>
           Made with <Abbr short="AI" long="artificial intelligence" />
         </h2>
@@ -437,7 +442,7 @@ const TOOLS_WALL = wallClasses({ lg: [[0, 1], [2], [3], [4]] }, 5);
             </li>
           ))}
         </ul>
-        <p class="mt-8 mb-paragraph text-post-h2 leading-paragraph font-black text-text uppercase text-balance">
+        <p class="mt-8 mb-paragraph text-h2 leading-paragraph font-black text-text uppercase text-balance">
           Thank you to all the artists whose designs AI models are built on and
           ripped off from.
         </p>

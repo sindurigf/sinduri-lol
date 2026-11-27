@@ -65,6 +65,10 @@ DATA_SCRIPT_TYPES=$(node --input-type=module -e \
   "import { DATA_SCRIPT_TYPES } from './scripts/csp-hashes.mjs'; console.log(DATA_SCRIPT_TYPES.join(' '))") ||
   die "could not read DATA_SCRIPT_TYPES from scripts/csp-hashes.mjs"
 [ -n "$DATA_SCRIPT_TYPES" ] || die "scripts/csp-hashes.mjs lists no DATA_SCRIPT_TYPES"
+
+COMPRESSED_PAGES=$(node --input-type=module -e \
+  "import { COMPRESSED_PAGE_PATHS } from './src/lib/html-compression.ts'; console.log([...COMPRESSED_PAGE_PATHS].join(' '))") ||
+  die "could not read COMPRESSED_PAGE_PATHS from src/lib/html-compression.ts"
 TARGET=${TARGET%/}
 case "$TARGET" in
   https://*/*) die "pass an origin, not a URL with a path: $TARGET" ;;
@@ -367,15 +371,20 @@ check_elements() {
 }
 
 check_encoding() {
-  case "$1" in /_astro/* | /favicon.* | *rss.xml) ;; *) return 0 ;; esac
+  case "$1" in
+    /_astro/* | /favicon.* | *rss.xml) by=Cloudflare ;;
+    *)
+      case " $COMPRESSED_PAGES " in *" $1 "*) by='the Worker' ;; *) return 0 ;; esac
+      ;;
+  esac
   case "$3" in
     text/css* | text/javascript* | application/javascript* | image/svg+xml* | \
       image/vnd.microsoft.icon* | image/x-icon* | application/xml* | \
-      application/rss+xml*) ;;
+      application/rss+xml* | text/html*) ;;
     *) return 0 ;;
   esac
   live_header content-encoding "$2" >/dev/null && return 0
-  fail "$1" "served without Content-Encoding, so Cloudflare did not compress it"
+  fail "$1" "served without Content-Encoding, so $by did not compress it"
   detail "cache-control: $(live_header cache-control "$2" || echo '(not sent)')"
 }
 
@@ -420,6 +429,7 @@ ASSET=$(grep -o '/_astro/[A-Za-z0-9._-]*\.css' "$LAST_BODY" | head -n 1 || true)
   ASSET=$(grep -o '/_astro/[A-Za-z0-9._-]*' "$LAST_BODY" | head -n 1 || true)
 
 check_response /privacy/ 200
+for page in $COMPRESSED_PAGES; do check_response "$page" 200; done
 check_response "$POST_PATH" 200
 
 if [ -n "$ASSET" ]; then

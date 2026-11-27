@@ -6,24 +6,14 @@
 
 /** Read from `--color-*` at runtime: check-tokens.mjs forbids raw hex here. */
 export interface HeroPalette {
-  /** `--color-gold-border`. */
-  readonly border: string;
-  /** `--color-gold-muted`. */
-  readonly subtle: string;
-  /** `--color-gold-bud`. */
-  readonly bud: string;
-  /*
-   * Edges keep their hue: canvas gradients interpolate unpremultiplied, so
-   * `transparent` would gray them.
-   */
-  /** `--color-hero-veil`. */
-  readonly veil: string;
-  /** `--color-hero-veil-edge`. */
-  readonly veilEdge: string;
-  /** `--color-hero-floor`. */
-  readonly floor: string;
-  /** `--color-hero-floor-edge`. */
-  readonly floorEdge: string;
+  /** `--color-hero-stalk`: the stalks and buds, or their outline over a fill. */
+  readonly stalk: string;
+  /** `--color-hero-fill`, or empty. Set, the buds fill with it inside a stalk-colored outline. */
+  readonly fill: string;
+  /** `--color-background`: under a bud's fill, so a faded bud hides the stalks behind it. */
+  readonly background: string;
+  /** `--color-block-ink` with a hero fill, else empty: the rabbit's ground shadow. */
+  readonly shadow: string;
 }
 
 export interface HeroField {
@@ -42,7 +32,16 @@ export const REFERENCE_HEIGHT = 780;
 export const REFERENCE_WIDTH = 1440;
 export const REFERENCE_ASPECT = REFERENCE_WIDTH / REFERENCE_HEIGHT;
 
-const HORIZON_RATIO = 398 / REFERENCE_HEIGHT;
+/** Hero width over height, rounded up, at 1280x720: the widest desktop hero. */
+const WIDEST_DESKTOP_ASPECT = 3;
+
+/*
+ * Stem density is the box aspect over REFERENCE_ASPECT, so without a cap a
+ * landscape phone's short hero sows several desktops' worth.
+ */
+export const DENSITY_CAP = WIDEST_DESKTOP_ASPECT / REFERENCE_ASPECT;
+
+const HORIZON_RATIO = 250 / REFERENCE_HEIGHT;
 
 const GROUND_RATIO = 930 / REFERENCE_HEIGHT;
 
@@ -66,7 +65,6 @@ export const FIELD_OF_VIEW_FLOOR = 0.68;
 
 export const FRONT_DEPTH = 1.55;
 
-/* Tuned with --color-hero-veil and --color-hero-floor in global.css. */
 export const NEAR_BLUR = 1.4;
 
 /* Deep enough that stems stand in front, so the hare passes behind cover. */
@@ -85,7 +83,6 @@ export interface Stem {
   readonly root: number;
   /** Apparent height, CSS pixels. */
   readonly height: number;
-  readonly tone: number;
   readonly phase: number;
   readonly veil: number;
   /** Sideways offset at the tip, CSS pixels. */
@@ -262,9 +259,6 @@ export const SIT = { rate: 1.3, gain: 1.7 } as const;
 /* About the hare's body width, so it reads as touch, not a gust. */
 export const REACH = { base: 58, bySize: 110 } as const;
 
-/** Stem tone above which a bud takes the bud, then the muted color. */
-export const BUD_TONE = { bud: 0.78, subtle: 0.5 } as const;
-
 /** By stem height in reference units, tallest first; shorter stems get none. */
 export const BUD_TIERS = [
   { above: 200, count: 5, spacing: 0.11 },
@@ -272,19 +266,22 @@ export const BUD_TIERS = [
   { above: 42, count: 2, spacing: 0.19 },
 ] as const;
 
-export const STALK_WIDTH = { min: 0.55, bySize: 3.1 } as const;
+export const STALK_WIDTH = { min: 0.55, bySize: 1.7 } as const;
+/** Device pixels: thinner, a stalk antialiases under 7:1 on a 1x screen (measured). */
+export const STALK_MIN_DEVICE_PX = 1.5;
+/** Share of its traced width a stalk is drawn at, never under either minimum. */
+export const STALK_WIDTH_SHARE = 0.5;
+/** Line width in CSS pixels of the outline around a filled bud. */
+export const FILL_OUTLINE = 1;
 export const STEM_ALPHA = { base: 0.09, byScale: 0.5 } as const;
 export const BUD_ALPHA = { lift: 0.16, max: 0.82 } as const;
 /** Where the first bud sits, as a share of the stem from its root. */
 export const BUD_START = 0.55;
-export const BUD_SIZE = { min: 0.36, bySize: 2.3 } as const;
+/** CSS pixels: the `sm` breakpoint, under which the phone field applies. */
+export const PHONE_MAX_WIDTH = 640;
+/** On a phone: share of stems sown, and stem height over the desktop's. */
+export const PHONE_FIELD = { sow: 0.62, lift: 1.4 } as const;
+export const BUD_SIZE = { min: 0.4, bySize: 2.6 } as const;
 
 /* Horizon grass: too small for buds. Reference units. */
 export const BUD_MIN_HEIGHT = 13;
-
-/** Reference units above the horizon and deep; `peak` is its densest stop. */
-export const VEIL = { above: 64, depth: 260, peak: 0.34 } as const;
-export const FLOOR_HEIGHT = 230;
-
-/** Stems deeper than this are painted behind the veil. */
-export const VEIL_DEPTH = 7;

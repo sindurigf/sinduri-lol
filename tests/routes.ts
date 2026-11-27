@@ -84,6 +84,7 @@ const PAGE_ROUTES = [
   '/privacy',
   '/credits',
   '/brand',
+  '/talks',
 ];
 
 interface PostSummary {
@@ -310,22 +311,6 @@ export const builtHtml = (distDir = DIST_DIR): Map<string, string> =>
     ]),
   );
 
-/**
- * Routes whose HTML hydrates `component` (matched on `component-url`), to guard a
- * spec's hardcoded subset of ROUTES. Call inside a test body, never at module scope.
- */
-export const islandRoutesFromBuild = (
-  component: string,
-  distDir = DIST_DIR,
-): string[] => {
-  const marker = new RegExp(`component-url="[^"]*/${component}\\.[^"]*\\.js"`);
-
-  return builtPages(distDir)
-    .filter((page) => marker.test(readFileSync(page.file, 'utf8')))
-    .map((page) => page.route)
-    .sort();
-};
-
 let goldRoutes: string[] | undefined;
 
 /**
@@ -348,3 +333,30 @@ export const goldRoutesFromBuild = (): string[] =>
     )
     .map((page) => page.route)
     .sort());
+
+const GOLD_OPEN = /<(\w+)\b[^>]*\bclass="[^"]*\bsurface-gold\b[^"]*"[^>]*>/g;
+const CONTROL_OPEN = /<(?:a|button)\b|\brole="button"/g;
+
+/** The HTML inside each `.surface-gold` element, found by matching its tag's depth. */
+const goldSectionsIn = (html: string): string[] =>
+  [...html.matchAll(GOLD_OPEN)].map((open) => {
+    const tag = new RegExp(`<(/?)${open[1]}\\b[^>]*>`, 'g');
+    const start = open.index + open[0].length;
+    tag.lastIndex = start;
+    let depth = 1;
+    for (let match = tag.exec(html); match; match = tag.exec(html)) {
+      depth += match[1] ? -1 : 1;
+      if (depth === 0) return html.slice(start, match.index);
+    }
+    throw new Error(`unclosed .surface-gold <${open[1]}>`);
+  });
+
+/** Links and buttons inside `route`'s `.surface-gold` elements in its built HTML. */
+export const goldControlsInBuild = (route: string): number => {
+  const html = builtHtml().get(route);
+  if (html === undefined) throw new Error(`${route} is not in the build`);
+  return goldSectionsIn(html).reduce(
+    (total, inside) => total + (inside.match(CONTROL_OPEN)?.length ?? 0),
+    0,
+  );
+};

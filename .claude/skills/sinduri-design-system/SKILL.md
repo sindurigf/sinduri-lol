@@ -13,15 +13,18 @@ before changing anything it covers.
 
 - An arbitrary value: no raw hex, `text-[32px]` or `shadow-[8px_8px_0]`. Add a
   token to `@theme` instead ([Tokens only](../../../docs/STYLEGUIDE.md#tokens-only)).
-- `pink` as text, at any size. `pink-text` as a border, shadow or fill.
+- `red` as text, `red-text` as a border, shadow or fill, or any red on
+  gold: throws on gold are ink. Every red is 7:1 or more on its surface.
 - `cyan` at rest. It is hover and focus only; inside a block, hover and focus
   are `gold-link`. A still state sample on `/brand` may show its hover color.
 - A gold ground without `.surface-gold`, or `.btn-primary`/`.btn-secondary`
-  on gold. The one exception is the footer name band, a `block-gold` fill with
+  on gold or paper: both take the gold pair. The one exception is the footer name band, a `block-gold` fill with
   ink text and no controls ([Gold surface](../../../docs/STYLEGUIDE.md#gold-surface)).
 - `border` on a gold or light fill: it takes `fill-edge`. `fill-edge` on a
-  dark fill. A card's own edge or fill: cards are blocks (`block-gold`,
-  `block-light`, `block-ink`), set in `cards.css`.
+  dark fill. A fourth card form: there are three, ground, paper and gold. A card's own edge or fill: cards are blocks (`block-gold`,
+  `block-light`, `block-ink`), set in `cards.css`; a `.card-ground` keeps the
+  page's ground and a `text` edge: one filled card per section at most, lists
+  and text-heavy cards on the ground (homepage and /brand excepted).
 - `bg-gold` for a fill that may sit in a block: it remaps there; use
   `bg-block-gold`.
 - A shadow class on a brick in a `.card-block`, or a brick that drops:
@@ -36,7 +39,7 @@ before changing anything it covers.
 - Text over a photograph, or `aspect-ratio` on an `<img>`.
 - A cropped photo, except a post card cover, which the build crops to 4:3 at
   `coverPosition` ([Posts](../../../docs/STYLEGUIDE.md#posts)).
-- A radius other than `rounded-nav`, `rounded-full` or `rounded-none`.
+- A radius off [Borders, shadows and radius](../../../docs/STYLEGUIDE.md#borders-shadows-and-radius).
 - ARIA where a native element works; an `aria-label` over visible text
   ([ACCESSIBILITY.md §9](../../../ACCESSIBILITY.md#9-contributor-checklist)).
 - Horizontal padding on a page container.
@@ -56,8 +59,6 @@ before changing anything it covers.
   [Heading floors](../../../docs/STYLEGUIDE.md#heading-floors),
   [Uppercase](../../../docs/STYLEGUIDE.md#uppercase),
   [Soft hyphens](../../../docs/STYLEGUIDE.md#soft-hyphens).
-- Case: headings, page titles and buttons in Chicago title case; `.label` and
-  `.badge` text in sentence case ([Uppercase](../../../docs/STYLEGUIDE.md#uppercase)).
 - Spacing and layout: [Spacing scale](../../../docs/STYLEGUIDE.md#spacing-scale),
   [Gutter and column](../../../docs/STYLEGUIDE.md#gutter-and-column).
 - Borders, shadows, radius:
@@ -68,21 +69,19 @@ before changing anything it covers.
 - Posts: [Posts](../../../docs/STYLEGUIDE.md#posts).
 - Empty and failed states:
   [Empty, loading and error states](../../../docs/STYLEGUIDE.md#empty-loading-and-error-states).
-- Header and menu: [Navigation](../../../docs/STYLEGUIDE.md#navigation). The
-  bar is a gold block in both modes, ink edge, pink throw (ink in light mode).
+- Header and menu: [Navigation](../../../docs/STYLEGUIDE.md#navigation),
+  [Report band](../../../docs/STYLEGUIDE.md#report-band).
 - Footer: [Footer](../../../docs/STYLEGUIDE.md#footer).
 - Animation: [Motion](../../../docs/STYLEGUIDE.md#motion).
 - Focus rings: [Focus](../../../docs/STYLEGUIDE.md#focus).
 - Photos: [Photo frames](../../../docs/STYLEGUIDE.md#photo-frames-and-the-failed-photo-state).
-- Photo captions: "Photo: Name", plus the short license on a Creative Commons
-  photo, and its title first where the license asks for it
-  ([Photo credits](../../../docs/STYLEGUIDE.md#photo-credits)).
+- Photo captions: [Photo credits](../../../docs/STYLEGUIDE.md#photo-credits).
 - A form posting to a new origin: [The CSP](../../../ARCHITECTURE.md#the-csp).
 
 ## Before calling it done
 
 - Run the commands in `AGENTS.md`.
 - Tab the page, zoom to 400% and toggle reduced motion.
-- Never suppress an axe, AccessLint or HTML_CodeSniffer rule; a false positive
-  is handled as [DEVELOPMENT.md](../../../docs/DEVELOPMENT.md#other-notes) says.
+- No axe, AccessLint or HTML_CodeSniffer suppression except a named false
+  positive in [Rejected findings](../../../ARCHITECTURE.md#rejected-findings).
 - A new color, animation or control usually needs a new assertion.

@@ -123,7 +123,7 @@ try {
     );
     const page = await context.newPage();
     await page.goto(ORIGIN);
-    // Mounted fields size their canvases before drawing the still frame.
+    // The field sizes its canvases before drawing the still frame.
     await page.waitForFunction(
       () => document.querySelector('canvas.hero-field-layer')?.width > 0,
       undefined,

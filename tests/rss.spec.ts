@@ -2,12 +2,24 @@ import { test, expect, type Page } from './test';
 import { configuredSite } from './source';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { DIST_DIR, POSTS, TAG_ROUTES, builtHtml } from './routes';
+import {
+  DIST_DIR,
+  POSTS,
+  TAG_ROUTES,
+  builtHtml,
+  frontmatterTime,
+  postFrontmatter,
+} from './routes';
 import { NODE } from './tags';
 import {
   FEED_EXCERPT_MAX_CHARACTERS,
   feedExcerpt,
 } from '../src/lib/feed-excerpt';
+import { lastChanged } from '../src/lib/feed-date';
+import {
+  FEED_CONTENT_MAX_CHARACTERS,
+  feedContentHtml,
+} from '../src/lib/feed-content';
 import { PLANET_TAG } from '../src/lib/paths';
 
 /*
@@ -33,6 +45,7 @@ interface ParsedFeed {
   title: string | null;
   link: string | null;
   description: string | null;
+  lastBuildDate: string | null;
   self: string | null;
   items: {
     link: string;
@@ -66,6 +79,7 @@ const parseFeed = async (page: Page, path: string): Promise<ParsedFeed> => {
       title: child('title'),
       link: child('link'),
       description: child('description'),
+      lastBuildDate: child('lastBuildDate'),
       self: self?.getAttribute('href') ?? null,
       items: [...(channel?.querySelectorAll(':scope > item') ?? [])].map(
         (item) => ({
@@ -94,7 +108,15 @@ const expectValidFeed = (feed: ParsedFeed, path: string): void => {
     feed.self,
     `${path} must name itself in atom:link rel="self", absolute`,
   ).toBe(`${SITE}${path}`);
+  expect(feed.lastBuildDate, `${path}: lastBuildDate is not RFC 822`).toMatch(
+    RFC_822,
+  );
+  const lastBuild = Date.parse(feed.lastBuildDate ?? '');
   for (const item of feed.items) {
+    expect(
+      Date.parse(item.pubDate),
+      `${item.link}: pubDate is after the ${path} lastBuildDate`,
+    ).toBeLessThanOrEqual(lastBuild);
     expect(item.title, `an item in ${path} has no title`).toBeTruthy();
     expect(item.guid, `${item.link}: guid should be the permalink`).toBe(
       item.link,
@@ -169,6 +191,90 @@ test.describe('the feeds', () => {
   );
 });
 
+test.describe('the built feed lastBuildDate', NODE, () => {
+  const lastChangedOf = (slug: string): number => {
+    const frontmatter = postFrontmatter(slug);
+    const time =
+      frontmatterTime(frontmatter, 'updated') ??
+      frontmatterTime(frontmatter, 'date');
+    if (time === undefined) throw new Error(`${slug} has no date.`);
+    return time;
+  };
+
+  test('every feed lastBuildDate is the latest updated or date of its posts', () => {
+    const paths = [SITE_FEED, ...TAG_ROUTES.map((route) => `${route}/rss.xml`)];
+    const wrong: string[] = [];
+    for (const path of paths) {
+      const xml = readFileSync(join(DIST_DIR, path), 'utf8');
+      const lastBuild = /<lastBuildDate>([^<]*)<\/lastBuildDate>/.exec(
+        xml,
+      )?.[1];
+      const slugs = [
+        ...xml.matchAll(/<item>[\s\S]*?<link>([^<]*)<\/link>/g),
+      ].map((match) =>
+        new URL(match[1]!).pathname.split('/').filter(Boolean).pop()!,
+      );
+      if (slugs.length === 0) {
+        if (lastBuild !== undefined) wrong.push(`${path} is empty but dated`);
+        continue;
+      }
+      const expected = Math.max(...slugs.map(lastChangedOf));
+      if (lastBuild === undefined || Date.parse(lastBuild) !== expected) {
+        wrong.push(
+          `${path} lastBuildDate ${lastBuild}, latest post change ${new Date(expected).toUTCString()}`,
+        );
+      }
+    }
+    expect(
+      wrong,
+      'a feed lastBuildDate is not the latest updated or date of its posts.',
+    ).toEqual([]);
+  });
+});
+
+test.describe('lastChanged, the feed lastBuildDate', NODE, () => {
+  const post = (tag: string, date: string, updated?: string) => ({
+    tag,
+    data: {
+      date: new Date(date),
+      updated: updated === undefined ? undefined : new Date(updated),
+    },
+  });
+  const latestOf = (posts: readonly ReturnType<typeof post>[]): number =>
+    Math.max(...posts.map((p) => (p.data.updated ?? p.data.date).getTime()));
+
+  const POSTS_FIXTURE = [
+    post('drupal', '2026-09-13'),
+    post('drupal', '2026-08-01', '2026-08-20'),
+    post('community', '2026-07-01', '2026-10-18'),
+  ];
+
+  test('an updated date newer than every post date wins', () => {
+    const newestDate = Math.max(
+      ...POSTS_FIXTURE.map((p) => p.data.date.getTime()),
+    );
+    const result = lastChanged(POSTS_FIXTURE)?.getTime();
+    expect(result).toBe(latestOf(POSTS_FIXTURE));
+    expect(result).toBeGreaterThan(newestDate);
+  });
+
+  test('with no updated dates the newest post date wins', () => {
+    const posts = [post('drupal', '2026-06-01'), post('drupal', '2026-09-13')];
+    expect(lastChanged(posts)?.getTime()).toBe(latestOf(posts));
+  });
+
+  test('a tag feed counts only its own posts', () => {
+    const tagged = POSTS_FIXTURE.filter((p) => p.tag === 'drupal');
+    const result = lastChanged(tagged)?.getTime();
+    expect(result).toBe(latestOf(tagged));
+    expect(result).toBeLessThan(latestOf(POSTS_FIXTURE));
+  });
+
+  test('a feed with no posts has no lastBuildDate', () => {
+    expect(lastChanged([])).toBeUndefined();
+  });
+});
+
 test.describe('the Drupal Planet opening', () => {
   test('the Drupal feed describes each post by whole sentences from its opening, within the cap', async ({
     page,
@@ -233,6 +339,23 @@ test.describe('the Drupal Planet opening', () => {
       expect(() => feedExcerpt('A &bogus; entity.')).toThrow(/&bogus;/);
     });
 
+    test('names a numeric entity outside Unicode instead of a RangeError', () => {
+      for (const entity of ['&#9999999999;', '&#x110000;', '&#xFFFFFFFFF;']) {
+        expect(() => feedExcerpt(`A bad ${entity} entity.`)).toThrow(
+          new RegExp(entity),
+        );
+      }
+    });
+
+    test('rejects numeric entities XML 1.0 cannot carry', () => {
+      for (const entity of ['&#0;', '&#x1;', '&#11;', '&#x1F;', '&#xD800;']) {
+        expect(() => feedExcerpt(`A bad ${entity} entity.`)).toThrow(
+          new RegExp(entity),
+        );
+      }
+      expect(feedExcerpt('Tab&#9; and newline&#10; are fine.')).toBeDefined();
+    });
+
     test('keeps titles and initials inside their sentence', () => {
       expect(
         feedExcerpt('I met Dr. Purer in the U.S. office. It went well.', 40),
@@ -244,6 +367,124 @@ test.describe('the Drupal Planet opening', () => {
 
     test('gives nothing when the first sentence is over the cap', () => {
       expect(feedExcerpt('A very long sentence indeed.', 10)).toBeUndefined();
+    });
+  });
+});
+
+const MEDIA_NS = 'http://search.yahoo.com/mrss/';
+const CONTENT_NS = 'http://purl.org/rss/1.0/modules/content/';
+
+test.describe('the repost content', () => {
+  test('every site feed item carries its cover, a bounded opening and a link back', async ({
+    page,
+  }) => {
+    const xml = readFileSync(join(DIST_DIR, 'rss.xml'), 'utf8');
+    await page.setContent('<!doctype html><title>feed</title>');
+    const items = await page.evaluate(
+      ({ text, media, content }) => {
+        const doc = new DOMParser().parseFromString(text, 'application/xml');
+        return [...doc.querySelectorAll('rss > channel > item')].map((item) => {
+          const cover = item.getElementsByTagNameNS(media, 'content')[0];
+          const html =
+            item.getElementsByTagNameNS(content, 'encoded')[0]?.textContent ??
+            '';
+          const body = new DOMParser().parseFromString(html, 'text/html');
+          return {
+            link: item.querySelector('link')?.textContent ?? '',
+            coverUrl: cover?.getAttribute('url') ?? '',
+            coverAlt:
+              cover?.getElementsByTagNameNS(media, 'description')[0]
+                ?.textContent ?? '',
+            img: body.querySelector('img')?.getAttribute('src') ?? '',
+            imgAlt: body.querySelector('img')?.getAttribute('alt') ?? '',
+            links: [...body.querySelectorAll('a')].map((a) => a.href),
+            scripts: body.querySelectorAll('script, iframe, [onerror]').length,
+            text: [...body.querySelectorAll('p')].map(
+              (p) => p.textContent ?? '',
+            ),
+          };
+        });
+      },
+      { text: xml, media: MEDIA_NS, content: CONTENT_NS },
+    );
+    expect(items.length, 'the site feed has no items').toBeGreaterThan(0);
+    for (const item of items) {
+      expect(
+        item.coverUrl,
+        `${item.link}: media:content is not absolute`,
+      ).toMatch(new RegExp(`^${SITE}/`));
+      const built = join(DIST_DIR, new URL(item.coverUrl).pathname);
+      expect(
+        existsSync(built),
+        `${item.link}: the cover ${item.coverUrl} was not built`,
+      ).toBe(true);
+      expect(
+        item.coverAlt,
+        `${item.link}: the cover has no description`,
+      ).toBeTruthy();
+      expect(
+        item.img,
+        `${item.link}: the content shows a different cover`,
+      ).toBe(item.coverUrl);
+      expect(
+        item.imgAlt,
+        `${item.link}: the content cover has no alt text`,
+      ).toBe(item.coverAlt);
+      expect(
+        item.links,
+        `${item.link}: the content does not link back to the post`,
+      ).toContain(item.link);
+      expect(
+        item.scripts,
+        `${item.link}: the content carries active markup`,
+      ).toBe(0);
+      const longest = Math.max(...item.text.map((p) => p.length));
+      expect(
+        longest,
+        `${item.link}: the opening is over ${FEED_CONTENT_MAX_CHARACTERS} characters, so a repost carries too much`,
+      ).toBeLessThanOrEqual(FEED_CONTENT_MAX_CHARACTERS);
+    }
+  });
+
+  test.describe('feedContentHtml', NODE, () => {
+    const base = {
+      url: 'https://example.test/blog/a/',
+      siteName: 'example.test',
+      opening: 'An opening.',
+    };
+
+    test('escapes text and attributes, so a post cannot inject markup', () => {
+      const html = feedContentHtml({
+        ...base,
+        opening: '<script>x()</script> & more',
+        cover: {
+          src: 'https://example.test/a.jpg',
+          width: 1,
+          height: 1,
+          alt: '" onerror="x()',
+        },
+      });
+      expect(html).not.toContain('<script>');
+      expect(html).toContain('&lt;script&gt;x()&lt;/script&gt; &amp; more');
+      expect(html).toContain('alt="&quot; onerror=&quot;x()"');
+    });
+
+    test('links a known photographer and leaves an unknown one plain', () => {
+      expect(
+        feedContentHtml({
+          ...base,
+          credit: { name: 'A', href: 'https://a.test/' },
+        }),
+      ).toContain('<p>Photo: <a href="https://a.test/">A</a></p>');
+      expect(feedContentHtml({ ...base, credit: { name: 'B' } })).toContain(
+        '<p>Photo: B</p>',
+      );
+    });
+
+    test('ends with a link back to the post', () => {
+      expect(feedContentHtml(base)).toMatch(
+        /<a href="https:\/\/example\.test\/blog\/a\/">Read the rest on example\.test<\/a><\/p>$/,
+      );
     });
   });
 });

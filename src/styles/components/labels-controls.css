@@ -13,14 +13,13 @@
    * stay hidden on focus.
    */
   .skip-link {
-    @apply absolute left-4 top-4 z-60 border-4 border-fill-edge bg-block-gold px-6 py-4
-      text-label font-black uppercase tracking-label text-background;
+    @apply absolute left-4 top-4 z-60 edge-block border-fill-edge bg-block-gold px-6 py-4
+      text-label font-black uppercase tracking-label text-gold-text;
 
     transform: translateY(calc(-100% - --spacing(6)));
   }
 
-  .skip-link:focus,
-  .skip-link:focus-visible {
+  .skip-link:focus {
     transform: translateY(0);
   }
 
@@ -30,7 +29,7 @@
    * site adds a positioning class.
    */
   .motion-toggle {
-    @apply absolute grid size-target place-items-center border-4 border-border
+    @apply absolute grid size-target place-items-center edge-block border-border
       bg-surface text-gold;
   }
 

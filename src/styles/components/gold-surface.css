@@ -27,11 +27,9 @@
     color: var(--color-gold-text);
   }
 
-  /* `surface` vanishes on gold and pink fails SC 1.4.11 there, so both change. */
-  .surface-gold .card {
-    background-color: transparent;
-
-    @apply shadow-hard-gold-border-4;
+  /* No red on gold: every throw cast on it is ink. A ground card is not gold. */
+  :is(.surface-gold, .card:not(.card-ground), .bg-block-gold) * {
+    --color-red: var(--color-block-ink);
   }
 
   /* A wall on gold: light blocks with the ink edge; each casts the throw. */
@@ -58,18 +56,17 @@
   }
 
   /*
-   * Scoped to .surface-gold so it renders unstyled elsewhere. Label, fill and
-   * `gold-text` edge pass SC 1.4.3 and 1.4.11 on gold. The pink shadow fails
-   * and is decoration: it must never delimit the control.
+   * Scoped to .surface-gold and blocks, so it renders unstyled elsewhere. Label,
+   * fill and `gold-text` edge pass SC 1.4.3 and 1.4.11 on both; its throw is ink.
    */
-  .surface-gold .btn-gold-primary {
-    @apply inline-block border-4 border-gold-text bg-gold-text
+  :is(.surface-gold, .card) .btn-gold-primary {
+    @apply inline-block edge-block border-gold-text bg-gold-text
       px-8 py-4 text-button font-black uppercase
       tracking-label text-gold-btn-label shadow-hard-bunny-4 lift-control;
   }
 
-  .surface-gold .btn-gold-secondary {
-    @apply inline-block border-4 border-gold-text bg-transparent
+  :is(.surface-gold, .card:where(:not(.card-ground))) .btn-gold-secondary {
+    @apply inline-block edge-block border-gold-text bg-transparent
       px-8 py-4 text-button font-black uppercase
       tracking-label text-gold-text;
   }
@@ -79,29 +76,46 @@
    * (18.58), #131313 outside (11.32). The inner half rides in the press rule's
    * `box-shadow` (buttons-nav.css), so the throw stays beside it.
    */
-  .surface-gold .btn-gold-primary:focus-visible {
+  :is(.surface-gold, .card) .btn-gold-primary:focus-visible {
     --press-ring: var(--inset-shadow-gold-btn-ring);
   }
 
   /* No underline: the box already marks it as a control (SC 1.4.1). */
-  .surface-gold a.btn-gold-primary,
-  .surface-gold a.btn-gold-secondary {
+  :is(.surface-gold, .card) a.btn-gold-primary,
+  :is(.surface-gold, .card:where(:not(.card-ground))) a.btn-gold-secondary {
     text-decoration: none;
   }
 
-  /*
-   * Keeps its dark fill and `text` label; edge `gold-text` like
-   * the gold buttons.
-   */
-  .surface-gold a.chip {
+  /* Keeps its dark fill and label; edge `gold-text` like the gold buttons. */
+  :is(.surface-gold, .card:where(:not(.card-ground))) a.chip {
     @apply border-gold-text text-text no-underline;
   }
 
-  .surface-gold a.btn-gold-primary:hover {
+  :is(.surface-gold, .card) a.btn-gold-primary:hover {
     color: var(--color-gold-btn-label);
   }
 
-  .surface-gold a.btn-gold-secondary:hover {
-    color: var(--color-gold-text);
+  /* Without the lift, hover takes the secondary's empty rest fill; the inner ring has no fill left to sit on. */
+  @media (prefers-reduced-motion: reduce) and (hover: hover) {
+    :is(.surface-gold, .card) a.btn-gold-primary:hover:not(:active) {
+      --press-ring: 0 0 transparent;
+      background-color: transparent;
+      color: var(--color-gold-text);
+    }
+  }
+
+  /* Hover is the lift alone otherwise, and reduced motion drops the lift (SC 1.4.1). */
+  :is(.surface-gold, .card)
+    .btn-gold-primary:hover:not([aria-disabled='true']) {
+    text-decoration: underline;
+    text-decoration-thickness: var(--underline-thin);
+    text-underline-offset: var(--underline-offset);
+  }
+
+  /* Fills like the primary at rest; the ring stays clear of the fill across the gold gap. */
+  :is(.surface-gold, .card:where(:not(.card-ground)))
+    :is(a, summary).btn-gold-secondary:hover {
+    background-color: var(--color-gold-text);
+    color: var(--color-gold-btn-label);
   }
 }

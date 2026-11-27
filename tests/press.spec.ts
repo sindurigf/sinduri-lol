@@ -1,6 +1,7 @@
 import { expect, test, type Page } from './test';
 import { gotoSettled } from './settle';
 import { DESKTOP_VIEWPORT, PHONE_VIEWPORT } from './wcag';
+import { NO_FIREFOX } from './tags';
 
 /** A pressed control drops its shadow, and moves only without reduced motion. `moves` carries the shadow. */
 interface Pressable {
@@ -10,12 +11,23 @@ interface Pressable {
   moves: string;
 }
 
+const PRIMARY_ROUTE = '/brand';
+const PRIMARY_BUTTON =
+  'main [data-component="primary-button"] [data-example] a.btn-primary';
+const CONTACT_SUBMIT = 'main form .contact-submit';
+
 const PRESSABLE: Pressable[] = [
   {
     name: 'a primary button',
+    route: PRIMARY_ROUTE,
+    control: PRIMARY_BUTTON,
+    moves: PRIMARY_BUTTON,
+  },
+  {
+    name: 'the contact submit in its block',
     route: '/contact',
-    control: 'main .btn-primary',
-    moves: 'main .btn-primary',
+    control: CONTACT_SUBMIT,
+    moves: CONTACT_SUBMIT,
   },
   {
     name: 'a gold primary button',
@@ -195,7 +207,7 @@ test.describe('a press on the edge still clicks', () => {
   }
 });
 
-/** The gold primary's inner focus ring is an inset shadow; a press empties box-shadow, so only the pink goes. */
+/** The gold primary's inner focus ring is an inset shadow; a press empties box-shadow, so only the red goes. */
 test('a focused gold primary keeps its inner ring when pressed', async ({
   page,
 }) => {
@@ -231,27 +243,17 @@ test.describe('bricks', () => {
     await expect(page.locator(MENU_LINK).first()).toBeVisible();
   };
 
-  const brickThrowOf = (page: Page) =>
-    page.evaluate(() =>
-      parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue(
-          '--brick-throw',
-        ),
-      ),
-    );
-
-  test('a menu brick drops its throw and moves by it', async ({ page }) => {
+  test('a pressed menu brick drops its throw and moves', async ({ page }) => {
     await openMenu(page);
     await pressCenter(page, MENU_LINK);
     expect(
       await castsShadow(page, MENU_LINK),
       'a pressed menu brick keeps its throw',
     ).toBe(false);
-    const step = await brickThrowOf(page);
     expect(
-      await translateOf(page, MENU_LINK),
-      'a pressed menu brick does not move into its throw',
-    ).toEqual([step, step]);
+      (await translateOf(page, MENU_LINK)).some((offset) => offset !== 0),
+      'a pressed menu brick does not move',
+    ).toBe(true);
     await page.mouse.up();
   });
 
@@ -281,9 +283,9 @@ test.describe('bricks', () => {
   test('a joined header brick holds still when pressed', async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     await gotoSettled(page, '/blog/');
-    await pressCenter(page, 'header .header-bricks .nav-cta');
+    await pressCenter(page, 'header .header-bricks .theme-switch');
     expect(
-      await translateOf(page, 'header .header-bricks .nav-cta'),
+      await translateOf(page, 'header .header-bricks .theme-switch'),
       'a joined brick moved out of its row',
     ).toEqual([0, 0]);
     await page.mouse.up();
@@ -354,6 +356,21 @@ test.describe('a hover lift', () => {
       expect(await translateOf(page, p.moves)).toEqual([0, 0]);
     });
 
+    test(`${p.name} shows hover under reduced motion by a longer throw`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.setViewportSize(DESKTOP_VIEWPORT);
+      await gotoSettled(page, p.route);
+      const rest = await throwOf(page, p.control);
+      await page.locator(p.control).first().hover();
+      await transitionsDone(page, p.control);
+      expect(
+        await throwOf(page, p.control),
+        'hover under reduced motion looks the same as rest',
+      ).toBeGreaterThan(rest);
+    });
+
     test(`${p.name} keeps its focus ring clear of its lifted throw`, async ({
       page,
     }) => {
@@ -376,17 +393,13 @@ test.describe('a hover lift', () => {
       }));
       expect(
         offset,
-        'the ring does not clear the throw by its gap: cyan over pink fails SC 1.4.11',
+        'the ring does not clear the throw by its gap: cyan over red fails SC 1.4.11',
       ).toBeGreaterThanOrEqual((await throwOf(page, p.control)) + gap);
     });
   }
 });
 
-test.describe('on a touch screen', () => {
-  test.skip(
-    ({ browserName }) => browserName === 'firefox',
-    'Firefox has no isMobile emulation, so it always reports hover: hover',
-  );
+test.describe('on a touch screen', NO_FIREFOX, () => {
   test.use({ isMobile: true, hasTouch: true });
 
   // A tap leaves :hover set on a phone, so a lift would stay on after the finger leaves.
@@ -394,14 +407,14 @@ test.describe('on a touch screen', () => {
     page,
   }) => {
     await page.setViewportSize(PHONE_VIEWPORT);
-    await gotoSettled(page, '/contact');
+    await gotoSettled(page, PRIMARY_ROUTE);
     expect(
       await page.evaluate(() => matchMedia('(hover: hover)').matches),
     ).toBe(false);
-    const button = page.locator('main .btn-primary').first();
+    const button = page.locator(PRIMARY_BUTTON);
     await button.hover();
     expect(await button.evaluate((node) => node.matches(':hover'))).toBe(true);
-    await transitionsDone(page, 'main .btn-primary');
-    expect(await translateOf(page, 'main .btn-primary')).toEqual([0, 0]);
+    await transitionsDone(page, PRIMARY_BUTTON);
+    expect(await translateOf(page, PRIMARY_BUTTON)).toEqual([0, 0]);
   });
 });

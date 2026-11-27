@@ -114,7 +114,7 @@ export interface CatSpot {
 export type Hold = 'pointer' | 'focus' | 'card';
 
 /** 'hidden' while the colony does not step the cat: off screen, not yet seen, or reduced motion. */
-export type CatMood = 'hidden' | 'playing' | 'holding' | 'asleep';
+type CatMood = 'hidden' | 'playing' | 'holding' | 'asleep';
 
 interface Playing {
   move: Move;
@@ -260,10 +260,8 @@ export const planMove = (
 };
 
 /**
- * The cup push from anywhere on the track, heading left: a run and a creep to
- * `edge`, the track's left end, so the cup goes over the card's or the step's
- * edge at `floor`, where the surface the cat stands on starts, onto a floor
- * `depth` px below.
+ * The cup push, heading left: a run and a creep to `edge` (the track's left end), so the cup goes
+ * over the surface edge at `floor`, where the cat's surface starts, onto a floor `depth` px below.
  * Left only: the right end is the sleep control's corner.
  */
 export const cupPush = (

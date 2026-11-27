@@ -5,6 +5,7 @@ import type {
 } from './contact-env';
 import type { ContactSubmission } from './contact-form';
 import { errorMessage } from './errors';
+import { HIDDEN_CHARACTERS } from './hidden-characters';
 import { SITE_NAME } from './site';
 
 /*
@@ -17,10 +18,14 @@ export const NOTIFICATION_SENDER = {
 } as const;
 
 /* Validation trims but keeps inner control characters; a header cannot. */
+const HEADER_BREAKS = new RegExp(
+  `[\\p{Cc}\\p{Zl}\\p{Zp}${HIDDEN_CHARACTERS}]+`,
+  'gu',
+);
 const oneLine = (value: string): string =>
-  value.replace(/[\p{Cc}\p{Zl}\p{Zp}]+/gu, ' ').trim();
+  value.replace(HEADER_BREAKS, ' ').trim();
 
-/** The email that tells the site owner a message arrived. */
+/** The email that tells `to` a contact message arrived. */
 export const notificationFor = (
   submission: ContactSubmission,
   to: string,
@@ -39,7 +44,7 @@ export const notificationFor = (
 });
 
 /**
- * Emails the site owner about one stored message. True once the mailer
+ * Emails `CONTACT_NOTIFY_TO` about one stored message. True once the mailer
  * accepts it; every failure is logged with its reason and never the message.
  */
 export const sendNotification = async (

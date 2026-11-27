@@ -7,7 +7,7 @@ export const CATEGORY_TILE = 'bg-block-gold text-gold-text border-gold-text';
 
 interface Category {
   readonly glyph: string;
-  /** Sinduri's copy from /about; also the category page's meta description. */
+  /** Editorial copy (AGENTS.md "Copy"); also the category page's meta description. */
   readonly teaser: string;
 }
 

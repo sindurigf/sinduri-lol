@@ -1,39 +1,13 @@
 /*
- * Pure. The rabbit is four traced poses in one vector atlas (src/assets/hero-rabbit.svg),
- * die-cut sticker and ink-backed pink block included; they face left and the
- * route runs right, so it is drawn mirrored. It moves as one piece and swaps
- * poses; it never bends.
+ * Pure. The hero hare's poses and drawing, from the atlas in rabbit-atlas.ts;
+ * the poses face left and the route runs right, so it is drawn mirrored.
  */
 import type { RoutePoint } from './hero-field-scene';
 
-export type RabbitPose = 'sit' | 'look' | 'crouch' | 'leap';
-
-/** Atlas pixels; the foot is the bottom center of the rabbit within its frame. */
-interface AtlasFrame {
-  readonly x: number;
-  readonly y: number;
-  readonly w: number;
-  readonly h: number;
-  readonly footX: number;
-  readonly footY: number;
-}
-
-/* Must match the atlas layout the frames were packed with. */
-export const RABBIT_FRAMES: Readonly<Record<RabbitPose, AtlasFrame>> = {
-  sit: { x: 0, y: 0, w: 207, h: 335, footX: 103, footY: 312 },
-  look: { x: 211, y: 0, w: 213, h: 271, footX: 106, footY: 249 },
-  crouch: { x: 428, y: 0, w: 234, h: 265, footX: 117, footY: 242 },
-  leap: { x: 666, y: 0, w: 267, h: 255, footX: 133, footY: 233 },
-};
+import { RABBIT_FRAMES, type RabbitPose } from './rabbit-atlas';
 
 /** Atlas pixels per drawing unit; sets the rabbit's size, about 90 units tall sitting. */
 const ATLAS_PX_PER_UNIT = 3.2;
-
-/** The atlas's size in its own pixels, the frames' coordinates. */
-export const ATLAS_SIZE = { w: 933, h: 335 } as const;
-
-/** CSS px: the rabbit's height at most while it climbs onto Let It Fall's heap, the floor of --size-footer-rabbit; the two must agree. */
-export const CLIMB_HEIGHT = 96;
 
 /** Device px per atlas px the rabbit is drawn at, for `scale` CSS px per unit on a canvas of `pixelRatio`. */
 export const atlasDensity = (scale: number, pixelRatio: number): number =>

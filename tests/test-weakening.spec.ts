@@ -3,7 +3,7 @@ import { NODE } from './tags';
 import {
   changeFindings,
   main,
-  ownerApproval,
+  maintainerApproval,
 } from '../scripts/check-test-weakening.mjs';
 
 /* Trigger text is assembled here so this file never holds a literal the guard flags in tests/. */
@@ -155,6 +155,10 @@ test.describe('test-weakening guard', NODE, () => {
     expect(inSpec(awaited.replace('await ', ''), awaited)).toEqual([
       'leaves 1 async expect unawaited',
     ]);
+    const notAwaited = withLine(`  await ${E}(page).not.toHaveURL('/a');`);
+    expect(inSpec(notAwaited.replace('await ', ''), notAwaited)).toEqual([
+      'leaves 1 async expect unawaited',
+    ]);
     expect(
       inSpec(
         BASE.replace(
@@ -166,6 +170,10 @@ test.describe('test-weakening guard', NODE, () => {
     expect(inSpec(BASE.replace(`(2).toBe(2)`, `(2).not.toBe(2)`))).toEqual([
       'negates an assertion',
     ]);
+  });
+
+  test('does not flag a page variable before a value matcher', () => {
+    expect(inSpec(withLine(`  ${E}(page).toContain('a');`))).toEqual([]);
   });
 
   test('counts a wrapped expect chain and flags a number changed on a wrapped matcher', () => {
@@ -181,14 +189,50 @@ test.describe('test-weakening guard', NODE, () => {
   });
 
   test('flags an existing test moved to fewer engines, not a new one', () => {
-    const tag = ['ENGINE', 'INVARIANT'].join('_');
+    const tags = [
+      ['ENGINE', 'INVARIANT'],
+      ['CHROMIUM', 'ONLY'],
+      ['WEBKIT', 'ONLY'],
+      ['NO', 'WEBKIT'],
+      ['NO', 'FIREFOX'],
+      ['WITH', 'ANALYTICS'],
+      ['WITHOUT', 'CONTACT', 'FORM'],
+      ['NODE'],
+    ].map((parts) => parts.join('_'));
+    const constant = ['CHROMIUM', 'ONLY', 'TAG'].join('_');
+    for (const tag of [
+      ...tags,
+      `{ tag: '@chromium-only' }`,
+      `{ tag: ${constant} }`,
+      `{ tag: ['@slow', '@no-webkit'] }`,
+    ]) {
+      expect(
+        inSpec(
+          BASE.replace(`test('one', () => {`, `test('one', ${tag}, () => {`),
+        ),
+        `${tag} on an existing test is not flagged`,
+      ).toEqual(['runs an existing test in fewer engines']);
+      expect(
+        inSpec(
+          withLine(`test('two', ${tag}, () => {\n  ${E}(3).toBe(3);\n});`),
+        ),
+        `${tag} on a new test is flagged`,
+      ).toEqual([]);
+    }
+  });
+
+  test('flags an existing test wrapped in a newly tagged describe, not new tests', () => {
+    const tag = ['NO', 'FIREFOX'].join('_');
+    const wrap = (body: string) =>
+      spec(`test.describe('group', ${tag}, () => {`, body, `});`);
+    const one = BASE.split('\n').slice(1).join('\n');
+    expect(inSpec(wrap(one))).toEqual([
+      'runs an existing test in fewer engines',
+    ]);
     expect(
       inSpec(
-        BASE.replace(`test('one', () => {`, `test('one', ${tag}, () => {`),
+        `${BASE}\n${wrap(`test('two', () => {\n  ${E}(3).toBe(3);\n});`).split('\n').slice(1).join('\n')}`,
       ),
-    ).toEqual(['runs an existing test in fewer engines']);
-    expect(
-      inSpec(withLine(`test('two', ${tag}, () => {\n  ${E}(3).toBe(3);\n});`)),
     ).toEqual([]);
   });
 
@@ -489,7 +533,7 @@ test.describe('test-weakening guard', NODE, () => {
     expect(inSpec(withLine(`  ${call('photos', 'fail')});`))).toEqual([]);
   });
 
-  test("accepts the marker only in the owner's approving or comment review of the tested commit, outside code", () => {
+  test('accepts the marker only in an approving or comment review by GITHUB_REPOSITORY_OWNER of the tested commit, outside code', () => {
     const HEAD = 'abc123';
     const review = (
       login: string,
@@ -501,7 +545,7 @@ test.describe('test-weakening guard', NODE, () => {
       } = {},
     ) => ({ login, body, commitId, state, editor });
     const approve = (...reviews: ReturnType<typeof review>[]) =>
-      ownerApproval(reviews, OWNER, HEAD);
+      maintainerApproval(reviews, OWNER, HEAD);
 
     expect(approve(review('coordinator-bot', MARKER))).toBeNull();
     expect(approve(review(OWNER, MARKER, { commitId: 'older1' }))).toBeNull();
@@ -605,7 +649,7 @@ test.describe('test-weakening guard in CI', NODE, () => {
     return { code, output: lines.join('\n') };
   };
 
-  test("fails a finding without approval and passes it with the owner's approving review", async () => {
+  test('fails a finding without approval and passes it with an approving review by GITHUB_REPOSITORY_OWNER', async () => {
     const unapproved = await run();
     expect(unapproved.code).toBe(1);
     expect(unapproved.output).toContain(`${SPEC}:`);
