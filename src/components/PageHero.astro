@@ -62,9 +62,7 @@ const titleClass =
     ]}
   >
     {Astro.slots.has('eyebrow') && (
-      <div
-        class:list={['mx-auto mb-8', reading ? 'max-w-measure' : 'max-w-page']}
-      >
+      <div class="mx-auto mb-8 max-w-page">
         <slot name="eyebrow" />
       </div>
     )}
@@ -77,12 +75,7 @@ const titleClass =
         <Roundel eager variant="hero" />
       </div>
     </div>
-    <div
-      class:list={[
-        'hero-intro mx-auto',
-        reading ? 'max-w-measure' : 'max-w-page',
-      ]}
-    >
+    <div class="hero-intro mx-auto max-w-page">
       <slot />
     </div>
   </section>
