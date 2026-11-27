@@ -95,18 +95,6 @@
     @apply pt-head pb-section;
   }
 
-  .page-hero-thin .standfirst {
-    @apply text-standfirst;
-  }
-
-  /*
-   * No gold ground: the column is set in PageHero to match the page body, so
-   * the title shares the prose's left edge.
-   */
-  .page-hero-plain .standfirst {
-    @apply text-standfirst;
-  }
-
   /* Bottom room for the roundel's upper half plus 24px. */
   .plain-slab {
     padding-block: var(--spacing-head)
