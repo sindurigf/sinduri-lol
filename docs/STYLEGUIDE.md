@@ -116,7 +116,6 @@ blur, uppercase headings, tilted marks.
 | `cyan`        | `#00DCFD`    | Hover and focus only                              |
 | `red`         | `#FF8080`    | Depth and error edges, shadows; ink on gold       |
 | `red-text`    | `#FF8080`    | Every red glyph                                   |
-| `bunny`       | `#FF8080`    | Bunny mark throws; ink on gold                    |
 | `block-cyan`  | `#1FC8F0`    | Light-mode header slab; ink on it is 9.36         |
 | `button-text` | `ButtonText` | Forced colors only: bars on the button face       |
 | `cat-*`       | 2 fills      | About cat props; decoration, never a boundary     |
@@ -127,14 +126,16 @@ The gold-ground set is in [Gold surface](#gold-surface), light values in
 
 - Two dark grounds: `background` (page, header, footer, bands) and `surface`
   (cards, inputs). Measure every foreground against both.
-- Blocks: homepage and /brand cards, the plain hero slab and the post contents are a gold
+- Blocks: homepage and /brand cards, the plain hero slab (always gold) and the post contents are a gold
   `block-gold` or light `block-light` fill with a 4px `block-ink` edge
   (`--block-edge`) and the red throw. Cards are gold; every second card in a
-  `.card-block`, `.card-solid`, the plain hero slab and the post contents are
-  light. Inside a block the color tokens are remapped, so `text-text` and
+  `.card-block` (every first in `.card-block-paper-first`), `.card-solid` and the post contents are light. Inside a block the color tokens are remapped, so `text-text` and
   `text-gold` are ink (11.32 on gold, 14.42 on light), `subtle` is `gold-muted`
   (7.88) or `light-subtle` (7.40), and a badge inverts. Gold fills use
   `block-gold`, which never remaps. `tests/blocks.spec.ts`.
+- Three card forms: ground (`.card-ground`), paper (`block-light`) and gold
+  (`block-gold`, the plain `.card` and `.card.surface-gold`). A card on gold
+  sits in a `.card-block` wall and is paper with an ink throw (/career).
 - Ground cards: `.card-ground` (/about, /career, /credits, blog listings,
   /contact, /contact/send, /contact/sent) is no block. A section fills one
   card at most, 3 to 5 per page; lists and text-heavy cards stay on the
@@ -269,8 +270,7 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
   `.lead`, `.panel-lead` and `.standfirst` (`gold-text`), links (`gold-link`,
   underlined), the focus ring (`gold-text`) and default borders
   (`gold-border`); the area's own outer edge keeps `border`, gold on gold,
-  since it meets the page. A card inside turns transparent with
-  `shadow-hard-gold-border-4`; a `.card-block` wall on gold is light blocks
+  since it meets the page. A card on gold sits in a `.card-block` wall: light blocks
   with the ink edge (`/career`); a linked chip keeps its dark fill with a
   `gold-text` edge.
 - A whole gold section (hero slab, gold band) is also a `.gold-column`.
@@ -285,7 +285,7 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
 - No `gold-subtle`: a third step would be indistinguishable from `gold-text`.
   Below `gold-muted`, hierarchy is weight and size.
 - No `cyan`, `red` or `red-text` on gold, not even a shadow: `.surface-gold`
-  turns `red` and `bunny` ink, so every throw on gold is ink. A `.sticker` carries its own `surface` ground, dark in dark mode and white in light.
+  turns `red` ink, so every throw on gold is ink. A `.sticker` carries its own `surface` ground, dark in dark mode and white in light.
 - A utility written inside a gold section (`border-border`, `text-subtle`)
   beats the subtree default and is a bug. axe misses it;
   `tests/gold-surface.spec.ts` catches it.
@@ -306,8 +306,13 @@ set; hex values and ratios are in the generated [Contrast](#contrast) table:
   `tests/gold-surface.spec.ts` asserts every control in a `.surface-gold`
   section has a visible edge: a fill that differs from the ground, or a border
   of at least 3:1.
+- Paper (a light block) takes the same two buttons and a linked chip, not new
+  forms: ink edges and labels on `block-light`, 14.42.
 - `.btn-gold-primary` is scoped to `.surface-gold` and blocks (`.card`);
-  `.btn-gold-secondary` to `.surface-gold`. Both render unstyled elsewhere.
+  `.btn-gold-secondary` and the linked chip's ink edge to `.surface-gold` and
+  every block but `.card-ground`. Both buttons render unstyled elsewhere.
+- `tests/states.spec.ts` measures the /brand paper sample at rest, hover, focus
+  and press: label 7:1, edge and ring 3:1, dark and light.
 - The /brand form sample is `.btn-gold-primary` in a block. Its fill is 11.32
   on a gold block, 9.36 on light mode's cyan block and 14.42 on a light one.
 - The /contact submit sits on a ground card and is `.btn-primary`. In light
@@ -334,7 +339,7 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
 | `card-edge`                                   | `#131313` | 18.58        |
 | gold as text, `.text-gold`                    | `#131313` | 18.58        |
 | `subtle`                                      | `#3f4650` | 9.53         |
-| `red`, `red-text`, `bunny`                    | `#560000` | 15.05        |
+| `red`, `red-text`                             | `#560000` | 15.05        |
 | `code-edge`                                   | `#767676` | 4.54         |
 | `code-fill`                                   | `#e5e2e1` | 1.29         |
 | `cyan` (focus ring and hover text)            | `#0047b3` | 8.23         |
@@ -362,8 +367,8 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
   band and the tab white, the skip link cyan under `gold-text`.
 - The footer follows the mode like `<main>`: white in light mode, its words
   7:1 or more and its tiles apart from it (`tests/footer.spec.ts`).
-- Bunny marks use `bunny`, `fill-edge` and `shadow-hard-bunny-*`, never
-  `border`. `bunny` is the mode's red, ink on gold.
+- Bunny marks use `red`, `fill-edge` and `shadow-hard-bunny-*`, never
+  `border`: the mode's red, ink on gold.
 - The label on a gold fill is `gold-text`, never `background` (white in
   light).
 - RIDET is a black block. A `.sticker` follows the tokens: white fill,
@@ -372,48 +377,44 @@ The switch and what it scopes: [ARCHITECTURE.md](../ARCHITECTURE.md#light-mode).
 
 ## Type scale
 
-Lexend Variable, weights 400 and 900 only. Heading sizes are fixed so 200%
+Lexend Variable, weights 400 and 900 only: `--font-weight-normal` and
+`--font-weight-black`, the only weight tokens. Heading sizes are fixed so 200%
 zoom doubles them (SC 1.4.4); other sizes are `clamp()` tokens; the
 copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
 0.92 of the text around it with a 16px floor.
 
-| Token                     | Min px | Max px | Line height | Weight | Use                                   |
-| ------------------------- | ------ | ------ | ----------- | ------ | ------------------------------------- |
-| `text-hero-h1`            | 36     | 36     | 0.94        | 900    | Homepage name only                    |
-| `text-h1`                 | 48     | 48     | 0.94        | 900    | Page title                            |
-| `text-deck-cover`         | 33     | 80     | 0.94        | 900    | Talk cover title                      |
-| `text-reading-h1`         | 40     | 40     | 0.94        | 900    | Privacy, Accessibility title          |
-| `text-h2`                 | 28     | 28     | 0.96        | 900    | Section and panel heading             |
-| `text-h3`                 | 22     | 22     | 1.1         | 900    | Third-level heading, card title       |
-| `text-display`            | 20     | 32     | 1.1         | 900    | Links, values and stats, not headings |
-| `text-lead`               | 24     | 24     | 1.55        | 400    | Lead; card paragraph                  |
-| `text-post-title`         | 32     | 32     | 1.06        | 900    | Post title, in its own case           |
-| `text-post-h2`            | 28     | 28     | 1.02        | 900    | Post section; `.reading-layout`       |
-| `text-post-h3`            | 22     | 22     | 1.15        | 900    | Post subsection, last level           |
-| `text-post-card`          | 24     | 24     | 1.15        | 900    | Post card title (an `h2`)             |
-| `text-post-card-feature`  | 28     | 28     | 1.02        | 900    | Featured post card title              |
-| `text-contents`           | 16     | 16     | 1.35        | 400    | A post's contents list                |
-| `text-standfirst`         | 20     | 36     | 1.55        | 400    | Slab aside, `.standfirst`             |
-| `text-post-teaser`        | 21     | 26     | 1.55        | 400    | Post and plain-tier aside             |
-| `text-body`               | 19.96  | 19.96  | 1.62        | 400    | Reading text                          |
-| `text-code`               | 16     | none   | 1.5         | 400    | Code, `--font-mono`; tracks body      |
-| `text-button`             | 16     | 18     | 1.2         | 900    | Buttons; same as `text-label`         |
-| `text-label`              | 16     | 18     | 1.2         | 900    | Labels; 18 to 40rem, 16 at 48rem      |
-| `text-hero-sticker`       | 16     | 20     | 1.02        | 900    | Homepage hero stickers                |
-| `text-menu`               | 34     | 56     | 1           | 900    | Mobile menu links                     |
-| `text-slide`              | 17     | 34     | 1.35        | 400    | Slide text: full screen, print        |
-| `text-slide-title`        | 26     | 65     | 1           | 900    | Talk slide title, its own case        |
-| `text-slide-title-page`   | 24     | 56     | 1           | 900    | Slide title on the page               |
-| `text-slide-h3`           | 22     | 42     | 1.1         | 900    | Slide group label: full screen, print |
-| `text-slide-number`       | 72     | 160    | 1           | 900    | Talk part number                      |
-| `text-slide-frame`        | 17     | 34     | 1.35        | 400    | Slide text in full screen, by frame   |
-| `text-slide-title-frame`  | 26     | 65     | 1           | 900    | Slide title in full screen, by frame  |
-| `text-slide-h3-frame`     | 22     | 42     | 1.1         | 900    | Slide label in full screen, by frame  |
-| `text-slide-number-frame` | 72     | 160    | 1           | 900    | Part number in full screen, by frame  |
-| `text-copyright`          | 20     | 20     | 1.2         | 900    | Footer copyright                      |
-| `text-footer-name-fluid`  | fills  | fills  | 0.82        | 900    | Footer name band, sized to its width  |
-| `text-section-number`     | 21     | 28     | 1           | 900    | Category glyph tile                   |
-| `text-quote-mark`         | 64     | 144    | 0.75        | 900    | About kindness quote mark             |
+| Token                     | Min px | Max px | Line height | Weight | Use                                    |
+| ------------------------- | ------ | ------ | ----------- | ------ | -------------------------------------- |
+| `text-hero-h1`            | 36     | 36     | 0.94        | 900    | Homepage name only                     |
+| `text-h1`                 | 48     | 48     | 0.94        | 900    | Page title                             |
+| `text-deck-cover`         | 33     | 80     | 0.94        | 900    | Talk cover title                       |
+| `text-reading-h1`         | 40     | 40     | 0.94        | 900    | Privacy, Accessibility title           |
+| `text-h2`                 | 28     | 28     | 1.02        | 900    | Section, post section, featured card   |
+| `text-h3`                 | 22     | 22     | 1.15        | 900    | Third level, post card title (an `h2`) |
+| `text-display`            | 20     | 32     | 1.1         | 900    | Links, values and stats, not headings  |
+| `text-lead`               | 24     | 24     | 1.55        | 400    | Lead; card paragraph                   |
+| `text-post-title`         | 32     | 32     | 1.06        | 900    | Post title, in its own case            |
+| `text-contents`           | 16     | 16     | 1.35        | 400    | A post's contents list                 |
+| `text-standfirst`         | 21     | 26     | 1.55        | 400    | Slab aside, post teaser                |
+| `text-body`               | 19.96  | 19.96  | 1.62        | 400    | Reading text                           |
+| `text-code`               | 16     | none   | 1.5         | 400    | Code, `--font-mono`; tracks body       |
+| `text-button`             | 16     | 18     | 1.2         | 900    | Buttons; same as `text-label`          |
+| `text-label`              | 16     | 18     | 1.2         | 900    | Labels; 18 to 40rem, 16 at 48rem       |
+| `text-hero-sticker`       | 16     | 20     | 1.02        | 900    | Homepage hero stickers                 |
+| `text-menu`               | 34     | 56     | 1           | 900    | Mobile menu links                      |
+| `text-slide`              | 17     | 34     | 1.35        | 400    | Slide text: full screen, print         |
+| `text-slide-title`        | 26     | 65     | 1           | 900    | Talk slide title, its own case         |
+| `text-slide-title-page`   | 24     | 56     | 1           | 900    | Slide title on the page                |
+| `text-slide-h3`           | 22     | 42     | 1.1         | 900    | Slide group label: full screen, print  |
+| `text-slide-number`       | 72     | 160    | 1           | 900    | Talk part number                       |
+| `text-slide-frame`        | 17     | 34     | 1.35        | 400    | Slide text in full screen, by frame    |
+| `text-slide-title-frame`  | 26     | 65     | 1           | 900    | Slide title in full screen, by frame   |
+| `text-slide-h3-frame`     | 22     | 42     | 1.1         | 900    | Slide label in full screen, by frame   |
+| `text-slide-number-frame` | 72     | 160    | 1           | 900    | Part number in full screen, by frame   |
+| `text-copyright`          | 20     | 20     | 1.2         | 900    | Footer copyright                       |
+| `text-footer-name-fluid`  | fills  | fills  | 0.82        | 900    | Footer name band, sized to its width   |
+| `text-section-number`     | 21     | 28     | 1           | 900    | Category glyph tile                    |
+| `text-quote-mark`         | 64     | 144    | 0.75        | 900    | About kindness quote mark              |
 
 - Lexend, self-hosted from `@fontsource-variable/lexend` (OFL-1.1), family
   `'Lexend Variable'`. Only the latin subset is declared, in the `@font-face`
@@ -451,12 +452,11 @@ copyright and contents list are fixed, and `text-code` is `max(1rem, 0.92em)`,
   the level above it (`tests/headings.spec.ts`); a /brand example, shown at
   another page's size, is exempt.
 - `text-hero-h1` is 36px so the homepage name stays two lines
-  (`tests/hero-fit.spec.ts`). `home.css` swaps in `--text-hero-h1-column` and
-  `--text-hero-h1-column-phone`, both 36px.
+  (`tests/hero-fit.spec.ts`), in every layout and at every width.
 - `text-reading-h1` is for the Privacy and Accessibility titles only.
 - The talk cover keeps the fluid `text-deck-cover`; the deck has its own
   rule ([ACCESSIBILITY.md](../ACCESSIBILITY.md) gap 7).
-- Posts use `text-post-*`. Do not raise them to the page scale.
+- Post titles use `text-post-title`. Do not raise them to the page scale.
 - The footer name fills its band by container width (`--text-footer-name-fluid`, `-md`), two lines below 48rem, one from 48rem that wraps to two under SC 1.4.12 text spacing; it has no rem floor, so a larger default font never pushes it past the band.
 - Tracking: `--tracking-heading` -0.05em on h1 and h2, `--tracking-title`
   -0.02em on h3, post and slide titles, `--tracking-label`
@@ -578,8 +578,8 @@ with a comment beside it.
   width of panels, popovers, form fields, topic tiles, the `/accessibility`
   fact-strip rules, a prose `hr` and blockquote: the
   `edge`, `edge-t`, `edge-b` and `edge-l` utilities. Photos, controls, chips,
-  the theme switch and the code label keep `border-4`; footer
-  stickers take `--border-width-sticker` (4px). No rule between sections.
+  the theme switch, the code label and footer stickers take `edge-block`
+  (`--block-edge`). No rule between sections.
 - One thinner weight, `--border-width-thin` (2px), for post code frames, the
   quotes and rules inside a module only: where it applies is in the Code
   block and Fold rows of [Components](#components).
@@ -599,19 +599,16 @@ with a comment beside it.
   fringe; when they match, the fill runs under the edge, or the ground shows
   between them as a seam (`tests/tilt.spec.ts`, every route, both modes).
 
-| Utility                     | Casts it                                                                                                                                                                |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `shadow-hard-red-object`    | Cards, post contents, gold areas, popovers, slide cards; `--hard-throw` (8px)                                                                                           |
-| `shadow-hard-red-4`         | The PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, footer stickers, slide cards                                                                          |
-| `shadow-brick`              | The header's brick rows (in `block-ink`), the menu's links, call to action and Close; `--brick-throw` (6px) in `text`                                                   |
-| `shadow-hard-cyan-object`   | A hovered linked card, in place of red; a contact link brick fills instead, cyan in dark mode and ink in light mode (label 14.42), its ring inside in the label's color |
-| `shadow-hard-gold-border-4` | A card on gold                                                                                                                                                          |
-| `shadow-hard-bunny-4`       | `.sticker`, `.btn-gold-primary`                                                                                                                                         |
-| `shadow-hard-bunny-8`       | The homepage stickers, the laughing rabbit tile on `/about` below `lg`, the logo tile                                                                                   |
-| `shadow-hard-bunny-12`      | The laughing rabbit tile on `/about` from `lg`                                                                                                                          |
+| Utility                   | Casts it                                                                                                                                                                |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shadow-hard-red-object`  | Cards, post contents, gold areas, popovers, slide cards; `--hard-throw` (8px)                                                                                           |
+| `shadow-hard-red-4`       | The PageHero photo, `.btn-primary`, `.btn-secondary`, link chips, footer stickers, slide cards; `--control-throw` (4px)                                                 |
+| `shadow-brick`            | The header's brick rows (in `block-ink`), the menu's links, call to action and Close; `--brick-throw` (6px) in `text`                                                   |
+| `shadow-hard-cyan-object` | A hovered linked card, in place of red; a contact link brick fills instead, cyan in dark mode and ink in light mode (label 14.42), its ring inside in the label's color |
+| `shadow-hard-bunny-4`     | `.sticker`, `.btn-gold-primary`                                                                                                                                         |
+| `shadow-hard-bunny-8`     | The homepage stickers, the laughing rabbit tile on `/about` below `lg`, the logo tile                                                                                   |
+| `shadow-hard-bunny-12`    | The laughing rabbit tile on `/about` from `lg`                                                                                                                          |
 
-- `bunny` is `red`, set apart so a surface can turn the bunny throws ink
-  (`.surface-gold`).
 - Anything focusable with a shadow sets its lift: [Focus](#focus).
 - Radius is 0 everywhere (base layer). `rounded-nav` (14px): the logo tile
   (`Header.astro`), the laughing rabbit tile on the Lepus Ridet panel on `/about` and the Star
@@ -625,20 +622,20 @@ file per area.
 
 | Class                                   | What                                                                                                                                                                                                                                                                    |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.btn-primary`                          | Gold fill, `gold-text` label, `border-4` in `text` (ink inside a block), red 4px shadow, `text-button` 900                                                                                                                                                              |
-| `.btn-secondary`                        | Light block: `block-light` fill, `block-ink` label and `border-4`, red 4px shadow                                                                                                                                                                                       |
+| `.btn-primary`                          | Gold fill, `gold-text` label, `edge-block` in `text` (ink inside a block), red 4px shadow, `text-button` 900                                                                                                                                                            |
+| `.btn-secondary`                        | Light block: `block-light` fill, `block-ink` label and `edge-block`, red 4px shadow                                                                                                                                                                                     |
 | `.actions`                              | Button row; its 32px row gap clears shadow and ring when buttons wrap                                                                                                                                                                                                   |
 | `.card`                                 | A gold block: `block-gold`, 4px `block-ink` edge, red 8px shadow, padding 24px, 40px from `sm`                                                                                                                                                                          |
 | `.card-title`                           | Every card heading, `text-h3` 900                                                                                                                                                                                                                                       |
 | `.card-link`                            | Title link; a short press on the card follows it, text stays selectable (`card-click.ts`); inline-block, 44px min; card hover turns title and shadow cyan                                                                                                               |
 | `.card-solid`                           | A light block outside a `.card-block`, where alternation does not reach it                                                                                                                                                                                              |
-| `.card-block`                           | A wall: blocks share 4px walls, alternate gold and light, and step up to the right (`card-rise-*`, `card-step-*` from `src/lib/wall.ts`); each brick casts the throw, the next covers it                                                                                |
+| `.card-block`                           | A wall: blocks share 4px walls, alternate gold and light (light first with `.card-block-paper-first`, /talks), and step up to the right (`card-rise-*`, `card-step-*` from `src/lib/wall.ts`); each brick casts the throw, the next covers it                           |
 | `.lead`                                 | Paragraph under a section heading, `text-lead` 400, 24px under it                                                                                                                                                                                                       |
 | `.standfirst`                           | Line beside PageHero's title, `text-standfirst` 400                                                                                                                                                                                                                     |
 | `.bullet-list`                          | Bulleted list, gold markers                                                                                                                                                                                                                                             |
-| `.chip`                                 | Tags, jump links, filters, pager. Always a link. `border-4`, 44px target; a chip list is `gap-6`. The blog filter and pager are a `.chip-row`: joined light bricks, one throw, the current one gold with an ink marker (`tests/chip-row.spec.ts`)                       |
+| `.chip`                                 | Tags, jump links, filters, pager. Always a link. `edge-block`, 44px target; a chip list is `gap-6`. The blog filter and pager are a `.chip-row`: joined light bricks, one throw, the current one gold with an ink marker (`tests/chip-row.spec.ts`)                     |
 | `.badge`                                | A non-link fact or state. Flat `bg-text`, `background` label, no border or shadow                                                                                                                                                                                       |
-| `.nav-cta`                              | Nav call to action: `block-ink` with a `block-light` label and a 6px `bunny` throw in the header, gold in the menu, `border-4` in `text`; current takes the bar's current mark                                                                                          |
+| `.nav-cta`                              | Nav call to action: `block-ink` with a `block-light` label and a 6px `red` throw in the header, gold in the menu, `edge-block` in `text`; current takes the bar's current mark                                                                                          |
 | `.label`                                | `text-label` 900 uppercase, 0.1em                                                                                                                                                                                                                                       |
 | `.link`                                 | Running-text underline for a classed standalone link                                                                                                                                                                                                                    |
 | `.abbr-trigger`, `.abbr-tip`            | An abbreviation's first use (`src/components/Abbr.astro`): dotted underline; the expansion is a popover in a `surface` box flush below it; inline in brackets where popovers are missing. Punctuation right after it goes in `after`, so a line never starts with it    |
@@ -848,31 +845,28 @@ Four openings, no fifth: Home's canvas hero, a talk's cover slide, a post's
 Set by `PageHero`'s `slab` prop. The tier follows what is under the title, not
 how important the page is.
 
-| Tier  | `slab`   | Routes                                                                                            | Ground                                                              | Title                                                                    | Aside              | Padding              |
-| ----- | -------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------ | -------------------- |
-| Full  | `"full"` | `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`; `/contact/send`, `/blog/page/<n>` | gold                                                                | `text-h1`; `text-h2` on the last two                                     | `.standfirst`      | `py-section`         |
-| Thin  | `"thin"` | `/contact/sent` and a post's own `.post-slab`                                                     | gold                                                                | `text-post-title`                                                        | `text-post-teaser` | `pt-head pb-section` |
-| Plain | `"none"` | `/privacy`, `/accessibility`, `/talks`, category and tag listings, `/404`                         | light block; gold block on categories and tags (`plainFill="gold"`) | `text-reading-h1`; `text-h1` on `/404`; `text-h2` on categories and tags | `text-post-teaser` | `pt-head pb-section` |
+| Tier  | `slab`   | Routes                                                                                                                                            | Ground     | Title                                                                                      | Aside             | Padding              |
+| ----- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------ | ----------------- | -------------------- |
+| Full  | `"full"` | `/about`, `/career`, `/contact`, `/blog`, `/credits`, `/brand`, `/talks`, `/accessibility`, `/privacy`, `/404`; `/contact/send`, `/blog/page/<n>` | gold       | `text-h1`; `text-reading-h1` on `/accessibility` and `/privacy`; `text-h2` on the last two | `.standfirst`     | `py-section`         |
+| Thin  | `"thin"` | `/contact/sent` and a post's own `.post-slab`                                                                                                     | gold       | `text-post-title`                                                                          | `text-standfirst` | `pt-head pb-section` |
+| Plain | `"none"` | category and tag listings                                                                                                                         | gold block | `text-h2`                                                                                  | `text-standfirst` | `pt-head pb-section` |
 
 - **Full:** the opening is a statement and the other half of the composition
   has content.
 - **Thin:** one short line and no section headings after it. A 32px thin title
   over 28px panel headings is not a 0.8 step, so a page with panels is never
-  thin. `/blog` is not thin: its featured title is `text-post-card-feature`.
-- **Plain:** a document, or a page whose chips and cards say what it is. Takes
-  `.reading-layout` in the same change, which sets `.prose h2` to
-  `text-post-h2` (40px title over a 28px first heading).
-- The plain tier is a light block in the gold column's shape holding the title
+  thin. `/blog` is not thin: its featured title is `text-h2`.
+- **Plain:** a listing whose chips and cards say what it is.
+- The plain tier is a gold block in the gold column's shape holding the title
   and roundel; the breadcrumb sits above it and everything else under it, on
-  the page body's column (the measure on a reading page, the page column on a
-  listing).
+  the page column.
 
 ### Variants
 
 | Variant  | Where                                                        | Title                            | Column                             |
 | -------- | ------------------------------------------------------------ | -------------------------------- | ---------------------------------- |
 | Home     | `/` only                                                     | `text-hero-h1`, `.hero-plate`    | its own composition                |
-| Standard | About, Career, Contact, Blog, Credits, Brand, `/404`         | `text-h1`                        | `max-w-page`; 6 of 12 with a photo |
+| Standard | About, Career, Contact, Blog, Credits, Brand, Talks, `/404`  | `text-h1`                        | `max-w-page`; 6 of 12 with a photo |
 | Reading  | Privacy, Accessibility (`measure="reading"`)                 | `text-reading-h1`                | `max-w-measure`, the prose column  |
 | Compact  | category and tag listings, `/contact/send`, `/blog/page/<n>` | `text-h2`, still the page's `h1` | `max-w-page`                       |
 | Thin     | `/contact/sent`                                              | `text-post-title`                | `max-w-page`                       |
@@ -922,13 +916,13 @@ roundel.**
 - About and every post have a photo, so no roundel.
 - The homepage is not a PageHero and has no roundel on its window.
 - The roundel is the jumping rabbit with no disc: a die-cut sticker (white
-  rim, thin ink line) on a `bunny` block that falls behind the rabbit, its back
+  rim, thin ink line) on a `red` block that falls behind the rabbit, its back
   face edged in ink, drawn into `src/assets/roundel-rabbit.svg` by
   `scripts/make-logo.mjs`, tilted 3deg. `variant="hero"` sizes its box by
   `--spacing-roundel`; the page variant is 96px, 128px from `lg`.
 - Its center sits `--spacing(1)` above the slab's bottom edge; its right side
   on the column's text edge (`.hero-roundel`).
-- On a plain tier it straddles the light block's bottom edge too, and is never
+- On a plain tier it straddles the gold block's bottom edge too, and is never
   left off. The slab's bottom padding is half the box plus 24px; the text
   under it starts 32px past the box's lower half.
 - The roundel sets a slab's minimum bottom padding: half its box plus its lift
@@ -981,7 +975,7 @@ text-gold-muted` under the standfirst. Color
 
 - The header is a bar on the hero's column, 12px below the top, with the
   logo tile at its left end, and from 48rem its name too ([Navigation](#navigation)).
-- The logo tile keeps its `bunny` shadow. The die-cut rabbit jumps its
+- The logo tile keeps its `red` shadow. The die-cut rabbit jumps its
   top-right corner and casts an ink throw, so the corner never doubles the red.
 - The tile is the rabbit's springboard: hovered, the rabbit rises 3px; pressed,
   the tile drops into its shadow and the rabbit crouches with it; released, the
@@ -1095,8 +1089,8 @@ Enforced by `tests/post-page.spec.ts`.
 | Element     | Treatment                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Paragraph   | `mt-6`, `text-body` (19.96px, line height 1.62), `text`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `h2`        | `mt-16`, `text-post-h2` (28px); its text follows at the next `mt-6`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `h3`        | `mt-12`, `text-post-h3` (22px). The last level                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `h2`        | `mt-16`, `text-h2` (28px); its text follows at the next `mt-6`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `h3`        | `mt-12`, `text-h3` (22px). The last level                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | Inline code | `.prose code`: the mono stack at `--text-code`, on a `surface` fill with `px-1` and no border                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Code block  | `.prose pre`: mono, scrolls sideways, a named tab stop while it overflows. In a post, `.code-block` (`src/styles/components/code-block.css`): a `--border-width-thin` `code-edge` frame on `code-fill`, the fence language in a gold label brick on its top edge (`block-gold`, `fill-edge`, 4px in both modes), and a Copy button in its top-right corner, the word beside the icon, named "Copy `<language>` code", 44px, its ring inside. The code group is named "`<language>` code"; the label is hidden from assistive technology. The room for the button is kept only with JavaScript (`.js`). A failed copy (no clipboard, or the browser refuses) selects the code and says how to copy it, in `red-text` under the block, on the page ground. No script, no button                                                                                                                                                                                                                                       |
 | Lists       | `mt-6 pl-6`, items `mt-3`, gold markers; a link-only item is 44px tall                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -1129,7 +1123,7 @@ Enforced by `tests/post-page.spec.ts`.
 
 - `tests/headings.spec.ts` holds a post at 1280px and 320px to a 19px floor
   (`HEADING_FLOOR`) and a 0.8 step (`STEP`) between levels.
-- `--text-post-h3` is 22px, so an `h4` would need to be at most 17.6px and
+- `--text-h3` is 22px, so an `h4` would need to be at most 17.6px and
   at least 19px. The spec fails it at 320px.
 - The heading floor stays 19px and level 4 is not exempt from `STEP`.
 - A post that needs a fourth level is reopened as a deliberate decision.
@@ -1311,13 +1305,13 @@ No rule or divider joins the footer to the page.
 - The current page has `aria-current` and the 2px text-link underline; hover
   changes color only, so the two never look alike.
 - Stickers: `--size-sticker` 48px (`--size-sticker-lg` 56px from 64rem),
-  a `--border-width-sticker` 4px transparent edge (drawn only in forced
+  a `--block-edge` transparent edge (drawn only in forced
   colors), so the throw meets the fill; 3deg tilt, 4px red shadow with
   `lift-control`. They straighten on hover and focus.
 - One colorway, the `.badge` inversion: `text` fill, `background` glyph
   (15.28). Not cycled by `nth-child`.
 - Sizes are `@theme` tokens: `--size-sticker`, `--size-sticker-lg`,
-  `--size-sticker-icon` (22px), `--border-width-sticker`, `--size-footer-rabbit`
+  `--size-sticker-icon` (22px), `--size-footer-rabbit`
   (96px to 160px).
 
 ## Navigation
@@ -1365,7 +1359,7 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   dark is the base in `buttons-nav.css`, light overrides in `light-mode.css`.
   The menu dialog and Theme menu reset the page's values.
 - The logo tile is a `block-gold` tile in dark mode and a `block-cyan` tile in
-  light mode, no edge, with an 8px `bunny` shadow. Get in Touch throws 6px in `text`.
+  light mode, no edge, with an 8px `red` shadow. Get in Touch throws 6px in `text`.
 - Focused, the logo link turns into a block in the bar's opposite color, with
   no ring: the rabbit jumps higher than the bar leaves room for a ring. Its
   ring is transparent, and `CanvasText` in forced colors
@@ -1377,7 +1371,7 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
 - `.header-actions` holds Get in Touch, then a 24px gap, then the theme
   switch, text size brick and menu button as their own `.header-bricks` row.
   Get in Touch is a `block-ink` brick with a `block-light` label and its own
-  6px `bunny` shadow.
+  6px `red` shadow.
 - Link bricks take the page's ground and text (`--brick-fill`,
   `--brick-label`): ink in dark mode, white in light mode. The current page has
   a 4px `block-gold` underline.
@@ -1526,7 +1520,7 @@ Enforced by `tests/nav-current.spec.ts`, `tests/mobile-menu.spec.ts`,
   plus `--focus-gap` in, so it never crosses the next brick: `gold-link` on
   a light brick (14.49), `gold-text` on gold (11.32), and `gold-text` on a
   hovered brick's cyan (11.20).
-- `--lift-control` 4px beside a control's 4px shadow, `--lift-object` (the
+- `--lift-control` (the `--control-throw`, 4px) beside a control's shadow, `--lift-object` (the
   `--hard-throw`, 8px) beside an object's shadow, `--lift-mark` 8px beside the
   logo tile's 8px shadow, so the ring clears the shadow (cyan on red is 1.46). The button,
   `.nav-cta` and `.chip` classes carry it. A current item with no shadow sets

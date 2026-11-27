@@ -19,7 +19,7 @@ import { cssColorToken } from '../src/lib/css-token.ts';
 
 const INK = cssColorToken('--color-block-ink');
 const GOLD = cssColorToken('--color-block-gold');
-const RED = cssColorToken('--color-bunny');
+const RED = cssColorToken('--color-red');
 const WHITE = cssColorToken('--color-light-ground');
 const LIGHT_RED = cssColorToken('--color-light-red-text');
 
@@ -63,7 +63,7 @@ const TRACE = JSON.parse(readFileSync('artwork/rabbit-jump.json', 'utf8'));
 const shipped = (source) =>
   source.replace(/ d="([^"]+)"/g, (_, d) => ` d="${relative(d)}"`);
 
-/* The header tile, Header.astro: 48px, `border-4`, `rounded-nav`. */
+/* The header tile, Header.astro: 48px, `edge-block`, `rounded-nav`. */
 const TILE = 48;
 const BORDER = 4;
 /* The share cards draw the tile at 7x (TILE_SCALE in scripts/make-og.mjs); this renders the rabbit at 2x of that. */

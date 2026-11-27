@@ -44,15 +44,9 @@ const PLAIN_ZOOM_TOKENS = [
   '--text-h1',
   '--text-reading-h1',
   '--text-hero-h1',
-  '--text-hero-h1-column',
-  '--text-hero-h1-column-phone',
   '--text-h2',
   '--text-h3',
   '--text-post-title',
-  '--text-post-card',
-  '--text-post-card-feature',
-  '--text-post-h2',
-  '--text-post-h3',
 ] as const;
 
 const PLAIN_ZOOM = 2;
@@ -135,7 +129,6 @@ const WEBKIT_SHORTFALL: Record<(typeof WINDOWS)[number]['width'], string[]> = {
     '--text-deck-cover',
     '--text-quote-mark',
     '--text-display',
-    '--text-standfirst',
     '--text-slide-title',
     '--text-slide-number',
     '--text-menu',
@@ -143,7 +136,6 @@ const WEBKIT_SHORTFALL: Record<(typeof WINDOWS)[number]['width'], string[]> = {
   1920: [
     '--text-quote-mark',
     '--text-display',
-    '--text-standfirst',
     '--text-slide',
     '--text-slide-title',
     '--text-slide-h3',

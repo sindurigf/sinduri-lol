@@ -123,6 +123,9 @@
 @custom-variant stickers-wrap (@media (width < 17.5rem));
 
 @theme static {
+  --font-weight-*: initial;
+  --font-weight-normal: 400;
+  --font-weight-black: 900;
   --color-background: #0b0b0b;
   --color-surface: #1a1a1a;
   --color-border: #ffc000;
@@ -152,8 +155,6 @@
    */
   --color-red: #ff8080;
   --color-red-text: #ff8080;
-  /* The bunny marks' throw: `red`, except where a surface turns it ink. */
-  --color-bunny: #ff8080;
   /* The system color forced-colors mode pairs with the button face; bars on it use `forced-colors:bg-button-text`. */
   --color-button-text: ButtonText;
   /* The About cats' toy box and scratching post, read by about-cats.css. */
@@ -260,27 +261,13 @@
   /* Blog post title, in its own case; "Communities" fits at 305px. */
   --text-post-title: 2rem;
   --text-post-title--line-height: 1.06;
-  /* The post teaser beside the title on its slab, read as a standfirst. */
-  --text-post-teaser: calc(
-    clamp(1.3125rem, 2vw, 1.625rem) * var(--text-scale, 1)
-  );
-  --text-post-teaser--line-height: var(--leading-paragraph);
-  /* Under the post title, over the h3 at 0.8 or less (tests/headings.spec.ts). */
-  --text-post-h2: 1.75rem;
-  --text-post-h2--line-height: 1.02;
-  --text-post-h3: 1.375rem;
-  --text-post-h3--line-height: 1.15;
   --text-contents: 1rem;
   --text-contents--line-height: 1.35;
-  /* Card titles are h2s, at or under the 28px h1 of tag and category pages. */
-  --text-post-card: 1.5rem;
-  --text-post-card--line-height: 1.15;
-  --text-post-card-feature: 1.75rem;
-  --text-post-card-feature--line-height: 1.02;
+  /* The h3 is 0.8 of the h2 or less (tests/headings.spec.ts); a post card title is set at h3 size, a featured one at h2. */
   --text-h2: 1.75rem;
-  --text-h2--line-height: 0.96;
+  --text-h2--line-height: 1.02;
   --text-h3: 1.375rem;
-  --text-h3--line-height: 1.1;
+  --text-h3--line-height: 1.15;
   /*
    * Display-size text that is a paragraph, not a heading: SC 1.4.8 asks 1.5 of
    * a block of more than one sentence; 1.55 stays clear after sub-pixel rounding.
@@ -289,16 +276,13 @@
   /* Display text that is not a heading: links, values and stats. */
   --text-display: clamp(1.25rem, 2.6vw, 2rem);
   --text-display--line-height: 1.1;
-  /* --text-scale (Drink Me and Eat Me) multiplies the reading sizes only: lead, standfirst, post teaser, body and label. */
+  /* --text-scale (Drink Me and Eat Me) multiplies the reading sizes only: lead, standfirst, body and label. */
   /* A lead or card paragraph: fixed, under the 28px h2 (SC 1.4.4 at 200% zoom). */
   --text-lead: calc(1.5rem * var(--text-scale, 1));
   --text-lead--line-height: var(--leading-paragraph);
-  /*
-   * PageHero standfirst. Its own token because --text-lead also sizes card
-   * paragraphs and section leads.
-   */
+  /* The standfirst on a slab and the post teaser beside its title. Its own token because --text-lead also sizes card paragraphs and section leads. */
   --text-standfirst: calc(
-    clamp(1.25rem, 2.8vw, 2.25rem) * var(--text-scale, 1)
+    clamp(1.3125rem, 2vw, 1.625rem) * var(--text-scale, 1)
   );
   --text-standfirst--line-height: var(--leading-paragraph);
   /*
@@ -389,8 +373,9 @@
    * is hover and focus. Gold casts none: gold on gold shows nothing, and red is
    * visible on gold and on the page.
    */
-  /* One throw for object shadows; controls keep 4px. */
+  /* One throw for object shadows, one for controls. */
   --hard-throw: 8px;
+  --control-throw: 4px;
   /* A block's ink edge; blocks in a `.card-block` share it as one wall. */
   --block-edge: 4px;
   /* The header's joined bricks and its logo block. */
@@ -403,22 +388,22 @@
   --step-y: clamp(0px, calc((100vw - 640px) / 10), 48px);
   /* Share of `--step-y` a wall of short bricks (taglines) rises. */
   --step-y-short-share: 1 / 3;
-  /* Card, panel, field, header and rule edges (`edge` utilities); controls, chips, photos and stickers keep `border-4`. */
+  /* Card, panel, field, header and rule edges (`edge` utilities); controls, chips, photos and stickers keep `edge-block`. */
   --edge: 6px;
   /* Table rules only (`hairline` utilities). */
   --hairline: 1px;
-  --shadow-hard-red-4: 4px 4px 0 var(--color-red);
+  --shadow-hard-red-4: var(--control-throw) var(--control-throw) 0
+    var(--color-red);
   /* In the color opposite the ground, so it shows in both modes. */
   --shadow-brick: var(--brick-throw) var(--brick-throw) 0 var(--color-text);
   --shadow-hard-red-object: var(--hard-throw) var(--hard-throw) 0
     var(--color-red);
-  --shadow-hard-bunny-4: 4px 4px 0 var(--color-bunny);
-  --shadow-hard-bunny-8: 8px 8px 0 var(--color-bunny);
-  --shadow-hard-bunny-12: 12px 12px 0 var(--color-bunny);
+  --shadow-hard-bunny-4: var(--control-throw) var(--control-throw) 0
+    var(--color-red);
+  --shadow-hard-bunny-8: 8px 8px 0 var(--color-red);
+  --shadow-hard-bunny-12: 12px 12px 0 var(--color-red);
   --shadow-hard-cyan-object: var(--hard-throw) var(--hard-throw) 0
     var(--color-cyan);
-  /* A card on gold: `gold-border` passes SC 1.4.11 there, red does not. */
-  --shadow-hard-gold-border-4: 4px 4px 0 var(--color-gold-border);
 
   /*
    * Inner half of .btn-gold-primary's two-tone focus ring, visible against the
@@ -489,7 +474,7 @@
   --focus-width: 4px;
   --focus-gap: 4px;
   --focus-offset-inset: calc(-1 * (var(--focus-width) + var(--focus-gap)));
-  --lift-control: 4px;
+  --lift-control: var(--control-throw);
   --lift-object: var(--hard-throw);
   /* The logo tile keeps its 8px bunny shadow, so its ring clears 8px. */
   --lift-mark: 8px;
@@ -520,8 +505,8 @@
   --press-lift: 2px;
   /* The lift's move; none under reduced motion, where the throw still grows. */
   --press-rise: calc(var(--press-lift) * -1);
-  /* A pressable's `border-4`; its hit strip reaches past it. */
-  --press-edge: 4px;
+  /* A pressable's `edge-block`; its hit strip reaches past it. */
+  --press-edge: var(--block-edge);
   /* A lift or release slides at an even speed in this time; a press lands at once. */
   --press-travel: 80ms;
   /* Layout lands on fractions of a pixel, scrolling on whole ones. */
@@ -553,20 +538,13 @@
 
   --hero-column-pad-inline: clamp(20px, 3.5vw, 64px);
 
-  --hero-column-edge: var(--block-edge);
-  --hero-rule: var(--hero-column-edge);
+  --hero-rule: var(--block-edge);
   /*
    * At least SINDURI's leading under its letters (0.0831em, 7px at 84px), or
    * its line box reaches the gold at 1.27. tests/hero-fit.spec.ts.
    */
   --hero-name-clearance: 8px;
 
-  /*
-   * The name in the column and below `sm`; home.css swaps them into
-   * --text-hero-h1, so they hold literal values. tests/hero-fit.spec.ts.
-   */
-  --text-hero-h1-column: 2.25rem;
-  --text-hero-h1-column-phone: 2.25rem;
   /*
    * Reserved for the two sticker words at the top right, since `max-width` on
    * the name cannot see them. Holds the widest sticker plus border, padding,
@@ -582,7 +560,6 @@
   --size-sticker: 48px;
   --size-sticker-lg: 56px;
   --size-sticker-icon: 22px;
-  --border-width-sticker: 4px;
   /* The post code frame, and light mode's edge on post modules and code labels: the full edge reads too heavy on white. */
   --border-width-thin: 2px;
   --size-footer-rabbit: clamp(96px, 12vw, 160px);

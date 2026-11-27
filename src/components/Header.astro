@@ -119,7 +119,7 @@ const current = (href: string) => ariaCurrent(currentPath, href);
         <div class="mobile-menu md:hidden" data-mobile-menu>
           <button
             type="button"
-            class="menu-brick group flex size-target items-center justify-center border-4"
+            class="menu-brick group flex size-target items-center justify-center edge-block"
             aria-expanded="false"
             aria-controls="mobile-menu-panel"
             aria-label="Menu"
@@ -185,7 +185,7 @@ const current = (href: string) => ariaCurrent(currentPath, href);
   <NavList
     links={[...NAV_LINKS, CTA]}
     class="mx-auto flex max-w-page flex-wrap items-center gap-6"
-    linkClass="hit-target label block border-4 border-border px-4 py-2"
+    linkClass="hit-target label block edge-block border-border px-4 py-2"
     activeClass="bg-text text-background"
     restClass="text-text hover:text-cyan"
   />

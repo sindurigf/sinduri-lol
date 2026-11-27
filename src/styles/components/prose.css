@@ -213,7 +213,7 @@
    * would make every block a landmark.
    */
   .prose pre {
-    @apply mt-6 min-w-0 overflow-x-auto border-4 border-border bg-surface p-4
+    @apply mt-6 min-w-0 overflow-x-auto edge-block border-border bg-surface p-4
       font-mono text-code text-text;
   }
 
@@ -261,7 +261,7 @@
    * measures.
    */
   .prose figure :is(.aspect-frame, video) {
-    @apply block h-auto w-full ring-4 ring-border;
+    @apply block h-auto w-full ring-(length:--block-edge) ring-border;
   }
 
   .prose figcaption {
@@ -325,7 +325,7 @@
   /* tests/forced-colors.spec.ts: a scroller needs its own edge there; the table's may be scrolled away. */
   @media (forced-colors: active) {
     .prose .table-scroll {
-      @apply border-4;
+      @apply edge-block;
     }
   }
 
