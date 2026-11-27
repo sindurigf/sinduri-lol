@@ -6,6 +6,7 @@ import {
   POST_ROUTES,
   ROUTES,
   TAG_ROUTES,
+  TALK_ROUTES,
   builtHtml,
 } from './routes';
 import { NODE } from './tags';
@@ -123,10 +124,30 @@ test.describe('breadcrumbs', NODE, () => {
     }
   });
 
-  test('pages outside the blog carry neither', () => {
+  test("a talk's trail is Home / Talks and its JSON-LD adds the deck", () => {
     const pages = builtHtml();
+    for (const route of TALK_ROUTES) {
+      const html = pages.get(route);
+      expect(html, `${route} was not built`).toBeDefined();
+      const trail = visibleTrail(html!);
+      expect(trail, `${route} should have a Home / Talks trail`).toEqual([
+        { name: 'Home', item: `${SITE}/` },
+        { name: 'Talks', item: `${SITE}/talks/` },
+      ]);
+      expect(
+        breadcrumbList(html!),
+        `${route}: the BreadcrumbList does not match the trail on the page`,
+      ).toEqual([...trail!, { name: heading(html!) }]);
+    }
+  });
+
+  test('pages outside the blog and the talk decks carry neither', () => {
+    const pages = builtHtml();
+    const talks: readonly string[] = TALK_ROUTES;
     const others = ROUTES.filter(
-      (route) => route === '/blog' || !route.startsWith('/blog'),
+      (route) =>
+        (route === '/blog' || !route.startsWith('/blog')) &&
+        !talks.includes(route),
     );
     expect(
       others.length,

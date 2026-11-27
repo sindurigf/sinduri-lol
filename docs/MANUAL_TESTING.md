@@ -68,7 +68,7 @@ npm run build && npm run preview   # http://localhost:4340
 
 Setup: Chrome, 1280px, `/`, focus in the address bar.
 
-- [ ] First Tab lands on "Skip to main content", visible at top left. → SC 2.4.1, 2.4.7
+- [ ] First Tab lands on "Skip to Main Content", visible at top left. → SC 2.4.1, 2.4.7
 - [ ] Enter on it: focus moves to main, which shows a cyan outline. → SC 2.4.1
 - [ ] Next Tab reaches the first control in the page (the hero pause control on `/`), not the header. → SC 2.4.1
 - [ ] Reload and Tab through: skip link, Report an Accessibility Problem, logo, About, Career, Blog, the
@@ -342,7 +342,7 @@ No outcome changes the practice: real case in markup ([case rule](STYLEGUIDE.md#
 
 Setup: Firefox, 1280px, `/`, click the address bar, Tab once.
 
-- [ ] It is the first thing announced, as "Skip to main content". → SC 2.4.1, 2.4.4
+- [ ] It is the first thing announced, as "Skip to Main Content". → SC 2.4.1, 2.4.4
 - [ ] Enter: something is announced. → SC 2.4.1
 - [ ] `Down` reads from inside main (pause control or `h1`), not the header:
       the reading cursor moved. → SC 2.4.1

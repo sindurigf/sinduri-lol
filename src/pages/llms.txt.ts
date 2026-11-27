@@ -131,9 +131,12 @@ export const GET: APIRoute = async ({ site: configuredSite }) => {
   const talks = [...(await talkDecks())].map(([deck, slides]) => {
     const cover = slides[0]?.slide;
     if (!cover) throw new Error(`Talk deck ${deck} has no slides.`);
+    if (cover.data.info === undefined) {
+      throw new Error(`Talk deck ${deck} has no info: on its cover.`);
+    }
     return (
       `- [${cover.data.title}](${absolute(`/talks/${deck}/`)}): ` +
-      'the slides, as a page.'
+      `the slides, as a page. ${cover.data.info}`
     );
   });
 
