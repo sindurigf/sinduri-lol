@@ -52,6 +52,8 @@ Listed under [Made with AI on `/credits/`](https://sinduri.lol/credits/#ai):
   sleep, wake and trick-list icons (`src/components/AboutCats.astro`) and
   their trick icons (`src/lib/about-cats-tricks.json`). The cat photos are
   real.
+- the linocut-style cover of the Learning Discourse post, made with Canva AI
+  (`src/assets/blog/learning-discourse/cover.jpg`).
 
 ## Keeping this current
 
